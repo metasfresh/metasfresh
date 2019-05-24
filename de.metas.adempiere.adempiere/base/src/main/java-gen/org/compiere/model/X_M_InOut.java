@@ -1,8 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-import static org.compiere.model.I_M_InOut.COLUMNNAME_IsApproved;
-
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -17,7 +15,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1446765335L;
+	private static final long serialVersionUID = 681134849L;
 
     /** Standard Constructor */
     public X_M_InOut (Properties ctx, int M_InOut_ID, String trxName)
@@ -36,6 +34,7 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 			setDocumentNo (null);
 			setFreightCostRule (null); // I
 			setIsApproved (false);
+			setIsExportedToCustomsInvoice (false); // N
 			setIsInDispute (false);
 			setIsInOutApprovedForInvoicing (false); // N
 			setIsInTransit (false);
@@ -344,6 +343,40 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_Customs_Invoice getC_Customs_Invoice() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class);
+	}
+
+	@Override
+	public void setC_Customs_Invoice(org.compiere.model.I_C_Customs_Invoice C_Customs_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Customs_Invoice_ID, org.compiere.model.I_C_Customs_Invoice.class, C_Customs_Invoice);
+	}
+
+	/** Set Customs Invoice.
+		@param C_Customs_Invoice_ID Customs Invoice	  */
+	@Override
+	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID)
+	{
+		if (C_Customs_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Customs_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customs_Invoice_ID, Integer.valueOf(C_Customs_Invoice_ID));
+	}
+
+	/** Get Customs Invoice.
+		@return Customs Invoice	  */
+	@Override
+	public int getC_Customs_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Customs_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
@@ -621,25 +654,25 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateReceived);
 	}
 
-//	/** 
-//	 * DeliveryRule AD_Reference_ID=151
-//	 * Reference name: C_Order DeliveryRule
-//	 */
-//	public static final int DELIVERYRULE_AD_Reference_ID=151;
-//	/** AfterReceipt = R */
-//	public static final String DELIVERYRULE_AfterReceipt = "R";
-//	/** Availability = A */
-//	public static final String DELIVERYRULE_Availability = "A";
-//	/** CompleteLine = L */
-//	public static final String DELIVERYRULE_CompleteLine = "L";
-//	/** CompleteOrder = O */
-//	public static final String DELIVERYRULE_CompleteOrder = "O";
-//	/** Force = F */
-//	public static final String DELIVERYRULE_Force = "F";
-//	/** Manual = M */
-//	public static final String DELIVERYRULE_Manual = "M";
-//	/** MitNaechsterAbolieferung = S */
-//	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
+	/** 
+	 * DeliveryRule AD_Reference_ID=151
+	 * Reference name: C_Order DeliveryRule
+	 */
+	public static final int DELIVERYRULE_AD_Reference_ID=151;
+	/** AfterReceipt = R */
+	public static final String DELIVERYRULE_AfterReceipt = "R";
+	/** Availability = A */
+	public static final String DELIVERYRULE_Availability = "A";
+	/** CompleteLine = L */
+	public static final String DELIVERYRULE_CompleteLine = "L";
+	/** CompleteOrder = O */
+	public static final String DELIVERYRULE_CompleteOrder = "O";
+	/** Force = F */
+	public static final String DELIVERYRULE_Force = "F";
+	/** Manual = M */
+	public static final String DELIVERYRULE_Manual = "M";
+	/** MitNaechsterAbolieferung = S */
+	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
 	/** Set Lieferart.
 		@param DeliveryRule 
 		Defines the timing of Delivery
@@ -1189,19 +1222,39 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 		return false;
 	}
 
-	/** Set In Dispute.
-		@param IsInDispute 
-		Document is in dispute
-	  */
+	/** Set Exported To Customs Invoice.
+		@param IsExportedToCustomsInvoice Exported To Customs Invoice	  */
+	@Override
+	public void setIsExportedToCustomsInvoice (boolean IsExportedToCustomsInvoice)
+	{
+		set_Value (COLUMNNAME_IsExportedToCustomsInvoice, Boolean.valueOf(IsExportedToCustomsInvoice));
+	}
+
+	/** Get Exported To Customs Invoice.
+		@return Exported To Customs Invoice	  */
+	@Override
+	public boolean isExportedToCustomsInvoice () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsExportedToCustomsInvoice);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Strittig.
+		@param IsInDispute Strittig	  */
 	@Override
 	public void setIsInDispute (boolean IsInDispute)
 	{
 		set_Value (COLUMNNAME_IsInDispute, Boolean.valueOf(IsInDispute));
 	}
 
-	/** Get In Dispute.
-		@return Document is in dispute
-	  */
+	/** Get Strittig.
+		@return Strittig	  */
 	@Override
 	public boolean isInDispute () 
 	{

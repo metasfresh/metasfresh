@@ -1,40 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
 /** Generated Interface for M_InOutLine
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_M_InOutLine
+public interface I_M_InOutLine 
 {
 
     /** TableName=M_InOutLine */
     public static final String Table_Name = "M_InOutLine";
 
     /** AD_Table_ID=320 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
     /** AccessLevel = 1 - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
     /** Load Meta Data */
 
@@ -48,10 +32,10 @@ public interface I_M_InOutLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Client>(I_M_InOutLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
@@ -75,12 +59,12 @@ public interface I_M_InOutLine
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org>(I_M_InOutLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
@@ -104,12 +88,12 @@ public interface I_M_InOutLine
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_OrgTrx();
 
 	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org>(I_M_InOutLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_OrgTrx_ID */
     public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
@@ -133,12 +117,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException;
+	public org.compiere.model.I_C_Activity getC_Activity();
 
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
     /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Activity>(I_M_InOutLine.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
     /** Column name C_Activity_ID */
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
@@ -162,12 +146,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_Campaign_ID();
 
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException;
+	public org.compiere.model.I_C_Campaign getC_Campaign();
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
     /** Column definition for C_Campaign_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Campaign>(I_M_InOutLine.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
     /** Column name C_Campaign_ID */
     public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
@@ -191,14 +175,41 @@ public interface I_M_InOutLine
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException;
+	public org.compiere.model.I_C_Charge getC_Charge();
 
 	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
 
     /** Column definition for C_Charge_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Charge> COLUMN_C_Charge_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Charge>(I_M_InOutLine.class, "C_Charge_ID", org.compiere.model.I_C_Charge.class);
     /** Column name C_Charge_ID */
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
+
+	/**
+	 * Set Customs Invoice Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Customs_Invoice_Line_ID (int C_Customs_Invoice_Line_ID);
+
+	/**
+	 * Get Customs Invoice Line.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Customs_Invoice_Line_ID();
+
+	public org.compiere.model.I_C_Customs_Invoice_Line getC_Customs_Invoice_Line();
+
+	public void setC_Customs_Invoice_Line(org.compiere.model.I_C_Customs_Invoice_Line C_Customs_Invoice_Line);
+
+    /** Column definition for C_Customs_Invoice_Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Customs_Invoice_Line> COLUMN_C_Customs_Invoice_Line_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Customs_Invoice_Line>(I_M_InOutLine.class, "C_Customs_Invoice_Line_ID", org.compiere.model.I_C_Customs_Invoice_Line.class);
+    /** Column name C_Customs_Invoice_Line_ID */
+    public static final String COLUMNNAME_C_Customs_Invoice_Line_ID = "C_Customs_Invoice_Line_ID";
 
 	/**
 	 * Set Auftragsposition.
@@ -220,12 +231,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_OrderLine_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLine() throws RuntimeException;
+	public org.compiere.model.I_C_OrderLine getC_OrderLine();
 
 	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
 
     /** Column definition for C_OrderLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_OrderLine>(I_M_InOutLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
     /** Column name C_OrderLine_ID */
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
@@ -249,12 +260,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException;
+	public org.compiere.model.I_C_Project getC_Project();
 
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
     /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Project>(I_M_InOutLine.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
@@ -278,12 +289,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_ProjectPhase_ID();
 
-	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase() throws RuntimeException;
+	public org.compiere.model.I_C_ProjectPhase getC_ProjectPhase();
 
 	public void setC_ProjectPhase(org.compiere.model.I_C_ProjectPhase C_ProjectPhase);
 
     /** Column definition for C_ProjectPhase_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectPhase>(I_M_InOutLine.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
     /** Column name C_ProjectPhase_ID */
     public static final String COLUMNNAME_C_ProjectPhase_ID = "C_ProjectPhase_ID";
 
@@ -307,12 +318,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_ProjectTask_ID();
 
-	public org.compiere.model.I_C_ProjectTask getC_ProjectTask() throws RuntimeException;
+	public org.compiere.model.I_C_ProjectTask getC_ProjectTask();
 
 	public void setC_ProjectTask(org.compiere.model.I_C_ProjectTask C_ProjectTask);
 
     /** Column definition for C_ProjectTask_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ProjectTask>(I_M_InOutLine.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
     /** Column name C_ProjectTask_ID */
     public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
@@ -336,12 +347,12 @@ public interface I_M_InOutLine
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
+	public org.compiere.model.I_C_UOM getC_UOM();
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
     /** Column name C_UOM_ID */
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
@@ -366,7 +377,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getConfirmedQty();
 
     /** Column definition for ConfirmedQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "ConfirmedQty", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ConfirmedQty", null);
     /** Column name ConfirmedQty */
     public static final String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
 
@@ -381,7 +392,7 @@ public interface I_M_InOutLine
 	public java.sql.Timestamp getCreated();
 
     /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Created", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -396,7 +407,7 @@ public interface I_M_InOutLine
 	public int getCreatedBy();
 
     /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User>(I_M_InOutLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
@@ -419,7 +430,7 @@ public interface I_M_InOutLine
 	public java.lang.String getDescription();
 
     /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Description", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
@@ -444,7 +455,7 @@ public interface I_M_InOutLine
 	public boolean isActive();
 
     /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "IsActive", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -469,7 +480,7 @@ public interface I_M_InOutLine
 	public boolean isDescription();
 
     /** Column definition for IsDescription */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsDescription = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "IsDescription", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsDescription = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "IsDescription", null);
     /** Column name IsDescription */
     public static final String COLUMNNAME_IsDescription = "IsDescription";
 
@@ -494,7 +505,7 @@ public interface I_M_InOutLine
 	public boolean isInvoiced();
 
     /** Column definition for IsInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "IsInvoiced", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_IsInvoiced = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "IsInvoiced", null);
     /** Column name IsInvoiced */
     public static final String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
@@ -519,13 +530,13 @@ public interface I_M_InOutLine
 	public int getLine();
 
     /** Column definition for Line */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Line", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Line", null);
     /** Column name Line */
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -534,8 +545,8 @@ public interface I_M_InOutLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -543,17 +554,17 @@ public interface I_M_InOutLine
 	 */
 	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
     /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_AttributeSetInstance>(I_M_InOutLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
     /** Column name M_AttributeSetInstance_ID */
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Versand/Wareneingang.
+	 * Set Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -563,7 +574,7 @@ public interface I_M_InOutLine
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Versand/Wareneingang.
+	 * Get Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: Search
@@ -572,12 +583,12 @@ public interface I_M_InOutLine
 	 */
 	public int getM_InOut_ID();
 
-	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException;
+	public org.compiere.model.I_M_InOut getM_InOut();
 
 	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
 
     /** Column definition for M_InOut_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOut>(I_M_InOutLine.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
     /** Column name M_InOut_ID */
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
@@ -602,7 +613,7 @@ public interface I_M_InOutLine
 	public int getM_InOutLine_ID();
 
     /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_InOutLine_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "M_InOutLine_ID", null);
     /** Column name M_InOutLine_ID */
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
@@ -626,12 +637,12 @@ public interface I_M_InOutLine
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException;
+	public org.compiere.model.I_M_Locator getM_Locator();
 
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Locator>(I_M_InOutLine.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
@@ -655,12 +666,12 @@ public interface I_M_InOutLine
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Product>(I_M_InOutLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
     /** Column name M_Product_ID */
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
@@ -684,12 +695,12 @@ public interface I_M_InOutLine
 	 */
 	public int getM_RMALine_ID();
 
-	public org.compiere.model.I_M_RMALine getM_RMALine() throws RuntimeException;
+	public org.compiere.model.I_M_RMALine getM_RMALine();
 
 	public void setM_RMALine(org.compiere.model.I_M_RMALine M_RMALine);
 
     /** Column definition for M_RMALine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_RMALine> COLUMN_M_RMALine_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "M_RMALine_ID", org.compiere.model.I_M_RMALine.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_RMALine> COLUMN_M_RMALine_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_RMALine>(I_M_InOutLine.class, "M_RMALine_ID", org.compiere.model.I_M_RMALine.class);
     /** Column name M_RMALine_ID */
     public static final String COLUMNNAME_M_RMALine_ID = "M_RMALine_ID";
 
@@ -714,7 +725,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getMovementQty();
 
     /** Column definition for MovementQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "MovementQty", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "MovementQty", null);
     /** Column name MovementQty */
     public static final String COLUMNNAME_MovementQty = "MovementQty";
 
@@ -737,7 +748,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getPickedQty();
 
     /** Column definition for PickedQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_PickedQty = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "PickedQty", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_PickedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "PickedQty", null);
     /** Column name PickedQty */
     public static final String COLUMNNAME_PickedQty = "PickedQty";
 
@@ -762,7 +773,7 @@ public interface I_M_InOutLine
 	public boolean isProcessed();
 
     /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Processed", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
 
@@ -787,7 +798,7 @@ public interface I_M_InOutLine
 	public java.lang.String getProductDescription();
 
     /** Column definition for ProductDescription */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ProductDescription = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "ProductDescription", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ProductDescription = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ProductDescription", null);
     /** Column name ProductDescription */
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
@@ -812,7 +823,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getQtyEntered();
 
     /** Column definition for QtyEntered */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "QtyEntered", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyEntered = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyEntered", null);
     /** Column name QtyEntered */
     public static final String COLUMNNAME_QtyEntered = "QtyEntered";
 
@@ -835,13 +846,12 @@ public interface I_M_InOutLine
 	public int getRef_InOutLine_ID();
 
     /** Column definition for Ref_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Ref_InOutLine_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Ref_InOutLine_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Ref_InOutLine_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Ref_InOutLine_ID", null);
     /** Column name Ref_InOutLine_ID */
     public static final String COLUMNNAME_Ref_InOutLine_ID = "Ref_InOutLine_ID";
 
 	/**
-	 * Set Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Set Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -850,8 +860,7 @@ public interface I_M_InOutLine
 	public void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Reversal Line.
-	 * Use to keep the reversal line ID for reversing costing purpose
+	 * Get Storno-Zeile.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -859,12 +868,12 @@ public interface I_M_InOutLine
 	 */
 	public int getReversalLine_ID();
 
-	public org.compiere.model.I_M_InOutLine getReversalLine() throws RuntimeException;
+	public org.compiere.model.I_M_InOutLine getReversalLine();
 
 	public void setReversalLine(org.compiere.model.I_M_InOutLine ReversalLine);
 
     /** Column definition for ReversalLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOutLine> COLUMN_ReversalLine_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "ReversalLine_ID", org.compiere.model.I_M_InOutLine.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOutLine> COLUMN_ReversalLine_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_InOutLine>(I_M_InOutLine.class, "ReversalLine_ID", org.compiere.model.I_M_InOutLine.class);
     /** Column name ReversalLine_ID */
     public static final String COLUMNNAME_ReversalLine_ID = "ReversalLine_ID";
 
@@ -889,7 +898,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getScrappedQty();
 
     /** Column definition for ScrappedQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ScrappedQty = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "ScrappedQty", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ScrappedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ScrappedQty", null);
     /** Column name ScrappedQty */
     public static final String COLUMNNAME_ScrappedQty = "ScrappedQty";
 
@@ -914,7 +923,7 @@ public interface I_M_InOutLine
 	public java.math.BigDecimal getTargetQty();
 
     /** Column definition for TargetQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_TargetQty = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "TargetQty", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_TargetQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "TargetQty", null);
     /** Column name TargetQty */
     public static final String COLUMNNAME_TargetQty = "TargetQty";
 
@@ -929,7 +938,7 @@ public interface I_M_InOutLine
 	public java.sql.Timestamp getUpdated();
 
     /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "Updated", null);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
@@ -944,7 +953,7 @@ public interface I_M_InOutLine
 	public int getUpdatedBy();
 
     /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User>(I_M_InOutLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
@@ -968,12 +977,12 @@ public interface I_M_InOutLine
 	 */
 	public int getUser1_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException;
+	public org.compiere.model.I_C_ElementValue getUser1();
 
 	public void setUser1(org.compiere.model.I_C_ElementValue User1);
 
     /** Column definition for User1_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue>(I_M_InOutLine.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User1_ID */
     public static final String COLUMNNAME_User1_ID = "User1_ID";
 
@@ -997,12 +1006,12 @@ public interface I_M_InOutLine
 	 */
 	public int getUser2_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException;
+	public org.compiere.model.I_C_ElementValue getUser2();
 
 	public void setUser2(org.compiere.model.I_C_ElementValue User2);
 
     /** Column definition for User2_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<>(I_M_InOutLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_ElementValue>(I_M_InOutLine.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User2_ID */
     public static final String COLUMNNAME_User2_ID = "User2_ID";
 }
