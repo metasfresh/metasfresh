@@ -35,6 +35,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentHandlerProvider;
 import de.metas.document.engine.DocumentTableFields;
@@ -321,9 +322,12 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final IDocument doc = getDocument(document);
 		final String docStatus = doc.getDocStatus();
-		return isStatusStrOneOf(docStatus,
-				IDocument.STATUS_Reversed,
-				IDocument.STATUS_Voided);
+		if (docStatus == null)
+		{
+			return false;
+		}
+
+		return DocStatus.ofCode(docStatus).isReversedOrVoided();
 	}
 
 	@Override

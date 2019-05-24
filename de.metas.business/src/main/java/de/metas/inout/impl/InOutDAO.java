@@ -1,6 +1,7 @@
 package de.metas.inout.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -71,6 +72,13 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
+		return inoutLine;
 	}
 
 	@Override
