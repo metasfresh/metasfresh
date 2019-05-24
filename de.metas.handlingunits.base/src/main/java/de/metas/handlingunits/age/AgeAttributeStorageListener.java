@@ -9,7 +9,6 @@ import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.Adempiere;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -42,10 +41,11 @@ import java.time.LocalDateTime;
 @Component
 public class AgeAttributeStorageListener implements IAttributeStorageListener
 {
-	private final transient AgeAttributesService ageAttributesService = Adempiere.getBean(AgeAttributesService.class);
+	private final transient AgeAttributesService ageAttributesService;
 
-	public AgeAttributeStorageListener()
+	public AgeAttributeStorageListener(final AgeAttributesService ageAttributesService)
 	{
+		this.ageAttributesService = ageAttributesService;
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
 
