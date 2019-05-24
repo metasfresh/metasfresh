@@ -23,21 +23,13 @@
 
 package de.metas.vertical.pharma.securpharm.client;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Base64;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.Ignore;
 
-import de.metas.user.UserId;
-import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
+import de.metas.vertical.pharma.securpharm.service.PlainSecurPharmConfigRespository;
 
 @Ignore
 public class SecurPharmClientManualTest
@@ -49,7 +41,8 @@ public class SecurPharmClientManualTest
 
 	private void run()
 	{
-		final SecurPharmConfig config = getConfig();
+		final PlainSecurPharmConfigRespository configRepo = PlainSecurPharmConfigRespository.ofDefaultSandboxProperties();
+		final SecurPharmConfig config = configRepo.getConfig();
 		System.out.println("Using config: " + config);
 
 		final SecurPharmClient client = SecurPharmClient.createAndAuthenticate(config);
@@ -63,26 +56,5 @@ public class SecurPharmClientManualTest
 		System.out.println("verifying product: " + decodeResponse.getProductData());
 		VerifyProductResponse verifyResponse = client.verifyProduct(decodeResponse.getProductData());
 		System.out.println("verify response: " + verifyResponse);
-	}
-
-	private SecurPharmConfig getConfig()
-	{
-		try (InputStream in = new FileInputStream("./sandbox.properties"))
-		{
-			final Properties props = new Properties();
-			props.load(in);
-			return SecurPharmConfig.builder()
-					.applicationUUID(props.getProperty("applicationUUID"))
-					.authBaseUrl(props.getProperty("authBaseUrl"))
-					.pharmaAPIBaseUrl(props.getProperty("pharmaAPIBaseUrl"))
-					.certificatePath(props.getProperty("certificatePath"))
-					.supportUserId(UserId.METASFRESH)
-					.keystorePassword(props.getProperty("keystorePassword"))
-					.build();
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException(e);
-		}
 	}
 }
