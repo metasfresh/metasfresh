@@ -39,7 +39,7 @@ public class HUWithAgeRepository
 			.add(X_M_HU.HUSTATUS_Active)
 			.build();
 
-	public Stream<I_M_HU> getAllWhereProductionDateIsNotEmptyAndQtyOnHandStatus()
+	public Stream<I_M_HU> getAllWhereProductionDateIsNotEmptyAndStatusActive()
 	{
 		return Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()

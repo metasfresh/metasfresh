@@ -56,7 +56,7 @@ public class M_HU_UpdateHUAgeAttributeProcess extends JavaProcess
 
 	private Stream<I_M_HU> streamHUs()
 	{
-		return huWithAgeRepository.getAllWhereProductionDateIsNotEmptyAndQtyOnHandStatus();
+		return huWithAgeRepository.getAllWhereProductionDateIsNotEmptyAndStatusActive();
 	}
 
 	private void updateAgeAttribute(final I_M_HU hu)
