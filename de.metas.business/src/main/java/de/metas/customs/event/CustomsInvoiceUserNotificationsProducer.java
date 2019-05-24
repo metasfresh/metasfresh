@@ -10,7 +10,6 @@ import org.compiere.model.I_C_Customs_Invoice;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.customs.CustomsInvoice;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
@@ -54,9 +53,6 @@ public class CustomsInvoiceUserNotificationsProducer
 			.name("de.metas.customs.UserNotifications")
 			.type(Type.REMOTE)
 			.build();
-
-	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	private static final AdWindowId WINDOW_CUSTOMS_INVOICE = AdWindowId.ofRepoId(540643); // FIXME: HARDCODED
 	private static final String MSG_Event_CustomsInvoiceGenerated = "Event_CustomsInvoiceGenerated";

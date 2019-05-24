@@ -1,6 +1,9 @@
 package de.metas.letters.model;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -54,7 +57,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
@@ -284,7 +286,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				ITrx.TRXNAME_ThreadInherited // trxName
 		);
 		updateRequestDetails(requestRecord, parent_table_id, parent_record_id, context);
-		InterfaceWrapperHelper.save(requestRecord);
+		saveRecord(requestRecord);
 
 		//
 		// Attach printed letter
@@ -1080,7 +1082,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		public I_AD_User getSalesRepUser()
 		{
-			return InterfaceWrapperHelper.create(get(VAR_SalesRep), I_AD_User.class);
+			return create(get(VAR_SalesRep), I_AD_User.class);
 		}
 
 		public String getEMail()
@@ -1292,7 +1294,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return (SourceDocument)obj;
 			}
 
-			final PO po = InterfaceWrapperHelper.getPO(obj);
+			final PO po = getPO(obj);
 			return new POSourceDocument(po);
 		}
 	}

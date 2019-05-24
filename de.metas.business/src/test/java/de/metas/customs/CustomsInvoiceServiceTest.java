@@ -107,8 +107,6 @@ public class CustomsInvoiceServiceTest
 
 	private ProductId product1;
 
-	private PlainCurrencyDAO currencyDAO;
-
 	@Before
 	public void init()
 	{
@@ -146,7 +144,7 @@ public class CustomsInvoiceServiceTest
 		// createCurrencyConversion(euro, chf, currencyMultiplier, currencyDivisor);
 		// createCurrencyConversion(chf, euro, currencyDivisor, currencyMultiplier);
 
-		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
+		final PlainCurrencyDAO currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		currencyDAO.setRate(euro, chf, currencyMultiplier);
 
 	}
