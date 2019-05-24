@@ -43,15 +43,21 @@ public class ExpirationDateTest
 	}
 
 	@Test
-	public void test_ofString()
+	public void test_ofJson()
 	{
-		assertThat(ExpirationDate.ofString("210601").toLocalDate())
+		assertThat(ExpirationDate.ofJson("210601").toLocalDate())
+				.isEqualTo(LocalDate.of(2021, Month.JUNE, 1));
+		assertThat(ExpirationDate.ofJson("2021-06-01").toLocalDate())
 				.isEqualTo(LocalDate.of(2021, Month.JUNE, 1));
 
-		assertThat(ExpirationDate.ofString("220830").toLocalDate())
+		assertThat(ExpirationDate.ofJson("220830").toLocalDate())
+				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 30));
+		assertThat(ExpirationDate.ofJson("2022-08-30").toLocalDate())
 				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 30));
 
-		assertThat(ExpirationDate.ofString("220800").toLocalDate())
+		assertThat(ExpirationDate.ofJson("220800").toLocalDate())
+				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 31));
+		assertThat(ExpirationDate.ofJson("2022-08-31").toLocalDate())
 				.isEqualTo(LocalDate.of(2022, Month.AUGUST, 31));
 	}
 
@@ -71,8 +77,8 @@ public class ExpirationDateTest
 	@Test
 	public void testSerializedDeserialize() throws Exception
 	{
-		testSerializedDeserialize(ExpirationDate.ofString("210601"));
-		testSerializedDeserialize(ExpirationDate.ofString("220800"));
+		testSerializedDeserialize(ExpirationDate.ofJson("210601"));
+		testSerializedDeserialize(ExpirationDate.ofJson("220800"));
 	}
 
 	public void testSerializedDeserialize(final ExpirationDate date) throws Exception

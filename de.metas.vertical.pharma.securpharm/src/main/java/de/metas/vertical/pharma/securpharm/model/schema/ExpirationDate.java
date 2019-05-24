@@ -3,9 +3,9 @@ package de.metas.vertical.pharma.securpharm.model.schema;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -41,9 +41,20 @@ import lombok.ToString;
 public final class ExpirationDate
 {
 	@JsonCreator
-	public static ExpirationDate ofString(@NonNull final String yyMMdd)
+	public static ExpirationDate ofJson(@NonNull final String json)
 	{
-		return new ExpirationDate(yyMMdd, toLocalDate(yyMMdd));
+		if (json.contains("-"))
+		{
+			final LocalDate localDate = LocalDate.parse(json, FORMAT_yyyy_MM_dd);
+			final String yyMMdd = toYYMMDD(localDate);
+			return new ExpirationDate(yyMMdd, localDate);
+		}
+		else
+		{
+			final String yyMMdd = json;
+			final LocalDate localDate = toLocalDate(yyMMdd);
+			return new ExpirationDate(yyMMdd, localDate);
+		}
 	}
 
 	public static ExpirationDate ofLocalDate(@NonNull final LocalDate date)
@@ -53,6 +64,7 @@ public final class ExpirationDate
 
 	private static final DateTimeFormatter FORMAT_yyMMdd = DateTimeFormatter.ofPattern("yyMMdd");
 	private static final DateTimeFormatter FORMAT_yyMM = DateTimeFormatter.ofPattern("yyMM");
+	private static final DateTimeFormatter FORMAT_yyyy_MM_dd = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	private final String yyMMdd;
 	private final LocalDate localDate;
@@ -71,7 +83,7 @@ public final class ExpirationDate
 		}
 
 		final String dd = yyMMdd.substring(4, 6);
-		if (dd.endsWith("00"))
+		if (dd.endsWith("00")) // last day of month indicator
 		{
 			final String yyMM = yyMMdd.substring(0, 4);
 			return YearMonth.parse(yyMM, FORMAT_yyMM).atEndOfMonth();
@@ -84,8 +96,7 @@ public final class ExpirationDate
 
 	private static String toYYMMDD(@NonNull final LocalDate localDate)
 	{
-		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
-		if (localDate.equals(lastDayOfMonth))
+		if (TimeUtil.isLastDayOfMonth(localDate))
 		{
 			return FORMAT_yyMM.format(localDate) + "00";
 		}
