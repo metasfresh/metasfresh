@@ -47,7 +47,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<spring-boot-admin.version>1.5.0</spring-boot-admin.version>
 
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
-		
+
 		<mockito.version>2.7.22</mockito.version>
 	</properties>
 
@@ -143,6 +143,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.junit.jupiter</groupId>
+					<artifactId>junit-jupiter-params</artifactId>
+				</exclusion>
+			</exclusions>
 			<version>5.4.0</version>
 			<scope>test</scope>
 		</dependency>
@@ -657,7 +663,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</plugins>
 			</build>
 		</profile>
-		
+
 		<profile>
 			<!-- If there is a sql directory, then this profile will activate and 
 				zip up the migration SQL files in that directory. Note the property "migration-sql-basedir" 
