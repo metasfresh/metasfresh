@@ -138,7 +138,7 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		}
 		else
 		{
-			replenish = importRecord.getM_Replenish();
+			replenish = uppdateReplenish(importRecord);
 			replenishImportResult = ImportRecordResult.Updated;
 		}
 
@@ -153,21 +153,15 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 
 	private I_M_Replenish createNewReplenish(@NonNull final I_I_Replenish importRecord)
 	{
-		final I_M_Replenish replenish;
-		if (importRecord.getM_Replenish_ID() <= 0)
-		{
-			replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
-		}
-		else
-		{
-			replenish = importRecord.getM_Replenish();
-		}
-
+		final I_M_Replenish replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
 		setReplenishmenttValueFields(importRecord, replenish);
-
-		InterfaceWrapperHelper.save(replenish);
-		importRecord.setM_Replenish(replenish);
-
+		return replenish;
+	}
+	
+	private I_M_Replenish uppdateReplenish(@NonNull final I_I_Replenish importRecord)
+	{
+		final I_M_Replenish replenish = InterfaceWrapperHelper.newInstance(I_M_Replenish.class, importRecord);
+		setReplenishmenttValueFields(importRecord, replenish);
 		return replenish;
 	}
 
@@ -199,5 +193,4 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 			replenish.setC_Period_ID(importRecord.getC_Period_ID());
 		}
 	}
-
 }
