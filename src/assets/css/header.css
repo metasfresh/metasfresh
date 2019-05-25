@@ -193,7 +193,6 @@
 
 @media (max-width: $breakpoint) {
     .subheader-container {
-        top: 55px;
         width: 100%;
         z-index: 201;
         max-height: calc(100vh - 55px);
