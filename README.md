@@ -73,13 +73,13 @@ Also remember to respect our code-schema rules. All of them are listed in __esli
 
 Project has a generic structure. Name of components and their containers should be strictly defined and keep for better understanding.
 
-__MasterWindow__ - (e.g. `/window/143/1000000`) It is container for displaying single document view.
+__MasterWindow__ - (e.g. `/window/143/1000000`) It is the container for displaying a single document view (document main view, detailed view).
 
 __DocList__ - (e.g. `/window/143/`) It's a view with a list of documents kept in table.
 
 __DocumentList__ - It is a component that combining table for documents, filters, selection attributes, etc...
 
-__Window__ - It is a component that is generating set of sections, columns, element's groups, element's lines and widgets (these are defined by backend layout)
+__Window__ - It is a component that is generating a set of sections, columns, elements groups, elements lines and widgets (these are defined by the backend layout)
 
 __Widget__ - (__MasterWidget__, __RawWidget__) It is a component for getting user input.
 
