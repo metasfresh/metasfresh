@@ -69,8 +69,11 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOICE_CONTEXTPATH);
+		final String charset = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
+
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_INVOICE_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(charset);
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();

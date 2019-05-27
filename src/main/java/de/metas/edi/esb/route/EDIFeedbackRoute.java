@@ -60,7 +60,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 		// Catch any exception in feedback, log it, and stop the route from continuing execution.
 		onException(Exception.class)
 				.handled(true)
-				.log(LoggingLevel.ERROR, property(Exchange.EXCEPTION_CAUGHT).toString())
+				.log(LoggingLevel.ERROR, exchangeProperty(Exchange.EXCEPTION_CAUGHT).toString())
 				.to(AbstractEDIRoute.EP_EDI_LOG_ExceptionHandler)
 				.stop();
 
@@ -81,7 +81,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 		from(EDIFeedbackRoute.EP_EDI_ERROR_COMMON)
 				.to(AbstractEDIRoute.EP_EDI_LOG_ExceptionHandler)
 				.choice()
-					.when(property(AbstractEDIRoute.IS_CREATE_XML_FEEDBACK).isEqualTo(true))
+					.when(exchangeProperty(AbstractEDIRoute.IS_CREATE_XML_FEEDBACK).isEqualTo(true))
 						.log(LoggingLevel.INFO, "EDI: Creating error feedback XML Java Object...")
 						.choice()
 							//.when(body().isInstanceOf(EDICctopInvoicVType.class))
@@ -98,7 +98,7 @@ public class EDIFeedbackRoute extends RouteBuilder
 						// Add the extension for the Feedback object so that it opens nicely :)
 						// (the extension is hard-coded, as i didn't see a real reason to keep it in properties --
 						// this can be removed at any time)
-						.setHeader(Exchange.FILE_NAME, property(Exchange.FILE_NAME).append(".error.xml"))
+						.setHeader(Exchange.FILE_NAME, exchangeProperty(Exchange.FILE_NAME).append(".error.xml"))
 						// If errors occurred, put the feedback in the error directory
 						.to(EDIFeedbackRoute.EP_EDI_LOCAL_ERROR)
 						// Send the feedback to ADempiere

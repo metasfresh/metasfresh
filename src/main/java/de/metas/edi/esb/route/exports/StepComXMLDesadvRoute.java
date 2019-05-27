@@ -46,7 +46,7 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
-	private static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-XML-EDI-DESADV-Aggregate";
+	private static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-XML-EDI-DESADV";
 
 	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.xml.filename";
 
@@ -73,9 +73,11 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
+		final String charset = Util.resolvePropertyPlaceholders(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
 
-		JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_DESADV_CONTEXTPATH);
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(JAXB_DESADV_CONTEXTPATH);
 		dataFormat.setCamelContext(getContext());
+		dataFormat.setEncoding(charset);
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
@@ -131,7 +133,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
 
-				.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }

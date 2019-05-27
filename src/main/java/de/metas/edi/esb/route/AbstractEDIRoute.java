@@ -1,5 +1,16 @@
 package de.metas.edi.esb.route;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+
+import org.apache.camel.RuntimeCamelException;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.model.ModelCamelContext;
+import org.apache.camel.spi.DataFormat;
+import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -10,12 +21,12 @@ package de.metas.edi.esb.route;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -24,16 +35,6 @@ package de.metas.edi.esb.route;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.converter.jaxb.JaxbDataFormat;
-import org.apache.camel.model.ModelCamelContext;
-import org.apache.camel.spi.DataFormat;
-import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
-
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 
 public abstract class AbstractEDIRoute extends RouteBuilder
 {
@@ -47,7 +48,9 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 
 	protected static final String IS_CREATE_XML_FEEDBACK = "IsCreateXMLFeedback";
 
-	protected static final String EDI_GENERATED_CHARSET_NAME = "edi.generated.charset.name";
+	protected static final String EDI_COMPUDATA_CHARSET_NAME = "edi.compudata.charset.name";
+	protected static final String EDI_STEPCOM_CHARSET_NAME = "edi.stepcom.charset.name";
+
 
 	public static final String EDI_ORDER_EDIMessageDatePattern = "edi.order.edi_message_date_pattern";
 	public static final String EDI_ORDER_ADClientValue = "edi.order.ad_client_value";
@@ -65,7 +68,7 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 
 	/**
 	 * Replaces Camel's {@link RouteBuilder#configure()} when extending this class.
-	 * 
+	 *
 	 * @param jaxb
 	 */
 	protected abstract void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat);
