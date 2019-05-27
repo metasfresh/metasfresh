@@ -1,0 +1,68 @@
+package de.metas.location.interceptor;
+
+import java.util.Properties;
+
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
+import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeValue;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
+import de.metas.util.Services;
+
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+@Interceptor(C_Country.class)
+@Component("de.metas.location.model.interceptor.C_Country")
+public class C_Country
+{
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void onCreateCountry(final I_C_Country country)
+	{
+		final Properties ctx = Env.getCtx();
+		final I_M_Attribute countryAttribute = Services.get(ICountryAttributeDAO.class).retrieveCountryAttribute(ctx);
+		final IAttributeValueGenerator generator = Services.get(IAttributesBL.class).getAttributeValueGenerator(countryAttribute);
+		final I_M_AttributeValue attributeValue = Services.get(ICountryAttributeDAO.class).retrieveAttributeValue(ctx, country);
+		if (attributeValue != null)
+		{
+			attributeValue.setIsActive(true);
+		}
+		else
+		{
+			generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
+	public void onChangeCountry()
+	{
+
+	}
+
+}
