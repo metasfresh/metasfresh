@@ -34,7 +34,6 @@ import java.util.Comparator;
 
 import org.apache.camel.Exchange;
 import org.apache.commons.lang.StringUtils;
-import org.milyn.payload.JavaSource;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.SystemTime;
@@ -74,9 +73,9 @@ import de.metas.edi.esb.pojo.desadv.qualifier.ProductQual;
 import de.metas.edi.esb.pojo.desadv.qualifier.QuantityQual;
 import de.metas.edi.esb.pojo.desadv.qualifier.ReferenceQual;
 import de.metas.edi.esb.route.AbstractEDIRoute;
-import de.metas.edi.esb.route.exports.XMLDesadvRoute;
+import de.metas.edi.esb.route.exports.StepComXMLDesadvRoute;
 
-public class EDIXMLDesadvBean
+public class StepComXMLDesadvBean
 {
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
 
@@ -89,26 +88,25 @@ public class EDIXMLDesadvBean
 
 		// validate mandatory exchange properties
 		validateString(
-				exchange.getProperty(XMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class),
-				"exchange property " + XMLDesadvRoute.EDI_XML_DESADV_IS_TEST + " cannot be null or empty");
+				exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class),
+				"exchange property " + StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST + " cannot be null or empty");
 
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
 
-		final JavaSource source = new JavaSource(desadvDocument);
-		exchange.getIn().setBody(source, Document.class);
+		exchange.getIn().setBody(desadvDocument, Document.class);
 	}
 
 	private Document createDesadvDocumentFromXMLBean(final EDIExpDesadvType xmlDesadv, final Exchange exchange)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
-		final String isTest = exchange.getProperty(XMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class);
+		final String isTest = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class);
 		final String dateFormat = (String)exchange.getProperty(AbstractEDIRoute.EDI_ORDER_EDIMessageDatePattern);
-		final String partnerId = exchange.getProperty(XMLDesadvRoute.EDI_XML_PARTNER_ID, String.class);
-		final String ownerId = exchange.getProperty(XMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
-		final String applicationRef = exchange.getProperty(XMLDesadvRoute.EDI_XML_APPLICATION_REF, String.class);
-		final String supplierGln = exchange.getProperty(XMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
-		final String supplierAdditionalId = exchange.getProperty(XMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID, String.class);
+		final String partnerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_PARTNER_ID, String.class);
+		final String ownerId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID, String.class);
+		final String applicationRef = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF, String.class);
+		final String supplierGln = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN, String.class);
+		final String supplierAdditionalId = exchange.getProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID, String.class);
 
 		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 		final Document document = DESADV_objectFactory.createDocument();

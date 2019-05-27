@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component;
  * #L%
  */
 
-import de.metas.edi.esb.bean.invoice.EDICctopInvoiceBean;
+import de.metas.edi.esb.bean.invoice.CompuDataInvoicBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
@@ -43,7 +43,7 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
-public class EDIInvoiceRoute extends AbstractEDIRoute
+public class CompuDataInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "XML-Invoice-To-EDI-Invoic";
 
@@ -71,17 +71,17 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_FILENAME_PATTERN);
+		final String invoiceFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
+		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN);
+		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_IS_TEST);
 
-		from(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
+		from(CompuDataInvoicRoute.EP_EDI_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST).constant(isTest)
+				.setProperty(CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
+				.setProperty(CompuDataInvoicRoute.EDI_INVOICE_IS_TEST).constant(isTest)
 
 		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()
@@ -100,7 +100,7 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 				})
 
 		.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
-				.bean(EDICctopInvoiceBean.class, EDICctopInvoiceBean.METHOD_createEDIData)
+				.bean(CompuDataInvoicBean.class, CompuDataInvoicBean.METHOD_createEDIData)
 
 		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using SDF...")
 				.marshal(sdf)
@@ -109,10 +109,10 @@ public class EDIInvoiceRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(invoiceFilenamePattern)
 
 		.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(EDIInvoiceRoute.EP_EDI_FILE_INVOICE)
+				.to(CompuDataInvoicRoute.EP_EDI_FILE_INVOICE)
 
 		.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
-				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, EDIInvoiceRoute.EDIInvoiceFeedback_QNAME, EDIInvoiceRoute.METHOD_setCInvoiceID))
+				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID))
 
 		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)

@@ -32,7 +32,6 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpMInOutType;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
@@ -68,20 +67,16 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.choice()
 							.when(isXML -> Boolean.valueOf(isXMLInvoice))
-								.to(XMLInvoiceRoute.EP_EDI_INVOICE_XML_CONSUMER)
+								.to(StepComXMLInvoicRoute.EP_EDI_INVOICE_XML_CONSUMER)
 							.otherwise()
-								.to(EDIInvoiceRoute.EP_EDI_INVOICE_CONSUMER)
+								.to(CompuDataInvoicRoute.EP_EDI_INVOICE_CONSUMER)
 						.endChoice()
-					// Single InOut DESADV
-					.when(body().isInstanceOf(EDIExpMInOutType.class))
-						.to(EDIDesadvRoute.EP_EDI_DESADV_SINGLE_CONSUMER)
-					// Aggregated InOut DESADV
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						.choice()
 							.when(isXML -> Boolean.valueOf(isXMLDesadv))
-								.to(XMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
+								.to(StepComXMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
 							.otherwise()
-								.to(EDIDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
+								.to(CompuDataDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
 						.endChoice()
 				.end();
 				// @formatter:on

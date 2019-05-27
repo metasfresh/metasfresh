@@ -33,7 +33,7 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.bean.invoice.EDIXMLInvoiceBean;
+import de.metas.edi.esb.bean.invoice.StepComXMLInvoicBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
@@ -44,7 +44,7 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
-public class XMLInvoiceRoute extends AbstractEDIRoute
+public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	private static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
 
@@ -76,25 +76,25 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_XML_FILENAME_PATTERN);
+		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_INVOICE_XML_FILENAME_PATTERN);
 
-		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN);
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST);
-		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_PARTNER_ID);
-		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_XML_APPLICATION_REF);
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_INVOICE_SENDER_GLN);
+		final String isTest = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST);
+		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_PARTNER_ID);
+		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_OWNER_ID);
+		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF);
+		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_ORDER_EDIMessageDatePattern);
 
-		from(XMLInvoiceRoute.EP_EDI_INVOICE_XML_CONSUMER)
+		from(StepComXMLInvoicRoute.EP_EDI_INVOICE_XML_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(XMLInvoiceRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
-				.setProperty(XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST).constant(isTest)
-				.setProperty(XMLInvoiceRoute.EDI_XML_PARTNER_ID).constant(partnerId)
-				.setProperty(XMLInvoiceRoute.EDI_XML_OWNER_ID).constant(ownerId)
-				.setProperty(XMLInvoiceRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
-				.setProperty(XMLInvoiceRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
+				.setProperty(StepComXMLInvoicRoute.EDI_INVOICE_SENDER_GLN).constant(senderGln)
+				.setProperty(StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST).constant(isTest)
+				.setProperty(StepComXMLInvoicRoute.EDI_XML_PARTNER_ID).constant(partnerId)
+				.setProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID).constant(ownerId)
+				.setProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
+				.setProperty(StepComXMLInvoicRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(exchange -> {
@@ -108,7 +108,7 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI XML Java Object...")
-				.bean(EDIXMLInvoiceBean.class, EDIXMLInvoiceBean.METHOD_createXMLEDIData)
+				.bean(StepComXMLInvoicBean.class, StepComXMLInvoicBean.METHOD_createXMLEDIData)
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling EDI XML Java Object to XML...")
 				.marshal(dataFormat)
@@ -117,10 +117,10 @@ public class XMLInvoiceRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(invoiceXMLFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(XMLInvoiceRoute.EP_EDI_XML_FILE_INVOICE)
+				.to(StepComXMLInvoicRoute.EP_EDI_XML_FILE_INVOICE)
 
 				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
-				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, XMLInvoiceRoute.EDIInvoiceFeedback_QNAME, XMLInvoiceRoute.METHOD_setCInvoiceID))
+				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, StepComXMLInvoicRoute.EDIInvoiceFeedback_QNAME, StepComXMLInvoicRoute.METHOD_setCInvoiceID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)

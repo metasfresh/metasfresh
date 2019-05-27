@@ -60,9 +60,9 @@ import de.metas.edi.esb.pojo.invoice.cctop.Cctop140V;
 import de.metas.edi.esb.pojo.invoice.cctop.Cctop901991V;
 import de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice;
 import de.metas.edi.esb.pojo.invoice.cctop.CctopInvoice500V;
-import de.metas.edi.esb.route.exports.EDIInvoiceRoute;
+import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
 
-public class EDICctopInvoiceBean
+public class CompuDataInvoicBean
 {
 	public static final String METHOD_createEDIData = "createEDIData";
 
@@ -196,14 +196,14 @@ public class EDICctopInvoiceBean
 		}
 		cctop000V.setInterchangeReferenceNo(sequenceNoAttr.toString());
 
-		final Object senderGln = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_SENDER_GLN);
+		final Object senderGln = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN);
 		if (senderGln == null)
 		{
 			throw new RuntimeCamelException("senderGln property cannot be null for!");
 		}
 		cctop000V.setSenderGln(senderGln.toString());
 
-		final Object isTest = exchange.getProperty(EDIInvoiceRoute.EDI_INVOICE_IS_TEST);
+		final Object isTest = exchange.getProperty(CompuDataInvoicRoute.EDI_INVOICE_IS_TEST);
 		if (isTest == null)
 		{
 			throw new RuntimeCamelException("isTest property cannot be null for!");

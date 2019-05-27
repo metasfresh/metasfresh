@@ -119,7 +119,6 @@
 	</xsd:attribute>
 	<xsd:element name="EDI_Exp_C_BPartner_Product_v" type="EDI_Exp_C_BPartner_Product_vType" />
 	<xsd:element name="EDI_Imp_AD_InputDataSource_Lookup_IN" type="EDI_Imp_AD_InputDataSource_Lookup_INType" />
-	<xsd:element name="EDI_M_InOut_Overdelivery_C_OrderLine_v" type="EDI_M_InOut_Overdelivery_C_OrderLine_vType" />
 	<xsd:simpleType name="C_CreditMemo_ReasonEnum">
 		<xsd:restriction base="xsd:string">
 			<xsd:enumeration value="CMD">
@@ -272,15 +271,12 @@
 	<xsd:element name="EDI_Imp_C_OLCand" type="EDI_Imp_C_OLCandType" />
 	<xsd:element name="EDI_Imp_C_BPartner_Location_Lookup_GLN" type="EDI_Imp_C_BPartner_Location_Lookup_GLNType" />
 	<xsd:element name="EDI_Imp_C_UOM_Lookup_UOMSymbol" type="EDI_Imp_C_UOM_Lookup_UOMSymbolType" />
-	<xsd:element name="EDI_Exp_M_InOut" type="EDI_Exp_M_InOutType" />
-	<xsd:element name="EDI_Exp_M_InOutLine" type="EDI_Exp_M_InOutLineType" />
 	<xsd:element name="EDI_Exp_C_BPartner" type="EDI_Exp_C_BPartnerType" />
 	<xsd:element name="EDI_Exp_M_Product" type="EDI_Exp_M_ProductType" />
 	<xsd:element name="EDI_Exp_C_Order" type="EDI_Exp_C_OrderType" />
 	<xsd:element name="EDI_Exp_C_OrderLine" type="EDI_Exp_C_OrderLineType" />
 	<xsd:element name="EDI_Exp_C_Currency" type="EDI_Exp_C_CurrencyType" />
 	<xsd:element name="EDI_Exp_C_UOM" type="EDI_Exp_C_UOMType" />
-	<xsd:element name="EDI_InOut_Feedback" type="EDI_InOut_FeedbackType" />
 	<xsd:element name="EDI_Imp_C_BPartner_Lookup_RecipientGLN" type="EDI_Imp_C_BPartner_Lookup_RecipientGLNType" />
 	<xsd:element name="EDI_Imp_C_Currency_Lookup_ISOCode" type="EDI_Imp_C_Currency_Lookup_ISOCodeType" />
 	<xsd:element name="EDI_Exp_C_BPartner_Location" type="EDI_Exp_C_BPartner_LocationType" />
@@ -358,26 +354,7 @@
 			<xsd:element maxOccurs="1" minOccurs="1" name="QtyOrdered" type="xsd:decimal" />
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_C_BPartner_Product_v" type="EDI_Exp_C_BPartner_Product_vType" />
 		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:complexType name="EDI_M_InOut_Overdelivery_C_OrderLine_vType">
-		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_OrderLine_ID" type="EDI_Exp_C_OrderLineType" />
-		</xsd:sequence>
-		<xsd:attribute ref="AD_Client_Value" />
-		<xsd:attribute ref="ReplicationEvent" />
-		<xsd:attribute ref="ReplicationMode" />
-		<xsd:attribute ref="ReplicationType" />
-		<xsd:attribute fixed="*" name="Version" type="xsd:string">
-			<xsd:annotation>
-				<xsd:appinfo>
-					<jaxb:property name="VersionAttr" />
-				</xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="SequenceNo" />
-		<xsd:attribute ref="TrxName" />
-		<xsd:attribute ref="AD_Session_ID" />
-	</xsd:complexType>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_cctop_000_vType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="C_BPartner_Location_ID" type="xsd:integer" />
@@ -666,71 +643,7 @@
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="0" name="Value" type="xsd:string" />
 		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:complexType name="EDI_Exp_M_InOutLineType">
-		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_OrderLine_ID" type="EDI_Exp_C_OrderLineType" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_UOM_ID" type="EDI_Exp_C_UOMType" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="Line" type="xsd:integer" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="M_Product_ID" type="EDI_Exp_M_ProductType" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="MovementQty" type="xsd:decimal" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="ProductDescription" type="xsd:string" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="QtyEntered" type="xsd:decimal" />
-			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_M_IOL_HU_IPA_SSCC18_v" type="EDI_Exp_M_IOL_HU_IPA_SSCC18_vType" />
-			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_C_BPartner_Product_v" type="EDI_Exp_C_BPartner_Product_vType" />
-		</xsd:sequence>
-	</xsd:complexType>
-	<xsd:complexType name="EDI_Exp_M_InOutType">
-		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_BPartner_ID" type="EDI_Exp_C_BPartnerType" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_BPartner_Location_ID" type="EDI_Exp_C_BPartner_LocationType" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="C_Order_ID" type="EDI_Exp_C_OrderType" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="DateOrdered" type="xsd:date" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="DocumentNo" type="xsd:string" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="M_InOut_ID" type="xsd:integer" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="MovementDate" type="xsd:date" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="POReference" type="xsd:string" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="ShipDate" type="xsd:dateTime" />
-			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_M_InOutLine" type="EDI_Exp_M_InOutLineType" />
-			<xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_M_InOut_Overdelivery_C_OrderLine_v" type="EDI_M_InOut_Overdelivery_C_OrderLine_vType" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="EDI_ExportStatus" type="EDI_ExportStatusEnum" />
-		</xsd:sequence>
-		<xsd:attribute ref="AD_Client_Value" />
-		<xsd:attribute ref="ReplicationEvent" />
-		<xsd:attribute ref="ReplicationMode" />
-		<xsd:attribute ref="ReplicationType" />
-		<xsd:attribute fixed="*" name="Version" type="xsd:string">
-			<xsd:annotation>
-				<xsd:appinfo>
-					<jaxb:property name="VersionAttr" />
-				</xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="SequenceNo" />
-		<xsd:attribute ref="TrxName" />
-		<xsd:attribute ref="AD_Session_ID" />
-	</xsd:complexType>
-	<xsd:complexType name="EDI_InOut_FeedbackType">
-		<xsd:sequence>
-			<xsd:element maxOccurs="1" minOccurs="1" name="M_InOut_ID" type="xsd:integer" />
-			<xsd:element maxOccurs="1" minOccurs="1" name="EDI_ExportStatus" type="EDI_ExportStatusEnum" />
-			<xsd:element maxOccurs="1" minOccurs="0" name="EDIErrorMsg" type="xsd:string" />
-		</xsd:sequence>
-		<xsd:attribute ref="AD_Client_Value" />
-		<xsd:attribute ref="ReplicationEvent" />
-		<xsd:attribute ref="ReplicationMode" />
-		<xsd:attribute ref="ReplicationType" />
-		<xsd:attribute fixed="*" name="Version" type="xsd:string">
-			<xsd:annotation>
-				<xsd:appinfo>
-					<jaxb:property name="VersionAttr" />
-				</xsd:appinfo>
-			</xsd:annotation>
-		</xsd:attribute>
-		<xsd:attribute ref="SequenceNo" />
-		<xsd:attribute ref="TrxName" />
-		<xsd:attribute ref="AD_Session_ID" />
-	</xsd:complexType>
+	</xsd:complexType>
 	<xsd:complexType name="EDI_Imp_C_BPartner_Lookup_RecipientGLNType">
 		<xsd:sequence>
 			<xsd:element maxOccurs="1" minOccurs="1" name="EdiRecipientGLN" type="xsd:string" />

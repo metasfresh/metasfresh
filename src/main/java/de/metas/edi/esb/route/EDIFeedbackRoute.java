@@ -31,12 +31,11 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIInOutFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
 import de.metas.edi.esb.processor.feedback.EDIXmlErrorFeedbackProcessor;
 import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
-import de.metas.edi.esb.route.exports.EDIInvoiceRoute;
+import de.metas.edi.esb.route.exports.CompuDataDesadvRoute;
+import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
 
 /**
  * In order to avoid endless loops when processing feedback, we're NOT extending AbstractEDIRoute here.<br>
@@ -74,11 +73,9 @@ public class EDIFeedbackRoute extends RouteBuilder
 				.to(EDIFeedbackRoute.EP_EDI_ERROR_COMMON);
 
 		final Processor errorInvoiceProcessor = new EDIXmlErrorFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class,
-				EDIInvoiceRoute.EDIInvoiceFeedback_QNAME, EDIInvoiceRoute.METHOD_setCInvoiceID); // FIXME ugly
-		final Processor errorInOutProcessor = new EDIXmlErrorFeedbackProcessor<EDIInOutFeedbackType>(EDIInOutFeedbackType.class,
-				EDIDesadvRoute.EDIInOutFeedback_QNAME, EDIDesadvRoute.METHOD_setMInOutID); // FIXME ugly
+				CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID); // FIXME ugly
 		final Processor errorDesadvProcessor = new EDIXmlErrorFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class,
-				EDIDesadvRoute.EDIDesadvFeedback_QNAME, EDIDesadvRoute.METHOD_setEDIDesadvID); // FIXME ugly
+				CompuDataDesadvRoute.EDIDesadvFeedback_QNAME, CompuDataDesadvRoute.METHOD_setEDIDesadvID); // FIXME ugly
 
 		// @formatter:off
 		from(EDIFeedbackRoute.EP_EDI_ERROR_COMMON)
@@ -88,11 +85,9 @@ public class EDIFeedbackRoute extends RouteBuilder
 						.log(LoggingLevel.INFO, "EDI: Creating error feedback XML Java Object...")
 						.choice()
 							//.when(body().isInstanceOf(EDICctopInvoicVType.class))
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIInvoiceRoute.ROUTE_ID))
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataInvoicRoute.ROUTE_ID))
 								.process(errorInvoiceProcessor)
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIDesadvRoute.ROUTE_ID_SINGLE))
-								.process(errorInOutProcessor)
-							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(EDIDesadvRoute.ROUTE_ID_AGGREGATE))
+							.when(header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID).isEqualTo(CompuDataDesadvRoute.ROUTE_ID_AGGREGATE))
 								.process(errorDesadvProcessor)
 							.otherwise()
 								.log(LoggingLevel.ERROR, "EDI: No available feedback processor found for header[HEADER_ROUTE_ID]=" + header(EDIXmlFeedbackHelper.HEADER_ROUTE_ID))

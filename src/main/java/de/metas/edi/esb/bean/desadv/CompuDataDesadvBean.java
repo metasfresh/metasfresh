@@ -51,9 +51,9 @@ import de.metas.edi.esb.pojo.desadv.compudata.P060;
 import de.metas.edi.esb.pojo.desadv.compudata.P100;
 import de.metas.edi.esb.pojo.desadv.compudata.P102;
 import de.metas.edi.esb.pojo.desadv.compudata.join.JP060P100;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
+import de.metas.edi.esb.route.exports.CompuDataDesadvRoute;
 
-public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
+public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 {
 	/**
 	 * <ul>
@@ -68,14 +68,14 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	{
 		final EDIDesadvValidation validation = new EDIDesadvValidation();
 
-		validateString(exchange.getProperty(EDIDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + EDIDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
+		validateString(exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + CompuDataDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
 
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		sortLines(xmlDesadv);
 
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
 
-		final H000 desadvDocument = createEDIDesadvFromXMLBean(xmlDesadv, decimalFormat, exchange.getProperty(EDIDesadvRoute.EDI_DESADV_IS_TEST, String.class));
+		final H000 desadvDocument = createEDIDesadvFromXMLBean(xmlDesadv, decimalFormat, exchange.getProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST, String.class));
 
 		final JavaSource source = new JavaSource(desadvDocument);
 		exchange.getIn().setBody(source, H000.class);

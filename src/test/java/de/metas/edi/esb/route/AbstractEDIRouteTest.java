@@ -38,8 +38,8 @@ import org.junit.Before;
 import de.metas.edi.esb.commons.AbstractEDITest;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.route.exports.EDIDesadvRoute;
-import de.metas.edi.esb.route.exports.EDIInvoiceRoute;
+import de.metas.edi.esb.route.exports.CompuDataDesadvRoute;
+import de.metas.edi.esb.route.exports.CompuDataInvoicRoute;
 import de.metas.edi.esb.route.imports.EDIOrderRoute;
 
 public abstract class AbstractEDIRouteTest extends AbstractEDITest
@@ -47,10 +47,10 @@ public abstract class AbstractEDIRouteTest extends AbstractEDITest
 	@Produce(uri = Constants.EP_AMQP_FROM_AD)
 	private ProducerTemplate inputXMLInvoice;
 
-	@EndpointInject(uri = EDIInvoiceRoute.EP_EDI_FILE_INVOICE)
+	@EndpointInject(uri = CompuDataInvoicRoute.EP_EDI_FILE_INVOICE)
 	protected BrowsableEndpoint outEDIInvoiceFILE;
 
-	@EndpointInject(uri = EDIDesadvRoute.EP_EDI_FILE_DESADV)
+	@EndpointInject(uri = CompuDataDesadvRoute.EP_EDI_FILE_DESADV)
 	protected BrowsableEndpoint outEDIDesadvFILE;
 
 	@Produce(uri = EDIOrderRoute.EDI_INPUT_ORDERS)

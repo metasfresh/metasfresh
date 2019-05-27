@@ -33,7 +33,7 @@ import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.bean.desadv.EDIXMLDesadvBean;
+import de.metas.edi.esb.bean.desadv.StepComXMLDesadvBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
@@ -44,7 +44,7 @@ import de.metas.edi.esb.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.route.AbstractEDIRoute;
 
 @Component
-public class XMLDesadvRoute extends AbstractEDIRoute
+public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
 	private static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-XML-EDI-DESADV-Aggregate";
 
@@ -81,27 +81,27 @@ public class XMLDesadvRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
+		final String desadvFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_DESADV_XML_FILENAME_PATTERN);
 
-		final String isTest = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_DESADV_IS_TEST);
-		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_PARTNER_ID);
-		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_OWNER_ID);
-		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_APPLICATION_REF);
-		final String supplierGln = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
-		final String supplierAdditionalId = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID);
-		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), XMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String isTest = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST);
+		final String partnerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_PARTNER_ID);
+		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_OWNER_ID);
+		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF);
+		final String supplierGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
+		final String supplierAdditionalId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID);
+		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
 
-		from(XMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
+		from(StepComXMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
 				.routeId(ROUTE_ID_AGGREGATE)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(XMLDesadvRoute.EDI_XML_DESADV_IS_TEST).constant(isTest)
-				.setProperty(XMLDesadvRoute.EDI_XML_PARTNER_ID).constant(partnerId)
-				.setProperty(XMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
-				.setProperty(XMLDesadvRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
-				.setProperty(XMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)
-				.setProperty(XMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID).constant(supplierAdditionalId)
-				.setProperty(XMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_DESADV_IS_TEST).constant(isTest)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_PARTNER_ID).constant(partnerId)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_OWNER_ID).constant(ownerId)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_APPLICATION_REF).constant(applicationRef)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN).constant(supplierGln)
+				.setProperty(StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID).constant(supplierAdditionalId)
+				.setProperty(StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(exchange -> {
@@ -115,7 +115,7 @@ public class XMLDesadvRoute extends AbstractEDIRoute
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> XML Java Object...")
-				.bean(EDIXMLDesadvBean.class, EDIXMLDesadvBean.METHOD_createXMLEDIData)
+				.bean(StepComXMLDesadvBean.class, StepComXMLDesadvBean.METHOD_createXMLEDIData)
 				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML EDI Format...")
 				.marshal(dataFormat)
 
@@ -123,10 +123,10 @@ public class XMLDesadvRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the XML EDI file to the FILE component...")
-				.to(XMLDesadvRoute.EP_EDI_FILE_DESADV_XML)
+				.to(StepComXMLDesadvRoute.EP_EDI_FILE_DESADV_XML)
 
 				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
-				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, XMLDesadvRoute.EDIDesadvFeedback_QNAME, XMLDesadvRoute.METHOD_setEDIDesadvID))
+				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
 
 				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)

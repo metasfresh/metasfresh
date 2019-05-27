@@ -35,7 +35,6 @@ import java.util.Comparator;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.commons.lang.StringUtils;
-import org.milyn.payload.JavaSource;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
@@ -88,9 +87,9 @@ import de.metas.edi.esb.pojo.invoice.qualifier.TermsQual;
 import de.metas.edi.esb.pojo.invoice.qualifier.TimePeriodType;
 import de.metas.edi.esb.pojo.invoice.qualifier.TimeRelation;
 import de.metas.edi.esb.route.AbstractEDIRoute;
-import de.metas.edi.esb.route.exports.XMLInvoiceRoute;
+import de.metas.edi.esb.route.exports.StepComXMLInvoicRoute;
 
-public class EDIXMLInvoiceBean
+public class StepComXMLInvoicBean
 {
 
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
@@ -112,17 +111,17 @@ public class EDIXMLInvoiceBean
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 		final Document document = createDocument(exchange, xmlCctopInvoice);
-		final JavaSource source = new JavaSource(document);
-		exchange.getIn().setBody(source, Document.class);
+
+		exchange.getIn().setBody(document, Document.class);
 	}
 
 	private Document createDocument(final Exchange exchange, final EDICctopInvoicVType invoice)
 	{
 		final DecimalFormat decimalFormat = exchange.getProperty(Constants.DECIMAL_FORMAT, DecimalFormat.class);
-		final String isTest = exchange.getProperty(XMLInvoiceRoute.EDI_XML_INVOICE_IS_TEST, String.class);
-		final String partnerId = exchange.getProperty(XMLInvoiceRoute.EDI_XML_PARTNER_ID, String.class);
-		final String ownerId = exchange.getProperty(XMLInvoiceRoute.EDI_XML_OWNER_ID, String.class);
-		final String applicationRef = exchange.getProperty(XMLInvoiceRoute.EDI_XML_APPLICATION_REF, String.class);
+		final String isTest = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST, String.class);
+		final String partnerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_PARTNER_ID, String.class);
+		final String ownerId = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_OWNER_ID, String.class);
+		final String applicationRef = exchange.getProperty(StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF, String.class);
 
 		final Document document = INVOICE_objectFactory.createDocument();
 		final Xrech4H xrech4H = INVOICE_objectFactory.createXrech4H();
