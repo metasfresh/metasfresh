@@ -2,6 +2,7 @@ package de.metas.edi.esb.bean.desadv;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,11 +28,11 @@ import org.milyn.payload.JavaSource;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,6 +67,9 @@ public class EDIDesadvAggregateBean extends AbstractEDIDesadvCommonBean
 	public final void createEDIData(final Exchange exchange)
 	{
 		final EDIDesadvValidation validation = new EDIDesadvValidation();
+
+		validateString(exchange.getProperty(EDIDesadvRoute.EDI_DESADV_IS_TEST, String.class), "exchange property " + EDIDesadvRoute.EDI_DESADV_IS_TEST + " cannot be null or empty");
+
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		sortLines(xmlDesadv);
 

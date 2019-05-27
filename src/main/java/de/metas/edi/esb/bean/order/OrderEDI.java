@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.metas.edi.esb.pojo.order.compudata.H000;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -36,12 +37,12 @@ public class OrderEDI
 
 	private final List<OrderHeader> orderHeaders = new ArrayList<OrderHeader>();
 
-	public OrderEDI(final H000 h000)
+	public OrderEDI(@NonNull final H000 h000)
 	{
 		this.h000 = h000;
 	}
 
-	public void addOrderHeader(final OrderHeader orderHeader)
+	public void addOrderHeader(@NonNull final OrderHeader orderHeader)
 	{
 		orderHeaders.add(orderHeader);
 	}

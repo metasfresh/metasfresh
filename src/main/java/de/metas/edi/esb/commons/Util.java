@@ -52,6 +52,7 @@ import org.apache.camel.impl.DefaultMessage;
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.ILookupValue;
+import lombok.NonNull;
 
 public final class Util
 {
@@ -301,14 +302,14 @@ public final class Util
 
 	/**
 	 * Returns a {@link Message} with the body of a {@link JAXBElement}
-	 *
-	 * @param element
-	 * @return {@link Message}
 	 */
-	public static Message createJaxbMessage(final JAXBElement<?> element)
+	public static Message createJaxbMessage(
+			@NonNull final JAXBElement<?> element,
+			@NonNull final CamelContext camelContext)
 	{
-		final Message message = new DefaultMessage();
+		final Message message = new DefaultMessage(camelContext);
 		message.setBody(element);
+
 		return message;
 	}
 

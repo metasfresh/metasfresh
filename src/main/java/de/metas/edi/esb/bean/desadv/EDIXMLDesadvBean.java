@@ -1,23 +1,23 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
@@ -26,6 +26,7 @@ package de.metas.edi.esb.bean.desadv;
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.toDate;
 import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
+import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -85,6 +86,12 @@ public class EDIXMLDesadvBean
 	public final void createXMLEDIData(final Exchange exchange)
 	{
 		final EDIDesadvValidation validation = new EDIDesadvValidation();
+
+		// validate mandatory exchange properties
+		validateString(
+				exchange.getProperty(XMLDesadvRoute.EDI_XML_DESADV_IS_TEST, String.class),
+				"exchange property " + XMLDesadvRoute.EDI_XML_DESADV_IS_TEST + " cannot be null or empty");
+
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
 
@@ -142,7 +149,7 @@ public class EDIXMLDesadvBean
 		DiscrepencyCode discrepancyCode;
 		if (diff.signum() == -1)
 		{
-			discrepancyCode = DiscrepencyCode.OVSH; //  = Over-shipped
+			discrepancyCode = DiscrepencyCode.OVSH; // = Over-shipped
 			return discrepancyCode;
 		}
 		if (Boolean.parseBoolean(isSubsequentDeliveryPlanned))
@@ -167,11 +174,11 @@ public class EDIXMLDesadvBean
 		{
 			final PPACK1 packDetail = DESADV_objectFactory.createPPACK1();
 			packDetail.setDOCUMENTID(header.getDOCUMENTID());
-			//usually one, as per spec
+			// usually one, as per spec
 			packDetail.setPACKAGINGDETAIL(DEFAULT_PACK_DETAIL);
-			//ISO1 as default for now
+			// ISO1 as default for now
 			packDetail.setPACKAGINGCODE(PackagingCode.ISO1.name());
-			//full pallet as default for now
+			// full pallet as default for now
 			packDetail.setPACKAGINGLEVEL(PackagingLevel.OUTE.name());
 			packDetail.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.name());
 			final String sscc18Value = Util.removePrecedingZeros(ediExpDesadvLineType.getIPASSCC18());
@@ -242,7 +249,7 @@ public class EDIXMLDesadvBean
 		detailRef.setDOCUMENTID(documentId);
 		detailRef.setLINENUMBER(lineNumber);
 		detailRef.setREFERENCEQUAL(ReferenceQual.LIRN.name());
-		//line number for now
+		// line number for now
 		detailRef.setREFERENCELINE(lineNumber);
 		detail.getDREFE1().add(detailRef);
 
@@ -290,7 +297,7 @@ public class EDIXMLDesadvBean
 		hrfad.setREFERENCE(supplierAdditionalId);
 		supplierAddress.setHRFAD1(hrfad);
 
-		//address HCTAD1 contact not mapped for now
+		// address HCTAD1 contact not mapped for now
 
 		header.getHADRE1().add(supplierAddress);
 
@@ -303,7 +310,7 @@ public class EDIXMLDesadvBean
 			header.getHADRE1().add(ucAddress);
 		}
 
-		//transport details HTRSD1 not mapped for now
+		// transport details HTRSD1 not mapped for now
 	}
 
 	private void mapReferences(final EDIExpDesadvType xmlDesadv, final String dateFormat, final HEADERXlief header)

@@ -1,5 +1,8 @@
 package de.metas.edi.esb.bean.order;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * #%L
  * de.metas.edi.esb
@@ -21,17 +24,21 @@ package de.metas.edi.esb.bean.order;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import de.metas.edi.esb.pojo.order.compudata.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import de.metas.edi.esb.pojo.order.compudata.H000;
+import de.metas.edi.esb.pojo.order.compudata.H100;
+import de.metas.edi.esb.pojo.order.compudata.H110;
+import de.metas.edi.esb.pojo.order.compudata.H120;
+import de.metas.edi.esb.pojo.order.compudata.H130;
+import de.metas.edi.esb.pojo.order.compudata.P100;
+import de.metas.edi.esb.pojo.order.compudata.P110;
+import de.metas.edi.esb.pojo.order.compudata.T100;
+import lombok.NonNull;
 
 public class CompudataEDIOrdersBean extends AbstractEDIOrdersBean
 {
 
 	@Override
-	protected List<OrderEDI> getEDIDocumentObjects(final List<Object> ediLines)
+	protected List<OrderEDI> convertToOrderEDIs(@NonNull final List<Object> ediLines)
 	{
 		final List<OrderEDI> ediDocuments = new ArrayList<OrderEDI>();
 

@@ -54,7 +54,7 @@ public class StepComXMLEDIOrdersBean extends AbstractEDIOrdersBean
 {
 
 	@Override
-	protected List<OrderEDI> getEDIDocumentObjects(final List<Object> orders)
+	protected List<OrderEDI> convertToOrderEDIs(final List<Object> orders)
 	{
 		final List<OrderEDI> ediDocuments = new ArrayList<>();
 

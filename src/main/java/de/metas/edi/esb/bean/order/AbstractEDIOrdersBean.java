@@ -1,23 +1,23 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
@@ -32,9 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.camel.Body;
+import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangeProperty;
 import org.apache.camel.Message;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
@@ -60,6 +62,8 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 
 public abstract class AbstractEDIOrdersBean
 {
+	@Autowired
+	private CamelContext camelContext;
 
 	public static final String METHOD_createXMLDocument = "createXMLDocument";
 
@@ -76,18 +80,16 @@ public abstract class AbstractEDIOrdersBean
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_DELIVERY_RULE) final String DeliveryRule,
 			@ExchangeProperty(value = AbstractEDIRoute.EDI_ORDER_DELIVERY_VIA_RULE) final String DeliveryViaRule)
 	{
-		final List<OrderEDI> ediDocuments = getEDIDocumentObjects(ediLines);
+		final List<OrderEDI> ediDocuments = convertToOrderEDIs(ediLines);
 
 		final EDIConfigurationContext ctx = new EDIConfigurationContext(CamelFileName,
 				EDIMessageDatePattern, ADClientValue, ADOrgID,
 				ADInputDataDestination_InternalName, ADInputDataSourceID, ADUserEnteredByID, DeliveryRule, DeliveryViaRule);
 
-		final List<Message> olCandMessages = createOLCandMessages(ctx, ediDocuments);
-
-		return olCandMessages;
+		return createOLCandMessages(ctx, ediDocuments);
 	}
 
-	protected abstract List<OrderEDI> getEDIDocumentObjects(List<Object> ediLines);
+	protected abstract List<OrderEDI> convertToOrderEDIs(List<Object> ediLines);
 
 	private List<Message> createOLCandMessages(final EDIConfigurationContext ctx, final List<OrderEDI> ediDocuments)
 	{
@@ -108,7 +110,11 @@ public abstract class AbstractEDIOrdersBean
 		return olCandMessages;
 	}
 
-	private Message createOLCandMessage(final EDIConfigurationContext ctx, final H000 h000, final OrderHeader orderHeader, final OrderLine orderLine)
+	private Message createOLCandMessage(
+			final EDIConfigurationContext ctx,
+			final H000 h000,
+			final OrderHeader orderHeader,
+			final OrderLine orderLine)
 	{
 		final EDIImpCOLCandType olcand = AbstractEDIOrdersBean.factory.createEDIImpCOLCandType();
 
@@ -144,27 +150,6 @@ public abstract class AbstractEDIOrdersBean
 
 		final P100 p100 = orderLine.getP100();
 
-		// extracted from EDI document
-		// flat
-		// TODO check if we need msgNo and add it to a dedicated field. SequenceNoAttr is not read, it's only used for messages coming out of ADempiere.
-		// final String messageNoStr = p100.getMessageNo();
-		// if (messageNoStr != null)
-		// {
-		// try
-		// {
-		// final BigInteger sequenceNoAttr = new BigInteger(trimString(messageNoStr));
-		// olcand.setSequenceNoAttr(sequenceNoAttr);
-		// }
-		// catch (final NumberFormatException e)
-		// {
-		// throw new RuntimeCamelException("Invalid reference number " + messageNoStr, e);
-		// }
-		// }
-		// else
-		// {
-		// throw new RuntimeCamelException("Reference number cannot be null for " + h000);
-		// }
-
 		final String dateCandidateStr = trimString(h100.getMessageDate()); // TODO Check if this is it
 		olcand.setDateCandidate(Util.createCalendarDate(dateCandidateStr, ctx.getEDIMessageDatePattern()));
 
@@ -198,7 +183,8 @@ public abstract class AbstractEDIOrdersBean
 		}
 		olcand.setQtyItemCapacity(qtyItemCapacity);
 
-		final BigDecimal qty = new BigDecimal(trimString(p100.getOrderQty())).multiply(qtyItemCapacity); // qty = orderQty * CUPerTU
+		final BigDecimal qty = new BigDecimal(trimString(p100.getOrderQty()))
+				.multiply(qtyItemCapacity); // qty = orderQty * CUPerTU
 		olcand.setQty(qty);
 
 		final BigDecimal priceEntered = new BigDecimal(trimString(p100.getBuyerPrice()));
@@ -306,7 +292,9 @@ public abstract class AbstractEDIOrdersBean
 			olcand.setCCurrencyID(currencyLookup);
 		}
 
-		return Util.createJaxbMessage(AbstractEDIOrdersBean.factory.createEDIImpCOLCand(olcand));
+		return Util.createJaxbMessage(
+				AbstractEDIOrdersBean.factory.createEDIImpCOLCand(olcand),
+				camelContext);
 	}
 
 	protected static final class EDIConfigurationContext
@@ -323,9 +311,14 @@ public abstract class AbstractEDIOrdersBean
 		private final String DeliveryViaRule;
 
 		public EDIConfigurationContext(final String CamelFileName,
-				final String EDIMessageDatePattern, final String ADClientValue, final BigInteger ADOrgID,
-				final String ADInputDataDestination_InternalName, final BigInteger ADInputDataSourceID, final BigInteger ADUserEnteredByID,
-				final String DeliveryRule, final String DeliveryViaRule)
+				final String EDIMessageDatePattern,
+				final String ADClientValue,
+				final BigInteger ADOrgID,
+				final String ADInputDataDestination_InternalName,
+				final BigInteger ADInputDataSourceID,
+				final BigInteger ADUserEnteredByID,
+				final String DeliveryRule,
+				final String DeliveryViaRule)
 		{
 			this.CamelFileName = CamelFileName;
 			this.EDIMessageDatePattern = EDIMessageDatePattern;
