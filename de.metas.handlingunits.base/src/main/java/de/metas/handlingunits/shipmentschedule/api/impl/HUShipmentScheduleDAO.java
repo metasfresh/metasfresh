@@ -42,7 +42,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.async.ShipmentScheduleWithHUComparator;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUComparator;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;

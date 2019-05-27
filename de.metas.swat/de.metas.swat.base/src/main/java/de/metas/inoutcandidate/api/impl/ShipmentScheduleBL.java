@@ -69,6 +69,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
@@ -92,6 +93,7 @@ import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
@@ -958,20 +960,19 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
-
 		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
-		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
-
-		storageQuery.addProduct(sched.getM_Product());
-		storageQuery.addWarehouseIds(warehouseIds);
-		storageQuery.addPartner(bpartner);
+		final IStorageQuery storageQuery = storageEngine
+				.newStorageQuery()
+				.addBPartnerId(bpartnerId)
+				.addWarehouseIds(warehouseIds)
+				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
 
 		// Add query attributes
 		if (considerAttributes)

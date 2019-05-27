@@ -89,11 +89,10 @@ import lombok.NonNull;
  * HU Shipment Process:
  * <ul>
  * <li>picking: TUs are created
- * <li>aggregation: TUs are moved to LUs. But this is not necesary.
+ * <li>aggregation: TUs are moved to LUs. But this is not necessary.
  * <li>shipper transportation: add aggregated HUs shipper transportation document
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
- * <li>
  * </ul>
  *
  * @author tsa
@@ -235,7 +234,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		final I_M_IolCandHandler handlerRecord = ((ShipmentScheduleHandlerBL)shipmentScheduleHandlerBL)
 				.retrieveHandlerRecordOrNull(OrderLineShipmentScheduleHandler.class.getName());
 		assertThat(handlerRecord).isNotNull(); // should have been registered by super.initialize();
-		
+
 		//
 		// Create doctype
 		final I_C_DocType docType = newInstanceOutOfTrx(I_C_DocType.class);
@@ -426,7 +425,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 				.assertExpected_ShipmentScheduleWithHUs("after split IShipmentScheduleWithHU candidates", candidatesSorted);
 
 		final InOutGeneratedNotificationChecker notificationsChecker = InOutGeneratedNotificationChecker.createAndSubscribe();
-		
+
 		//
 		// Make sure the current user is configured to receive notifications
 		final I_AD_User user = newInstance(I_AD_User.class);

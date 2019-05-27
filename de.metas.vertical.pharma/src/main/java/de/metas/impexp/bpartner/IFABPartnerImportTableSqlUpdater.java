@@ -1,13 +1,10 @@
 package de.metas.impexp.bpartner;
 
-import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
 import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -44,8 +41,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class IFABPartnerImportTableSqlUpdater
 {
-	private static final transient Logger logger = LogManager.getLogger(IFABPartnerImportTableSqlUpdater.class);
-
 	final public void updateBPartnerImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateBPartners(whereClause);
@@ -65,7 +60,6 @@ public class IFABPartnerImportTableSqlUpdater
 
 	private void dbUpdateCountries(@NonNull final String whereClause)
 	{
-		int no;
 		StringBuilder sql;
 		sql = new StringBuilder("UPDATE ")
 				.append(I_I_Pharma_BPartner.Table_Name + " i ")
@@ -74,13 +68,5 @@ public class IFABPartnerImportTableSqlUpdater
 				.append("WHERE C_Country_ID IS NULL ")
 				.append("AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE ")
-				.append(I_I_Pharma_BPartner.Table_Name + " i ")
-				.append("SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid Country, ' ")
-				.append("WHERE C_Country_ID IS NULL AND b00ssatz <> '2'") // do not try to match country for records that means to deactivate the partner
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
-		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-		logger.info("Invalid Country={}", no);
 	}
 }

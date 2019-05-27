@@ -67,9 +67,7 @@ public interface IAttributeValue
 	void setValue(IAttributeValueContext attributeValueContext, Object value);
 
 	/**
-	 * Gets attribute value
-	 *
-	 * @return
+	 * Gets attribute value which may be {@code null}
 	 */
 	Object getValue();
 
@@ -199,7 +197,7 @@ public interface IAttributeValue
 	 * @return true if attribute is displayed to user
 	 */
 	boolean isDisplayedUI();
-	
+
 	boolean isMandatory();
 
 	/**

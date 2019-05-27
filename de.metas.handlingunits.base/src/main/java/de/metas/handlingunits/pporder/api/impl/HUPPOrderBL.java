@@ -22,6 +22,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -64,7 +65,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsDAO
 				.createHUQueryBuilder()
-				.addOnlyWithProductId(ppOrderBomLine.getM_Product_ID())
+				.addOnlyWithProductId(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()))
 				.addOnlyInWarehouseId(WarehouseId.ofRepoId(ppOrderBomLine.getM_Warehouse_ID()))
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.setExcludeReserved()

@@ -41,6 +41,7 @@ import org.adempiere.mm.attributes.listeners.adr.OrderADRModelAttributeSetInstan
 import org.adempiere.mm.attributes.listeners.adr.OrderLineADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineAllocADRModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.adr.OrderLineLotNumberModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.listeners.age.AgeModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.expiry.OrderLineExpiryModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.InOutLineInAusLandModelAttributeSetInstanceListener;
@@ -102,6 +103,8 @@ public class Main extends AbstractModuleInterceptor
 		modelAttributeSetInstanceListenerService.registerListener(new OrderLineLotNumberModelAttributeSetInstanceListener());
 
 		modelAttributeSetInstanceListenerService.registerListener(new OrderLineExpiryModelAttributeSetInstanceListener());
+
+		modelAttributeSetInstanceListenerService.registerListener(new AgeModelAttributeSetInstanceListener());
 
 		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
 

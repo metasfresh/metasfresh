@@ -129,37 +129,46 @@ public class ProcessPickingCandidatesCommand
 		}
 	}
 
-	private void processInTrx(final PickingCandidate pc)
+	private void processInTrx(@NonNull final PickingCandidate pickingCandidate)
 	{
 		shipmentSchedulesCache.clear(); // because we want to get the fresh QtyToDeliver each time!
 
 		final HuId packedToHuId;
-		if (pc.isRejectedToPick())
+		if (pickingCandidate.isRejectedToPick())
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pc.getShipmentScheduleId());
+			final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(pickingCandidate.getShipmentScheduleId());
 			closeShipmentScheduleAndInvoiceCandidates(shipmentSchedule);
 			packedToHuId = null;
 		}
 		else
 		{
-			final IAllocationSource pickFromSource = HUListAllocationSourceDestination.ofHUId(pc.getPickFromHuId())
+			final IAllocationSource pickFromSource = HUListAllocationSourceDestination
+					.ofHUId(pickingCandidate.getPickFromHuId())
 					.setDestroyEmptyHUs(true);
-			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pc);
+			final IHUProducerAllocationDestination packToDestination = getPackToDestination(pickingCandidate);
 
-			HULoader.of(pickFromSource, packToDestination)
-					.load(createPackToAllocationRequest(pc));
+			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
+
+			final IAllocationRequest request = createPackToAllocationRequest(pickingCandidate, huContext);
+			HULoader
+					.of(pickFromSource, packToDestination)
+					.load(request);
 
 			packedToHuId = packToDestination.getSingleCreatedHuId();
 			if (packedToHuId == null)
 			{
-				throw new AdempiereException("Nothing packed for " + pc);
+				throw new AdempiereException("Nothing packed for " + pickingCandidate);
 			}
 
-			huShipmentScheduleBL.addQtyPickedAndUpdateHU(pc.getShipmentScheduleId(), pc.getQtyPicked(), packedToHuId);
+			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
+					pickingCandidate.getShipmentScheduleId(),
+					pickingCandidate.getQtyPicked(),
+					packedToHuId,
+					huContext);
 		}
 
-		pc.changeStatusToProcessed(packedToHuId);
-		pickingCandidateRepository.save(pc);
+		pickingCandidate.changeStatusToProcessed(packedToHuId);
+		pickingCandidateRepository.save(pickingCandidate);
 	}
 
 	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
@@ -183,9 +192,10 @@ public class ProcessPickingCandidatesCommand
 		return invoiceCandidatesRepo.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
 	}
 
-	private IAllocationRequest createPackToAllocationRequest(final PickingCandidate pc)
+	private IAllocationRequest createPackToAllocationRequest(
+			@NonNull final PickingCandidate pc,
+			@NonNull final IHUContext huContext)
 	{
-		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(getProductId(pc))
