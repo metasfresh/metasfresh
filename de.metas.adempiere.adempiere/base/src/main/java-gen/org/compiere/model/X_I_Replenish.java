@@ -5,36 +5,32 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for M_Replenish
+/** Generated Model for I_Replenish
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenish, org.compiere.model.I_Persistent 
+public class X_I_Replenish extends org.compiere.model.PO implements I_I_Replenish, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1996604909L;
+	private static final long serialVersionUID = -962299609L;
 
     /** Standard Constructor */
-    public X_M_Replenish (Properties ctx, int M_Replenish_ID, String trxName)
+    public X_I_Replenish (Properties ctx, int I_Replenish_ID, String trxName)
     {
-      super (ctx, M_Replenish_ID, trxName);
-      /** if (M_Replenish_ID == 0)
+      super (ctx, I_Replenish_ID, trxName);
+      /** if (I_Replenish_ID == 0)
         {
-			setLevel_Max (BigDecimal.ZERO);
-			setLevel_Min (BigDecimal.ZERO);
-			setM_Product_ID (0);
-			setM_Replenish_ID (0);
-			setM_Warehouse_ID (0);
-			setReplenishType (null);
+			setI_IsImported (null); // N
+			setI_Replenish_ID (0);
 			setTimeToMarket (0); // 0
         } */
     }
 
     /** Load Constructor */
-    public X_M_Replenish (Properties ctx, ResultSet rs, String trxName)
+    public X_I_Replenish (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -62,7 +58,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 
 	/** Set Kalender.
 		@param C_Calendar_ID 
-		Bezeichnung des Buchf�hrungs-Kalenders
+		Bezeichnung des Buchführungs-Kalenders
 	  */
 	@Override
 	public void setC_Calendar_ID (int C_Calendar_ID)
@@ -74,7 +70,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	/** Get Kalender.
-		@return Bezeichnung des Buchf�hrungs-Kalenders
+		@return Bezeichnung des Buchführungs-Kalenders
 	  */
 	@Override
 	public int getC_Calendar_ID () 
@@ -122,9 +118,97 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 		return ii.intValue();
 	}
 
+	/** Set Datum.
+		@param DateGeneral Datum	  */
+	@Override
+	public void setDateGeneral (java.lang.String DateGeneral)
+	{
+		set_Value (COLUMNNAME_DateGeneral, DateGeneral);
+	}
+
+	/** Get Datum.
+		@return Datum	  */
+	@Override
+	public java.lang.String getDateGeneral () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DateGeneral);
+	}
+
+	/** Set Import-Fehlermeldung.
+		@param I_ErrorMsg 
+		Meldungen, die durch den Importprozess generiert wurden
+	  */
+	@Override
+	public void setI_ErrorMsg (java.lang.String I_ErrorMsg)
+	{
+		set_Value (COLUMNNAME_I_ErrorMsg, I_ErrorMsg);
+	}
+
+	/** Get Import-Fehlermeldung.
+		@return Meldungen, die durch den Importprozess generiert wurden
+	  */
+	@Override
+	public java.lang.String getI_ErrorMsg () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_I_ErrorMsg);
+	}
+
+	/** 
+	 * I_IsImported AD_Reference_ID=540745
+	 * Reference name: I_IsImported
+	 */
+	public static final int I_ISIMPORTED_AD_Reference_ID=540745;
+	/** NotImported = N */
+	public static final String I_ISIMPORTED_NotImported = "N";
+	/** Imported = Y */
+	public static final String I_ISIMPORTED_Imported = "Y";
+	/** ImportFailed = E */
+	public static final String I_ISIMPORTED_ImportFailed = "E";
+	/** Set Importiert.
+		@param I_IsImported 
+		Ist dieser Import verarbeitet worden?
+	  */
+	@Override
+	public void setI_IsImported (java.lang.String I_IsImported)
+	{
+
+		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
+	}
+
+	/** Get Importiert.
+		@return Ist dieser Import verarbeitet worden?
+	  */
+	@Override
+	public java.lang.String getI_IsImported () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
+	}
+
+	/** Set Import Replenishment.
+		@param I_Replenish_ID Import Replenishment	  */
+	@Override
+	public void setI_Replenish_ID (int I_Replenish_ID)
+	{
+		if (I_Replenish_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_I_Replenish_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_I_Replenish_ID, Integer.valueOf(I_Replenish_ID));
+	}
+
+	/** Get Import Replenishment.
+		@return Import Replenishment	  */
+	@Override
+	public int getI_Replenish_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_I_Replenish_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Maximalmenge.
 		@param Level_Max 
-		Maximum Inventory level for this product
+		Maximaler Bestand für dieses Produkt
 	  */
 	@Override
 	public void setLevel_Max (java.math.BigDecimal Level_Max)
@@ -133,7 +217,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	/** Get Maximalmenge.
-		@return Maximum Inventory level for this product
+		@return Maximaler Bestand für dieses Produkt
 	  */
 	@Override
 	public java.math.BigDecimal getLevel_Max () 
@@ -146,7 +230,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 
 	/** Set Mindestmenge.
 		@param Level_Min 
-		Minimum Inventory level for this product
+		Minimaler Bestand für dieses Produkt
 	  */
 	@Override
 	public void setLevel_Min (java.math.BigDecimal Level_Min)
@@ -155,7 +239,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	/** Get Mindestmenge.
-		@return Minimum Inventory level for this product
+		@return Minimaler Bestand für dieses Produkt
 	  */
 	@Override
 	public java.math.BigDecimal getLevel_Min () 
@@ -164,6 +248,25 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Lagerort-Schlüssel.
+		@param LocatorValue 
+		Suchschlüssel für den Lagerort im Lager
+	  */
+	@Override
+	public void setLocatorValue (java.lang.String LocatorValue)
+	{
+		set_Value (COLUMNNAME_LocatorValue, LocatorValue);
+	}
+
+	/** Get Lagerort-Schlüssel.
+		@return Suchschlüssel für den Lagerort im Lager
+	  */
+	@Override
+	public java.lang.String getLocatorValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LocatorValue);
 	}
 
 	@Override
@@ -180,7 +283,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 
 	/** Set Lagerort.
 		@param M_Locator_ID 
-		Warehouse Locator
+		Lagerort im Lager
 	  */
 	@Override
 	public void setM_Locator_ID (int M_Locator_ID)
@@ -192,7 +295,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	/** Get Lagerort.
-		@return Warehouse Locator
+		@return Lagerort im Lager
 	  */
 	@Override
 	public int getM_Locator_ID () 
@@ -223,9 +326,9 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	public void setM_Product_ID (int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
 	}
 
 	/** Get Produkt.
@@ -240,15 +343,27 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_M_Replenish getM_Replenish() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Replenish_ID, org.compiere.model.I_M_Replenish.class);
+	}
+
+	@Override
+	public void setM_Replenish(org.compiere.model.I_M_Replenish M_Replenish)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Replenish_ID, org.compiere.model.I_M_Replenish.class, M_Replenish);
+	}
+
 	/** Set M_Replenish.
 		@param M_Replenish_ID M_Replenish	  */
 	@Override
 	public void setM_Replenish_ID (int M_Replenish_ID)
 	{
 		if (M_Replenish_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Replenish_ID, null);
+			set_Value (COLUMNNAME_M_Replenish_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Replenish_ID, Integer.valueOf(M_Replenish_ID));
+			set_Value (COLUMNNAME_M_Replenish_ID, Integer.valueOf(M_Replenish_ID));
 	}
 
 	/** Get M_Replenish.
@@ -276,19 +391,19 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 
 	/** Set Lager.
 		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
+		Lager oder Ort für Dienstleistung
 	  */
 	@Override
 	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
 	}
 
 	/** Get Lager.
-		@return Storage Warehouse and Service Point
+		@return Lager oder Ort für Dienstleistung
 	  */
 	@Override
 	public int getM_Warehouse_ID () 
@@ -336,6 +451,93 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 		return ii.intValue();
 	}
 
+	/** Set Organisations-Schlüssel.
+		@param OrgValue 
+		Suchschlüssel der Organisation
+	  */
+	@Override
+	public void setOrgValue (java.lang.String OrgValue)
+	{
+		set_Value (COLUMNNAME_OrgValue, OrgValue);
+	}
+
+	/** Get Organisations-Schlüssel.
+		@return Suchschlüssel der Organisation
+	  */
+	@Override
+	public java.lang.String getOrgValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OrgValue);
+	}
+
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Process Now.
+		@param Processing Process Now	  */
+	@Override
+	public void setProcessing (boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+	}
+
+	/** Get Process Now.
+		@return Process Now	  */
+	@Override
+	public boolean isProcessing () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processing);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
 	/** 
 	 * ReplenishType AD_Reference_ID=164
 	 * Reference name: M_Replenish Type
@@ -353,7 +555,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	public static final String REPLENISHTYPE_ZukNftigenBestandSichern = "7";
 	/** Set Art der Wiederauffüllung.
 		@param ReplenishType 
-		Method for re-ordering a product
+		Methode für das Nachbestellen des Produktes
 	  */
 	@Override
 	public void setReplenishType (java.lang.String ReplenishType)
@@ -363,7 +565,7 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 	}
 
 	/** Get Art der Wiederauffüllung.
-		@return Method for re-ordering a product
+		@return Methode für das Nachbestellen des Produktes
 	  */
 	@Override
 	public java.lang.String getReplenishType () 
@@ -391,5 +593,40 @@ public class X_M_Replenish extends org.compiere.model.PO implements I_M_Replenis
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Source Warehouse Value.
+		@param WarehouseSourceValue Source Warehouse Value	  */
+	@Override
+	public void setWarehouseSourceValue (java.lang.String WarehouseSourceValue)
+	{
+		set_Value (COLUMNNAME_WarehouseSourceValue, WarehouseSourceValue);
+	}
+
+	/** Get Source Warehouse Value.
+		@return Source Warehouse Value	  */
+	@Override
+	public java.lang.String getWarehouseSourceValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WarehouseSourceValue);
+	}
+
+	/** Set Lager-Schlüssel.
+		@param WarehouseValue 
+		Suchschlüssel des Lagers
+	  */
+	@Override
+	public void setWarehouseValue (java.lang.String WarehouseValue)
+	{
+		set_Value (COLUMNNAME_WarehouseValue, WarehouseValue);
+	}
+
+	/** Get Lager-Schlüssel.
+		@return Suchschlüssel des Lagers
+	  */
+	@Override
+	public java.lang.String getWarehouseValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WarehouseValue);
 	}
 }

@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.106
+
+## Features
+* metasfresh
+  * [#5205](https://github.com/metasfresh/metasfresh/issues/5205) Improve IFA import
+  * [#5212](https://github.com/metasfresh/metasfresh/issues/5212) Add Specifications product report
+  * [#5216](https://github.com/metasfresh/metasfresh/issues/5216) Allow deleting candidates if processed_override and not invoiced
+  * [#5224](https://github.com/metasfresh/metasfresh/issues/5224) Adjust Balance report
+  * [#5229](https://github.com/metasfresh/metasfresh/issues/5229) Adjust production order report
+
+## Fixes
+* metasfresh-e2e
+  * [#87](https://github.com/metasfresh/metasfresh-e2e/issues/87) Filter buttons not reachable if many records
+  * [#91](https://github.com/metasfresh/metasfresh-e2e/issues/91) Fix sales order to invoice test
+
 # metasfresh 5.105
 
 ## Features
