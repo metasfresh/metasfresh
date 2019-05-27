@@ -1,5 +1,7 @@
 package de.metas.adempiere.gui.search.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -25,7 +27,6 @@ package de.metas.adempiere.gui.search.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -99,19 +100,12 @@ public class OLCandHUPackingAware implements IHUPackingAware
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
-
 		final int m_HU_PI_Item_Product_ID = getM_HU_PI_Item_Product_ID();
 		if (m_HU_PI_Item_Product_ID <= 0)
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(
-				ctx,
-				m_HU_PI_Item_Product_ID,
-				I_M_HU_PI_Item_Product.class,
-				trxName);
+		return loadOutOfTrx(m_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class);
 	}
 
 	@Override

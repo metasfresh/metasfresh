@@ -34,6 +34,7 @@ import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandler;
 import org.adempiere.process.rpl.requesthandler.model.I_IMP_RequestHandlerType;
 import org.adempiere.process.rpl.requesthandler.spi.IReplRequestHandler;
 import org.adempiere.server.rpl.interfaces.I_EXP_Format;
+import org.adempiere.service.ClientId;
 import org.compiere.model.MEXPFormat;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_ReplicationTable;
@@ -78,7 +79,9 @@ public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 
 		final MEXPFormat formatToUsePO = (MEXPFormat)InterfaceWrapperHelper.getStrictPO(formatToUse);
 
-		final ExportHelper exportHelper = new ExportHelper(poToExport.getCtx(), formatToUse.getAD_Client_ID());
+		final ExportHelper exportHelper = new ExportHelper(
+				poToExport.getCtx(),
+				ClientId.ofRepoId(formatToUse.getAD_Client_ID()));
 
 		return exportHelper.createExportDOM(poToExport,
 				formatToUsePO,

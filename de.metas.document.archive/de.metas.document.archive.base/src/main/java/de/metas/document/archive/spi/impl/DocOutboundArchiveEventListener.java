@@ -3,8 +3,6 @@ package de.metas.document.archive.spi.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +39,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
@@ -228,10 +227,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry = Adempiere.getBean(DocOutboundLogMailRecipientRegistry.class);
 
 		final Optional<DocOutBoundRecipient> mailRecipient = docOutboundLogMailRecipientRegistry.invokeProvider(docOutboundLogRecord);
-		if (!mailRecipient.isPresent())
-		{
-			return;
-		}
 
 		mailRecipient.ifPresent(recipient -> updateRecordWithRecipient(docOutboundLogRecord, recipient));
 	}
