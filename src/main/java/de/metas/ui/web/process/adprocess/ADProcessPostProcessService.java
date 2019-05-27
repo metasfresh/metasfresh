@@ -346,8 +346,18 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
+						.modalOverlay(true)
 						.build();
 			}
+			else if (ViewOpenTarget.NewBrowserTab.equals(target))
+			{
+				return OpenViewAction.builder()
+						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
+						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
+						.modalOverlay(false)
+						.build();
+			}
+
 			else
 			{
 				throw new AdempiereException("Unknown target: " + target);
