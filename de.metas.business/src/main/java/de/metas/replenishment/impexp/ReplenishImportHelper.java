@@ -4,6 +4,7 @@
 package de.metas.replenishment.impexp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Period;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 
@@ -83,14 +84,16 @@ import lombok.experimental.UtilityClass;
 		{
 			replenish.setM_Locator_ID(importRecord.getM_Locator_ID());
 		}
-		if (importRecord.getC_Calendar_ID() > 0)
-		{
-			replenish.setC_Calendar_ID(importRecord.getC_Calendar_ID());
-		}
 		if (importRecord.getC_Period_ID() > 0)
 		{
 			replenish.setC_Period_ID(importRecord.getC_Period_ID());
+			replenish.setC_Calendar_ID(getCalendar(importRecord.getC_Period()));
 		}
+	}
+
+	private int getCalendar(final I_C_Period period)
+	{
+		return period.getC_Year().getC_Calendar_ID();
 	}
 
 }
