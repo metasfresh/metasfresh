@@ -94,7 +94,9 @@ public class StepComXMLDesadvBean
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
 		final Document desadvDocument = createDesadvDocumentFromXMLBean(xmlDesadv, exchange);
 
-		exchange.getIn().setBody(desadvDocument, Document.class);
+		exchange
+				.getIn()
+				.setBody(DESADV_objectFactory.createDocument(desadvDocument));
 	}
 
 	private Document createDesadvDocumentFromXMLBean(final EDIExpDesadvType xmlDesadv, final Exchange exchange)
