@@ -6,6 +6,7 @@ import java.util.List;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -37,7 +38,7 @@ public interface IHUInventoryBL extends ISingletonService
 	 * Move products from the warehouse to garbage (waste disposal)
 	 * After this process an internal use inventory is created.
 	 */
-	List<I_M_Inventory> moveToGarbage(Collection<I_M_HU> husToDestroy, Timestamp movementDate, int activityId, String description, boolean isCompleteInventory, boolean isCreateMovement);
+	List<I_M_Inventory> moveToGarbage(Collection<I_M_HU> husToDestroy, Timestamp movementDate, ActivityId activityId, String description, boolean isCompleteInventory, boolean isCreateMovement);
 
 	/**
 	 * Check if the given inventory is a material disposal
