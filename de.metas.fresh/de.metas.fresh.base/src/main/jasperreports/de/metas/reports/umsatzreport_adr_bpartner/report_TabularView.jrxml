@@ -103,7 +103,7 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 			<textField isBlankWhenNull="false">
 				<reportElement x="282" y="59" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 			</textField>

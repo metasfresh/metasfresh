@@ -84,42 +84,42 @@ GROUP BY
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="58fc1725-0263-4799-a7cd-ae7036cc439d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="312" y="0" width="46" height="12" forecolor="#000000" uuid="c9d83f9e-a496-4449-bd94-602a835303f0"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Delivered}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="359" y="0" width="46" height="12" forecolor="#000000" uuid="62fca000-f310-4eb9-9b23-7c13382607a9"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Return}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="406" y="0" width="37" height="12" forecolor="#000000" uuid="9d1dbca0-f708-4bc4-94e1-1753d16510d1"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="436" y="0" width="31" height="12" forecolor="#000000" uuid="85d9e025-4514-47b4-90d1-11e141dcc480"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="493" y="0" width="50" height="12" forecolor="#000000" uuid="48d39b15-2f64-43f5-aeb4-874b337354d5"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{linenetamt}]]></textFieldExpression>
 			</textField>
@@ -294,14 +294,14 @@ GROUP BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="f35f0348-d2d3-4347-9b0f-8cd4e89f7ab8"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" isItalic="false" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>

@@ -56,7 +56,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" />
 				</textElement>
 				<textFieldExpression><![CDATA[(($F{docstatus}.equals("DR")) ? "Entwurf" :
 (($F{docstatus}.equals("IN")) ? "Ungültig" : null))]]></textFieldExpression>
