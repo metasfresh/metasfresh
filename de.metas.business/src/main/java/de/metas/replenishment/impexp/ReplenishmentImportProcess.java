@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
@@ -12,6 +13,9 @@ import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_M_Replenish;
 import org.compiere.model.X_I_Replenish;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -39,6 +43,8 @@ import lombok.NonNull;
 public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replenish>
 {
 
+	private static final String MSG_NoValidRecord = "de.metas.replenishment.impexp.ReplenishmentImportProcess.RecordNotValid";
+
 	@Override
 	public Class<I_I_Replenish> getImportModelClass()
 	{
@@ -60,7 +66,7 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		RepelnishmentImportTableSqlUpdater.updateReplenishmentImortTable(getWhereClause());
+		RepelnishmentImportTableSqlUpdater.updateReplenishmentImportTable(getWhereClause());
 	}
 
 	@Override
@@ -90,7 +96,8 @@ public class ReplenishmentImportProcess extends AbstractImportProcess<I_I_Replen
 		}
 		else
 		{
-			return ImportRecordResult.Nothing; 
+			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NoValidRecord);
+			throw new AdempiereException(errorMsg); 
 		}
 
 	}

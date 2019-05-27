@@ -48,7 +48,7 @@ public class RepelnishmentImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(RepelnishmentImportTableSqlUpdater.class);
 
-	public void updateReplenishmentImortTable(@NonNull final String whereClause)
+	public void updateReplenishmentImportTable(@NonNull final String whereClause)
 	{
 		dbUpdateOrg(whereClause);
 		dbUpdateProducIds(whereClause);

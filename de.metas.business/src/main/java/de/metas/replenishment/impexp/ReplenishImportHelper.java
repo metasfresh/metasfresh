@@ -42,32 +42,11 @@ import lombok.experimental.UtilityClass;
 {
 	final public boolean isValidRecordForImport(@NonNull final I_I_Replenish importRecord)
 	{
-		if (importRecord.getM_Product_ID() <= 0)
-		{
-			return false;
-		}
-
-		if (importRecord.getM_Warehouse_ID() <= 0)
-		{
-			return false;
-		}
-
-		if (importRecord.getLevel_Max() == null)
-		{
-			return false;
-		}
-
-		if (importRecord.getLevel_Min() == null)
-		{
-			return false;
-		}
-
-		if (Check.isEmpty(importRecord.getReplenishType(), true))
-		{
-			return false;
-		}
-
-		return true;
+		return (importRecord.getM_Product_ID() > 0)
+				&& (importRecord.getM_Warehouse_ID() > 0)
+				&& (importRecord.getLevel_Max() != null)
+				&& (importRecord.getLevel_Min() != null)
+				&& (!Check.isEmpty(importRecord.getReplenishType(), true));
 	}
 
 	final public I_M_Replenish createNewReplenish(@NonNull final I_I_Replenish importRecord)
