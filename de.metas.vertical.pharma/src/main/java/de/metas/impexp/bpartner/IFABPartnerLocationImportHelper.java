@@ -39,11 +39,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -107,7 +107,7 @@ import lombok.experimental.UtilityClass;
 		{
 			return null;
 		}
-		
+
 		final Address importAddress = Address.builder()
 				.counrytId(importRecord.getC_Country_ID())
 				.city(importRecord.getb00ortzu())
@@ -139,7 +139,7 @@ import lombok.experimental.UtilityClass;
 			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
 			return bpartnerLocation;
 		}
-		
+
 		return null;
 	}
 
@@ -174,17 +174,21 @@ import lombok.experimental.UtilityClass;
 	public class Address
 	{
 		final int counrytId;
-		@Nullable final String city;
-		@Nullable final String address1;
-		@Nullable final String address2;
-		@Nullable final String postal;
-		@Nullable final String pobox;;
+		@Nullable
+		final String city;
+		@Nullable
+		final String address1;
+		@Nullable
+		final String address2;
+		@Nullable
+		final String postal;
+		@Nullable
+		final String pobox;;
 		final int bpLocationId;
 
 		@Builder(builderMethodName = "builder")
 		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)
 		{
-			Check.assume(counrytId > 0, "CountryId shall be greater then 0!");
 			this.counrytId = counrytId;
 			this.city = city == null ? "" : city;
 			this.address1 = address1 == null ? "" : address1;
@@ -196,20 +200,47 @@ import lombok.experimental.UtilityClass;
 
 	}
 
-	@Nullable private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord)
+	@Nullable
+	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord)
 	{
-		if (importRecord.getC_Country_ID() > 0
-				&& !Check.isEmpty(importRecord.getb00ortzu(), true))
+		if (isCountryAndCityFilled(importRecord)
+				|| isSomeBPartnerLocationDetailsFilled(importRecord))
 		{
 			final I_C_BPartner bpartner = importRecord.getC_BPartner();
 			final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 			bpartnerLocation.setC_BPartner(bpartner);
-			updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+
+			if (isCountryAndCityFilled(importRecord))
+			{
+				updateExistingBPartnerLocation(importRecord, bpartnerLocation);
+			}
+			else
+			{
+				updatePhoneAndFax(importRecord, bpartnerLocation);
+				updateEmails(importRecord, bpartnerLocation);
+			}
+
 			InterfaceWrapperHelper.save(bpartnerLocation);
 			return bpartnerLocation;
 		}
 
 		return null;
+	}
+
+	private boolean isCountryAndCityFilled(final I_I_Pharma_BPartner importRecord)
+	{
+		return importRecord.getC_Country_ID() > 0
+				&& !Check.isEmpty(importRecord.getb00ortzu(), true);
+	}
+
+	private boolean isSomeBPartnerLocationDetailsFilled(@NonNull final I_I_Pharma_BPartner importRecord)
+	{
+		return (!Check.isEmpty(importRecord.getb00email())
+				|| !Check.isEmpty(importRecord.getb00email2())
+				|| !Check.isEmpty(importRecord.getb00tel1())
+				|| !Check.isEmpty(importRecord.getb00tel2())
+				|| !Check.isEmpty(importRecord.getb00fax1())
+				|| !Check.isEmpty(importRecord.getb00fax2()));
 	}
 
 	private void updateExistingBPartnerLocation(@NonNull final I_I_Pharma_BPartner importRecord, @NonNull final I_C_BPartner_Location bpartnerLocation)
@@ -238,7 +269,10 @@ import lombok.experimental.UtilityClass;
 		location.setAddress2(buildAddress2(importRecord));
 		location.setPostal(importRecord.getb00plzzu1());
 		location.setCity(importRecord.getb00ortzu());
-		location.setC_Country_ID(importRecord.getC_Country_ID());
+		if (importRecord.getC_Country_ID() > 0)
+		{
+			location.setC_Country_ID(importRecord.getC_Country_ID());
+		}
 		location.setPOBox(buildPOBox(importRecord));
 		InterfaceWrapperHelper.save(location);
 	}

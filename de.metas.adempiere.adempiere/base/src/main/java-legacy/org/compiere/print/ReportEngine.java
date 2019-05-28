@@ -1309,7 +1309,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 			"C_DunningRunEntry_ID", "PP_Order_ID", "DD_Order_ID" };
 	private static final int[] DOC_TABLE_ID = new int[] {
 			I_C_Order.Table_ID,
-			I_M_InOut.Table_ID,
+			getTableId(I_M_InOut.class),
 			getTableId(I_C_Invoice.class),
 			getTableId(I_C_Project.class),
 			I_C_DunningRunEntry.Table_ID,

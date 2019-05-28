@@ -42,6 +42,7 @@ import org.compiere.model.I_I_DiscountSchema;
 import org.compiere.model.I_I_Inventory;
 import org.compiere.model.I_I_Postal;
 import org.compiere.model.I_I_Product;
+import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
 
@@ -51,6 +52,7 @@ import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
+import de.metas.replenishment.impexp.ReplenishmentImportProcess;
 import de.metas.util.Check;
 
 public class ImportProcessFactory implements IImportProcessFactory
@@ -69,6 +71,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_Inventory.class, InventoryImportProcess.class);
 		registerImportProcess(I_I_DiscountSchema.class, DiscountSchemaImportProcess.class);
 		registerImportProcess(I_I_BPartner_GlobalID.class, BPartnerGlobalIDImportProcess.class);
+		registerImportProcess(I_I_Replenish.class, ReplenishmentImportProcess.class);
 		registerImportProcess(I_I_Postal.class, PostalCodeImportProcess.class);
 	}
 

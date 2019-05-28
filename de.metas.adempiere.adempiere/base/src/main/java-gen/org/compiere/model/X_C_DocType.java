@@ -461,6 +461,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
+	/** Customs Invoice = CUI */
+	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** Set Dokument Basis Typ.
 		@param DocBaseType Dokument Basis Typ	  */
 	@Override

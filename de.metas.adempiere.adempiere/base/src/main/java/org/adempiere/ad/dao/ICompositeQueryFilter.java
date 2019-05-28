@@ -36,6 +36,8 @@ import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
 
+import de.metas.util.lang.RepoIdAware;
+
 public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 {
 	/**
@@ -134,6 +136,8 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Filters those rows for whom the columnName's value is in given collection.
 	 * If no values were provided the record is accepted.
+	 *
+	 * @param values may also be {@link RepoIdAware}s
 	 */
 	<V> ICompositeQueryFilter<T> addInArrayOrAllFilter(ModelColumn<T, ?> column, Collection<V> values);
 
@@ -311,7 +315,7 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	/**
 	 * Unboxes and add the filters contained in the <code>compositeFilter</code>.
 	 * If it could not be unboxed (e.g. because JOIN method does not match) the composite filter is added as is.
-	 * 
+	 *
 	 * @param compositeFilter
 	 */
 	ICompositeQueryFilter<T> addFiltersUnboxed(ICompositeQueryFilter<T> compositeFilter);

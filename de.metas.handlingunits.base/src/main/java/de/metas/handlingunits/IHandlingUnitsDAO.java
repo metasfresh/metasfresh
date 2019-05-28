@@ -310,8 +310,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveHUsForWarehouses(Properties ctx, Collection<WarehouseId> warehouseIds, String trxName);
 
-	List<I_M_HU> retrieveHUsForWarehousesAndProductId(Properties ctx, Collection<WarehouseId> warehouseIds, int productId, String trxName);
-
 	IHUQueryBuilder createHUQueryBuilder();
 
 	/**

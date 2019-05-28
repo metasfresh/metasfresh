@@ -235,6 +235,10 @@ public class ShipmentScheduleWithHUService
 
 			final I_C_UOM uomRecord = remainingQtyToAllocate.getUOM();
 			final Quantity qtyOfSourceHU = extractQtyOfHU(sourceHURecord, productId, uomRecord);
+			if (qtyOfSourceHU.signum() <= 0)
+			{
+				continue; // expected not to happen, but shall not be our problem if it does
+			}
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 
