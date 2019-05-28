@@ -330,6 +330,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	{
 		return attributesStorage.getValue(attributeName);
 	}
+	
+	public String getValueAsString(@NonNull final String attributeName)
+	{
+		return attributesStorage.getValueAsString(attributeName);
+	}
+
 
 	/**
 	 * Intercepts {@link IAttributeStorage} events and forwards them to {@link Execution#getCurrentDocumentChangesCollector()}.
