@@ -116,6 +116,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
 
+	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
+
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
 	 *
@@ -207,4 +209,5 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
+
 }

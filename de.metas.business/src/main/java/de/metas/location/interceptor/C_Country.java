@@ -7,15 +7,15 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.countryattribute.ICountryAttributeDAO;
-import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.util.Services;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -38,7 +38,7 @@ import de.metas.util.Services;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(C_Country.class)
+@Interceptor(I_C_Country.class)
 @Component("de.metas.location.model.interceptor.C_Country")
 public class C_Country
 {
@@ -46,23 +46,43 @@ public class C_Country
 	public void onCreateCountry(final I_C_Country country)
 	{
 		final Properties ctx = Env.getCtx();
-		final I_M_Attribute countryAttribute = Services.get(ICountryAttributeDAO.class).retrieveCountryAttribute(ctx);
-		final IAttributeValueGenerator generator = Services.get(IAttributesBL.class).getAttributeValueGenerator(countryAttribute);
-		final I_M_AttributeValue attributeValue = Services.get(ICountryAttributeDAO.class).retrieveAttributeValue(ctx, country);
+		final I_M_AttributeValue attributeValue = getAttributeValue(country);
 		if (attributeValue != null)
 		{
-			attributeValue.setIsActive(true);
+			setCountryAttributeAsActive(country, true);
 		}
 		else
 		{
-			generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
+			Services.get(IAttributesBL.class).getAttributeValueGenerator(Services.get(ICountryAttributeDAO.class).retrieveCountryAttribute(ctx)).generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void onChangeCountry()
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Country.COLUMNNAME_IsActive)
+	public void onChangeCountry(final I_C_Country country)
 	{
-
+		setCountryAttributeAsActive(country, country.isActive());
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void onDeleteCountry(final I_C_Country country)
+	{
+		setCountryAttributeAsActive(country, false);
+	}
+
+	private I_M_AttributeValue setCountryAttributeAsActive(final I_C_Country country,final boolean isActive)
+	{
+		final I_M_AttributeValue attributeValue = getAttributeValue(country);
+		if (attributeValue != null)
+		{
+			attributeValue.setIsActive(isActive);
+			save(attributeValue);
+		}
+		return attributeValue;
+	}
+
+	private I_M_AttributeValue getAttributeValue(final I_C_Country country)
+	{
+		final I_M_AttributeValue attributeValue = Services.get(ICountryAttributeDAO.class).retrieveAttributeValue(Env.getCtx(), country, true);
+		return attributeValue;
+	}
 }
