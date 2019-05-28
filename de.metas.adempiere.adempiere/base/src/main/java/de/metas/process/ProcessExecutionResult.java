@@ -862,7 +862,7 @@ public class ProcessExecutionResult
 
 	public static enum ViewOpenTarget
 	{
-		IncludedView, ModalOverlay
+		IncludedView, ModalOverlay, NewBrowserTab
 	}
 
 	@Immutable
