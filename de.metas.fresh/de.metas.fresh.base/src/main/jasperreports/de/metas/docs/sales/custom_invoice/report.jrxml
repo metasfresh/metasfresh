@@ -81,7 +81,7 @@
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/custom_invoice/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-7" x="56" y="153" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
@@ -91,7 +91,7 @@
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[new String("i")]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[new String("ci")]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
