@@ -15,6 +15,7 @@
         "prettier/prettier": ["error", {
           "singleQuote": true,
           "trailingComma": "es5",
+          "endOfLine":"auto",
           "tabWidth": 2
         }],
         "react/prop-types": "warn",
