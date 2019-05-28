@@ -100,7 +100,7 @@ public final class JSONProcessInstanceResult implements Serializable
 		else if (resultAction instanceof OpenViewAction)
 		{
 			final OpenViewAction openViewAction = (OpenViewAction)resultAction;
-			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId());
+			return new JSONOpenViewAction(openViewAction.getViewId(), openViewAction.getProfileId(), openViewAction.isModalOverlay());
 		}
 		else if (resultAction instanceof OpenIncludedViewAction)
 		{
@@ -172,13 +172,15 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final String viewId;
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
 		private final String profileId;
+		private final boolean modalOverlay;
 
-		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId)
+		public JSONOpenViewAction(final ViewId viewId, final ViewProfileId profileId, final boolean modalOverlay)
 		{
 			super("openView");
 			this.windowId = viewId.getWindowId();
 			this.viewId = viewId.getViewId();
 			this.profileId = profileId != null ? profileId.toJson() : null;
+			this.modalOverlay = modalOverlay;
 		}
 	}
 
