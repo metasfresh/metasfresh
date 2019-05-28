@@ -34,8 +34,13 @@ public class DecodeDataMatrixResponse
 {
 	/** Set if not error */
 	@Nullable
-	ProductData productData;
+	ProductDetails productDetails;
 
 	@NonNull
-	SecurPharmRequestLogData logData;
+	SecurPharmLog log;
+
+	public boolean isError()
+	{
+		return getProductDetails() == null;
+	}
 }

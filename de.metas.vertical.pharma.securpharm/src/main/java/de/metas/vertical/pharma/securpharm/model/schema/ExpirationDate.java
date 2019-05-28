@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.securpharm.model.schema;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -120,5 +121,10 @@ public final class ExpirationDate
 	public LocalDate toLocalDate()
 	{
 		return localDate;
+	}
+
+	public Timestamp toTimestamp()
+	{
+		return TimeUtil.asTimestamp(toLocalDate());
 	}
 }

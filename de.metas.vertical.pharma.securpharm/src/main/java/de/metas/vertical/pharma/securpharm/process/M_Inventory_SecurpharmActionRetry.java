@@ -23,25 +23,31 @@
 
 package de.metas.vertical.pharma.securpharm.process;
 
+import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.document.engine.IDocument;
+import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
-import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
-import de.metas.vertical.pharma.securpharm.model.UndoDecommisionRequest;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
+import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IProcessPrecondition
 {
 	private final SecurPharmService securPharmService = Adempiere.getBean(SecurPharmService.class);
-	private final SecurPharmResultRepository resultRepository = Adempiere.getBean(SecurPharmResultRepository.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -66,22 +72,10 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		final SecurPharmActionResult actionResult = resultRepository
-				.getActionResultByInventoryId(inventoryId, DecommissionAction.DESTROY)
-				.orElse(null);
-		if (actionResult == null)
+		ProductsToProcess productsToProcess = getProductsToProcess(inventoryId).orElse(null);
+		if (productsToProcess.isEmpty())
 		{
 			return ProcessPreconditionsResolution.reject();
-		}
-		if (!actionResult.isError())
-		{
-			final SecurPharmActionResult undoActionResult = resultRepository
-					.getActionResultByInventoryId(inventoryId, DecommissionAction.UNDO_DISPENSE)
-					.orElse(null);
-			if (!undoActionResult.isError())
-			{
-				return ProcessPreconditionsResolution.reject();
-			}
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -91,33 +85,126 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 	protected String doIt()
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		final SecurPharmActionResult actionResult = resultRepository
-				.getActionResultByInventoryId(inventoryId, DecommissionAction.DESTROY)
-				.orElseThrow(() -> new AdempiereException("@NotFound@"));
-		if (actionResult.isError())
+		final ProductsToProcess productsToProcess = getProductsToProcess(inventoryId).orElse(null);
+		if (productsToProcess == null)
 		{
-			securPharmService.decommision(DecommisionRequest.builder()
-					.productData(actionResult.getProductData())
-					.productDataResultId(actionResult.getProductDataResultId())
-					.inventoryId(inventoryId)
-					.build());
+			return MSG_OK;
 		}
-		else
+
+		process(productsToProcess);
+
+		return MSG_OK;
+	}
+
+	private Optional<ProductsToProcess> getProductsToProcess(@NonNull final InventoryId inventoryId)
+	{
+		final Action actionToRun = getActionToRun(inventoryId);
+		if (actionToRun == null)
 		{
-			final SecurPharmActionResult undoActionResult = resultRepository
-					.getActionResultByInventoryId(inventoryId, DecommissionAction.UNDO_DISPENSE)
-					.orElseThrow(() -> new AdempiereException("@NotFound@"));
-			if (undoActionResult.isError())
+			// throw new AdempiereException("@Invalid@ @DocStatus@");
+			return Optional.empty();
+		}
+
+		final ProductsToProcess.ProductsToProcessBuilder resultBuilder = ProductsToProcess.builder()
+				.action(actionToRun)
+				.inventoryId(inventoryId);
+
+		for (final SecurPharmProduct product : securPharmService.getProductsByInventoryId(inventoryId))
+		{
+			if (actionToRun == Action.DECOMMISSION)
 			{
-				securPharmService.undoDecommision(UndoDecommisionRequest.builder()
-						.productData(undoActionResult.getProductData())
-						.serverTransactionId(undoActionResult.getServerTransactionId())
-						.productDataResultId(undoActionResult.getProductDataResultId())
-						.inventoryId(inventoryId)
-						.build());
+				if (securPharmService.isEligibleForDecommission(product))
+				{
+					resultBuilder.product(product);
+				}
+			}
+			else if (actionToRun == Action.UNDO_DECOMMISSION)
+			{
+				if (securPharmService.isEligibleForUndoDecommission(product))
+				{
+					resultBuilder.product(product);
+				}
 			}
 		}
 
-		return MSG_OK;
+		final ProductsToProcess result = resultBuilder.build();
+		if (result.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(result);
+	}
+
+	private void process(@NonNull final ProductsToProcess productsToProcess)
+	{
+		final Action action = productsToProcess.getAction();
+		final InventoryId inventoryId = productsToProcess.getInventoryId();
+		for (final SecurPharmProduct product : productsToProcess.getProducts())
+		{
+			process(product, action, inventoryId);
+		}
+	}
+
+	private void process(
+			@NonNull final SecurPharmProduct product,
+			@NonNull final Action action,
+			@NonNull final InventoryId inventoryId)
+	{
+		if (action == Action.DECOMMISSION)
+		{
+			securPharmService.decommissionProductIfEligible(product, inventoryId);
+		}
+		else if (action == Action.UNDO_DECOMMISSION)
+		{
+			securPharmService.undoDecommissionProductIfEligible(product, inventoryId);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid action: " + action);
+		}
+	}
+
+	private Action getActionToRun(@NonNull final InventoryId inventoryId)
+	{
+		final String inventoryDocStatus = Services.get(IInventoryBL.class).getDocStatus(inventoryId);
+		if (IDocument.STATUS_Completed.contentEquals(inventoryDocStatus))
+		{
+			return Action.DECOMMISSION;
+		}
+		else if (IDocument.STATUS_Reversed.contentEquals(inventoryDocStatus))
+		{
+			return Action.UNDO_DECOMMISSION;
+		}
+		else
+		{
+			return null;
+		}
+
+	}
+
+	private static enum Action
+	{
+		DECOMMISSION, UNDO_DECOMMISSION
+	}
+
+	@Value
+	@Builder
+	private static class ProductsToProcess
+	{
+		@NonNull
+		Action action;
+
+		@NonNull
+		InventoryId inventoryId;
+
+		@NonNull
+		@Singular
+		ImmutableList<SecurPharmProduct> products;
+
+		public boolean isEmpty()
+		{
+			return getProducts().isEmpty();
+		}
 	}
 }

@@ -12,14 +12,9 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 {
 
 	/**
-	 * SerialNumber AD_Reference_ID=110
-	 * Reference name: AD_User
-	 */
-	public static final int SERIALNUMBER_AD_Reference_ID=110;
-	/**
 	 *
 	 */
-	private static final long serialVersionUID = -829984081L;
+	private static final long serialVersionUID = 300034730L;
 
     /** Standard Constructor */
     public X_M_Securpharm_Productdata_Result (Properties ctx, int M_Securpharm_Productdata_Result_ID, String trxName)
@@ -27,22 +22,19 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
       super (ctx, M_Securpharm_Productdata_Result_ID, trxName);
       /** if (M_Securpharm_Productdata_Result_ID == 0)
         {
-			sethasActiveStatus (false); // N
+			setIsDecommissioned (false); // N
 			setIsError (false); // N
+			setIsPackVerified (false); // N
 			setM_Securpharm_Productdata_Result_ID (0);
-			setRequestEndTime (new Timestamp( System.currentTimeMillis() ));
-			setRequestStartTime (new Timestamp( System.currentTimeMillis() ));
-			setRequestUrl (null);
-			setTransactionIDClient (null);
         } */
     }
-
 
     /** Load Constructor */
     public X_M_Securpharm_Productdata_Result (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
+
 
     /** Load Meta Data */
     @Override
@@ -52,12 +44,46 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
       return poi;
     }
 
-	/** Get Mindesthaltbarkeit.
-		@return Mindesthaltbarkeit	  */
+	/** 
+	 * ActiveStatus AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ACTIVESTATUS_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ACTIVESTATUS_Yes = "Y";
+	/** No = N */
+	public static final String ACTIVESTATUS_No = "N";
+	/** Set Aktiv Status.
+		@param ActiveStatus Aktiv Status	  */
 	@Override
-	public java.sql.Timestamp getExpirationDate () 
+	public void setActiveStatus (java.lang.String ActiveStatus)
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ExpirationDate);
+
+		set_ValueNoCheck (COLUMNNAME_ActiveStatus, ActiveStatus);
+	}
+
+	/** Get Aktiv Status.
+		@return Aktiv Status	  */
+	@Override
+	public java.lang.String getActiveStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ActiveStatus);
+	}
+
+	/** Set Decommissioned Server Transaction Id.
+		@param DecommissionedServerTransactionId Decommissioned Server Transaction Id	  */
+	@Override
+	public void setDecommissionedServerTransactionId (java.lang.String DecommissionedServerTransactionId)
+	{
+		set_Value (COLUMNNAME_DecommissionedServerTransactionId, DecommissionedServerTransactionId);
+	}
+
+	/** Get Decommissioned Server Transaction Id.
+		@return Decommissioned Server Transaction Id	  */
+	@Override
+	public java.lang.String getDecommissionedServerTransactionId () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DecommissionedServerTransactionId);
 	}
 
 	/** Set Mindesthaltbarkeit.
@@ -68,35 +94,12 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		set_ValueNoCheck (COLUMNNAME_ExpirationDate, ExpirationDate);
 	}
 
-	/** Set Aktiv Status.
-		@param hasActiveStatus Aktiv Status	  */
+	/** Get Mindesthaltbarkeit.
+		@return Mindesthaltbarkeit	  */
 	@Override
-	public void sethasActiveStatus (boolean hasActiveStatus)
+	public java.sql.Timestamp getExpirationDate () 
 	{
-		set_ValueNoCheck (COLUMNNAME_hasActiveStatus, Boolean.valueOf(hasActiveStatus));
-	}
-
-	/** Get Aktiv Status.
-		@return Aktiv Status	  */
-	@Override
-	public boolean ishasActiveStatus ()
-	{
-		Object oo = get_Value(COLUMNNAME_hasActiveStatus);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Get Inaktiv Grund.
-		@return Inaktiv Grund	  */
-	@Override
-	public java.lang.String getInactiveReason () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_InactiveReason);
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ExpirationDate);
 	}
 
 	/** Set Inaktiv Grund.
@@ -107,8 +110,39 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		set_ValueNoCheck (COLUMNNAME_InactiveReason, InactiveReason);
 	}
 
+	/** Get Inaktiv Grund.
+		@return Inaktiv Grund	  */
+	@Override
+	public java.lang.String getInactiveReason () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InactiveReason);
+	}
+
+	/** Set Decommissioned.
+		@param IsDecommissioned Decommissioned	  */
+	@Override
+	public void setIsDecommissioned (boolean IsDecommissioned)
+	{
+		set_Value (COLUMNNAME_IsDecommissioned, Boolean.valueOf(IsDecommissioned));
+	}
+
+	/** Get Decommissioned.
+		@return Decommissioned	  */
+	@Override
+	public boolean isDecommissioned () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsDecommissioned);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Fehler.
-		@param IsError
+		@param IsError 
 		Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
@@ -121,16 +155,47 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		@return Ein Fehler ist bei der Durchführung aufgetreten
 	  */
 	@Override
-	public boolean isError ()
+	public boolean isError () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsError);
-		if (oo != null)
+		if (oo != null) 
 		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Verified Pack.
+		@param IsPackVerified Verified Pack	  */
+	@Override
+	public void setIsPackVerified (boolean IsPackVerified)
+	{
+		set_Value (COLUMNNAME_IsPackVerified, Boolean.valueOf(IsPackVerified));
+	}
+
+	/** Get Verified Pack.
+		@return Verified Pack	  */
+	@Override
+	public boolean isPackVerified () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsPackVerified);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Chargennummer.
+		@param LotNumber Chargennummer	  */
+	@Override
+	public void setLotNumber (java.lang.String LotNumber)
+	{
+		set_ValueNoCheck (COLUMNNAME_LotNumber, LotNumber);
 	}
 
 	/** Get Chargennummer.
@@ -141,12 +206,15 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return (java.lang.String)get_Value(COLUMNNAME_LotNumber);
 	}
 
-	/** Set Chargennummer.
-		@param LotNumber Chargennummer	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setLotNumber (java.lang.String LotNumber)
+	public void setM_HU_ID (int M_HU_ID)
 	{
-		set_ValueNoCheck (COLUMNNAME_LotNumber, LotNumber);
+		if (M_HU_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
 	/** Get Handling Unit.
@@ -160,15 +228,15 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
+	/** Set SecurPharm product data result.
+		@param M_Securpharm_Productdata_Result_ID SecurPharm product data result	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID)
 	{
-		if (M_HU_ID < 1)
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+		if (M_Securpharm_Productdata_Result_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Productdata_Result_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Productdata_Result_ID, Integer.valueOf(M_Securpharm_Productdata_Result_ID));
 	}
 
 	/** Get SecurPharm product data result.
@@ -182,15 +250,44 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set SecurPharm product data result.
-		@param M_Securpharm_Productdata_Result_ID SecurPharm product data result	  */
+	/** Set Verification Code.
+		@param PackVerificationCode Verification Code	  */
 	@Override
-	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID)
+	public void setPackVerificationCode (java.lang.String PackVerificationCode)
 	{
-		if (M_Securpharm_Productdata_Result_ID < 1)
-			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Productdata_Result_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Productdata_Result_ID, Integer.valueOf(M_Securpharm_Productdata_Result_ID));
+		set_Value (COLUMNNAME_PackVerificationCode, PackVerificationCode);
+	}
+
+	/** Get Verification Code.
+		@return Verification Code	  */
+	@Override
+	public java.lang.String getPackVerificationCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PackVerificationCode);
+	}
+
+	/** Set Verification Message.
+		@param PackVerificationMessage Verification Message	  */
+	@Override
+	public void setPackVerificationMessage (java.lang.String PackVerificationMessage)
+	{
+		set_Value (COLUMNNAME_PackVerificationMessage, PackVerificationMessage);
+	}
+
+	/** Get Verification Message.
+		@return Verification Message	  */
+	@Override
+	public java.lang.String getPackVerificationMessage () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PackVerificationMessage);
+	}
+
+	/** Set Produktcode.
+		@param ProductCode Produktcode	  */
+	@Override
+	public void setProductCode (java.lang.String ProductCode)
+	{
+		set_ValueNoCheck (COLUMNNAME_ProductCode, ProductCode);
 	}
 
 	/** Get Produktcode.
@@ -201,12 +298,14 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return (java.lang.String)get_Value(COLUMNNAME_ProductCode);
 	}
 
-	/** Set Produktcode.
-		@param ProductCode Produktcode	  */
+	/** Set Kodierungskennzeichen.
+		@param ProductCodeType 
+		Kodierungskennzeichen
+	  */
 	@Override
-	public void setProductCode (java.lang.String ProductCode)
+	public void setProductCodeType (java.lang.String ProductCodeType)
 	{
-		set_ValueNoCheck (COLUMNNAME_ProductCode, ProductCode);
+		set_ValueNoCheck (COLUMNNAME_ProductCodeType, ProductCodeType);
 	}
 
 	/** Get Kodierungskennzeichen.
@@ -218,72 +317,11 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return (java.lang.String)get_Value(COLUMNNAME_ProductCodeType);
 	}
 
-	/** Set Kodierungskennzeichen.
-		@param ProductCodeType
-		Kodierungskennzeichen
-	  */
-	@Override
-	public void setProductCodeType (java.lang.String ProductCodeType)
-	{
-		set_ValueNoCheck (COLUMNNAME_ProductCodeType, ProductCodeType);
-	}
-
-	/** Get Anfrage Ende.
-		@return Anfrage Ende	  */
-	@Override
-	public java.sql.Timestamp getRequestEndTime () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_RequestEndTime);
-	}
-
-	/** Set Anfrage Ende.
-		@param RequestEndTime Anfrage Ende	  */
-	@Override
-	public void setRequestEndTime (java.sql.Timestamp RequestEndTime)
-	{
-		set_ValueNoCheck (COLUMNNAME_RequestEndTime, RequestEndTime);
-	}
-
-	/** Get Anfrage Start .
-		@return Anfrage Start 	  */
-	@Override
-	public java.sql.Timestamp getRequestStartTime () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_RequestStartTime);
-	}
-
-	/** Set Anfrage Start .
-		@param RequestStartTime Anfrage Start 	  */
-	@Override
-	public void setRequestStartTime (java.sql.Timestamp RequestStartTime)
-	{
-		set_ValueNoCheck (COLUMNNAME_RequestStartTime, RequestStartTime);
-	}
-
-	/** Get Abfrage.
-		@return Abfrage	  */
-	@Override
-	public java.lang.String getRequestUrl () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_RequestUrl);
-	}
-
-	/** Set Abfrage.
-		@param RequestUrl Abfrage	  */
-	@Override
-	public void setRequestUrl (java.lang.String RequestUrl)
-	{
-		set_ValueNoCheck (COLUMNNAME_RequestUrl, RequestUrl);
-	}
-
-	/** Get Seriennummer.
-		@return Seriennummer	  */
-	@Override
-	public java.lang.String getSerialNumber ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_SerialNumber);
-	}
-
+	/** 
+	 * SerialNumber AD_Reference_ID=110
+	 * Reference name: AD_User
+	 */
+	public static final int SERIALNUMBER_AD_Reference_ID=110;
 	/** Set Seriennummer.
 		@param SerialNumber Seriennummer	  */
 	@Override
@@ -293,35 +331,11 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		set_ValueNoCheck (COLUMNNAME_SerialNumber, SerialNumber);
 	}
 
-	/** Get TransaktionsID Client.
-		@return TransaktionsID Client	  */
+	/** Get Seriennummer.
+		@return Seriennummer	  */
 	@Override
-	public java.lang.String getTransactionIDClient ()
+	public java.lang.String getSerialNumber () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TransactionIDClient);
-	}
-
-	/** Set TransaktionsID Client.
-		@param TransactionIDClient TransaktionsID Client	  */
-	@Override
-	public void setTransactionIDClient (java.lang.String TransactionIDClient)
-	{
-		set_ValueNoCheck (COLUMNNAME_TransactionIDClient, TransactionIDClient);
-	}
-
-	/** Get TransaktionsID Server.
-		@return TransaktionsID Server	  */
-	@Override
-	public java.lang.String getTransactionIDServer ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_TransactionIDServer);
-	}
-
-	/** Set TransaktionsID Server.
-		@param TransactionIDServer TransaktionsID Server	  */
-	@Override
-	public void setTransactionIDServer (java.lang.String TransactionIDServer)
-	{
-		set_ValueNoCheck (COLUMNNAME_TransactionIDServer, TransactionIDServer);
+		return (java.lang.String)get_Value(COLUMNNAME_SerialNumber);
 	}
 }

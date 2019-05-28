@@ -29,40 +29,58 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
+import lombok.Setter;
+import lombok.Value;
 import lombok.experimental.NonFinal;
 
 /**
  * Contains the product informations we acquired from server.
  */
-@Data
-@FieldDefaults(makeFinal = true)
+@Value
 @Builder
-public class SecurPharmProductDataResult
+public class SecurPharmProduct
 {
-	/** Set if not {@link #isError()} */
+	boolean error;
+
 	@Nullable
-	private ProductData productData;
+	ProductDetails productDetails;
 
 	@NonNull
-	private SecurPharmRequestLogData requestLogData;
-
-	@NonNull
-	private HuId huId;
+	HuId huId;
 
 	@Nullable
 	@NonFinal
-	private SecurPharmProductDataResultId id;
+	@Setter
+	SecurPharmProductId id;
 
 	public TableRecordReference getRecordRef()
 	{
 		return TableRecordReference.of(I_M_Securpharm_Productdata_Result.Table_Name, getId());
 	}
 
-	public boolean isError()
+	public boolean isActive()
 	{
-		return getRequestLogData().isError();
+		return getProductDetails().isActive();
+	}
+
+	public boolean isDecommissioned()
+	{
+		return getProductDetails().isDecommissioned();
+	}
+
+	public String getDecommissionServerTransactionId()
+	{
+		return getProductDetails().getDecommissionedServerTransactionId();
+	}
+
+	public void productDecommissioned(@NonNull final String decommissionedServerTransactionId)
+	{
+		getProductDetails().productDecommissioned(decommissionedServerTransactionId);
+	}
+
+	public void productDecommissionUndo(@NonNull final String undoDecommissionedServerTransactionId)
+	{
+		getProductDetails().productDecommissionUndo(undoDecommissionedServerTransactionId);
 	}
 }

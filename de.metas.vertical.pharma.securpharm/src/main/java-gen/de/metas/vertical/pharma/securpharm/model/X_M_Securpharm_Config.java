@@ -47,14 +47,6 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
       return poi;
     }
 
-	/** Get Application UUID.
-		@return Application UUID	  */
-	@Override
-	public java.lang.String getApplicationUUID ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ApplicationUUID);
-	}
-
 	/** Set Application UUID.
 		@param ApplicationUUID Application UUID	  */
 	@Override
@@ -63,12 +55,12 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		set_Value (COLUMNNAME_ApplicationUUID, ApplicationUUID);
 	}
 
-	/** Get Pharma Auth REST API URL.
-		@return Pharma Auth REST API URL	  */
+	/** Get Application UUID.
+		@return Application UUID	  */
 	@Override
-	public java.lang.String getAuthPharmaRestApiBaseURL ()
+	public java.lang.String getApplicationUUID () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AuthPharmaRestApiBaseURL);
+		return (java.lang.String)get_Value(COLUMNNAME_ApplicationUUID);
 	}
 
 	/** Set Pharma Auth REST API URL.
@@ -79,12 +71,12 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		set_Value (COLUMNNAME_AuthPharmaRestApiBaseURL, AuthPharmaRestApiBaseURL);
 	}
 
-	/** Get Zertifikatpfad.
-		@return Zertifikatpfad	  */
+	/** Get Pharma Auth REST API URL.
+		@return Pharma Auth REST API URL	  */
 	@Override
-	public java.lang.String getCertificatePath ()
+	public java.lang.String getAuthPharmaRestApiBaseURL () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CertificatePath);
+		return (java.lang.String)get_Value(COLUMNNAME_AuthPharmaRestApiBaseURL);
 	}
 
 	/** Set Zertifikatpfad.
@@ -95,15 +87,12 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		set_Value (COLUMNNAME_CertificatePath, CertificatePath);
 	}
 
-	/** Get SecurPharm Configuration.
-		@return SecurPharm Configuration	  */
+	/** Get Zertifikatpfad.
+		@return Zertifikatpfad	  */
 	@Override
-	public int getM_Securpharm_Config_ID ()
+	public java.lang.String getCertificatePath () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Securpharm_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return (java.lang.String)get_Value(COLUMNNAME_CertificatePath);
 	}
 
 	/** Set SecurPharm Configuration.
@@ -111,18 +100,21 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setM_Securpharm_Config_ID (int M_Securpharm_Config_ID)
 	{
-		if (M_Securpharm_Config_ID < 1)
+		if (M_Securpharm_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Config_ID, null);
-		else
+		else 
 			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Config_ID, Integer.valueOf(M_Securpharm_Config_ID));
 	}
 
-	/** Get Pharma REST API URL.
-		@return Pharma REST API URL	  */
+	/** Get SecurPharm Configuration.
+		@return SecurPharm Configuration	  */
 	@Override
-	public java.lang.String getPharmaRestApiBaseURL ()
+	public int getM_Securpharm_Config_ID () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PharmaRestApiBaseURL);
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Securpharm_Config_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Pharma REST API URL.
@@ -131,6 +123,14 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 	public void setPharmaRestApiBaseURL (java.lang.String PharmaRestApiBaseURL)
 	{
 		set_Value (COLUMNNAME_PharmaRestApiBaseURL, PharmaRestApiBaseURL);
+	}
+
+	/** Get Pharma REST API URL.
+		@return Pharma REST API URL	  */
+	@Override
+	public java.lang.String getPharmaRestApiBaseURL () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PharmaRestApiBaseURL);
 	}
 
 	@Override
@@ -145,11 +145,24 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		set_ValueFromPO(COLUMNNAME_Support_User_ID, org.compiere.model.I_AD_User.class, Support_User);
 	}
 
-	/** Get Support Benutzer.
-		@return Benutzer für Benachrichtigungen
+	/** Set Support Benutzer.
+		@param Support_User_ID 
+		Benutzer für Benachrichtigungen 
 	  */
 	@Override
-	public int getSupport_User_ID ()
+	public void setSupport_User_ID (int Support_User_ID)
+	{
+		if (Support_User_ID < 1) 
+			set_Value (COLUMNNAME_Support_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Support_User_ID, Integer.valueOf(Support_User_ID));
+	}
+
+	/** Get Support Benutzer.
+		@return Benutzer für Benachrichtigungen 
+	  */
+	@Override
+	public int getSupport_User_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Support_User_ID);
 		if (ii == null)
@@ -157,35 +170,22 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
-	/** Set Support Benutzer.
-		@param Support_User_ID
-		Benutzer für Benachrichtigungen
-	  */
-	@Override
-	public void setSupport_User_ID (int Support_User_ID)
-	{
-		if (Support_User_ID < 1)
-			set_Value (COLUMNNAME_Support_User_ID, null);
-		else
-			set_Value (COLUMNNAME_Support_User_ID, Integer.valueOf(Support_User_ID));
-	}
-
-	/** Get TAN Passwort.
-		@return TAN Passwort benutzt für Authentifizierung
-	  */
-	@Override
-	public java.lang.String getTanPassword ()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_TanPassword);
-	}
-
 	/** Set TAN Passwort.
-		@param TanPassword
+		@param TanPassword 
 		TAN Passwort benutzt für Authentifizierung
 	  */
 	@Override
 	public void setTanPassword (java.lang.String TanPassword)
 	{
 		set_Value (COLUMNNAME_TanPassword, TanPassword);
+	}
+
+	/** Get TAN Passwort.
+		@return TAN Passwort benutzt für Authentifizierung
+	  */
+	@Override
+	public java.lang.String getTanPassword () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TanPassword);
 	}
 }

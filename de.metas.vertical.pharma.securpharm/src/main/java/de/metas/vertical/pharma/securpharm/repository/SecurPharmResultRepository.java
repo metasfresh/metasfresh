@@ -23,32 +23,46 @@
 
 package de.metas.vertical.pharma.securpharm.repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Optional;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.cache.CCache;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.inventory.IInventoryDAO;
-import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
+import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result;
+import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Log;
 import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
-import de.metas.vertical.pharma.securpharm.model.ProductData;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
+import de.metas.vertical.pharma.securpharm.model.ProductDetails;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmLogId;
+import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
+import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
 import lombok.NonNull;
 
 @Repository
@@ -56,212 +70,277 @@ public class SecurPharmResultRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void saveNew(@NonNull final SecurPharmProductDataResult result)
-	{
-		Check.assumeNull(result.getId(), "productDataResult shall not be already saved: {}", result);
+	private CCache<SecurPharmProductId, SecurPharmProduct> productDataCache = CCache.<SecurPharmProductId, SecurPharmProduct> builder()
+			.tableName(I_M_Securpharm_Productdata_Result.Table_Name)
+			.build();
 
-		final I_M_Securpharm_Productdata_Result record = newInstance(I_M_Securpharm_Productdata_Result.class);
-		record.setM_HU_ID(result.getHuId().getRepoId());
+	public void save(
+			@NonNull final SecurPharmProduct productDataResult,
+			final Collection<SecurPharmLog> logs)
+	{
+		I_M_Securpharm_Productdata_Result record = null;
+		if (productDataResult.getId() != null)
+		{
+			record = load(productDataResult.getId(), I_M_Securpharm_Productdata_Result.class);
+		}
+		if (record == null)
+		{
+			record = newInstance(I_M_Securpharm_Productdata_Result.class);
+		}
+
+		record.setIsError(productDataResult.isError());
+		record.setM_HU_ID(productDataResult.getHuId().getRepoId());
 
 		//
 		// Product data
-		final ProductData productData = result.getProductData();
-		if (productData != null)
+		final ProductDetails productDetails = productDataResult.getProductDetails();
+		record.setExpirationDate(productDetails != null ? productDetails.getExpirationDate().toTimestamp() : null);
+		record.setLotNumber(productDetails != null ? productDetails.getLot() : null);
+		record.setProductCode(productDetails != null ? productDetails.getProductCode() : null);
+		record.setProductCodeType(productDetails != null ? productDetails.getProductCodeType().name() : null);
+		record.setSerialNumber(productDetails != null ? productDetails.getSerialNumber() : null);
+
+		record.setActiveStatus(productDetails != null ? productDetails.getActiveStatus().toYesNoString() : null);
+		record.setInactiveReason(productDetails != null ? productDetails.getInactiveReason() : null);
+
+		record.setIsDecommissioned(productDetails.isDecommissioned());
+		record.setDecommissionedServerTransactionId(productDetails.getDecommissionedServerTransactionId());
+
+		saveRecord(record);
+		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID());
+		productDataResult.setId(productDataResultId);
+
+		saveLogs(logs,
+				productDataResultId,
+				(SecurPharmActionResultId)null);
+	}
+
+	private void saveLogs(
+			final Collection<SecurPharmLog> logs,
+			@Nullable final SecurPharmProductId productDataId,
+			@Nullable final SecurPharmActionResultId actionResultId)
+	{
+		if (logs.isEmpty())
 		{
-			record.setExpirationDate(TimeUtil.asTimestamp(productData.getExpirationDate().toLocalDate()));
-			record.sethasActiveStatus(productData.isActive());
-			record.setInactiveReason(productData.getInactiveReason());
-			record.setLotNumber(productData.getLot());
-			record.setProductCode(productData.getProductCode());
-			record.setProductCodeType(productData.getProductCodeType().name());
-			record.setSerialNumber(productData.getSerialNumber());
+			return;
 		}
 
-		//
-		// Protocol Log data
+		final Set<SecurPharmLogId> existingLogIds = logs.stream()
+				.map(SecurPharmLog::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<SecurPharmLogId, I_M_Securpharm_Log> existingLogRecords = retrieveLogRecordsByIds(existingLogIds);
+
+		for (final SecurPharmLog log : logs)
 		{
-			final SecurPharmRequestLogData logData = result.getRequestLogData();
-			// TODO set HTTP Response code from logData.getResponseCode()
-			record.setIsError(logData.isError());
-			record.setRequestUrl(logData.getRequestUrl());
-			record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-			record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-			record.setTransactionIDClient(logData.getClientTransactionId());
-			record.setTransactionIDServer(logData.getServerTransactionId());
+			final I_M_Securpharm_Log existingLogRecord = existingLogRecords.get(log.getId());
+			saveLog(log, existingLogRecord, productDataId, actionResultId);
+		}
+	}
+
+	private ImmutableMap<SecurPharmLogId, I_M_Securpharm_Log> retrieveLogRecordsByIds(final Collection<SecurPharmLogId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Securpharm_Log.class)
+				.addInArrayFilter(I_M_Securpharm_Log.COLUMN_M_Securpharm_Log_ID, ids)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toImmutableMapByKey(record -> SecurPharmLogId.ofRepoId(record.getM_Securpharm_Log_ID())));
+
+	}
+
+	private void saveLog(
+			@NonNull final SecurPharmLog log,
+			@Nullable final I_M_Securpharm_Log existingLogRecord,
+			@Nullable final SecurPharmProductId productDataId,
+			@Nullable final SecurPharmActionResultId actionResultId)
+	{
+		final I_M_Securpharm_Log record;
+		if (existingLogRecord != null)
+		{
+			record = existingLogRecord;
+		}
+		else
+		{
+			record = newInstance(I_M_Securpharm_Log.class);
+		}
+
+		record.setIsError(log.isError());
+
+		//
+		// Request
+		record.setRequestUrl(log.getRequestUrl());
+		record.setRequestMethod(log.getRequestMethod() != null ? log.getRequestMethod().name() : null);
+		record.setRequestStartTime(TimeUtil.asTimestamp(log.getRequestTime()));
+
+		//
+		// Response
+		record.setRequestEndTime(TimeUtil.asTimestamp(log.getResponseTime()));
+		record.setResponseCode(log.getResponseCode() != null ? log.getResponseCode().value() : 0);
+
+		//
+		record.setTransactionIDClient(log.getClientTransactionId());
+		record.setTransactionIDServer(log.getServerTransactionId());
+
+		//
+		// Links
+		if (productDataId != null)
+		{
+			record.setM_Securpharm_Productdata_Result_ID(productDataId.getRepoId());
+		}
+		if (actionResultId != null)
+		{
+			record.setM_Securpharm_Action_Result_ID(actionResultId.getRepoId());
 		}
 
 		saveRecord(record);
-		result.setId(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()));
+		log.setId(SecurPharmLogId.ofRepoId(record.getM_Securpharm_Log_ID()));
 	}
 
-	public void saveNew(@NonNull final SecurPharmActionResult result)
+	public void save(
+			@NonNull final DecommissionResponse response,
+			final Collection<SecurPharmLog> logs)
 	{
-		Check.assumeNull(result.getId(), "productDataResult shall not be already saved: {}", result);
+		final SecurPharmActionResultId responseId = saveActionResult(response);
 
+		saveLogs(logs,
+				response.getProductDataResultId(),
+				responseId);
+	}
+
+	private SecurPharmActionResultId saveActionResult(final DecommissionResponse response)
+	{
 		final I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);
 
-		record.setAction(result.getAction().getCode());
-		record.setM_Inventory_ID(result.getInventoryId().getRepoId());
-		record.setM_Securpharm_Productdata_Result_ID(result.getProductDataResultId().getRepoId());
-
-		//
-		// Protocol Log data
-		{
-			final SecurPharmRequestLogData logData = result.getRequestLogData();
-			// TODO set HTTP Response code from logData.getResponseCode()
-			record.setIsError(logData.isError());
-			record.setRequestUrl(logData.getRequestUrl());
-			record.setRequestStartTime(TimeUtil.asTimestamp(logData.getRequestTime()));
-			record.setRequestEndTime(TimeUtil.asTimestamp(logData.getResponseTime()));
-			record.setTransactionIDClient(logData.getClientTransactionId());
-			record.setTransactionIDServer(logData.getServerTransactionId());
-		}
+		record.setIsError(response.isError());
+		record.setAction(DecommissionAction.DESTROY.getCode());
+		record.setM_Inventory_ID(response.getInventoryId().getRepoId());
+		record.setM_Securpharm_Productdata_Result_ID(response.getProductDataResultId().getRepoId());
+		record.setTransactionIDServer(response.getServerTransactionId());
 
 		saveRecord(record);
-		result.setId(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()));
+
+		return SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID());
 	}
 
-	public Optional<SecurPharmActionResult> getActionResultByInventoryId(
-			@NonNull final InventoryId inventoryId,
-			@NonNull final DecommissionAction action)
+	public void save(
+			@NonNull final UndoDecommissionResponse response,
+			final Collection<SecurPharmLog> logs)
 	{
-		//
-		// Fetch Product Action Result
-		final I_M_Securpharm_Action_Result actionResultRecord = queryBL
-				.createQueryBuilder(I_M_Securpharm_Action_Result.class)
-				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_M_Inventory_ID, inventoryId)
-				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMNNAME_Action, action.getCode())
-				.orderByDescending(I_M_Securpharm_Action_Result.COLUMNNAME_RequestStartTime)
-				.create()
-				.first();
-		if (actionResultRecord == null)
+		final SecurPharmActionResultId responseId = saveActionResult(response);
+
+		saveLogs(logs,
+				response.getProductDataResultId(),
+				responseId);
+	}
+
+	private SecurPharmActionResultId saveActionResult(@NonNull final UndoDecommissionResponse response)
+	{
+		I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);
+
+		record.setIsError(response.isError());
+		record.setAction(DecommissionAction.UNDO_DISPENSE.getCode());
+		record.setM_Inventory_ID(response.getInventoryId().getRepoId());
+		record.setM_Securpharm_Productdata_Result_ID(response.getProductDataResultId().getRepoId());
+		record.setTransactionIDServer(response.getServerTransactionId());
+
+		saveRecord(record);
+
+		return SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID());
+	}
+
+	public SecurPharmProduct getProductById(@NonNull final SecurPharmProductId id)
+	{
+		Collection<SecurPharmProduct> products = getProductsByIds(ImmutableList.of(id));
+		if (products.isEmpty())
 		{
-			return Optional.empty();
+			throw new AdempiereException("@NotFound@" + id);
+		}
+		else if (products.size() == 1)
+		{
+			return products.iterator().next();
+		}
+		else
+		{
+			// shall not happen
+			throw new AdempiereException("@InternalError@ Got more results for " + id + ": " + products);
 		}
 
-		//
-		// Retrieve Product Data
-		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(actionResultRecord.getM_Securpharm_Productdata_Result_ID());
-		final ProductData productData = getProductDataResultById(productDataResultId).getProductData();
-
-		return Optional.of(toActionResult(
-				actionResultRecord,
-				productData,
-				inventoryId));
 	}
 
-	public SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
+	public Collection<SecurPharmProduct> getProductsByIds(@NonNull final Collection<SecurPharmProductId> productDataResultIds)
 	{
-		final I_M_Securpharm_Productdata_Result productResultRecord = queryBL
+		if (productDataResultIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return productDataCache.getAllOrLoad(productDataResultIds, this::retrieveProductDataResultByIds);
+	}
+
+	private Map<SecurPharmProductId, SecurPharmProduct> retrieveProductDataResultByIds(@NonNull final Collection<SecurPharmProductId> productDataResultIds)
+	{
+		Check.assumeNotEmpty(productDataResultIds, "productDataResultIds is not empty");
+
+		return queryBL
 				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
-				.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, productDataResultId)
+				.addInArrayFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, productDataResultIds)
 				.create()
-				.firstOnlyNotNull(I_M_Securpharm_Productdata_Result.class);
-
-		return toProductDataResult(productResultRecord);
-	}
-
-	private static SecurPharmActionResult toActionResult(
-			@NonNull final I_M_Securpharm_Action_Result record,
-			@NonNull final ProductData productData,
-			@NonNull final InventoryId inventoryId)
-	{
-		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID());
-
-		return SecurPharmActionResult.builder()
-				.productDataResultId(productDataResultId)
-				.productData(productData)
-				.requestLogData(toRequestLogData(record))
-				.action(DecommissionAction.ofCode(record.getAction()))
-				.inventoryId(inventoryId)
-				.id(SecurPharmActionResultId.ofRepoId(record.getM_Securpharm_Action_Result_ID()))
-				.build();
-	}
-
-	private static SecurPharmRequestLogData toRequestLogData(final I_M_Securpharm_Action_Result record)
-	{
-		return SecurPharmRequestLogData.builder()
-				.requestTime(TimeUtil.asInstant(record.getRequestStartTime()))
-				.responseTime(TimeUtil.asInstant(record.getRequestEndTime()))
-				.requestUrl(record.getRequestUrl())
-				.clientTransactionId(record.getTransactionIDClient())
-				.serverTransactionId(record.getTransactionIDServer())
-				.error(record.isError())
-				.build();
-	}
-
-	public Optional<SecurPharmProductDataResult> getProductDataResultByInventoryId(@NonNull final InventoryId inventoryId)
-	{
-		final IInventoryDAO inventoryRepo = Services.get(IInventoryDAO.class);
-
-		// TODO: is this correct?! what if we have more HUs...
-		final HuId huId = inventoryRepo
-				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 				.stream()
-				.findFirst()
-				.map(invLine -> HuId.ofRepoId(invLine.getM_HU_ID())) // TODO: handle multiple HUs
-				.orElse(null);
-		if (huId == null)
-		{
-			return Optional.empty();
-		}
-
-		return getProductDataResultByHuId(huId);
+				.map(record -> toProductDataResult(record))
+				.collect(GuavaCollectors.toImmutableMapByKey(SecurPharmProduct::getId));
 	}
 
-	private Optional<SecurPharmProductDataResult> getProductDataResultByHuId(@NonNull final HuId huId)
+	public Collection<SecurPharmProduct> getProductDataResultByHuIds(@NonNull final Collection<HuId> huIds)
 	{
-		final I_M_Securpharm_Productdata_Result record = queryBL
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<SecurPharmProductId> ids = queryBL
 				.createQueryBuilder(I_M_Securpharm_Productdata_Result.class)
-				.addEqualsFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huId)
+				.addInArrayFilter(I_M_Securpharm_Productdata_Result.COLUMNNAME_M_HU_ID, huIds)
 				.create()
-				.first();
-		if (record == null)
-		{
-			return Optional.empty();
-		}
+				.listIds(SecurPharmProductId::ofRepoId);
 
-		final SecurPharmProductDataResult result = toProductDataResult(record);
-		return Optional.of(result);
+		return getProductsByIds(ids);
 	}
 
-	private static SecurPharmProductDataResult toProductDataResult(@NonNull final I_M_Securpharm_Productdata_Result record)
+	private static SecurPharmProduct toProductDataResult(@NonNull final I_M_Securpharm_Productdata_Result record)
 	{
-		final SecurPharmRequestLogData logData = toRequestLogData(record);
-		return SecurPharmProductDataResult.builder()
-				.productData(!logData.isError() ? toProductData(record) : null)
-				.requestLogData(logData)
-				//
+		final boolean error = record.isError();
+
+		return SecurPharmProduct.builder()
+				.error(error)
+				.productDetails(!error ? toProductDetails(record) : null)
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
-				//
-				.id(SecurPharmProductDataResultId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
-				//
+				.id(SecurPharmProductId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))
 				.build();
 	}
 
-	private static SecurPharmRequestLogData toRequestLogData(final I_M_Securpharm_Productdata_Result record)
+	private static ProductDetails toProductDetails(final I_M_Securpharm_Productdata_Result record)
 	{
-		final SecurPharmRequestLogData logData = SecurPharmRequestLogData.builder()
-				.requestTime(TimeUtil.asInstant(record.getRequestStartTime()))
-				.responseTime(TimeUtil.asInstant(record.getRequestEndTime()))
-				.requestUrl(record.getRequestUrl())
-				.clientTransactionId(record.getTransactionIDClient())
-				.serverTransactionId(record.getTransactionIDServer())
-				.error(record.isError())
-				.build();
-		return logData;
-	}
-
-	private static ProductData toProductData(final I_M_Securpharm_Productdata_Result record)
-	{
-		return ProductData.builder()
-				.active(record.isActive())
-				.expirationDate(ExpirationDate.ofLocalDate(TimeUtil.asLocalDate(record.getExpirationDate())))
-				.inactiveReason(record.getInactiveReason())
-				.lot(record.getLotNumber())
+		return ProductDetails.builder()
 				.productCode(record.getProductCode())
 				.productCodeType(ProductCodeType.ofCode(record.getProductCodeType()))
+				//
+				.lot(record.getLotNumber())
 				.serialNumber(record.getSerialNumber())
+				//
+				.expirationDate(ExpirationDate.ofLocalDate(TimeUtil.asLocalDate(record.getExpirationDate())))
+				//
+				.activeStatus(ProductPackageState.ofYesNoString(record.getActiveStatus()))
+				.inactiveReason(record.getInactiveReason())
+				//
+				.decommissioned(record.isDecommissioned())
+				.decommissionedServerTransactionId(record.getDecommissionedServerTransactionId())
+				//
 				.build();
 	}
 }

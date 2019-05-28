@@ -53,8 +53,8 @@ public class SecurPharmClientManualTest
 		final DecodeDataMatrixResponse decodeResponse = client.decodeDataMatrix(code);
 		System.out.println("decode response: " + decodeResponse);
 
-		System.out.println("verifying product: " + decodeResponse.getProductData());
-		VerifyProductResponse verifyResponse = client.verifyProduct(decodeResponse.getProductData());
+		System.out.println("verifying product: " + decodeResponse.getProductDetails());
+		VerifyProductResponse verifyResponse = client.verifyProduct(decodeResponse.getProductDetails());
 		System.out.println("verify response: " + verifyResponse);
 	}
 }

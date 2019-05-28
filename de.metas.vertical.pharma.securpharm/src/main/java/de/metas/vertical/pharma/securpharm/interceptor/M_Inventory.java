@@ -30,12 +30,6 @@ import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.InventoryId;
-import de.metas.vertical.pharma.securpharm.model.DecommisionRequest;
-import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
-import de.metas.vertical.pharma.securpharm.model.UndoDecommisionRequest;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -44,35 +38,21 @@ import lombok.NonNull;
 public class M_Inventory
 {
 	private final SecurPharmService securPharmService;
-	private final SecurPharmResultRepository resultRepository;
 
-	public M_Inventory(@NonNull final SecurPharmService securPharmService, @NonNull final SecurPharmResultRepository resultRepository)
+	public M_Inventory(@NonNull final SecurPharmService securPharmService)
 	{
 		this.securPharmService = securPharmService;
-		this.resultRepository = resultRepository;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void beforeComplete(final I_M_Inventory inventory)
 	{
-		// TODO: fire after commit... or async?!
-
 		if (securPharmService.hasConfig())
 		{
+			// TODO: fire after commit... or async?!
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-			final SecurPharmProductDataResult productDataResult = resultRepository
-					.getProductDataResultByInventoryId(inventoryId)
-					.orElse(null);
-			if (productDataResult != null && !productDataResult.isError())
-			{
-				securPharmService.decommision(DecommisionRequest.builder()
-						.productData(productDataResult.getProductData())
-						.productDataResultId(productDataResult.getId())
-						.inventoryId(inventoryId)
-						.build());
-			}
+			securPharmService.decommissionProductsByInventoryId(inventoryId);
 		}
-
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
@@ -81,19 +61,8 @@ public class M_Inventory
 		if (securPharmService.hasConfig())
 		{
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-			final SecurPharmActionResult lastDecommisionActionResult = resultRepository
-					.getActionResultByInventoryId(inventoryId, DecommissionAction.DESTROY)
-					.orElse(null);
-			if (lastDecommisionActionResult != null && !lastDecommisionActionResult.isError())
-			{
-				securPharmService.undoDecommision(UndoDecommisionRequest.builder()
-						.productData(lastDecommisionActionResult.getProductData())
-						.serverTransactionId(lastDecommisionActionResult.getServerTransactionId())
-						.productDataResultId(lastDecommisionActionResult.getProductDataResultId())
-						.inventoryId(inventoryId)
-						.build());
-			}
+			securPharmService.undoDecommissionProductsByInventoryId(inventoryId);
 		}
-
 	}
+
 }

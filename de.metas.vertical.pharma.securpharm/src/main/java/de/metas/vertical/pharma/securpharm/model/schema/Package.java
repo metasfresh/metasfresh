@@ -43,7 +43,7 @@ public class Package
 	private String serialNumber;
 
 	@JsonProperty("state")
-	private State state;
+	private ProductPackageState state;
 
 	@JsonProperty("reasons")
 	private List<String> reasons;

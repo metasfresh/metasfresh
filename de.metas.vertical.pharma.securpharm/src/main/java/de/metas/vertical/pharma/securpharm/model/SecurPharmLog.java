@@ -23,55 +23,50 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
+import java.time.Instant;
+
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 
-import de.metas.inventory.InventoryId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.FieldDefaults;
+import lombok.Setter;
+import lombok.Value;
 import lombok.experimental.NonFinal;
 
-@Data
-@FieldDefaults(makeFinal = true)
+/**
+ * API communication informations
+ */
+@Value
 @Builder
-public class SecurPharmActionResult
+public class SecurPharmLog
 {
+	boolean error;
+
+	//
+	// Request
 	@NonNull
-	private DecommissionAction action;
+	String requestUrl;
+	@NonNull
+	HttpMethod requestMethod;
+	@NonNull
+	Instant requestTime;
 
-	@Nullable
-	ProductData productData;
+	//
+	// Response
+	@NonNull
+	Instant responseTime;
+	HttpStatus responseCode;
+	String responseData;
 
 	@NonNull
-	private SecurPharmRequestLogData requestLogData;
+	String clientTransactionId;
+	String serverTransactionId;
 
 	@Nullable
 	@NonFinal
-	private InventoryId inventoryId;
-
-	@Nullable
-	@NonFinal
-	SecurPharmProductDataResultId productDataResultId;
-
-	@Nullable
-	@NonFinal
-	private SecurPharmActionResultId id;
-
-	public TableRecordReference getRecordRef()
-	{
-		return TableRecordReference.of(I_M_Securpharm_Action_Result.Table_Name, getId());
-	}
-
-	public boolean isError()
-	{
-		return getRequestLogData().isError();
-	}
-
-	public String getServerTransactionId()
-	{
-		return getRequestLogData().getServerTransactionId();
-	}
+	@Setter
+	SecurPharmLogId id;
 }

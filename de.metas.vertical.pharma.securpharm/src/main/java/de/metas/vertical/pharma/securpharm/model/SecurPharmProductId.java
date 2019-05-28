@@ -23,36 +23,27 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
-import java.time.Instant;
-
-import org.springframework.http.HttpStatus;
-
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
-/**
- * API communication informations
- */
 @Value
-@Builder
-public class SecurPharmRequestLogData
+public class SecurPharmProductId implements RepoIdAware
 {
-	@NonNull
-	String requestUrl;
-	HttpStatus responseCode;
-	String responseData;
+	int repoId;
 
-	@NonNull
-	String clientTransactionId;
+	private SecurPharmProductId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
 
-	String serverTransactionId;
+	public static SecurPharmProductId ofRepoId(final int repoId)
+	{
+		return new SecurPharmProductId(repoId);
+	}
 
-	@NonNull
-	Instant requestTime;
-
-	@NonNull
-	Instant responseTime;
-
-	boolean error;
+	public static int toRepoId(final SecurPharmProductId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
 }

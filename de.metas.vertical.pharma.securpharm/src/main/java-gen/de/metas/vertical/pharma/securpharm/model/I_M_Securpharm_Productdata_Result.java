@@ -9,7 +9,7 @@ public interface I_M_Securpharm_Productdata_Result
 {
 
     /** TableName=M_Securpharm_Productdata_Result */
-	String Table_Name = "M_Securpharm_Productdata_Result";
+    public static final String Table_Name = "M_Securpharm_Productdata_Result";
 
     /** AD_Table_ID=541349 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -21,94 +21,29 @@ public interface I_M_Securpharm_Productdata_Result
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
-    /** Column definition for AD_Client_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client>(I_M_Securpharm_Productdata_Result.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-    /** Column definition for AD_Org_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org>(I_M_Securpharm_Productdata_Result.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-    /** Column definition for Created */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "Created", null);
-    /** Column name Created */
-	String COLUMNNAME_Created = "Created";
-    /** Column definition for CreatedBy */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User>(I_M_Securpharm_Productdata_Result.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-    /** Column definition for ExpirationDate */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ExpirationDate = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ExpirationDate", null);
-    /** Column name ExpirationDate */
-	String COLUMNNAME_ExpirationDate = "ExpirationDate";
-    /** Column definition for hasActiveStatus */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_hasActiveStatus = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "hasActiveStatus", null);
-    /** Column name hasActiveStatus */
-	String COLUMNNAME_hasActiveStatus = "hasActiveStatus";
-    /** Column definition for InactiveReason */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_InactiveReason = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "InactiveReason", null);
-    /** Column name InactiveReason */
-	String COLUMNNAME_InactiveReason = "InactiveReason";
-    /** Column definition for IsActive */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsActive", null);
-    /** Column name IsActive */
-	String COLUMNNAME_IsActive = "IsActive";
-    /** Column definition for IsError */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsError = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsError", null);
-    /** Column name IsError */
-	String COLUMNNAME_IsError = "IsError";
-    /** Column definition for LotNumber */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_LotNumber = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "LotNumber", null);
-    /** Column name LotNumber */
-	String COLUMNNAME_LotNumber = "LotNumber";
-    /** Column definition for M_HU_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "M_HU_ID", null);
-    /** Column name M_HU_ID */
-	String COLUMNNAME_M_HU_ID = "M_HU_ID";
-    /** Column definition for M_Securpharm_Productdata_Result_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_M_Securpharm_Productdata_Result_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "M_Securpharm_Productdata_Result_ID", null);
-    /** Column name M_Securpharm_Productdata_Result_ID */
-	String COLUMNNAME_M_Securpharm_Productdata_Result_ID = "M_Securpharm_Productdata_Result_ID";
-    /** Column definition for ProductCode */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ProductCode = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ProductCode", null);
-    /** Column name ProductCode */
-	String COLUMNNAME_ProductCode = "ProductCode";
-    /** Column definition for ProductCodeType */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ProductCodeType = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ProductCodeType", null);
-    /** Column name ProductCodeType */
-	String COLUMNNAME_ProductCodeType = "ProductCodeType";
-    /** Column definition for RequestEndTime */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_RequestEndTime = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "RequestEndTime", null);
-    /** Column name RequestEndTime */
-	String COLUMNNAME_RequestEndTime = "RequestEndTime";
-    /** Column definition for RequestStartTime */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_RequestStartTime = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "RequestStartTime", null);
-    /** Column name RequestStartTime */
-	String COLUMNNAME_RequestStartTime = "RequestStartTime";
-    /** Column definition for RequestUrl */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_RequestUrl = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "RequestUrl", null);
-    /** Column name RequestUrl */
-	String COLUMNNAME_RequestUrl = "RequestUrl";
-    /** Column definition for SerialNumber */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_SerialNumber = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "SerialNumber", null);
-    /** Column name SerialNumber */
-	String COLUMNNAME_SerialNumber = "SerialNumber";
-    /** Column definition for TransactionIDClient */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_TransactionIDClient = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "TransactionIDClient", null);
-    /** Column name TransactionIDClient */
-	String COLUMNNAME_TransactionIDClient = "TransactionIDClient";
-    /** Column definition for TransactionIDServer */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_TransactionIDServer = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "TransactionIDServer", null);
-    /** Column name TransactionIDServer */
-	String COLUMNNAME_TransactionIDServer = "TransactionIDServer";
-    /** Column definition for Updated */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "Updated", null);
-    /** Column name Updated */
-	String COLUMNNAME_Updated = "Updated";
-    /** Column definition for UpdatedBy */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User>(I_M_Securpharm_Productdata_Result.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Aktiv Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setActiveStatus (java.lang.String ActiveStatus);
+
+	/**
+	 * Get Aktiv Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getActiveStatus();
+
+    /** Column definition for ActiveStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ActiveStatus = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ActiveStatus", null);
+    /** Column name ActiveStatus */
+    public static final String COLUMNNAME_ActiveStatus = "ActiveStatus";
 
 	/**
 	 * Get Mandant.
@@ -118,19 +53,14 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	org.compiere.model.I_AD_Client getAD_Client();
+	public org.compiere.model.I_AD_Client getAD_Client();
 
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client>(I_M_Securpharm_Productdata_Result.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -140,11 +70,26 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	org.compiere.model.I_AD_Org getAD_Org();
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
 
-	void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org>(I_M_Securpharm_Productdata_Result.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Get Erstellt.
@@ -154,7 +99,12 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -164,16 +114,35 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User>(I_M_Securpharm_Productdata_Result.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Get Mindesthaltbarkeit.
+	 * Set Decommissioned Server Transaction Id.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getExpirationDate();
+	public void setDecommissionedServerTransactionId (java.lang.String DecommissionedServerTransactionId);
+
+	/**
+	 * Get Decommissioned Server Transaction Id.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDecommissionedServerTransactionId();
+
+    /** Column definition for DecommissionedServerTransactionId */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_DecommissionedServerTransactionId = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "DecommissionedServerTransactionId", null);
+    /** Column name DecommissionedServerTransactionId */
+    public static final String COLUMNNAME_DecommissionedServerTransactionId = "DecommissionedServerTransactionId";
 
 	/**
 	 * Set Mindesthaltbarkeit.
@@ -182,34 +151,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExpirationDate(java.sql.Timestamp ExpirationDate);
+	public void setExpirationDate (java.sql.Timestamp ExpirationDate);
 
 	/**
-	 * Set Aktiv Status.
+	 * Get Mindesthaltbarkeit.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void sethasActiveStatus(boolean hasActiveStatus);
-
-	/**
-	 * Get Aktiv Status.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean ishasActiveStatus();
-
-	/**
-	 * Get Inaktiv Grund.
-	 *
-	 * <br>Type: String
+	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getInactiveReason();
+	public java.sql.Timestamp getExpirationDate();
+
+    /** Column definition for ExpirationDate */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ExpirationDate = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ExpirationDate", null);
+    /** Column name ExpirationDate */
+    public static final String COLUMNNAME_ExpirationDate = "ExpirationDate";
 
 	/**
 	 * Set Inaktiv Grund.
@@ -218,7 +174,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInactiveReason(java.lang.String InactiveReason);
+	public void setInactiveReason (java.lang.String InactiveReason);
+
+	/**
+	 * Get Inaktiv Grund.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInactiveReason();
+
+    /** Column definition for InactiveReason */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_InactiveReason = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "InactiveReason", null);
+    /** Column name InactiveReason */
+    public static final String COLUMNNAME_InactiveReason = "InactiveReason";
 
 	/**
 	 * Set Aktiv.
@@ -228,7 +198,7 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -238,7 +208,35 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
+
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Decommissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsDecommissioned (boolean IsDecommissioned);
+
+	/**
+	 * Get Decommissioned.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isDecommissioned();
+
+    /** Column definition for IsDecommissioned */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsDecommissioned = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsDecommissioned", null);
+    /** Column name IsDecommissioned */
+    public static final String COLUMNNAME_IsDecommissioned = "IsDecommissioned";
 
 	/**
 	 * Set Fehler.
@@ -248,7 +246,7 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsError(boolean IsError);
+	public void setIsError (boolean IsError);
 
 	/**
 	 * Get Fehler.
@@ -258,16 +256,35 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isError();
+	public boolean isError();
+
+    /** Column definition for IsError */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsError = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsError", null);
+    /** Column name IsError */
+    public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
-	 * Get Chargennummer.
+	 * Set Verified Pack.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getLotNumber();
+	public void setIsPackVerified (boolean IsPackVerified);
+
+	/**
+	 * Get Verified Pack.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isPackVerified();
+
+    /** Column definition for IsPackVerified */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_IsPackVerified = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "IsPackVerified", null);
+    /** Column name IsPackVerified */
+    public static final String COLUMNNAME_IsPackVerified = "IsPackVerified";
 
 	/**
 	 * Set Chargennummer.
@@ -276,16 +293,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLotNumber(java.lang.String LotNumber);
+	public void setLotNumber (java.lang.String LotNumber);
 
 	/**
-	 * Get Handling Unit.
+	 * Get Chargennummer.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_HU_ID();
+	public java.lang.String getLotNumber();
+
+    /** Column definition for LotNumber */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_LotNumber = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "LotNumber", null);
+    /** Column name LotNumber */
+    public static final String COLUMNNAME_LotNumber = "LotNumber";
 
 	/**
 	 * Set Handling Unit.
@@ -294,16 +316,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setM_HU_ID(int M_HU_ID);
+	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get SecurPharm product data result.
+	 * Get Handling Unit.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getM_Securpharm_Productdata_Result_ID();
+	public int getM_HU_ID();
+
+    /** Column definition for M_HU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "M_HU_ID", null);
+    /** Column name M_HU_ID */
+    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set SecurPharm product data result.
@@ -312,16 +339,67 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Securpharm_Productdata_Result_ID(int M_Securpharm_Productdata_Result_ID);
+	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID);
 
 	/**
-	 * Get Produktcode.
+	 * Get SecurPharm product data result.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Securpharm_Productdata_Result_ID();
+
+    /** Column definition for M_Securpharm_Productdata_Result_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_M_Securpharm_Productdata_Result_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "M_Securpharm_Productdata_Result_ID", null);
+    /** Column name M_Securpharm_Productdata_Result_ID */
+    public static final String COLUMNNAME_M_Securpharm_Productdata_Result_ID = "M_Securpharm_Productdata_Result_ID";
+
+	/**
+	 * Set Verification Code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getProductCode();
+	public void setPackVerificationCode (java.lang.String PackVerificationCode);
+
+	/**
+	 * Get Verification Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPackVerificationCode();
+
+    /** Column definition for PackVerificationCode */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_PackVerificationCode = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "PackVerificationCode", null);
+    /** Column name PackVerificationCode */
+    public static final String COLUMNNAME_PackVerificationCode = "PackVerificationCode";
+
+	/**
+	 * Set Verification Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPackVerificationMessage (java.lang.String PackVerificationMessage);
+
+	/**
+	 * Get Verification Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPackVerificationMessage();
+
+    /** Column definition for PackVerificationMessage */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_PackVerificationMessage = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "PackVerificationMessage", null);
+    /** Column name PackVerificationMessage */
+    public static final String COLUMNNAME_PackVerificationMessage = "PackVerificationMessage";
 
 	/**
 	 * Set Produktcode.
@@ -330,17 +408,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductCode(java.lang.String ProductCode);
+	public void setProductCode (java.lang.String ProductCode);
 
 	/**
-	 * Get Kodierungskennzeichen.
-	 * Kodierungskennzeichen
+	 * Get Produktcode.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getProductCodeType();
+	public java.lang.String getProductCode();
+
+    /** Column definition for ProductCode */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ProductCode = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ProductCode", null);
+    /** Column name ProductCode */
+    public static final String COLUMNNAME_ProductCode = "ProductCode";
 
 	/**
 	 * Set Kodierungskennzeichen.
@@ -350,70 +432,22 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setProductCodeType(java.lang.String ProductCodeType);
+	public void setProductCodeType (java.lang.String ProductCodeType);
 
 	/**
-	 * Get Anfrage Ende.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getRequestEndTime();
-
-	/**
-	 * Set Anfrage Ende.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setRequestEndTime(java.sql.Timestamp RequestEndTime);
-
-	/**
-	 * Get Anfrage Start .
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getRequestStartTime();
-
-	/**
-	 * Set Anfrage Start .
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setRequestStartTime(java.sql.Timestamp RequestStartTime);
-
-	/**
-	 * Get Abfrage.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getRequestUrl();
-
-	/**
-	 * Set Abfrage.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setRequestUrl(java.lang.String RequestUrl);
-
-	/**
-	 * Get Seriennummer.
+	 * Get Kodierungskennzeichen.
+	 * Kodierungskennzeichen
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getSerialNumber();
+	public java.lang.String getProductCodeType();
+
+    /** Column definition for ProductCodeType */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_ProductCodeType = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "ProductCodeType", null);
+    /** Column name ProductCodeType */
+    public static final String COLUMNNAME_ProductCodeType = "ProductCodeType";
 
 	/**
 	 * Set Seriennummer.
@@ -422,43 +456,21 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSerialNumber(java.lang.String SerialNumber);
+	public void setSerialNumber (java.lang.String SerialNumber);
 
 	/**
-	 * Get TransaktionsID Client.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getTransactionIDClient();
-
-	/**
-	 * Set TransaktionsID Client.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setTransactionIDClient(java.lang.String TransactionIDClient);
-
-	/**
-	 * Get TransaktionsID Server.
+	 * Get Seriennummer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getTransactionIDServer();
+	public java.lang.String getSerialNumber();
 
-	/**
-	 * Set TransaktionsID Server.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setTransactionIDServer(java.lang.String TransactionIDServer);
+    /** Column definition for SerialNumber */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_SerialNumber = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "SerialNumber", null);
+    /** Column name SerialNumber */
+    public static final String COLUMNNAME_SerialNumber = "SerialNumber";
 
 	/**
 	 * Get Aktualisiert.
@@ -468,7 +480,12 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
+
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -478,5 +495,10 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
+
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_User>(I_M_Securpharm_Productdata_Result.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

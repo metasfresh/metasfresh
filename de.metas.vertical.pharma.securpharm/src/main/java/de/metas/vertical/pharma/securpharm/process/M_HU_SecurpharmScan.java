@@ -46,8 +46,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.ProductData;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.ProductDetails;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -122,11 +122,10 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
 		
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
-		final SecurPharmProductDataResult result = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
-		
-		if (!result.isError() && result.getProductData() != null)
+		final SecurPharmProduct product = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
+		if (!product.isError() && product.getProductDetails() != null)
 		{
-			final ProductData productData = result.getProductData();
+			final ProductDetails productData = product.getProductDetails();
 			if (productData.isActive())
 			{
 				// TODO check if it fits current data and split otherwise

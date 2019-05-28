@@ -28,8 +28,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
 
 public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 {
@@ -53,9 +53,9 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 			return ProcessPreconditionsResolution.reject();
 		}
 
-		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(context.getSingleSelectedRecordId());
-		final SecurPharmProductDataResult productData = securPharmService.getProductDataResultById(productDataResultId);
-		if (!productData.isError() && productData.getHuId() == null)
+		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(context.getSingleSelectedRecordId());
+		final SecurPharmProduct product = securPharmService.getProductById(productDataResultId);
+		if (!product.isError())
 		{
 			ProcessPreconditionsResolution.reject();
 		}
@@ -66,9 +66,9 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 	@Override
 	protected I_M_HU getHandlingUnit()
 	{
-		final SecurPharmProductDataResultId productDataResultId = SecurPharmProductDataResultId.ofRepoId(getRecord_ID());
-		final SecurPharmProductDataResult productData = securPharmService.getProductDataResultById(productDataResultId);
+		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(getRecord_ID());
+		final SecurPharmProduct product = securPharmService.getProductById(productDataResultId);
 
-		return handlingUnitsBL.getById(productData.getHuId());
+		return handlingUnitsBL.getById(product.getHuId());
 	}
 }

@@ -2,9 +2,11 @@ package de.metas.vertical.pharma.securpharm.model;
 
 import javax.annotation.Nullable;
 
+import de.metas.inventory.InventoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -30,19 +32,22 @@ import lombok.Value;
 
 @Value
 @Builder
-public class VerifyProductResponse
+public class DecommissionResponse
 {
-	String resultCode;
-	String resultMessage;
-
-	@Nullable
-	ProductDetails productDetails;
+	//
+	// Actual response
+	boolean error;
 
 	@NonNull
-	final SecurPharmLog log;
+	String serverTransactionId;
 
-	public boolean isError()
-	{
-		return getLog().isError();
-	}
+	//
+	// From Request
+	@Nullable
+	@NonFinal
+	InventoryId inventoryId;
+
+	@Nullable
+	@NonFinal
+	SecurPharmProductId productDataResultId;
 }

@@ -3,11 +3,11 @@ package de.metas.vertical.pharma.securpharm.service;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Ignore;
 
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
 
@@ -52,8 +52,8 @@ public class SecurPharmServiceManualTest
 		System.out.println("Sending code: " + datamatrix);
 
 		final HuId huId = HuId.ofRepoId(1);
-		final SecurPharmProductDataResult result = service.getAndSaveProductData(datamatrix, huId);
-		System.out.println("result: " + result);
+		final SecurPharmProduct product = service.getAndSaveProductData(datamatrix, huId);
+		System.out.println("product: " + product);
 	}
 
 	private static SecurPharmService createSecurPharmService()
@@ -62,8 +62,8 @@ public class SecurPharmServiceManualTest
 		final SecurPharmClientFactory clientFactory = new SecurPharmClientFactory(configRespository);
 
 		final SecurPharmResultRepository resultRepository = new SecurPharmResultRepository();
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		final SecurPharmResultService resultService = new SecurPharmResultService(resultRepository, attachmentEntryService);
+		final InventoryLineRepository inventoryRepo = new InventoryLineRepository();
+		final SecurPharmResultService resultService = new SecurPharmResultService(resultRepository, inventoryRepo);
 
 		return new SecurPharmService(clientFactory, resultService, configRespository);
 	}

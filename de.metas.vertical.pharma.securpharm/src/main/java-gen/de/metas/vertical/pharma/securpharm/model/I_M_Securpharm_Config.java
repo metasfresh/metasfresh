@@ -9,7 +9,7 @@ public interface I_M_Securpharm_Config
 {
 
     /** TableName=M_Securpharm_Config */
-	String Table_Name = "M_Securpharm_Config";
+    public static final String Table_Name = "M_Securpharm_Config";
 
     /** AD_Table_ID=541348 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
@@ -21,62 +21,6 @@ public interface I_M_Securpharm_Config
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
-    /** Column definition for AD_Client_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client>(I_M_Securpharm_Config.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
-    /** Column definition for AD_Org_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org>(I_M_Securpharm_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
-    /** Column definition for ApplicationUUID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_ApplicationUUID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "ApplicationUUID", null);
-    /** Column name ApplicationUUID */
-	String COLUMNNAME_ApplicationUUID = "ApplicationUUID";
-    /** Column definition for AuthPharmaRestApiBaseURL */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_AuthPharmaRestApiBaseURL = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "AuthPharmaRestApiBaseURL", null);
-    /** Column name AuthPharmaRestApiBaseURL */
-	String COLUMNNAME_AuthPharmaRestApiBaseURL = "AuthPharmaRestApiBaseURL";
-    /** Column definition for CertificatePath */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_CertificatePath = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "CertificatePath", null);
-    /** Column name CertificatePath */
-	String COLUMNNAME_CertificatePath = "CertificatePath";
-    /** Column definition for Created */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "Created", null);
-    /** Column name Created */
-	String COLUMNNAME_Created = "Created";
-    /** Column definition for CreatedBy */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-    /** Column definition for IsActive */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "IsActive", null);
-    /** Column name IsActive */
-	String COLUMNNAME_IsActive = "IsActive";
-    /** Column definition for M_Securpharm_Config_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_M_Securpharm_Config_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "M_Securpharm_Config_ID", null);
-    /** Column name M_Securpharm_Config_ID */
-	String COLUMNNAME_M_Securpharm_Config_ID = "M_Securpharm_Config_ID";
-    /** Column definition for PharmaRestApiBaseURL */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_PharmaRestApiBaseURL = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "PharmaRestApiBaseURL", null);
-    /** Column name PharmaRestApiBaseURL */
-	String COLUMNNAME_PharmaRestApiBaseURL = "PharmaRestApiBaseURL";
-    /** Column definition for Support_User_ID */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_Support_User_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "Support_User_ID", org.compiere.model.I_AD_User.class);
-    /** Column name Support_User_ID */
-	String COLUMNNAME_Support_User_ID = "Support_User_ID";
-    /** Column definition for TanPassword */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_TanPassword = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "TanPassword", null);
-    /** Column name TanPassword */
-	String COLUMNNAME_TanPassword = "TanPassword";
-    /** Column definition for Updated */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "Updated", null);
-    /** Column name Updated */
-	String COLUMNNAME_Updated = "Updated";
-    /** Column definition for UpdatedBy */
-	org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Get Mandant.
@@ -86,19 +30,14 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getAD_Client_ID();
+	public int getAD_Client_ID();
 
-	org.compiere.model.I_AD_Client getAD_Client();
+	public org.compiere.model.I_AD_Client getAD_Client();
 
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client>(I_M_Securpharm_Config.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+    /** Column name AD_Client_ID */
+    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Sektion.
@@ -108,20 +47,26 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAD_Org_ID(int AD_Org_ID);
-
-	org.compiere.model.I_AD_Org getAD_Org();
-
-	void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Application UUID.
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getApplicationUUID();
+	public int getAD_Org_ID();
+
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org>(I_M_Securpharm_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Application UUID.
@@ -130,16 +75,21 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setApplicationUUID(java.lang.String ApplicationUUID);
+	public void setApplicationUUID (java.lang.String ApplicationUUID);
 
 	/**
-	 * Get Pharma Auth REST API URL.
+	 * Get Application UUID.
 	 *
-	 * <br>Type: URL
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAuthPharmaRestApiBaseURL();
+	public java.lang.String getApplicationUUID();
+
+    /** Column definition for ApplicationUUID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_ApplicationUUID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "ApplicationUUID", null);
+    /** Column name ApplicationUUID */
+    public static final String COLUMNNAME_ApplicationUUID = "ApplicationUUID";
 
 	/**
 	 * Set Pharma Auth REST API URL.
@@ -148,16 +98,21 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAuthPharmaRestApiBaseURL(java.lang.String AuthPharmaRestApiBaseURL);
+	public void setAuthPharmaRestApiBaseURL (java.lang.String AuthPharmaRestApiBaseURL);
 
 	/**
-	 * Get Zertifikatpfad.
+	 * Get Pharma Auth REST API URL.
 	 *
-	 * <br>Type: String
+	 * <br>Type: URL
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCertificatePath();
+	public java.lang.String getAuthPharmaRestApiBaseURL();
+
+    /** Column definition for AuthPharmaRestApiBaseURL */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_AuthPharmaRestApiBaseURL = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "AuthPharmaRestApiBaseURL", null);
+    /** Column name AuthPharmaRestApiBaseURL */
+    public static final String COLUMNNAME_AuthPharmaRestApiBaseURL = "AuthPharmaRestApiBaseURL";
 
 	/**
 	 * Set Zertifikatpfad.
@@ -166,7 +121,21 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCertificatePath(java.lang.String CertificatePath);
+	public void setCertificatePath (java.lang.String CertificatePath);
+
+	/**
+	 * Get Zertifikatpfad.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCertificatePath();
+
+    /** Column definition for CertificatePath */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_CertificatePath = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "CertificatePath", null);
+    /** Column name CertificatePath */
+    public static final String COLUMNNAME_CertificatePath = "CertificatePath";
 
 	/**
 	 * Get Erstellt.
@@ -176,7 +145,12 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	public java.sql.Timestamp getCreated();
+
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "Created", null);
+    /** Column name Created */
+    public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -186,7 +160,12 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getCreatedBy();
+	public int getCreatedBy();
+
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name CreatedBy */
+    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Aktiv.
@@ -196,7 +175,7 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Aktiv.
@@ -206,16 +185,12 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isActive();
+	public boolean isActive();
 
-	/**
-	 * Get SecurPharm Configuration.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getM_Securpharm_Config_ID();
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "IsActive", null);
+    /** Column name IsActive */
+    public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set SecurPharm Configuration.
@@ -224,16 +199,21 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Securpharm_Config_ID(int M_Securpharm_Config_ID);
+	public void setM_Securpharm_Config_ID (int M_Securpharm_Config_ID);
 
 	/**
-	 * Get Pharma REST API URL.
+	 * Get SecurPharm Configuration.
 	 *
-	 * <br>Type: URL
+	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPharmaRestApiBaseURL();
+	public int getM_Securpharm_Config_ID();
+
+    /** Column definition for M_Securpharm_Config_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_M_Securpharm_Config_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "M_Securpharm_Config_ID", null);
+    /** Column name M_Securpharm_Config_ID */
+    public static final String COLUMNNAME_M_Securpharm_Config_ID = "M_Securpharm_Config_ID";
 
 	/**
 	 * Set Pharma REST API URL.
@@ -242,17 +222,21 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPharmaRestApiBaseURL(java.lang.String PharmaRestApiBaseURL);
+	public void setPharmaRestApiBaseURL (java.lang.String PharmaRestApiBaseURL);
 
 	/**
-	 * Get Support Benutzer.
-	 * Benutzer für Benachrichtigungen
+	 * Get Pharma REST API URL.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: URL
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getSupport_User_ID();
+	public java.lang.String getPharmaRestApiBaseURL();
+
+    /** Column definition for PharmaRestApiBaseURL */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_PharmaRestApiBaseURL = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "PharmaRestApiBaseURL", null);
+    /** Column name PharmaRestApiBaseURL */
+    public static final String COLUMNNAME_PharmaRestApiBaseURL = "PharmaRestApiBaseURL";
 
 	/**
 	 * Set Support Benutzer.
@@ -262,21 +246,26 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setSupport_User_ID(int Support_User_ID);
-
-	org.compiere.model.I_AD_User getSupport_User();
-
-	void setSupport_User(org.compiere.model.I_AD_User Support_User);
+	public void setSupport_User_ID (int Support_User_ID);
 
 	/**
-	 * Get TAN Passwort.
-	 * TAN Passwort benutzt für Authentifizierung
+	 * Get Support Benutzer.
+	 * Benutzer für Benachrichtigungen
 	 *
-	 * <br>Type: String
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getTanPassword();
+	public int getSupport_User_ID();
+
+	public org.compiere.model.I_AD_User getSupport_User();
+
+	public void setSupport_User(org.compiere.model.I_AD_User Support_User);
+
+    /** Column definition for Support_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_Support_User_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "Support_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name Support_User_ID */
+    public static final String COLUMNNAME_Support_User_ID = "Support_User_ID";
 
 	/**
 	 * Set TAN Passwort.
@@ -286,7 +275,22 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTanPassword(java.lang.String TanPassword);
+	public void setTanPassword (java.lang.String TanPassword);
+
+	/**
+	 * Get TAN Passwort.
+	 * TAN Passwort benutzt für Authentifizierung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTanPassword();
+
+    /** Column definition for TanPassword */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_TanPassword = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "TanPassword", null);
+    /** Column name TanPassword */
+    public static final String COLUMNNAME_TanPassword = "TanPassword";
 
 	/**
 	 * Get Aktualisiert.
@@ -296,7 +300,12 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	public java.sql.Timestamp getUpdated();
+
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, Object>(I_M_Securpharm_Config.class, "Updated", null);
+    /** Column name Updated */
+    public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -306,5 +315,10 @@ public interface I_M_Securpharm_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getUpdatedBy();
+	public int getUpdatedBy();
+
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+    /** Column name UpdatedBy */
+    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

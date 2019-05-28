@@ -23,17 +23,22 @@
 
 package de.metas.vertical.pharma.securpharm.service;
 
-import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Set;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResultId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmRequestLogData;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.inventory.InventoryId;
+import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
 import lombok.NonNull;
 
@@ -41,44 +46,58 @@ import lombok.NonNull;
 public class SecurPharmResultService
 {
 	private final SecurPharmResultRepository resultRepository;
-	private final AttachmentEntryService attachmentEntryService;
+	private final InventoryLineRepository inventoryRepo;
 
 	public SecurPharmResultService(
 			@NonNull final SecurPharmResultRepository resultRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final InventoryLineRepository inventoryRepo)
 	{
 		this.resultRepository = resultRepository;
-		this.attachmentEntryService = attachmentEntryService;
+		this.inventoryRepo = inventoryRepo;
 	}
 
-	public void saveNew(@NonNull final SecurPharmProductDataResult result)
+	public void save(@NonNull final SecurPharmProduct product)
 	{
-		resultRepository.saveNew(result);
-		addResultAttachment(result.getRecordRef(), result.getRequestLogData());
+		save(product, ImmutableList.of());
 	}
 
-	public void saveNew(@NonNull final SecurPharmActionResult result)
+	public void save(@NonNull final SecurPharmProduct product, final Collection<SecurPharmLog> logs)
 	{
-		resultRepository.saveNew(result);
-		addResultAttachment(result.getRecordRef(), result.getRequestLogData());
+		resultRepository.save(product, logs);
 	}
 
-	private void addResultAttachment(
-			@NonNull final TableRecordReference recordRef,
-			@NonNull final SecurPharmRequestLogData logData)
+	public void save(@NonNull final DecommissionResponse response, final Collection<SecurPharmLog> logs)
 	{
-		if (logData.getResponseData() != null)
+		resultRepository.save(response, logs);
+	}
+
+	public void save(@NonNull final UndoDecommissionResponse response, final Collection<SecurPharmLog> logs)
+	{
+		resultRepository.save(response, logs);
+	}
+
+	public SecurPharmProduct getProductById(@NonNull final SecurPharmProductId id)
+	{
+		return resultRepository.getProductById(id);
+	}
+
+	public Collection<SecurPharmProduct> getProductsByInventoryId(@NonNull final InventoryId inventoryId)
+	{
+		final Set<HuId> huIds = getHUIdsByInventoryId(inventoryId);
+		if (huIds.isEmpty())
 		{
-			final AttachmentEntryCreateRequest responseDataAttachment = AttachmentEntryCreateRequest.fromByteArray(
-					MessageFormat.format("Response_{0}", logData.getClientTransactionId()),
-					logData.getResponseData().getBytes());
-			attachmentEntryService.createNewAttachment(recordRef, responseDataAttachment);
+			return ImmutableList.of();
 		}
+
+		return resultRepository.getProductDataResultByHuIds(huIds);
 	}
 
-	SecurPharmProductDataResult getProductDataResultById(@NonNull final SecurPharmProductDataResultId productDataResultId)
+	private Set<HuId> getHUIdsByInventoryId(final InventoryId inventoryId)
 	{
-		return resultRepository.getProductDataResultById(productDataResultId);
+		return inventoryRepo.getByInventoryId(inventoryId)
+				.stream()
+				.flatMap(inventoryLine -> inventoryLine.getHUIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 }
