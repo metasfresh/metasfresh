@@ -1,23 +1,23 @@
 /*
  *
- *  * #%L
- *  * %%
- *  * Copyright (C) <current year> metas GmbH
- *  * %%
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as
- *  * published by the Free Software Foundation, either version 2 of the
- *  * License, or (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public
- *  * License along with this program. If not, see
- *  * <http://www.gnu.org/licenses/gpl-2.0.html>.
- *  * #L%
+ * * #%L
+ * * %%
+ * * Copyright (C) <current year> metas GmbH
+ * * %%
+ * * This program is free software: you can redistribute it and/or modify
+ * * it under the terms of the GNU General Public License as
+ * * published by the Free Software Foundation, either version 2 of the
+ * * License, or (at your option) any later version.
+ * *
+ * * This program is distributed in the hope that it will be useful,
+ * * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * * GNU General Public License for more details.
+ * *
+ * * You should have received a copy of the GNU General Public
+ * * License along with this program. If not, see
+ * * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * * #L%
  *
  */
 
@@ -50,7 +50,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.stepcom-xml.filename";
 
-	public static final String EP_EDI_XML_DESADV_AGGREGATE = "direct:edi.xml.desadv.consumer";
+	public static final String EP_EDI_STEPCOM_XML_DESADV_CONSUMER = "direct:edi.xml.desadv.consumer";
 
 	public static final String EDI_XML_DESADV_IS_TEST = "edi.xml.props.desadv.isTest";
 
@@ -92,8 +92,9 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 		final String supplierGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_GLN);
 		final String supplierAdditionalId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_XML_SUPPLIER_ADDITIONAL_ID);
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLDesadvRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
-		from(StepComXMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
+		from(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID_AGGREGATE)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
@@ -116,24 +117,25 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
-				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> XML Java Object...")
+				.log(LoggingLevel.INFO, "EDI: Converting metasfresh-XML Java Object -> stepCOM-XML Java Object...")
 				.bean(StepComXMLDesadvBean.class, StepComXMLDesadvBean.METHOD_createXMLEDIData)
-				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML EDI Format...")
+				.log(LoggingLevel.INFO, "EDI: Marshalling stepCOM-XML Java Object -> XML...")
 				.marshal(dataFormat)
 
 				.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
-				.log(LoggingLevel.INFO, "EDI: Sending the XML EDI file to the FILE component...")
+				.log(LoggingLevel.INFO, "EDI: Sending the stepCOM-XML to the FILE component...")
 				.to(StepComXMLDesadvRoute.EP_EDI_FILE_DESADV_XML)
 
-				.log(LoggingLevel.INFO, "EDI: Creating ADempiere feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, StepComXMLDesadvRoute.EDIDesadvFeedback_QNAME, StepComXMLDesadvRoute.METHOD_setEDIDesadvID))
 
-				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
+				.log(LoggingLevel.INFO, "EDI: Marshalling metasfresh feedback XML Java Object -> XML...")
 				.marshal(jaxb)
 
 				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }

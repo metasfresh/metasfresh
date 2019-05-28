@@ -51,7 +51,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
 	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
-	public static final String EP_EDI_DESADV_AGGREGATE_CONSUMER = "direct:edi.desadv.consumer.aggregate";
+	public static final String EP_EDI_COMPUDATA_DESADV_CONSUMER = "direct:edi.desadv.consumer.aggregate";
 
 	/**
 	 * Common file routing for both single and aggregated DESADV documents
@@ -82,7 +82,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
 
-		from(CompuDataDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
+		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 				.routeId(ROUTE_ID_AGGREGATE)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")

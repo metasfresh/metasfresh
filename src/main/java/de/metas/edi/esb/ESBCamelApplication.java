@@ -25,6 +25,8 @@ package de.metas.edi.esb;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.ctc.wstx.stax.WstxInputFactory;
+
 @SpringBootApplication
 public class ESBCamelApplication
 {
@@ -34,6 +36,9 @@ public class ESBCamelApplication
 	 */
 	public static void main(String[] args)
 	{
+		// get http://camel.465427.n5.nabble.com/Seeing-Info-message-all-over-log-file-related-to-Woodstox-td5749044.html
+		System.setProperty("javax.xml.stream.XMLInputFactory", WstxInputFactory.class.getName());
+
 		SpringApplication.run(ESBCamelApplication.class, args);
 	}
 

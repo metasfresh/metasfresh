@@ -49,7 +49,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 
 	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.compudata.filename";
 
-	public static final String EP_EDI_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
+	public static final String EP_EDI_COMPUDATA_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
 
 	public static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 	public static final String EDI_INVOICE_IS_TEST = "edi.props.invoice.isTest";
@@ -76,7 +76,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_SENDER_GLN);
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), CompuDataInvoicRoute.EDI_INVOICE_IS_TEST);
 
-		from(CompuDataInvoicRoute.EP_EDI_INVOICE_CONSUMER)
+		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")

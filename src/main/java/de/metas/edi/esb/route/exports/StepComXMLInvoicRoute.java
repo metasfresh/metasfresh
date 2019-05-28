@@ -48,9 +48,9 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	private static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
 
-	private static final String EDI_INVOICE_XML_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
+	private static final String EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
 
-	public static final String EP_EDI_INVOICE_XML_CONSUMER = "direct:edi.invoice.xml.consumer";
+	public static final String EP_EDI_STEPCOM_XML_INVOICE_CONSUMER = "direct:edi.invoice.stepcom-xml.consumer";
 
 	public static final String EDI_XML_PARTNER_ID = "edi.props.stepcom.partner.id";
 	public static final String EDI_XML_OWNER_ID = "edi.props.stepcom.owner.id";
@@ -79,7 +79,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_INVOICE_XML_FILENAME_PATTERN);
+		final String invoiceXMLFilenamePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_STEPCOM_XML_INVOICE_FILENAME_PATTERN);
 
 		final String senderGln = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_INVOICE_SENDER_GLN);
 		final String isTest = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_INVOICE_IS_TEST);
@@ -87,8 +87,9 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 		final String ownerId = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_OWNER_ID);
 		final String applicationRef = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_XML_APPLICATION_REF);
 		final String defaultEDIMessageDatePattern = Util.resolvePropertyPlaceholders(getContext(), StepComXMLInvoicRoute.EDI_ORDER_EDIMessageDatePattern);
+		final String feedbackMessageRoutingKey = Util.resolvePropertyPlaceholders(getContext(), Constants.EP_AMQP_TO_AD_DURABLE_ROUTING_KEY);
 
-		from(StepComXMLInvoicRoute.EP_EDI_INVOICE_XML_CONSUMER)
+		from(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
@@ -129,6 +130,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 				.log(LoggingLevel.INFO, "EDI: Sending success response to ADempiere...")
+				.setHeader("rabbitmq.ROUTING_KEY").simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.to(Constants.EP_AMQP_TO_AD);
 	}
 }

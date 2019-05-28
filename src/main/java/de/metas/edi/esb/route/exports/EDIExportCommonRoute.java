@@ -38,16 +38,15 @@ import de.metas.edi.esb.route.AbstractEDIRoute;
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
 {
+	public static final String EDI_INVOICE_IS_STEPCOM_XML = "edi.props.invoice.isStepComXML";
 
-	public static final String EDI_INVOICE_IS_XML = "edi.props.invoice.isXML";
-
-	public static final String EDI_DESADV_IS_XML = "edi.props.desadv.isXML";
+	public static final String EDI_DESADV_IS_STEPCOM_XML = "edi.props.desadv.isStepComXML";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String isXMLInvoice = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_XML);
-		final String isXMLDesadv = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_XML);
+		final String isXMLInvoice = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_INVOICE_IS_STEPCOM_XML);
+		final String isXMLDesadv = Util.resolvePropertyPlaceholders(getContext(), EDIExportCommonRoute.EDI_DESADV_IS_STEPCOM_XML);
 		from(Constants.EP_AMQP_FROM_AD)
 				.routeId("XML-To-EDI-Common")
 
@@ -67,16 +66,16 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.choice()
 							.when(isXML -> Boolean.valueOf(isXMLInvoice))
-								.to(StepComXMLInvoicRoute.EP_EDI_INVOICE_XML_CONSUMER)
+								.to(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 							.otherwise()
-								.to(CompuDataInvoicRoute.EP_EDI_INVOICE_CONSUMER)
+								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
 						.endChoice()
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						.choice()
 							.when(isXML -> Boolean.valueOf(isXMLDesadv))
-								.to(StepComXMLDesadvRoute.EP_EDI_XML_DESADV_AGGREGATE)
+								.to(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 							.otherwise()
-								.to(CompuDataDesadvRoute.EP_EDI_DESADV_AGGREGATE_CONSUMER)
+								.to(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 						.endChoice()
 				.end();
 				// @formatter:on

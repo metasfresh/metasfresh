@@ -13,15 +13,14 @@ package de.metas.edi.esb.commons;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.impl.LookupTemplate;
@@ -38,8 +37,9 @@ public final class Constants
 	/**
 	 * @see http://fusesource.com/docs/router/2.8/component_ref/_IDU_ActiveMQ.html
 	 */
-	public static final String EP_AMQP_FROM_AD = "{{ep.amqp.from.ad}}";
-	public static final String EP_AMQP_TO_AD = "{{ep.amqp.to.ad}}";
+	public static final String EP_AMQP_FROM_AD = "{{ep.rabbitmq.from.ad}}";
+	public static final String EP_AMQP_TO_AD = "{{ep.rabbitmq.to.ad}}";
+	public static final String EP_AMQP_TO_AD_DURABLE_ROUTING_KEY = "{{rabbitmq.out.exchange.durable}}";
 
 	public static final String JAXB_ContextPath = ObjectFactory.class.getPackage().getName();
 	public static final ObjectFactory JAXB_ObjectFactory = new ObjectFactory();
@@ -68,8 +68,7 @@ public final class Constants
 	public static final ILookupTemplate<String> LOOKUP_TEMPLATE_UPC = new LookupTemplate<String>(String.class, Constants.METHOD_SET_UPC);
 	public static final ILookupTemplate<String> LOOKUP_TEMPLATE_ISOCode = new LookupTemplate<String>(String.class, Constants.METHOD_SET_ISOCode);
 	public static final ILookupTemplate<String> LOOKUP_TEMPLATE_InternalName = new LookupTemplate<String>(String.class, Constants.METHOD_SET_InternalName);
-	public static final ILookupTemplate<EDICBPartnerLookupBPLGLNVType> LOOKUP_TEMPLATE_C_BPartner_ID =
-			new LookupTemplate<EDICBPartnerLookupBPLGLNVType>(EDICBPartnerLookupBPLGLNVType.class, Constants.METHOD_SET_C_BPartner_ID);
+	public static final ILookupTemplate<EDICBPartnerLookupBPLGLNVType> LOOKUP_TEMPLATE_C_BPartner_ID = new LookupTemplate<EDICBPartnerLookupBPLGLNVType>(EDICBPartnerLookupBPLGLNVType.class, Constants.METHOD_SET_C_BPartner_ID);
 
 	public static final String DECIMAL_FORMAT = "EDIDecimalFormat";
 
