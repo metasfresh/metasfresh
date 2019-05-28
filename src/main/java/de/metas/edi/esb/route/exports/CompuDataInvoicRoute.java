@@ -47,7 +47,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "XML-Invoice-To-EDI-Invoic";
 
-	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.filename";
+	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoice.compudata.filename";
 
 	public static final String EP_EDI_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
 
@@ -60,7 +60,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_INVOICE = "{{edi.file.invoice}}";
+	public static final String EP_EDI_FILE_INVOICE = "{{edi.file.invoice.compudata}}";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -95,7 +95,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 						final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
 						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID());
+						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 					}
 				})
 

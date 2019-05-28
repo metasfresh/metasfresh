@@ -48,7 +48,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 {
 	private static final String ROUTE_ID = "XML-Invoice-To-XML-EDI-Invoic";
 
-	private static final String EDI_INVOICE_XML_FILENAME_PATTERN = "edi.file.invoice.xml.filename";
+	private static final String EDI_INVOICE_XML_FILENAME_PATTERN = "edi.file.invoice.stepcom-xml.filename";
 
 	public static final String EP_EDI_INVOICE_XML_CONSUMER = "direct:edi.invoice.xml.consumer";
 
@@ -62,7 +62,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
-	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoice.xml}}";
+	private static final String EP_EDI_XML_FILE_INVOICE = "{{edi.file.invoice.stepcom-xml}}";
 
 	private static final String JAXB_INVOICE_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -107,7 +107,7 @@ public class StepComXMLInvoicRoute extends AbstractEDIRoute
 					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
-					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID());
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI XML Java Object...")

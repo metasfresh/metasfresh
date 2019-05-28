@@ -48,7 +48,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-EDI-DESADV-Aggregate";
 
-	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.filename";
+	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
 	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
 	public static final String EP_EDI_DESADV_AGGREGATE_CONSUMER = "direct:edi.desadv.consumer.aggregate";
@@ -67,7 +67,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_DESADV = "{{edi.file.desadv}}";
+	public static final String EP_EDI_FILE_DESADV = "{{edi.file.desadv.compudata}}";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -104,7 +104,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 						final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 
 						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID());
+						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 					}
 				})
 

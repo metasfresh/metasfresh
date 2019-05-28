@@ -48,7 +48,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 {
 	private static final String ROUTE_ID_AGGREGATE = "XML-InOut-To-XML-EDI-DESADV";
 
-	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.xml.filename";
+	private static final String EDI_DESADV_XML_FILENAME_PATTERN = "edi.file.desadv.stepcom-xml.filename";
 
 	public static final String EP_EDI_XML_DESADV_AGGREGATE = "direct:edi.xml.desadv.consumer";
 
@@ -66,7 +66,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
-	private static final String EP_EDI_FILE_DESADV_XML = "{{edi.file.desadv.xml}}";
+	private static final String EP_EDI_FILE_DESADV_XML = "{{edi.file.desadv.stepcom-xml}}";
 
 	private static final String JAXB_DESADV_CONTEXTPATH = ObjectFactory.class.getPackage().getName();
 
@@ -113,7 +113,7 @@ public class StepComXMLDesadvRoute extends AbstractEDIRoute
 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
-					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID());
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> XML Java Object...")
