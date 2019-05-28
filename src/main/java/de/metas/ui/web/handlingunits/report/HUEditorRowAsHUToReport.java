@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -46,7 +47,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 	private final HUEditorRow row;
 
 	private final HuId huId;
-	private final int partnerId;
+	private final BPartnerId partnerId;
 	private final String huUnitType;
 	private final boolean topLevel;
 
@@ -67,7 +68,7 @@ public final class HUEditorRowAsHUToReport implements HUToReport
 	}
 
 	@Override
-	public int getBPartnerId()
+	public BPartnerId getBPartnerId()
 	{
 		return partnerId;
 	}

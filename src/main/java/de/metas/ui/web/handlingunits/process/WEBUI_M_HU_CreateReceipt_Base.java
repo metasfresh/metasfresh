@@ -109,7 +109,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		}
 		if (securPharmService.hasConfig())
 		{
-			final BPartnerId vendorId = BPartnerId.ofRepoIdOrNull(document.getBPartnerId());
+			final BPartnerId vendorId = document.getBPartnerId();
 			final Product prod = productRepository.getById(document.getProductId());
 			final BPartnerId manufacturerId = prod.getManufacturerId();
 			if ((vendorId != null && manufacturerId != null && vendorId.getRepoId() != manufacturerId.getRepoId())
