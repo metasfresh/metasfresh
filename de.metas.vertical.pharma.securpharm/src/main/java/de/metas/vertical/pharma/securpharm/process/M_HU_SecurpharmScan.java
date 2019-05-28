@@ -120,7 +120,7 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 	private void scanAndUpdate(@NonNull final I_M_HU hu)
 	{
 		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
-		
+
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final SecurPharmProduct product = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
 		if (!product.isError() && product.getProductDetails() != null)
@@ -131,18 +131,18 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 				// TODO check if it fits current data and split otherwise
 				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productData.getExpirationDate());
 				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productData.getLot());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y.name());
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.YES.getCode());
 			}
 			else
 			{
 				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productData.getSerialNumber());
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 				// TODO HU split
 			}
 		}
 		else
 		{
-			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
+			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 		}
 
 		attributeStorage.saveChangesIfNeeded();
