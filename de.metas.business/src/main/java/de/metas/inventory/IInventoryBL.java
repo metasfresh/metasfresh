@@ -5,6 +5,7 @@ import java.util.List;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
@@ -25,7 +26,7 @@ public interface IInventoryBL extends ISingletonService
 
 	void addDescription(I_M_InventoryLine inventoryLine, String descriptionToAdd);
 
-	String getDocStatus(InventoryId inventoryId);
+	DocStatus getDocStatus(InventoryId inventoryId);
 
 	boolean isComplete(I_M_Inventory inventory);
 

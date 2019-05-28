@@ -42,7 +42,7 @@ import org.compiere.util.Env;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
@@ -103,21 +103,19 @@ public class InventoryBL implements IInventoryBL
 			inventoryLine.setDescription(description + " | " + description);
 		}
 	}
-	
+
 	@Override
-	public String getDocStatus(final InventoryId inventoryId)
+	public DocStatus getDocStatus(@NonNull final InventoryId inventoryId)
 	{
 		final I_M_Inventory inventory = Services.get(IInventoryDAO.class).getById(inventoryId);
-		return inventory.getDocStatus();
+		return DocStatus.ofCode(inventory.getDocStatus());
 	}
 
 	@Override
-	public boolean isComplete(final I_M_Inventory inventory)
+	public boolean isComplete(@NonNull final I_M_Inventory inventory)
 	{
-		final String docStatus = inventory.getDocStatus();
-		return IDocument.STATUS_Completed.equals(docStatus)
-				|| IDocument.STATUS_Closed.equals(docStatus)
-				|| IDocument.STATUS_Reversed.equals(docStatus);
+		final DocStatus docStatus = DocStatus.ofCode(inventory.getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}
 
 	@Override

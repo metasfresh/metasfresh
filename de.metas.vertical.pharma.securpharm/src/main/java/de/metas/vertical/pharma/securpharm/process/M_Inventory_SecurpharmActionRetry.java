@@ -30,7 +30,7 @@ import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.inventory.IInventoryBL;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
@@ -167,12 +167,12 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 
 	private Action getActionToRun(@NonNull final InventoryId inventoryId)
 	{
-		final String inventoryDocStatus = Services.get(IInventoryBL.class).getDocStatus(inventoryId);
-		if (IDocument.STATUS_Completed.contentEquals(inventoryDocStatus))
+		final DocStatus inventoryDocStatus = Services.get(IInventoryBL.class).getDocStatus(inventoryId);
+		if (DocStatus.Completed.equals(inventoryDocStatus))
 		{
 			return Action.DECOMMISSION;
 		}
-		else if (IDocument.STATUS_Reversed.contentEquals(inventoryDocStatus))
+		else if (DocStatus.Reversed.equals(inventoryDocStatus))
 		{
 			return Action.UNDO_DECOMMISSION;
 		}
