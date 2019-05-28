@@ -10,18 +10,17 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -35,15 +34,15 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
 
+import lombok.NonNull;
+
 public class CountryAttributeDAO implements ICountryAttributeDAO
 {
 	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
 
 	@Override
-	public I_M_AttributeValue retrieveAttributeValue(final Properties ctx, final I_C_Country country)
+	public I_M_AttributeValue retrieveAttributeValue(final Properties ctx, @NonNull final I_C_Country country, final boolean includeInactive)
 	{
-		Check.assumeNotNull(country, "country not null");
-
 		final String countryValue = country.getCountryCode();
 		if (Check.isEmpty(countryValue, true))
 		{
@@ -58,16 +57,16 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 
 		//
 		// First try: search by CountryCode
-		final I_M_AttributeValue attributeValueByCode = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryValue);
+		final I_M_AttributeValue attributeValueByCode = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryValue, includeInactive);
 		if (attributeValueByCode != null)
 		{
 			return attributeValueByCode;
 		}
-		
+
 		//
 		// Second try: Search by country name
 		final String countryName = country.getName();
-		final I_M_AttributeValue attributeValueByName = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryName);
+		final I_M_AttributeValue attributeValueByName = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(countryAttribute, countryName, includeInactive);
 		if (attributeValueByName != null)
 		{
 			return attributeValueByName;
@@ -89,7 +88,7 @@ public class CountryAttributeDAO implements ICountryAttributeDAO
 			return null;
 		}
 
-	
+
 		return Services.get(IAttributeDAO.class).retrieveAttributeById(ctx, countryAttributeId);
 	}
 

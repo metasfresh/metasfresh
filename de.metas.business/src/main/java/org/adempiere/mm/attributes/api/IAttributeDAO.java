@@ -116,6 +116,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value);
 
+	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
+
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
 	 *

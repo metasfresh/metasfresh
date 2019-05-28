@@ -91,12 +91,18 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/*includeInactive*/);
 		return new ArrayList<>(map.values());
 	}
 
 	@Override
 	public I_M_AttributeValue retrieveAttributeValueOrNull(final I_M_Attribute attribute, final String value)
+	{
+		return retrieveAttributeValueOrNull(attribute, value, false);
+	}
+
+	@Override
+	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value, final boolean includeInactive)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -111,7 +117,7 @@ public class AttributeDAO implements IAttributeDAO
 					.firstOnly(I_M_AttributeValue.class);
 		}
 
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, includeInactive);
 
 		//
 		// search by Value
@@ -216,9 +222,10 @@ public class AttributeDAO implements IAttributeDAO
 	/**
 	 *
 	 * @param attribute
+	 * @param includeInactive
 	 * @return value to {@link I_M_AttributeValue} map
 	 */
-	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute)
+	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute, final boolean includeInactive)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
@@ -237,7 +244,7 @@ public class AttributeDAO implements IAttributeDAO
 			validationRuleQueryFilter = null;
 		}
 
-		return retrieveAttributeValuesMap(ctx, attributeId, validationRuleQueryFilter);
+		return retrieveAttributeValuesMap(ctx, attributeId, includeInactive, validationRuleQueryFilter);
 	}
 
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
@@ -246,7 +253,8 @@ public class AttributeDAO implements IAttributeDAO
 	/* package */Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			final int attributeId,
-			// NOTE: we are caching this method only if we dont have a filter.
+			final boolean includeInactive,
+			// NOTE: we are caching this method only if we don't have a filter.
 			// If we have a filter:
 			// * that's mutable so it will fuck up our case
 			// * in most of the cases, when we have an validation rule filter we are dealing with a huge amount of data which needs to be filtered (see Karoten ID example from)
@@ -256,7 +264,10 @@ public class AttributeDAO implements IAttributeDAO
 				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
+		if (!includeInactive)
+		{
+			filters.addOnlyActiveRecordsFilter();
+		}
 		filters.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId);
 
 		if (validationRuleQueryFilter != null)
