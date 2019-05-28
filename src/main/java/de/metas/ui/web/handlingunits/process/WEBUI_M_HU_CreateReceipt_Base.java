@@ -1,6 +1,23 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.util.List;
+import java.util.Set;
+
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Attribute;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -26,21 +43,6 @@ import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Attribute;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.List;
-import java.util.Set;
 
 /*
  * #%L
@@ -71,16 +73,12 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 	@Autowired
 	private IViewsRepository viewsRepo;
-
 	@Autowired
 	private DocumentCollection documentsCollection;
-
 	@Autowired
 	private SecurPharmService securPharmService;
-
 	@Autowired
 	private ProductRepository productRepository;
-
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -107,22 +105,23 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				return ProcessPreconditionsResolution.reject(msg);
 			}
 		}
+
 		if (securPharmService.hasConfig())
 		{
 			final BPartnerId vendorId = document.getBPartnerId();
 			final Product prod = productRepository.getById(document.getProductId());
 			final BPartnerId manufacturerId = prod.getManufacturerId();
-			if ((vendorId != null && manufacturerId != null && vendorId.getRepoId() != manufacturerId.getRepoId())
-					|| (vendorId == null && manufacturerId != null) || (vendorId != null && manufacturerId == null))
+			if (!BPartnerId.equals(vendorId, manufacturerId))
 			{
-				final ScannedAttributeValue scannedAttributeValue = ScannedAttributeValue.valueOf((String)attributes.getValue(AttributeConstants.ATTR_Scanned));
-				if (scannedAttributeValue == ScannedAttributeValue.N)
+				final ScannedAttributeValue scannedAttributeValue = ScannedAttributeValue.ofNullableCode(attributes.getValueAsString(AttributeConstants.ATTR_Scanned));
+				if (scannedAttributeValue == ScannedAttributeValue.NO)
 				{
 					return ProcessPreconditionsResolution.rejectWithInternalReason("Vendor is different from manufacturer and product was not scanned");
 				}
 			}
 		}
-		return null;
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
