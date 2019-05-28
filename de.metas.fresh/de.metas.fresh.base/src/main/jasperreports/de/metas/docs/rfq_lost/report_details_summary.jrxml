@@ -44,7 +44,7 @@
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-16" x="36" y="10" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{startNotice}]]></textFieldExpression>
 			</textField>
@@ -68,7 +68,7 @@
 			<textField>
 				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{endNotice}]]></textFieldExpression>
 			</textField>
@@ -92,7 +92,7 @@
 			<textField>
 				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{dateResponse}]]></textFieldExpression>
 			</textField>
@@ -123,7 +123,7 @@
 			<textField>
 				<reportElement key="textField-16" x="36" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{information}]]></textFieldExpression>
 			</textField>
