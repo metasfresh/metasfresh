@@ -21,6 +21,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -189,19 +190,19 @@ public class HUReportExecutor
 
 	private String extractReportingLanguageFromHUs(final Collection<HUToReport> hus)
 	{
-		final Set<Integer> huBPartnerIds = hus.stream()
+		final Set<BPartnerId> huBPartnerIds = hus.stream()
 				.map(HUToReport::getBPartnerId)
-				.filter(bpartnerId -> bpartnerId > 0)
+				.filter(bpartnerId -> bpartnerId != null)
 				.collect(ImmutableSet.toImmutableSet());
 		return extractReportingLanguageFromBPartnerIds(huBPartnerIds);
 	}
 
-	private String extractReportingLanguageFromBPartnerIds(final Set<Integer> huBPartnerIds)
+	private String extractReportingLanguageFromBPartnerIds(final Set<BPartnerId> huBPartnerIds)
 	{
 		if (huBPartnerIds.size() == 1)
 		{
-			final int bpartnerId = huBPartnerIds.iterator().next();
-			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+			final BPartnerId bpartnerId = huBPartnerIds.iterator().next();
+			final Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId.getRepoId());
 			return reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language();
 		}
 		else
