@@ -1,12 +1,17 @@
 package de.metas.handlingunits.inventory;
 
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -71,7 +76,16 @@ public class InventoryLine
 
 	public InventoryLineHU getSingleHU()
 	{
-		return CollectionUtils.singleElement(inventoryLineHUs);
+		return CollectionUtils.singleElement(getInventoryLineHUs());
+	}
+
+	public Set<HuId> getHUIds()
+	{
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getHuId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public InventoryLine withQtyCount(@NonNull final Quantity qtyCount)

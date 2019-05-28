@@ -21,32 +21,45 @@
  *
  */
 
-package de.metas.vertical.pharma.securpharm.model;
+package de.metas.vertical.pharma.securpharm.model.schema;
 
-import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class ProductData
+public enum ProductPackageState
 {
-	@NonNull
-	private String productCode;
+	INACTIVE, //
+	ACTIVE, //
+	UNKNOWN //
+	;
 
-	private ProductCodeType productCodeType;
+	public String toYesNoString()
+	{
+		if (this == ACTIVE)
+		{
+			return "Y";
+		}
+		else if (this == INACTIVE)
+		{
+			return "N";
+		}
+		else
+		{
+			return null;
+		}
+	}
 
-	@NonNull
-	private String lot;
+	public static ProductPackageState ofYesNoString(final String yesNoString)
+	{
+		if ("Y".equals(yesNoString))
+		{
+			return ACTIVE;
+		}
+		else if ("N".equals(yesNoString))
+		{
+			return INACTIVE;
+		}
+		else
+		{
+			return UNKNOWN;
+		}
+	}
 
-	@NonNull
-	private ExpirationDate expirationDate;
-
-	@NonNull
-	private String serialNumber;
-
-	private boolean active;
-
-	private String inactiveReason;
 }
