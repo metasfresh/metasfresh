@@ -105,30 +105,30 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 					// TODO just update or split?
 					attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate());
 					attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productDetails.getLot());
-					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y.name());
+					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.YES.getCode());
 				}
 				else
 				{
 					attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productDetails.getSerialNumber());
-					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
+					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 					// TODO should the process still continue with return?
 				}
 			}
 			else
 			{
-				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
+				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 				// TODO should the process still continue with return?
 			}
 		}
 		catch (final Exception ex)
 		{
 			logger.warn("", ex);
-			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E);
+			attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 		}
 
 		attributeStorage.saveChangesIfNeeded();
 	}
-	
+
 	protected final DataMatrixCode getDataMatrix()
 	{
 		return DataMatrixCode.ofString(dataMatrix);
