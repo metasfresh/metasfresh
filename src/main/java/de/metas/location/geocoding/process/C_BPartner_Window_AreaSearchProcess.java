@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerLocationRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -42,7 +41,6 @@ import de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaS
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewsRepository;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
@@ -54,7 +52,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
-public class C_BPartner_SearchWithPrefilledDataProcess extends JavaProcess
+public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 {
 	private final IViewsRepository viewsRepo = Adempiere.getBean(IViewsRepository.class);
 
