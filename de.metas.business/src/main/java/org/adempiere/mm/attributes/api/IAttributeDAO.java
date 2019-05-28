@@ -209,5 +209,4 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return true if given attribute is expected to have a huge amount of {@link I_M_AttributeValue}s.
 	 */
 	boolean isHighVolumeValuesList(I_M_Attribute attribute);
-
 }
