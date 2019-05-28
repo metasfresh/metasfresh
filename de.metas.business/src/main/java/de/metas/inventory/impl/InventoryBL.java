@@ -44,6 +44,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocument;
 import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -100,6 +102,13 @@ public class InventoryBL implements IInventoryBL
 		{
 			inventoryLine.setDescription(description + " | " + description);
 		}
+	}
+	
+	@Override
+	public String getDocStatus(final InventoryId inventoryId)
+	{
+		final I_M_Inventory inventory = Services.get(IInventoryDAO.class).getById(inventoryId);
+		return inventory.getDocStatus();
 	}
 
 	@Override

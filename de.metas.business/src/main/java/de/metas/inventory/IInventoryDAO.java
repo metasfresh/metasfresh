@@ -2,6 +2,7 @@ package de.metas.inventory;
 
 import java.util.List;
 
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.util.ISingletonService;
@@ -30,6 +31,8 @@ import de.metas.util.ISingletonService;
 
 public interface IInventoryDAO extends ISingletonService
 {
+	I_M_Inventory getById(InventoryId inventoryId);
+
 	/**
 	 * Retrieve all the active lines of the given inventory
 	 */

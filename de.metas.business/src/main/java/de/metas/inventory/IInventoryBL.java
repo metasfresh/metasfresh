@@ -25,6 +25,8 @@ public interface IInventoryBL extends ISingletonService
 
 	void addDescription(I_M_InventoryLine inventoryLine, String descriptionToAdd);
 
+	String getDocStatus(InventoryId inventoryId);
+
 	boolean isComplete(I_M_Inventory inventory);
 
 	boolean isSOTrx(I_M_InventoryLine inventoryLine);
@@ -40,5 +42,4 @@ public interface IInventoryBL extends ISingletonService
 	Quantity getMovementQtyInStockingUOM(I_M_InventoryLine inventoryLine);
 
 	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
-
 }

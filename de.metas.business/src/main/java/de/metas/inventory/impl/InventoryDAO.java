@@ -1,11 +1,13 @@
 package de.metas.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.inventory.IInventoryDAO;
@@ -37,6 +39,12 @@ import lombok.NonNull;
 
 public class InventoryDAO implements IInventoryDAO
 {
+	@Override
+	public I_M_Inventory getById(@NonNull final InventoryId inventoryId)
+	{
+		return load(inventoryId, I_M_Inventory.class);
+	}
+
 	@Override
 	public boolean hasLines(@NonNull final InventoryId inventoryId)
 	{
