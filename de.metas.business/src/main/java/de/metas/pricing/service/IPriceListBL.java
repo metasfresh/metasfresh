@@ -35,6 +35,13 @@ public interface IPriceListBL extends ISingletonService
 			LocalDate date,
 			SOTrx soTrx);
 
+	default CurrencyPrecision getPrecisionForLineNetAmount(int priceListId)
+	{
+		return getPrecisionForLineNetAmount(PriceListId.ofRepoIdOrNull(priceListId));
+	}
+
+	CurrencyPrecision getPrecisionForLineNetAmount(PriceListId priceListId);
+
 	/**
 	 * Find the current version from a pricing system based on the given parameters.
 	 *

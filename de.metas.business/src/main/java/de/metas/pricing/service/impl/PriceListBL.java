@@ -45,6 +45,9 @@ import javax.annotation.Nullable;
 @SuppressWarnings("unused")
 public class PriceListBL implements IPriceListBL
 {
+
+	private IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 	@Override
 	public CurrencyPrecision getPricePrecision(@Nullable final PriceListId priceListId)
 	{
@@ -53,8 +56,26 @@ public class PriceListBL implements IPriceListBL
 			return CurrencyPrecision.TWO; // default
 		}
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+	}
+
+	@Override public CurrencyPrecision getPrecisionForLineNetAmount(final PriceListId priceListId)
+	{
+		if (priceListId == null)
+		{
+			return CurrencyPrecision.TWO;    // default
+		}
+
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+		if (priceList.isRoundNetAmountToCurrencyPrecision())
+		{
+			return CurrencyPrecision.ofInt(priceList.getC_Currency().getStdPrecision());
+		}
+		else
+		{
+			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+		}
 	}
 
 	@Nullable @Override
@@ -92,7 +113,6 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx)
 				.iterator();
 		if (!pricelists.hasNext())
