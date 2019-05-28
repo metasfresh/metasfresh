@@ -37,14 +37,10 @@ de.metas.shipper.gateway.go/src/main/resources/application.properties
 de.metas.shipper.gateway.go/src/main/resources/application.properties
 de.metas.vertical.pharma.msv3.server/application.properties
 de.metas.report/report-service/application.properties
+de.metas.material/dispo-service/application.properties
 
 #Ignore IDEA files
 *.iml
 **/.idea
-de.metas.material/dispo-service/application.properties
-vertical-healthcare_ch/forum_datenaustausch_ch.invoice_base/LICENSE.txt
-vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/LICENSE.txt
-de.metas.invoice_gateway.api/LICENSE.txt
-de.metas.dunning_gateway.spi/LICENSE.txt
-vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/LICENSE.txt
-vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/LICENSE.txt
+
+**/LICENSE.txt

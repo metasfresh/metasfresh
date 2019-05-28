@@ -91,7 +91,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/*includeInactive*/);
 		return new ArrayList<>(map.values());
 	}
 
