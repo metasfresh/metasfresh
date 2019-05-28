@@ -44,8 +44,9 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
-import de.metas.vertical.pharma.securpharm.model.ProductData;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductDataResult;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.model.ProductDetails;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.process.M_HU_SecurpharmScan;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
@@ -95,20 +96,20 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
 		try
 		{
-			final SecurPharmProductDataResult result = securPharmService.getAndSaveProductData(dataMatrix, huId);
-			if (!result.isError() && result.getProductData() != null)
+			final SecurPharmProduct product = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
+			if (!product.isError() && product.getProductDetails() != null)
 			{
-				final ProductData productData = result.getProductData();
-				if (productData.isActive())
+				final ProductDetails productDetails = product.getProductDetails();
+				if (productDetails.isActive())
 				{
 					// TODO just update or split?
-					attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productData.getExpirationDate());
-					attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productData.getLot());
+					attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate());
+					attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productDetails.getLot());
 					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.Y.name());
 				}
 				else
 				{
-					attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productData.getSerialNumber());
+					attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productDetails.getSerialNumber());
 					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.E.name());
 					// TODO should the process still continue with return?
 				}
@@ -126,6 +127,11 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 		}
 
 		attributeStorage.saveChangesIfNeeded();
+	}
+	
+	protected final DataMatrixCode getDataMatrix()
+	{
+		return DataMatrixCode.ofString(dataMatrix);
 	}
 
 	private IAttributeStorage getAttributeStorage(final I_M_HU hu)
