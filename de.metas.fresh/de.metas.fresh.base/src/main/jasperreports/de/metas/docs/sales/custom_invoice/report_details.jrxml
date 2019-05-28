@@ -76,7 +76,8 @@ order by M_Inout_ID;]]>
 		<variableExpression><![CDATA[$F{ol_priceactual}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
-	<variable name="TOTAL" class="java.math.BigDecimal" incrementType="Report" calculation="Sum">
+	<variable name="TOTAL" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{ol_priceactual}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
 	<group name="m_inout_id" isReprintHeaderOnEachPage="true">
