@@ -565,12 +565,16 @@ export class DocumentList extends Component {
         });
 
         // process modal specific
-        const { parentViewId, parentWindowId } = response.data;
-
+        const {
+          parentViewId,
+          parentWindowId,
+          headerProperties,
+        } = response.data;
         dispatch(
           updateRawModal(windowType, {
             parentViewId,
             parentWindowId,
+            headerProperties,
           })
         );
       }
@@ -969,7 +973,7 @@ export class DocumentList extends Component {
               tabIndex={0}
               indentSupported={layout.supportTree}
               disableOnClickOutside={clickOutsideLock}
-              limitOnClickOutside={isIncluded && isModal}
+              limitOnClickOutside={isModal}
               defaultSelected={selected}
               refreshSelection={refreshSelection}
               queryLimitHit={data.queryLimitHit}

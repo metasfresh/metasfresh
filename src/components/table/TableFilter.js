@@ -19,10 +19,6 @@ class ActionButton extends Component {
     children: PropTypes.element,
   };
 
-  state = {
-    isTooltipShow: false,
-  };
-
   handleClick = () => {
     const { dispatch, action, docId } = this.props;
 
@@ -48,20 +44,7 @@ class ActionButton extends Component {
     );
   };
 
-  showToolTipOnActionButton = () => {
-    this.setState({
-      isTooltipShow: true,
-    });
-  };
-
-  hideToolTipOnActionButton = () => {
-    this.setState({
-      isTooltipShow: false,
-    });
-  };
-
   render() {
-    const { isTooltipShow } = this.state;
     const { action, tabIndex, children } = this.props;
 
     return (
@@ -70,17 +53,34 @@ class ActionButton extends Component {
         className="btn btn-meta-outline-secondary btn-distance btn-sm"
         tabIndex={tabIndex}
         title={action.description}
-        onMouseEnter={this.showToolTipOnActionButton}
-        onMouseLeave={this.hideToolTipOnActionButton}
       >
         {action.caption}
-        {isTooltipShow && children}
+        {children}
       </button>
     );
   }
 }
 
 class TableFilter extends Component {
+  static propTypes = {
+    dispatch: PropTypes.func.isRequired,
+    tabIndex: PropTypes.number.isRequired,
+    modalVisible: PropTypes.bool.isRequired,
+    forceHeight: PropTypes.number,
+    tabId: PropTypes.string,
+    docType: PropTypes.string,
+    docId: PropTypes.string,
+    openModal: PropTypes.func,
+    toggleFullScreen: PropTypes.func,
+    fullScreen: PropTypes.any,
+    wrapperHeight: PropTypes.number,
+    selected: PropTypes.array,
+    isBatchEntry: PropTypes.bool,
+    handleBatchEntryToggle: PropTypes.func,
+    supportQuickInput: PropTypes.bool,
+    allowCreateNew: PropTypes.bool,
+  };
+
   constructor(props) {
     super(props);
 
@@ -297,13 +297,6 @@ class TableFilter extends Component {
     );
   }
 }
-
-TableFilter.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-  tabIndex: PropTypes.number.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  forceHeight: PropTypes.number,
-};
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
