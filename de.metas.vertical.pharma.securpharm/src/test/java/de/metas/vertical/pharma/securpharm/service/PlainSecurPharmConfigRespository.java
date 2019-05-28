@@ -3,14 +3,17 @@ package de.metas.vertical.pharma.securpharm.service;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -70,23 +73,23 @@ public class PlainSecurPharmConfigRespository implements SecurPharmConfigResposi
 		}
 	}
 
-	private final SecurPharmConfig config;
+	private final Optional<SecurPharmConfig> config;
 
-	private PlainSecurPharmConfigRespository(@NonNull final SecurPharmConfig config)
+	private PlainSecurPharmConfigRespository(@Nullable final SecurPharmConfig config)
 	{
-		this.config = config;
+		this.config = Optional.ofNullable(config);
 	}
 
 	@Override
-	public boolean isConfigured()
-	{
-		return true;
-	}
-
-	@Override
-	public SecurPharmConfig getConfig()
+	public Optional<SecurPharmConfig> getDefaultConfig()
 	{
 		return config;
+	}
+
+	@Override
+	public SecurPharmConfig getById(final SecurPharmConfigId id)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -41,16 +41,15 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 	{
 		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
 		}
-
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 		if (!securPharmService.hasConfig())
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No SecurPharm config");
 		}
 
 		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(context.getSingleSelectedRecordId());
@@ -66,8 +65,8 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 	@Override
 	protected I_M_HU getHandlingUnit()
 	{
-		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(getRecord_ID());
-		final SecurPharmProduct product = securPharmService.getProductById(productDataResultId);
+		final SecurPharmProductId productId = SecurPharmProductId.ofRepoId(getRecord_ID());
+		final SecurPharmProduct product = securPharmService.getProductById(productId);
 
 		return handlingUnitsBL.getById(product.getHuId());
 	}

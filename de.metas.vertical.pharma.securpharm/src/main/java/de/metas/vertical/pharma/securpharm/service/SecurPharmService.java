@@ -47,9 +47,9 @@ import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
@@ -76,7 +76,7 @@ public class SecurPharmService
 
 	public boolean hasConfig()
 	{
-		return configRespository.isConfigured();
+		return configRespository.getDefaultConfig().isPresent();
 	}
 
 	public SecurPharmProduct getProductById(@NonNull final SecurPharmProductId id)

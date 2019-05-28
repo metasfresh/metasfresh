@@ -71,29 +71,32 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 		if (!securPharmService.hasConfig())
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no SecurPharm config");
 		}
-		final I_M_HU hu = context.getSelectedModel(I_M_HU.class);
-		if (hu != null)
-		{
-			if (Objects.equals(hu.getHUStatus(), X_M_HU.HUSTATUS_Destroyed)
-					|| Objects.equals(hu.getHUStatus(), X_M_HU.HUSTATUS_Shipped))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("handling unit status not appropriate");
-			}
 
-			final IAttributeStorage attributeStorage = getAttributeStorage(hu);
-			if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
-					|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
-					|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-					|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_Scanned))
-			{
-				return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
-			}
+		final I_M_HU hu = context.getSelectedModel(I_M_HU.class);
+		if (hu == null)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection().toInternal();
+		}
+
+		if (Objects.equals(hu.getHUStatus(), X_M_HU.HUSTATUS_Destroyed)
+				|| Objects.equals(hu.getHUStatus(), X_M_HU.HUSTATUS_Shipped))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("handling unit status not appropriate");
+		}
+
+		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
+		if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
+				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
+				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
+				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_Scanned))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -125,17 +128,17 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		final SecurPharmProduct product = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
 		if (!product.isError() && product.getProductDetails() != null)
 		{
-			final ProductDetails productData = product.getProductDetails();
-			if (productData.isActive())
+			final ProductDetails productDetails = product.getProductDetails();
+			if (productDetails.isActive())
 			{
 				// TODO check if it fits current data and split otherwise
-				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productData.getExpirationDate());
-				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productData.getLot());
+				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate());
+				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productDetails.getLot());
 				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.YES.getCode());
 			}
 			else
 			{
-				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productData.getSerialNumber());
+				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productDetails.getSerialNumber());
 				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 				// TODO HU split
 			}

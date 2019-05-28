@@ -42,7 +42,7 @@ public class SecurPharmClientManualTest
 	private void run()
 	{
 		final PlainSecurPharmConfigRespository configRepo = PlainSecurPharmConfigRespository.ofDefaultSandboxProperties();
-		final SecurPharmConfig config = configRepo.getConfig();
+		final SecurPharmConfig config = configRepo.getDefaultConfig().get();
 		System.out.println("Using config: " + config);
 
 		final SecurPharmClient client = SecurPharmClient.createAndAuthenticate(config);

@@ -23,10 +23,11 @@
 
 package de.metas.vertical.pharma.securpharm.repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
@@ -40,42 +41,47 @@ import lombok.NonNull;
 @Repository
 public class DatabaseBackedSecurPharmConfigRespository implements SecurPharmConfigRespository
 {
-	private final CCache<Integer, Optional<SecurPharmConfig>> cache = CCache.<Integer, Optional<SecurPharmConfig>> builder()
+	private final CCache<Integer, Optional<SecurPharmConfigId>> defaultConfigIdCache = CCache.<Integer, Optional<SecurPharmConfigId>> builder()
 			.tableName(I_M_Securpharm_Config.Table_Name)
 			.build();
 
-	public SecurPharmConfig getConfig()
+	private final CCache<SecurPharmConfigId, SecurPharmConfig> configsCache = CCache.<SecurPharmConfigId, SecurPharmConfig> builder()
+			.tableName(I_M_Securpharm_Config.Table_Name)
+			.build();
+
+	@Override
+	public Optional<SecurPharmConfig> getDefaultConfig()
 	{
-		return getConfigIfExists()
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @" + I_M_Securpharm_Config.COLUMNNAME_M_Securpharm_Config_ID + "@"));
+		return getDefaultConfigId().map(this::getById);
 	}
 
-	public boolean isConfigured()
+	private Optional<SecurPharmConfigId> getDefaultConfigId()
 	{
-		return getConfigIfExists().isPresent();
+		return defaultConfigIdCache.getOrLoad(0, this::retrieveDefaultConfigId);
 	}
 
-	private Optional<SecurPharmConfig> getConfigIfExists()
-	{
-		return cache.getOrLoad(0, this::retrieveConfig);
-	}
-
-	private Optional<SecurPharmConfig> retrieveConfig()
+	private Optional<SecurPharmConfigId> retrieveDefaultConfigId()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final I_M_Securpharm_Config configRecord = queryBL
+		final SecurPharmConfigId configId = queryBL
 				.createQueryBuilder(I_M_Securpharm_Config.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnly(I_M_Securpharm_Config.class);
-		if (configRecord == null)
-		{
-			return null;
-		}
-		else
-		{
-			return Optional.of(ofRecord(configRecord));
-		}
+				.firstIdOnly(SecurPharmConfigId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(configId);
+	}
+
+	@Override
+	public SecurPharmConfig getById(@NonNull final SecurPharmConfigId configId)
+	{
+		return configsCache.getOrLoad(configId, this::retrieveById);
+	}
+
+	private SecurPharmConfig retrieveById(@NonNull final SecurPharmConfigId configId)
+	{
+		final I_M_Securpharm_Config record = loadOutOfTrx(configId, I_M_Securpharm_Config.class);
+		return ofRecord(record);
 	}
 
 	private static SecurPharmConfig ofRecord(@NonNull final I_M_Securpharm_Config config)

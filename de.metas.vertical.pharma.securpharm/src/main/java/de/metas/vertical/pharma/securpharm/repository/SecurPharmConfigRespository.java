@@ -1,7 +1,9 @@
 package de.metas.vertical.pharma.securpharm.repository;
 
+import java.util.Optional;
+
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import lombok.NonNull;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 
 /*
  * #%L
@@ -27,8 +29,7 @@ import lombok.NonNull;
 
 public interface SecurPharmConfigRespository
 {
-	boolean isConfigured();
-
-	@NonNull
-	SecurPharmConfig getConfig();
+	Optional<SecurPharmConfig> getDefaultConfig();
+	
+	SecurPharmConfig getById(SecurPharmConfigId id);
 }

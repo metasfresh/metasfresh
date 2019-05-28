@@ -97,6 +97,11 @@ final class SecurPharmClientAuthenticator
 		return authResponse;
 	}
 
+	public void authenticate()
+	{
+		getAuthResponse();
+	}
+
 	private static AuthResponse authenticate(@NonNull final SecurPharmConfig config)
 	{
 		try
@@ -159,11 +164,14 @@ final class SecurPharmClientAuthenticator
 
 			return SSLContextBuilder.create()
 					.loadKeyMaterial(keyStore, password)
-					.loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
+					.loadTrustMaterial(null, new TrustSelfSignedStrategy())
+					.build();
 		}
 		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed creating SSL context for " + config, ex);
+			throw new AdempiereException("Failed creating SSL context " + ex.getLocalizedMessage(), ex)
+					.appendParametersToMessage()
+					.setParameter("config", config);
 		}
 	}
 }

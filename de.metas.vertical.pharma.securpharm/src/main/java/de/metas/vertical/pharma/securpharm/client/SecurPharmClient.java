@@ -70,7 +70,7 @@ public class SecurPharmClient
 	static SecurPharmClient createAndAuthenticate(@NonNull final SecurPharmConfig config)
 	{
 		final SecurPharmClient client = new SecurPharmClient(config);
-		client.getAuthorizationHttpHeader(); // make sure it's authenticated
+		client.authenticate(); // make sure it's authenticated
 		return client;
 	}
 
@@ -370,6 +370,11 @@ public class SecurPharmClient
 				.queryParam(QUERY_PARAM_LOT, encodeBase64url(productDetails.getLot()))
 				.queryParam(QUERY_PARAM_EXP, productDetails.getExpirationDate().toYYMMDDString())
 				.queryParam(QUERY_PARAM_PCS, productDetails.getProductCodeType().getCode());
+	}
+
+	public void authenticate()
+	{
+		authenticator.authenticate();
 	}
 
 	private String getAuthorizationHttpHeader()
