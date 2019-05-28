@@ -194,7 +194,7 @@ public class ASIDescriptorFactory
 			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attribute);
 		}
 
-		final ILogicExpression readonlyLogic = ConstantLogicExpression.FALSE;
+		final ILogicExpression readonlyLogic = ConstantLogicExpression.of(attribute.isReadOnlyValues());
 		final ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
 		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(attribute.isMandatory());
 

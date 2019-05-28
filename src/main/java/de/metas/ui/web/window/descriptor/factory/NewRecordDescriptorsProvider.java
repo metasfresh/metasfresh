@@ -42,7 +42,7 @@ import de.metas.util.Services;
  * Provides {@link NewRecordDescriptor}s.
  *
  * @author metas-dev <dev@metasfresh.com>
- * 
+ *
  * @task https://github.com/metasfresh/metasfresh/issues/1090
  */
 @Component
@@ -57,7 +57,6 @@ public class NewRecordDescriptorsProvider
 
 	NewRecordDescriptorsProvider()
 	{
-
 		// FIXME: hardcoded NewRecordDescriptor for C_BPartner_QuickInput
 		addNewRecordDescriptor(NewRecordDescriptor.of(
 				I_C_BPartner.Table_Name //
