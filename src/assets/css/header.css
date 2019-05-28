@@ -165,7 +165,7 @@
     width: 50%;
     position: fixed;
     z-index: 201;
-    margin-top:-1px;
+    margin-top:55px;
     background-color: $brand-bright-color;
 }
 
@@ -193,7 +193,6 @@
 
 @media (max-width: $breakpoint) {
     .subheader-container {
-        top: 55px;
         width: 100%;
         z-index: 201;
         max-height: calc(100vh - 55px);
