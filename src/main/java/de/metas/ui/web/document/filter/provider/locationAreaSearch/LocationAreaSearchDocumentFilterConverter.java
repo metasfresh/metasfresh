@@ -132,13 +132,13 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		return new StringBuilder()
 				.append("geographical_distance(")
 				//
-				.append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Latitude).append("::real")
-				.append(",").append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Longitude).append("::real")
+				.append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Latitude)
+				.append(",").append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Longitude)
 				//
-				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLatitude())).append("::real")
-				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLongitude())).append("::real")
+				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLatitude()))
+				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLongitude()))
 				//
-				.append(") <= ").append(sqlParamsOut.placeholder(distanceInKm)).append("::real")
+				.append(") <= ").append(sqlParamsOut.placeholder(distanceInKm))
 				//
 				.toString();
 	}
