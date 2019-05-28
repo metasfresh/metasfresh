@@ -12,13 +12,14 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /**
  * @author RC
- *
  */
 public interface IPriceListBL extends ISingletonService
 {
-	CurrencyPrecision getPricePrecision(PriceListId priceListId);
+	CurrencyPrecision getPricePrecision(@Nullable PriceListId priceListId);
 
 	default CurrencyPrecision getPricePrecision(final int priceListId)
 	{
@@ -26,11 +27,6 @@ public interface IPriceListBL extends ISingletonService
 	}
 
 	/**
-	 * @param pricingSystem
-	 * @param countryId
-	 * @param date
-	 * @param soTrx
-	 *
 	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
 	 */
 	I_M_PriceList getCurrentPricelistOrNull(
@@ -42,18 +38,14 @@ public interface IPriceListBL extends ISingletonService
 	/**
 	 * Find the current version from a pricing system based on the given parameters.
 	 *
-	 * @param pricingSystem
-	 * @param country
-	 * @param date
-	 * @param soTrx SO/PO or null
+	 * @param soTrx                 SO/PO or null
 	 * @param processedPLVFiltering if not <code>null</code>, then only PLVs which have the give value in their <code>Processed</code> column are considered.
-	 *            task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
-	 * @return
+	 *                              task 09533: the user doesn't know about PLV's processed flag, so in most cases we can't filter by it
 	 */
-	I_M_PriceList_Version getCurrentPriceListVersionOrNull(
+	@Nullable I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			PricingSystemId pricingSystemId,
 			CountryId countryId,
 			LocalDate date,
-			SOTrx soTrx,
+			@Nullable SOTrx soTrx,
 			Boolean processedPLVFiltering);
 }

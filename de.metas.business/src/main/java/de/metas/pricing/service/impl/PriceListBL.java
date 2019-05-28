@@ -40,10 +40,13 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
+@SuppressWarnings("unused")
 public class PriceListBL implements IPriceListBL
 {
 	@Override
-	public CurrencyPrecision getPricePrecision(final PriceListId priceListId)
+	public CurrencyPrecision getPricePrecision(@Nullable final PriceListId priceListId)
 	{
 		if (priceListId == null)
 		{
@@ -54,7 +57,7 @@ public class PriceListBL implements IPriceListBL
 		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 	}
 
-	@Override
+	@Nullable @Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
@@ -68,17 +71,16 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		final I_M_PriceList currentPricelist = InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
-		return currentPricelist;
+		return InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
 	}
 
-	@Override
+	@SuppressWarnings("UnusedAssignment") @Nullable @Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
 			@NonNull final LocalDate date,
 			final SOTrx soTrx,
-			final Boolean processedPLVFiltering)
+			@Nullable final Boolean processedPLVFiltering)
 	{
 		if (countryId == null)
 		{
@@ -104,16 +106,13 @@ public class PriceListBL implements IPriceListBL
 		Timestamp currentValidFrom = null;
 		I_M_PriceList_Version lastPriceListVersion = null;
 
-		if (pricelists.hasNext())
+		currentPricelist = pricelists.next();
+
+		lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processedPLVFiltering);
+
+		if (lastPriceListVersion != null)
 		{
-			currentPricelist = pricelists.next();
-
-			lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processedPLVFiltering);
-
-			if (lastPriceListVersion != null)
-			{
-				currentValidFrom = lastPriceListVersion.getValidFrom();
-			}
+			currentValidFrom = lastPriceListVersion.getValidFrom();
 		}
 
 		while (pricelists.hasNext())
