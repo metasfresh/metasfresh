@@ -11,7 +11,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<parameter name="C_Customs_Invoice_Id" class="java.lang.Integer">
+	<parameter name="C_Customs_Invoice_Id" class="java.lang.Integer" isForPrompting="false">
 		<defaultValueExpression><![CDATA[new Integer(1000000)]]></defaultValueExpression>
 	</parameter>
 	<parameter name="ad_language" class="java.lang.String">
@@ -59,7 +59,7 @@
 	<field name="cursymbol" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
-	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
+	<variable name="LINESUM_SUM" class="java.math.BigDecimal" incrementType="Report" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
 	</variable>
@@ -76,7 +76,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="9" isBold="true"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{doctype} + ":  "  +$F{documentno} + " " + $F{movementdate}]]></textFieldExpression>
 				</textField>
@@ -94,28 +94,28 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="3" width="213" height="12" forecolor="#000000" uuid="bfc989ec-072f-4b4e-839f-dfc61387f8de"/>
 				<textElement markup="none">
-					<font size="9" isBold="true"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="260" y="3" width="50" height="12" forecolor="#000000" uuid="eea9f049-df88-44d6-b192-5f9f36604e70"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="312" y="3" width="30" height="12" forecolor="#000000" uuid="fa02bcc4-c1b8-4d51-80bf-a527068a675d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="341" y="3" width="39" height="12" forecolor="#000000" uuid="c2e05692-db11-4101-86f6-46c25fb7039d"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="9" isBold="true"/>
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -135,7 +135,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -148,7 +148,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
 			</textField>
@@ -161,7 +161,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
 			</textField>
@@ -174,7 +174,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{invoicedqty}]]></textFieldExpression>
 			</textField>
@@ -189,7 +189,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
@@ -206,7 +206,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
 			</textField>
@@ -216,16 +216,16 @@
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<lastPageFooter>
-		<band height="12" splitType="Stretch">
+		<band height="30" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="140" height="12" forecolor="#000000" uuid="9cdb6a19-29dd-43d0-819b-fae3a73436eb"/>
+				<reportElement key="textField-52" mode="Transparent" x="37" y="16" width="140" height="12" forecolor="#000000" uuid="9cdb6a19-29dd-43d0-819b-fae3a73436eb"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{cursymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="341" y="0" width="39" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992"/>
+				<reportElement key="textField-53" mode="Transparent" x="341" y="16" width="39" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -233,7 +233,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>
