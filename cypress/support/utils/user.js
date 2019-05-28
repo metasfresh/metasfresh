@@ -1,8 +1,11 @@
 export class User {
-  constructor(lastName) {
+  constructor({ lastName, ...vals }) {
     cy.log(`Create user with lastName = ${lastName}`);
     this.lastName = lastName;
-    return this; 
+    for (let [key, val] of Object.entries(vals)) {
+      this[key] = val;
+    }
+    return this;
   }
 
   setSystemUser(isSystem) {
@@ -29,6 +32,12 @@ export class User {
     return this;
   }
 
+  setLogin(login) {
+    cy.log(`User - set login = ${login}`);
+    this.login = login;
+    return this;
+  }
+
   setPassword(password) {
     cy.log(`User - set password = ${password}`);
     this.password = password;
@@ -45,12 +54,9 @@ export class User {
 
 function applyUser(user) {
   describe(`Create new user ${user.name}`, function() {
-    it('Set names', function() {
-      cy.visitWindow('108', 'NEW');
-
-      cy.writeIntoStringField('Firstname', user.firstName);
-      cy.writeIntoStringField('Lasttname', user.lastName);
-      cy.writeIntoStringField('Email', user.email);
-    });
+    cy.visitWindow('108', 'NEW');
+    cy.writeIntoStringField('Firstname', user.firstName);
+    cy.writeIntoStringField('Lastname', user.lastName);
+    cy.writeIntoStringField('EMail', user.email);
   });
 }

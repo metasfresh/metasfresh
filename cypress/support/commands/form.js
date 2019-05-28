@@ -130,7 +130,6 @@ Cypress.Commands.add('selectDateViaPicker', fieldName => {
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   describe('Enter value into string field', function() {
     const aliasName = `writeIntoStringField-${new Date().getTime()}`;
-
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
