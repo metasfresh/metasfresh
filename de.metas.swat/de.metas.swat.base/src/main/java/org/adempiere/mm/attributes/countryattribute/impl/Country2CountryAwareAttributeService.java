@@ -72,7 +72,7 @@ public class Country2CountryAwareAttributeService implements ICountryAwareAttrib
 		final I_C_Country country = countryAware.getC_Country();
 		final boolean isSOTrx = countryAware.isSOTrx();
 		
-		final I_M_AttributeValue attributeValue = Services.get(ICountryAttributeDAO.class).retrieveAttributeValue(ctx, country,false);
+		final I_M_AttributeValue attributeValue = Services.get(ICountryAttributeDAO.class).retrieveAttributeValue(ctx, country,false/*includeInactive*/);
 
 		final AttributeAction attributeAction = Services.get(IAttributesBL.class).getAttributeAction(ctx);
 		if (attributeValue == null)

@@ -193,7 +193,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/*includeInactive*/);
 		return ImmutableList.copyOf(map.values());
 	}
 
@@ -244,7 +244,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 		else
 		{
-			return retrieveAttributeValuesMap(attribute, false)
+			return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
 					.values()
 					.stream()
 					.filter(av -> av.getM_AttributeValue_ID() == attributeValueId.getRepoId())
@@ -366,7 +366,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
-		return retrieveAttributeValuesMap(attribute, false)
+		return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
 				.values()
 				.stream()
 				.filter(av -> isAttributeValueMatchingSOTrx(av, soTrx))
