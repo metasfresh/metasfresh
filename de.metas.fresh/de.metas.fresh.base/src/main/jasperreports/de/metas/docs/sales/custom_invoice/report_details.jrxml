@@ -182,7 +182,7 @@ order by M_Inout_ID;]]>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="381" y="3" width="89" height="12" forecolor="#000000" uuid="fecb23cd-5d71-4c4c-bec6-ffc76fd262db"/>
-				<textElement textAlignment="Center" markup="none">
+				<textElement textAlignment="Left" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LineNetAmt}]]></textFieldExpression>
