@@ -61,6 +61,8 @@ import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -100,10 +102,12 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public List<Exception> isValidInvoice(final I_C_Invoice invoice)
 	{
+		final ILoggable loggable = Loggables.get();
 		final List<Exception> feedback = new ArrayList<>();
 		final String EDIStatus = invoice.getEDI_ExportStatus();
 		if (!invoice.isEdiEnabled() && !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(EDIStatus))
 		{
+			loggable.addLog("isValidInvoice - C_Invoice_ID={} has IsEdiEnabled={}, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(),invoice.isEdiEnabled(),EDIStatus );
 			return feedback;
 		}
 

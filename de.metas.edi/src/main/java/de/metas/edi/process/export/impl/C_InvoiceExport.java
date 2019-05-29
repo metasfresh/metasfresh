@@ -13,15 +13,14 @@ package de.metas.edi.process.export.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +49,7 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	}
 
 	@Override
-	public List<Exception> createExport()
+	public List<Exception> doExport()
 	{
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 

@@ -62,7 +62,7 @@ public class EDIExport extends JavaProcess
 				getTable_ID(),
 				recordId,
 				get_TrxName());
-		final List<Exception> feedback = export.createExport();
+		final List<Exception> feedback = export.doExport();
 		if (feedback == null || feedback.isEmpty())
 		{
 			return MSG_OK;

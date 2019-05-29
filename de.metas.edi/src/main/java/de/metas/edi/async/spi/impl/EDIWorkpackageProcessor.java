@@ -90,7 +90,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 
 			//
 			// Export & enlist feedback
-			final List<Exception> exportFeedback = export.createExport();
+			final List<Exception> exportFeedback = export.doExport();
 			feedback.addAll(exportFeedback);
 		}
 

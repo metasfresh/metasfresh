@@ -49,7 +49,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	}
 
 	@Override
-	public List<Exception> createExport()
+	public List<Exception> doExport()
 	{
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
