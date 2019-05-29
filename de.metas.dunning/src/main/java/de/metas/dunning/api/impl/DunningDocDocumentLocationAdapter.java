@@ -1,7 +1,6 @@
 package de.metas.dunning.api.impl;
 
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
 
 import de.metas.document.model.IDocumentLocation;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -27,12 +26,6 @@ public class DunningDocDocumentLocationAdapter implements IDocumentLocation
 	public int getC_BPartner_Location_ID()
 	{
 		return delegate.getC_BPartner_Location_ID();
-	}
-
-	@Override
-	public I_C_BPartner_Location getC_BPartner_Location()
-	{
-		return delegate.getC_BPartner_Location();
 	}
 
 	@Override

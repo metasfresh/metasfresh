@@ -4,12 +4,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -27,10 +24,7 @@ import lombok.ToString;
 public final class PlainDocumentLocation implements IDocumentLocation
 {
 	private final BPartnerId bpartnerId;
-	private I_C_BPartner bpartner; // lazy
-
 	private final BPartnerLocationId bpartnerLocationId;
-	private I_C_BPartner_Location bpartnerLocation; // lazy
 
 	private final UserId contactId;
 	private I_AD_User contact; // lazy
@@ -63,21 +57,6 @@ public final class PlainDocumentLocation implements IDocumentLocation
 	public int getC_BPartner_Location_ID()
 	{
 		return BPartnerLocationId.toRepoId(bpartnerLocationId);
-	}
-
-	@Override
-	public I_C_BPartner_Location getC_BPartner_Location()
-	{
-		if (bpartnerLocationId == null)
-		{
-			return null;
-		}
-
-		if (bpartnerLocation == null)
-		{
-			bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
-		}
-		return bpartnerLocation;
 	}
 
 	@Override

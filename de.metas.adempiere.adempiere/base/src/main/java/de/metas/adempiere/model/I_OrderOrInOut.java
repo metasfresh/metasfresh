@@ -40,7 +40,6 @@ public interface I_OrderOrInOut extends IDocumentLocation
 	@Override
 	int getC_BPartner_Location_ID();
 
-	@Override
 	I_C_BPartner_Location getC_BPartner_Location();
 
 	String getDeliveryViaRule();

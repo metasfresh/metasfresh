@@ -31,6 +31,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
@@ -62,7 +63,8 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(location.getC_BPartner_Location(), I_C_BPartner_Location.class);
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
 
 		final de.metas.adempiere.model.I_AD_User user;
 		if (location.getAD_User_ID() > 0)

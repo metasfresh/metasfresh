@@ -24,7 +24,6 @@ package de.metas.letters.model;
 
 
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Util;
 
 import de.metas.document.model.IDocumentLocation;
@@ -49,12 +48,6 @@ public class LetterDocumentLocationAdapter implements IDocumentLocation
 	public int getC_BPartner_Location_ID()
 	{
 		return delegate.getC_BPartner_Location_ID();
-	}
-
-	@Override
-	public I_C_BPartner_Location getC_BPartner_Location()
-	{
-		return delegate.getC_BPartner_Location();
 	}
 
 	@Override
