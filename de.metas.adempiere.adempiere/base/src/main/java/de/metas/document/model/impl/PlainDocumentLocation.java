@@ -60,21 +60,6 @@ public final class PlainDocumentLocation implements IDocumentLocation
 	}
 
 	@Override
-	public I_C_BPartner getC_BPartner()
-	{
-		if (bpartnerId == null)
-		{
-			return null;
-		}
-
-		if (bpartner == null)
-		{
-			bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
-		}
-		return bpartner;
-	}
-
-	@Override
 	public int getC_BPartner_Location_ID()
 	{
 		return BPartnerLocationId.toRepoId(bpartnerLocationId);

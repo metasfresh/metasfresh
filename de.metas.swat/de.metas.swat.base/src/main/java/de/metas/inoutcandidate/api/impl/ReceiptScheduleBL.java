@@ -264,12 +264,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			}
 
 			@Override
-			public org.compiere.model.I_C_BPartner getC_BPartner()
-			{
-				return receiptSchedule.getC_BPartner();
-			}
-
-			@Override
 			public String getBPartnerAddress()
 			{
 				return receiptSchedule.getBPartnerAddress();
@@ -316,12 +310,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			public int getC_BPartner_ID()
 			{
 				return getC_BPartner_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public org.compiere.model.I_C_BPartner getC_BPartner()
-			{
-				return getC_BPartner_Effective(receiptSchedule);
 			}
 
 			@Override

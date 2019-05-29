@@ -10,12 +10,12 @@ package de.metas.document.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,19 +27,20 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.util.Services;
 
 /**
- * 
+ *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
  */
@@ -52,7 +53,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(location.getC_BPartner(), I_C_BPartner.class);
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(location.getC_BPartner_ID());
 
 		// We need to use BP's trxName because else is not sure that we will get the right data or if we will get it at all
 		final String trxName = InterfaceWrapperHelper.getTrxName(bp);
@@ -157,7 +158,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 
 	/**
 	 * Builds the warehouse address by using {@link I_M_Warehouse#getC_BPartner_Location()}
-	 * 
+	 *
 	 * @param warehouse
 	 * @return address string
 	 */
