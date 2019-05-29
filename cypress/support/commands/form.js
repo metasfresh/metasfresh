@@ -1,3 +1,6 @@
+import { confirmCalendarDay } from '../functions';
+
+
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
@@ -106,6 +109,22 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
       .click({ force: true }) // we don't care if the checkbox scrolled out of view
       .waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
   });
+});
+
+/*
+ * Right now it can only select the current date
+ */
+Cypress.Commands.add('selectDateViaPicker', fieldName => {
+  const path = `.form-field-${fieldName}`;
+
+  cy.get(path)
+    .find('.datepicker')
+    .click();
+
+  confirmCalendarDay();
+  cy.get(path)
+    .find('.form-control-label')
+    .click();
 });
 
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {

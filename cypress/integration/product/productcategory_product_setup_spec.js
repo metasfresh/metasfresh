@@ -1,5 +1,4 @@
 import { Product, ProductCategory } from '../../support/utils/product';
-import { confirmCalendarDay } from '../../support/functions';
 
 // Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40
 describe('Create Product', function() {
@@ -44,12 +43,7 @@ describe('Create Product', function() {
 
     cy.selectInListField('M_HU_PI_Item_ID', 'IFCO', 'IFCO 6410');
     cy.writeIntoStringField('Qty', '1');
-    cy.get('.form-field-ValidFrom')
-      .find('.datepicker')
-      .click();
-
-    confirmCalendarDay();
-    cy.get('.panel-modal-header-title').click();
+    cy.selectDateViaPicker('ValidFrom');
     cy.pressDoneButton();
   });
 });
