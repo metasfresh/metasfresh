@@ -238,12 +238,12 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order order = groupFirstOrderLine.getC_Order();
 		final I_C_Order_CompensationGroup orderCompensationGroupPO = groupFirstOrderLine.getC_Order_CompensationGroup();
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final CurrencyPrecision amountPrecision = orderBL.getAmountPrecision(order);
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
 				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
-				.precision(amountPrecision.toInt())
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
@@ -563,11 +563,11 @@ public class OrderGroupRepository implements GroupRepository
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final I_C_Order order = compensationLinePO.getC_Order();
-		final CurrencyPrecision amountPrecision = orderBL.getAmountPrecision(order);
 
 		return Group.builder()
 				.groupId(extractGroupId(compensationLinePO))
-				.precision(amountPrecision.toInt())
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.regularLine(aggregatedRegularLine)
