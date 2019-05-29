@@ -190,6 +190,8 @@ public interface IOrderBL extends ISingletonService
 	
 	CurrencyPrecision getAmountPrecision(I_C_Order order);
 
+	CurrencyPrecision getTaxPrecision(I_C_Order order);
+
 	/**
 	 * Is Tax Included in Amount.
 	 *

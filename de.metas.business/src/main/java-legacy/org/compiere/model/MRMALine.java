@@ -120,7 +120,7 @@ public class MRMALine extends X_M_RMALine
 			if (getInvoiceLineId() != 0)
 			{
 				MInvoiceLine invoiceLine = new MInvoiceLine(getCtx(), getInvoiceLineId(), get_TrxName());
-				taxPrecision = Services.get(IInvoiceBL.class).getAmountPrecision(invoiceLine);
+				taxPrecision = Services.get(IInvoiceBL.class).getTaxPrecision(invoiceLine);
 				unitAmount = invoiceLine.getPriceEntered();
 				originalQty = invoiceLine.getQtyInvoiced();
 				taxId = invoiceLine.getC_Tax_ID();
@@ -128,7 +128,7 @@ public class MRMALine extends X_M_RMALine
 			else if (m_ioLine.getC_OrderLine_ID() > 0)
 			{
 				MOrderLine orderLine = new MOrderLine(getCtx(), m_ioLine.getC_OrderLine_ID(), get_TrxName());
-				taxPrecision = Services.get(IOrderLineBL.class).getAmountPrecision(orderLine);
+				taxPrecision = Services.get(IOrderLineBL.class).getTaxPrecision(orderLine);
 				unitAmount = orderLine.getPriceEntered();
 				originalQty = orderLine.getQtyDelivered();
 				taxId = orderLine.getC_Tax_ID();

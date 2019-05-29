@@ -85,7 +85,7 @@ public class InvoiceHistory
 	 */
 	private static final long serialVersionUID = 7886949815469558804L;
 
-	/** Logger */
+	/*	 Logger	 */
 	private static Logger log = LogManager.getLogger(InvoiceHistory.class);
 
 	public static final int TAB_PRICEHISTORY = 0;

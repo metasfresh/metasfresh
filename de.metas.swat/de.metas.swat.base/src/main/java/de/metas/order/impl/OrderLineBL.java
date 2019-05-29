@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -180,7 +181,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final boolean taxIncluded = isTaxIncluded(ol);
 		final BigDecimal lineAmout = ol.getLineNetAmt();
-		final CurrencyPrecision taxPrecision = getAmountPrecision(ol);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(ol);
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
@@ -317,7 +318,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = ol.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId);
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
 		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
@@ -562,6 +563,13 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
+	public CurrencyPrecision getTaxPrecision(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		return Services.get(IOrderBL.class).getTaxPrecision(order);
+	}
+
+	@Override
 	public boolean isAllowedCounterLineCopy(final org.compiere.model.I_C_OrderLine fromLine)
 	{
 		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(fromLine, de.metas.interfaces.I_C_OrderLine.class);
@@ -672,7 +680,7 @@ public class OrderLineBL implements IOrderLineBL
 					.build();
 		}
 
-		final CurrencyPrecision taxPrecision = getAmountPrecision(orderLine);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
 		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
@@ -700,7 +708,6 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/4535
 	 */
 	@Override

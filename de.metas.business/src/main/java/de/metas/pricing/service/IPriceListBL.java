@@ -3,6 +3,7 @@ package de.metas.pricing.service;
 import java.time.LocalDate;
 
 import de.metas.location.CountryId;
+import lombok.NonNull;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -19,12 +20,11 @@ import javax.annotation.Nullable;
  */
 public interface IPriceListBL extends ISingletonService
 {
-	CurrencyPrecision getPricePrecision(@Nullable PriceListId priceListId);
+	CurrencyPrecision getPricePrecision(@NonNull PriceListId priceListId);
 
-	default CurrencyPrecision getPricePrecision(final int priceListId)
-	{
-		return getPricePrecision(PriceListId.ofRepoIdOrNull(priceListId));
-	}
+	CurrencyPrecision getAmountPrecision(@NonNull PriceListId priceListId);
+
+	CurrencyPrecision getTaxPrecision(@NonNull PriceListId priceListId);
 
 	/**
 	 * @return the current price list for vendor if any (for the giver pricing system), null otherwise
@@ -34,13 +34,6 @@ public interface IPriceListBL extends ISingletonService
 			CountryId countryId,
 			LocalDate date,
 			SOTrx soTrx);
-
-	default CurrencyPrecision getPrecisionForLineNetAmount(final int priceListId)
-	{
-		return getPrecisionForLineNetAmount(PriceListId.ofRepoIdOrNull(priceListId));
-	}
-
-	CurrencyPrecision getPrecisionForLineNetAmount(PriceListId priceListId);
 
 	/**
 	 * Find the current version from a pricing system based on the given parameters.

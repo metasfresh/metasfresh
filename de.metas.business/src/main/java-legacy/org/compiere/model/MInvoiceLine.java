@@ -1099,7 +1099,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// NOTE: keep in sync with org.compiere.model.MOrderLine.updateOrderTax(boolean)
 
 		final String trxName = get_TrxName();
-		final CurrencyPrecision taxPrecision = Services.get(IInvoiceBL.class).getAmountPrecision(this);
+		final CurrencyPrecision taxPrecision = Services.get(IInvoiceBL.class).getTaxPrecision(this);
 		final MInvoiceTax tax = MInvoiceTax.get(this, taxPrecision.toInt(), oldTax, trxName);
 		if (tax == null)
 		{

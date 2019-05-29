@@ -48,27 +48,18 @@ import lombok.NonNull;
 public class PriceListBL implements IPriceListBL
 {
 
-	private IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	@Override
-	public CurrencyPrecision getPricePrecision(@Nullable final PriceListId priceListId)
+	public CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
-		if (priceListId == null)
-		{
-			return CurrencyPrecision.TWO; // default
-		}
-
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 	}
 
-	@Override public CurrencyPrecision getPrecisionForLineNetAmount(final PriceListId priceListId)
+	@Override
+	public CurrencyPrecision getAmountPrecision(@NonNull final PriceListId priceListId)
 	{
-		if (priceListId == null)
-		{
-			return CurrencyPrecision.TWO;    // default
-		}
-
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		if (priceList.isRoundNetAmountToCurrencyPrecision())
 		{
@@ -78,6 +69,13 @@ public class PriceListBL implements IPriceListBL
 		{
 			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 		}
+	}
+
+	@Override
+	public CurrencyPrecision getTaxPrecision(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+		return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 	}
 
 	@Nullable @Override

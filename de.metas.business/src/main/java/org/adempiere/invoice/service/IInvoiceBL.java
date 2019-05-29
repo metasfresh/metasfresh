@@ -115,14 +115,12 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isCreditMemo(I_C_Invoice invoice);
 
 	/**
-	 *
 	 * @param docBaseType
 	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(String docBaseType);
 
 	/**
-	 *
 	 * @param invoice
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -155,14 +153,12 @@ public interface IInvoiceBL extends ISingletonService
 	 * values.
 	 * <li>The created credit memo will always have <code>IsTaxIncluded='Y'</code>
 	 * </ul>
-	 *
+	 * <p>
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
 	 *
 	 * @param invoice the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
 	 * @param creditCtx see {@link IInvoiceCreditContext}
-	 *
 	 * @return the created credit memo
-	 *
 	 * @throws AdempiereException if
 	 *             <ul>
 	 *             <li>the given invoice is <code>null</code> or</li>
@@ -193,7 +189,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
-	 *
 	 * @param order
 	 * @param C_DocTypeTarget_ID invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
@@ -294,6 +289,10 @@ public interface IInvoiceBL extends ISingletonService
 
 	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_Invoice invoice);
+
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
 	/**
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
@@ -344,7 +343,6 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
 	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
-	 *
 	 */
 	void registerLineCopyHandler(
 			IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
@@ -364,7 +362,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param invoice
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
-	 *         {@link I_Invoice#isTaxIncluded()} value is returned.
 	 */
 	boolean isTaxIncluded(I_C_Invoice invoice, I_C_Tax tax);
 

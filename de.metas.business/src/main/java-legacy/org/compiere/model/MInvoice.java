@@ -1506,7 +1506,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final CurrencyPrecision taxPrecision = invoiceBL.getAmountPrecision(this.getRef_Invoice());
+		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(this.getRef_Invoice());
 
 		// Lines
 		BigDecimal totalLines = Env.ZERO;

@@ -87,7 +87,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final boolean taxIncluded = invoiceBL.isTaxIncluded(il);
 		final BigDecimal lineNetAmt = il.getLineNetAmt();
-		final CurrencyPrecision taxPrecision = invoiceBL.getAmountPrecision(il);
+		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
 		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
@@ -218,7 +218,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -247,8 +247,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_M_PriceList priceList = order.getM_PriceList();
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
-				priceList, 
-				TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+				priceList,
+				TimeUtil.asLocalDate(invoice.getDateInvoiced()),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -373,7 +373,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId);
+			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
 			BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
 			logger.debug("LineNetAmt={}", lineNetAmt);
@@ -452,18 +452,18 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		}
 		else
 		{
-			final CurrencyPrecision precisionToUse;
+			final CurrencyPrecision pricePrecision;
 			if (precision != null)
 			{
-				precisionToUse = precision;
+				pricePrecision = precision;
 			}
 			else
 			{
 				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-				precisionToUse = Services.get(IPriceListBL.class).getPricePrecision(invoice.getM_PriceList_ID());
+				pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
 			}
 
-			priceActual = subtractDiscount(priceEntered, discount, precisionToUse);
+			priceActual = subtractDiscount(priceEntered, discount, pricePrecision);
 		}
 
 		invoiceLine.setPriceActual(priceActual);

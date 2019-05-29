@@ -201,6 +201,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_OrderLine orderLine);
 
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_OrderLine orderLine);
+
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
 	 *

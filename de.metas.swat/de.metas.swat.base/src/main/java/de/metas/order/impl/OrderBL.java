@@ -863,7 +863,16 @@ public class OrderBL implements IOrderBL
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		return priceListId != null
-				? Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId)
+				? Services.get(IPriceListBL.class).getAmountPrecision(priceListId)
+				: CurrencyPrecision.TWO;
+	}
+
+	@Override
+	public CurrencyPrecision getTaxPrecision(final I_C_Order order)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getTaxPrecision(priceListId)
 				: CurrencyPrecision.TWO;
 	}
 

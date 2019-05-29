@@ -5,6 +5,8 @@ import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -39,7 +41,7 @@ public class PriceListId implements RepoIdAware
 		return new PriceListId(repoId);
 	}
 
-	public static PriceListId ofRepoIdOrNull(final int repoId)
+	@Nullable public static PriceListId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}

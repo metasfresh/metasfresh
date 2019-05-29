@@ -110,7 +110,6 @@ import lombok.NonNull;
  * Implements those methods that are DB decoupled
  *
  * @author ts
- *
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
@@ -1083,7 +1082,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
-		final CurrencyPrecision taxPrecision = getAmountPrecision(invoiceLine);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
 		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
@@ -1261,7 +1260,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		return priceListId != null
-				? Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId)
+				? Services.get(IPriceListBL.class).getAmountPrecision(priceListId)
 				: CurrencyPrecision.ZERO;
 	}
 
@@ -1270,6 +1269,22 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 		return getAmountPrecision(invoice);
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getTaxPrecision(priceListId)
+				: CurrencyPrecision.ZERO;
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return getTaxPrecision(invoice);
 	}
 
 	@Override
