@@ -9,6 +9,43 @@ import fixtures from '../../../../../test_setup/fixtures/table_full.json';
 const TAB = fixtures.tabs[0];
 const DATA = fixtures.data;
 
+const createDummyProps = function(tab, data, props) {
+  return {
+    allowShortcut: true,
+    allowOutsideClick: true,
+    ...props,
+    // list: List(data),
+  };
+};
+
+/*
+<Table
+  {...{
+    caption,
+    description,
+    rowData,
+    tabId,
+    windowId,
+    sort,
+    newRow,
+    internalName,
+  }}
+  entity="window"
+  keyProperty="rowId"
+  key={tabId}
+  cols={elements}
+  orderBy={defaultOrderBys}
+  docId={dataId}
+  emptyText={emptyResultText}
+  emptyHint={emptyResultHint}
+  tabIndex={this.tabIndex.tabs}
+  queryOnActivate={queryOnActivate}
+  supportQuickInput={supportQuickInput}
+  tabInfo={tabsInfo && tabsInfo[tabId]}
+  disconnectFromState={true}
+/>
+*/
+
 describe('Table in Tab component', () => {
   describe('rendering tests:', () => {
     it('renders without errors', () => {

@@ -1328,4 +1328,4 @@ export default connect(
   { withRef: true }
 )(onClickOutside(Table));
 
-export Table;
+export { Table };
