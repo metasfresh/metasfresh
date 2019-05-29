@@ -21,10 +21,17 @@ const applyFilters = () => {
   cy.clickElementWithClass('.filter-btn-wrapper .applyBtn', true);
 };
 
+const confirmCalendarDay = () => {
+  cy.get('.rdtPicker')
+    .find('.rdtToday')
+    .click();
+};
+
 export {
   toggleFrequentFilters,
   toggleNotFrequentFilters,
   selectFrequentFilterWidget,
   selectNotFrequentFilterWidget,
   applyFilters,
+  confirmCalendarDay,
 };
