@@ -373,9 +373,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			// this code has been borrowed from
 			// org.compiere.model.CalloutOrder.amt
-			final CurrencyPrecision stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+			final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId);
 
-			BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
+			BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.multiply(line.getPriceActual()));
 			logger.debug("LineNetAmt={}", lineNetAmt);
 			line.setLineNetAmt(lineNetAmt);
 		}

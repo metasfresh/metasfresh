@@ -317,10 +317,10 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = ol.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId);
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
-		lineNetAmt = precision.roundIfNeeded(lineNetAmt);
+		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);

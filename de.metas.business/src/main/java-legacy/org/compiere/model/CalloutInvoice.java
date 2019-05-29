@@ -737,7 +737,8 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Line Net Amt
-		BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListID);
+		BigDecimal lineNetAmt = netPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
 		log.info("amt = LineNetAmt=" + lineNetAmt);
 
 		invoiceLine.setLineNetAmt(lineNetAmt);

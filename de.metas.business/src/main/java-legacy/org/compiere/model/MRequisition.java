@@ -210,12 +210,12 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), X_C_DocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 
 		// Add up Amounts
-		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(getM_PriceList_ID());
 		BigDecimal totalLines = BigDecimal.ZERO;
 		for (final I_M_RequisitionLine line : lines)
 		{
 			BigDecimal lineNet = line.getQty().multiply(line.getPriceActual());
-			lineNet = precision.round(lineNet);
+			lineNet = netPrecision.round(lineNet);
 			if (lineNet.compareTo(line.getLineNetAmt()) != 0)
 			{
 				line.setLineNetAmt(lineNet);
