@@ -1,7 +1,5 @@
 package de.metas.dunning.api.impl;
 
-import org.compiere.model.I_AD_User;
-
 import de.metas.document.model.IDocumentLocation;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.util.Check;
@@ -32,12 +30,6 @@ public class DunningDocDocumentLocationAdapter implements IDocumentLocation
 	public int getAD_User_ID()
 	{
 		return delegate.getC_Dunning_Contact_ID();
-	}
-
-	@Override
-	public I_AD_User getAD_User()
-	{
-		return delegate.getC_Dunning_Contact();
 	}
 
 	@Override

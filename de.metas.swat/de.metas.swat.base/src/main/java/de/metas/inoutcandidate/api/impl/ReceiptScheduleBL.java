@@ -268,12 +268,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			{
 				return receiptSchedule.getAD_User_ID();
 			}
-
-			@Override
-			public org.compiere.model.I_AD_User getAD_User()
-			{
-				return receiptSchedule.getAD_User();
-			}
 		};
 	}
 
@@ -310,12 +304,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			public int getAD_User_ID()
 			{
 				return getAD_User_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public org.compiere.model.I_AD_User getAD_User()
-			{
-				return getAD_User_Effective(receiptSchedule);
 			}
 		};
 	}

@@ -3,14 +3,11 @@ package de.metas.document.model.impl;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.ToString;
 
@@ -25,9 +22,7 @@ public final class PlainDocumentLocation implements IDocumentLocation
 {
 	private final BPartnerId bpartnerId;
 	private final BPartnerLocationId bpartnerLocationId;
-
 	private final UserId contactId;
-	private I_AD_User contact; // lazy
 
 	private String bpartnerAddress;
 
@@ -63,21 +58,6 @@ public final class PlainDocumentLocation implements IDocumentLocation
 	public int getAD_User_ID()
 	{
 		return UserId.toRepoId(contactId);
-	}
-
-	@Override
-	public I_AD_User getAD_User()
-	{
-		if (contactId == null)
-		{
-			return null;
-		}
-
-		if (contact == null)
-		{
-			contact = Services.get(IUserDAO.class).getById(contactId);
-		}
-		return contact;
 	}
 
 	@Override

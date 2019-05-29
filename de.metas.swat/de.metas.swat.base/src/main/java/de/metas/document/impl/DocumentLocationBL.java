@@ -38,6 +38,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentBillLocation;
 import de.metas.document.model.IDocumentDeliveryLocation;
 import de.metas.document.model.IDocumentLocation;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /**
@@ -54,7 +55,9 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		{
 			return;
 		}
-		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(location.getC_BPartner_ID());
+
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		final I_C_BPartner bp = bpartnersRepo.getById(location.getC_BPartner_ID());
 
 		// We need to use BP's trxName because else is not sure that we will get the right data or if we will get it at all
 		final String trxName = InterfaceWrapperHelper.getTrxName(bp);
@@ -64,21 +67,21 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			return;
 		}
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
 
 		final de.metas.adempiere.model.I_AD_User user;
 		if (location.getAD_User_ID() > 0)
 		{
-			final I_AD_User userPO = location.getAD_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			final IUserDAO usersRepo = Services.get(IUserDAO.class);
+			user = usersRepo.getById(location.getAD_User_ID());
 		}
 		else
 		{
 			user = null;
 		}
 
-		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final String address = bPartnerBL.mkFullAddress(bp, bpartnerLocation, user, trxName);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final String address = bpartnerBL.mkFullAddress(bp, bpartnerLocation, user, trxName);
 		location.setBPartnerAddress(address);
 	}
 
