@@ -88,9 +88,9 @@ import de.metas.util.time.SystemTime;
  * @author Jorg Janke
  * @version $Id: MInvoice.java,v 1.2 2006/07/30 00:51:02 jjanke Exp $
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962
+ * @see [ http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962 ]
  *      <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
  *      Modifications: Added RMA functionality (Ashley Ramdass)
  */
 public class MInvoice extends X_C_Invoice implements IDocument
@@ -123,7 +123,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 *
 	 * @param from invoice
 	 * @param dateDoc date of the document date
-	 * @param acctDate original account date
+	 * @param dateAcct original account date
 	 * @param C_DocTypeTarget_ID target doc type
 	 * @param isSOTrx sales order
 	 * @param counter create counter links
