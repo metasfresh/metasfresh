@@ -138,6 +138,7 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 			}
 			else
 			{
+				// FRAUD!
 				attributeStorage.setValue(AttributeConstants.ATTR_SerialNo, productDetails.getSerialNumber());
 				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.ERROR.getCode());
 				// TODO HU split
