@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-05-24T13:25:48 -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_orgblock" pageWidth="225" pageHeight="842" columnWidth="225" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="7a1b6560-d1ef-4d70-acd9-642f0804e306">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -44,14 +43,14 @@ FROM
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="11"/>
+					<font fontName="Arial" size="11"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="FixRelativeToBottom" x="40" y="24" width="176" height="12" uuid="28b124c8-7a94-4ce5-90df-7e978c7fbfab"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
@@ -62,7 +61,7 @@ FROM
 :new Boolean(true)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone}]]></textFieldExpression>
 			</textField>
@@ -73,14 +72,14 @@ FROM
 	:new Boolean(true)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orgfax} + " " + $F{fax}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="FixRelativeToBottom" x="40" y="68" width="176" height="12" uuid="63844d65-924b-417a-b6a3-52eb03cc7a72"/>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{email}]]></textFieldExpression>
 			</textField>
@@ -91,14 +90,14 @@ FROM
 :new Boolean(true)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vataxid} + " " + $F{vataxid}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="FixRelativeToBottom" x="40" y="35" width="176" height="12" uuid="382642ff-3a69-4cd5-ae1c-f374c3c8226d"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{postal} + " " + $F{city}]]></textFieldExpression>
 			</textField>
