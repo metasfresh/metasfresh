@@ -14,7 +14,7 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 823033818L;
+	private static final long serialVersionUID = -1616576853L;
 
     /** Standard Constructor */
     public X_C_Customs_Invoice (Properties ctx, int C_Customs_Invoice_ID, String trxName)
@@ -83,6 +83,22 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Anschrift-Text.
+		@param BPartnerAddress Anschrift-Text	  */
+	@Override
+	public void setBPartnerAddress (java.lang.String BPartnerAddress)
+	{
+		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
+	}
+
+	/** Get Anschrift-Text.
+		@return Anschrift-Text	  */
+	@Override
+	public java.lang.String getBPartnerAddress () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
 	}
 
 	@Override
@@ -196,8 +212,8 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 		return ii.intValue();
 	}
 
-	/** Set Customs Invoice.
-		@param C_Customs_Invoice_ID Customs Invoice	  */
+	/** Set Zollrechnung.
+		@param C_Customs_Invoice_ID Zollrechnung	  */
 	@Override
 	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID)
 	{
@@ -207,8 +223,8 @@ public class X_C_Customs_Invoice extends org.compiere.model.PO implements I_C_Cu
 			set_ValueNoCheck (COLUMNNAME_C_Customs_Invoice_ID, Integer.valueOf(C_Customs_Invoice_ID));
 	}
 
-	/** Get Customs Invoice.
-		@return Customs Invoice	  */
+	/** Get Zollrechnung.
+		@return Zollrechnung	  */
 	@Override
 	public int getC_Customs_Invoice_ID () 
 	{

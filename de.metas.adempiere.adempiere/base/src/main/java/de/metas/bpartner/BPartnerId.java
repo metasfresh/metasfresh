@@ -53,6 +53,11 @@ public class BPartnerId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new BPartnerId(repoId) : null;
 	}
 
+	public static BPartnerId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? new BPartnerId(repoId) : null;
+	}
+
 	public static Optional<BPartnerId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));

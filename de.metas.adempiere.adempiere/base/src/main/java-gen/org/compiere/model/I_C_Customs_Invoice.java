@@ -98,6 +98,29 @@ public interface I_C_Customs_Invoice
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Anschrift-Text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBPartnerAddress (java.lang.String BPartnerAddress);
+
+	/**
+	 * Get Anschrift-Text.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBPartnerAddress();
+
+    /** Column definition for BPartnerAddress */
+    public static final org.adempiere.model.ModelColumn<I_C_Customs_Invoice, Object> COLUMN_BPartnerAddress = new org.adempiere.model.ModelColumn<I_C_Customs_Invoice, Object>(I_C_Customs_Invoice.class, "BPartnerAddress", null);
+    /** Column name BPartnerAddress */
+    public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
@@ -185,7 +208,7 @@ public interface I_C_Customs_Invoice
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Customs Invoice.
+	 * Set Zollrechnung.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -194,7 +217,7 @@ public interface I_C_Customs_Invoice
 	public void setC_Customs_Invoice_ID (int C_Customs_Invoice_ID);
 
 	/**
-	 * Get Customs Invoice.
+	 * Get Zollrechnung.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
