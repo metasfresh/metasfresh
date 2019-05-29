@@ -255,7 +255,7 @@ export class RawWidget extends Component {
       initialFocus,
     } = this.props;
 
-    let widgetValue = data != null ? data : widgetData[0].value;
+    let widgetValue = data != null ? widgetData[0].value : null;
     const { isEdited } = this.state;
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
