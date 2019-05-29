@@ -25,7 +25,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
@@ -35,8 +34,10 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -459,7 +460,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * @param M_PriceList_ID price list
 	 * @param C_BPartner_ID business partner
 	 */
-	public void setPrice(int M_PriceList_ID, int C_BPartner_ID)
+	private void setPrice(int M_PriceList_ID, int C_BPartner_ID)
 	{
 		if (getM_Product_ID() == 0 || isDescription())
 			return;
@@ -491,7 +492,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// metas: end
 		// metas us1064
 		// setPriceActual (m_productPricing.getPriceStd());
-		final BigDecimal priceActual = m_productPricing.getDiscount().subtractFromBase(m_productPricing.getPriceStd(), getPrecision());
+		final BigDecimal priceActual = m_productPricing.getDiscount().subtractFromBase(m_productPricing.getPriceStd(), getAmountPrecision().toInt());
 		setPriceActual(priceActual);
 		// metas us1064 end
 		setPriceList(m_productPricing.getPriceList());
@@ -635,7 +636,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (tax.isDocumentLevel() && m_IsSOTrx)		// AR Inv Tax
 			return;
 		//
-		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getPrecision());
+		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
 		if (isTaxIncluded())
 			setLineTotalAmt(getLineNetAmt());
 		else
@@ -969,9 +970,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	 * @deprecated Please use {@link IInvoiceBL#getPrecision(org.compiere.model.I_C_InvoiceLine)}.
 	 */
 	@Deprecated
-	public int getPrecision()
+	private CurrencyPrecision getAmountPrecision()
 	{
-		return Services.get(IInvoiceBL.class).getPrecision(this);
+		return Services.get(IInvoiceBL.class).getAmountPrecision(this);
 	}	// getPrecision
 
 	/**
@@ -1077,8 +1078,10 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setLineNetAmt();
 		// TaxAmt recalculations should be done if the TaxAmt is zero
 		// or this is an Invoice(Customer) - teo_sarca, globalqss [ 1686773 ]
-		if (m_IsSOTrx || getTaxAmt().compareTo(Env.ZERO) == 0)
+		if (m_IsSOTrx || getTaxAmt().signum() == 0)
+		{
 			setTaxAmt();
+		}
 		//
 		return true;
 	}	// beforeSave
@@ -1096,8 +1099,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// NOTE: keep in sync with org.compiere.model.MOrderLine.updateOrderTax(boolean)
 
 		final String trxName = get_TrxName();
-		final int taxPrecision = Services.get(IInvoiceBL.class).getPrecision(this);
-		final MInvoiceTax tax = MInvoiceTax.get(this, taxPrecision, oldTax, trxName);
+		final CurrencyPrecision taxPrecision = Services.get(IInvoiceBL.class).getAmountPrecision(this);
+		final MInvoiceTax tax = MInvoiceTax.get(this, taxPrecision.toInt(), oldTax, trxName);
 		if (tax == null)
 		{
 			return true;
@@ -1282,7 +1285,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					{
 						double result = getLineNetAmt().multiply(base).doubleValue();
 						result /= total.doubleValue();
-						lca.setAmt(result, getPrecision());
+						lca.setAmt(result, getAmountPrecision());
 					}
 					if (!lca.save())
 						return "Cannot save line Allocation = " + lca;
@@ -1390,7 +1393,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				double result = getLineNetAmt().multiply(base).doubleValue();
 				result /= total.doubleValue();
-				lca.setAmt(result, getPrecision());
+				lca.setAmt(result, getAmountPrecision());
 			}
 			if (!lca.save())
 				return "Cannot save line Allocation = " + lca;

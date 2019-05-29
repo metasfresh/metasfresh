@@ -57,7 +57,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -74,6 +74,7 @@ import de.metas.order.IOrderPA;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -849,10 +850,21 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public int getPrecision(final org.compiere.model.I_C_Order order)
+	public CurrencyPrecision getPricePrecision(final I_C_Order order)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		return Services.get(ICurrencyDAO.class).getStdPrecision(ctx, order.getC_Currency_ID());
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getPricePrecision(priceListId)
+				: CurrencyPrecision.TWO;
+	}
+	
+	@Override
+	public CurrencyPrecision getAmountPrecision(final I_C_Order order)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getPrecisionForLineNetAmount(priceListId)
+				: CurrencyPrecision.TWO;
 	}
 
 	@Override

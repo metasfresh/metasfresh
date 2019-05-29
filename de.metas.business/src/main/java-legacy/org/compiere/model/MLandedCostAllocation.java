@@ -21,13 +21,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.currency.CurrencyPrecision;
+import de.metas.logging.LogManager;
 
 /**
  * 	Landed Cost Allocation Model
@@ -137,22 +137,10 @@ public class MLandedCostAllocation extends X_C_LandedCostAllocation
 	 *	@param Amt amount
 	 *	@param precision precision
 	 */
-	public void setAmt (double Amt, int precision)
+	public void setAmt (double Amt, CurrencyPrecision precision)
 	{
-		BigDecimal bd = new BigDecimal(Amt);
-		if (bd.scale() > precision)
-			bd = bd.setScale(precision, BigDecimal.ROUND_HALF_UP);
+		BigDecimal bd = precision.roundIfNeeded(new BigDecimal(Amt));
 		super.setAmt(bd);
 	}	//	setAmt
 
-	/**
-	 * 	Set Allocation Qty (e.g. free products)
-	 *	@param Qty
-	 */
-	public void setQty (BigDecimal Qty)
-	{
-		super.setQty (Qty);
-	}	//	setQty
-	
-	
 }	//	MLandedCostAllocation

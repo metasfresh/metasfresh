@@ -50,10 +50,11 @@ public final class CurrencyPrecision
 		}
 	}
 
+	public static final CurrencyPrecision ZERO = new CurrencyPrecision(0);
 	public static final CurrencyPrecision TWO = new CurrencyPrecision(2);
 
 	private static final CurrencyPrecision[] cachedValues = new CurrencyPrecision[] {
-			new CurrencyPrecision(0),
+			ZERO,
 			new CurrencyPrecision(1),
 			TWO,
 			new CurrencyPrecision(3),

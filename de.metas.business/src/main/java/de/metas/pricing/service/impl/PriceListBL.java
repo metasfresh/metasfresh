@@ -1,5 +1,15 @@
 package de.metas.pricing.service.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Iterator;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,15 +43,6 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-
-import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Iterator;
 
 @SuppressWarnings("unused")
 public class PriceListBL implements IPriceListBL
@@ -71,8 +72,7 @@ public class PriceListBL implements IPriceListBL
 		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		if (priceList.isRoundNetAmountToCurrencyPrecision())
 		{
-			final I_C_Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
-			return CurrencyPrecision.ofInt(currency.getStdPrecision());
+			return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
 		}
 		else
 		{

@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -52,6 +51,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -460,7 +460,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			else
 			{
 				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-				precisionToUse = CurrencyPrecision.ofInt(invoice.getM_PriceList().getPricePrecision());
+				precisionToUse = Services.get(IPriceListBL.class).getPricePrecision(invoice.getM_PriceList_ID());
 			}
 
 			priceActual = subtractDiscount(priceEntered, discount, precisionToUse);

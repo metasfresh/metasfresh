@@ -38,6 +38,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
@@ -293,21 +294,13 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @param invoice
-	 * @return precision
-	 */
-	int getPrecision(org.compiere.model.I_C_Invoice invoice);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 
-	/**
-	 * Get Currency Precision. Calls {@link #getPrecision(I_C_Invoice)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code>.
-	 *
-	 * @param invoice
-	 * @return precision
-	 */
-	int getPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_Invoice invoice);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
