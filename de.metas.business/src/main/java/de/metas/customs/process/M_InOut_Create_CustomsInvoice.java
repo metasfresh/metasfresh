@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.ICurrencyBL;
 import de.metas.customs.CustomsInvoice;
@@ -22,6 +23,8 @@ import de.metas.customs.CustomsInvoiceRequest;
 import de.metas.customs.CustomsInvoiceService;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.model.impl.PlainDocumentLocation;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -66,13 +69,13 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo = Adempiere.getBean(ShipmentLinesForCustomsInvoiceRepo.class);
 
 	@Param(parameterName = "C_BPartner_ID")
-	private int p_C_BPartner_ID;
+	private BPartnerId p_BPartnerId;
 
 	@Param(parameterName = "C_BPartner_Location_ID")
 	private int p_C_BPartner_Location_ID;
 
 	@Param(parameterName = "AD_User_ID")
-	private int p_AD_User_ID;
+	private UserId p_ContactId;
 
 	@Param(parameterName = "IsComplete")
 	private boolean p_IsComplete;
@@ -107,8 +110,7 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 						this::getProductId, // keyFunction,
 						Function.identity()));// valueFunction
 
-		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(p_C_BPartner_ID, p_C_BPartner_Location_ID);
-		final UserId userId = UserId.ofRepoId(p_AD_User_ID);
+		final BPartnerLocationId bpartnerAndLocationId = BPartnerLocationId.ofRepoId(p_BPartnerId, p_C_BPartner_Location_ID);
 
 		final CurrencyId currencyId = currencyBL.getBaseCurrencyId(Env.getClientId(), Env.getOrgId());
 
@@ -118,9 +120,21 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 
 		final String documentNo = customsInvoiceService.reserveDocumentNo(docTypeId);
 
+
+		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
+				.bpartnerId(p_BPartnerId)
+				.bpartnerLocationId(bpartnerAndLocationId)
+				.contactId(p_ContactId)
+				.build();
+
+		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+
+		final String bpartnerAddress = documentLocation.getBPartnerAddress();
+
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerAndLocationId)
-				.userId(userId)
+				.bpartnerAddress(bpartnerAddress)
+				.userId(p_ContactId)
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)
 				.invoiceDate(invoiceDate)

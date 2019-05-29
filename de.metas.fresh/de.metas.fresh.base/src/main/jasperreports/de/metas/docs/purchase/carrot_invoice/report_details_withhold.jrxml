@@ -58,7 +58,7 @@ WHERE
 			<textField>
 				<reportElement key="textField-20" x="493" y="0" width="50" height="12" forecolor="#000000" uuid="897f20f5-df75-48f6-b5f1-2a45a299ecb3"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{linenetamt}]]></textFieldExpression>
 			</textField>
@@ -75,7 +75,7 @@ WHERE
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
 			</textField>

@@ -111,6 +111,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, AttributeValueId attributeValueId);
 
+	I_M_AttributeValue retrieveAttributeValueOrNull(I_M_Attribute attribute, String value, boolean includeInactive);
+
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
 	 *
@@ -194,4 +196,5 @@ public interface IAttributeDAO extends ISingletonService
 	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
 
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
+
 }

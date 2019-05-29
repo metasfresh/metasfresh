@@ -81,7 +81,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 				.addEqualsFilter(I_C_Location.COLUMN_GeocodingStatus, X_C_Location.GEOCODINGSTATUS_NotChecked)
 				//
 				.addCompareFilter(I_C_Location.COLUMN_C_Location_ID, Operator.GREATER, LocationId.toRepoIdOr(maxLocationIdScheduled, 0))
-				.orderBy(I_C_Location.COLUMN_C_Location_ID)
+				.orderByDescending(I_C_Location.COLUMN_C_Location_ID)
 				//
 				.setLimit(limit)
 				//
