@@ -131,8 +131,6 @@ class TableCell extends PureComponent {
     this.setState({
       widgetBlurred: false,
     });
-
-    console.log('TableCell blurwidgetfalse')
   };
 
   setBlurWidgetTrue = callback => {
@@ -142,8 +140,6 @@ class TableCell extends PureComponent {
       },
       () => {
         this.cell.focus();
-
-        console.log('TableCell blurwidgettrue')
 
         callback && callback();
       }
@@ -175,32 +171,15 @@ class TableCell extends PureComponent {
 
   handlePatch = () => {
     const { onCellChange, mainTable } = this.props;
-    // this.setState(
-    //   {
-    //     widgetBlurred: true,
-    //   },
-    //   () => {
-    //     this.cell.focus();
-    //     console.log('TableCell handlePatch')
-    //     mainTable && onCellChange && onCellChange();
-    //   }
-    // );
+
     this.setBlurWidgetTrue(() => {
-      // console.log('TableCell handlePatch')
       mainTable && onCellChange && onCellChange();
     });
-    // this.setBlurWidget(() => {
-    //   this.cell.focus();
-    //   console.log('TableCell handlePatch');
-    //   mainTable && onCellChange && onCellChange();
-    // });
   };
 
   handleKeyDown = e => {
     const { property, handleKeyDown, widgetData } = this.props;
     const { key } = e;
-
-    console.log('TableCell handleKeyDown: ', key)
 
     if (['Enter', 'Tab', 'Escape'].includes(key)) {
       this.setBlurWidgetTrue();
@@ -290,8 +269,6 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={e => {
-          // console.log('TableCell onFocus: ', widgetBlurred)
-
           if (!widgetBlurred) {
             onCellFocused(e, property, widgetData);
           } else {
