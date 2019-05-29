@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
@@ -1251,18 +1252,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return Services.get(ICurrencyDAO.class).getISO_Code(getCtx(), getC_Currency_ID());
 	}	// getCurrencyISO
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @return precision
-	 * @deprecated Please use {@link IInvoiceBL#getPrecision(I_C_Invoice)}
-	 */
-	@Deprecated
-	public int getPrecision()
-	{
-		return Services.get(IInvoiceBL.class).getPrecision(this);
-	}	// getPrecision
-
 	/**************************************************************************
 	 * Process document
 	 *
@@ -1517,7 +1506,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final int taxPrecision = invoiceBL.getPrecision(this);
+		final CurrencyPrecision taxPrecision = invoiceBL.getAmountPrecision(this.getRef_Invoice());
 
 		// Lines
 		BigDecimal totalLines = Env.ZERO;
@@ -1533,7 +1522,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				continue;
 			}
 
-			final MInvoiceTax iTax = MInvoiceTax.get(line, taxPrecision, false, trxName); // current Tax
+			final MInvoiceTax iTax = MInvoiceTax.get(line, taxPrecision.toInt(), false, trxName); // current Tax
 			if (iTax == null)
 			{
 				continue;
@@ -1562,13 +1551,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, cTax);
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision);
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
 					newITax.setC_Invoice(this);
 					newITax.setC_Tax(cTax);
-					newITax.setPrecision(taxPrecision);
+					newITax.setPrecision(taxPrecision.toInt());
 					newITax.setIsTaxIncluded(taxIncluded);
 					newITax.setTaxBaseAmt(taxBaseAmt);
 					newITax.setTaxAmt(taxAmt);

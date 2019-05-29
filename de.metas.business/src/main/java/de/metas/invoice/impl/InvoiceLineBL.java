@@ -87,10 +87,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final boolean taxIncluded = invoiceBL.isTaxIncluded(il);
 		final BigDecimal lineNetAmt = il.getLineNetAmt();
-		final int taxPrecision = invoiceBL.getPrecision(il);
+		final CurrencyPrecision taxPrecision = invoiceBL.getAmountPrecision(il);
 
 		final I_C_Tax tax = MTax.get(ctx, taxId);
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision);
+		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineNetAmt, taxIncluded, taxPrecision.toInt());
 
 		il.setTaxAmtInfo(taxAmtInfo);
 	}
