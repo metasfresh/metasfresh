@@ -109,6 +109,8 @@ public class CustomsInvoiceService
 
 		final BPartnerLocationId bpartnerAndLocationId = customsInvoiceRequest.getBpartnerAndLocationId();
 
+		final String bpartnerAddress = customsInvoiceRequest.getBpartnerAddress();
+
 		final UserId userId = customsInvoiceRequest.getUserId();
 
 		final LocalDate invoiceDate = customsInvoiceRequest.getInvoiceDate();
@@ -124,6 +126,7 @@ public class CustomsInvoiceService
 
 		final CustomsInvoice customsInvoice = CustomsInvoice.builder()
 				.bpartnerAndLocationId(bpartnerAndLocationId)
+				.bpartnerAddress(bpartnerAddress)
 				.userId(userId)
 				.invoiceDate(invoiceDate)
 				.orgId(Env.getOrgId())
@@ -284,11 +287,10 @@ public class CustomsInvoiceService
 
 	}
 
-
 	private void setCustomsInvoiceLine(final ImmutableSet<InOutAndLineId> shipmentLines, final CustomsInvoiceLineId customsInvoiceLineId)
 	{
 
-		for(final InOutAndLineId shipmentLine : shipmentLines)
+		for (final InOutAndLineId shipmentLine : shipmentLines)
 		{
 			customsInvoiceRepo.setCustomsInvoiceLineToShipmentLine(shipmentLine, customsInvoiceLineId);
 

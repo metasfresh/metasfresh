@@ -169,10 +169,13 @@ public class CustomsInvoiceServiceTest
 				.put(product1, shipmentLine1)
 				.build();
 
+		final String bpartnerAddress = "Bpartner Address";
+
 		final boolean doComplete = true;
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
+				.bpartnerAddress(bpartnerAddress)
 				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
@@ -254,8 +257,11 @@ public class CustomsInvoiceServiceTest
 
 		final boolean doComplete = true;
 
+		final String bpartnerAddress = "Bpartner Address";
+
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
+				.bpartnerAddress(bpartnerAddress)
 				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
@@ -336,8 +342,11 @@ public class CustomsInvoiceServiceTest
 
 		final boolean doComplete = true;
 
+		final String bpartnerAddress = "Bpartner Address";
+
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
+				.bpartnerAddress(bpartnerAddress)
 				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
@@ -421,8 +430,11 @@ public class CustomsInvoiceServiceTest
 
 		final boolean doComplete = true;
 
+		final String bpartnerAddress = "Bpartner Address";
+
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
+				.bpartnerAddress(bpartnerAddress)
 				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)

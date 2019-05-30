@@ -40,6 +40,7 @@ SELECT
 		WHEN $2 = 'rfqr' THEN COALESCE(bprfqr.name||E'\n', '') || COALESCE( bplrfqr.address, '' )
 		WHEN $2 = 'ft' THEN COALESCE(bpft.name||E'\n', '') || COALESCE( bplft.address, '' )
 		WHEN $2 = 'mkt' THEN COALESCE(mktbp.name||E'\n', '') || COALESCE( mktbpl.address, '' )
+		WHEN $2 = 'ci' THEN COALESCE(cibp.name||E'\n', '') || COALESCE( cibpl.address, '' )
 		WHEN $3 IS NOT NULL THEN
 			COALESCE(bp.name||E'\n', '') || COALESCE( bpl.address, '' )
 		ELSE 'Incompatible Parameter!'
@@ -86,6 +87,11 @@ FROM
 	LEFT JOIN mktg_contactperson mkt  on mkt.mktg_contactperson_id = $4 AND mkt.isActive = 'Y'
     LEFT JOIN c_bpartner_location mktbpl on mkt.c_bpartner_location_id = mktbpl.c_bpartner_location_id AND mktbpl.isActive = 'Y'
 	LEFT JOIN C_BPartner mktbp ON mktbp.C_BPartner_ID = mktbpl.C_BPartner_ID AND mktbp.isActive = 'Y'
+	
+	-- extract customs invoice address
+	LEFT JOIN C_Customs_Invoice ci  on ci.C_Customs_Invoice_id = $4 AND ci.isActive = 'Y'
+    LEFT JOIN c_bpartner_location cibpl on ci.c_bpartner_location_id = cibpl.c_bpartner_location_id AND cibpl.isActive = 'Y'
+	LEFT JOIN C_BPartner cibp ON cibp.C_BPartner_ID = cibpl.C_BPartner_ID AND cibp.isActive = 'Y'
 $BODY$
   LANGUAGE sql STABLE
 ;
