@@ -1,5 +1,7 @@
 package de.metas.bpartner.service;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -261,6 +263,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
+	List<String> getBPartnerNamesByIds(Collection<BPartnerId> bpartnerIds);
+
 	Optional<BPartnerId> retrieveBPartnerIdBy(BPartnerQuery query);
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
@@ -288,4 +292,6 @@ public interface IBPartnerDAO extends ISingletonService
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
 
 	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
+
+	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 }
