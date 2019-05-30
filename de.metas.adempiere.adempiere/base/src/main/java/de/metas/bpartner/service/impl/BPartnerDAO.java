@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,9 +46,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -85,6 +83,9 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
@@ -1128,5 +1129,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	public BPGroupId getBPGroupIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID());
+	}
+
+	@Override
+	public Stream<BPartnerId> streamChildBPartnerIds(@NonNull final BPartnerId parentPartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_BPartner_Parent_ID, parentPartnerId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(BPartnerId::ofRepoId)
+				.stream();
 	}
 }
