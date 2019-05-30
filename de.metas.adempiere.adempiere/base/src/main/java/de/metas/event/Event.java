@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -110,8 +111,20 @@ public final class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final ImmutableSet<Integer> recipientUserIds;
 
-	@JsonProperty("storeEvent")
-	private final boolean storeEvent;
+	private enum LoggingStatus
+	{
+		SHALL_NOT_BE_LOGGED,
+
+		/** With this status, the system shall store the event before it is posted to the event bus. See {@link Event#withStatusIsLogged()}. */
+		SHALL_BE_LOGGED,
+
+		/** Indicate that the event itself was logged; with this status, the event handlers will invoke {@link EventLogEntryCollector#createThreadLocalForEvent(Event)} so that event handling business logic can log event-related info. */
+		WAS_LOGGED;
+	}
+
+	@JsonProperty("loggingStatus")
+	@Getter(value = AccessLevel.NONE)
+	private final LoggingStatus loggingStatus;
 
 	@JsonIgnore
 	@Getter(AccessLevel.NONE)
@@ -128,7 +141,7 @@ public final class Event
 		senderId = builder.senderId;
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
-		storeEvent = builder.storeEvent;
+		loggingStatus = builder.loggingStatus;
 	}
 
 	@JsonCreator
@@ -141,7 +154,7 @@ public final class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
-			@JsonProperty("storeEvent") final boolean storeEvent)
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -152,7 +165,7 @@ public final class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
-		this.storeEvent = storeEvent;
+		this.loggingStatus = loggingStatus;
 	}
 
 	private static final ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -270,14 +283,11 @@ public final class Event
 	}
 
 	/**
-	 *
-	 * @param eventBusId
 	 * @return
 	 *         <ul>
 	 *         <li>true if event was successfully marked
 	 *         <li>false if event was already received by given event bus ID
 	 *         </ul>
-	 *
 	 */
 	public final boolean markReceivedByEventBusId(final String eventBusId)
 	{
@@ -294,6 +304,23 @@ public final class Event
 		return receivedByEventBusIds.contains(eventBusId);
 	}
 
+	public Event withStatusWasLogged()
+	{
+		final Builder builder = toBuilder();
+		builder.loggingStatus = LoggingStatus.WAS_LOGGED;
+		return builder.build();
+	}
+
+	public boolean isShallBeLogged()
+	{
+		return LoggingStatus.SHALL_BE_LOGGED.equals(loggingStatus);
+	}
+
+	public boolean isWasLogged()
+	{
+		return LoggingStatus.WAS_LOGGED.equals(loggingStatus);
+	}
+
 	public Builder toBuilder()
 	{
 		final Builder builder = new Builder();
@@ -305,6 +332,7 @@ public final class Event
 		builder.summary = summary;
 		builder.uuid = uuid;
 		builder.when = when;
+		builder.loggingStatus = loggingStatus;
 
 		return builder;
 	}
@@ -322,7 +350,7 @@ public final class Event
 		private String senderId = EventBusConstants.getSenderId();
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
-		private boolean storeEvent;
+		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
 
 		private Builder()
 		{
@@ -599,14 +627,15 @@ public final class Event
 			return this;
 		}
 
-		public Builder storeEvent()
+		public Builder wasLogged()
 		{
-			return storeEvent(true);
+			this.loggingStatus = LoggingStatus.WAS_LOGGED;
+			return this;
 		}
 
-		public Builder storeEvent(final boolean storeEvent)
+		public Builder shallBeLogged()
 		{
-			this.storeEvent = storeEvent;
+			this.loggingStatus = LoggingStatus.SHALL_BE_LOGGED;
 			return this;
 		}
 	}
