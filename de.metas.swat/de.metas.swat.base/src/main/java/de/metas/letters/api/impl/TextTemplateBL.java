@@ -193,7 +193,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 	private static int getJasperProcess_ID(final Letter request)
 	{
-		if (request.getBoilerPlateId() != null)
+		if (request.getBoilerPlateId() == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
