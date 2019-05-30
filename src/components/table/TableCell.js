@@ -107,7 +107,7 @@ class TableCell extends PureComponent {
 
     this.state = {
       tooltipToggled: false,
-      widgetBlurred: false,
+      widgetFocused: false,
     };
   }
 
@@ -127,16 +127,16 @@ class TableCell extends PureComponent {
     }
   }
 
-  setBlurWidgetFalse = () => {
+  setFocusedWidgetFalse = () => {
     this.setState({
-      widgetBlurred: false,
+      widgetFocused: false,
     });
   };
 
-  setBlurWidgetTrue = callback => {
+  setFocusedWidgetTrue = callback => {
     this.setState(
       {
-        widgetBlurred: true,
+        widgetFocused: true,
       },
       () => {
         this.cell.focus();
@@ -172,7 +172,7 @@ class TableCell extends PureComponent {
   handlePatch = () => {
     const { onCellChange, mainTable } = this.props;
 
-    this.setBlurWidgetTrue(() => {
+    this.setFocusedWidgetTrue(() => {
       mainTable && onCellChange && onCellChange();
     });
   };
@@ -182,7 +182,7 @@ class TableCell extends PureComponent {
     const { key } = e;
 
     if (['Enter', 'Tab', 'Escape'].includes(key)) {
-      this.setBlurWidgetTrue();
+      this.setFocusedWidgetTrue();
     }
 
     handleKeyDown(e, property, widgetData);
@@ -218,7 +218,7 @@ class TableCell extends PureComponent {
       isEditable,
     } = this.props;
     const docId = `${this.props.docId}`;
-    const { tooltipToggled, widgetBlurred } = this.state;
+    const { tooltipToggled, widgetFocused } = this.state;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -269,10 +269,10 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={e => {
-          if (!widgetBlurred) {
+          if (!widgetFocused) {
             onCellFocused(e, property, widgetData);
           } else {
-            this.setBlurWidgetFalse();
+            this.setFocusedWidgetFalse();
           }
         }}
         onContextMenu={handleRightClick}
