@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.location.CountryId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -42,6 +42,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
@@ -285,4 +286,6 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
+
+	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
 }

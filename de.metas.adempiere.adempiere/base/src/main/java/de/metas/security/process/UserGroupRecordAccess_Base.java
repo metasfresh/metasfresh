@@ -1,6 +1,7 @@
 package de.metas.security.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -8,6 +9,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -78,7 +80,7 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 		userGroupRecordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 				.recordRef(getRecordRef())
 				.principal(getPrincipal())
-				.permission(getPermission())
+				.permissions(getPermissionsToGrant())
 				.build());
 	}
 
@@ -128,14 +130,22 @@ abstract class UserGroupRecordAccess_Base extends JavaProcess implements IProces
 		}
 	}
 
-	private Access getPermission()
+	private Set<Access> getPermissionsToGrant()
 	{
 		final Access permission = getPermissionOrNull();
 		if (permission == null)
 		{
 			throw new FillMandatoryException(PARAM_PermissionCode);
 		}
-		return permission;
+
+		if (Access.WRITE.equals(permission))
+		{
+			return ImmutableSet.of(Access.READ, Access.WRITE);
+		}
+		else
+		{
+			return ImmutableSet.of(permission);
+		}
 	}
 
 	private Access getPermissionOrNull()
