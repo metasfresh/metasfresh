@@ -29,9 +29,9 @@ import lombok.Value;
 @Builder
 public class MetasfreshVersion
 {
-	final int major;
-	final int minor;
+	int major;
+	int minor;
 
 	/** Not longer than 50 chars, otherwise there will be trouble with some XSDs. */
-	final String fullVersion;
+	String fullVersion;
 }
