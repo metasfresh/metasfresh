@@ -187,7 +187,7 @@ final class EventBus implements IEventBus
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
 				.putProperty(PROP_Body, json)
-				.storeEvent()
+				.shallBeLogged()
 				.build());
 	}
 
@@ -201,15 +201,23 @@ final class EventBus implements IEventBus
 			return;
 		}
 
+		final Event eventToPost;
+
 		// as long as we have just one common event-log-DB, we store events only on the machine they were created on, in order to avoid duplicates.
-		if (event.isStoreEvent() && event.isLocalEvent())
+		if (event.isShallBeLogged() && event.isLocalEvent())
 		{
+			eventToPost = event.withStatusWasLogged();
+
 			final EventLogService eventLogService = Adempiere.getBean(EventLogService.class);
-			eventLogService.saveEvent(event, this);
+			eventLogService.saveEvent(eventToPost, this);
+		}
+		else
+		{
+			eventToPost = event;
 		}
 
 		logger.debug("{} - Posting event: {}", this, event);
-		eventBus.post(event);
+		eventBus.post(eventToPost);
 	}
 
 	private static class TypedConsumerAsEventListener<T> implements IEventListener
@@ -284,7 +292,7 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		if (event.isStoreEvent())
+		if (event.isWasLogged())
 		{
 			invokeEventListenerWithLogging(eventListener, event);
 		}
