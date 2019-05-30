@@ -19,12 +19,6 @@ class Inbox extends Component {
     super(props);
   }
 
-  handleClickOutside = () => {
-    const { close } = this.props;
-
-    close && close();
-  };
-
   handleClick = item => {
     const { dispatch, close, location } = this.props;
     if (item.target) {
@@ -115,14 +109,12 @@ class Inbox extends Component {
   };
 
   render() {
-    const { open, inbox, all, close, modalVisible, onFocus } = this.props;
+    const { open, inbox, all, close } = this.props;
 
     return (
       <div
         className="js-inbox-wrapper js-not-unselect"
         onKeyDown={e => this.handleKeyDown(e)}
-        onFocus={onFocus}
-        tabIndex={modalVisible ? -1 : 0}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -173,18 +165,37 @@ class Inbox extends Component {
 Inbox.propTypes = {
   dispatch: PropTypes.func.isRequired,
   open: PropTypes.bool,
-  onFocus: PropTypes.func,
   modalVisible: PropTypes.bool.isRequired,
   location: PropTypes.object,
+  close: PropTypes.func,
+  inbox: PropTypes.shape({}),
+  all: PropTypes.bool,
 };
 
-Inbox.defaultProps = {
-  onFocus: () => {},
-};
+Inbox.defaultProps = {};
 
-export default withRouter(
+const routerInbox = withRouter(
   connect((state, props) => ({
     modalVisible: state.windowHandler.modal.visible,
     location: props.router.location,
-  }))(onClickOutside(Inbox))
+  }))(Inbox)
 );
+
+const addClickOutsideHandler = Child => {
+  return class WithClickOutsideHandler extends Component {
+    static propTypes = {
+      close: PropTypes.func,
+    };
+
+    handleClickOutside = () => {
+      const { close } = this.props;
+      close && close();
+    };
+
+    render() {
+      return <Child {...this.props} />;
+    }
+  };
+};
+
+export default onClickOutside(addClickOutsideHandler(routerInbox));

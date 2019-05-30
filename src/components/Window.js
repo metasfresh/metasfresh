@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
 
 import Table from './table/Table';
 import EntryTable from './table/EntryTable';
@@ -530,5 +531,39 @@ class Window extends PureComponent {
     );
   }
 }
+
+Window.propTypes = {
+  layout: PropTypes.shape(),
+  handleDropFile: PropTypes.func,
+  handleRejectDropped: PropTypes.func,
+  handleDragStart: PropTypes.func,
+  isModal: PropTypes.bool,
+  rowData: PropTypes.shape(),
+  newRow: PropTypes.bool,
+  tabsInfo: PropTypes.shape(),
+  sort: PropTypes.func,
+  allowShortcut: PropTypes.bool,
+  data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
+  dataId: PropTypes.string,
+  modal: PropTypes.bool,
+  tabId: PropTypes.string,
+  rowId: PropTypes.string,
+  isAdvanced: PropTypes.bool,
+};
+
+Window.defaultProps = {
+  handleDropFile: () => {
+    // eslint-disable-next-line no-console
+    console.warn('TODO: handleDropFile prop is missing');
+  },
+  handleRejectDropped: () => {
+    // eslint-disable-next-line no-console
+    console.warn('TODO: handleRejectDropped prop is missing');
+  },
+  handleDragStart: () => {
+    // eslint-disable-next-line no-console
+    console.warn('TODO: handleDragStart prop is missing');
+  },
+};
 
 export default Window;

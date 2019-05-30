@@ -178,9 +178,19 @@ button, .btn {
     border: solid 1px $brand-light-color;
     color: $brand-font-color-secondary;
     background-color: transparent;
+
+    .tooltip-wrapp {
+        transition: opacity 50ms ease-in-out;
+        opacity: 0;
+    }
 }
 .btn-meta-outline-secondary:hover {
     background-color: color(#000 lightness(95%));
+
+    .tooltip-wrapp {
+        transition: opacity 50ms ease-in-out 1s;
+        opacity: 1;
+    }
 }
 .btn-meta-outline-secondary:focus {
     border-color: $brand-font-color;

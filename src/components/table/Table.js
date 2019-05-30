@@ -481,7 +481,8 @@ class Table extends Component {
     const parentNode = event.target.parentNode;
     const closeIncluded =
       limitOnClickOutside &&
-      parentNode.className.includes('document-list-wrapper')
+      (parentNode.className.includes('document-list-wrapper') ||
+        event.target.className.includes('document-list-wrapper'))
         ? parentNode.className.includes('document-list-has-included')
         : true;
 
@@ -1321,11 +1322,15 @@ const mapStateToProps = state => ({
   allowOutsideClick: state.windowHandler.allowOutsideClick,
 });
 
+const clickOutsideConfig = {
+  excludeScrollbar: true,
+};
+
 export default connect(
   mapStateToProps,
   false,
   false,
   { withRef: true }
-)(onClickOutside(Table));
+)(onClickOutside(Table, clickOutsideConfig));
 
 export { Table };
