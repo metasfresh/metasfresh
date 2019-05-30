@@ -159,7 +159,7 @@ export default class SelectionDropdown extends Component {
     if (event.keyCode > 47 && event.keyCode < 123) {
       this.navigateToAlphanumeric(event.key);
     } else {
-      // console.log('SelectionDropdown handleKeyDown: ', event.key)
+      console.log('SelectionDropdown handleKeyDown: ', event.key)
 
       switch (event.key) {
         case 'ArrowUp':

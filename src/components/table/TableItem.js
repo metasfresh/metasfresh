@@ -151,7 +151,7 @@ class TableItem extends PureComponent {
           'js-input-field'
         )[0];
 
-        // TODO: We need to focus attributes button if it exists
+        // @TODO: We need to focus attributes button if it exists
 
         // const disabled = elem && elem.className.includes('input-disabled');
         const disabled = elem && elem.hasAttribute('disabled');
@@ -193,7 +193,7 @@ class TableItem extends PureComponent {
       case 'Tab':
       case 'Escape':
         if (edited === property) {
-          e.stopPropagation();
+          // e.stopPropagation();
           // @TODO This should be done differently
           this.handleEditProperty(e);
           this.listenOnKeysTrue();
@@ -558,9 +558,7 @@ class TableItem extends PureComponent {
     return (
       <tr
         key={key}
-        onClick={(e) => {
-          onClick(e);
-        }}
+        onClick={onClick}
         onDoubleClick={this.handleDoubleClick}
         className={classnames({
           'row-selected': isSelected,
