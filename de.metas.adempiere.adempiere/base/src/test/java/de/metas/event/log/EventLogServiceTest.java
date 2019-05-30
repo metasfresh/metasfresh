@@ -87,7 +87,7 @@ public class EventLogServiceTest
 						"  \"uuid\" : \"5fc6dbeb-aee4-4ac7-89ca-d31ff50d6421\",\n" +
 						"  \"when\" : \"2018-01-02T07:08:14.521Z\",\n" +
 						"  \"senderId\" : \"testSenderId\",\n" +
-						"  \"loggingStatus\" : \"SHALL_NOT_BE_LOGGED\"" +
+						"  \"loggingStatus\" : \"SHALL_NOT_BE_LOGGED\"\n" +
 						"}");
 
 		final List<I_AD_EventLog_Entry> eventLogEntryRecords = pojoLookupMap.getRecords(I_AD_EventLog_Entry.class);
