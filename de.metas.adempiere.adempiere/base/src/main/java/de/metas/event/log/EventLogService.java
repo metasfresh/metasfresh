@@ -94,7 +94,7 @@ public class EventLogService
 				.putPropertyFromObject(
 						EventLogUserService.PROPERTY_PROCESSED_BY_HANDLER_CLASS_NAMES,
 						processedHandlers)
-				.wasLogged() // the event is logged; otherwise we would not be able to load&repost it
+				.wasLogged() // the event was logged; otherwise we would not be able to load it
 				.build();
 	}
 
