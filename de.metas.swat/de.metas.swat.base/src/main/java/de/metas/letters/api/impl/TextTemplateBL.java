@@ -57,6 +57,7 @@ import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
@@ -69,7 +70,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 	private static final TextTemplateBL instance = new TextTemplateBL();
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private static final int AD_Process_ID_T_Letter_Spool_Print = 540278; // TODO: HARDCODED
+	private static final AdProcessId AD_Process_ID_T_Letter_Spool_Print = AdProcessId.ofRepoId(540278); // TODO: HARDCODED
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -191,9 +192,9 @@ public final class TextTemplateBL implements ITextTemplateBL
 		return pdf;
 	}
 
-	private static int getJasperProcess_ID(final Letter request)
+	private static AdProcessId getJasperProcess_ID(final Letter request)
 	{
-		if (request.getBoilerPlateId() != null)
+		if (request.getBoilerPlateId() == null)
 		{
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
@@ -204,8 +205,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 			return AD_Process_ID_T_Letter_Spool_Print;
 		}
 
-		int jasperProcessId = textTemplate.getJasperProcess_ID();
-		if (jasperProcessId <= 0)
+		AdProcessId jasperProcessId = AdProcessId.ofRepoIdOrNull(textTemplate.getJasperProcess_ID());
+		if (jasperProcessId == null)
 		{
 			jasperProcessId = AD_Process_ID_T_Letter_Spool_Print;
 		}

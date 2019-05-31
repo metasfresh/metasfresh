@@ -71,7 +71,7 @@ public class EventLogEntryCollector implements IAutoCloseable
 	{
 		final EventLogEntryCollector eventLogCollector = threadLocalCollector.get();
 		Check.errorIf(eventLogCollector == null,
-				"Missing thread-local event log collector. It is expected that one was created using provideEventLogCollectorForCurrentThread().");
+				"Missing thread-local EventLogEntryCollector instance. It is expected that one was created using createThreadLocalForEvent().");
 		return eventLogCollector;
 	}
 
@@ -96,7 +96,7 @@ public class EventLogEntryCollector implements IAutoCloseable
 		threadLocalCollector.remove();
 
 		// Avoid throwing exception because EventLogService is not available in unit tests
-		if(Adempiere.isUnitTestMode())
+		if (Adempiere.isUnitTestMode())
 		{
 			return;
 		}

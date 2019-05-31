@@ -2,6 +2,7 @@ package de.metas.bpartner.service.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -27,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +39,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,9 +48,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
-import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -68,6 +68,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -85,6 +86,9 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
@@ -148,7 +152,18 @@ public class BPartnerDAO implements IBPartnerDAO
 		return bpartner;
 	}
 
-	@Override public BPartnerId getBPartnerIdByValue(@NonNull final String value)
+	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return loadByRepoIdAwaresOutOfTrx(bpartnerIds, I_C_BPartner.class);
+	}
+
+	@Override
+	public BPartnerId getBPartnerIdByValue(@NonNull final String value)
 	{
 		final String valueFixed = value.trim();
 
@@ -868,6 +883,23 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public List<String> getBPartnerNamesByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
+	{
+		final ImmutableMap<BPartnerId, String> bpartnerNamesById = getByIds(bpartnerIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()),
+						bpartner -> bpartner.getName()));
+
+		return bpartnerIds.stream()
+				.map(bpartnerId -> {
+					final String name = bpartnerNamesById.get(bpartnerId);
+					return name != null ? name : "<" + bpartnerId.getRepoId() + ">";
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
 	public I_C_BPartner_Location retrieveBPartnerLocation(@NonNull final BPartnerLocationQuery query)
 	{
 		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = Services.get(IQueryBL.class)
@@ -1047,7 +1079,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	private final CCache<BPartnerLocationGLNQuery, Optional<BPartnerId>> //
-			bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>>builder()
+	bpartnerIdsByGLNQuery = CCache.<BPartnerLocationGLNQuery, Optional<BPartnerId>> builder()
 			.tableName(I_C_BPartner_Location.Table_Name)
 			.build();
 
@@ -1128,5 +1160,53 @@ public class BPartnerDAO implements IBPartnerDAO
 	public BPGroupId getBPGroupIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return BPGroupId.ofRepoId(getById(bpartnerId).getC_BP_Group_ID());
+	}
+
+	@Override
+	public Stream<BPartnerId> streamChildBPartnerIds(@NonNull final BPartnerId parentPartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_BPartner_Parent_ID, parentPartnerId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(BPartnerId::ofRepoId)
+				.stream();
+	}
+
+	@Override
+	public List<BPartnerId> getParentsUpToTheTopInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		final ArrayList<BPartnerId> path = new ArrayList<>();
+
+		BPartnerId currentBPartnerId = bpartnerId;
+		while (currentBPartnerId != null)
+		{
+			if (path.contains(currentBPartnerId))
+			{
+				throw new AdempiereException("Cycle detected: " + path);
+			}
+
+			path.add(0, currentBPartnerId);
+
+			currentBPartnerId = getParentIdInTrx(currentBPartnerId);
+		}
+
+		return path;
+	}
+
+	private BPartnerId getParentIdInTrx(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_C_BPartner_ID, bpartnerId)
+				.addNotNull(I_C_BPartner.COLUMN_BPartner_Parent_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, Integer.class)
+				.stream()
+				.map(BPartnerId::ofRepoId)
+				.findAny()
+				.orElse(null);
 	}
 }
