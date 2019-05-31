@@ -1506,10 +1506,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_taxes = null;
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(this.getRef_Invoice());
+		final CurrencyPrecision taxPrecision = invoiceBL.getTaxPrecision(this);
 
 		// Lines
-		BigDecimal totalLines = Env.ZERO;
+		BigDecimal totalLines = BigDecimal.ZERO;
 		final Set<Integer> taxIds = new HashSet<>();
 		final MInvoiceLine[] lines = getLines(false);
 		for (final MInvoiceLine line : lines)
