@@ -2,9 +2,12 @@
   <dictionary name="cp">
     <words>
       <w>adempiere</w>
+      <w>bpartner</w>
+      <w>dataentry</w>
       <w>metasfresh</w>
       <w>nominatim</w>
       <w>pharma</w>
+      <w>subtab</w>
       <w>tibi</w>
     </words>
   </dictionary>
