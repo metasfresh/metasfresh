@@ -1,4 +1,4 @@
-CREATE backup.m_attributevalue_2019_05_31 AS
+CREATE TABLE backup.m_attributevalue_2019_05_31 AS
 SELECT * FROM m_attributevalue;
 
 UPDATE m_attributevalue SET isactive=c_country.isactive,name=c_country.name,updated=now(),updatedby=99
