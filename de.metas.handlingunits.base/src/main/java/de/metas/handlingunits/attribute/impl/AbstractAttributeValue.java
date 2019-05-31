@@ -60,6 +60,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Generic {@link IAttributeValue} value implementation
  *
@@ -726,7 +728,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 		}
 	}
 
-	@Override
+	@Nullable @Override
 	public final Object getEmptyValue()
 	{
 		final Object value = getValue();
@@ -740,6 +742,10 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 			return BigDecimal.ZERO;
 		}
 		else if (value instanceof String)
+		{
+			return null;
+		}
+		else if(TimeUtil.isDateOrTimeObject(value))
 		{
 			return null;
 		}
