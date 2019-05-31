@@ -1,10 +1,11 @@
-update m_attributevalue set isactive=c_country.isactive,name=c_country.name,updated=now(),updatedby=99
-from c_country
-where 
-m_attribute_id::text=(select value from ad_Sysconfig where name='de.metas.swat.CountryAttribute')
-and c_country.countrycode=m_attributevalue.value
-and (c_country.name!=m_attributevalue.name
-or c_country.isactive!=m_attributevalue.isactive);
+CREATE backup.m_attributevalue_2019_05_31 AS
+SELECT * FROM m_attributevalue;
 
-create backup.m_attributevalue_2019_05_31 as
-select * from m_attributevalue;
+UPDATE m_attributevalue SET isactive=c_country.isactive,name=c_country.name,updated=now(),updatedby=99
+FROM c_country
+WHERE 
+m_attribute_id::text=(SELECT value FROM ad_Sysconfig WHERE name='de.metas.swat.CountryAttribute')
+AND c_country.countrycode=m_attributevalue.value
+AND (c_country.name!=m_attributevalue.name
+OR c_country.isactive!=m_attributevalue.isactive);
+
