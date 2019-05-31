@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.document.ICopyHandler;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -38,6 +39,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
@@ -71,15 +73,6 @@ public interface IInvoiceBL extends ISingletonService
 			boolean setInvoiceRef,
 			boolean copyLines);
 
-	/**
-	 * @param fromInvoice
-	 * @param toInvoice
-	 * @param counter
-	 * @param setOrderRef
-	 * @param setInvoiceRef
-	 * @return
-	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean)
-	 */
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef);
 
 	/**
@@ -102,7 +95,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param docLineCopyHandler allows copying of fields to be customized per implementation. This is e.g. used by {@link #creditInvoice(de.metas.adempiere.model.I_C_Invoice, IInvoiceCreditContext)}.
 	 *            May be <code>null</code>.
 	 * @return
-	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean)
+	 * @see #copyFrom(I_C_Invoice, Timestamp, int, boolean, boolean, boolean, boolean, boolean)
 	 */
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef,
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> docLineCopyHandler);
@@ -122,14 +115,12 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isCreditMemo(I_C_Invoice invoice);
 
 	/**
-	 *
 	 * @param docBaseType
 	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(String docBaseType);
 
 	/**
-	 *
 	 * @param invoice
 	 * @return <code>true</code> if the given invoice is the reversal of another invoice.
 	 */
@@ -162,14 +153,12 @@ public interface IInvoiceBL extends ISingletonService
 	 * values.
 	 * <li>The created credit memo will always have <code>IsTaxIncluded='Y'</code>
 	 * </ul>
-	 *
+	 * <p>
 	 * Depending in the <code>completeAndAllocate</code> parameter, the credit memo will also be allocated against the invoice, so that both have <code>IsPaid='Y'</code>.
 	 *
 	 * @param invoice the invoice to be credited. May not be fully paid/allocated and may not be a credit memo itself
 	 * @param creditCtx see {@link IInvoiceCreditContext}
-	 *
 	 * @return the created credit memo
-	 *
 	 * @throws AdempiereException if
 	 *             <ul>
 	 *             <li>the given invoice is <code>null</code> or</li>
@@ -200,7 +189,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
 	/**
-	 *
 	 * @param order
 	 * @param C_DocTypeTarget_ID invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
@@ -241,7 +229,7 @@ public interface IInvoiceBL extends ISingletonService
 	void renumberLines(de.metas.adempiere.model.I_C_Invoice invoice, int step);
 
 	/**
-	 * Similar to {@link #renumberLines(de.metas.adempiere.model.I_C_Invoice, int)}, but in addition, leave alone lines which were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine)}
+	 * Similar to {@link #renumberLines(de.metas.adempiere.model.I_C_Invoice, int)}, but in addition, leave alone lines which were flagged using {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}
 	 * and don't assign their <code>Line</code> value to any other line.
 	 *
 	 * @param lines
@@ -293,21 +281,17 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @param invoice
-	 * @return precision
-	 */
-	int getPrecision(org.compiere.model.I_C_Invoice invoice);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 
-	/**
-	 * Get Currency Precision. Calls {@link #getPrecision(I_C_Invoice)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code>.
-	 *
-	 * @param invoice
-	 * @return precision
-	 */
-	int getPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_Invoice invoice);
+
+	CurrencyPrecision getAmountPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
+
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_Invoice invoice);
+
+	CurrencyPrecision getTaxPrecision(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
@@ -347,7 +331,7 @@ public interface IInvoiceBL extends ISingletonService
 	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
 	/**
-	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, de.metas.document.service.ICopyHandler)}, but makes sure that the correct types are used.
+	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
 	 *
 	 * @param filter
 	 * @param copyHandler
@@ -357,11 +341,8 @@ public interface IInvoiceBL extends ISingletonService
 			IDocCopyHandler<I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyHandler);
 
 	/**
-	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, de.metas.document.service.ICopyHandler)}, but makes sure that the correct types are used.
+	 * Basically this method delegates to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
 	 * If this proves to be usefull, we can add similar methods e.g. to <code>IOrderBL</code>.
-	 *
-	 * @param filter
-	 * @param copyHandler
 	 */
 	void registerLineCopyHandler(
 			IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
@@ -381,7 +362,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param invoice
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
-	 *         {@link I_Invoice#isTaxIncluded()} value is returned.
 	 */
 	boolean isTaxIncluded(I_C_Invoice invoice, I_C_Tax tax);
 

@@ -237,12 +237,12 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order order = groupFirstOrderLine.getC_Order();
 		final I_C_Order_CompensationGroup orderCompensationGroupPO = groupFirstOrderLine.getC_Order_CompensationGroup();
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final int precision = orderBL.getPrecision(order);
 
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
 				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
-				.precision(precision)
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()));
 
@@ -562,11 +562,11 @@ public class OrderGroupRepository implements GroupRepository
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final I_C_Order order = compensationLinePO.getC_Order();
-		final int precision = orderBL.getPrecision(order);
 
 		return Group.builder()
 				.groupId(extractGroupId(compensationLinePO))
-				.precision(precision)
+				.pricePrecision(orderBL.getPricePrecision(order))
+				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
 				.regularLine(aggregatedRegularLine)
@@ -688,7 +688,7 @@ public class OrderGroupRepository implements GroupRepository
 		};
 
 		final Consumer<Collection<I_C_OrderLine>> orderLinesSequenceUpdater = orderLines -> orderLines.stream()
-				.sorted(Comparator.<I_C_OrderLine, Integer> comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
+				.sorted(Comparator.<I_C_OrderLine, Integer>comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
 						.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedCompensationLine(orderLine) ? 0 : 1)
 						.thenComparing(I_C_OrderLine::getLine)
 						.thenComparing(I_C_OrderLine::getC_OrderLine_ID))

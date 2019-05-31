@@ -1,8 +1,8 @@
 package de.metas.order.compensationGroup;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.product.ProductId;
@@ -144,7 +144,7 @@ public final class GroupCompensationLine
 	void setPriceAndQty(
 			@NonNull final BigDecimal price,
 			@NonNull final Quantity qtyEntered,
-			final int precision)
+			@NonNull final CurrencyPrecision amountPrecision)
 	{
 		Check.assumeEquals(qtyEntered.getUomId(), this.uomId, "Param qtyEntered needs to have UomId={}; qtyEntered={}", this.uomId, qtyEntered);
 
@@ -156,10 +156,7 @@ public final class GroupCompensationLine
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, getProductId());
 
 		this.lineNetAmt = price.multiply(qtyInProductUOM.getAsBigDecimal());
-		if (lineNetAmt.scale() > precision)
-		{
-			lineNetAmt = lineNetAmt.setScale(precision, RoundingMode.HALF_UP);
-		}
+		this.lineNetAmt = amountPrecision.roundIfNeeded(this.lineNetAmt);
 	}
 
 	public boolean isGeneratedLine()
