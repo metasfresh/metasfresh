@@ -1,8 +1,12 @@
 package de.metas.request.api;
 
+import java.util.stream.Stream;
+
 import org.eevolution.model.I_DD_OrderLine;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.request.RequestId;
 import de.metas.request.model.I_R_Request;
 import de.metas.util.ISingletonService;
 
@@ -50,4 +54,6 @@ public interface IRequestDAO extends ISingletonService
 	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
+
+	Stream<RequestId> streamRequestIdsByBPartnerId(BPartnerId bpartnerId);
 }

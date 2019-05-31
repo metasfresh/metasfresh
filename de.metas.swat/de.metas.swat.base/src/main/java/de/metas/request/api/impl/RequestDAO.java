@@ -5,9 +5,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.sql.Timestamp;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_AttributeInstance;
@@ -20,16 +22,17 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.request.RequestId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.model.I_R_Request;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -216,5 +219,16 @@ public class RequestDAO implements IRequestDAO
 		save(request);
 
 		return request;
+	}
+
+	@Override
+	public Stream<RequestId> streamRequestIdsByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_R_Request.class)
+				.addEqualsFilter(I_R_Request.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.create()
+				.listIds(RequestId::ofRepoId)
+				.stream();
 	}
 }
