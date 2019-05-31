@@ -1,20 +1,16 @@
 package de.metas.request.api;
 
-import java.util.stream.Stream;
-
+import org.compiere.model.I_R_Request;
 import org.eevolution.model.I_DD_OrderLine;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.request.RequestId;
-import de.metas.request.model.I_R_Request;
 import de.metas.util.ISingletonService;
 
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,7 +28,7 @@ import de.metas.util.ISingletonService;
  * #L%
  */
 
-public interface IRequestDAO extends ISingletonService
+public interface IRequestBL extends ISingletonService
 {
 
 	/**
@@ -54,6 +50,4 @@ public interface IRequestDAO extends ISingletonService
 	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
 
 	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
-
-	Stream<RequestId> streamRequestIdsByBPartnerId(BPartnerId bpartnerId);
 }

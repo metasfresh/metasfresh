@@ -1,7 +1,11 @@
 package de.metas.request.api;
 
-import org.compiere.model.I_R_RequestType;
+import java.util.stream.Stream;
 
+import org.compiere.model.I_R_Request;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.request.RequestId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -17,20 +21,18 @@ import de.metas.util.ISingletonService;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IRequestTypeDAO extends ISingletonService
+public interface IRequestDAO extends ISingletonService
 {
+	I_R_Request createRequest(RequestCandidate candidate);
 
-	I_R_RequestType retrieveVendorRequestType();
-
-	I_R_RequestType retrieveCustomerRequestType();
-
+	Stream<RequestId> streamRequestIdsByBPartnerId(BPartnerId bpartnerId);
 }

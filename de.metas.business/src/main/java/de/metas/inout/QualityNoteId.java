@@ -1,4 +1,4 @@
-package de.metas.request;
+package de.metas.inout;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -9,9 +9,9 @@ import lombok.Value;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,29 +30,29 @@ import lombok.Value;
  */
 
 @Value
-public class RequestTypeId implements RepoIdAware
+public class QualityNoteId implements RepoIdAware
 {
 	@JsonCreator
-	public static RequestTypeId ofRepoId(final int repoId)
+	public static QualityNoteId ofRepoId(final int repoId)
 	{
-		return new RequestTypeId(repoId);
+		return new QualityNoteId(repoId);
 	}
 
-	public static RequestTypeId ofRepoIdOrNull(final int repoId)
+	public static QualityNoteId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
+		return repoId > 0 ? new QualityNoteId(repoId) : null;
 	}
 
-	public static int toRepoId(final RequestTypeId RequestTypeId)
+	public static int toRepoId(final QualityNoteId id)
 	{
-		return RequestTypeId != null ? RequestTypeId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	int repoId;
 
-	private RequestTypeId(final int repoId)
+	private QualityNoteId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_RequestType_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_QualityNote_ID");
 	}
 
 	@Override
