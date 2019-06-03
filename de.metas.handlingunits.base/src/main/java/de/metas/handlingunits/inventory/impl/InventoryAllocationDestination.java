@@ -319,7 +319,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return inoutLineInDispute;
 	}
 
-	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory )
+	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory)
 	{
 		final List<I_M_Inventory> inventories = getInventories();
 		inventories.forEach(inventory -> processInventory(inventory, isCompleteInventory));
@@ -444,7 +444,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		inventory.setM_Warehouse_ID(warehouseId);
 
-		inventory.setC_Activity_ID(activityId.getRepoId());
+		inventory.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
 		inventory.setDescription(description);
 
 		if (inventoryDocTypeId > 0)
