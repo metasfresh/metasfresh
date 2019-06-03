@@ -103,12 +103,12 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		final File outputDirectory = new File(outputFilePath);
 		Check.assume(outputDirectory.isDirectory(), "Parameter OutputDirectory does not denote a directory; OutputDirectory={}", outputDirectory);
-		Check.assume(outputDirectory.canWrite(), "Parameter OutputDirectory is a directory, but this process doies not have write-access; OutputDirectory={}", outputDirectory);
+		Check.assume(outputDirectory.canWrite(), "Parameter OutputDirectory is a directory, but this process does not have write-access; OutputDirectory={}", outputDirectory);
 
 		final FileFilter fileFilter = new WildcardFileFilter(importFileWildcard);
 		final File[] filesToImport = inputDirectory.listFiles(fileFilter);
 
-		final Mutable<Boolean> allFilesImported = new Mutable<Boolean>(true);
+		final Mutable<Boolean> allFilesImported = new Mutable<>(true);
 
 		for (final File fileToImport : filesToImport)
 		{
