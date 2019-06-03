@@ -334,7 +334,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$F{shelflifedays}+" "+$R{days}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
+				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
