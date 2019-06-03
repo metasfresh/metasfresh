@@ -244,8 +244,8 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ProductDescription}+":"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement isPrintRepeatedValues="false" x="136" y="87" width="414" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="136" y="87" width="34" height="12" isPrintWhenDetailOverflows="true" uuid="f0348708-6ca4-4573-a37d-91f583522320"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -315,6 +315,14 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/reports/productspecifications/report_packagingmaterial.jasper"]]></subreportExpression>
 			</subreport>
+			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="162" y="87" width="54" height="12" isPrintWhenDetailOverflows="true" uuid="33a810c7-1ce5-4059-b1ee-06d44e6d2767"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font fontName="Arial" size="9" isBold="false"/>
+					<paragraph lineSpacing="1_1_2"/>
+				</textElement>
+				<textFieldExpression><![CDATA["kg"]]></textFieldExpression>
+			</textField>
 		</band>
 		<band height="65" splitType="Prevent">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
