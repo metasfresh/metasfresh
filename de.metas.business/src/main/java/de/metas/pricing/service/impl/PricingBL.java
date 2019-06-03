@@ -414,7 +414,7 @@ public class PricingBL implements IPricingBL
 		}
 	}
 
-	private final CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
+	private CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
 	{
 		return Services.get(IPriceListBL.class).getPricePrecision(priceListId);
 	}

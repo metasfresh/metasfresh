@@ -1,9 +1,11 @@
 package de.metas.request.api;
 
-import org.eevolution.model.I_DD_OrderLine;
+import java.util.stream.Stream;
 
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.request.model.I_R_Request;
+import org.compiere.model.I_R_Request;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.request.RequestId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -30,24 +32,7 @@ import de.metas.util.ISingletonService;
 
 public interface IRequestDAO extends ISingletonService
 {
+	I_R_Request createRequest(RequestCandidate candidate);
 
-	/**
-	 * Create a new R_Request based on the given inout line.
-	 * This request will contain information taken from the line and from its inout header:
-	 * <li>inout
-	 * <li>product
-	 * <li>partner
-	 * <li>dateDelivered
-	 * <li>qualityNotice
-	 * <li>org
-	 * <li>linked salesrep of the org, etc.
-	 * 
-	 * Note that the quantities are not relevant in the requests. Therefore, the qualityDiscountPercent is not even set in the request.
-	 * We can have requests with no quality notices, in case the base inout line was created with qualityDiscountPercent but with no quality notice.
-	 * 
-	 * @param line
-	 */
-	I_R_Request createRequestFromInOutLine(I_M_InOutLine line);
-
-	I_R_Request createRequestFromDDOrderLine(I_DD_OrderLine line);
+	Stream<RequestId> streamRequestIdsByBPartnerId(BPartnerId bpartnerId);
 }

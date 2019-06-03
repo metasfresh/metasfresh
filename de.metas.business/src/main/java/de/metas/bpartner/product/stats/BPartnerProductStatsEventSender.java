@@ -73,7 +73,7 @@ public class BPartnerProductStatsEventSender
 
 		return Event.builder()
 				.putProperty(EVENT_PROPERTY_Content, objectSerializer.serialize(event))
-				.storeEvent()
+				.shallBeLogged()
 				.build();
 	}
 

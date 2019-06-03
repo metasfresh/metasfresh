@@ -1,5 +1,15 @@
 package de.metas.pricing.service.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Iterator;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -22,17 +32,11 @@ package de.metas.pricing.service.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Iterator;
-
-import de.metas.location.CountryId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
@@ -40,21 +44,41 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+@SuppressWarnings("unused")
 public class PriceListBL implements IPriceListBL
 {
-	@Override
-	public CurrencyPrecision getPricePrecision(final PriceListId priceListId)
-	{
-		if (priceListId == null)
-		{
-			return CurrencyPrecision.TWO; // default
-		}
 
-		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+	@Override
+	public CurrencyPrecision getPricePrecision(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		return CurrencyPrecision.ofInt(priceList.getPricePrecision());
 	}
 
 	@Override
+	public CurrencyPrecision getAmountPrecision(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+		if (priceList.isRoundNetAmountToCurrencyPrecision())
+		{
+			return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+		}
+		else
+		{
+			return CurrencyPrecision.ofInt(priceList.getPricePrecision());
+		}
+	}
+
+	@Override
+	public CurrencyPrecision getTaxPrecision(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+		return Services.get(ICurrencyDAO.class).getStdPrecision(CurrencyId.ofRepoId(priceList.getC_Currency_ID()));
+	}
+
+	@Nullable @Override
 	public I_M_PriceList getCurrentPricelistOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
@@ -68,17 +92,16 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		final I_M_PriceList currentPricelist = InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
-		return currentPricelist;
+		return InterfaceWrapperHelper.create(currentVersion.getM_PriceList(), I_M_PriceList.class);
 	}
 
-	@Override
+	@SuppressWarnings("UnusedAssignment") @Nullable @Override
 	public I_M_PriceList_Version getCurrentPriceListVersionOrNull(
 			final PricingSystemId pricingSystemId,
 			final CountryId countryId,
 			@NonNull final LocalDate date,
 			final SOTrx soTrx,
-			final Boolean processedPLVFiltering)
+			@Nullable final Boolean processedPLVFiltering)
 	{
 		if (countryId == null)
 		{
@@ -90,7 +113,6 @@ public class PriceListBL implements IPriceListBL
 			return null;
 		}
 
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final Iterator<I_M_PriceList> pricelists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx)
 				.iterator();
 		if (!pricelists.hasNext())
@@ -104,16 +126,13 @@ public class PriceListBL implements IPriceListBL
 		Timestamp currentValidFrom = null;
 		I_M_PriceList_Version lastPriceListVersion = null;
 
-		if (pricelists.hasNext())
+		currentPricelist = pricelists.next();
+
+		lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processedPLVFiltering);
+
+		if (lastPriceListVersion != null)
 		{
-			currentPricelist = pricelists.next();
-
-			lastPriceListVersion = priceListDAO.retrievePriceListVersionOrNull(currentPricelist, date, processedPLVFiltering);
-
-			if (lastPriceListVersion != null)
-			{
-				currentValidFrom = lastPriceListVersion.getValidFrom();
-			}
+			currentValidFrom = lastPriceListVersion.getValidFrom();
 		}
 
 		while (pricelists.hasNext())

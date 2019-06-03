@@ -45,6 +45,9 @@ public class CustomsInvoiceRequest
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
 
+	@NonNull
+	String bpartnerAddress;
+
 	@Nullable
 	UserId userId;
 

@@ -228,7 +228,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="SansSerif" size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[($F{isdropship}.equals( "N" )?
     $R{shipmentno} + " " + $F{inout_docno} +" "+ $R{ofdate}+" ":
@@ -238,7 +238,7 @@ ORDER BY
 				<textField>
 					<reportElement key="textField-16" x="37" y="12" width="140" height="12" forecolor="#000000" uuid="2b4c8be0-0e71-4d1f-849c-394a0491e8a7"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 				</textField>
@@ -247,14 +247,14 @@ ORDER BY
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{huquantity}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-17" x="226" y="12" width="63" height="12" forecolor="#000000" uuid="4893d419-1583-42d2-b6ec-87cd5f527d7a"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 				</textField>
@@ -263,35 +263,35 @@ ORDER BY
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-19" x="346" y="12" width="59" height="12" forecolor="#000000" uuid="5f20ddef-9eb2-4314-bbfc-4c49fe1f53e8"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="407" y="12" width="40" height="12" forecolor="#000000" uuid="0af1cdcd-6af8-4003-af59-68a1406258c6"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="446" y="12" width="46" height="12" forecolor="#000000" uuid="3832b17d-e364-483d-a833-b27c8932cb0b"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="500" y="12" width="43" height="12" forecolor="#000000" uuid="8b2c3063-720b-46fa-a45a-2d864d423d5e"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{linenetamt}]]></textFieldExpression>
 				</textField>
@@ -557,7 +557,7 @@ ORDER BY
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>
@@ -566,7 +566,7 @@ ORDER BY
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" isItalic="false" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Total}]]></textFieldExpression>
 			</textField>

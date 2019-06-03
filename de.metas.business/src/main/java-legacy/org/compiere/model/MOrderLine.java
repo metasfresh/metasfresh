@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -38,7 +39,6 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -274,8 +274,6 @@ public class MOrderLine extends X_C_OrderLine
 
 	/**
 	 * Set Price for Product and PriceList. Use only if newly created.
-	 *
-	 * @param M_PriceList_ID price list
 	 */
 	public void setPrice()
 	{
@@ -332,7 +330,7 @@ public class MOrderLine extends X_C_OrderLine
 
 		final boolean documentLevel = getTax().isDocumentLevel();
 		final boolean isTaxIncluded = Services.get(IOrderLineBL.class).isTaxIncluded(this);
-		final int taxPrecision = Services.get(IOrderLineBL.class).getPrecision(this);
+		final CurrencyPrecision taxPrecision = Services.get(IOrderLineBL.class).getTaxPrecision(this);
 
 		// juddm: Tax Exempt & Tax Included in Price List & not Document Level - Adjust Line Amount
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
@@ -367,8 +365,8 @@ public class MOrderLine extends X_C_OrderLine
 				log.debug("orderTax rate is " + orderTax.getRate());
 
 				final ITaxBL taxBL = Services.get(ITaxBL.class);
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(orderTax, bd, isTaxIncluded, taxPrecision));
-				taxStdAmt = taxStdAmt.add(taxBL.calculateTax(stdTax, bd, isTaxIncluded, taxPrecision));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(orderTax, bd, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxStdAmt.add(taxBL.calculateTax(stdTax, bd, isTaxIncluded, taxPrecision.toInt()));
 
 				bd = bd.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -378,8 +376,8 @@ public class MOrderLine extends X_C_OrderLine
 
 		}
 
-		if (bd.scale() > taxPrecision)
-			bd = bd.setScale(taxPrecision, BigDecimal.ROUND_HALF_UP);
+		if (bd.scale() > taxPrecision.toInt())
+			bd = bd.setScale(taxPrecision.toInt(), BigDecimal.ROUND_HALF_UP);
 		super.setLineNetAmt(bd);
 	}	// setLineNetAmt
 
@@ -406,40 +404,6 @@ public class MOrderLine extends X_C_OrderLine
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
 		return m_tax;
 	}	// getTax
-
-	/**
-	 * Get Currency Precision from Currency
-	 *
-	 * @return precision
-	 */
-	public int getPrecision()
-	{
-		final Integer precision= Services.get(IOrderBL.class).getPrecision(getC_Order());
-
-		//
-		if (getC_Currency_ID() == 0)
-		{
-			Services.get(IOrderLineBL.class).setOrder(this, getC_Order());
-			if (precision != null)
-				return precision;
-		}
-		if (getC_Currency_ID() > 0)
-		{
-			final I_C_Currency cur = Services.get(ICurrencyDAO.class).retrieveCurrency(getCtx(), getC_Currency_ID());
-			if (cur.getC_Currency_ID() != 0)
-			{
-				return cur.getStdPrecision();
-			}
-		}
-
-		//
-		// Fallback
-		// FIXME: drop this, i guess is not used AT ALL
-		final String sql = "SELECT c.StdPrecision "
-				+ "FROM C_Currency c INNER JOIN C_Order x ON (x.C_Currency_ID=c.C_Currency_ID) "
-				+ "WHERE x.C_Order_ID=?";
-		return DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
-	}	// getPrecision
 
 	public void setM_Product_ID(final int productRepoId, final boolean setUOM)
 	{
@@ -933,8 +897,8 @@ public class MOrderLine extends X_C_OrderLine
 		// NOTE: keep in sync with org.compiere.model.MInvoiceLine.updateInvoiceTax(boolean)
 
 		final String trxName = get_TrxName();
-		final int taxPrecision = getPrecision();
-		final MOrderTax tax = MOrderTax.get(this, taxPrecision, oldTax, trxName);
+		final CurrencyPrecision taxPrecision = Services.get(IOrderBL.class).getTaxPrecision(getC_Order());
+		final MOrderTax tax = MOrderTax.get(this, taxPrecision.toInt(), oldTax, trxName);
 		if (tax == null)
 		{
 			return true;

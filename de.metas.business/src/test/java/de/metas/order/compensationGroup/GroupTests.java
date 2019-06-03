@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import de.metas.currency.CurrencyPrecision;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -73,7 +74,8 @@ public class GroupTests
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
-				.precision(2)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
 				.bpartnerId(BPartnerId.ofRepoId(3))
 				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())
@@ -104,15 +106,13 @@ public class GroupTests
 		}
 	}
 
-	/**
-	 * NOTE: This test is using the same data as {@link #test_updateAllPercentageLines_twoPercentDiscountLines()}
-	 */
 	@Test
 	void addNewCompensationLine()
 	{
 		final Group group = Group.builder()
 				.groupId(GroupId.of(I_C_Order.Table_Name, C_Order_ID, 1))
-				.precision(2)
+				.pricePrecision(CurrencyPrecision.TWO)
+				.amountPrecision(CurrencyPrecision.TWO)
 				.bpartnerId(BPartnerId.ofRepoId(3))
 				.soTrx(SOTrx.SALES)
 				.regularLine(regularLine(480).build())

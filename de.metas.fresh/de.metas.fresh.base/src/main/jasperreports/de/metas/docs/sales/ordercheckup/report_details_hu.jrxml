@@ -202,70 +202,70 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" positionType="FixRelativeToBottom" x="37" y="23" width="55" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Pos.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="c098d47c-8e7e-49b6-b9b6-4151f0bdafee" key="textField-13" positionType="FixRelativeToBottom" x="90" y="23" width="127" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="41d29ca1-2c98-4395-a16a-bc3ce80d0e38" key="textField-19" positionType="FixRelativeToBottom" x="389" y="35" width="76" height="13" forecolor="#000000"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Bestellmenge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d9624032-eb35-46e9-bcf0-26296aa97877" key="textField-17" positionType="FixRelativeToBottom" x="217" y="23" width="124" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[EAN Nr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" positionType="FixRelativeToBottom" x="470" y="35" width="70" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Einheit BE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" positionType="FixRelativeToBottom" x="37" y="35" width="55" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Herkunft]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="c098d47c-8e7e-49b6-b9b6-4151f0bdafee" key="textField-13" positionType="FixRelativeToBottom" x="90" y="35" width="127" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Bezeichnung]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="d35bf7fe-33c5-454d-9a1e-1b5eca9d1564" key="textField-31" positionType="FixRelativeToBottom" mode="Transparent" x="217" y="35" width="123" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Ausz. VP/VE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="6ff26657-6119-4cb7-8018-e5d609e54b16" key="textField-31" positionType="FixRelativeToBottom" mode="Transparent" x="340" y="35" width="50" height="13" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF"/>
 				<textElement textAlignment="Right" verticalAlignment="Top" markup="none">
-					<font fontName="SansSerif" size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[EP/BE]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" positionType="FixRelativeToBottom" x="37" y="11" width="120" height="13" forecolor="#000000"/>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gebinde]]></text>
 			</staticText>

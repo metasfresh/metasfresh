@@ -71,14 +71,14 @@
 				<textField>
 					<reportElement x="0" y="10" width="100" height="20" uuid="a04a7acf-914c-406a-9ffd-1d8e23744d21"/>
 					<textElement>
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{vatcode} !=null ? $F{vatcode} : $R{no_vatcode}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00">
 					<reportElement x="549" y="10" width="127" height="20" uuid="ce9ee0cf-3874-49d4-8f03-9e1946af64a2"/>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{baseamt_vat_sum}]]></textFieldExpression>
 				</textField>
@@ -92,7 +92,7 @@
 				<textField evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00">
 					<reportElement x="676" y="10" width="100" height="20" uuid="77b1b958-51e3-4517-b90f-7f682857cb2c"/>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{endsaldo}]]></textFieldExpression>
 				</textField>
@@ -109,28 +109,28 @@
 				<textField>
 					<reportElement x="0" y="0" width="70" height="20" uuid="0e98b97d-7a0c-44e8-a6c8-cc18afe15c34"/>
 					<textElement>
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{kontono}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="70" y="0" width="279" height="20" uuid="420aae85-c7f7-4b90-a94a-930134d9dc5c"/>
 					<textElement>
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{kontoname}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00">
 					<reportElement x="549" y="0" width="127" height="20" uuid="ef6e52a8-4675-4e21-ab13-14c2e17be64d"/>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{baseamt_acct_sum}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00">
 					<reportElement x="676" y="0" width="100" height="20" uuid="77b1b958-51e3-4517-b90f-7f682857cb2c"/>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{endsaldo}]]></textFieldExpression>
 				</textField>
@@ -158,63 +158,63 @@
 			<textField>
 				<reportElement x="0" y="120" width="70" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="70" y="120" width="59" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="129" y="120" width="125" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="254" y="120" width="180" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="434" y="120" width="55" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="489" y="120" width="60" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat_amt}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="549" y="120" width="127" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ref_value}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="676" y="120" width="100" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="0" y="0" width="155" height="20" uuid="416555b5-426f-4e0e-8ced-78e6d5b1304f"/>
 				<textElement>
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
