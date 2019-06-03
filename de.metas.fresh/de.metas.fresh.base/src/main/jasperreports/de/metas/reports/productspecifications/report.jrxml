@@ -204,7 +204,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 	</title>
 	<detail>
 		<band height="149" splitType="Stretch">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="ae93a721-5e42-4219-bd07-2ad1eab73cfe"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -220,7 +220,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$F{country}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="99" width="136" height="12" uuid="fd6c9a8d-3fc8-4d94-88d5-c1ffca87e01f"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -236,7 +236,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$F{additional_produktinfos}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="1aa2dcbe-2bdc-42a5-8045-1a3e75126294"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -252,7 +252,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$F{netweight}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="87" width="136" height="12" uuid="29f35d2e-188a-45b4-b53a-9a9bee62c17a"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -260,7 +260,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$R{NetWeight}+":"]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="75" width="136" height="12" uuid="68843a1b-6778-4d03-8410-e3e91134d235"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -276,7 +276,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productdescription}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="63" width="136" height="12" uuid="acc4b218-b0fe-4c5e-9211-142ee6fb2525"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -325,11 +325,11 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				</textElement>
 				<textFieldExpression><![CDATA[$F{shelflifedays}+" "+$R{days}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement stretchType="ContainerHeight" isPrintRepeatedValues="false" x="0" y="39" width="136" height="12" uuid="b41a5a19-7b9e-4bf0-8800-44dc6c2e93f4"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
-					<paragraph lineSpacing="1_1_2"/>
+					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ShelfLifeDays}+":"]]></textFieldExpression>
 			</textField>
@@ -341,15 +341,15 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 				<textFieldExpression><![CDATA[$R{Detail_4}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
+				<reportElement positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="136" y="51" width="414" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="68ad74ae-dacc-4fce-9e98-459b522a4c99"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{warehouse_temperature}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="b8f96be5-6fd9-4439-a2e0-a6c94544a761"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="FixRelativeToBottom" isPrintRepeatedValues="false" x="0" y="51" width="136" height="12" uuid="b8f96be5-6fd9-4439-a2e0-a6c94544a761"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="9" isBold="false"/>
 					<paragraph lineSpacing="1_1_2"/>
@@ -398,7 +398,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 			</subreport>
 		</band>
 		<band height="58" splitType="Prevent">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="4deb80a3-a065-4a26-94fe-4f548a87383b"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="10" isBold="true"/>
@@ -415,7 +415,7 @@ left outer join c_location l on bpl.c_location_id = l.c_location_id
 			</textField>
 		</band>
 		<band height="155">
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="0" y="20" width="180" height="14" uuid="85734e8a-e3c0-45d5-b283-6aa55c3811a8"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font fontName="Arial" size="10" isBold="true"/>
