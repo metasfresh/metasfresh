@@ -4,9 +4,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
 import org.compiere.model.I_GL_JournalLine;
@@ -98,30 +98,31 @@ public class GL_JournalLine
 	private void updateJournalTotal(final I_GL_JournalLine glJournalLine)
 	{
 		final int glJournalId = glJournalLine.getGL_Journal_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(glJournalLine);
 
+		//
 		// Update Journal Total
 		{
 			final String sql = DB.convertSqlToNative("UPDATE GL_Journal j"
 					+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(AmtAcctDr),0), COALESCE(SUM(AmtAcctCr),0)" // croo Bug# 1789935
 					+ " FROM GL_JournalLine jl WHERE jl.IsActive='Y' AND j.GL_Journal_ID=jl.GL_Journal_ID) "
 					+ "WHERE GL_Journal_ID=" + glJournalId);
-			final int no = DB.executeUpdateEx(sql, trxName);
+			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 			if (no != 1)
 			{
 				throw new AdempiereException("afterSave - Update Journal #" + no);
 			}
 		}
 
-		// Update Batch Total
+		//
+		// Update Batch Total, if there is any batch
 		{
 			final String sql = DB.convertSqlToNative("UPDATE GL_JournalBatch jb"
 					+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
 					+ " FROM GL_Journal j WHERE jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
 					+ "WHERE GL_JournalBatch_ID="
 					+ "(SELECT DISTINCT GL_JournalBatch_ID FROM GL_Journal WHERE GL_Journal_ID=" + glJournalId + ")");
-			final int no = DB.executeUpdateEx(sql, trxName);
-			if (no != 1)
+			final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+			if (no != 0 && no != 1)
 			{
 				throw new AdempiereException("Update Batch #" + no);
 			}
