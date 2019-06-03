@@ -5,10 +5,11 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.attachments.IDocumentAttachmentEntry;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.Setter;
+import lombok.ToString;
 
 /*
  * #%L
@@ -33,7 +34,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 @SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString
 public class JSONAttachment implements Serializable
 {
 	public static JSONAttachment of(IDocumentAttachmentEntry entry)
@@ -41,24 +43,19 @@ public class JSONAttachment implements Serializable
 		return new JSONAttachment(entry.getId(), entry.getFilename());
 	}
 
-
 	@JsonProperty("id")
 	private final String id;
+
 	@JsonProperty("name")
 	private final String name;
+
+	@JsonProperty("allowDelete")
+	@Setter
+	private boolean allowDelete = false;
 
 	private JSONAttachment(final DocumentId id, final String name)
 	{
 		this.id = id.toJson();
 		this.name = name;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("id", id)
-				.add("name", name)
-				.toString();
 	}
 }
