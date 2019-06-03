@@ -361,10 +361,10 @@ export class RawList extends PureComponent {
                     'input-disabled': disabled,
                   }
                 )}
-                _readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
                 value={value}
+                onChange={() => undefined}
                 disabled={readonly || disabled}
               />
             </div>
