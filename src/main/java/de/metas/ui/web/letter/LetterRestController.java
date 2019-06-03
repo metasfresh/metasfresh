@@ -8,7 +8,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -135,13 +134,17 @@ public class LetterRestController
 		//
 		// Extract context BPartner, Location and Contact
 		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(contextDocumentPath);
-		final int bpartnerId = context.getC_BPartner_ID(-1);
-		final int bpartnerLocationId = context.getC_BPartner_Location_ID(-1);
-		final int contactId = context.getAD_User_ID(-1);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(context.getC_BPartner_ID(-1));
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, context.getC_BPartner_Location_ID(-1));
+		final UserId contactId = UserId.ofRepoIdOrNull(context.getAD_User_ID(-1));
 
 		//
 		// Build BPartnerAddress
-		final PlainDocumentLocation documentLocation = new PlainDocumentLocation(Env.getCtx(), bpartnerId, bpartnerLocationId, contactId, ITrx.TRXNAME_None);
+		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(contactId)
+				.build();
 		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
 		final String bpartnerAddress = documentLocation.getBPartnerAddress();
 
@@ -149,10 +152,10 @@ public class LetterRestController
 				.contextDocumentPath(contextDocumentPath)
 				.ownerUserId(userSession.getLoggedUserId())
 				.adOrgId(context.getAD_Org_ID(userSession.getOrgId().getRepoId()))
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.bpartnerAddress(bpartnerAddress)
-				.bpartnerContactId(contactId));
+				.bpartnerId(BPartnerId.toRepoId(bpartnerId))
+				.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
+				.bpartnerContactId(UserId.toRepoId(contactId))
+				.bpartnerAddress(bpartnerAddress));
 
 		return JSONLetter.of(letter);
 	}

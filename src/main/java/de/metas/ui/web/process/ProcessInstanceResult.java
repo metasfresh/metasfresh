@@ -96,8 +96,7 @@ public final class ProcessInstanceResult
 		{
 			throw new IllegalStateException("Action is not of type " + actionType + " but " + action.getClass());
 		}
-		@SuppressWarnings("unchecked")
-		final T actionCasted = (T)action;
+		@SuppressWarnings("unchecked") final T actionCasted = (T)action;
 		return actionCasted;
 	}
 
@@ -139,6 +138,8 @@ public final class ProcessInstanceResult
 		@NonNull
 		private final ViewId viewId;
 		private final ViewProfileId profileId;
+		@Builder.Default
+		private final boolean modalOverlay = true;
 	}
 
 	@lombok.Value
@@ -173,7 +174,7 @@ public final class ProcessInstanceResult
 		private @NonNull final ViewId viewId;
 		private @NonNull final DocumentIdsSelection rowIds;
 	}
-	
+
 	@lombok.Value
 	@lombok.Builder
 	public static final class DisplayQRCodeAction implements ResultAction

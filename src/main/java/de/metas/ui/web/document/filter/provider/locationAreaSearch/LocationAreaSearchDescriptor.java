@@ -28,7 +28,7 @@ import lombok.Value;
 
 @Value
 @Builder
-final class LocationAreaSearchDescriptor
+public final class LocationAreaSearchDescriptor
 {
 	@NonNull
 	LocationColumnNameType type;
