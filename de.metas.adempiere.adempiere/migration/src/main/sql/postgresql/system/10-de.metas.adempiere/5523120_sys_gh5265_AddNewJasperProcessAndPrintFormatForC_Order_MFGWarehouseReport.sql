@@ -1,7 +1,8 @@
 -- 2019-06-03T12:21:04.111
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,541142,'N','de.metas.report.jasper.client.process.JasperReportStarter','N',TO_TIMESTAMP('2019-06-03 12:21:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','Y','N','Y','Y','@PREFIX@de/metas/docs/sales/ordercheckup_combined/report.jasper',0,'Bestellkontrolle(both)','N','N','JasperReports',TO_TIMESTAMP('2019-06-03 12:21:03','YYYY-MM-DD HH24:MI:SS'),100,'C_Order_MFGWarehouse_Report_Combined')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,JasperReport,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,541142,'N','org.compiere.report.ReportStarter','N',TO_TIMESTAMP('2019-06-03 12:21:03','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','Y','N','Y','@PREFIX@de/metas/docs/sales/ordercheckup_combined/report.jasper',0,'Bestellkontrolle(both)','N','N','Java',TO_TIMESTAMP('2019-06-03 12:21:03','YYYY-MM-DD HH24:MI:SS'),100,'C_Order_MFGWarehouse_Report_Combined')
 ;
+
 
 -- 2019-06-03T12:21:04.128
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
