@@ -65,6 +65,10 @@ import de.metas.util.ConsoleLoggable;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 /**
  * Standard test:
  * <ul>
@@ -143,12 +147,12 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		// * invoice candidates which were added to workpackages, they have a lock per workpackage
 		// * invoice candidates which were skipped, they shall be released
 		final ILock enqueuerLock = enqueueResult.getLock();
-		Assert.assertEquals("Invalid enqueuerLock count: " + enqueuerLock, 0, enqueuerLock.getCountLocked());
+		assertEquals("Invalid enqueuerLock count: " + enqueuerLock, 0, enqueuerLock.getCountLocked());
 
 		// Test: all invoice candidates were locked on enqueue
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			Assert.assertTrue("IC is locked: " + ic, lockManager.isLocked(ic));
+			assertTrue("IC is locked: " + ic, lockManager.isLocked(ic));
 		}
 
 		return enqueueResult;
@@ -186,12 +190,12 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		//
 		// Make sure all of them are processed
 		final List<I_C_Queue_WorkPackage> workpackages = retrieveWorkpackages(workpackageProcessorClass);
-		Assert.assertFalse("Some workpackages were created", workpackages.isEmpty());
+		assertFalse("Some workpackages were created", workpackages.isEmpty());
 
 		for (I_C_Queue_WorkPackage workpackage : workpackages)
 		{
-			Assert.assertTrue("Workpackage processed: " + workpackage, workpackage.isProcessed());
-			Assert.assertFalse("Workpackage no error: " + workpackage, workpackage.isError());
+			assertTrue("Workpackage processed: " + workpackage, workpackage.isProcessed());
+			assertFalse("Workpackage no error: " + workpackage, workpackage.isError());
 		}
 
 		//
@@ -199,8 +203,8 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		InterfaceWrapperHelper.refreshAll(invoiceCandidates);
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			Assert.assertFalse("IC no error: " + ic, ic.isError());
-			Assert.assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
+			assertFalse("IC no error: " + ic, ic.isError());
+			assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
 		}
 
 		//
@@ -239,7 +243,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 					+ "\n " + icLock
 					+ "\n" + ic
 					+ "\n" + workpackage;
-			Assert.assertTrue(message, icLock.get().isLocked(ic));
+			assertTrue(message, icLock.get().isLocked(ic));
 		}
 
 		//

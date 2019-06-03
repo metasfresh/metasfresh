@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -50,7 +51,7 @@ import de.metas.util.time.SystemTime;
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
  * @version $Id: MRequisition.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  * @author red1
  *         <li>FR [ 2214883 ] Remove SQL code and Replace for Query
@@ -210,12 +211,12 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateDoc(), X_C_DocType.DOCBASETYPE_PurchaseRequisition, getAD_Org_ID());
 
 		// Add up Amounts
-		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(getM_PriceList_ID());
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(getM_PriceList_ID()));
 		BigDecimal totalLines = BigDecimal.ZERO;
 		for (final I_M_RequisitionLine line : lines)
 		{
 			BigDecimal lineNet = line.getQty().multiply(line.getPriceActual());
-			lineNet = precision.round(lineNet);
+			lineNet = netPrecision.round(lineNet);
 			if (lineNet.compareTo(line.getLineNetAmt()) != 0)
 			{
 				line.setLineNetAmt(lineNet);

@@ -40,6 +40,8 @@ import de.metas.handlingunits.attribute.strategy.IAttributeSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 
+import javax.annotation.Nullable;
+
 public interface IAttributeValue
 {
 	/**
@@ -166,7 +168,7 @@ public interface IAttributeValue
 	/**
 	 * @return the default empty value of an attribute (hard-coded)
 	 */
-	Object getEmptyValue();
+	@Nullable Object getEmptyValue();
 
 	void addAttributeValueListener(IAttributeValueListener listener);
 

@@ -44,6 +44,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AppsAction;
@@ -84,7 +85,7 @@ public class InvoiceHistory
 	 */
 	private static final long serialVersionUID = 7886949815469558804L;
 
-	/** Logger */
+	/*	 Logger	 */
 	private static Logger log = LogManager.getLogger(InvoiceHistory.class);
 
 	public static final int TAB_PRICEHISTORY = 0;
@@ -104,14 +105,6 @@ public class InvoiceHistory
 
 	private final InvoiceHistoryContext ihCtx;
 
-	/**
-	 * Show History
-	 *
-	 * @param C_BPartner_ID partner
-	 * @param M_Product_ID product
-	 * @param M_Warehouse_ID warehouse
-	 * @param M_AttributeSetInstance_ID ASI
-	 */
 	public InvoiceHistory(final InvoiceHistoryContext ihCtx, final Window owner)
 	{
 		super(owner, Services.get(IMsgBL.class).getMsg(Env.getCtx(), "PriceHistory"), true);
@@ -414,13 +407,13 @@ public class InvoiceHistory
 					final BigDecimal priceActual = rs.getBigDecimal(2);
 					if (!Check.isEmpty(priceList))
 					{
-						final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(rs.getInt(10));
+						final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(rs.getInt(10)));
 
 						discountBD = priceList.subtract(priceActual)
-								.divide(priceList, precision.toInt(), precision.getRoundingMode())
+								.divide(priceList, pricePrecision.toInt(), pricePrecision.getRoundingMode())
 								.multiply(Env.ONEHUNDRED);
 						// Rounding:
-						discountBD = precision.roundIfNeeded(discountBD);
+						discountBD = pricePrecision.roundIfNeeded(discountBD);
 					}
 					else
 					{
@@ -518,10 +511,6 @@ public class InvoiceHistory
 
 	/**
 	 * Query Reserved/Ordered
-	 *
-	 * @param table
-	 *
-	 * @param reserved po/so
 	 */
 	private void initReservedOrderedTab(final MiniTable table, final boolean reserved)
 	{
@@ -892,11 +881,10 @@ public class InvoiceHistory
 
 	/**
 	 * 08754: M_InOut history tab
-	 *
+	 * <p>
 	 * Query Received/Delivered
 	 *
 	 * @param table
-	 *
 	 * @param received PO / delivered SO
 	 */
 	private void initReceivedDeliveredTab(final MiniTable table, final boolean received)
