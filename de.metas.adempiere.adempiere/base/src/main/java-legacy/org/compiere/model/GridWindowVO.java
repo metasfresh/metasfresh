@@ -401,7 +401,9 @@ public class GridWindowVO implements Serializable
 					{
 						if(firstTab)
 						{
-							logger.warn("First tab could not be created for {}. Skip creating the window", mWindowVO);
+							logger.warn("First tab could not be created for {}. Skip creating the window.\nThe error message was: {}",
+									mWindowVO,
+									mWindowVO.loadErrorMessages);
 							break; // don't continue if first tab is null
 						}
 						else
