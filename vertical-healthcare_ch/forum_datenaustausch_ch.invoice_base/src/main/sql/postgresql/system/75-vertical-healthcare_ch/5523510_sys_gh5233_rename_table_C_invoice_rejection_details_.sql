@@ -1,8 +1,3 @@
-alter table c_invoice_rejection_details drop column if exists xmlfile;
-
-
-alter table c_invoice_rejection_details drop column if exists xml_file;
-
 
 
 -- 2019-06-03T14:55:25.061
