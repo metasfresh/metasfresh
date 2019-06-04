@@ -43,7 +43,6 @@ public class UserBPartnerDependentDocumentHandler implements BPartnerDependentDo
 	@Override
 	public String getDocumentTableName()
 	{
-		// TODO Auto-generated method stub
 		return I_AD_User.Table_Name;
 	}
 
