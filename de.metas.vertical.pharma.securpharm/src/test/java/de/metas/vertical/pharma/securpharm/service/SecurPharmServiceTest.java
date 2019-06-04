@@ -45,8 +45,9 @@ import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductDetails;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
 import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
@@ -81,16 +82,6 @@ public class SecurPharmServiceTest
 		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
-		final SecurPharmLog log = SecurPharmLog.builder()
-				.responseTime(Instant.now())
-				.requestTime(Instant.now())
-				.requestMethod(HttpMethod.GET)
-				.requestUrl("url")
-				.responseData("data")
-				.clientTransactionId("id")
-				.clientTransactionId("clientid")
-				.error(false)
-				.build();
 		final ProductDetails productDetails = ProductDetails.builder()
 				.activeStatus(ProductPackageState.ACTIVE)
 				.expirationDate(ExpirationDate.ofLocalDate(LocalDate.now()))
@@ -103,12 +94,15 @@ public class SecurPharmServiceTest
 		Mockito.when(client.decodeDataMatrix(dataMatrix))
 				.thenReturn(DecodeDataMatrixResponse.builder()
 						.productDetails(productDetails)
-						.log(log)
+						.log(generateDummyLog())
 						.build());
 
-		// expectedResult.setHuId(HuId.ofRepoId(1));
-		// expectedResult.setId(SecurPharmProductDataResultId.ofRepoId(1));
-		// Mockito.when(resultService.saveNew(expectedResult)).thenReturn(expectedResult);
+		Mockito.when(client.verifyProduct(productDetails))
+				.thenReturn(VerifyProductResponse.builder()
+						.resultCode("200")
+						.productDetails(productDetails)
+						.log(generateDummyLog())
+						.build());
 
 		Mockito.when(client.getConfig())
 				.thenReturn(SecurPharmConfig.builder()
@@ -121,11 +115,25 @@ public class SecurPharmServiceTest
 						.build());
 
 		final HuId huId = HuId.ofRepoId(1);
-		final SecurPharmProduct actualResult = underTest.getAndSaveProductData(dataMatrix, huId);
+		final SecurPharmProduct actualResult = underTest.getAndSaveProduct(dataMatrix, huId);
 		assertThat(actualResult)
 				.isEqualTo(SecurPharmProduct.builder()
 						.productDetails(productDetails)
 						.huId(huId)
 						.build());
+	}
+
+	private SecurPharmLog generateDummyLog()
+	{
+		return SecurPharmLog.builder()
+				.responseTime(Instant.now())
+				.requestTime(Instant.now())
+				.requestMethod(HttpMethod.GET)
+				.requestUrl("url")
+				.responseData("data")
+				.clientTransactionId("id")
+				.clientTransactionId("clientid")
+				.error(false)
+				.build();
 	}
 }

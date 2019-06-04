@@ -52,7 +52,7 @@ public class SecurPharmServiceManualTest
 		System.out.println("Sending code: " + datamatrix);
 
 		final HuId huId = HuId.ofRepoId(1);
-		final SecurPharmProduct product = service.getAndSaveProductData(datamatrix, huId);
+		final SecurPharmProduct product = service.getAndSaveProduct(datamatrix, huId);
 		System.out.println("product: " + product);
 	}
 

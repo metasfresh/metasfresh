@@ -47,11 +47,13 @@ import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
+import de.metas.vertical.pharma.securpharm.model.ProductDetails;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
+import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
 import lombok.NonNull;
 
@@ -89,7 +91,7 @@ public class SecurPharmService
 		return resultService.getProductsByInventoryId(inventoryId);
 	}
 
-	public SecurPharmProduct getAndSaveProductData(
+	public SecurPharmProduct getAndSaveProduct(
 			@NonNull final DataMatrixCode datamatrix,
 			@NonNull final HuId huId)
 	{
@@ -97,21 +99,34 @@ public class SecurPharmService
 
 		final List<SecurPharmLog> logs = new ArrayList<>();
 
+		//
+		// Decode datamatrix
 		final DecodeDataMatrixResponse decodeResult = client.decodeDataMatrix(datamatrix);
 		logs.add(decodeResult.getLog());
+		ProductDetails productDetails = decodeResult.getProductDetails();
+		boolean error = decodeResult.isError();
+
+		//
+		// Verify product
+		if (!error)
+		{
+			final VerifyProductResponse verifyResult = client.verifyProduct(productDetails);
+			logs.add(verifyResult.getLog());
+			productDetails = verifyResult.getProductDetails();
+			error = verifyResult.isError();
+		}
 
 		final SecurPharmProduct product = SecurPharmProduct.builder()
-				.error(decodeResult.isError())
-				.productDetails(decodeResult.getProductDetails())
+				.error(error)
+				.productDetails(productDetails)
 				.huId(huId)
 				.build();
-
 		resultService.save(product, logs);
 
 		if (product.isError())
 		{
 			sendNotification(
-					client.getConfig().getSupportUserId(),
+					client.getSupportUserId(),
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
 					product.getRecordRef());
 		}
@@ -176,7 +191,7 @@ public class SecurPharmService
 		else
 		{
 			sendNotification(
-					client.getConfig().getSupportUserId(),
+					client.getSupportUserId(),
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
 					TableRecordReference.of(I_M_Inventory.Table_Name, response.getInventoryId()));
 		}
@@ -240,7 +255,7 @@ public class SecurPharmService
 		else
 		{
 			sendNotification(
-					client.getConfig().getSupportUserId(),
+					client.getSupportUserId(),
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
 					TableRecordReference.of(I_M_Inventory.Table_Name, response.getInventoryId()));
 		}

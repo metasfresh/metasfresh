@@ -43,9 +43,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionClientResponse;
@@ -90,7 +92,9 @@ public class SecurPharmClient
 	private static final String DELIMITER = ",";
 
 	@Getter
+	@VisibleForTesting
 	private final SecurPharmConfig config;
+
 	private final RestTemplate apiRestTemplate;
 	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
 	private final SecurPharmClientAuthenticator authenticator;
@@ -104,6 +108,11 @@ public class SecurPharmClient
 				.build();
 
 		authenticator = SecurPharmClientAuthenticator.ofConfig(config);
+	}
+
+	public UserId getSupportUserId()
+	{
+		return getConfig().getSupportUserId();
 	}
 
 	public DecodeDataMatrixResponse decodeDataMatrix(@NonNull final DataMatrixCode dataMatrix)
