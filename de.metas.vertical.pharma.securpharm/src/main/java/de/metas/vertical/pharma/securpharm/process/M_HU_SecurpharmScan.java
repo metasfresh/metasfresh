@@ -25,19 +25,23 @@ package de.metas.vertical.pharma.securpharm.process;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.logging.LogManager;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -54,12 +58,15 @@ import lombok.NonNull;
 // TODO move to webui for HU splitting and view update
 public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondition
 {
+	private static final Logger logger = LogManager.getLogger(M_HU_SecurpharmScan.class);
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	protected final SecurPharmService securPharmService = Adempiere.getBean(SecurPharmService.class);
 
 	public static final String PARAM_DataMatrix = "dataMatrix";
 	@Param(mandatory = true, parameterName = PARAM_DataMatrix)
-	private String dataMatrix;
+	private String dataMatrixString;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -112,12 +119,13 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 	protected I_M_HU getHandlingUnit()
 	{
-		return getRecord(I_M_HU.class);
+		final HuId huId = HuId.ofRepoId(getRecord_ID());
+		return handlingUnitsRepo.getById(huId);
 	}
 
 	protected final DataMatrixCode getDataMatrix()
 	{
-		return DataMatrixCode.ofString(dataMatrix);
+		return DataMatrixCode.ofString(dataMatrixString);
 	}
 
 	private void scanAndUpdate(@NonNull final I_M_HU hu)
@@ -126,13 +134,13 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final SecurPharmProduct product = securPharmService.getAndSaveProduct(getDataMatrix(), huId);
-		if (!product.isError() && product.getProductDetails() != null)
+		if (!product.isError())
 		{
 			final ProductDetails productDetails = product.getProductDetails();
 			if (productDetails.isActive())
 			{
 				// TODO check if it fits current data and split otherwise
-				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate());
+				attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate().toLocalDate());
 				attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productDetails.getLot());
 				attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.YES.getCode());
 			}
@@ -158,5 +166,32 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
 		return attributeStorageFactory.getAttributeStorage(hu);
+	}
+
+	private I_M_HU getHUBySerialNoAndHUStatus(@NonNull final String serialNo, @NonNull final String huStatus)
+	{
+		final List<I_M_HU> hus = handlingUnitsRepo.createHUQueryBuilder()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNo)
+				// TODO: make sure LotNo and Scanned exists
+				.addHUStatusToInclude(huStatus)
+				.createQueryBuilder()
+				.orderBy(I_M_HU.COLUMN_M_HU_ID)
+				.setLimit(2)
+				.create()
+				.list();
+
+		if (hus.isEmpty())
+		{
+			return null;
+		}
+		else if (hus.size() == 1)
+		{
+			return hus.get(0);
+		}
+		else
+		{
+			logger.warn("More than one HU found for serialNo={} and huStatus={}. Returning first one: {}", serialNo, huStatus, hus);
+			return hus.get(0);
+		}
 	}
 }
