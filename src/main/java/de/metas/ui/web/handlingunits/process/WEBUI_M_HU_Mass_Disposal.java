@@ -18,6 +18,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
@@ -98,7 +99,9 @@ public class WEBUI_M_HU_Mass_Disposal extends HUEditorProcessTemplate implements
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, p_C_Activity_ID, p_Description, p_IsCompleteInventory, false);
+
+		final ActivityId activityId = ActivityId.ofRepoIdOrNull(p_C_Activity_ID);
+		huInventoryBL.moveToGarbage(husToDestroy, movementDate, activityId, p_Description, p_IsCompleteInventory, false);
 
 		huIdsDestroyed = husToDestroy
 				.stream()
