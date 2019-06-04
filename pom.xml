@@ -83,6 +83,7 @@
 		<module>de.metas.aggregation</module>
 
 		<module>de.metas.business</module>
+
 		<module>de.metas.business.rest-api</module>
 		<module>de.metas.business.rest-api-impl</module>
 
@@ -119,7 +120,6 @@
 		<module>de.metas.invoice_gateway.spi</module>
 
 		<module>de.metas.inbound.mail</module>
-		<module>de.metas.invoice.rest-api</module>
 
 		<module>de.metas.fresh</module>
 
@@ -131,11 +131,6 @@
 
 		<module>de.metas.handlingunits.base</module>
 		<module>de.metas.handlingunits.client</module>
-
-		<module>de.metas.order.rest-api</module>
-
-		<module>de.metas.ordercandidate.rest-api</module>
-		<module>de.metas.ordercandidate.rest-api-impl</module>
 
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>

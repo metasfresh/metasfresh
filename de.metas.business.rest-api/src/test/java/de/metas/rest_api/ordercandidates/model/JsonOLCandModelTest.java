@@ -6,14 +6,14 @@ import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.rest_api.bpartner.model.JsonBPartner;
-import de.metas.rest_api.bpartner.model.JsonBPartnerContact;
-import de.metas.rest_api.bpartner.model.JsonBPartnerInfo;
-import de.metas.rest_api.bpartner.model.JsonBPartnerLocation;
-import de.metas.rest_api.ordercandidates.model.JsonDocTypeInfo;
-import de.metas.rest_api.ordercandidates.model.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.model.JsonOLCandCreateRequest;
-import de.metas.rest_api.product.model.JsonProductInfo;
+import de.metas.rest_api.bpartner.JsonBPartner;
+import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonBPartnerInfo;
+import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
+import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
+import de.metas.rest_api.product.JsonProductInfo;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 

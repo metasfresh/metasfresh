@@ -53,14 +53,6 @@
 			<artifactId>spring-web</artifactId>
 		</dependency>
 
-<!-- 
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util.web</artifactId>
-			<version>${metasfresh.version}</version>
-			<scope>test</scope>
-		</dependency>
- -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
