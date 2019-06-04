@@ -250,7 +250,7 @@ public class LetterRestController
 				.bpartnerId(BPartnerId.ofRepoId(letter.getBpartnerId()))
 				.bpartnerLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(letter.getBpartnerId()), letter.getBpartnerLocationId()))
 				.address(letter.getBpartnerAddress())
-				.userId(UserId.ofRepoId(letter.getBpartnerContactId()))
+				.userId(UserId.ofRepoIdOrNull(letter.getBpartnerContactId()))
 				.build();
 		return Services.get(ITextTemplateBL.class).createPDF(request);
 	}
