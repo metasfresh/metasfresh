@@ -233,7 +233,7 @@ export class RawList extends PureComponent {
       if (list.size === 0 && !readonly && !loading) {
         onSelect(null);
       }
-    } else if (e.key === 'ArrowDown') {
+    } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
       if (!isToggled) {
         e.preventDefault();
         e.stopPropagation();

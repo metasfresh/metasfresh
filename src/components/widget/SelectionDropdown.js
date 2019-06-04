@@ -159,8 +159,6 @@ export default class SelectionDropdown extends Component {
     if (event.keyCode > 47 && event.keyCode < 123) {
       this.navigateToAlphanumeric(event.key);
     } else {
-      console.log('SelectionDropdown handleKeyDown: ', event.key)
-
       switch (event.key) {
         case 'ArrowUp':
           event.preventDefault();
@@ -171,6 +169,17 @@ export default class SelectionDropdown extends Component {
           navigate(false);
           break;
         case 'Tab':
+          event.preventDefault();
+          onCancel();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          onCancel();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          onCancel();
+          break;
         case 'Escape':
           event.preventDefault();
           onCancel();

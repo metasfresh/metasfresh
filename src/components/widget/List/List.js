@@ -359,6 +359,12 @@ ListWidget.propTypes = {
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
+  widgetField: PropTypes.string,
+  id: PropTypes.string,
+  field: PropTypes.string,
+  mandatory: PropTypes.bool,
+  lastProperty: PropTypes.string,
+  disableAutofocus: PropTypes.bool,
 };
 
 const mapStateToProps = state => ({

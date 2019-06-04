@@ -120,6 +120,7 @@ class TableItem extends PureComponent {
     }
 
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
+      console.log('activeCell',this.state.activeCell);
       this.setState({
         activeCell: elem,
       });
@@ -185,6 +186,7 @@ class TableItem extends PureComponent {
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
+          console.log('TableItem enter');
           this.handleEditProperty(e, property, widgetData[0]);
         } else {
           this.listenOnKeysTrue();
@@ -222,7 +224,6 @@ class TableItem extends PureComponent {
 
   closeTableField = e => {
     const { activeCell } = this.state;
-
     // @TODO This should be done differently
     this.handleEditProperty(e);
     this.listenOnKeysTrue();
@@ -276,7 +277,7 @@ class TableItem extends PureComponent {
   // @TODO: Is this still needed ?
   handleClickOutside = e => {
     // const { changeListenOnTrue, rowId, isSelected } = this.props;
-    console.log('handleclickoutside')
+    console.log('handleclickoutside');
     // if (isSelected) {
     //   console.log('THIS: ', rowId, this);
     //   this.handleEditProperty(e);
@@ -599,8 +600,8 @@ TableItem.propTypes = {
   supportOpenRecord: PropTypes.bool,
   changeListenOnTrue: PropTypes.func,
   changeListenOnFalse: PropTypes.func,
-  tabId: PropTypes.string,
-  mainTable: PropTypes.string,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  mainTable: PropTypes.bool,
   newRow: PropTypes.bool,
   tabIndex: PropTypes.number,
   entity: PropTypes.string,

@@ -134,6 +134,7 @@ class TableCell extends PureComponent {
   };
 
   setFocusedWidgetTrue = callback => {
+    console.log('TableCell enter')
     this.setState(
       {
         widgetFocused: true,
@@ -310,6 +311,7 @@ class TableCell extends PureComponent {
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}
+            listenOnKeysdoNotOpenOnFocusFalse={listenOnKeysFalse}
             onChange={this.handlePatch}
             closeTableField={closeTableField}
             isOpenDatePicker={isOpenDatePicker}
@@ -362,9 +364,9 @@ TableCell.propTypes = {
   readonly: PropTypes.string,
   rowId: PropTypes.string,
   item: PropTypes.object,
-  mainTable: PropTypes.string,
+  mainTable: PropTypes.bool,
   windowId: PropTypes.string,
-  tabId: PropTypes.string,
+  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   updatedRow: PropTypes.bool,
   tabIndex: PropTypes.number,
   entity: PropTypes.string,
