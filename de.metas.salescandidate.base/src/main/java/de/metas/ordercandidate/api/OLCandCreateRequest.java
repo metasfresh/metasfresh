@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
 
+import de.metas.bpartner.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;
@@ -60,10 +61,10 @@ public class OLCandCreateRequest
 
 	OrgId orgId;
 
-	OLCandBPartnerInfo bpartner;
-	OLCandBPartnerInfo billBPartner;
-	OLCandBPartnerInfo dropShipBPartner;
-	OLCandBPartnerInfo handOverBPartner;
+	BPartnerInfo bpartner;
+	BPartnerInfo billBPartner;
+	BPartnerInfo dropShipBPartner;
+	BPartnerInfo handOverBPartner;
 
 	String poReference;
 
@@ -92,10 +93,10 @@ public class OLCandCreateRequest
 			final OrgId orgId,
 			@NonNull final String dataSourceInternalName,
 			@Nullable final String dataDestInternalName,
-			@NonNull final OLCandBPartnerInfo bpartner,
-			final OLCandBPartnerInfo billBPartner,
-			final OLCandBPartnerInfo dropShipBPartner,
-			final OLCandBPartnerInfo handOverBPartner,
+			@NonNull final BPartnerInfo bpartner,
+			final BPartnerInfo billBPartner,
+			final BPartnerInfo dropShipBPartner,
+			final BPartnerInfo handOverBPartner,
 			final String poReference,
 			@Nullable final LocalDate dateRequired,
 			@Nullable final LocalDate dateInvoiced,

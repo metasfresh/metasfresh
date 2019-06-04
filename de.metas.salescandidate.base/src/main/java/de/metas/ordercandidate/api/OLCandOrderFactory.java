@@ -33,6 +33,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocumentBL;
@@ -149,13 +150,13 @@ class OLCandOrderFactory
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
 
-		final OLCandBPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
+		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
 		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
 		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
 		// if the olc has no value set, we are not falling back here!
-		final OLCandBPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
+		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 		order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
 		order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
@@ -167,13 +168,13 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		// 05617
-		final OLCandBPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
+		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo();
 		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
 		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
 		final boolean isDropShip = dropShipBPartner != null || dropShipBPartner.getBpartnerLocationId() != null;
 		order.setIsDropShip(isDropShip);
 
-		final OLCandBPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
+		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo();
 		order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
 		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
 		order.setIsUseHandOver_Location(handOverBPartner.getBpartnerLocationId() != null);

@@ -21,8 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.model.JsonAttachment;
+import de.metas.rest_api.ordercandidates.model.OrderCandidatesRestEndpoint;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

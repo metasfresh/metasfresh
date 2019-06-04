@@ -50,8 +50,6 @@ public interface MaterialEventHandler<T extends MaterialEvent>
 	/**
 	 * Note that when this method is called, there is a thread-local {@link ILoggable} instance you can get with {@link Loggables#get()}.
 	 * What you log to it will be persisted in the {@code I_AD_EventLog} table.
-	 *
-	 * @param event
 	 */
 	void handleEvent(T event);
 

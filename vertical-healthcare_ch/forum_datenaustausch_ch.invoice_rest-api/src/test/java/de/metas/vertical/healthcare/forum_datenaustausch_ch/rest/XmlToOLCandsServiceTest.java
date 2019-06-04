@@ -17,10 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
-import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
-import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.rest_api.ordercandidates.model.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.model.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.model.OrderCandidatesRestEndpoint;
+import de.metas.rest_api.ordercandidates.model.SyncAdvise;
 import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
