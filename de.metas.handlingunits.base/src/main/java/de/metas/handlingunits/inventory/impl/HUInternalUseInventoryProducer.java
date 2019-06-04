@@ -25,6 +25,7 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.event.InventoryUserNotificationsProducer;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,7 +75,7 @@ public class HUInternalUseInventoryProducer
 	private String _docSubType = X_C_DocType.DOCSUBTYPE_InternalUseInventory;
 	private final List<I_M_HU> _hus = new ArrayList<>();
 
-	private int activityId;
+	private ActivityId activityId;
 	private String description;
 	private boolean isCompleteInventory;
 
@@ -104,7 +105,8 @@ public class HUInternalUseInventoryProducer
 
 	private final List<I_M_Inventory> createInventories(final int warehouseId,
 			final List<I_M_HU> hus,
-			final int activityId, final String description,
+			final ActivityId activityId,
+			final String description,
 			final boolean isCompleteInventory,
 			final boolean isCreateMovement)
 	{
@@ -190,12 +192,12 @@ public class HUInternalUseInventoryProducer
 		return _movementDate;
 	}
 
-	public int getActivityId()
+	public ActivityId getActivityId()
 	{
 		return activityId;
 	}
 
-	public HUInternalUseInventoryProducer setActivityId(int activityId)
+	public HUInternalUseInventoryProducer setActivityId(ActivityId activityId)
 	{
 		this.activityId = activityId;
 

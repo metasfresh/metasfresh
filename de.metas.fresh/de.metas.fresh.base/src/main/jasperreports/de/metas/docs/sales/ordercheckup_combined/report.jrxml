@@ -69,7 +69,7 @@ LIMIT 1
 		<band height="64" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="30" uuid="1f8f6c71-814f-4233-a1bd-a8b9181b8384">
-					<printWhenExpression><![CDATA[$F{reportdocumenttype}.equals("WH")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{reportdocumenttype}.equals("PL")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="M_Warehouse_ID">
 					<subreportParameterExpression><![CDATA[$P{M_Warehouse_ID}]]></subreportParameterExpression>
@@ -97,7 +97,7 @@ LIMIT 1
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="-1" y="0" width="595" height="30" uuid="79f6d3a6-493e-4e66-bbc5-cc6ec0e7fcbb">
-					<printWhenExpression><![CDATA[$F{reportdocumenttype}.equals("PL")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{reportdocumenttype}.equals("WH")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>

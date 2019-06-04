@@ -76,6 +76,13 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void beforeComplete(final I_M_Inventory inventoryRecord)
 	{
+		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+
+		if (huInventoryBL.isMaterialDisposal(inventoryRecord))
+		{
+			return; // nothing to do
+		}
+
 		inventoryLineRecordService.syncToHUs(inventoryRecord);
 	}
 
