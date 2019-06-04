@@ -96,7 +96,7 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 		final IAttributeStorage attributeStorage = getAttributeStorage(hu);
 		try
 		{
-			final SecurPharmProduct product = securPharmService.getAndSaveProductData(getDataMatrix(), huId);
+			final SecurPharmProduct product = securPharmService.getAndSaveProduct(getDataMatrix(), huId);
 			if (!product.isError() && product.getProductDetails() != null)
 			{
 				final ProductDetails productDetails = product.getProductDetails();
