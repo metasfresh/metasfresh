@@ -103,7 +103,7 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 				if (productDetails.isActive())
 				{
 					// TODO just update or split?
-					attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate());
+					attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, productDetails.getExpirationDate().toLocalDate());
 					attributeStorage.setValue(AttributeConstants.ATTR_LotNr, productDetails.getLot());
 					attributeStorage.setValue(AttributeConstants.ATTR_Scanned, ScannedAttributeValue.YES.getCode());
 				}
