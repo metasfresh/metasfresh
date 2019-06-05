@@ -26,7 +26,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import de.metas.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -57,6 +56,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
@@ -518,7 +518,7 @@ public final class FactLine extends X_Fact_Acct
 		// Qty
 		if (get_Value("Qty") == null)	// not previously set
 		{
-			if (m_docLine != null)
+			if (m_docLine != null && m_docLine.getQty() != null)
 			{
 				setQty(m_docLine.getQty());
 			}
