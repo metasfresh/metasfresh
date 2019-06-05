@@ -2,14 +2,16 @@ import React from "react";
 import * as Immutable from "immutable";
 import { mount, shallow, render } from "enzyme";
 import uuid from "uuid/v4";
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
 
+import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import Table, { Table as TableBare } from "../../../components/table/Table";
-import { Tab } from "../../../components/tabs/Tab";
 import tableFixtures from "../../../../test_setup/fixtures/table_full.json";
 import tabFixtures from "../../../../test_setup/fixtures/tab_full.json";
 
+const mockStore = configureStore([]);
 const TAB_PROPS = tabFixtures.layout.tabs[0];
-// const DATA = tabFixtures.data;
 
 const createDummyTableProps = function(tableProps) {
   return {
@@ -20,29 +22,33 @@ const createDummyTableProps = function(tableProps) {
     onRowEdited: jest.fn(),
     defaultSelected: [],
     supportOpenRecord: false,
-    ...tableProps,
-    rowData: Immutable.Map(tableProps.rowData),
     page: 2,
-    pageLength: 20
+    pageLength: 20,
+    size: 2,
+    tabIndex: 3,
+    rowData: Immutable.Map(tableProps.rowData),
+    ...tableProps,
   };
 };
 
-const mockTabProps = {
-  dispatch: jest.fn(),
-  singleRowView: false,
-  docId: null,
-  orderBy: []
-};
-
-describe("Table in Tab component", () => {
+describe.only("Table in Tab component", () => {
   describe("rendering tests:", () => {
     it("renders without errors", () => {
+      const initialState = { windowHandler: {
+        allowShortcut: true,
+        modal: {
+          visible: false,
+        },
+      }};
+      const store = mockStore(initialState)
       const dummyTableProps = createDummyTableProps(tableFixtures);
 
-      const wrapper = shallow(
-        <Tab {...TAB_PROPS} {...mockTabProps}>
-          <TableBare {...dummyTableProps} />
-        </Tab>
+      const wrapper = render(
+        <ShortcutProvider hotkeys={{}} keymap={{}} >
+          <Provider store={store}>
+            <Table {...dummyTableProps} />
+          </Provider>
+        </ShortcutProvider>
       );
       const html = wrapper.html();
     });
