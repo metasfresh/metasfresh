@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
@@ -77,12 +77,12 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartnerContact() throws Exception
 	{
-		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
+		final JsonContact contact = JsonContact.builder()
 				.name("john doe")
 				.email("john@doe.com")
 				.phone("+123456789")
 				.build();
-		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonBPartnerContact.class));
+		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonContact.class));
 	}
 
 	@Test
@@ -100,7 +100,7 @@ public class JsonOLCandModelTest
 						.city("city")
 						.countryCode("DE")
 						.build())
-				.contact(JsonBPartnerContact.builder()
+				.contact(JsonContact.builder()
 						.name("john doe")
 						.email("john@doe.com")
 						.phone("+123456789")
@@ -160,7 +160,7 @@ public class JsonOLCandModelTest
 								.city("city")
 								.countryCode("DE")
 								.build())
-						.contact(JsonBPartnerContact.builder()
+						.contact(JsonContact.builder()
 								.name("john doe")
 								.email("john@doe.com")
 								.phone("+123456789")

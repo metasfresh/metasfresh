@@ -35,7 +35,7 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
@@ -540,7 +540,7 @@ public class XmlToOLCandsService
 					biller.getPerson().getPostal());
 		}
 
-		final JsonBPartnerContact contact = JsonBPartnerContact
+		final JsonContact contact = JsonContact
 				.builder()
 				.externalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"))
 				.firstName(name.getFirstName())

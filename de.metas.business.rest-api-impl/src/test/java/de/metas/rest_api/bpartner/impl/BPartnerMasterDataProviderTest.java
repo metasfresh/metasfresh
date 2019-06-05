@@ -32,7 +32,7 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.utils.PermissionService;
@@ -98,7 +98,7 @@ public class BPartnerMasterDataProviderTest
 				.externalId(JsonExternalId.of("jsonBPartnerLocation.ExternalId"))
 				.build();
 
-		JsonBPartnerContact jsonBPartnerContact = JsonBPartnerContact.builder()
+		JsonContact jsonBPartnerContact = JsonContact.builder()
 				.externalId(JsonExternalId.of("jsonBPartnerContact.ExternalId"))
 				.email("jsonBPartnerContact.Email")
 				.build();
@@ -327,7 +327,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(userRecord);
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), userRecord.getAD_User_ID());
-		final JsonBPartnerContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
+		final JsonContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
 
 		assertThat(result.getEmail()).isEqualTo("EMail");
 		assertThat(result.getExternalId()).isEqualTo("ExternalId");

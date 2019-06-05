@@ -1,5 +1,7 @@
 package de.metas.rest_api.bpartner.impl;
 
+import javax.annotation.Nullable;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,8 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
-import de.metas.rest_api.bpartner.JsonBPartnerContactList;
+import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.JsonContactList;
+import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.time.SystemTime;
@@ -44,16 +47,18 @@ public class ContactRestController implements ContactRestEndpoint
 {
 
 	@Override
-	public ResponseEntity<JsonBPartnerContact> retrieveBPartnerContact(String contactIdentifier)
+	public ResponseEntity<JsonContact> retrieveContact(@NonNull final String contactIdentifier)
 	{
-		final JsonBPartnerContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
+		final JsonContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
 		return ResponseEntity.ok(mockContact);
 	}
 
 	@Override
-	public ResponseEntity<JsonBPartnerContactList> retrieveBPartnerContactsSince(long epochTimestampMillis)
+	public ResponseEntity<JsonContactList> retrieveContactsSince(
+			@NonNull final Long epochTimestampMillis,
+			@Nullable final String next)
 	{
-		JsonBPartnerContactList list = JsonBPartnerContactList
+		JsonContactList list = JsonContactList
 				.builder()
 				.contact(MockDataUtil.createMockContact("c1"))
 				.pagingDescriptor(JsonPagingDescriptor.builder()
@@ -67,9 +72,9 @@ public class ContactRestController implements ContactRestEndpoint
 	}
 
 	@Override
-	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartnerContact(
+	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
 			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
-			@RequestBody final @NonNull JsonBPartnerContactList contacts)
+			@RequestBody @NonNull final JsonContactUpsertRequest contacts)
 	{
 		final JsonUpsertResponse response = JsonUpsertResponse.builder()
 				.responseItem(JsonUpsertResponseItem.builder().build())

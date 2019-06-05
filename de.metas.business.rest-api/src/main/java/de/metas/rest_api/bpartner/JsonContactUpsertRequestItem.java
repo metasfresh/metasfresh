@@ -44,12 +44,12 @@ public class JsonContactUpsertRequestItem
 	JsonExternalId externalId;
 
 	@NonNull
-	JsonBPartnerContact contact;
+	JsonContact contact;
 
 	@JsonCreator
 	public JsonContactUpsertRequestItem(
 			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
-			@NonNull @JsonProperty("contact") JsonBPartnerContact contact)
+			@NonNull @JsonProperty("contact") JsonContact contact)
 	{
 		this.externalId = externalId;
 		this.contact = contact;

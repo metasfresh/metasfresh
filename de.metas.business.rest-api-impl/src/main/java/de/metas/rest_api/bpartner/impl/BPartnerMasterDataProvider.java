@@ -41,7 +41,7 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.utils.JsonExternalIds;
@@ -285,7 +285,7 @@ public class BPartnerMasterDataProvider
 	}
 
 	private BPartnerContactId lookupContactIdOrNull(
-			@Nullable final JsonBPartnerContact jsonBPartnerContact,
+			@Nullable final JsonContact jsonBPartnerContact,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = context.getBpartnerId();
@@ -548,7 +548,7 @@ public class BPartnerMasterDataProvider
 				.build();
 	}
 
-	private BPartnerContactId getCreateBPartnerContactId(final JsonBPartnerContact json, final BPartnerMasterDataContext context)
+	private BPartnerContactId getCreateBPartnerContactId(final JsonContact json, final BPartnerMasterDataContext context)
 	{
 		if (json == null)
 		{
@@ -562,7 +562,7 @@ public class BPartnerMasterDataProvider
 	}
 
 	private BPartnerContactId createOrUpdateBPartnerContactId(
-			@NonNull final JsonBPartnerContact jsonBPartnerContact,
+			@NonNull final JsonContact jsonBPartnerContact,
 			@NonNull final BPartnerMasterDataContext context)
 	{
 		final BPartnerId bpartnerId = Check.assumeNotNull(context.getBpartnerId(),
@@ -589,7 +589,7 @@ public class BPartnerMasterDataProvider
 		return BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID());
 	}
 
-	private void updateBPartnerContactRecord(final I_AD_User bpContactRecord, final BPartnerId bpartnerId, final JsonBPartnerContact json)
+	private void updateBPartnerContactRecord(final I_AD_User bpContactRecord, final BPartnerId bpartnerId, final JsonContact json)
 	{
 		bpContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bpContactRecord.setName(json.getName());
@@ -598,7 +598,7 @@ public class BPartnerMasterDataProvider
 		bpContactRecord.setExternalId(json.getExternalId().getValue());
 	}
 
-	public JsonBPartnerContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
+	public JsonContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
 	{
 		if (bpartnerContactId == null)
 		{
@@ -611,7 +611,7 @@ public class BPartnerMasterDataProvider
 			return null;
 		}
 
-		return JsonBPartnerContact
+		return JsonContact
 				.builder()
 				.externalId(JsonExternalId.of(bpContactRecord.getExternalId()))
 				.name(bpContactRecord.getName())

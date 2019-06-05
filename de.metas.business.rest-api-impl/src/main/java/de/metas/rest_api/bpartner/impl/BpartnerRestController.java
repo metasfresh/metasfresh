@@ -17,7 +17,7 @@ import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList.JsonBPartnerCompositeListBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequest;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItem;
@@ -73,9 +73,9 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	}
 
 	@Override
-	public ResponseEntity<JsonBPartnerContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
+	public ResponseEntity<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
 	{
-		final JsonBPartnerContact contact = MockDataUtil.createMockContact("c1");
+		final JsonContact contact = MockDataUtil.createMockContact("c1");
 		return ResponseEntity.ok(contact);
 	}
 
@@ -150,7 +150,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
 			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
-			@RequestBody @NonNull final JsonBPartnerContact contact)
+			@RequestBody @NonNull final JsonContact contact)
 	{
 		final JsonUpsertResponseItem resonseItem = JsonUpsertResponseItem.builder()
 				.externalId(contact.getExternalId())

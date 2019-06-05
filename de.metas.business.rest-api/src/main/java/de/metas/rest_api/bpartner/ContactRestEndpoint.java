@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /*
  * #%L
@@ -35,17 +37,37 @@ import io.swagger.annotations.ApiParam;
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/contact")
 public interface ContactRestEndpoint
 {
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
 	@GetMapping("{contactIdentifier}")
-	ResponseEntity<JsonBPartnerContact> retrieveBPartnerContact(
-			@ApiParam(value = "Identifier of the bpartner's contact is question. Be a plain `AD_User_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
+	ResponseEntity<JsonContact> retrieveContact(
+			@ApiParam(value = "Identifier of the bpartner's contact in question. Can be a plain `AD_User_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
 			@PathVariable("contactIdentifier") //
 			String contactIdentifier);
 
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved contact(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
 	@GetMapping
-	ResponseEntity<JsonBPartnerContactList> retrieveBPartnerContactsSince(
-			@RequestParam(name = "since", required = false, defaultValue = "0") //
-			long epochTimestampMillis);
+	ResponseEntity<JsonContactList> retrieveContactsSince(
+			@RequestParam(name = "since", required = false) //
+			Long epochTimestampMillis,
 
+			@RequestParam(name = "next", required = false) //
+			String next);
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+	})
 	@PostMapping
-	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartnerContact(JsonBPartnerContactList contacts);
+	ResponseEntity<JsonUpsertResponse> createOrUpdateContact(JsonContactUpsertRequest contacts);
 }

@@ -51,14 +51,14 @@ public final class JsonBPartnerComposite
 	List<JsonBPartnerLocation> locations;
 
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonBPartnerContact> contacts;
+	List<JsonContact> contacts;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerComposite(
 			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonBPartnerLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonBPartnerContact> contacts)
+			@JsonProperty("contacts") @Singular final List<JsonContact> contacts)
 	{
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());

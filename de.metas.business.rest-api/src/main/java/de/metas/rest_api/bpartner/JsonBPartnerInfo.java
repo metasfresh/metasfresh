@@ -47,7 +47,7 @@ public final class JsonBPartnerInfo
 	JsonBPartnerLocation location;
 
 	@JsonInclude(Include.NON_NULL)
-	JsonBPartnerContact contact;
+	JsonContact contact;
 
 	SyncAdvise syncAdvise;
 
@@ -56,7 +56,7 @@ public final class JsonBPartnerInfo
 	private JsonBPartnerInfo(
 			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
 			@JsonProperty("location") final JsonBPartnerLocation location,
-			@JsonProperty("contact") final JsonBPartnerContact contact,
+			@JsonProperty("contact") final JsonContact contact,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.bpartner = bpartner;

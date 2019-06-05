@@ -36,13 +36,17 @@ import lombok.Value;
  */
 
 @Value
-public class JsonBPartnerContact
+public class JsonContact
 {
 	@ApiModelProperty(dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
 	@ApiModelProperty(dataType = "java.lang.String")
 	JsonExternalId externalId;
+
+	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(dataType = "java.lang.Long")
+	private MetasfreshId metasfreshBPartnerId;
 
 	@JsonInclude(Include.NON_NULL)
 	String name;
@@ -61,9 +65,10 @@ public class JsonBPartnerContact
 
 	@Builder
 	@JsonCreator
-	private JsonBPartnerContact(
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+	private JsonContact(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
+			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("name") final String name,
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
@@ -72,6 +77,7 @@ public class JsonBPartnerContact
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
+		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;

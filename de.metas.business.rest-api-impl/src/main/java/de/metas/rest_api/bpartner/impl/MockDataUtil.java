@@ -6,7 +6,7 @@ import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -84,18 +84,18 @@ public class MockDataUtil
 		final JsonBPartnerLocation location2 = createMockLocation("l2", "DE");
 		result.location(location2);
 
-		final JsonBPartnerContact contact1 = createMockContact("c1");
+		final JsonContact contact1 = createMockContact("c1");
 		result.contact(contact1);
 
-		final JsonBPartnerContact contact2 = createMockContact("c2");
+		final JsonContact contact2 = createMockContact("c2");
 		result.contact(contact2);
 
 		return result.build();
 	}
 
-	public JsonBPartnerContact createMockContact(@NonNull final String prefix)
+	public JsonContact createMockContact(@NonNull final String prefix)
 	{
-		final JsonBPartnerContact contact = JsonBPartnerContact.builder()
+		final JsonContact contact = JsonContact.builder()
 				.metasfreshId(nextMetasFreshId())
 				.email(prefix + "_email@email.net")
 				.externalId(JsonExternalId.of(prefix + "_externalId"))

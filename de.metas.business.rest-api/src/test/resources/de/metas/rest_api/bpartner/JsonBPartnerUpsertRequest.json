@@ -2,7 +2,7 @@
   "requestItems": [
     {
       "externalId": "string",
-      "jsonBPartnerComposite": {
+      "bpartnerComposite": {
         "bpartner": {
           "code": "string",
           "companyName": "string",

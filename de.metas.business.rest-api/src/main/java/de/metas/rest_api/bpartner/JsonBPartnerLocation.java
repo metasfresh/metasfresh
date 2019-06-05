@@ -48,6 +48,10 @@ public class JsonBPartnerLocation
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
+	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(dataType = "java.lang.Long")
+	private MetasfreshId metasfreshBPartnerId;
+
 	private String address1;
 
 	@JsonInclude(Include.NON_NULL)
@@ -77,6 +81,7 @@ public class JsonBPartnerLocation
 	private JsonBPartnerLocation(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
 			@JsonProperty("postal") final String postal,
@@ -91,6 +96,7 @@ public class JsonBPartnerLocation
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
+		this.metasfreshBPartnerId = metasfreshBPartnerId;
 
 		this.address1 = address1;
 		this.address2 = address2;

@@ -36,17 +36,17 @@ import lombok.Value;
  */
 
 @Value
-public class JsonBPartnerContactList
+public class JsonContactList
 {
 	@JsonUnwrapped
 	JsonPagingDescriptor pagingDescriptor;
 
-	List<JsonBPartnerContact> contacts;
+	List<JsonContact> contacts;
 
 	@Builder
-	private JsonBPartnerContactList(
+	private JsonContactList(
 			@NonNull final JsonPagingDescriptor pagingDescriptor,
-			@Singular final List<JsonBPartnerContact> contacts)
+			@Singular final List<JsonContact> contacts)
 	{
 		this.pagingDescriptor = pagingDescriptor;
 		this.contacts = coalesce(contacts, ImmutableList.of());
