@@ -172,7 +172,7 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 			response += employee.getFamilyName();
 			if (employee.getGivenName() != null)
 			{
-				response += employee.getGivenName();
+				response += " " + employee.getGivenName();
 			}
 		}
 

@@ -33,6 +33,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class InvoiceRejectionDetailRepo
 {
+	private static final String REASON_SEPARATOR = "\n";
+
 	private final AttachmentEntryService attachmentEntryService;
 
 	public InvoiceRejectionDetailRepo(@NonNull final AttachmentEntryService attachmentEntryService)
@@ -51,7 +53,7 @@ public class InvoiceRejectionDetailRepo
 		}
 		rejectionDetail.setClient(response.getClient());
 		rejectionDetail.setInvoiceRecipient(response.getInvoiceRecipient());
-		rejectionDetail.setReason(Joiner.on("\n").join(response.getReason()));
+		rejectionDetail.setReason(Joiner.on(REASON_SEPARATOR).join(response.getReason()));
 		rejectionDetail.setExplanation(response.getExplanation());
 		rejectionDetail.setResponsiblePerson(response.getResponsiblePerson());
 		rejectionDetail.setPhone(response.getPhone());

@@ -90,7 +90,7 @@ public class ImportedInvoiceResponse
 
 		@Override public String toString()
 		{
-			return code + "; " + text + ";";
+			return code + ": " + text + ";";
 		}
 	}
 }
