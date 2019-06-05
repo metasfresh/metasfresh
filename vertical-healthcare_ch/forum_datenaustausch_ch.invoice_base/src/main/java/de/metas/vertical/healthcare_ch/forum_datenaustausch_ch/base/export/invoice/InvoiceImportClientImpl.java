@@ -102,8 +102,6 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 				.builder()
 				.documentNumber(invoice.getRequestId()) //invoiceNo
 				.invoiceCreated(invoiceCreatedTimestamp)
-				// isDone
-				//C_Invoice_ID
 				.client(getClient(body))
 				.invoiceRecipient(getRecipient(body))
 				.reason(getErrors(body))
@@ -111,7 +109,7 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 				.responsiblePerson(getResponsiblePerson(body))
 				.phone(getPhone(body))
 				.email(getEmail(body))
-				.org(getOrg(body))
+				.billerEan(getBillerEan(body))
 				.request(request);
 
 		if (body.getRejected() != null)
@@ -129,7 +127,7 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 	}
 
 	@NonNull
-	private String getOrg(@NonNull final XmlBody body)
+	private String getBillerEan(@NonNull final XmlBody body)
 	{
 		return body.getBiller().getEanParty();
 	}
