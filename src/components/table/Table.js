@@ -36,24 +36,12 @@ import {
   collapsedMap,
 } from '../../utils/documentListHelper';
 
-const isMobileDevice = !!(
-  navigator.userAgent.match(/Android/i) ||
-  navigator.userAgent.match(/webOS/i) ||
-  navigator.userAgent.match(/iPhone/i) ||
-  navigator.userAgent.match(/iPad/i) ||
-  navigator.userAgent.match(/iPod/i) ||
-  navigator.userAgent.match(/BlackBerry/i) ||
-  navigator.userAgent.match(/Windows Phone/i)
-);
-
-const tableLimitationOnMobileDevice = 30;
+const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
+const isMobileOrTablet =
+  currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
 class Table extends Component {
   _isMounted = false;
-
-  state = {
-    mobileDevice: false,
-  };
 
   constructor(props) {
     super(props);
@@ -71,9 +59,6 @@ class Table extends Component {
     }
     if (this.props.autofocus) {
       this.table.focus();
-    }
-    if (isMobileDevice) {
-      this.setState({ mobileDevice: true });
     }
   }
 
@@ -681,10 +666,8 @@ class Table extends Component {
       const isAnySelected = selected.length > 0;
 
       let newSelection;
-      let mobileDevice =
-        currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-      if (selectMore || mobileDevice) {
+      if (selectMore || isMobileOrTablet) {
         if (isSelected) {
           newSelection = this.deselectProduct(id);
         } else {
@@ -980,220 +963,101 @@ class Table extends Component {
       supportOpenRecord,
     } = this.props;
 
-    const {
-      selected,
-      rows,
-      collapsedRows,
-      collapsedParentsRows,
-      mobileDevice,
-    } = this.state;
+    const { selected, rows, collapsedRows, collapsedParentsRows } = this.state;
 
-    console.log('tableLimitationOnMobileDevice', tableLimitationOnMobileDevice);
     if (!rows || !rows.length) return null;
 
     this.rowRefs = {};
 
-    if (mobileDevice && rows.length > tableLimitationOnMobileDevice) {
-      return (
-        rows
-          .filter(row => {
-            if (collapsedRows) {
-              return collapsedRows.indexOf(row[keyProperty]) === -1;
-            }
-            return true;
-          })
-          // TODO: just as a proof of concept if we have only 10 rows the table will be much faster on mobile
-          // See existing enhancement task https://github.com/metasfresh/me03/issues/1971
-          .slice(0, tableLimitationOnMobileDevice)
-          .map((item, i) => (
-            <TableItem
-              {...item}
-              {...{
-                entity,
-                cols,
-                windowId,
-                mainTable,
-                indentSupported,
-                selected,
-                docId,
-                tabIndex,
-                readonly,
-                collapsible,
-                viewId,
-                supportOpenRecord,
-              }}
-              key={`${i}-${docId}`}
-              collapsed={
-                collapsedParentsRows &&
-                collapsedParentsRows.indexOf(item[keyProperty]) > -1
-              }
-              odd={i & 1}
-              ref={c => {
-                if (c) {
-                  const keyProp = item[keyProperty];
-                  this.rowRefs[keyProp] = c.wrappedInstance;
-                }
-              }}
-              rowId={item[keyProperty]}
-              tabId={tabId}
-              onDoubleClick={this.handleDoubleClick}
-              onClick={e => {
-                const selected = this.handleClick(e, keyProperty, item);
+    let renderRows = rows.filter(row => {
+      if (collapsedRows) {
+        return collapsedRows.indexOf(row[keyProperty]) === -1;
+      }
+      return true;
+    });
 
-                if (openIncludedViewOnSelect) {
-                  showIncludedViewOnSelect({
-                    showIncludedView: selected && item.supportIncludedViews,
-                    forceClose: !selected,
-                    windowType: item.supportIncludedViews
-                      ? item.includedView.windowType ||
-                        item.includedView.windowId
-                      : null,
-                    viewId: item.supportIncludedViews
-                      ? item.includedView.viewId
-                      : '',
-                  });
-                }
-              }}
-              handleRightClick={(
-                e,
-                fieldName,
-                supportZoomInto,
-                supportFieldEdit
-              ) =>
-                this.handleRightClick(
-                  e,
-                  item[keyProperty],
-                  fieldName,
-                  !!supportZoomInto,
-                  supportFieldEdit
-                )
-              }
-              changeListenOnTrue={() => this.changeListen(true)}
-              changeListenOnFalse={() => this.changeListen(false)}
-              newRow={i === rows.length - 1 ? newRow : false}
-              isSelected={
-                selected &&
-                (selected.indexOf(item[keyProperty]) > -1 ||
-                  selected[0] === 'all')
-              }
-              handleSelect={this.selectRangeProduct}
-              contextType={item.type}
-              caption={item.caption ? item.caption : ''}
-              colspan={item.colspan}
-              notSaved={item.saveStatus && !item.saveStatus.saved}
-              getSizeClass={getSizeClass}
-              handleRowCollapse={() =>
-                this.handleRowCollapse(
-                  item,
-                  collapsedParentsRows.indexOf(item[keyProperty]) > -1
-                )
-              }
-              onItemChange={this.handleItemChange}
-              onCopy={handleCopy}
-            />
-          ))
-      );
-    } else {
-      return (
-        rows
-          .filter(row => {
-            if (collapsedRows) {
-              return collapsedRows.indexOf(row[keyProperty]) === -1;
-            }
-            return true;
-          })
-          // TODO: just as a proof of concept if we have only 10 rows the table will be much faster on mobile
-          // See existing enhancement task https://github.com/metasfresh/me03/issues/1971
-          // .slice(0, 10)
-          .map((item, i) => (
-            <TableItem
-              {...item}
-              {...{
-                entity,
-                cols,
-                windowId,
-                mainTable,
-                indentSupported,
-                selected,
-                docId,
-                tabIndex,
-                readonly,
-                collapsible,
-                viewId,
-                supportOpenRecord,
-              }}
-              key={`${i}-${docId}`}
-              collapsed={
-                collapsedParentsRows &&
-                collapsedParentsRows.indexOf(item[keyProperty]) > -1
-              }
-              odd={i & 1}
-              ref={c => {
-                if (c) {
-                  const keyProp = item[keyProperty];
-                  this.rowRefs[keyProp] = c.wrappedInstance;
-                }
-              }}
-              rowId={item[keyProperty]}
-              tabId={tabId}
-              onDoubleClick={this.handleDoubleClick}
-              onClick={e => {
-                const selected = this.handleClick(e, keyProperty, item);
-
-                if (openIncludedViewOnSelect) {
-                  showIncludedViewOnSelect({
-                    showIncludedView: selected && item.supportIncludedViews,
-                    forceClose: !selected,
-                    windowType: item.supportIncludedViews
-                      ? item.includedView.windowType ||
-                        item.includedView.windowId
-                      : null,
-                    viewId: item.supportIncludedViews
-                      ? item.includedView.viewId
-                      : '',
-                  });
-                }
-              }}
-              handleRightClick={(
-                e,
-                fieldName,
-                supportZoomInto,
-                supportFieldEdit
-              ) =>
-                this.handleRightClick(
-                  e,
-                  item[keyProperty],
-                  fieldName,
-                  !!supportZoomInto,
-                  supportFieldEdit
-                )
-              }
-              changeListenOnTrue={() => this.changeListen(true)}
-              changeListenOnFalse={() => this.changeListen(false)}
-              newRow={i === rows.length - 1 ? newRow : false}
-              isSelected={
-                selected &&
-                (selected.indexOf(item[keyProperty]) > -1 ||
-                  selected[0] === 'all')
-              }
-              handleSelect={this.selectRangeProduct}
-              contextType={item.type}
-              caption={item.caption ? item.caption : ''}
-              colspan={item.colspan}
-              notSaved={item.saveStatus && !item.saveStatus.saved}
-              getSizeClass={getSizeClass}
-              handleRowCollapse={() =>
-                this.handleRowCollapse(
-                  item,
-                  collapsedParentsRows.indexOf(item[keyProperty]) > -1
-                )
-              }
-              onItemChange={this.handleItemChange}
-              onCopy={handleCopy}
-            />
-          ))
-      );
+    if (isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT) {
+      renderRows = renderRows.slice(0, MOBILE_TABLE_SIZE_LIMIT);
     }
+
+    return renderRows.map((item, i) => (
+      <TableItem
+        {...item}
+        {...{
+          entity,
+          cols,
+          windowId,
+          mainTable,
+          indentSupported,
+          selected,
+          docId,
+          tabIndex,
+          readonly,
+          collapsible,
+          viewId,
+          supportOpenRecord,
+        }}
+        key={`${i}-${docId}`}
+        collapsed={
+          collapsedParentsRows &&
+          collapsedParentsRows.indexOf(item[keyProperty]) > -1
+        }
+        odd={i & 1}
+        ref={c => {
+          if (c) {
+            const keyProp = item[keyProperty];
+            this.rowRefs[keyProp] = c.wrappedInstance;
+          }
+        }}
+        rowId={item[keyProperty]}
+        tabId={tabId}
+        onDoubleClick={this.handleDoubleClick}
+        onClick={e => {
+          const selected = this.handleClick(e, keyProperty, item);
+
+          if (openIncludedViewOnSelect) {
+            showIncludedViewOnSelect({
+              showIncludedView: selected && item.supportIncludedViews,
+              forceClose: !selected,
+              windowType: item.supportIncludedViews
+                ? item.includedView.windowType || item.includedView.windowId
+                : null,
+              viewId: item.supportIncludedViews ? item.includedView.viewId : '',
+            });
+          }
+        }}
+        handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
+          this.handleRightClick(
+            e,
+            item[keyProperty],
+            fieldName,
+            !!supportZoomInto,
+            supportFieldEdit
+          )
+        }
+        changeListenOnTrue={() => this.changeListen(true)}
+        changeListenOnFalse={() => this.changeListen(false)}
+        newRow={i === rows.length - 1 ? newRow : false}
+        isSelected={
+          selected &&
+          (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
+        }
+        handleSelect={this.selectRangeProduct}
+        contextType={item.type}
+        caption={item.caption ? item.caption : ''}
+        colspan={item.colspan}
+        notSaved={item.saveStatus && !item.saveStatus.saved}
+        getSizeClass={getSizeClass}
+        handleRowCollapse={() =>
+          this.handleRowCollapse(
+            item,
+            collapsedParentsRows.indexOf(item[keyProperty]) > -1
+          )
+        }
+        onItemChange={this.handleItemChange}
+        onCopy={handleCopy}
+      />
+    ));
   };
 
   renderEmptyInfo = (data, tabId) => {
@@ -1258,7 +1122,6 @@ class Table extends Component {
       isBatchEntry,
       rows,
       tableRefreshToggle,
-      mobileDevice,
     } = this.state;
 
     let showPagination = page && pageLength;
@@ -1442,9 +1305,11 @@ class Table extends Component {
             handleToggleExpand={toggleFullScreen}
           />
         )}
-        {mobileDevice && rows.length > 50 && (
+        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
           <span className="text-danger">
-            Limited to {tableLimitationOnMobileDevice} results of {rows.length}
+            {/*TODO: use here translations, but how we define new keys?*/}
+            {/*{counterpart.translate('Limited to')}*/}
+            Limited to {MOBILE_TABLE_SIZE_LIMIT} results of {rows.length}
           </span>
         )}
       </div>
