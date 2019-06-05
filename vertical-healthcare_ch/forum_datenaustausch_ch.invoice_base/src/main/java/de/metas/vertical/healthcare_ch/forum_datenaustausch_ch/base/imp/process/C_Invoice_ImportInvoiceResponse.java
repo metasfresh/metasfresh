@@ -70,8 +70,8 @@ import lombok.NonNull;
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
-	private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
-	private static int WINDOW_ID_SALES_C_INVOICE_ID = 167; // FIXME Hardcoded
+	@SuppressWarnings({ "FieldMayBeFinal", "FieldCanBeLocal" }) private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
+	@SuppressWarnings({ "FieldMayBeFinal", "FieldCanBeLocal" }) private static int WINDOW_ID_SALES_C_INVOICE_ID = 167; // FIXME Hardcoded
 
 	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
 	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
@@ -164,16 +164,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
 			final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
-			final BPartnerQuery query = BPartnerQuery.builder()
-					.locationGln(response.getBillerEan())
-					.build();
-			final Optional<BPartnerId> partnerIdOptional = ibPartnerDAO.retrieveBPartnerIdBy(query);
-			int billerOrg = 0;
-			if (partnerIdOptional.isPresent())
-			{
-				ibPartnerDAO.getById(partnerIdOptional.get()).getAD_OrgBP_ID();
-				billerOrg = ibPartnerDAO.getById(partnerIdOptional.get()).getAD_Org_ID();
-			}
+			final int billerOrg = retrieveBillerOrg(response);
 
 			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
 					.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
@@ -218,6 +209,21 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issue.getAD_Issue_ID(), e.getMessage());
 		}
 		return false;
+	}
+
+	private int retrieveBillerOrg(@NonNull final ImportedInvoiceResponse response)
+	{
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.locationGln(response.getBillerEan())
+				.build();
+		final Optional<BPartnerId> partnerIdOptional = ibPartnerDAO.retrieveBPartnerIdBy(query);
+		int billerOrg = 0;
+		if (partnerIdOptional.isPresent())
+		{
+			ibPartnerDAO.getById(partnerIdOptional.get()).getAD_OrgBP_ID();
+			billerOrg = ibPartnerDAO.getById(partnerIdOptional.get()).getAD_Org_ID();
+		}
+		return billerOrg;
 	}
 
 	private ImportInvoiceResponseRequest createRequest(@NonNull final Path fileToImport)
