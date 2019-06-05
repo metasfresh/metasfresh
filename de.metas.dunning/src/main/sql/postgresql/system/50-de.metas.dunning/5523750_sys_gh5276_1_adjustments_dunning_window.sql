@@ -28,3 +28,6 @@ UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Mahndatum', Pr
 UPDATE AD_Element_Trl SET Description='',Updated=TO_TIMESTAMP('2019-06-05 14:07:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1883 AND AD_Language='en_US'
 ;
 
+select update_trl_tables_on_ad_element_trl_update(1883, 'en_US');
+select update_trl_tables_on_ad_element_trl_update(1883, 'de_DE');
+select update_trl_tables_on_ad_element_trl_update(1883, 'de_CH');
