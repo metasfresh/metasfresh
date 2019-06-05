@@ -35,6 +35,7 @@ public interface IUserRolePermissions
 	Permission PERMISSION_MenuAvailable = ResourceAsPermission.ofName("IsMenuAvailable");
 	Permission PERMISSION_AllowLoginDateOverride = ResourceAsPermission.ofName(Env.CTXNAME_IsAllowLoginDateOverride);
 	Permission PERMISSION_UseBetaFunctions = ResourceAsPermission.ofName("UseBetaFunctions");
+	Permission PERMISSION_IsAttachmentDeletionAllowed = ResourceAsPermission.ofName("IsAttachmentDeletionAllowed");
 
 	@Deprecated
 	Permission PERMISSION_AutoRoleLogin = ResourceAsPermission.ofName("IsAutoRoleLogin");

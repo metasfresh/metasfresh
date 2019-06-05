@@ -83,6 +83,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryBL;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
@@ -118,7 +119,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final int inventoryDocTypeId;
 	private final int chargeId;
 
-	private final int activityId;
+	private final ActivityId activityId;
 	private final String description;
 
 	private final Map<Integer, I_M_Inventory> inventoriesByOrderId = new LinkedHashMap<>();
@@ -139,7 +140,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	public InventoryAllocationDestination(
 			@NonNull final I_M_Warehouse warehouse,
 			final int inventoryDocTypeId,
-			final int activityId,
+			final ActivityId activityId,
 			final String description)
 	{
 		warehouseId = warehouse.getM_Warehouse_ID();
@@ -318,7 +319,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return inoutLineInDispute;
 	}
 
-	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory )
+	public List<I_M_Inventory> processInventories(final boolean isCompleteInventory)
 	{
 		final List<I_M_Inventory> inventories = getInventories();
 		inventories.forEach(inventory -> processInventory(inventory, isCompleteInventory));
@@ -443,7 +444,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		inventory.setM_Warehouse_ID(warehouseId);
 
-		inventory.setC_Activity_ID(activityId);
+		inventory.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
 		inventory.setDescription(description);
 
 		if (inventoryDocTypeId > 0)

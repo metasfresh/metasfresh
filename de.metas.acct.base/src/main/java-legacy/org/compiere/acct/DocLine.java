@@ -24,7 +24,6 @@ import java.util.function.IntFunction;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
-import de.metas.location.LocationId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -52,6 +51,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.IProductCostingBL;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -91,7 +91,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	private final DT m_doc;
 
 	/** Qty */
-	private Quantity m_qty = null;
+	private Quantity qty = null;
 
 	// -- GL Amounts
 	/** Debit Journal Amt */
@@ -658,12 +658,17 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	{
 		if (isSOTrx)
 		{
-			m_qty = quantity.negate();
+			setQty(quantity.negate());
 		}
 		else
 		{
-			m_qty = quantity;
+			setQty(quantity);
 		}
+	}
+
+	protected final void setQty(@NonNull final Quantity quantity)
+	{
+		this.qty = quantity;
 	}
 
 	/**
@@ -673,7 +678,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	 */
 	public final Quantity getQty()
 	{
-		return m_qty;
+		return qty;
 	}   // getQty
 
 	public final String getDescription()
@@ -927,7 +932,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 				.add("id", get_ID())
 				.add("description", getDescription())
 				.add("productId", getProductId())
-				.add("qty", m_qty)
+				.add("qty", getQty())
 				.add("amtSource", getAmtSource())
 				.toString();
 	}
