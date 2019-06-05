@@ -130,6 +130,7 @@ public class RoleDAO implements IRoleDAO
 		rolePermissions.addPermissionIfCondition(record.isAutoRoleLogin(), IUserRolePermissions.PERMISSION_AutoRoleLogin);
 		rolePermissions.addPermissionIfCondition(record.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
 		rolePermissions.addPermissionIfCondition(record.isRoleAlwaysUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
+		rolePermissions.addPermissionIfCondition(record.isAttachmentDeletionAllowed(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 
 		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
 		rolePermissions.addPermissionIfCondition(record.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
