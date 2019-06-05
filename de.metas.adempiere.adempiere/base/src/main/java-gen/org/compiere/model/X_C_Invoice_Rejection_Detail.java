@@ -14,7 +14,7 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1911828391L;
+	private static final long serialVersionUID = 1872957668L;
 
     /** Standard Constructor */
     public X_C_Invoice_Rejection_Detail (Properties ctx, int C_Invoice_Rejection_Detail_ID, String trxName)
@@ -22,7 +22,6 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
       super (ctx, C_Invoice_Rejection_Detail_ID, trxName);
       /** if (C_Invoice_Rejection_Detail_ID == 0)
         {
-			setC_Invoice_Rejection_Detail_ID (0);
 			setIsDone (false); // N
         } */
     }
@@ -108,28 +107,6 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
 	public int getC_Invoice_Org_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Org_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Zurückweisungsdetail.
-		@param C_Invoice_Rejection_Detail_ID Zurückweisungsdetail	  */
-	@Override
-	public void setC_Invoice_Rejection_Detail_ID (int C_Invoice_Rejection_Detail_ID)
-	{
-		if (C_Invoice_Rejection_Detail_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Rejection_Detail_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Rejection_Detail_ID, Integer.valueOf(C_Invoice_Rejection_Detail_ID));
-	}
-
-	/** Get Zurückweisungsdetail.
-		@return Zurückweisungsdetail	  */
-	@Override
-	public int getC_Invoice_Rejection_Detail_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Rejection_Detail_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -125,29 +125,6 @@ public interface I_C_Invoice_Rejection_Detail
     public static final String COLUMNNAME_C_Invoice_Org_ID = "C_Invoice_Org_ID";
 
 	/**
-	 * Set Zurückweisungsdetail.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Invoice_Rejection_Detail_ID (int C_Invoice_Rejection_Detail_ID);
-
-	/**
-	 * Get Zurückweisungsdetail.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Invoice_Rejection_Detail_ID();
-
-    /** Column definition for C_Invoice_Rejection_Detail_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, Object> COLUMN_C_Invoice_Rejection_Detail_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, Object>(I_C_Invoice_Rejection_Detail.class, "C_Invoice_Rejection_Detail_ID", null);
-    /** Column name C_Invoice_Rejection_Detail_ID */
-    public static final String COLUMNNAME_C_Invoice_Rejection_Detail_ID = "C_Invoice_Rejection_Detail_ID";
-
-	/**
 	 * Set Klient/in.
 	 *
 	 * <br>Type: String
