@@ -14,7 +14,7 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1872957668L;
+	private static final long serialVersionUID = 1520787047L;
 
     /** Standard Constructor */
     public X_C_Invoice_Rejection_Detail (Properties ctx, int C_Invoice_Rejection_Detail_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
       super (ctx, C_Invoice_Rejection_Detail_ID, trxName);
       /** if (C_Invoice_Rejection_Detail_ID == 0)
         {
+			setC_Invoice_Rejection_Detail_ID (0);
 			setIsDone (false); // N
         } */
     }
@@ -78,35 +79,23 @@ public class X_C_Invoice_Rejection_Detail extends org.compiere.model.PO implemen
 		return ii.intValue();
 	}
 
+	/** Set Zurückweisungsdetail.
+		@param C_Invoice_Rejection_Detail_ID Zurückweisungsdetail	  */
 	@Override
-	public org.compiere.model.I_AD_Org getC_Invoice_Org() throws RuntimeException
+	public void setC_Invoice_Rejection_Detail_ID (int C_Invoice_Rejection_Detail_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_Org_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setC_Invoice_Org(org.compiere.model.I_AD_Org C_Invoice_Org)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_Org_ID, org.compiere.model.I_AD_Org.class, C_Invoice_Org);
-	}
-
-	/** Set Sektion.
-		@param C_Invoice_Org_ID Sektion	  */
-	@Override
-	public void setC_Invoice_Org_ID (int C_Invoice_Org_ID)
-	{
-		if (C_Invoice_Org_ID < 1) 
-			set_Value (COLUMNNAME_C_Invoice_Org_ID, null);
+		if (C_Invoice_Rejection_Detail_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Rejection_Detail_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_Org_ID, Integer.valueOf(C_Invoice_Org_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Rejection_Detail_ID, Integer.valueOf(C_Invoice_Rejection_Detail_ID));
 	}
 
-	/** Get Sektion.
-		@return Sektion	  */
+	/** Get Zurückweisungsdetail.
+		@return Zurückweisungsdetail	  */
 	@Override
-	public int getC_Invoice_Org_ID () 
+	public int getC_Invoice_Rejection_Detail_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Org_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Rejection_Detail_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -98,31 +98,27 @@ public interface I_C_Invoice_Rejection_Detail
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Sektion.
+	 * Set Zurückweisungsdetail.
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: ID
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Org_ID (int C_Invoice_Org_ID);
+	public void setC_Invoice_Rejection_Detail_ID (int C_Invoice_Rejection_Detail_ID);
 
 	/**
-	 * Get Sektion.
+	 * Get Zurückweisungsdetail.
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Type: ID
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Org_ID();
+	public int getC_Invoice_Rejection_Detail_ID();
 
-	public org.compiere.model.I_AD_Org getC_Invoice_Org();
-
-	public void setC_Invoice_Org(org.compiere.model.I_AD_Org C_Invoice_Org);
-
-    /** Column definition for C_Invoice_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, org.compiere.model.I_AD_Org> COLUMN_C_Invoice_Org_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, org.compiere.model.I_AD_Org>(I_C_Invoice_Rejection_Detail.class, "C_Invoice_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name C_Invoice_Org_ID */
-    public static final String COLUMNNAME_C_Invoice_Org_ID = "C_Invoice_Org_ID";
+    /** Column definition for C_Invoice_Rejection_Detail_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, Object> COLUMN_C_Invoice_Rejection_Detail_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Rejection_Detail, Object>(I_C_Invoice_Rejection_Detail.class, "C_Invoice_Rejection_Detail_ID", null);
+    /** Column name C_Invoice_Rejection_Detail_ID */
+    public static final String COLUMNNAME_C_Invoice_Rejection_Detail_ID = "C_Invoice_Rejection_Detail_ID";
 
 	/**
 	 * Set Klient/in.
