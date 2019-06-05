@@ -42,9 +42,9 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  */
 
 @RestController
-@RequestMapping(BPartnerProductRestController.ENDPOINT)
+@RequestMapping(BpartnerProductRestController.ENDPOINT)
 //the spelling "Bpartner.." is to avoid swagger spelling it "b-partner-prod.."
-public class BPartnerProductRestController
+public class BpartnerProductRestController
 {
 	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartnerProducts";
 
