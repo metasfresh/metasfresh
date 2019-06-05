@@ -10,6 +10,7 @@ import {
 } from '../../constants/Constants';
 import TableCell from './TableCell';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
+import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
   constructor(props) {
@@ -487,25 +488,27 @@ class TableItem extends PureComponent {
     } = this.props;
 
     return (
-      <tr
-        key={key}
-        onClick={onClick}
-        onDoubleClick={this.handleDoubleClick}
-        className={classnames({
-          'row-selected': isSelected,
-          'tr-odd': odd,
-          'tr-even': !odd,
-          'row-disabled': processed,
-          'row-boundary': processed && lastChild && !includedDocuments,
-          'row-not-saved': notSaved,
-          'item-caption': caption,
-        })}
-      >
-        {indentSupported && indent && (
-          <td className="indented">{this.renderTree(contextType)}</td>
-        )}
-        {this.renderCells()}
-      </tr>
+      <WithMobileDoubleTap>
+        <tr
+          key={key}
+          onClick={onClick}
+          onDoubleClick={this.handleDoubleClick}
+          className={classnames({
+            'row-selected': isSelected,
+            'tr-odd': odd,
+            'tr-even': !odd,
+            'row-disabled': processed,
+            'row-boundary': processed && lastChild && !includedDocuments,
+            'row-not-saved': notSaved,
+            'item-caption': caption,
+          })}
+        >
+          {indentSupported && indent && (
+            <td className="indented">{this.renderTree(contextType)}</td>
+          )}
+          {this.renderCells()}
+        </tr>
+      </WithMobileDoubleTap>
     );
   }
 }
