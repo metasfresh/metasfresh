@@ -1,21 +1,16 @@
 package de.metas.rest_api.bpartner;
 
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -56,25 +51,19 @@ public final class JsonBPartnerComposite
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonBPartnerContact> contacts;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "If not set, read-only will be assumed")
-	SyncAdvise syncAdvise;
-
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerComposite(
 			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonBPartnerLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonBPartnerContact> contacts,
-			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+			@JsonProperty("contacts") @Singular final List<JsonBPartnerContact> contacts)
 	{
 		this.bpartner = bpartner;
 		this.locations = locations;
 		this.contacts = contacts;
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 
 		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
-				|| !isEmpty(bpartner.getExternalId(), true);
+				|| bpartner.getExternalId() != null;
 		Check.errorUnless(
 				lokupValuesAreOk,
 				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);

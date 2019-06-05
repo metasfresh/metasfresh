@@ -65,7 +65,7 @@ public final class JsonBPartnerInfo
 		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 
 		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
-				|| !isEmpty(bpartner.getExternalId(), true)
+				|| bpartner.getExternalId() != null
 				|| !isEmpty(location.getGln(), true);
 		Check.errorUnless(
 				lokupValuesAreOk,

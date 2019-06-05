@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -62,8 +63,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -98,6 +97,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -189,11 +189,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerContactId> getContactIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<BPartnerContactId> getContactIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveContacts(bpartnerId)
 				.stream()
-				.filter(contact -> externalId.equals(contact.getExternalId()))
+				.filter(contact -> Objects.equals(externalId.getValue(), contact.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerContactId.ofRepoId(bpartnerId, record.getAD_User_ID()));
 	}
@@ -211,27 +213,24 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
-		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
-
-		final String wc = org.compiere.model.I_AD_User.COLUMNNAME_IsDefaultContact + "=" + DB.TO_STRING("Y") + " AND " +
-				org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID + "=?";
-
-		final T result = new Query(ctx, org.compiere.model.I_AD_User.Table_Name, wc, trxName)
-				.setParameters(bPartner.getC_BPartner_ID())
-				.setOnlyActiveRecords(true)
-				.setClient_ID()
+		final T result = Services.get(IQueryBL.class)
+				.createQueryBuilder(clazz)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+				.create()
 				.firstOnly(clazz);
-
 		return result;
 	}
 
 	@Override
-	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
-				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.filter(bpLocation -> Objects.equals(externalId.getValue(), bpLocation.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}

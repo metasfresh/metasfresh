@@ -1,15 +1,9 @@
 package de.metas.rest_api.bpartner;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.JsonExternalId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -36,14 +30,12 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonBPartnerCompositeList
+public class JsonBPartnerUpsertRequestItem
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
+	@ApiModelProperty(allowEmptyValue = false, value = "External system's ID of the business partner to upsert.")
 	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	JsonExternalId externalId;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	@NonNull
+	JsonBPartnerComposite jsonBPartnerComposite;
 }

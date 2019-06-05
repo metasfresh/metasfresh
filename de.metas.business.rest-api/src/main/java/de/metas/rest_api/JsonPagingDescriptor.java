@@ -1,6 +1,11 @@
 package de.metas.rest_api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -16,16 +21,18 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@ApiModel(description = "Included in various responses that are so big that they require pagination")
 @Value
+@Builder
 public class JsonPagingDescriptor
 {
 	@ApiModelProperty("Epoc-Timestamp in ms. Can be stored by the API client and be used in a later invocation.")
@@ -35,8 +42,9 @@ public class JsonPagingDescriptor
 	long totalSize;
 
 	@ApiModelProperty("Number of results in the current page.")
-	long pageSize;
+	int pageSize;
 
 	@ApiModelProperty("If provided, then the overal result has further pages and the next page can be retrieved using the given value")
+	@JsonInclude(Include.NON_EMPTY)
 	String nextPage;
 }

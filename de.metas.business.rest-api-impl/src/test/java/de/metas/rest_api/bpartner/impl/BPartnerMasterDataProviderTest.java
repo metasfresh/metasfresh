@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerInfo;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
@@ -34,7 +35,6 @@ import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.impl.BPartnerMasterDataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 
@@ -95,11 +95,11 @@ public class BPartnerMasterDataProviderTest
 		jsonBPartnerLocation = JsonBPartnerLocation.builder()
 				.countryCode("DE")
 				.gln("jsonBPartnerLocation.GLN")
-				.externalId("jsonBPartnerLocation.ExternalId")
+				.externalId(JsonExternalId.of("jsonBPartnerLocation.ExternalId"))
 				.build();
 
 		JsonBPartnerContact jsonBPartnerContact = JsonBPartnerContact.builder()
-				.externalId("jsonBPartnerContact.ExternalId")
+				.externalId(JsonExternalId.of("jsonBPartnerContact.ExternalId"))
 				.email("jsonBPartnerContact.Email")
 				.build();
 

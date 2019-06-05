@@ -38,6 +38,7 @@ public class MasterdataProviderFactory
 	private PermissionService permissionService;
 	private ProductMasterDataProvider productMasterDataProvider;
 
+	/** This empty public constructor is here for spring */
 	public MasterdataProviderFactory()
 	{
 		this(null/* bpartnerMasterDataProvider */, null/* productMasterDataProvider */, null/* permissionService */);

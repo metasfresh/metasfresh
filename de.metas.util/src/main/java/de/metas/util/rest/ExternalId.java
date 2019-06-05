@@ -1,15 +1,8 @@
-package de.metas.rest_api.bpartner;
+package de.metas.util.rest;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,15 +28,21 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class JsonBPartnerCompositeList
+public class ExternalId
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	String value;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	public static ExternalId of(@NonNull final String value)
+	{
+		return new ExternalId(value);
+	}
+
+	public static String toValue(@Nullable final ExternalId externalId)
+	{
+		if(externalId==null)
+		{
+			return null;
+		}
+		return externalId.getValue();
+	}
 }

@@ -48,6 +48,7 @@ import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -84,7 +85,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
 
-	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
+	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, String gln);
 
@@ -110,7 +111,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_AD_User> retrieveContacts(I_C_BPartner bpartner);
 
-	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, String externalId);
+	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
 

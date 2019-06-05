@@ -1,14 +1,15 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import javax.annotation.Nullable;
 
-import de.metas.rest_api.JsonPagingDescriptor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.rest_api.SyncAdvise;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -36,14 +37,18 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonBPartnerCompositeList
+public class JsonBPartnerUpsertRequest
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	List<JsonBPartnerUpsertRequestItem> requestItems;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	@JsonProperty("syncAdvise")
+	SyncAdvise syncAdvise;
+
+	public JsonBPartnerUpsertRequest(
+			@Singular final List<JsonBPartnerUpsertRequestItem> requestItems,
+			@Nullable final SyncAdvise syncAdvise)
+	{
+		this.requestItems = requestItems;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+	}
 }

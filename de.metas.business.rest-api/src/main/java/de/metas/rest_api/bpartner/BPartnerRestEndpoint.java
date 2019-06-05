@@ -71,11 +71,11 @@ public interface BPartnerRestEndpoint
 			String next);
 
 	@PostMapping
-	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateBPartner(JsonBPartnerCompositeList bpartners);
+	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateBPartner(JsonBPartnerUpsertRequest bpartners);
 
 	@PostMapping("{bpartnerIdentifier}/location")
-	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateLocation(JsonBPartnerLocation location);
+	ResponseEntity<JsonBPartnerUpsertResponseItem> createOrUpdateLocation(JsonBPartnerLocation location);
 
 	@PostMapping("{bpartnerIdentifier}/contact")
-	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateContact(JsonBPartnerContact contact);
+	ResponseEntity<JsonBPartnerUpsertResponseItem> createOrUpdateContact(JsonBPartnerContact contact);
 }

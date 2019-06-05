@@ -46,7 +46,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(RestApiConstants.ENDPOINT_INVOICE_440)
 @Conditional(RestApiStartupCondition.class)
-@Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
+@Api(description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {
 	private final XmlToOLCandsService xmlToOLCandsService;

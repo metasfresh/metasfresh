@@ -67,9 +67,11 @@ public class UserRepository
 				.lastName(userRecord.getLastname())
 				.birthday(TimeUtil.asLocalDate(userRecord.getBirthday()))
 				.emailAddress(userRecord.getEMail())
+
 				.userLanguage(userLanguage)
 				.bPartnerLanguage(bPartnerLanguage)
 				.language(language)
+
 				.build();
 	}
 
@@ -84,10 +86,13 @@ public class UserRepository
 		{
 			userRecord = load(user.getId().getRepoId(), I_AD_User.class);
 		}
-
+		userRecord.setC_BPartner_ID(BPartnerId.toRepoId(user.getBpartnerId()));
 		userRecord.setName(user.getName());
+		userRecord.setFirstname(user.getFirstName());
+		userRecord.setLastname(user.getLastName());
+		userRecord.setBirthday(TimeUtil.asTimestamp(user.getBirthday()));
 		userRecord.setEMail(user.getEmailAddress());
-		userRecord.setAD_Language(Language.asLanguageString(user.getLanguage()));
+		userRecord.setAD_Language(Language.asLanguageString(user.getUserLanguage()));
 		saveRecord(userRecord);
 
 		return user

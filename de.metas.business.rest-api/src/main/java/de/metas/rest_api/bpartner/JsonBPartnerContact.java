@@ -1,10 +1,14 @@
 package de.metas.rest_api.bpartner;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -33,10 +37,18 @@ import lombok.Value;
 @Value
 public class JsonBPartnerContact
 {
-	String externalId;
+	MetasfreshId id;
+
+	JsonExternalId externalId;
 
 	@JsonInclude(Include.NON_NULL)
 	String name;
+
+	@JsonInclude(Include.NON_NULL)
+	String lastName;
+
+	@JsonInclude(Include.NON_NULL)
+	String firstName;
 
 	@JsonInclude(Include.NON_NULL)
 	String email;
@@ -47,13 +59,19 @@ public class JsonBPartnerContact
 	@Builder
 	@JsonCreator
 	private JsonBPartnerContact(
-			@JsonProperty("externalId") final String externalId,
+			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+			@JsonProperty("id") @Nullable final MetasfreshId id,
 			@JsonProperty("name") final String name,
+			@JsonProperty("firstName") final String firstName,
+			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
 			@JsonProperty("phone") final String phone)
 	{
+		this.id = id;
 		this.externalId = externalId;
 		this.name = name;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
 	}

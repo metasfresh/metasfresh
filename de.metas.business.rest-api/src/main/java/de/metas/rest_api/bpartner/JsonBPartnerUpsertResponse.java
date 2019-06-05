@@ -1,5 +1,9 @@
 package de.metas.rest_api.bpartner;
 
+import java.util.List;
+
+import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -25,6 +29,9 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public final class JsonBPartnerUpsertResponse
 {
+	@Singular
+	List<JsonBPartnerUpsertResponseItem> responseItems;
 }

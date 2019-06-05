@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -40,19 +42,21 @@ public class JsonBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
+
 			value = "This translates to <code>C_BPartner.C_BPartner_ID</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If the lookup does not succeed, it will fail.")
 	@JsonInclude(Include.NON_NULL)
-	private int id;
+	MetasfreshId id;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
+
 			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
 	@JsonInclude(Include.NON_NULL)
-	private String externalId;
+	JsonExternalId externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -60,38 +64,74 @@ public class JsonBPartner
 					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
 	@JsonInclude(Include.NON_NULL)
-	private String code;
+	String code;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to <code>C_BPartner.Name</code>.\n"
 					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
-	private String name;
+	String name;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to <code>C_BPartner.CompanyName</code>.\n"
-					+ "If set, the the respective <code>C_BPartner</code> record will also have <code>IsCompany='Y'</code>")
+			value = "This translates to `C_BPartner.CompanyName`.\n"
+					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonInclude(Include.NON_NULL)
-	private String companyName;
+	String companyName;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company")
+	@JsonInclude(Include.NON_NULL)
+	MetasfreshId parentId;
+
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
+	@JsonInclude(Include.NON_NULL)
+	String phone;
+
+	@JsonInclude(Include.NON_NULL)
+	String language;
+
+	@JsonInclude(Include.NON_NULL)
+	String url;
+
+	@JsonInclude(Include.NON_NULL)
+	String group;
 
 	@JsonCreator
 	@Builder
 	private JsonBPartner(
-			@JsonProperty("id") @Nullable final int id,
-			@JsonProperty("externalId") @Nullable final String externalId,
+			@JsonProperty("id") @Nullable final MetasfreshId id,
+			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+
 			@JsonProperty("code") @Nullable final String code,
 			@JsonProperty("name") @Nullable final String name,
-			@JsonProperty("companyName") @Nullable final String companyName)
+			@JsonProperty("companyName") @Nullable final String companyName,
+			@JsonProperty("parentId") @Nullable final MetasfreshId parentId,
+			@JsonProperty("phone") @Nullable final String phone,
+			@JsonProperty("language") @Nullable final String language,
+			@JsonProperty("url") @Nullable final String url,
+			@JsonProperty("group") @Nullable final String group)
 	{
 		this.id = id;
 		this.externalId = externalId;
 		this.code = code;
+
 		this.name = name;
 		this.companyName = companyName;
 
+		this.parentId = parentId;
+
+		this.phone = phone;
+		this.language = language;
+		this.url = url;
+		this.group = group;
+
 		// both id, externalId and code may be empty if this instance belongs to a JsonBPArtnerInfo that has a location with has a GLN.
+
 		// errorIf(isEmpty(code, true) && isEmpty(externalId, true), "At least one of code and externalId need to be non-empty; name={}; companyName={}", name, companyName);
 	}
 

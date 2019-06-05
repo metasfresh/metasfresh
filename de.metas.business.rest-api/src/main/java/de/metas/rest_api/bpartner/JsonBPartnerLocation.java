@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -36,15 +38,20 @@ import lombok.Value;
 @Value
 public class JsonBPartnerLocation
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "This translates to <code>C_BPartner_Location.ExternalId</code>.\n"
+	@JsonInclude(Include.NON_NULL)
+	private MetasfreshId id;
+
+	@ApiModelProperty(allowEmptyValue = true, //
+			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
-	private String externalId;
+	private JsonExternalId externalId;
 
 	private String address1;
 
 	@JsonInclude(Include.NON_NULL)
 	private String address2;
+
+	private String poBox;
 
 	private String postal;
 
@@ -53,31 +60,44 @@ public class JsonBPartnerLocation
 	@JsonInclude(Include.NON_NULL)
 	private String state;
 
+	private String district;
+
+	private String region;
+
 	private String countryCode;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "This translates to <code>C_BPartner_Location.GLN</code>.")
+	@ApiModelProperty(allowEmptyValue = true, //
+			value = "This translates to `C_BPartner_Location.GLN`.")
 	private String gln;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerLocation(
-			@JsonProperty("externalId") final String externalId,
-			@JsonProperty("address1") final String address1,
-			@JsonProperty("address2") final String address2,
+			@JsonProperty("id") @Nullable final MetasfreshId id,
+			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+			@JsonProperty("address1") @Nullable final String address1,
+			@JsonProperty("address2") @Nullable final String address2,
 			@JsonProperty("postal") final String postal,
+			@JsonProperty("poBox") final String poBox,
+			@JsonProperty("district") final String district,
+			@JsonProperty("region") final String region,
 			@JsonProperty("city") final String city,
 			@JsonProperty("state") final String state,
 			@JsonProperty("countryCode") @Nullable final String countryCode,
 			@JsonProperty("gln") @Nullable final String gln)
 	{
+		this.id = id;
+		this.gln = gln;
 		this.externalId = externalId;
+
 		this.address1 = address1;
 		this.address2 = address2;
 		this.postal = postal;
+		this.poBox = poBox;
+		this.district = district;
+		this.region = region;
 		this.city = city;
 		this.state = state;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
-		this.gln = gln;
 	}
 }

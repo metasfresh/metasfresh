@@ -1,6 +1,5 @@
 package de.metas.rest_api.dataentry.impl;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 
 import de.metas.Profiles;
@@ -46,9 +46,9 @@ import lombok.NonNull;
  * #L%
  */
 
-@Profile(Profiles.PROFILE_App)
 @RestController
 @RequestMapping(DataEntryRestController.ENDPOINT)
+@Profile(Profiles.PROFILE_App)
 public class DataEntryRestController
 {
 	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";

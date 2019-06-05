@@ -1,15 +1,9 @@
 package de.metas.rest_api.bpartner;
 
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
-import lombok.Builder;
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -25,25 +19,22 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
-public class JsonBPartnerCompositeList
+public class JsonBPartnerUpsertResponseItem
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
+	@ApiModelProperty(value = "The external id from the respective update request")
 	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	JsonExternalId externalId;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	@ApiModelProperty(value = "The metasfresh-ID of the upserted record")
+	MetasfreshId id;
 }

@@ -1,15 +1,9 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
+import de.metas.util.Check;
 import lombok.Value;
 
 /*
@@ -35,15 +29,19 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class JsonBPartnerCompositeList
+public class MetasfreshId
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	@JsonValue
+	long value;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	@JsonCreator
+	public static MetasfreshId of(long id)
+	{
+		return new MetasfreshId(id);
+	}
+
+	private MetasfreshId(long value)
+	{
+		this.value = Check.assumeGreaterThanZero(value, "value");
+	}
 }

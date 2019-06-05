@@ -1,20 +1,14 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.utils;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import de.metas.rest_api.JsonExternalId;
+import de.metas.util.rest.ExternalId;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -34,16 +28,15 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class JsonBPartnerCompositeList
+@UtilityClass
+public class JsonExternalIds
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
-
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	public ExternalId toExternalIdOrNull(@Nullable final JsonExternalId jsonExternalId)
+	{
+		if (jsonExternalId == null)
+		{
+			return null;
+		}
+		return ExternalId.of(jsonExternalId.getValue());
+	}
 }

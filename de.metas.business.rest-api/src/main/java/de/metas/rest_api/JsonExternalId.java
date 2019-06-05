@@ -1,15 +1,14 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api;
 
-import java.util.List;
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import javax.annotation.Nullable;
 
-import de.metas.rest_api.JsonPagingDescriptor;
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -35,15 +34,29 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class JsonBPartnerCompositeList
+public class JsonExternalId
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
+	@JsonValue
+	String value;
 
-	@JsonInclude(Include.ALWAYS)
-	@Singular
-	List<JsonBPartnerComposite> items;
+	@JsonCreator
+	public static JsonExternalId of(@NonNull final String value)
+	{
+		return new JsonExternalId(value);
+	}
+
+	public static JsonExternalId ofOrNull(@Nullable final String value)
+	{
+		if (isEmpty(value, true))
+		{
+			return null;
+		}
+		return new JsonExternalId(value);
+	}
+
+	private JsonExternalId(@NonNull final String value)
+	{
+		this.value = assumeNotEmpty(value, "Param value={} may not be empty", value);
+	}
+
 }

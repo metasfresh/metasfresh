@@ -2,14 +2,15 @@ package de.metas.bpartner.service;
 
 import static de.metas.util.Check.errorIf;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -25,12 +26,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,7 +45,7 @@ import lombok.Value;
 @Value
 public class BPartnerQuery
 {
-	String externalId;
+	ExternalId externalId;
 	String bpartnerValue;
 	String bpartnerName;
 	String locationGln;
@@ -56,7 +57,7 @@ public class BPartnerQuery
 
 	@Builder
 	private BPartnerQuery(
-			@Nullable final String externalId,
+			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
 			@Nullable final String locationGln,
@@ -73,13 +74,13 @@ public class BPartnerQuery
 		this.externalId = externalId;
 		errorIf(isEmpty(bpartnerValue, true)
 				&& isEmpty(bpartnerName, true)
-				&& isEmpty(externalId, true)
+				&& externalId == null
 				&& isEmpty(locationGln, true),
 				"At least one of the given bpartnerValue, bpartnerName, locationGln or externalId needs to be non-empty");
 
 		this.onlyOrgIds = onlyOrgIds;
 
-		this.outOfTrx = Util.coalesce(outOfTrx, true);
-		this.failIfNotExists = Util.coalesce(failIfNotExists, false);
+		this.outOfTrx = coalesce(outOfTrx, true);
+		this.failIfNotExists = coalesce(failIfNotExists, false);
 	}
 }

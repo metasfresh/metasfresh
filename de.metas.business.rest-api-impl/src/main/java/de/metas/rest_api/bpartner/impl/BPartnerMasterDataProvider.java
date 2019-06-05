@@ -22,6 +22,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -44,8 +45,21 @@ import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
+
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.bpartner.JsonBPartner;
+import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonBPartnerInfo;
+import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.PermissionService;
+
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -84,8 +98,8 @@ public class BPartnerMasterDataProvider
 	}
 
 	private final BiMap<JsonBPartner, BPartnerId> bpartnerIdsByJson = HashBiMap.<JsonBPartner, BPartnerId> create();
-	private final Map<String, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
-	private final Map<String, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
+	private final Map<JsonExternalId, BPartnerLocationId> bpartnerLocationIdsByExternalId = new HashMap<>();
+	private final Map<JsonExternalId, BPartnerContactId> bpartnerContactIdsByExternalId = new HashMap<>();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationsRepo = Services.get(ILocationDAO.class);
@@ -94,7 +108,8 @@ public class BPartnerMasterDataProvider
 
 	private final PermissionService permissionService;
 
-	public BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
+	@VisibleForTesting
+	BPartnerMasterDataProvider(@NonNull final PermissionService permissionService)
 	{
 		this.permissionService = permissionService;
 	}
@@ -226,13 +241,14 @@ public class BPartnerMasterDataProvider
 		}
 
 		final SyncAdvise syncAdvise = jsonBPartnerInfo.getSyncAdvise();
+		final ExternalId externalId = JsonExternalIds.toExternalIdOrNull(json.getExternalId());
 
 		final BPartnerQuery.BPartnerQueryBuilder query = BPartnerQuery.builder()
 				.onlyOrgId(context.getOrgId())
 				.onlyOrgId(OrgId.ANY)
 				.outOfTrx(syncAdvise.isLoadReadOnly())
 				.failIfNotExists(syncAdvise.isFailIfNotExists())
-				.externalId(json.getExternalId())
+				.externalId(externalId)
 				.bpartnerValue(json.getCode());
 
 		final JsonBPartnerLocation jsonLocation = jsonBPartnerInfo.getLocation();
@@ -263,7 +279,7 @@ public class BPartnerMasterDataProvider
 			existingBPLocationId = bpartnersRepo
 					.getBPartnerLocationIdByExternalId(
 							bpartnerId,
-							jsonBPartnerLocation.getExternalId())
+							JsonExternalIds.toExternalIdOrNull(jsonBPartnerLocation.getExternalId()))
 					.orElse(null);
 		}
 		if (existingBPLocationId == null && jsonBPartnerLocation.getGln() != null)
@@ -294,7 +310,7 @@ public class BPartnerMasterDataProvider
 			existingContactId = bpartnersRepo
 					.getContactIdByExternalId(
 							bpartnerId,
-							jsonBPartnerContact.getExternalId())
+							JsonExternalIds.toExternalIdOrNull(jsonBPartnerContact.getExternalId()))
 					.orElse(null);
 		}
 		else
@@ -362,10 +378,10 @@ public class BPartnerMasterDataProvider
 	{
 		final boolean isNew = isNew(bpartnerRecord);
 
-		final String externalId = from.getExternalId();
-		if (!Check.isEmpty(externalId, true))
+		final JsonExternalId externalId = from.getExternalId();
+		if (externalId != null)
 		{
-			bpartnerRecord.setExternalId(externalId);
+			bpartnerRecord.setExternalId(externalId.getValue());
 		}
 
 		final String code = from.getCode();
@@ -407,9 +423,10 @@ public class BPartnerMasterDataProvider
 							final I_C_BPartner bpartnerRecord = bpartnersRepo.getById(id);
 							Check.assumeNotNull(bpartnerRecord, "bpartner shall exist for {}", bpartnerId);
 
-							return JsonBPartner.builder()
+							return JsonBPartner
+									.builder()
 									.code(bpartnerRecord.getValue())
-									.externalId(bpartnerRecord.getExternalId())
+									.externalId(JsonExternalId.ofOrNull(bpartnerRecord.getExternalId()))
 									.name(bpartnerRecord.getName())
 									.companyName(bpartnerRecord.getCompanyName())
 									.build();
@@ -480,8 +497,7 @@ public class BPartnerMasterDataProvider
 		bpLocationRecord.setIsBillTo(true);
 
 		bpLocationRecord.setGLN(json.getGln());
-
-		bpLocationRecord.setExternalId(json.getExternalId());
+		bpLocationRecord.setExternalId(json.getExternalId().getValue());
 
 		final boolean newOrLocationHasChanged = isNew(bpLocationRecord) || !json.equals(toJsonBPartnerLocation(bpLocationRecord));
 		if (newOrLocationHasChanged)
@@ -529,10 +545,10 @@ public class BPartnerMasterDataProvider
 
 		final String countryCode = countryRepo.retrieveCountryCode2ByCountryId(CountryId.ofRepoId(location.getC_Country_ID()));
 
-		return JsonBPartnerLocation.builder()
-				.externalId(bpLocationRecord.getExternalId())
+		return JsonBPartnerLocation
+				.builder()
+				.externalId(JsonExternalId.of(bpLocationRecord.getExternalId()))
 				.gln(bpLocationRecord.getGLN())
-				.externalId(bpLocationRecord.getExternalId())
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.postal(location.getPostal())
@@ -589,7 +605,7 @@ public class BPartnerMasterDataProvider
 		bpContactRecord.setName(json.getName());
 		bpContactRecord.setEMail(json.getEmail());
 		bpContactRecord.setPhone(json.getPhone());
-		bpContactRecord.setExternalId(json.getExternalId());
+		bpContactRecord.setExternalId(json.getExternalId().getValue());
 	}
 
 	public JsonBPartnerContact getJsonBPartnerContactById(final BPartnerContactId bpartnerContactId)
@@ -605,8 +621,9 @@ public class BPartnerMasterDataProvider
 			return null;
 		}
 
-		return JsonBPartnerContact.builder()
-				.externalId(bpContactRecord.getExternalId())
+		return JsonBPartnerContact
+				.builder()
+				.externalId(JsonExternalId.of(bpContactRecord.getExternalId()))
 				.name(bpContactRecord.getName())
 				.email(bpContactRecord.getEMail())
 				.phone(bpContactRecord.getPhone())

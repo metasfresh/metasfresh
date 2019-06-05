@@ -1,5 +1,7 @@
 package de.metas.bpartner;
 
+import javax.annotation.Nullable;
+
 import lombok.Builder;
 import lombok.Value;
 
@@ -27,6 +29,9 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+/**
+ * Composition of bpartner-id, location-id and contact-id. These three in conjunction are used in many documents.
+ */
 @Value
 public final class BPartnerInfo
 {

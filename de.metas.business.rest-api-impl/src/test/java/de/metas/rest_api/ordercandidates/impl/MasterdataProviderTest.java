@@ -26,13 +26,13 @@ import org.mockito.MockitoAnnotations;
 
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
-import de.metas.rest_api.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
@@ -113,7 +113,7 @@ public class MasterdataProviderTest
 
 		jsonBPartnerLocation = JsonBPartnerLocation.builder()
 				.countryCode("DE")
-				.externalId("jsonBPartnerLocation.externalId")
+				.externalId(JsonExternalId.of("jsonBPartnerLocation.externalId"))
 				.build();
 
 		jsonBPartnerInfo = JsonBPartnerInfo.builder()
