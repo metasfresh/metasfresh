@@ -1,6 +1,10 @@
 package de.metas.rest_api.bpartner;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.rest_api.JsonExternalId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -30,12 +34,24 @@ import lombok.Value;
 
 @Value
 @Builder
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonBPartnerUpsertRequestItem
 {
-	@ApiModelProperty(allowEmptyValue = false, value = "External system's ID of the business partner to upsert.")
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "External system's ID of the business partner to upsert.", //
+			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
 	@NonNull
-	JsonBPartnerComposite jsonBPartnerComposite;
+	JsonBPartnerComposite bpartnerComposite;
+
+	@JsonCreator
+	public JsonBPartnerUpsertRequestItem(
+			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
+			@NonNull @JsonProperty("bpartnerComposite") JsonBPartnerComposite bpartnerComposite)
+	{
+		this.externalId = externalId;
+		this.bpartnerComposite = bpartnerComposite;
+	}
 }

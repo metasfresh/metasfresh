@@ -31,17 +31,22 @@ import lombok.Value;
 @Value
 public class MetasfreshId
 {
-	@JsonValue
 	long value;
 
-	@JsonCreator
 	public static MetasfreshId of(long id)
 	{
 		return new MetasfreshId(id);
 	}
 
+	@JsonCreator
 	private MetasfreshId(long value)
 	{
 		this.value = Check.assumeGreaterThanZero(value, "value");
+	}
+
+	@JsonValue
+	public long getValue()
+	{
+		return value;
 	}
 }

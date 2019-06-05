@@ -1,8 +1,12 @@
 package de.metas.rest_api.bpartner;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -19,22 +23,35 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-public class JsonBPartnerUpsertResponseItem
+@Builder
+public class JsonUpsertResponseItem
 {
-	@ApiModelProperty(value = "The external id from the respective update request")
+	@ApiModelProperty(//
+			value = "The external id from the respective update request",//
+			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record")
-	MetasfreshId id;
+	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
+			dataType = "java.lang.Long")
+	MetasfreshId metasfreshId;
+
+	@JsonCreator
+	private JsonUpsertResponseItem(
+			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
+			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
+	{
+		this.externalId = externalId;
+		this.metasfreshId = metasfreshId;
+	}
 }

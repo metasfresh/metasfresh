@@ -37,15 +37,6 @@ import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
-import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerContact;
-import de.metas.rest_api.bpartner.JsonBPartnerInfo;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.utils.MissingPropertyException;
-import de.metas.rest_api.utils.PermissionService;
-
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -56,7 +47,6 @@ import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
-
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalId;

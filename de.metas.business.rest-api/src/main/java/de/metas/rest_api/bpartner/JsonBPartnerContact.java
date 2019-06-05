@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
@@ -37,8 +38,10 @@ import lombok.Value;
 @Value
 public class JsonBPartnerContact
 {
-	MetasfreshId id;
+	@ApiModelProperty(dataType = "java.lang.Long")
+	MetasfreshId metasfreshId;
 
+	@ApiModelProperty(dataType = "java.lang.String")
 	JsonExternalId externalId;
 
 	@JsonInclude(Include.NON_NULL)
@@ -60,14 +63,14 @@ public class JsonBPartnerContact
 	@JsonCreator
 	private JsonBPartnerContact(
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("id") @Nullable final MetasfreshId id,
+			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("name") final String name,
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
 			@JsonProperty("phone") final String phone)
 	{
-		this.id = id;
+		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.name = name;
 		this.firstName = firstName;

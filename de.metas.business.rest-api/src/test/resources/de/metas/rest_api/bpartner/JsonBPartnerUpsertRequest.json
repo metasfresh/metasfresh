@@ -1,0 +1,52 @@
+{
+  "requestItems": [
+    {
+      "externalId": "string",
+      "jsonBPartnerComposite": {
+        "bpartner": {
+          "code": "string",
+          "companyName": "string",
+          "externalId": "string",
+          "group": "string",
+          "language": "string",
+          "metasfreshId": 1,
+          "name": "string",
+          "parentId": 1,
+          "phone": "string",
+          "url": "string"
+        },
+        "locations": [
+          {
+            "address1": "string",
+            "address2": "string",
+            "city": "string",
+            "countryCode": "string",
+            "district": "string",
+            "externalId": "string",
+            "gln": "string",
+            "metasfreshId": 1,
+            "poBox": "string",
+            "postal": "string",
+            "region": "string",
+            "state": "string"
+          }
+        ],
+        "contacts": [
+          {
+            "email": "string",
+            "externalId": "string",
+            "firstName": "string",
+            "lastName": "string",
+            "metasfreshId": 1,
+            "name": "string",
+            "phone": "string"
+          }
+        ]
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifExists": "UPDATE",
+    "ifNotExists": "CREATE"
+  }
+}

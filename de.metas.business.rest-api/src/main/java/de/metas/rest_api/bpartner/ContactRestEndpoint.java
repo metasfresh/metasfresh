@@ -47,5 +47,5 @@ public interface ContactRestEndpoint
 			long epochTimestampMillis);
 
 	@PostMapping
-	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateBPartnerContact(JsonBPartnerContactList contacts);
+	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartnerContact(JsonBPartnerContactList contacts);
 }

@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -64,18 +65,18 @@ public interface BPartnerRestEndpoint
 
 	@GetMapping
 	ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
-			@RequestParam(name = "since", required = false, defaultValue = "0") //
-			long epochTimestampMillis,
+			@RequestParam(name = "since", required = false) //
+			Long epochTimestampMillis,
 
-			@RequestParam(name = "next", required = false, defaultValue = "") //
+			@RequestParam(name = "next", required = false) //
 			String next);
 
 	@PostMapping
-	ResponseEntity<JsonBPartnerUpsertResponse> createOrUpdateBPartner(JsonBPartnerUpsertRequest bpartners);
+	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(@RequestBody JsonBPartnerUpsertRequest bpartners);
 
 	@PostMapping("{bpartnerIdentifier}/location")
-	ResponseEntity<JsonBPartnerUpsertResponseItem> createOrUpdateLocation(JsonBPartnerLocation location);
+	ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(@RequestBody JsonBPartnerLocation location);
 
 	@PostMapping("{bpartnerIdentifier}/contact")
-	ResponseEntity<JsonBPartnerUpsertResponseItem> createOrUpdateContact(JsonBPartnerContact contact);
+	ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(@RequestBody JsonBPartnerContact contact);
 }

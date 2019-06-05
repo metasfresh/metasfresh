@@ -36,7 +36,6 @@ import lombok.Value;
 @Value
 public class JsonExternalId
 {
-	@JsonValue
 	String value;
 
 	@JsonCreator
@@ -59,4 +58,9 @@ public class JsonExternalId
 		this.value = assumeNotEmpty(value, "Param value={} may not be empty", value);
 	}
 
+	@JsonValue
+	public String getValue()
+	{
+		return value;
+	}
 }

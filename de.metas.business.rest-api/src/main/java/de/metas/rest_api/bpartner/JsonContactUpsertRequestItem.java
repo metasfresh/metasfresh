@@ -1,19 +1,13 @@
 package de.metas.rest_api.bpartner;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.JsonExternalId;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -40,19 +34,24 @@ import lombok.Value;
 
 @Value
 @Builder
-@ApiModel
-public class JsonBPartnerUpsertRequest
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+public class JsonContactUpsertRequestItem
 {
-	List<JsonBPartnerUpsertRequestItem> requestItems;
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "External system's ID of the business partner to upsert.", //
+			dataType = "java.lang.String")
+	@NonNull
+	JsonExternalId externalId;
 
-	SyncAdvise syncAdvise;
+	@NonNull
+	JsonBPartnerContact contact;
 
 	@JsonCreator
-	public JsonBPartnerUpsertRequest(
-			@Singular @JsonProperty("requestItems") final List<JsonBPartnerUpsertRequestItem> requestItems,
-			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+	public JsonContactUpsertRequestItem(
+			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
+			@NonNull @JsonProperty("contact") JsonBPartnerContact contact)
 	{
-		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.externalId = externalId;
+		this.contact = contact;
 	}
 }

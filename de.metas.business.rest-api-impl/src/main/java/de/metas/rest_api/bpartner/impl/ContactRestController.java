@@ -1,0 +1,81 @@
+package de.metas.rest_api.bpartner.impl;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import de.metas.Profiles;
+import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.bpartner.ContactRestEndpoint;
+import de.metas.rest_api.bpartner.JsonBPartnerContact;
+import de.metas.rest_api.bpartner.JsonBPartnerContactList;
+import de.metas.rest_api.bpartner.JsonUpsertResponse;
+import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@RestController
+@Profile(Profiles.PROFILE_App)
+public class ContactRestController implements ContactRestEndpoint
+{
+
+	@Override
+	public ResponseEntity<JsonBPartnerContact> retrieveBPartnerContact(String contactIdentifier)
+	{
+		final JsonBPartnerContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
+		return ResponseEntity.ok(mockContact);
+	}
+
+	@Override
+	public ResponseEntity<JsonBPartnerContactList> retrieveBPartnerContactsSince(long epochTimestampMillis)
+	{
+		JsonBPartnerContactList list = JsonBPartnerContactList
+				.builder()
+				.contact(MockDataUtil.createMockContact("c1"))
+				.pagingDescriptor(JsonPagingDescriptor.builder()
+						.pageSize(40)
+						.totalSize(1)
+						.resultTimestamp(SystemTime.millis())
+						.build())
+				.build();
+
+		return ResponseEntity.ok(list);
+	}
+
+	@Override
+	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartnerContact(
+			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
+			@RequestBody final @NonNull JsonBPartnerContactList contacts)
+	{
+		final JsonUpsertResponse response = JsonUpsertResponse.builder()
+				.responseItem(JsonUpsertResponseItem.builder().build())
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+}

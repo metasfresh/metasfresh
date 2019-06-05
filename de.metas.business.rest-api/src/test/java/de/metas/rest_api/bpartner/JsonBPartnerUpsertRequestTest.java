@@ -1,16 +1,20 @@
 package de.metas.rest_api.bpartner;
 
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
+import de.metas.util.JSONObjectMapper;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,10 +32,16 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public final class JsonBPartnerUpsertResponse
+public class JsonBPartnerUpsertRequestTest
 {
-	@Singular
-	List<JsonBPartnerUpsertResponseItem> responseItems;
+
+	@Test
+	public void deserialize() throws IOException
+	{
+		final InputStream stream = JsonBPartnerUpsertRequestTest.class.getResourceAsStream("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest.json");
+		final String string = IOUtils.toString(stream, "UTF-8");
+		assertThat(string).isNotNull(); // guard
+
+		JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).readValue(string);
+	}
 }

@@ -39,9 +39,11 @@ import lombok.Value;
 public class JsonBPartnerLocation
 {
 	@JsonInclude(Include.NON_NULL)
-	private MetasfreshId id;
+	@ApiModelProperty(dataType = "java.lang.Long")
+	private MetasfreshId metasfreshId;
 
 	@ApiModelProperty(allowEmptyValue = true, //
+			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
@@ -73,7 +75,7 @@ public class JsonBPartnerLocation
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerLocation(
-			@JsonProperty("id") @Nullable final MetasfreshId id,
+			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
@@ -86,7 +88,7 @@ public class JsonBPartnerLocation
 			@JsonProperty("countryCode") @Nullable final String countryCode,
 			@JsonProperty("gln") @Nullable final String gln)
 	{
-		this.id = id;
+		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
 

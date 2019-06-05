@@ -42,16 +42,16 @@ public class JsonBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-
+			dataType = "java.lang.Long", //
 			value = "This translates to <code>C_BPartner.C_BPartner_ID</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If the lookup does not succeed, it will fail.")
 	@JsonInclude(Include.NON_NULL)
-	MetasfreshId id;
+	MetasfreshId metasfreshId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-
+			dataType = "java.lang.String", //
 			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
@@ -82,7 +82,8 @@ public class JsonBPartner
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company")
+			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
+			dataType = "java.lang.Long")
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId parentId;
 
@@ -104,7 +105,7 @@ public class JsonBPartner
 	@JsonCreator
 	@Builder
 	private JsonBPartner(
-			@JsonProperty("id") @Nullable final MetasfreshId id,
+			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 
 			@JsonProperty("code") @Nullable final String code,
@@ -116,7 +117,7 @@ public class JsonBPartner
 			@JsonProperty("url") @Nullable final String url,
 			@JsonProperty("group") @Nullable final String group)
 	{
-		this.id = id;
+		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.code = code;
 

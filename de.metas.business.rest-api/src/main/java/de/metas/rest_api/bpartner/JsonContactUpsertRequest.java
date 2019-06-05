@@ -41,15 +41,15 @@ import lombok.Value;
 @Value
 @Builder
 @ApiModel
-public class JsonBPartnerUpsertRequest
+public class JsonContactUpsertRequest
 {
-	List<JsonBPartnerUpsertRequestItem> requestItems;
+	List<JsonContactUpsertRequestItem> requestItems;
 
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
-	public JsonBPartnerUpsertRequest(
-			@Singular @JsonProperty("requestItems") final List<JsonBPartnerUpsertRequestItem> requestItems,
+	public JsonContactUpsertRequest(
+			@Singular @JsonProperty("requestItems") final List<JsonContactUpsertRequestItem> requestItems,
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.requestItems = coalesce(requestItems, ImmutableList.of());

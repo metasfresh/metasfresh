@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner;
 
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
 
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
@@ -59,8 +61,8 @@ public final class JsonBPartnerComposite
 			@JsonProperty("contacts") @Singular final List<JsonBPartnerContact> contacts)
 	{
 		this.bpartner = bpartner;
-		this.locations = locations;
-		this.contacts = contacts;
+		this.locations = coalesce(locations, ImmutableList.of());
+		this.contacts = coalesce(contacts, ImmutableList.of());;
 
 		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
 				|| bpartner.getExternalId() != null;
