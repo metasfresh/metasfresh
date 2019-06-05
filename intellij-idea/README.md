@@ -16,3 +16,8 @@ C:\work-metas
 ```
 
 If there are duplicate conflicts, you should merge the files there by using idea's [files comparator](https://www.jetbrains.com/help/idea/comparing-files-and-folders.html) to diff between the files already in the project's `.idea/` folder and this folder here.
+
+### Reference
+
+
+- [How to manage projects under Version Control Systems - JetBrains Support](https://intellij-support.jetbrains.com/hc/en-us/articles/206544839-How-to-manage-projects-under-Version-Control-Systems)
