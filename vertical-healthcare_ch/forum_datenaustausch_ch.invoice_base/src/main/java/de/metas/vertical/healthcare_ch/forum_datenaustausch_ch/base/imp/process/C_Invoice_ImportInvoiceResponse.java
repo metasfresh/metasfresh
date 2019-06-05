@@ -5,7 +5,12 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
@@ -92,6 +97,10 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
+	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
+
+	private final IBPartnerDAO ibPartnerDAO = Services.get(IBPartnerDAO.class);
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -155,11 +164,26 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
 			final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
+			final BPartnerQuery query = BPartnerQuery.builder()
+					.locationGln(response.getBillerEan())
+					.build();
+			final Optional<BPartnerId> partnerIdOptional = ibPartnerDAO.retrieveBPartnerIdBy(query);
+			int billerOrg = 0;
+			if (partnerIdOptional.isPresent())
+			{
+				ibPartnerDAO.getById(partnerIdOptional.get()).getAD_OrgBP_ID();
+				billerOrg = ibPartnerDAO.getById(partnerIdOptional.get()).getAD_Org_ID();
+			}
+
 			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
 					.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
 					.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
 					.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
+					.invoiceId(importedInvoiceResponseRepo.retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(response))
+					.billerOrg(billerOrg)
 					.build();
+
+			invoiceRejectionDetailRepo.save(responseWithTags);
 
 			final InvoiceId invoiceId = importedInvoiceResponseRepo.save(responseWithTags);
 			moveFile(fileToImport, outputDirectory);
@@ -171,11 +195,14 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 				final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 						.builder()
 						.recipient(recipient)
+
+						// todo cri get rid of this notification
 						.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 						.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT)
 						.contentADMessageParam(responseWithTags.getDocumentNumber())
 						.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
 						.build();
+
 				notificationBL.send(userNotificationRequest);
 				addLog("Send notification to recipient={}", recipient);
 			}
