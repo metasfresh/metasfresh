@@ -2,6 +2,7 @@ package de.metas.logging;
 
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.IssueReportableExceptions;
@@ -39,11 +40,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -80,26 +81,26 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	 *
 	 * To be changed exclusively from {@link #temporaryDisableIssueReporting()}
 	 */
-	private final ThreadLocal<Boolean> issueReportingEnabled = new ThreadLocal<Boolean>()
+	private final ThreadLocal<Boolean> issueReportingEnabledInThread = ThreadLocal.withInitial(() -> Boolean.TRUE);
+
+	private volatile AtomicBoolean issueReportingEnabledGlobally = new AtomicBoolean(false);
+
+	public final void enableIssueReporting()
 	{
-		@Override
-		protected Boolean initialValue()
-		{
-			return Boolean.TRUE; // enabled by default
-		}
-	};
+		issueReportingEnabledGlobally.set(true);
+	}
 
 	/** Temporary disable the issue reporting and returns an {@link IAutoCloseable} which will enable it back */
 	public final IAutoCloseable temporaryDisableIssueReporting()
 	{
 		// If it's already disabled then do nothing
-		if (!issueReportingEnabled.get())
+		if (!issueReportingEnabledInThread.get())
 		{
 			return NullAutoCloseable.instance;
 		}
 
 		// Disable issue reporting
-		issueReportingEnabled.set(false);
+		issueReportingEnabledInThread.set(false);
 
 		// Return an auto-closeable which will put it back to on
 		return new IAutoCloseable()
@@ -115,7 +116,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 				}
 
 				// Enable issue reporting
-				issueReportingEnabled.set(true);
+				issueReportingEnabledInThread.set(true);
 				closed = true;
 			}
 		};
@@ -126,7 +127,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 	 */
 	private final boolean isIssueReportingEnabled()
 	{
-		return issueReportingEnabled.get();
+		return issueReportingEnabledGlobally.get() && issueReportingEnabledInThread.get();
 	}
 
 	/** Advice the issue reporter to skip reporting for given <code>loggerName</code> */
