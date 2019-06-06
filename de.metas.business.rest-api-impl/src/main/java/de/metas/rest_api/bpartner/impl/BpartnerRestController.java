@@ -1,5 +1,11 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
+
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -17,15 +23,16 @@ import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList.JsonBPartnerCompositeListBuilder;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequest;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItem;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponse.JsonUpsertResponseBuilder;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.Check;
 import de.metas.util.time.SystemTime;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
 /*
@@ -56,8 +63,10 @@ import lombok.NonNull;
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
-	@Override
-	public ResponseEntity<JsonBPartnerComposite> retrieveBPartner(@NonNull final String bpartnerIdentifier)
+@Override
+	public ResponseEntity<JsonBPartnerComposite> retrieveBPartner(
+			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String bpartnerIdentifier)
 	{
 		final JsonBPartnerComposite result = MockDataUtil.createMockBPartnerComposite(bpartnerIdentifier);
 		return ResponseEntity.ok(result);
@@ -65,15 +74,24 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 	@Override
 	public ResponseEntity<JsonBPartnerLocation> retrieveBPartnerLocation(
-			String bpartnerIdentifier,
-			String locationIdentifier)
+
+			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String bpartnerIdentifier,
+
+			@ApiParam(value = LOCATION_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String locationIdentifier)
 	{
 		final JsonBPartnerLocation location = MockDataUtil.createMockLocation("l1", "CH");
 		return ResponseEntity.ok(location);
 	}
 
 	@Override
-	public ResponseEntity<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
+	public ResponseEntity<JsonContact> retrieveBPartnerContact(
+			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String bpartnerIdentifier,
+
+			@ApiParam(value = CONTACT_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String contactIdentifier)
 	{
 		final JsonContact contact = MockDataUtil.createMockContact("c1");
 		return ResponseEntity.ok(contact);
@@ -83,7 +101,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 	@Override
 	public ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
+
+			@ApiParam(SINCE_DOC) //
 			@Nullable final Long epochTimestampMillis,
+
+			@ApiParam(NEXT_DOC) //
 			@Nullable final String next)
 	{
 		final JsonPagingDescriptorBuilder pagingDescriptor = JsonPagingDescriptor.builder()
@@ -135,9 +157,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
 
+	// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
-			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
+			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String bpartnerIdentifier,
+
 			@RequestBody @NonNull final JsonBPartnerLocation location)
 	{
 		final JsonUpsertResponseItem resonseItem = JsonUpsertResponseItem.builder()
@@ -147,9 +172,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		return new ResponseEntity<>(resonseItem, HttpStatus.CREATED);
 	}
 
+	// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
-			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
+			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String bpartnerIdentifier,
+
 			@RequestBody @NonNull final JsonContact contact)
 	{
 		final JsonUpsertResponseItem resonseItem = JsonUpsertResponseItem.builder()

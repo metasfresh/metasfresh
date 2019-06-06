@@ -1,5 +1,9 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
+
 import javax.annotation.Nullable;
 
 import org.springframework.context.annotation.Profile;
@@ -17,6 +21,7 @@ import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.time.SystemTime;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
 /*
@@ -47,7 +52,9 @@ public class ContactRestController implements ContactRestEndpoint
 {
 
 	@Override
-	public ResponseEntity<JsonContact> retrieveContact(@NonNull final String contactIdentifier)
+	public ResponseEntity<JsonContact> retrieveContact(
+			@ApiParam(value = CONTACT_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@NonNull final String contactIdentifier)
 	{
 		final JsonContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
 		return ResponseEntity.ok(mockContact);
@@ -55,7 +62,11 @@ public class ContactRestController implements ContactRestEndpoint
 
 	@Override
 	public ResponseEntity<JsonContactList> retrieveContactsSince(
+
+			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
 			@NonNull final Long epochTimestampMillis,
+
+			@ApiParam(value = NEXT_DOC, allowEmptyValue = true) //
 			@Nullable final String next)
 	{
 		JsonContactList list = JsonContactList

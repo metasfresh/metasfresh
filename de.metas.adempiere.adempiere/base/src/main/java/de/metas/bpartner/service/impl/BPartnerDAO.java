@@ -1,5 +1,6 @@
 package de.metas.bpartner.service.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -1025,8 +1026,10 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(@NonNull final BPartnerQuery query)
 	{
+		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
+
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, query.getExternalId());
+				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{

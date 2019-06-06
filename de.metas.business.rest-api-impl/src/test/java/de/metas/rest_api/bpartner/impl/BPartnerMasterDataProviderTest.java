@@ -32,9 +32,9 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 
@@ -269,7 +269,7 @@ public class BPartnerMasterDataProviderTest
 		assertThat(result.getName()).isEqualTo("Name");
 		assertThat(result.getCode()).isEqualTo("Value");
 		assertThat(result.getCompanyName()).isEqualTo("CompanyName");
-		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");
 		assertThat(result.getName()).isEqualTo("Name");
 	}
 
@@ -306,7 +306,7 @@ public class BPartnerMasterDataProviderTest
 		assertThat(result.getAddress2()).isEqualTo("Address2");
 		assertThat(result.getCity()).isEqualTo("City");
 		assertThat(result.getCountryCode()).isEqualTo("CountryCode");
-		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");
 		assertThat(result.getGln()).isEqualTo("GLN");
 		assertThat(result.getPostal()).isEqualTo("Postal");
 		assertThat(result.getState()).isEqualTo("State");
@@ -330,7 +330,7 @@ public class BPartnerMasterDataProviderTest
 		final JsonContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
 
 		assertThat(result.getEmail()).isEqualTo("EMail");
-		assertThat(result.getExternalId()).isEqualTo("ExternalId");
+		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");
 		assertThat(result.getName()).isEqualTo("Name");
 		assertThat(result.getPhone()).isEqualTo("Phone");
 	}

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import de.metas.util.rest.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
@@ -38,7 +37,7 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner")
 public interface BPartnerRestEndpoint
 {
-
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -47,10 +46,10 @@ public interface BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}")
 	ResponseEntity<JsonBPartnerComposite> retrieveBPartner(
-			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
 			@PathVariable("bpartnerIdentifier") //
 			String bpartnerIdentifier);
 
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved location"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -59,14 +58,13 @@ public interface BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}/location/{locationIdentifier}")
 	ResponseEntity<JsonBPartnerLocation> retrieveBPartnerLocation(
-			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
 			@PathVariable("bpartnerIdentifier") //
 			String bpartnerIdentifier,
 
-			@ApiParam(value = "Identifier of the bpartner's location in question. Be a plain `C_BPartner_Location_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
 			@PathVariable("locationIdentifier") //
 			String locationIdentifier);
 
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -75,11 +73,10 @@ public interface BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}/contact/{contactIdentifier}")
 	ResponseEntity<JsonContact> retrieveBPartnerContact(
-			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
+
 			@PathVariable("bpartnerIdentifier") //
 			String bpartnerIdentifier,
 
-			@ApiParam(value = "Identifier of the bpartner's contact in question. Be a plain `AD_User_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
 			@PathVariable("contactIdentifier") //
 			String contactIdentifier);
 
@@ -92,15 +89,13 @@ public interface BPartnerRestEndpoint
 	@GetMapping
 	ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
 
-			@ApiParam("Optional epoch timestamp in ms. The enpoint returns all resources that were created or modified *after* the given time.") //
 			@RequestParam(name = "since", required = false) //
 			Long epochTimestampMillis,
 
-			@ApiParam("Optional identifier for the next page that was provided to the client in the previous page.\n"
-					+ "If provided, any `since` value is ignored") //
 			@RequestParam(name = "next", required = false) //
 			String next);
 
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
@@ -109,19 +104,28 @@ public interface BPartnerRestEndpoint
 	@PostMapping
 	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(@RequestBody JsonBPartnerUpsertRequest bpartners);
 
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated location"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
 	@PostMapping("{bpartnerIdentifier}/location")
-	ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(@RequestBody JsonBPartnerLocation location);
+	ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
 
+			@PathVariable("bpartnerIdentifier") String bpartnerIdentifier,
+			@RequestBody JsonBPartnerLocation location);
+
+	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
 	@PostMapping("{bpartnerIdentifier}/contact")
-	ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(@RequestBody JsonContact contact);
+	ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
+
+			@PathVariable("bpartnerIdentifier") String bpartnerIdentifier,
+
+			@RequestBody JsonContact contact);
 }
