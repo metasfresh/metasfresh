@@ -9,7 +9,12 @@ import javax.annotation.Nullable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
@@ -20,8 +25,11 @@ import de.metas.rest_api.bpartner.JsonContactList;
 import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
+import de.metas.util.rest.MetasfreshRestAPIConstants;
 import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 
 /*
@@ -46,27 +54,45 @@ import lombok.NonNull;
  * #L%
  */
 
+@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/contact")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ContactRestController implements ContactRestEndpoint
 {
 
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
+	@GetMapping("{contactIdentifier}")
 	@Override
 	public ResponseEntity<JsonContact> retrieveContact(
-			@ApiParam(value = CONTACT_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@ApiParam(CONTACT_IDENTIFIER_DOC) //
+			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
 		final JsonContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
 		return ResponseEntity.ok(mockContact);
 	}
 
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully retrieved contact(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
+	@GetMapping
 	@Override
 	public ResponseEntity<JsonContactList> retrieveContactsSince(
 
 			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
+			@RequestParam(name = "since", required = false) //
 			@NonNull final Long epochTimestampMillis,
 
 			@ApiParam(value = NEXT_DOC, allowEmptyValue = true) //
+			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
 		JsonContactList list = JsonContactList
@@ -82,6 +108,12 @@ public class ContactRestController implements ContactRestEndpoint
 		return ResponseEntity.ok(list);
 	}
 
+	@ApiResponses(value = {
+			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+	})
+	@PostMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
 			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
@@ -93,5 +125,4 @@ public class ContactRestController implements ContactRestEndpoint
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
-
 }
