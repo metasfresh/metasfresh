@@ -17,10 +17,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -76,20 +76,20 @@ public class MasterdataProviderTest
 
 	private I_C_Country countryRecord;
 
-	@BeforeAll
-	static void beforeAll()
+	@BeforeClass
+	public static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
 	}
 
-	@AfterAll
-	static void afterAll()
+	@AfterClass
+	public static void afterAll()
 	{
 		validateSnapshots();
 	}
 
-	@BeforeEach
-	void beforeEach()
+	@Before
+	public void beforeEach()
 	{
 		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
 		// then eclipse can't find my test methods anymore
@@ -131,7 +131,7 @@ public class MasterdataProviderTest
 	}
 
 	@Test
-	void getCreateOrgId_createIfNotExists()
+	public void getCreateOrgId_createIfNotExists()
 	{
 		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
 
@@ -145,7 +145,7 @@ public class MasterdataProviderTest
 		assertThat(orgInfoRecord.getOrgBP_Location_ID()).isGreaterThan(0);
 
 		final I_C_BPartner_Location orgBPLocation = orgInfoRecord.getOrgBP_Location();
-		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId());
+		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId().getValue());
 		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
 
 		// verify C_BPartner
