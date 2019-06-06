@@ -5,14 +5,20 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -76,7 +82,8 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
 	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
 	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject";
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content";
+	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserExists";
+	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserDoesNotExist";
 
 	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
 	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
@@ -100,6 +107,11 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
 
 	private final IBPartnerDAO ibPartnerDAO = Services.get(IBPartnerDAO.class);
+
+	private final IBPartnerOrgBL ibPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+
+	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
+
 
 	@Override
 	@RunOutOfTrx
@@ -180,22 +192,16 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			moveFile(fileToImport, outputDirectory);
 			addLog("Imported invoice response file={} with status={} into C_Invoice_ID={}", fileToImport.getFileName().toString(), response.getStatus(), invoiceId.getRepoId());
 
-			if (Status.REJECTED.equals(responseWithTags.getStatus()))
+			if (isInvoiceRejected(responseWithTags))
 			{
-				final Recipient recipient = Recipient.user(getUserId());
-				final UserNotificationRequest userNotificationRequest = UserNotificationRequest
-						.builder()
-						.recipient(recipient)
+				final Optional<UserId> userIdOptional= ibPartnerOrgBL.retrieveUserInChargeOrNull(OrgId.ofRepoId(responseWithTags.getBillerOrg()));
 
-						// todo cri get rid of this notification
-						.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
-						.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT)
-						.contentADMessageParam(responseWithTags.getDocumentNumber())
-						.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
-						.build();
-
-				notificationBL.send(userNotificationRequest);
-				addLog("Send notification to recipient={}", recipient);
+				if (userIdOptional.isPresent())
+				{
+					sendNotificationWhenUserExists(responseWithTags, invoiceId, userIdOptional.get());
+				} else {
+					sendNotificationWhenUserDoesNotExist(responseWithTags, invoiceId);
+				}
 			}
 			return true;
 		}
@@ -209,6 +215,47 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issue.getAD_Issue_ID(), e.getMessage());
 		}
 		return false;
+	}
+
+	private void sendNotificationWhenUserDoesNotExist(final ImportedInvoiceResponse responseWithTags, final InvoiceId invoiceId)
+	{
+		final Recipient recipient = Recipient.user(getUserId());
+
+		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
+				.builder()
+				.recipient(recipient)
+				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
+				.subjectADMessageParam(responseWithTags.getDocumentNumber())
+				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST)
+				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
+				.build();
+
+		notificationBL.send(userNotificationRequest);
+		addLog("Send notification to recipient={}", recipient);
+	}
+
+	private void sendNotificationWhenUserExists(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceId invoiceId, final UserId userId)
+	{
+		final Recipient recipient = Recipient.user(userId);
+		final User user = userRepository.getByIdInTrx(userId);
+
+		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
+				.builder()
+				.recipient(recipient)
+				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
+				.subjectADMessageParam(responseWithTags.getDocumentNumber())
+				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS)
+				.contentADMessageParam(user.getName())
+				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
+				.build();
+
+		notificationBL.send(userNotificationRequest);
+		addLog("Send notification to recipient={}", recipient);
+	}
+
+	private boolean isInvoiceRejected(final ImportedInvoiceResponse responseWithTags)
+	{
+		return Status.REJECTED.equals(responseWithTags.getStatus());
 	}
 
 	private int retrieveBillerOrg(@NonNull final ImportedInvoiceResponse response)
