@@ -85,9 +85,9 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserExists";
 	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserDoesNotExist";
 
-	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
-	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
-	private static final String ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
+	private static final String ATTACHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
+	private static final String ATTACHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
+	private static final String ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
 
 	@Param(mandatory = true, parameterName = "InputDirectory")
 	private String inputFilePath;
@@ -179,9 +179,9 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			final int billerOrg = retrieveBillerOrg(response);
 
 			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
-					.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
-					.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
-					.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
+					.additionalTag(ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
+					.additionalTag(ATTACHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
+					.additionalTag(ATTACHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
 					.invoiceId(importedInvoiceResponseRepo.retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(response))
 					.billerOrg(billerOrg)
 					.build();
