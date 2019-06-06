@@ -57,9 +57,12 @@ public interface ContactRestEndpoint
 	})
 	@GetMapping
 	ResponseEntity<JsonContactList> retrieveContactsSince(
+			@ApiParam("Optional epoch timestamp in ms. The enpoint returns all resources that were created or modified *after* the given time.") //
 			@RequestParam(name = "since", required = false) //
 			Long epochTimestampMillis,
 
+			@ApiParam("Optional identifier for the next page that was provided to the client in the previous page.\n"
+					+ "If provided, any `since` value is ignored") //
 			@RequestParam(name = "next", required = false) //
 			String next);
 

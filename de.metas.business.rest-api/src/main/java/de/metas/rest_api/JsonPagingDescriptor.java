@@ -35,7 +35,7 @@ import lombok.Value;
 @Builder
 public class JsonPagingDescriptor
 {
-	@ApiModelProperty("Epoc-Timestamp in ms. Can be stored by the API client and be used in a later invocation.")
+	@ApiModelProperty("Epoch timestamp in ms. Can be stored by the API client and used as `since` value in a later invocation.")
 	long resultTimestamp;
 
 	@ApiModelProperty("Total number of results. If bigger than `pageSize`, the API client can use the given `nextPage` to retrieve the next page.")

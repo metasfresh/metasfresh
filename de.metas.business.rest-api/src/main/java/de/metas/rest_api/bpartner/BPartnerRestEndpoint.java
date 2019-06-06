@@ -40,11 +40,11 @@ public interface BPartnerRestEndpoint
 {
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
-	        @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	        @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	    })
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
 	@GetMapping("{bpartnerIdentifier}")
 	ResponseEntity<JsonBPartnerComposite> retrieveBPartner(
 			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
@@ -52,11 +52,11 @@ public interface BPartnerRestEndpoint
 			String bpartnerIdentifier);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 200, message = "Successfully retrieved location"),
-	        @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	        @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	    })
+			@ApiResponse(code = 200, message = "Successfully retrieved location"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
 	@GetMapping("{bpartnerIdentifier}/location/{locationIdentifier}")
 	ResponseEntity<JsonBPartnerLocation> retrieveBPartnerLocation(
 			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
@@ -68,11 +68,11 @@ public interface BPartnerRestEndpoint
 			String locationIdentifier);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 200, message = "Successfully retrieved contact"),
-	        @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	        @ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
-	    })
+			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
+	})
 	@GetMapping("{bpartnerIdentifier}/contact/{contactIdentifier}")
 	ResponseEntity<JsonContact> retrieveBPartnerContact(
 			@ApiParam(value = "Identifier of the bPartner in question. Can be a plain `C_BPartner_ID` or something like `ext-YourExternalId`", allowEmptyValue = false) //
@@ -84,40 +84,44 @@ public interface BPartnerRestEndpoint
 			String contactIdentifier);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
-	        @ApiResponse(code = 401, message = "You are not authorized to view the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
-	        @ApiResponse(code = 404, message = "There is no page for the given 'next' value")
-	    })
+			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
+	})
 	@GetMapping
 	ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
+
+			@ApiParam("Optional epoch timestamp in ms. The enpoint returns all resources that were created or modified *after* the given time.") //
 			@RequestParam(name = "since", required = false) //
 			Long epochTimestampMillis,
 
+			@ApiParam("Optional identifier for the next page that was provided to the client in the previous page.\n"
+					+ "If provided, any `since` value is ignored") //
 			@RequestParam(name = "next", required = false) //
 			String next);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
-	        @ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
-	    })
+			@ApiResponse(code = 201, message = "Successfully created or updated bpartner(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+	})
 	@PostMapping
 	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(@RequestBody JsonBPartnerUpsertRequest bpartners);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 201, message = "Successfully created or updated location"),
-	        @ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
-	    })
+			@ApiResponse(code = 201, message = "Successfully created or updated location"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+	})
 	@PostMapping("{bpartnerIdentifier}/location")
 	ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(@RequestBody JsonBPartnerLocation location);
 
 	@ApiResponses(value = {
-	        @ApiResponse(code = 201, message = "Successfully created or updated contact"),
-	        @ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-	        @ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
-	    })
+			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+	})
 	@PostMapping("{bpartnerIdentifier}/contact")
 	ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(@RequestBody JsonContact contact);
 }
