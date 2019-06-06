@@ -112,26 +112,16 @@ class TableItem extends PureComponent {
     let showWidget = false;
 
     if (item) {
-      // const cell = this.getCell(col);
-      // const property = cell.fields[0].field;
       const showOnEdit = this.shouldShowWidget(item);
       const isEditable = this.isEditableOnDemand(item);
       showWidget = showOnEdit || isEditable;
     }
 
     if (activeCell !== elem && !elem.className.includes('js-input-field')) {
-      console.log('activeCell',this.state.activeCell);
       this.setState({
         activeCell: elem,
       });
-      // this.editProperty(e, property, item, showWidget);
     }
-    // const { fieldsByName } = this.props;
-    // const { editedCells } = this.state;
-    // const cells = merge({}, fieldsByName, editedCells);
-    // // const property = item.field ? item.field : item.fields[0].field;
-    // // const property = item.fields ? item.fields[0].field : item.field;
-    // console.log('TableItem hatdleEditProperty: ', showOnEdit, isEditable, item, cells[property]);
 
     this.editProperty(e, property, item, showWidget);
   };
@@ -152,22 +142,22 @@ class TableItem extends PureComponent {
           'js-input-field'
         )[0];
 
-        // @TODO: We need to focus attributes button if it exists
+        if (elem) {
+          const disabled = elem.hasAttribute('disabled');
+          const readonly =
+            elem.hasAttribute('readonly') ||
+            elem.className.includes('disabled');
 
-        // const disabled = elem && elem.className.includes('input-disabled');
-        const disabled = elem && elem.hasAttribute('disabled');
-        const readonly =
-          elem &&
-          (elem.hasAttribute('readonly') ||
-            elem.className.includes('disabled'));
-
-        if (elem && !disabled && !readonly) {
-          elem.focus();
-          this.listenOnKeysFalse();
+          if (!disabled && !readonly) {
+            elem.focus();
+            this.listenOnKeysFalse();
+          }
+        } else {
+          const attributesBtn = document.activeElement.getElementsByTagName(
+            'BUTTON'
+          );
+          attributesBtn && attributesBtn.length && attributesBtn[0].focus();
         }
-        // if (disabled || readonly) {
-        //   // this.listenOnKeysTrue();
-        //   // this.handleEditProperty(e);
       }
     });
   };
@@ -186,7 +176,6 @@ class TableItem extends PureComponent {
     switch (e.key) {
       case 'Enter':
         if (listenOnKeys) {
-          console.log('TableItem enter');
           this.handleEditProperty(e, property, widgetData[0]);
         } else {
           this.listenOnKeysTrue();
@@ -277,13 +266,9 @@ class TableItem extends PureComponent {
   // @TODO: Is this still needed ?
   handleClickOutside = e => {
     // const { changeListenOnTrue, rowId, isSelected } = this.props;
-    console.log('handleclickoutside');
     // if (isSelected) {
-    //   console.log('THIS: ', rowId, this);
     //   this.handleEditProperty(e);
     //   changeListenOnTrue();
-    // } else {
-    //   console.log('NOT SELECTED: ', rowId)
     // }
   };
 
