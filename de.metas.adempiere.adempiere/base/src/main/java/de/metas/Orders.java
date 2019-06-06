@@ -1,5 +1,8 @@
 package de.metas;
 
+import org.compiere.model.ModelValidationEngine;
+
+import de.metas.logging.MetasfreshIssueAppender;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -24,11 +27,16 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-
+/** Used to coordinate the ordering of components on a "global" metasfresh scale...<b>in cases where it's necessary</b>. */
 @UtilityClass
 public class Orders
 {
+	/** See {@link ApplicationReadyListener#initModelValidationEngine()}. */
 	public static final int FORCE_MODEL_VALIDATION_ENGINE_INIT = 90;
 
+	/**
+	 * Make sure that {@link MetasfreshIssueAppender} is enabled only <b>after</b> the {@link ModelValidationEngine} was initialized.
+	 * See {@link ApplicationReadyListener#enableIssueReporting()}
+	 */
 	public static final int ENABLE_ISSUE_LOG_APPENDER = 100;
 }
