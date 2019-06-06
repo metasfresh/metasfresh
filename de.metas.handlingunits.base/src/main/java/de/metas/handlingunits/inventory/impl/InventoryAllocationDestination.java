@@ -1,5 +1,9 @@
 package de.metas.handlingunits.inventory.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -35,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -48,7 +51,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -211,7 +213,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				inventoryLineInDispute.setQtyInternalUse(inventoryLine_Qty_New);
 
 				// Make sure the inout line is saved
-				InterfaceWrapperHelper.save(inventoryLineInDispute);
+				save(inventoryLineInDispute);
 			}
 
 			inventoryLine.setM_HU_PI_Item_Product(extractPackingOrNull(hu, inventoryLine));
@@ -244,7 +246,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Save the inventory line and assign the top level HU to it
-			InterfaceWrapperHelper.save(inventoryLine);
+			save(inventoryLine);
 
 			Services.get(IHUAssignmentBL.class).assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
 
@@ -286,13 +288,13 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
 	}
 
-	private Set<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final ProductId productId)
+	private List<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final ProductId productId)
 	{
-		final ImmutableSet<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
+		final ImmutableList<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
 				.stream()
 				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId.getRepoId()) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(ImmutableList.toImmutableList());
 
 		return receiptLines;
 	}
@@ -308,7 +310,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final int huId, final Date movementDate)
 	{
-		final I_M_InOutLine originReceiptLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
+		final I_M_InOutLine originReceiptLineInDispute = create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
 		if (originReceiptLineInDispute == null)
 		{
 			return null;
@@ -414,7 +416,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(receiptLine, movementDate);
 
-		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.newInstance(I_M_InventoryLine.class);
+		final I_M_InventoryLine inventoryLine = newInstance(I_M_InventoryLine.class);
 		inventoryLine.setM_Inventory_ID(inventoryHeader.getM_Inventory_ID());
 		inventoryLine.setM_Product_ID(receiptLine.getM_Product_ID());
 		inventoryLine.setC_Charge_ID(chargeId);
@@ -442,7 +444,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class);
+		final I_M_Inventory inventory = newInstance(I_M_Inventory.class);
 		inventory.setMovementDate(TimeUtil.asTimestamp(movementDate));
 		inventory.setM_Warehouse_ID(warehouseId);
 
@@ -455,7 +457,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		}
 
 		inventory.setPOReference(purchaseOrder.getPOReference());
-		InterfaceWrapperHelper.save(inventory);
+		save(inventory);
 
 		createAndLinkSnapshotProducerForInventory(inventory);
 
@@ -484,7 +486,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private void linkHUSnapshotProducerWithInventory(final ISnapshotProducer<I_M_HU> snapshotProducerForInventory, final I_M_Inventory inventory)
 	{
 		inventory.setSnapshot_UUID(snapshotProducerForInventory.getSnapshotId());
-		InterfaceWrapperHelper.save(inventory);
+		save(inventory);
 	}
 
 	private ISnapshotProducer<I_M_HU> snapshotHUForInventoryLine(
@@ -516,7 +518,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		// From HU's PI and material receipt's bpartner, date and product
 		{
 			final I_M_HU_PI effectivePI = handlingUnitsBL.getEffectivePI(hu);
-			final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+			final I_M_InOutLine receiptLine = create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
 			final I_M_InOut receipt = receiptLine.getM_InOut();
 			final I_C_BPartner bpartner = receipt.getC_BPartner();
 
@@ -551,7 +553,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			@NonNull final I_M_HU tuHU,
 			@NonNull final I_M_InventoryLine inventoryLine)
 	{
-		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+		final I_M_InOutLine receiptLine = create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
 		final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
 
 		if (pmCollectorForCountingTUs == null)
