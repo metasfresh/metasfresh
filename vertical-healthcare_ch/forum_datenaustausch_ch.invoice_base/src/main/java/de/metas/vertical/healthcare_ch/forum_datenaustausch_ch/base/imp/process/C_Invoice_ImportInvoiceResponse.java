@@ -131,7 +131,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		final Mutable<Boolean> allFilesImported = new Mutable<>(true);
 
-		for (final File fileToImport : filesToImport)
+		for (final File fileToImport : Objects.requireNonNull(filesToImport))
 		{
 			trxManager.run(() -> {
 
