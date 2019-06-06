@@ -112,7 +112,6 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
 
-
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -194,12 +193,14 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 			if (isInvoiceRejected(responseWithTags))
 			{
-				final Optional<UserId> userIdOptional= ibPartnerOrgBL.retrieveUserInChargeOrNull(OrgId.ofRepoId(responseWithTags.getBillerOrg()));
+				final Optional<UserId> userIdOptional = ibPartnerOrgBL.retrieveUserInChargeOrNull(OrgId.ofRepoId(responseWithTags.getBillerOrg()));
 
 				if (userIdOptional.isPresent())
 				{
 					sendNotificationWhenUserExists(responseWithTags, invoiceId, userIdOptional.get());
-				} else {
+				}
+				else
+				{
 					sendNotificationWhenUserDoesNotExist(responseWithTags, invoiceId);
 				}
 			}
