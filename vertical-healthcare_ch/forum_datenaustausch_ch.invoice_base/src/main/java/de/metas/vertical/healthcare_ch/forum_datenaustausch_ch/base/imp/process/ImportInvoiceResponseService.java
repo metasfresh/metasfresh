@@ -39,14 +39,15 @@ import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Invoice_Rejection_Detail;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -74,16 +75,22 @@ class ImportInvoiceResponseService
 
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
-	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
-
 	private final IBPartnerDAO ibPartnerDAO = Services.get(IBPartnerDAO.class);
 
+	private final UserRepository userRepository;
+
+	ImportInvoiceResponseService(final UserRepository userRepository)
+	{
+		this.userRepository = userRepository;
+	}
+
 	// package visibility
-	void sendNotificationDefaultUserDoesNotExist(final ImportedInvoiceResponse responseWithTags, final InvoiceId invoiceId, final UserId userId)
+	// i believe these 2 methods should be merged into 1 since all that's different is a single TRL.
+	void sendNotificationDefaultUserDoesNotExist(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceRejectionDetailId invoiceRejectionDetailId, final UserId userId)
 	{
 		final Recipient recipient = Recipient.user(userId);
 
-		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
+		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
@@ -101,12 +108,12 @@ class ImportInvoiceResponseService
 	}
 
 	// package visibility
-	void sendNotificationDefaultUserExists(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceId invoiceId, final UserId userId)
+	void sendNotificationDefaultUserExists(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceRejectionDetailId invoiceRejectionDetailId, final UserId userId)
 	{
 		final Recipient recipient = Recipient.user(userId);
 		final User user = userRepository.getByIdInTrx(userId);
 
-		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
+		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()

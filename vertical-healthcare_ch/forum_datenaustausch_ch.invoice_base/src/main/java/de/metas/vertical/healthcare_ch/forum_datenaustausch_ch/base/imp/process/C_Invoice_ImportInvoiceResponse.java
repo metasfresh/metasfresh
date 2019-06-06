@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import de.metas.process.PInstanceId;
 import de.metas.user.UserId;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -155,7 +156,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 					.billerOrg(billerOrg)
 					.build();
 
-			invoiceRejectionDetailRepo.save(responseWithTags);
+			final InvoiceRejectionDetailId invoiceRejectionDetailId = invoiceRejectionDetailRepo.save(responseWithTags);
 
 			final InvoiceId invoiceId = importedInvoiceResponseRepo.save(responseWithTags);
 			moveFile(fileToImport, outputDirectory);
@@ -167,11 +168,11 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 				if (defaultUserIdOptional.isPresent())
 				{
-					importInvoiceResponseService.sendNotificationDefaultUserExists(responseWithTags, invoiceId, defaultUserIdOptional.get());
+					importInvoiceResponseService.sendNotificationDefaultUserExists(responseWithTags, invoiceRejectionDetailId, defaultUserIdOptional.get());
 				}
 				else
 				{
-					importInvoiceResponseService.sendNotificationDefaultUserDoesNotExist(responseWithTags, invoiceId, getUserId());
+					importInvoiceResponseService.sendNotificationDefaultUserDoesNotExist(responseWithTags, invoiceRejectionDetailId, getUserId());
 				}
 			}
 			return true;
@@ -188,7 +189,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		return false;
 	}
 
-	private boolean isInvoiceRejected(final ImportedInvoiceResponse responseWithTags)
+	private boolean isInvoiceRejected(@NonNull final ImportedInvoiceResponse responseWithTags)
 	{
 		return Status.REJECTED.equals(responseWithTags.getStatus());
 	}

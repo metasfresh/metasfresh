@@ -65,12 +65,14 @@ public class InvoiceRejectionDetailRepo
 		return rejectionDetail;
 	}
 
-	public void save(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
+	public InvoiceRejectionDetailId save(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
 	{
 		final I_C_Invoice_Rejection_Detail invoiceRejectionDetail = of(importedInvoiceResponse);
 		InterfaceWrapperHelper.saveRecord(invoiceRejectionDetail);
 
 		attachFileToInvoiceRejectionDetail(importedInvoiceResponse, invoiceRejectionDetail);
+
+		return InvoiceRejectionDetailId.ofRepoId(invoiceRejectionDetail.getC_Invoice_Rejection_Detail_ID());
 	}
 
 	private void attachFileToInvoiceRejectionDetail(
