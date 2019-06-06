@@ -48,6 +48,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -174,6 +175,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
 		final Quantity qty = getQtyInStockingUOM(request);
 
+
 		//
 		// For each receipt line which received this HU
 		for (final I_M_InOutLine receiptLine : getReceiptLinesOrEmpty(topLevelHU, request.getProductId()))
@@ -185,7 +187,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Get/create the inventory line based on the info from material receipt and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, hu.getM_HU_ID(), movementDate);
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, topLevelHU.getM_HU_ID(), movementDate);
 
 			// #2143 hu snapshots
 			snapshotHUForInventoryLine(topLevelHU, inventoryLine);
@@ -284,13 +286,13 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return uomConversionBL.convertToProductUOM(qtySource, request.getProductId());
 	}
 
-	private List<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final ProductId productId)
+	private Set<I_M_InOutLine> getReceiptLinesOrEmpty(final I_M_HU topLevelHU, final ProductId productId)
 	{
-		final List<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
+		final ImmutableSet<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHU)
 				.stream()
 				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId.getRepoId()) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
 		return receiptLines;
 	}
