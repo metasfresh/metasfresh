@@ -120,8 +120,6 @@ UPDATE AD_Process_Para SET ColumnName='C_Invoice_Rejection_Detail_ID', Name='Zur
 UPDATE AD_Process_Para SET ColumnName='C_Invoice_Rejection_Detail_ID', Name='Zurückweisungsdetail', Description=NULL, Help=NULL WHERE AD_Element_ID=576783 AND IsCentrallyMaintained='Y'
 ;
 
-drop table c_invoice_rejection_details;
-
 
 -- 2019-06-03T14:59:28.203
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
