@@ -311,12 +311,10 @@ class Table extends Component {
   };
 
   setListenTrue = () => {
-    // console.log('Table setListenTrue');
     this.setState({ listenOnKeys: true });
   };
 
   setListenFalse = () => {
-    // console.log('Table setListenFalse');
     this.setState({ listenOnKeys: false });
   };
 
@@ -525,8 +523,6 @@ class Table extends Component {
     const { keyProperty, mainTable, readonly, closeOverlays } = this.props;
     const { selected, rows, listenOnKeys, collapsedArrayMap } = this.state;
 
-    // console.log('Table handleKeyDown: ', listenOnKeys);
-
     if (!listenOnKeys) {
       return;
     }
@@ -572,7 +568,6 @@ class Table extends Component {
       }
       case 'ArrowUp': {
         e.preventDefault();
-        console.log('table arrowup')
         const array =
           collapsedArrayMap.length > 0
             ? collapsedArrayMap.map(item => item[keyProperty])
@@ -599,14 +594,12 @@ class Table extends Component {
       }
       case 'ArrowLeft':
         e.preventDefault();
-        // console.log('Table case arrowLeft')
         if (document.activeElement.previousSibling) {
           document.activeElement.previousSibling.focus();
         }
         break;
       case 'ArrowRight':
         e.preventDefault();
-        // console.log("Table case arrowRight");
         if (document.activeElement.nextSibling) {
           document.activeElement.nextSibling.focus();
         }
@@ -1017,7 +1010,6 @@ class Table extends Component {
           tabId={tabId}
           onDoubleClick={this.handleDoubleClick}
           onClick={e => {
-            console.log('Table clicked on row')
             const selected = this.handleClick(e, keyProperty, item);
 
             if (openIncludedViewOnSelect) {

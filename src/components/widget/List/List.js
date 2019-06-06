@@ -364,7 +364,6 @@ ListWidget.propTypes = {
   field: PropTypes.string,
   mandatory: PropTypes.bool,
   lastProperty: PropTypes.string,
-  disableAutofocus: PropTypes.bool,
 };
 
 const mapStateToProps = state => ({

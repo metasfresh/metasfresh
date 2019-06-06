@@ -114,23 +114,16 @@ export class RawWidget extends Component {
     );
   };
 
-  handleKeyDown = (e, property, value, widgetType) => {
-    // const textField = widgetType.search(/text/i) > -1;
+  handleKeyDown = (e, property, value) => {
     const key = e.key;
     const { lastFormField } = this.props;
 
-//     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-//       if (key === 'Enter' && textField) {
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
       if (key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);
     }
-
-    // if (!textField && (key === 'ArrowUp' || key === 'ArrowDown')) {
-    //   // e.preventDefault();
-    // }
   };
 
   // isForce will be used for Datepicker
