@@ -66,15 +66,20 @@ import lombok.NonNull;
 public class POTrlRepository
 {
 	public static final transient POTrlRepository instance = new POTrlRepository();
-
+	
 	private static final Logger logger = LogManager.getLogger(POTrlRepository.class);
 
+	private static final String TRL_TABLE_SUFFIX = "_Trl";
 	private static final String DYNATTR_TrlUpdateMode_UpdateIdenticalTrls = PO.class.getName() + ".TrlUpdateMode.UpdateIdenticalTrls";
-
 	private static final String COLUMNNAME_AD_Language = "AD_Language";
 
 	private POTrlRepository()
 	{
+	}
+	
+	public static String toTrlTableName(final String tableName)
+	{
+		return tableName + TRL_TABLE_SUFFIX;
 	}
 
 	public final POTrlInfo createPOTrlInfo(final String tableName, final String keyColumnName, final List<String> translatedColumnNames)
@@ -500,7 +505,7 @@ public class POTrlRepository
 		final StringBuilder sql = new StringBuilder("SELECT ")
 				.append(sqlColumns)
 				.append(", ").append(COLUMNNAME_AD_Language)
-				.append(" FROM ").append(tableName).append("_Trl")
+				.append(" FROM ").append(toTrlTableName(tableName))
 				.append(" WHERE ")
 				.append(keyColumnName).append("=?");
 
