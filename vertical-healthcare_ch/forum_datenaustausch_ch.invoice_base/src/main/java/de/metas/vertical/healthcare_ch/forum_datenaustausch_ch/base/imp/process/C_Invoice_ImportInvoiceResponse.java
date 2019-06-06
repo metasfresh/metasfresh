@@ -5,26 +5,30 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
@@ -79,6 +83,11 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	@SuppressWarnings({ "FieldMayBeFinal", "FieldCanBeLocal" }) private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
 	@SuppressWarnings({ "FieldMayBeFinal", "FieldCanBeLocal" }) private static int WINDOW_ID_SALES_C_INVOICE_ID = 167; // FIXME Hardcoded
 
+	public static final Topic EVENTBUS_TOPIC = Topic.builder()
+			.name("de.metas.invoicecandidate.UserNotifications")
+			.type(Type.REMOTE)
+			.build();
+
 	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
 	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
 	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject";
@@ -107,8 +116,6 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
 
 	private final IBPartnerDAO ibPartnerDAO = Services.get(IBPartnerDAO.class);
-
-	private final IBPartnerOrgBL ibPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	private final UserRepository userRepository = Adempiere.getBean(UserRepository.class);
 
@@ -193,7 +200,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 			if (isInvoiceRejected(responseWithTags))
 			{
-				final Optional<UserId> userIdOptional = ibPartnerOrgBL.retrieveUserInChargeOrNull(OrgId.ofRepoId(responseWithTags.getBillerOrg()));
+				final Optional<UserId> userIdOptional = retrieveOrgDefaultContactByGLN(responseWithTags.getBillerEan());
 
 				if (userIdOptional.isPresent())
 				{
@@ -224,6 +231,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
+				.topic(EVENTBUS_TOPIC)
 				.recipient(recipient)
 				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 				.subjectADMessageParam(responseWithTags.getDocumentNumber())
@@ -242,6 +250,7 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
 				.builder()
+				.topic(EVENTBUS_TOPIC)
 				.recipient(recipient)
 				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
 				.subjectADMessageParam(responseWithTags.getDocumentNumber())
@@ -257,6 +266,23 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 	private boolean isInvoiceRejected(final ImportedInvoiceResponse responseWithTags)
 	{
 		return Status.REJECTED.equals(responseWithTags.getStatus());
+	}
+
+	private Optional<UserId> retrieveOrgDefaultContactByGLN(final String gln)
+	{
+		final List<Integer> bpartnerIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, gln)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID) // just to have an predictable order
+				.create()
+				.listDistinct(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, Integer.class);
+
+		return bpartnerIds.stream()
+				.map(BPartnerId::ofRepoId)
+				.map(ibPartnerDAO::getDefaultContactId)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.findFirst();
 	}
 
 	private int retrieveBillerOrg(@NonNull final ImportedInvoiceResponse response)
