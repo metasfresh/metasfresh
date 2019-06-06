@@ -23,6 +23,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
  */
 
 import com.google.common.base.Joiner;
+import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import lombok.NonNull;
@@ -64,10 +65,24 @@ public class InvoiceRejectionDetailRepo
 		return rejectionDetail;
 	}
 
-	public void save(@NonNull ImportedInvoiceResponse importedInvoiceResponse)
+	public void save(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
 	{
 		final I_C_Invoice_Rejection_Detail invoiceRejectionDetail = of(importedInvoiceResponse);
 		InterfaceWrapperHelper.saveRecord(invoiceRejectionDetail);
+
+		attachFileToInvoiceRejectionDetail(importedInvoiceResponse, invoiceRejectionDetail);
+	}
+
+	private void attachFileToInvoiceRejectionDetail(
+			@NonNull final ImportedInvoiceResponse response,
+			@NonNull final I_C_Invoice_Rejection_Detail invoiceRejectionDetail)
+	{
+		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
+				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
+				.tags(response.getAdditionalTags())
+				.build();
+
+		attachmentEntryService.createNewAttachment(invoiceRejectionDetail, attachmentEntryCreateRequest);
 	}
 
 }
