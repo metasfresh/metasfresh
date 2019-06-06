@@ -1,7 +1,11 @@
 package de.metas.rest_api.bpartner;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.rest_api.JsonExternalId;
@@ -32,6 +36,13 @@ import de.metas.util.JSONObjectMapper;
 
 public class JsonBPartnerUpsertRequestItemTest
 {
+
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
+
 	@Test
 	public void serializeDeserialize()
 	{
@@ -49,8 +60,10 @@ public class JsonBPartnerUpsertRequestItemTest
 
 		final String string = mapper.writeValueAsString(item);
 		assertThat(string).isNotEmpty();
+
 		final JsonBPartnerUpsertRequestItem result = mapper.readValue(string);
 
 		assertThat(result).isEqualTo(item);
+		expect(result).toMatchSnapshot();
 	}
 }

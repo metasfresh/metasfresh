@@ -1,7 +1,11 @@
 package de.metas.rest_api.bpartner;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.rest_api.JsonExternalId;
@@ -32,24 +36,27 @@ import de.metas.util.JSONObjectMapper;
 
 public class JsonBPartnerUpsertResponseItemTest
 {
-
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
 	/** no need to deserialize this again */
 	@Test
 	public void serializeTest()
 	{
-		final JsonUpsertResponseItem jsonBPartnerUpsertResponseItem = JsonUpsertResponseItem.builder()
+		final JsonUpsertResponseItem item = JsonUpsertResponseItem.builder()
 				.externalId(JsonExternalId.of("12345"))
 				.metasfreshId(MetasfreshId.of(23l))
 				.build();
-		JSONObjectMapper<JsonUpsertResponseItem> m = JSONObjectMapper.forClass(JsonUpsertResponseItem.class);
+		final JSONObjectMapper<JsonUpsertResponseItem> m = JSONObjectMapper.forClass(JsonUpsertResponseItem.class);
 
-		final String str = m.writeValueAsString(jsonBPartnerUpsertResponseItem);
+		final String str = m.writeValueAsString(item);
 
-		assertThat(str).isEqualToNormalizingNewlines(
-				"{\n" +
-						"  \"externalId\" : \"12345\",\n" +
-						"  \"metasfreshId\" : 23\n" +
-						"}");
+		final JsonUpsertResponseItem result = m.readValue(str);
+		assertThat(result).isEqualTo(item);
+
+		expect(result).toMatchSnapshot();
 	}
 
 }

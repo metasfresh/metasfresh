@@ -1,0 +1,54 @@
+de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestTest.deserialize=[
+  {
+    "requestItems": [
+      {
+        "externalId": "string",
+        "bpartnerComposite": {
+          "bpartner": {
+            "metasfreshId": 1,
+            "externalId": "string",
+            "code": "string",
+            "name": "string",
+            "companyName": "string",
+            "parentId": 1,
+            "phone": "string",
+            "language": "string",
+            "url": "string",
+            "group": "string"
+          },
+          "locations": [
+            {
+              "metasfreshId": 1,
+              "externalId": "string",
+              "address1": "string",
+              "address2": "string",
+              "postal": "string",
+              "poBox": "string",
+              "district": "string",
+              "region": "string",
+              "city": "string",
+              "state": "string",
+              "countryCode": "string",
+              "gln": "string"
+            }
+          ],
+          "contacts": [
+            {
+              "metasfreshId": 1,
+              "externalId": "string",
+              "name": "string",
+              "firstName": "string",
+              "lastName": "string",
+              "email": "string",
+              "phone": "string"
+            }
+          ]
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE"
+    }
+  }
+]

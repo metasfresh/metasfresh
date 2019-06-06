@@ -1,11 +1,15 @@
 package de.metas.rest_api.bpartner;
 
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.IOUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.metas.util.JSONObjectMapper;
@@ -34,14 +38,32 @@ import de.metas.util.JSONObjectMapper;
 
 public class JsonBPartnerUpsertRequestTest
 {
+	@BeforeClass
+	public static void beforeAll()
+	{
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+	}
 
 	@Test
 	public void deserialize() throws IOException
 	{
+		final JsonBPartnerUpsertRequest request = readInstanceFromFile();
+
+		final JSONObjectMapper<JsonBPartnerUpsertRequest> mapper = JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class);
+		final String string = mapper.writeValueAsString(request);
+		final JsonBPartnerUpsertRequest result = mapper.readValue(string);
+
+		assertThat(result).isEqualTo(request);
+		expect(result).toMatchSnapshot();
+	}
+
+	private JsonBPartnerUpsertRequest readInstanceFromFile() throws IOException
+	{
 		final InputStream stream = JsonBPartnerUpsertRequestTest.class.getResourceAsStream("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest.json");
 		final String string = IOUtils.toString(stream, "UTF-8");
 		assertThat(string).isNotNull(); // guard
-
-		JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).readValue(string);
+		final JSONObjectMapper<JsonBPartnerUpsertRequest> mapper = JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class);
+		final JsonBPartnerUpsertRequest request = mapper.readValue(string);
+		return request;
 	}
 }
