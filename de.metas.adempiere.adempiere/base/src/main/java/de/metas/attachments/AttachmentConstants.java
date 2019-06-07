@@ -36,4 +36,8 @@ public class AttachmentConstants
 	public static final String TAGNAME_BPARTNER_RECIPIENT_ID = "C_BPartner_Recipient_ID";
 
 	public static final String TAGNAME_STORED_PREFIX = "Stored_";
+
+	public static final String TAGS_SEPARATOR = "\n";
+	
+	public static final String TAGS_KEY_VALUE_SEPARATOR = "=";
 }

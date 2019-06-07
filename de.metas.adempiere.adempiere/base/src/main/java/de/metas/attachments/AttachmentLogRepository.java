@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_Log;
 import org.springframework.stereotype.Repository;
 
@@ -34,9 +33,19 @@ import lombok.NonNull;
 @Repository
 public class AttachmentLogRepository
 {
+	private final AttachmentLogFactory attachmentLogFactory;
+
+	public AttachmentLogRepository(AttachmentLogFactory attachmentLogFactory)
+	{
+		this.attachmentLogFactory = attachmentLogFactory;
+	}
 
 	public AttachmentLog save(@NonNull final AttachmentLog attachmentLog)
 	{
-		return null;
+		final I_AD_Attachment_Log attachmentLogRecord;
+		attachmentLogRecord = newInstance(I_AD_Attachment_Log.class);
+		attachmentLogFactory.syncToRecord(attachmentLog, attachmentLogRecord);
+		saveRecord(attachmentLogRecord);
+		return attachmentLog;
 	}
 }

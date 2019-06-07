@@ -48,9 +48,6 @@ import de.metas.util.Check;
 @Service
 public class AttachmentEntryFactory
 {
-	public static final String TAGS_SEPARATOR = "\n";
-	public static final String TAGS_KEY_VALUE_SEPARATOR = "=";
-
 	public static final BiMap<String, AttachmentEntry.Type> AD_RefList_Value2attachmentEntryType = ImmutableBiMap.<String, AttachmentEntry.Type> builder()
 			.put(X_AD_AttachmentEntry.TYPE_Data, AttachmentEntry.Type.Data)
 			.put(X_AD_AttachmentEntry.TYPE_URL, AttachmentEntry.Type.URL)
@@ -113,8 +110,8 @@ public class AttachmentEntryFactory
 		else
 		{
 			tags = Splitter
-					.on(TAGS_SEPARATOR)
-					.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
+					.on(AttachmentConstants.TAGS_SEPARATOR)
+					.withKeyValueSeparator(AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR)
 					.split(tagsAsString);
 		}
 		return AttachmentEntry.builder()
@@ -190,8 +187,8 @@ public class AttachmentEntryFactory
 		validateTags(tags);
 
 		final String tagsAsString = Joiner
-				.on(TAGS_SEPARATOR)
-				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
+				.on(AttachmentConstants.TAGS_SEPARATOR)
+				.withKeyValueSeparator(AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR)
 				.join(tags);
 		attachmentEntryRecord.setTags(tagsAsString);
 	}
@@ -200,19 +197,19 @@ public class AttachmentEntryFactory
 	{
 		for (final Entry<String, String> tag : tags.entrySet())
 		{
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
+			Check.errorIf(tag.getKey().contains(AttachmentConstants.TAGS_SEPARATOR),
 					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getKey().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
+					AttachmentConstants.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
+			Check.errorIf(tag.getKey().contains(AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR),
 					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
+					AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
 
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_SEPARATOR),
+			Check.errorIf(tag.getValue().contains(AttachmentConstants.TAGS_SEPARATOR),
 					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getValue().contains(AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR),
+					AttachmentConstants.TAGS_SEPARATOR, tag.getKey(), tag.getValue());
+			Check.errorIf(tag.getValue().contains(AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR),
 					"Tags may not contain {}; illegal entry: name={}; value={}",
-					AttachmentEntryFactory.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
+					AttachmentConstants.TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
 		}
 		return tags;
 	}
