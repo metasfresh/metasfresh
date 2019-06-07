@@ -1,16 +1,12 @@
-package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body;
 
-import javax.annotation.Nullable;
-
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XmlRejected;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLContact;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * vertical-healthcare_ch.invoice_gateway.forum_datenaustausch_ch.invoice_commons
+ * metasfresh-pharma
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -32,17 +28,8 @@ import lombok.Value;
 
 @Value
 @Builder(toBuilder = true)
-public class XmlBody
+public class XMLCompany
 {
-	@Nullable
-	XmlRejected rejected;
-
 	@NonNull
-	XMLPatientAddress patient;
-
-	@NonNull
-	XMLParty biller;
-
-	@NonNull
-	XMLContact contact;
+	String companyName;
 }
