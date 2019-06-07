@@ -48,20 +48,19 @@ class Invoice440ToCrossVersionModelToolTest
 {
 	private Invoice440ResponseConversionService invoice440ResponseConversionService;
 
-	@BeforeEach
-	public void init()
+	@BeforeEach void init()
 	{
 		invoice440ResponseConversionService = new Invoice440ResponseConversionService();
 	}
 
 	@BeforeAll
-	public static void beforeAll()
+	static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
 	@AfterAll
-	public static void afterAll()
+	static void afterAll()
 	{
 		validateSnapshots();
 	}
@@ -74,7 +73,7 @@ class Invoice440ToCrossVersionModelToolTest
 		expect(result).toMatchSnapshot();
 	}
 
-	private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)
+	@SuppressWarnings({ "SameParameterValue", "UnnecessaryLocalVariable" }) private XmlResponse toCrossVersionResponseWithXmlFile(@NonNull final String inputXmlFileName)
 	{
 		final InputStream inputStream = createInputStream(inputXmlFileName);
 		assertXmlIsValid(inputStream); // guard

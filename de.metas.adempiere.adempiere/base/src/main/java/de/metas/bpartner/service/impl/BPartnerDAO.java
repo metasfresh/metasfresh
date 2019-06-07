@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
+import de.metas.user.UserId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -214,14 +215,30 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(final I_C_BPartner bPartner, final Class<T> clazz)
 	{
-		final T result = Services.get(IQueryBL.class)
-				.createQueryBuilder(clazz)
-				.addOnlyActiveRecordsFilter()
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
+		final String trxName = InterfaceWrapperHelper.getTrxName(bPartner);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartner.getC_BPartner_ID());
+
+		return retrieveDefaultContactOrNull(ctx, bpartnerId, trxName, clazz);
+	}
+	@Override
+	public Optional<UserId> getDefaultContactId(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_AD_User defaultContact = retrieveDefaultContactOrNull(Env.getCtx(), bpartnerId, ITrx.TRXNAME_None, I_AD_User.class);
+		return defaultContact != null
+				? Optional.of(UserId.ofRepoId(defaultContact.getAD_User_ID()))
+				: Optional.empty();
+	}
+
+	private <T extends I_AD_User> T retrieveDefaultContactOrNull(final Properties ctx, final BPartnerId bpartnerId, final String trxName, final Class<T> clazz)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class, ctx, trxName)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(clazz);
-		return result;
 	}
 
 	@Override

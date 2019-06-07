@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -88,6 +89,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * General Database Interface
@@ -119,6 +121,7 @@ import lombok.NonNull;
  *         <li>FR [
  *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  */
+@UtilityClass
 public final class DB
 {
 	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
@@ -2820,6 +2823,73 @@ public final class DB
 		{
 			close(rs, pstmt);
 		}
+	}
+
+	public static final String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
+	{
+		try
+		{
+			if (md.storesUpperCaseIdentifiers())
+			{
+				return dbIdentifier.toUpperCase();
+			}
+			else if (md.storesLowerCaseIdentifiers())
+			{
+				return dbIdentifier.toLowerCase();
+			}
+			else
+			{
+				return dbIdentifier;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+	}
+
+	public static boolean isDBColumnPresent(@NonNull final String tableName, @NonNull final String columnName)
+	{
+		final String catalog = getDatabase().getCatalog();
+		final String schema = getDatabase().getSchema();
+		String tableNameNorm = tableName;
+		String columnNameNorm = columnName;
+
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			tableNameNorm = normalizeDBIdentifier(tableName, md);
+			columnNameNorm = normalizeDBIdentifier(columnName, md);
+
+			//
+			rs = md.getColumns(catalog, schema, tableNameNorm, columnNameNorm);
+			if (rs.next())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex)
+					.appendParametersToMessage()
+					.setParameter("catalog", catalog)
+					.setParameter("schema", schema)
+					.setParameter("tableNameNorm", tableNameNorm)
+					.setParameter("columnNameNorm", columnNameNorm);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+
 	}
 
 } // DB
