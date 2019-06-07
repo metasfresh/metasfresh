@@ -35,6 +35,11 @@ public class QueueWorkPackageId implements RepoIdAware
 		return new QueueWorkPackageId(repoId);
 	}
 
+	public static QueueWorkPackageId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	private QueueWorkPackageId(final int repoId)

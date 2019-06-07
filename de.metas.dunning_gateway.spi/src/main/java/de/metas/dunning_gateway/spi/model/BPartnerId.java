@@ -1,11 +1,8 @@
 package de.metas.dunning_gateway.spi.model;
 
-
-
-import lombok.Value;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -34,6 +31,11 @@ public class BPartnerId implements RepoIdAware
 	public static BPartnerId ofRepoId(final int repoId)
 	{
 		return new BPartnerId(repoId);
+	}
+
+	public static BPartnerId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

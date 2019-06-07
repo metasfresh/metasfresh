@@ -46,6 +46,11 @@ public class MaterialTrackingId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new MaterialTrackingId(repoId) : null;
 	}
 
+	public static MaterialTrackingId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? new MaterialTrackingId(repoId) : null;
+	}
+
 	private MaterialTrackingId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "productId");

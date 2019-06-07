@@ -38,6 +38,11 @@ public class AdUIElementId implements RepoIdAware
 		return new AdUIElementId(repoId);
 	}
 
+	public static AdUIElementId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	private AdUIElementId(final int repoId)

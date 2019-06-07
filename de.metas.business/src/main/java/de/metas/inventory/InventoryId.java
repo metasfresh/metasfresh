@@ -40,6 +40,11 @@ public class InventoryId implements RepoIdAware
 		return new InventoryId(repoId);
 	}
 
+	public static InventoryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private InventoryId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "inventoryId");

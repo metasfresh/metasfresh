@@ -38,6 +38,11 @@ public class AdUIColumnId implements RepoIdAware
 		return new AdUIColumnId(repoId);
 	}
 
+	public static AdUIColumnId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new AdUIColumnId(repoId) : null;
+	}
+
 	int repoId;
 
 	private AdUIColumnId(final int repoId)

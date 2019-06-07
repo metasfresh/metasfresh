@@ -2,7 +2,6 @@ package de.metas.marketing.base.model;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -35,6 +34,11 @@ public class CampaignId implements RepoIdAware
 	public static CampaignId ofRepoId(final int repoId)
 	{
 		return new CampaignId(repoId);
+	}
+
+	public static CampaignId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	private CampaignId(final int repoId)

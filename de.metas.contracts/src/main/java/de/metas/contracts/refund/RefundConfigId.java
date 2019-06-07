@@ -1,8 +1,9 @@
 package de.metas.contracts.refund;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -33,6 +34,11 @@ public class RefundConfigId implements RepoIdAware
 	public static RefundConfigId ofRepoId(int repoId)
 	{
 		return new RefundConfigId(repoId);
+	}
+
+	public static RefundConfigId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

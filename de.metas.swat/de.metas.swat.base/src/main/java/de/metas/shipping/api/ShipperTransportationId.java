@@ -1,8 +1,9 @@
 package de.metas.shipping.api;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -37,8 +38,13 @@ public class ShipperTransportationId implements RepoIdAware
 		return new ShipperTransportationId(repoId);
 	}
 
+	public static ShipperTransportationId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private ShipperTransportationId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ShipperTransportation_ID");
 	}
 }

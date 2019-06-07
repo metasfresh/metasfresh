@@ -1,9 +1,8 @@
 package de.metas.invoice_gateway.spi.model;
 
-import lombok.Value;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,6 +32,11 @@ public class InvoiceId implements RepoIdAware
 	public static InvoiceId ofRepoId(final int repoId)
 	{
 		return new InvoiceId(repoId);
+	}
+
+	public static InvoiceId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

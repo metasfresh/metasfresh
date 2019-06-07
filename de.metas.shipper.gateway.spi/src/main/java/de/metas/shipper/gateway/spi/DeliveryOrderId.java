@@ -2,7 +2,6 @@ package de.metas.shipper.gateway.spi;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -35,6 +34,11 @@ public class DeliveryOrderId implements RepoIdAware
 	public static DeliveryOrderId ofRepoId(final int repoId)
 	{
 		return new DeliveryOrderId(repoId);
+	}
+
+	public static DeliveryOrderId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	private DeliveryOrderId(final int repoId)

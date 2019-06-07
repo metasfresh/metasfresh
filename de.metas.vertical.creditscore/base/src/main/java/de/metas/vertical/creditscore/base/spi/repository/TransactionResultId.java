@@ -1,5 +1,7 @@
 package de.metas.vertical.creditscore.base.spi.repository;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.vertical.creditscore.base.spi.repository
@@ -32,6 +34,11 @@ public class TransactionResultId implements RepoIdAware
 	public static TransactionResultId ofRepoId(final int repoId)
 	{
 		return new TransactionResultId(repoId);
+	}
+
+	public static TransactionResultId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

@@ -43,6 +43,11 @@ public class CurrentCostId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new CurrentCostId(repoId) : null;
 	}
 
+	public static CurrentCostId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? new CurrentCostId(repoId) : null;
+	}
+
 	public static int toRepoId(final CurrentCostId id)
 	{
 		return id != null ? id.getRepoId() : -1;

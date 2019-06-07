@@ -2,7 +2,6 @@ package de.metas.contracts;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -35,6 +34,11 @@ public class ConditionsId implements RepoIdAware
 	public static ConditionsId ofRepoId(final int repoId)
 	{
 		return new ConditionsId(repoId);
+	}
+
+	public static ConditionsId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	private ConditionsId(final int repoId)

@@ -35,6 +35,11 @@ public class DataEntryRecordId implements RepoIdAware
 		return new DataEntryRecordId(repoId);
 	}
 
+	public static DataEntryRecordId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	public DataEntryRecordId(final int repoId)
