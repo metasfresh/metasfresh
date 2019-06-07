@@ -43,6 +43,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -1000,5 +1001,11 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 		}
 
 		return QueryInsertExecutorResult.of(countInsert, insertSelectionId);
+	}
+
+	@Override
+	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
+	{
+		throw new UnsupportedOperationException();
 	}
 }

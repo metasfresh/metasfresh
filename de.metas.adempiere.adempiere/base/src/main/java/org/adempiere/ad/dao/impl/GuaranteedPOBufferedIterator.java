@@ -25,23 +25,19 @@ import java.io.Closeable;
  */
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.persistence.TableModelClassLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.compiere.model.IQuery;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -56,8 +52,6 @@ import lombok.NonNull;
  */
 /* package */final class GuaranteedPOBufferedIterator<T, ET extends T> implements Iterator<ET>, Closeable
 {
-	private static final transient Logger logger = LogManager.getLogger(GuaranteedPOBufferedIterator.class);
-
 	/** Original query */
 	private final TypedSqlQuery<T> query;
 	/** Model class */
@@ -84,6 +78,7 @@ import lombok.NonNull;
 	 * NOTE: we are also counting invalid models because the main purpose of this counter is to be compared with {@link #rowsCount} which will tell us if we reached the end of our selection.
 	 */
 	private int rowsFetched = 0;
+
 	/**
 	 * Underlying buffered iterator used to actually load the records page by page.
 	 *
@@ -91,6 +86,7 @@ import lombok.NonNull;
 	 * and because we want to include it in toString().
 	 */
 	private final POBufferedIterator<ET, ET> bufferedIterator;
+
 	/** Peeking iterator which wraps {@link #bufferedIterator} */
 	private final PeekingIterator<ET> peekingBufferedIterator;
 
@@ -112,52 +108,10 @@ import lombok.NonNull;
 		{
 			throw new DBException("Table " + tableName + " has 0 or more than 1 key columns");
 		}
-		final String keyColumnNameFQ = tableName + "." + keyColumnName;
 
 		//
 		// Select the records using the original query and INSERT their IDs to our T_Query_Selection
-		{
-			final String orderBy = query.getOrderBy();
-
-			final StringBuilder sqlRowNumber = new StringBuilder("row_number() OVER (");
-			if (!Check.isEmpty(orderBy, true))
-			{
-				sqlRowNumber.append("ORDER BY ").append(orderBy);
-			}
-			sqlRowNumber.append(")");
-
-			final StringBuilder sqlInsertIntoBuilder = new StringBuilder()
-					.append("INSERT INTO ")
-					.append(I_T_Query_Selection.Table_Name)
-					.append(" (")
-					.append(I_T_Query_Selection.COLUMNNAME_UUID)
-					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Line)
-					.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
-					.append(")");
-
-			final StringBuilder sqlSelectBuilder = new StringBuilder()
-					.append(" SELECT ")
-					.append(DB.TO_STRING(querySelectionUUID))
-					.append(", ").append(sqlRowNumber)
-					.append(", ").append(keyColumnNameFQ);
-
-			final StringBuilder sqlFromBuilder = new StringBuilder(" FROM ").append(tableName);
-
-			// be sure to only pass the "SELECT", not the "INSERT" sql to avoid invalid SQL when ORs are exploded to unions
-			final String sqlSelect = query.buildSQL(sqlSelectBuilder, sqlFromBuilder, true/*useOrderByClause*/);
-			final List<Object> params = query.getParametersEffective();
-
-			final String sql = sqlInsertIntoBuilder.append(sqlSelect).toString();
-
-			this.rowsCount = DB.executeUpdateEx(sql,
-					params == null ? null : params.toArray(),
-					trxName);
-
-			if (logger.isTraceEnabled())
-			{
-				logger.info("sql=" + sql + ", params=" + params + ", trxName=" + trxName + ", rowsCount=" + rowsCount);
-			}
-		}
+		this.rowsCount = QuerySelectionHelper.createUUIDSelection(query, querySelectionUUID);
 
 		//
 		// If model class is null (which it currently is allowed to be!), then find our class to use from the table name
@@ -174,30 +128,18 @@ import lombok.NonNull;
 			clazzToUse = clazz;
 		}
 
-		//
-		// Build the query used to retrieve models by querying the selection.
-		// NOTE: we are using LEFT OUTER JOIN instead of INNER JOIN because
-		// * methods like hasNext() are comparing the rowsFetched counter with rowsCount to detect if we reached the end of the selection (optimization).
-		// * POBufferedIterator is using LIMIT/OFFSET clause for fetching the next page and eliminating rows from here would fuck the paging if one record was deleted in meantime.
-		// So we decided to load everything here, and let the hasNext() method to deal with the case when the record is really missing.
-		final String selectionSqlFrom = "(SELECT "
-				+ I_T_Query_Selection.COLUMNNAME_UUID + " as ZZ_UUID"
-				+ ", " + I_T_Query_Selection.COLUMNNAME_Record_ID + " as ZZ_Record_ID"
-				+ ", " + I_T_Query_Selection.COLUMNNAME_Line + " as ZZ_Line"
-				+ " FROM " + I_T_Query_Selection.Table_Name
-				+ ") s "
-				+ "\n LEFT OUTER JOIN " + tableName + " ON (" + keyColumnNameFQ + "=s.ZZ_Record_ID)";
-		final String selectionWhereClause = "s.ZZ_UUID=?";
-		final String selectionOrderBy = "s.ZZ_Line";
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(query.getCtx(), clazzToUse, tableName, selectionWhereClause, trxName)
-				.setParameters(querySelectionUUID)
-				.setSqlFrom(selectionSqlFrom)
-				.setOrderBy(selectionOrderBy);
+		final TypedSqlQuery<ET> querySelection = QuerySelectionHelper.createUUIDSelectionQuery(
+				PlainContextAware.newWithTrxName(query.getCtx(), query.getTrxName()),
+				clazzToUse,
+				querySelectionUUID);
 
 		//
 		// Create the buffered iterator which will retrieve from selection, page by page
 		// provide column ZZ_Line so the iterator can page without using OFFSET
-		this.bufferedIterator = new POBufferedIterator<>(querySelection, clazzToUse, "ZZ_Line");
+		this.bufferedIterator = new POBufferedIterator<>(
+				querySelection,
+				clazzToUse,
+				QuerySelectionHelper.SELECTION_LINE_ALIAS);
 		this.peekingBufferedIterator = Iterators.peekingIterator(this.bufferedIterator);
 	}
 

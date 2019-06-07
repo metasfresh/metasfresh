@@ -24,6 +24,7 @@ package org.adempiere.ad.dao;
 
 import java.util.Properties;
 
+import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
@@ -33,6 +34,8 @@ import de.metas.util.ISingletonService;
 public interface IQueryBL extends ISingletonService
 {
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, String trxName);
+
+	<T> QueryResultPage<T> retrieveNextPage(Class<T> clazz, String next);
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 

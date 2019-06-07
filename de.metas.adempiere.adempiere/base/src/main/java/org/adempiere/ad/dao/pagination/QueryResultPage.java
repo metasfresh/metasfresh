@@ -1,14 +1,15 @@
-package de.metas.rest_api;
+package org.adempiere.ad.dao.pagination;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.List;
 
-import de.metas.util.Check;
+import javax.annotation.Nullable;
+
+import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,33 +30,14 @@ import lombok.Value;
  */
 
 @Value
-public class MetasfreshId
+public class QueryResultPage<T>
 {
-	long value;
+	@Nullable
+	PageDescriptor nextPageDescriptor;
 
-	public static MetasfreshId ofOrNull(long id)
-	{
-		if (id <= 0)
-		{
-			return null;
-		}
-		return of(id);
-	}
+	@NonNull
+	PageDescriptor currentPageDescriptor;
 
-	public static MetasfreshId of(long id)
-	{
-		return new MetasfreshId(id);
-	}
-
-	@JsonCreator
-	private MetasfreshId(long value)
-	{
-		this.value = Check.assumeGreaterThanZero(value, "value");
-	}
-
-	@JsonValue
-	public long getValue()
-	{
-		return value;
-	}
+	@NonNull
+	List<T> items;
 }

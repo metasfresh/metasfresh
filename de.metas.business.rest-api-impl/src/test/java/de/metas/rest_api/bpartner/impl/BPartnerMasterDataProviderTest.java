@@ -289,7 +289,7 @@ public class BPartnerMasterDataProviderTest
 		locationRecord.setAddress2("Address2");
 		locationRecord.setCity("City");
 		locationRecord.setPostal("Postal");
-		locationRecord.setRegionName("State");
+		locationRecord.setRegionName("Region");
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bPartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
@@ -309,7 +309,7 @@ public class BPartnerMasterDataProviderTest
 		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");
 		assertThat(result.getGln()).isEqualTo("GLN");
 		assertThat(result.getPostal()).isEqualTo("Postal");
-		assertThat(result.getState()).isEqualTo("State");
+		assertThat(result.getRegion()).isEqualTo("Region");
 	}
 
 	@Test

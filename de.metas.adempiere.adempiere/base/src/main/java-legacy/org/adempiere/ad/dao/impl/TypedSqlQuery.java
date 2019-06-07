@@ -39,6 +39,8 @@ import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
+import org.adempiere.ad.dao.pagination.POBufferedPageThingie;
+import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -229,14 +231,14 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.queryOrderBy = orderBy;
 		return this;
 	}
-	
+
 	@Override
 	public TypedSqlQuery<T> setRequiredAccess(@Nullable final Access access)
 	{
 		this.requiredAccess = access;
 		return this;
 	}
-	
+
 	@Override
 	public TypedSqlQuery<T> setOnlyActiveRecords(final boolean onlyActiveRecords)
 	{
@@ -885,6 +887,12 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return iterate(clazz, guaranteed);
 	}
 
+	@Override
+	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
+	{
+		return new POBufferedPageThingie<T, ET>(clazz).loadFirstPage(this, pageSize);
+	}
+
 	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz, final boolean guaranteed) throws DBException
 	{
 		Check.assumeNull(postQueryFilter, "No post-filter shall be defined when iterating");
@@ -901,83 +909,17 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			return it;
 		}
 
-		// metas: 03658: use POBufferedIterator instead of old POIterator, if database paging is supported
-		else if (DB.getDatabase().isPagingSupported())
+		final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<>(this, clazz, null);
+		if (iteratorBufferSize != null)
 		{
-			final POBufferedIterator<T, ET> poBufferedIterator = new POBufferedIterator<>(this, clazz, null);
-			if (iteratorBufferSize != null)
-			{
-				poBufferedIterator.setBufferSize(iteratorBufferSize);
-			}
-			else if (limit != NO_LIMIT)
-			{   // use the set limit as our buffer size, if a limit has been set
-				poBufferedIterator.setBufferSize(limit);
-			}
-			return poBufferedIterator;
+			poBufferedIterator.setBufferSize(iteratorBufferSize);
 		}
-		else
-		{
-			final String tableName = getTableName();
-			final List<Object[]> idList = retrieveComposedIDs();
-			return new POIterator<>(ctx, tableName, clazz, idList, trxName);
+		else if (limit != NO_LIMIT)
+		{   // use the set limit as our buffer size, if a limit has been set
+			poBufferedIterator.setBufferSize(limit);
 		}
-	}
+		return poBufferedIterator;
 
-	/**
-	 * Get a List of composed IDs for this Query.
-	 *
-	 * @return List of composed IDs
-	 */
-	private final List<Object[]> retrieveComposedIDs()
-	{
-		Check.assumeNull(postQueryFilter, "No post-filter shall be defined when retrieving composed IDs"); // FIXME: not supported
-
-		final StringBuilder sqlBuffer = new StringBuilder();
-		final List<String> keyColumnNames = getKeyColumnNames();
-		for (final String keyColumnName : keyColumnNames)
-		{
-			if (sqlBuffer.length() > 0)
-			{
-				sqlBuffer.append(", ");
-			}
-			sqlBuffer.append(keyColumnName);
-		}
-		sqlBuffer.insert(0, " SELECT ");
-
-		final StringBuilder fromClause = new StringBuilder(" FROM ").append(getSqlFrom());
-
-		final String sql = buildSQL(sqlBuffer, fromClause, true);
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final List<Object[]> idList = new ArrayList<>();
-		try
-		{
-			pstmt = DB.prepareStatement(sql, trxName);
-			rs = createResultSet(pstmt);
-			while (rs.next())
-			{
-				final Object[] ids = new Object[keyColumnNames.size()];
-				for (int i = 0; i < ids.length; i++)
-				{
-					ids[i] = rs.getObject(i + 1);
-				}
-				idList.add(ids);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.info(sql, e);
-			throw new DBException(e, sql, getParametersEffective());
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
-		return idList;
 	}
 
 	/**
@@ -1197,13 +1139,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			@Nullable final StringBuilder fromClause,
 			final boolean useOrderByClause)
 	{
-		StringBuilder selectClauseToUse=selectClause;
+		StringBuilder selectClauseToUse = selectClause;
 		if (selectClauseToUse == null)
 		{
 			final POInfo info = getPOInfo();
 			selectClauseToUse = new StringBuilder("SELECT ").append(info.getSqlSelectColumns());
 		}
-		StringBuilder fromClauseToUse=fromClause;
+		StringBuilder fromClauseToUse = fromClause;
 		if (fromClauseToUse == null)
 		{
 			fromClauseToUse = new StringBuilder(" FROM ").append(getSqlFrom());

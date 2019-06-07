@@ -1,14 +1,10 @@
-package de.metas.rest_api;
+package org.adempiere.ad.dao.pagination;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -28,34 +24,13 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class MetasfreshId
+public class PaginationException extends AdempiereException
 {
-	long value;
-
-	public static MetasfreshId ofOrNull(long id)
+	public PaginationException(String message)
 	{
-		if (id <= 0)
-		{
-			return null;
-		}
-		return of(id);
+		super(message);
 	}
 
-	public static MetasfreshId of(long id)
-	{
-		return new MetasfreshId(id);
-	}
+	private static final long serialVersionUID = 2037196076279971989L;
 
-	@JsonCreator
-	private MetasfreshId(long value)
-	{
-		this.value = Check.assumeGreaterThanZero(value, "value");
-	}
-
-	@JsonValue
-	public long getValue()
-	{
-		return value;
-	}
 }

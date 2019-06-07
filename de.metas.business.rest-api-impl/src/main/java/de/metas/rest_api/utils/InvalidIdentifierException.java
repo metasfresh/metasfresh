@@ -1,14 +1,10 @@
-package de.metas.rest_api;
+package de.metas.rest_api.utils;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -28,34 +24,13 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class MetasfreshId
+public class InvalidIdentifierException extends AdempiereException
 {
-	long value;
+	private static final long serialVersionUID = -1973403699430819624L;
 
-	public static MetasfreshId ofOrNull(long id)
+	public InvalidIdentifierException(String string)
 	{
-		if (id <= 0)
-		{
-			return null;
-		}
-		return of(id);
+		super(string);
 	}
 
-	public static MetasfreshId of(long id)
-	{
-		return new MetasfreshId(id);
-	}
-
-	@JsonCreator
-	private MetasfreshId(long value)
-	{
-		this.value = Check.assumeGreaterThanZero(value, "value");
-	}
-
-	@JsonValue
-	public long getValue()
-	{
-		return value;
-	}
 }

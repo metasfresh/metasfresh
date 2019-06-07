@@ -64,8 +64,6 @@ public class JsonBPartnerLocation
 	private String city;
 
 	@JsonInclude(Include.NON_NULL)
-	private String state;
-
 	private String district;
 
 	private String region;
@@ -89,7 +87,6 @@ public class JsonBPartnerLocation
 			@JsonProperty("district") final String district,
 			@JsonProperty("region") final String region,
 			@JsonProperty("city") final String city,
-			@JsonProperty("state") final String state,
 			@JsonProperty("countryCode") @Nullable final String countryCode,
 			@JsonProperty("gln") @Nullable final String gln)
 	{
@@ -105,7 +102,6 @@ public class JsonBPartnerLocation
 		this.district = district;
 		this.region = region;
 		this.city = city;
-		this.state = state;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 	}
 }

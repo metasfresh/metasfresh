@@ -10,6 +10,7 @@ import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,6 +46,7 @@ import lombok.Value;
 @Value
 public class BPartnerQuery
 {
+	BPartnerId bBartnerId;
 	ExternalId externalId;
 	String bpartnerValue;
 	String bpartnerName;
@@ -57,6 +59,7 @@ public class BPartnerQuery
 
 	@Builder
 	private BPartnerQuery(
+			@Nullable final BPartnerId bBartnerId,
 			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
@@ -68,11 +71,13 @@ public class BPartnerQuery
 			@Nullable final Boolean failIfNotExists)
 	{
 
+		this.bBartnerId = bBartnerId;
 		this.bpartnerValue = bpartnerValue;
 		this.bpartnerName = bpartnerName;
 		this.locationGln = locationGln;
 		this.externalId = externalId;
-		errorIf(isEmpty(bpartnerValue, true)
+		errorIf(bBartnerId == null
+				&& isEmpty(bpartnerValue, true)
 				&& isEmpty(bpartnerName, true)
 				&& externalId == null
 				&& isEmpty(locationGln, true),

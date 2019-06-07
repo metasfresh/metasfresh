@@ -4,6 +4,8 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
 
+import java.util.Optional;
+
 import javax.annotation.Nullable;
 
 import org.springframework.context.annotation.Profile;
@@ -18,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
@@ -26,7 +27,6 @@ import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
-import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -60,6 +60,13 @@ import lombok.NonNull;
 public class ContactRestController implements ContactRestEndpoint
 {
 
+	private final IBPartnerEndpointService bPartnerEndpointservice;
+
+	public ContactRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice)
+	{
+		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
+	}
+
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to view the resource"),
@@ -73,7 +80,7 @@ public class ContactRestController implements ContactRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final JsonContact mockContact = MockDataUtil.createMockContact(contactIdentifier);
+		final JsonContact mockContact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
 		return ResponseEntity.ok(mockContact);
 	}
 
@@ -95,17 +102,14 @@ public class ContactRestController implements ContactRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		JsonContactList list = JsonContactList
-				.builder()
-				.contact(MockDataUtil.createMockContact("c1"))
-				.pagingDescriptor(JsonPagingDescriptor.builder()
-						.pageSize(40)
-						.totalSize(1)
-						.resultTimestamp(SystemTime.millis())
-						.build())
-				.build();
-
-		return ResponseEntity.ok(list);
+		final Optional<JsonContactList> list = bPartnerEndpointservice.retrieveContactsSince(epochTimestampMillis, next);
+		if (list.isPresent())
+		{
+			return ResponseEntity.ok(list.get());
+		}
+		return new ResponseEntity<JsonContactList>(
+				(JsonContactList)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	@ApiResponses(value = {

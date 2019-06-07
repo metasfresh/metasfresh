@@ -30,16 +30,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
@@ -51,7 +50,6 @@ import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.product.JsonProductInfo;
 import de.metas.rest_api.product.JsonProductInfo.Type;
-
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -649,7 +647,7 @@ public class XmlToOLCandsService
 				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
 				.city(city)
 				.postal(zip.getValue())
-				.state(statecode)
+				.region(statecode)
 				.postal(statecode)
 				.countryCode(coalesce(countrycode, "CH")) // TODO
 				.build();

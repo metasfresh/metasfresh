@@ -6,7 +6,7 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
 
-import java.util.UUID;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -21,12 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.rest_api.JsonPagingDescriptor;
-import de.metas.rest_api.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
-import de.metas.rest_api.bpartner.JsonBPartnerCompositeList.JsonBPartnerCompositeListBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequest;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItem;
@@ -34,8 +31,6 @@ import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponse.JsonUpsertResponseBuilder;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
-import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -69,6 +64,13 @@ import lombok.NonNull;
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
+	private final IBPartnerEndpointService bPartnerEndpointservice;
+
+	public BpartnerRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice)
+	{
+		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
+	}
+
 	//
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved bpartner"),
@@ -84,7 +86,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier)
 	{
-		final JsonBPartnerComposite result = MockDataUtil.createMockBPartnerComposite(bpartnerIdentifier);
+		final JsonBPartnerComposite result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
 		return ResponseEntity.ok(result);
 	}
 
@@ -107,7 +109,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifier)
 	{
-		final JsonBPartnerLocation location = MockDataUtil.createMockLocation("l1", "CH");
+		final JsonBPartnerLocation location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
 		return ResponseEntity.ok(location);
 	}
 
@@ -129,11 +131,9 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final JsonContact contact = MockDataUtil.createMockContact("c1");
+		final JsonContact contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
 		return ResponseEntity.ok(contact);
 	}
-
-	public static final String MOCKED_NEXT = UUID.randomUUID().toString();
 
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully retrieved bpartner(s)"),
@@ -153,35 +153,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final JsonPagingDescriptorBuilder pagingDescriptor = JsonPagingDescriptor.builder()
-				.pageSize(1)
-				.totalSize(2)
-				.resultTimestamp(SystemTime.millis());
-
-		final JsonBPartnerCompositeListBuilder compositeList = JsonBPartnerCompositeList.builder();
-
-		if (Check.isEmpty(next))
+		final Optional<JsonBPartnerCompositeList> result = bPartnerEndpointservice.retrieveBPartnersSince(epochTimestampMillis, next);
+		if (result.isPresent())
 		{
-			pagingDescriptor.nextPage(MOCKED_NEXT); // will return the first page with the 2nd page's identifier
-			compositeList.item(MockDataUtil.createMockBPartnerComposite("1234"));
+			return ResponseEntity.ok(result.get());
 		}
-		else
-		{
-			if (MOCKED_NEXT.equals(next))
-			{
-				pagingDescriptor.nextPage(null); // will return the 2nd and last page
-				compositeList.item(MockDataUtil.createMockBPartnerComposite("1235"));
-			}
-			else
-			{
-				return new ResponseEntity<JsonBPartnerCompositeList>(
-						(JsonBPartnerCompositeList)null,
-						HttpStatus.NOT_FOUND);
-			}
-		}
-
-		compositeList.pagingDescriptor(pagingDescriptor.build());
-		return ResponseEntity.ok(compositeList.build());
+		return new ResponseEntity<JsonBPartnerCompositeList>(
+				(JsonBPartnerCompositeList)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	//

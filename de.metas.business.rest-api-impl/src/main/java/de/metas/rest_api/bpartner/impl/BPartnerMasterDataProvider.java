@@ -41,9 +41,9 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
@@ -543,7 +543,7 @@ public class BPartnerMasterDataProvider
 				.address2(location.getAddress2())
 				.postal(location.getPostal())
 				.city(location.getCity())
-				.state(location.getRegionName())
+				.region(location.getRegionName())
 				.countryCode(countryCode)
 				.build();
 	}

@@ -1,16 +1,10 @@
-package de.metas.rest_api;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import lombok.Value;
+package org.adempiere.ad.dao.model;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,34 +22,15 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public class MetasfreshId
+public interface I_T_Query_Selection_Pagination
 {
-	long value;
+	String Table_Name = "T_Query_Selection_Pagination";
 
-	public static MetasfreshId ofOrNull(long id)
-	{
-		if (id <= 0)
-		{
-			return null;
-		}
-		return of(id);
-	}
+	String COLUMNNAME_UUID = "UUID";
 
-	public static MetasfreshId of(long id)
-	{
-		return new MetasfreshId(id);
-	}
+	String COLUMNNAME_PAGE_ID = "Page_Id";
 
-	@JsonCreator
-	private MetasfreshId(long value)
-	{
-		this.value = Check.assumeGreaterThanZero(value, "value");
-	}
+	String COLUMNNAME_Offset = "Offset";
 
-	@JsonValue
-	public long getValue()
-	{
-		return value;
-	}
+	String COLUMNNAME_Size = "Size";
 }

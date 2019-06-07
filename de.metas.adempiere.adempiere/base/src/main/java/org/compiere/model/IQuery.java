@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
+import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.model.util.Model2IdFunction;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
@@ -243,10 +244,10 @@ public interface IQuery<T>
 	 * be considered.
 	 *
 	 * @param clazz model interface class
-	 * @return iterator
-	 * @throws DBException
 	 */
 	<ET extends T> Iterator<ET> iterate(Class<ET> clazz) throws DBException;
+
+	<ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException;
 
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.

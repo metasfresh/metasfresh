@@ -34,6 +34,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.pagination.POBufferedPageThingie;
+import org.adempiere.ad.dao.pagination.QueryResultPage;
 
 public class QueryBL implements IQueryBL
 {
@@ -148,5 +150,11 @@ public class QueryBL implements IQueryBL
 		}
 
 		return result;
+	}
+
+	@Override
+	public <T> QueryResultPage<T> retrieveNextPage(Class<T> clazz, String next)
+	{
+		return new POBufferedPageThingie<T, T>(clazz).loadPage(next);
 	}
 }

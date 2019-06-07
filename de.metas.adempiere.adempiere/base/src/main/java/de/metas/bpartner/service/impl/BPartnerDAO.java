@@ -984,6 +984,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public Optional<BPartnerId> retrieveBPartnerIdBy(@NonNull final BPartnerQuery query)
 	{
+		if (query.getBBartnerId() != null)
+		{
+			return Optional.of(query.getBBartnerId());
+		}
+
 		final StringJoiner searchedByInfo = new StringJoiner(", ");
 		BPartnerId existingBPartnerId = null;
 
