@@ -59,7 +59,9 @@ import de.metas.util.collections.CollectionUtils;
 public class AttachmentEntryService
 {
 	private final AttachmentEntryRepository attachmentEntryRepository;
+	private final AttachmentLogRepository attachmentLogRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
+	private final AttachmentLogFactory attachmentLogFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
@@ -67,13 +69,17 @@ public class AttachmentEntryService
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
+		final AttachmentLogFactory attachmentLogFactory = new AttachmentLogFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository(attachmentLogFactory);
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
+				attachmentLogRepository,
 				attachmentEntryFactory,
+				attachmentLogFactory,
 				attachmentMigrationService,
 				attachmentHandlerRegistry);
 	}
@@ -85,12 +91,16 @@ public class AttachmentEntryService
 	 */
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
+			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
+			@NonNull final AttachmentLogFactory attachmentLogFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
 			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
+		this.attachmentLogRepository=attachmentLogRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
+		this.attachmentLogFactory = attachmentLogFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
 	}
@@ -266,6 +276,8 @@ public class AttachmentEntryService
 
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{
+			final AttachmentLog attachmentLog = AttachmentLog.builder().attachmentEntry(attachment).recordRef(tableRecordReference).description((String)null).build();
+			attachmentLogRepository.save(attachmentLog);
 			attachmentEntryRepository.delete(withRemovedLinkedRecordAndId);
 		}
 		return withRemovedLinkedRecordAndId;

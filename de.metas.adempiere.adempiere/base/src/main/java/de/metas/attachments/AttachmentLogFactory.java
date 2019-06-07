@@ -43,7 +43,8 @@ public class AttachmentLogFactory
 		attachmentLogRecord.setDescription(attachmentLog.getDescription());
 		attachmentLogRecord.setFileName(attachmentLog.getFilename());
 		attachmentLogRecord.setType(attachmentLog.getType().name());
-		attachmentLogRecord.setURL(attachmentLog.getUrl().toASCIIString());
+		final String urlToBeSynced = attachmentLog.getUrl() != null ? attachmentLog.getUrl().toASCIIString() : null;
+		attachmentLogRecord.setURL(urlToBeSynced);
 		final ITableRecordReference recordRef = attachmentLog.getRecordRef();
 		attachmentLogRecord.setRecord_ID(recordRef.getRecord_ID());
 		attachmentLogRecord.setAD_Table_ID(recordRef.getAD_Table_ID());
