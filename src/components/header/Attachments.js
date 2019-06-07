@@ -56,7 +56,11 @@ class Attachments extends Component {
   handleDeleteAttachment = (e, id) => {
     const { windowType, docId } = this.props;
     e.stopPropagation();
-    if (window.confirm('Do you really want to delete?')) {
+    if (
+      window.confirm(
+        `${counterpart.translate('window.attachment.deleteQuestion')}`
+      )
+    ) {
       deleteRequest('window', windowType, docId, null, null, 'attachments', id)
         .then(() => {
           return attachmentsRequest('window', windowType, docId);
