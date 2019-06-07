@@ -6,12 +6,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Objects;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.RejectedError;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XmlBody;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLEmployee;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLTelecom;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.invoice_gateway.spi.InvoiceImportClient;
@@ -88,7 +90,7 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(inputStreamToUse);
 		inputStreamToUse.reset();
 
-		final CrossVersionResponseConverter converter = crossVersionServiceRegistry.getResponseConverterForXsdName(xsdName);
+		final CrossVersionResponseConverter converter = crossVersionServiceRegistry.getResponseConverterForXsdName(Objects.requireNonNull(xsdName));
 
 		final XmlResponse xInvoiceResponse = converter.toCrossVersionResponse(inputStreamToUse);
 
@@ -148,13 +150,15 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 	@Nullable
 	private String getPhone(@NonNull final XmlBody body)
 	{
-		if (body.getContact().getEmployee() != null)
+		final XMLEmployee employee = body.getContact().getEmployee();
+		if (employee != null)
 		{
-			if (body.getContact().getEmployee().getTelecom() != null)
+			final XMLTelecom employeeTelecom = employee.getTelecom();
+			if (employeeTelecom != null)
 			{
 				return Joiner
 						.on("; ")
-						.join(body.getContact().getEmployee().getTelecom().getPhone());
+						.join(employeeTelecom.getPhone());
 			}
 		}
 		return null;
@@ -199,12 +203,17 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 		return body.getContact().getCompany().getCompanyName();
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	private ImmutableList<RejectedError> getErrors(@NonNull final XmlBody body)
 	{
-		return body.getRejected().getErrors()
-				.stream()
-				.map(it -> new RejectedError(it.getCode(), it.getText()))
-				.collect(ImmutableList.toImmutableList());
+		if (body.getRejected() != null)
+		{
+			return body.getRejected().getErrors()
+					.stream()
+					.map(it -> new RejectedError(it.getCode(), it.getText()))
+					.collect(ImmutableList.toImmutableList());
+		}
+		return ImmutableList.of();
 	}
 
 }
