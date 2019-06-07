@@ -2,14 +2,21 @@ package de.metas.ui.web.attachments;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -20,12 +27,17 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentLog;
+import de.metas.attachments.AttachmentLogId;
+import de.metas.attachments.AttachmentLogService;
+import de.metas.attachments.AttachmentEntry.Type;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -77,6 +89,7 @@ final class DocumentAttachments
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 
 	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient AttachmentLogService attachmentLogService = Adempiere.getBean(AttachmentLogService.class);
 
 	private final DocumentPath documentPath;
 	private final ITableRecordReference recordRef;
@@ -176,9 +189,11 @@ final class DocumentAttachments
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
 			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
+			createAttachmentRemovalLog(entry);
 			attachmentEntryService.unattach(recordRef, entry);
 
 			notifyRelatedDocumentTabsChanged();
+			
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
@@ -193,6 +208,12 @@ final class DocumentAttachments
 		{
 			throw new EntityNotFoundException(id.toJson());
 		}
+	}
+
+	public void createAttachmentRemovalLog(AttachmentEntry attachmentEntry)
+	{
+		final AttachmentLog attachmentLog = AttachmentLog.builder().attachmentEntry(attachmentEntry).recordRef(recordRef).description((String)null).build();
+		attachmentLogService.save(attachmentLog);
 	}
 
 	private static IPair<String, Integer> toPrefixAndEntryId(final DocumentId id)
