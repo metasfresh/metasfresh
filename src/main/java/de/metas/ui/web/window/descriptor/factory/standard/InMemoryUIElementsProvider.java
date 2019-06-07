@@ -2,17 +2,16 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.window.process.AD_Window_CreateUIElements.IWindowUIElementsGeneratorConsumer;
-import org.adempiere.ad.window.process.AD_Window_CreateUIElements.WindowUIElementsGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.ad.window.process.IWindowUIElementsGeneratorConsumer;
+import org.adempiere.ad.window.process.WindowUIElementsGenerator;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -23,6 +22,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
 import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -37,20 +37,20 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorConsumer, IWindowUIElementsProvider
+final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWindowUIElementsGeneratorConsumer
 {
 	private static final Logger logger = LogManager.getLogger(InMemoryUIElementsProvider.class);
 
-	private final ListMultimap<Integer, I_AD_UI_Section> adTabId2sections = LinkedListMultimap.create();
+	private final ListMultimap<AdTabId, I_AD_UI_Section> adTabId2sections = LinkedListMultimap.create();
 	private final ListMultimap<I_AD_UI_Section, I_AD_UI_Column> section2columns = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
 	private final ListMultimap<I_AD_UI_Column, I_AD_UI_ElementGroup> column2elementGroups = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
 	private final ListMultimap<I_AD_UI_ElementGroup, I_AD_UI_Element> elementGroup2elements = Multimaps.newListMultimap(Maps.newIdentityHashMap(), () -> Lists.newLinkedList());
@@ -60,19 +60,19 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorCons
 	public void consume(final I_AD_UI_Section uiSection, final I_AD_Tab parent)
 	{
 		logger.info("Generated in memory {} for {}", uiSection, parent);
-		adTabId2sections.put(parent.getAD_Tab_ID(), uiSection);
+		final AdTabId adTabId = AdTabId.ofRepoId(parent.getAD_Tab_ID());
+		adTabId2sections.put(adTabId, uiSection);
 	}
 
 	@Override
-	public List<I_AD_UI_Section> getUISections(final int AD_Tab_ID)
+	public List<I_AD_UI_Section> getUISections(final AdTabId adTabId)
 	{
 		// Generate the UI elements if needed
-		if (!adTabId2sections.containsKey(AD_Tab_ID))
+		if (!adTabId2sections.containsKey(adTabId))
 		{
 			final WindowUIElementsGenerator generator = WindowUIElementsGenerator.forConsumer(this);
 
-			final I_AD_Tab adTab = InterfaceWrapperHelper.create(Env.getCtx(), AD_Tab_ID, I_AD_Tab.class, ITrx.TRXNAME_ThreadInherited);
-			
+			final I_AD_Tab adTab = Services.get(IADWindowDAO.class).getTabByIdInTrx(adTabId);
 			final boolean primaryTab = adTab.getTabLevel() == 0;
 			if (primaryTab)
 			{
@@ -84,7 +84,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorCons
 			}
 		}
 
-		return adTabId2sections.get(AD_Tab_ID);
+		return adTabId2sections.get(adTabId);
 	}
 
 	@Override
@@ -125,9 +125,9 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsGeneratorCons
 	{
 		return elementGroup2elements.get(uiElementGroup);
 	}
-	
+
 	@Override
-	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final int adTabId)
+	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final AdTabId adTabId)
 	{
 		return ImmutableList.of();
 	}
