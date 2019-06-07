@@ -10,10 +10,13 @@ import java.util.stream.Collectors;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
@@ -94,7 +97,7 @@ public class HUInternalUseInventoryProducer
 		final List<I_M_Inventory> result = new ArrayList<>();
 		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
 		{
-			final int warehouseId = warehouseIdAndHUs.getKey();
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouseIdAndHUs.getKey());
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
 			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory, isCreateMovement);
 			result.addAll(inventories);
@@ -103,14 +106,15 @@ public class HUInternalUseInventoryProducer
 		return result;
 	}
 
-	private final List<I_M_Inventory> createInventories(final int warehouseId,
+	private final List<I_M_Inventory> createInventories(
+			final WarehouseId warehouseId,
 			final List<I_M_HU> hus,
 			final ActivityId activityId,
 			final String description,
 			final boolean isCompleteInventory,
 			final boolean isCreateMovement)
 	{
-		final I_M_Warehouse warehouse = InterfaceWrapperHelper.loadOutOfTrx(warehouseId, I_M_Warehouse.class);
+		final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
 		// Make sure all HUs have ThreadInherited transaction (in order to use caching)
 		InterfaceWrapperHelper.setThreadInheritedTrxName(hus);
@@ -131,9 +135,9 @@ public class HUInternalUseInventoryProducer
 				.disable(); // we assume the inventory destination will do that
 
 		// Inventory allocation destination
-		final int materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
+		final DocTypeId materialDisposalDocTypeId = getInventoryDocTypeId(warehouse);
 		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(
-				warehouse,
+				warehouseId,
 				materialDisposalDocTypeId,
 				activityId,
 				description);
@@ -252,7 +256,7 @@ public class HUInternalUseInventoryProducer
 		return _docSubType;
 	}
 
-	private int getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
+	private DocTypeId getInventoryDocTypeId(@NonNull final I_M_Warehouse warehouse)
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
@@ -260,7 +264,7 @@ public class HUInternalUseInventoryProducer
 				.adClientId(warehouse.getAD_Client_ID())
 				.adOrgId(warehouse.getAD_Org_ID())
 				.build();
-		return docTypeDAO.getDocTypeId(query).getRepoId();
+		return docTypeDAO.getDocTypeId(query);
 	}
 
 	/**
