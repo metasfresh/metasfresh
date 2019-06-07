@@ -5,7 +5,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
 
 import de.metas.process.PInstanceId;
@@ -101,11 +100,16 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		Check.assume(outputDirectory.canWrite(), "Parameter OutputDirectory is a directory, but this process does not have write-access; OutputDirectory={}", outputDirectory);
 
 		final FileFilter fileFilter = new WildcardFileFilter(importFileWildcard);
-		final File[] filesToImport = inputDirectory.listFiles(fileFilter);
+
+		final File[] filesToImport = Check.assumeNotNull(
+				inputDirectory.listFiles(fileFilter),
+				"filesToImport may not be null; inputDirectory={}; fileFilter={}",
+				inputDirectory,
+				fileFilter);
 
 		final Mutable<Boolean> allFilesImported = new Mutable<>(true);
 
-		for (final File fileToImport : Objects.requireNonNull(filesToImport))
+		for (final File fileToImport : filesToImport)
 		{
 			trxManager.run(() -> {
 
