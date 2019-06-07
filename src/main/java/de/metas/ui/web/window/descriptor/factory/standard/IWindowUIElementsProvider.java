@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.List;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -32,7 +33,7 @@ import org.compiere.model.I_AD_UI_Section;
 
 interface IWindowUIElementsProvider
 {
-	List<I_AD_UI_Section> getUISections(int AD_Tab_ID);
+	List<I_AD_UI_Section> getUISections(AdTabId adTabId);
 
 	List<I_AD_UI_Column> getUIColumns(I_AD_UI_Section uiSection);
 
@@ -40,7 +41,7 @@ interface IWindowUIElementsProvider
 
 	List<I_AD_UI_Element> getUIElements(I_AD_UI_ElementGroup uiElementGroup);
 
-	List<I_AD_UI_Element> getUIElementsOfTypeLabels(int adTabId);
+	List<I_AD_UI_Element> getUIElementsOfTypeLabels(AdTabId adTabId);
 
 	List<I_AD_UI_ElementField> getUIElementFields(I_AD_UI_Element uiElement);
 
