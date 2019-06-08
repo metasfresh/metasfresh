@@ -25,7 +25,6 @@ import java.io.Closeable;
  */
 
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.adempiere.ad.persistence.TableModelClassLoader;
@@ -38,6 +37,9 @@ import org.compiere.model.IQuery;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
+import de.metas.dao.selection.QuerySelectionHelper;
+import de.metas.dao.selection.QuerySelectionHelper.UUISelection;
+import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -64,7 +66,7 @@ import lombok.NonNull;
 	private final String querySelectionUUID;
 	private final String trxName;
 	/** How many rows are in our selection */
-	private final int rowsCount;
+	private final long rowsCount;
 	/**
 	 * How many rows were fetched from our selection until now.
 	 *
@@ -98,7 +100,6 @@ import lombok.NonNull;
 
 		// Check.assume(clazz != null, "clazz != null"); // class can be null
 		this.clazz = clazz;
-		this.querySelectionUUID = UUID.randomUUID().toString();
 
 		this.trxName = query.getTrxName();
 
@@ -111,7 +112,9 @@ import lombok.NonNull;
 
 		//
 		// Select the records using the original query and INSERT their IDs to our T_Query_Selection
-		this.rowsCount = QuerySelectionHelper.createUUIDSelection(query, querySelectionUUID);
+		final UUISelection uuidSelection = QuerySelectionHelper.createUUIDSelection(query);
+		this.rowsCount = uuidSelection.getSize();
+		this.querySelectionUUID = uuidSelection.getUuid();
 
 		//
 		// If model class is null (which it currently is allowed to be!), then find our class to use from the table name
@@ -160,7 +163,7 @@ import lombok.NonNull;
 	 * @param model
 	 * @return
 	 */
-	private final boolean isValidModel(final ET model)
+	private boolean isValidModel(final ET model)
 	{
 		//
 		// Make sure the ID column has a not null value.

@@ -1,10 +1,12 @@
-package org.adempiere.ad.dao.impl;
+package de.metas.dao.selection;
 
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
-import org.adempiere.ad.dao.model.I_T_Query_Selection_ToDelete;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -13,6 +15,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,6 +79,7 @@ public class QuerySelectionToDeleteHelper
 				.registerHandlingMethod(trx -> scheduleDeleteSelectionsNow(uuids));
 	}
 
+	/** Inserts the uuids in a hardcoded way, with one DB statement per 1000 uuids */
 	private static void scheduleDeleteSelectionsNow(final Set<String> uuids)
 	{
 		if (uuids.isEmpty())
@@ -133,6 +138,28 @@ public class QuerySelectionToDeleteHelper
 		// Tag scheduled IDs
 		final String executorId = UUID.randomUUID().toString();
 		{
+			Services.get(IQueryBL.class)
+			.createQueryBuilder(I_T_Query_Selection_ToDelete.class)
+			.addEqualsFilter(I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID, null)
+			.create()
+			.updateDirectly(new ISqlQueryUpdater<I_T_Query_Selection_ToDelete>()
+			{
+
+				@Override
+				public boolean update(I_T_Query_Selection_ToDelete model)
+				{
+					// TODO Auto-generated method stub
+					return false;
+				}
+
+				@Override
+				public String getSql(Properties ctx, List<Object> params)
+				{
+					// TODO Auto-generated method stub
+					return null;
+				}
+			});
+
 			final String sql = "UPDATE " + I_T_Query_Selection_ToDelete.Table_Name + " SET "
 					+ I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
 					+ " WHERE " + I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + " IS NULL";

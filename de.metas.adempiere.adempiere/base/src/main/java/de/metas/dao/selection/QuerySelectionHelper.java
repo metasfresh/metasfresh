@@ -1,16 +1,22 @@
-package org.adempiere.ad.dao.impl;
+package de.metas.dao.selection;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
-import org.adempiere.ad.dao.model.I_T_Query_Selection_Metadata;
+import org.adempiere.ad.dao.impl.TypedSqlQuery;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
+import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -46,11 +52,10 @@ public class QuerySelectionHelper
 	/**
 	 * Uses the given query and uuid to insert records into the {@code T_Query_Selection} table.
 	 */
-	public int createUUIDSelection(
-			@NonNull final TypedSqlQuery<?> query,
-			@NonNull final String querySelectionUUID)
+	public UUISelection createUUIDSelection(@NonNull final TypedSqlQuery<?> query)
 	{
-		insertSelectionMetadata(query, querySelectionUUID);
+		// insertSelectionMetadata(query, querySelectionUUID);
+
 
 		final String tableName = query.getTableName();
 		final String keyColumnNameFQ = tableName + "." + query.getKeyColumnName();
@@ -73,6 +78,8 @@ public class QuerySelectionHelper
 				.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
 				.append(")");
 
+		final String querySelectionUUID = UUID.randomUUID().toString();
+
 		final StringBuilder sqlSelectBuilder = new StringBuilder()
 				.append(" SELECT ")
 				.append(DB.TO_STRING(querySelectionUUID))
@@ -89,6 +96,7 @@ public class QuerySelectionHelper
 
 		final String trxName = query.getTrxName();
 
+		final Timestamp now = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, "select now()");
 		final int rowsCount = DB.executeUpdateEx(sql,
 				params == null ? null : params.toArray(),
 				trxName);
@@ -98,43 +106,46 @@ public class QuerySelectionHelper
 			logger.info("sql=" + sql + ", params=" + params + ", trxName=" + trxName + ", rowsCount=" + rowsCount);
 		}
 
-		return rowsCount;
+		return new UUISelection(
+				rowsCount,
+				querySelectionUUID,
+				Instant.ofEpochMilli(now.getTime()));
 	}
 
-	private void insertSelectionMetadata(final TypedSqlQuery<?> query, final String querySelectionUUID)
+	@Value
+	public static class UUISelection
 	{
-		final String sqlInsertIntoMetadata = new StringBuilder()
-				.append("INSERT INTO ")
-				.append(I_T_Query_Selection_Metadata.Table_Name)
-				.append(" (")
-				.append(I_T_Query_Selection_Metadata.COLUMNNAME_UUID)
-				.append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Table)
-				.append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Column)
-				.append(") VALUE (")
-				.append(DB.TO_STRING(querySelectionUUID))
-				.append(", ").append(query.getTableName())
-				.append(", ").append(query.getKeyColumnName())
-				.append(")")
-				.toString();
-		DB.executeUpdateEx(sqlInsertIntoMetadata, query.getTrxName());
+		int size;
+		String uuid;
+		Instant time;
 	}
+
+	// private void insertSelectionMetadata(final TypedSqlQuery<?> query, final String querySelectionUUID)
+	// {
+	// final String sqlInsertIntoMetadata = new StringBuilder()
+	// .append("INSERT INTO ")
+	// .append(I_T_Query_Selection_Metadata.Table_Name)
+	// .append(" (")
+	// .append(I_T_Query_Selection_Metadata.COLUMNNAME_UUID)
+	// .append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Table)
+	// .append(", ").append(I_T_Query_Selection_Metadata.COLUMNNAME_Column)
+	// .append(") VALUE (")
+	// .append(DB.TO_STRING(querySelectionUUID))
+	// .append(", ").append(query.getTableName())
+	// .append(", ").append(query.getKeyColumnName())
+	// .append(")")
+	// .toString();
+	// DB.executeUpdateEx(sqlInsertIntoMetadata, query.getTrxName());
+	// }
 
 	public <T, ET extends T> TypedSqlQuery<ET> createUUIDSelectionQuery(
 			@NonNull final IContextAware ctx,
 			@NonNull final Class<ET> clazz,
 			@NonNull final String querySelectionUUID)
 	{
-
-		I_T_Query_Selection_Metadata metadata = new TypedSqlQuery<I_T_Query_Selection_Metadata>(
-				ctx.getCtx(),
-				I_T_Query_Selection_Metadata.class,
-				I_T_Query_Selection_Metadata.COLUMNNAME_UUID + "=?",
-				ctx.getTrxName())
-						.setParameters(querySelectionUUID)
-						.firstOnly();
-
-		final String tableName = metadata.getTable();
-		final String keyColumnNameFQ = tableName + "." + metadata.getColumn();
+		final String tableName = InterfaceWrapperHelper.getTableName(clazz);
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
+		final String keyColumnNameFQ = tableName + "." + keyColumnName;
 
 		//
 		// Build the query used to retrieve models by querying the selection.
@@ -153,10 +164,9 @@ public class QuerySelectionHelper
 		final String selectionWhereClause = "s.ZZ_UUID=?";
 		final String selectionOrderBy = "s." + SELECTION_LINE_ALIAS;
 
-		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<>(
+		final TypedSqlQuery<ET> querySelection = new TypedSqlQuery<ET>(
 				ctx.getCtx(),
 				clazz,
-				tableName,
 				selectionWhereClause,
 				ctx.getTrxName())
 						.setParameters(querySelectionUUID)

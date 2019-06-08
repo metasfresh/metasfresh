@@ -39,14 +39,13 @@ import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
-import org.adempiere.ad.dao.pagination.POBufferedPageThingie;
-import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBMoreThenOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.TokenizedStringBuilder;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -57,6 +56,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -115,18 +116,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 	private List<SqlQueryUnion<T>> unions;
 
-	/**
-	 *
-	 * @param ctx
-	 * @param tableName
-	 * @param whereClause
-	 * @param trxName
-	 */
-	protected TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String tableName, final String whereClause, final String trxName)
+	protected TypedSqlQuery(
+			@NonNull final Properties ctx,
+			final Class<T> modelClass,
+			final String tableName,
+			final String whereClause,
+			final String trxName)
 	{
-		super();
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		this.modelClass = modelClass;
 		this.tableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
 
@@ -136,7 +132,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.trxName = trxName;
 	}
 
-	public TypedSqlQuery(final Properties ctx, final Class<T> modelClass, final String whereClause, final String trxName)
+	public TypedSqlQuery(
+			final Properties ctx,
+			final Class<T> modelClass,
+			final String whereClause,
+			final String trxName)
 	{
 		this(ctx,
 				modelClass,
@@ -890,7 +890,9 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public <ET extends T> QueryResultPage<ET> paginate(Class<ET> clazz, int pageSize) throws DBException
 	{
-		return new POBufferedPageThingie<T, ET>(clazz).loadFirstPage(this, pageSize);
+		return Adempiere
+				.getBean(PaginationService.class)
+				.loadFirstPage(clazz, this, pageSize);
 	}
 
 	public <ET extends T> Iterator<ET> iterate(final Class<ET> clazz, final boolean guaranteed) throws DBException

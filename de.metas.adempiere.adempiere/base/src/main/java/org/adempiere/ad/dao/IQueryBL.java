@@ -24,11 +24,11 @@ package org.adempiere.ad.dao;
 
 import java.util.Properties;
 
-import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.util.ISingletonService;
 
 public interface IQueryBL extends ISingletonService

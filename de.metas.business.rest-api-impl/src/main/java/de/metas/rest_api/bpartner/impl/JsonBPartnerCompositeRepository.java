@@ -2,12 +2,18 @@ package de.metas.rest_api.bpartner.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import java.util.Collection;
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -74,6 +80,48 @@ public class JsonBPartnerCompositeRepository
 		return jsonBPartnerComposite.build();
 	}
 
+	public ImmutableList<JsonBPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
+	{
+		final List<I_C_BPartner> bPartnerRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bPartnerIds)
+				.create()
+				.list();
+
+		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
+				.create()
+				.list();
+		final ImmutableListMultimap<Integer, I_C_BPartner_Location> id2Locations = Multimaps.index(bPartnerLocationRecords, I_C_BPartner_Location::getC_BPartner_ID);
+
+		final List<I_AD_User> contactRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerIds)
+				.create()
+				.list();
+		final ImmutableListMultimap<Integer, I_AD_User> id2Contacts = Multimaps.index(contactRecords, I_AD_User::getC_BPartner_ID);
+
+		final ImmutableList.Builder<JsonBPartnerComposite> result = ImmutableList.builder();
+
+		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
+		{
+			final int id = bPartnerRecord.getC_BPartner_ID();
+
+			final JsonBPartnerComposite jsonBPartnerComposite = JsonBPartnerComposite.builder()
+					.bpartner(ofRecord(bPartnerRecord))
+					.contacts(ofContactRecords(id2Contacts.get(id)))
+					.locations(ofLocationRecords(id2Locations.get(id)))
+					.build();
+
+			result.add(jsonBPartnerComposite);
+		}
+		return result.build();
+	}
+
 	private JsonBPartner ofRecord(@NonNull final I_C_BPartner bpartnerRecord)
 	{
 		return JsonBPartner.builder()
@@ -88,6 +136,13 @@ public class JsonBPartnerCompositeRepository
 				// .phone(bpartnerRecord.get)
 				.url(bpartnerRecord.getURL())
 				.build();
+	}
+
+	private ImmutableList<JsonBPartnerLocation> ofLocationRecords(@NonNull final ImmutableList<I_C_BPartner_Location> immutableList)
+	{
+		return immutableList.stream()
+				.map(this::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private JsonBPartnerLocation ofRecord(@NonNull final I_C_BPartner_Location bPartnerLocationRecord)
@@ -113,6 +168,13 @@ public class JsonBPartnerCompositeRepository
 		}
 
 		return location.build();
+	}
+
+	private ImmutableList<JsonContact> ofContactRecords(@NonNull final ImmutableList<I_AD_User> immutableList)
+	{
+		return immutableList.stream()
+				.map(this::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private JsonContact ofRecord(I_AD_User contactRecord)

@@ -1,6 +1,8 @@
-package org.adempiere.ad.dao.pagination;
+package de.metas.dao.selection.pagination;
 
 import org.adempiere.exceptions.AdempiereException;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,13 +26,13 @@ import org.adempiere.exceptions.AdempiereException;
  * #L%
  */
 
-public class PaginationException extends AdempiereException
+public class UnknownPageIdentifierException extends AdempiereException
 {
-	public PaginationException(String message)
-	{
-		super(message);
-	}
+	private static final long serialVersionUID = -1833126347909632687L;
 
-	private static final long serialVersionUID = 2037196076279971989L;
+	public UnknownPageIdentifierException(@NonNull final String pageIdentifier)
+	{
+		super(pageIdentifier);
+	}
 
 }

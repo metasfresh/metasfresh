@@ -39,7 +39,7 @@ public class JsonPagingDescriptor
 	long resultTimestamp;
 
 	@ApiModelProperty("Total number of results. If bigger than `pageSize`, the API client can use the given `nextPage` to retrieve the next page.")
-	long totalSize;
+	int totalSize;
 
 	@ApiModelProperty("Number of results in the current page.")
 	int pageSize;

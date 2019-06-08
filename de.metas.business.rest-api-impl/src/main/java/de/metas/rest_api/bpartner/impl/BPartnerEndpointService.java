@@ -7,20 +7,26 @@ import java.time.Instant;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.interfaces.I_C_BPartner;
+import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
+import de.metas.rest_api.model.I_C_BPartner_Recent_ID;
 import de.metas.rest_api.utils.Identifier;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalId;
@@ -121,31 +127,82 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 	}
 
 	@Override
-	public Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(Long epochMilli, String nextPageId)
+	public Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(
+			final Long epochMilli,
+			final String nextPageId)
 	{
-		final QueryResultPage<I_C_BPartner> page;
+		final QueryResultPage<I_C_BPartner_Recent_ID> page;
+		try
+		{
+			page = retrievePage(epochMilli, nextPageId);
+		}
+		catch (UnknownPageIdentifierException e)
+		{
+			return Optional.empty();
+		}
+
+		final JsonPagingDescriptor jsonPagingDescriptor = createJsonPagingDescriptor(page);
+
+		final ImmutableList<JsonBPartnerComposite> jsonBPartners = retrieveJsonBPartnerComposites(page);
+
+		final JsonBPartnerCompositeList result = JsonBPartnerCompositeList.builder()
+				.items(jsonBPartners)
+				.pagingDescriptor(jsonPagingDescriptor)
+				.build();
+
+		return Optional.of(result);
+	}
+
+	private QueryResultPage<I_C_BPartner_Recent_ID> retrievePage(Long epochMilli, String nextPageId)
+	{
+		final QueryResultPage<I_C_BPartner_Recent_ID> page;
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		if (isEmpty(nextPageId, true))
 		{
 			// TODO: instead of C_BPArtner, load a view that contains *all* the IDs we need to load it all
-			page = Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner.class)
-					.addEqualsFilter(I_C_BPartner.COLUMNNAME_Updated, Timestamp.from(Instant.ofEpochMilli(epochMilli)))
+			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_ID.class)
+					.addEqualsFilter(I_C_BPartner_Recent_ID.COLUMNNAME_Updated, Timestamp.from(Instant.ofEpochMilli(epochMilli)))
 					.create()
-					.paginate(I_C_BPartner.class, 50);
+					.paginate(I_C_BPartner_Recent_ID.class, 50);
 
 		}
 		else
 		{
-			// nextPaveIdpage.getNextPageDescriptor().getCombinedUid();
-			page = Services.get(IQueryBL.class).retrieveNextPage(I_C_BPartner.class, nextPageId);
+			page = queryBL.retrieveNextPage(I_C_BPartner_Recent_ID.class, nextPageId);
 		}
+		return page;
+	}
 
-		// TODO extract IDs and load all contacts and locations in one select each;
-		return null;
+	private ImmutableList<JsonBPartnerComposite> retrieveJsonBPartnerComposites(@NonNull final QueryResultPage<I_C_BPartner_Recent_ID> page)
+	{
+		final ImmutableList<BPartnerId> bPartnerIds = page
+				.getItems()
+				.stream()
+				.map(i -> BPartnerId.ofRepoId(i.getC_BPartner_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<JsonBPartnerComposite> jsonBPartners = jsonBPartnerCompositeRepository.getByIds(bPartnerIds);
+		return jsonBPartners;
+	}
+
+	private JsonPagingDescriptor createJsonPagingDescriptor(@NonNull final QueryResultPage<I_C_BPartner_Recent_ID> page)
+	{
+		final JsonPagingDescriptorBuilder jsonPagingDescriptor = JsonPagingDescriptor.builder()
+				.pageSize(page.getItems().size())
+				.resultTimestamp(page.getResultTimestamp().toEpochMilli())
+				.totalSize(page.getTotalSize());
+		final PageDescriptor nextPageDescriptor = page.getNextPageDescriptor();
+		if (nextPageDescriptor != null)
+		{
+			jsonPagingDescriptor.nextPage(nextPageDescriptor.getPageIdentifier().getCombinedUid());
+		}
+		return jsonPagingDescriptor.build();
 	}
 
 	@Override
 	public JsonContact retrieveContact(String contactIdentifier)
 	{
+
 		// TODO Auto-generated method stub
 		return null;
 	}

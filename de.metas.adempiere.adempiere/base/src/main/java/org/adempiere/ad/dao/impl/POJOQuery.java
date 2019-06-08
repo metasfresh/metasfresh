@@ -43,7 +43,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.pagination.QueryResultPage;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,6 +54,7 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;

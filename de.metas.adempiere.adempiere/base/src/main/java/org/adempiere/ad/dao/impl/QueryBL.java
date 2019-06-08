@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,8 +36,11 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
-import org.adempiere.ad.dao.pagination.POBufferedPageThingie;
-import org.adempiere.ad.dao.pagination.QueryResultPage;
+import org.compiere.Adempiere;
+
+import de.metas.dao.selection.pagination.PaginationService;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import lombok.NonNull;
 
 public class QueryBL implements IQueryBL
 {
@@ -128,7 +133,7 @@ public class QueryBL implements IQueryBL
 		return sb.toString();
 	}
 
-	private <T> List<IQueryFilter<T>> extractAllFilters(final IQueryFilter<T> filter)
+	private <T> List<IQueryFilter<T>> extractAllFilters(@Nullable final IQueryFilter<T> filter)
 	{
 		if (filter == null)
 		{
@@ -153,8 +158,12 @@ public class QueryBL implements IQueryBL
 	}
 
 	@Override
-	public <T> QueryResultPage<T> retrieveNextPage(Class<T> clazz, String next)
+	public <T> QueryResultPage<T> retrieveNextPage(
+			@NonNull final Class<T> clazz,
+			@NonNull final String next)
 	{
-		return new POBufferedPageThingie<T, T>(clazz).loadPage(next);
+		return Adempiere
+				.getBean(PaginationService.class)
+				.loadPage(clazz, next);
 	}
 }

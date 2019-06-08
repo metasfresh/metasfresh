@@ -88,7 +88,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
-	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
+	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, String gln);
 
