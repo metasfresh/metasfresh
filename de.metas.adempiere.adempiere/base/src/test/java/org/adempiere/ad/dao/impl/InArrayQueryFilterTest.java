@@ -31,6 +31,8 @@ import java.util.Properties;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.util.lang.RepoIdAware;
@@ -120,6 +122,7 @@ public class InArrayQueryFilterTest
 	@VisibleForTesting
 	public static final class RepoId implements RepoIdAware
 	{
+		@JsonCreator
 		public static RepoId ofRepoId(final int repoId)
 		{
 			return new RepoId(repoId);
@@ -131,6 +134,13 @@ public class InArrayQueryFilterTest
 		}
 
 		int repoId;
+
+		@Override
+		@JsonValue
+		public int getRepoId()
+		{
+			return repoId;
+		}
 	}
 
 	/**

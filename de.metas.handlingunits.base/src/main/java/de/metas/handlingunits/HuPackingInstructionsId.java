@@ -2,6 +2,9 @@ package de.metas.handlingunits;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,6 +37,7 @@ import lombok.Value;
 @Value
 public class HuPackingInstructionsId implements RepoIdAware
 {
+	@JsonCreator
 	public static HuPackingInstructionsId ofRepoId(final int repoId)
 	{
 		if (repoId == TEMPLATE.repoId)
@@ -68,6 +72,13 @@ public class HuPackingInstructionsId implements RepoIdAware
 	private HuPackingInstructionsId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public static boolean equals(final HuPackingInstructionsId o1, final HuPackingInstructionsId o2)

@@ -43,7 +43,6 @@ public class AcctSchemaId implements RepoIdAware
 		return new AcctSchemaId(repoId);
 	}
 
-	@JsonCreator
 	public static AcctSchemaId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId <= 0)

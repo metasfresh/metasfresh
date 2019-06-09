@@ -1,5 +1,8 @@
 package de.metas.uom;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -17,11 +20,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +34,7 @@ public class UomId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static UomId ofRepoId(final int repoId)
 	{
 		return new UomId(repoId);
@@ -49,5 +53,12 @@ public class UomId implements RepoIdAware
 	private UomId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_UOM_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

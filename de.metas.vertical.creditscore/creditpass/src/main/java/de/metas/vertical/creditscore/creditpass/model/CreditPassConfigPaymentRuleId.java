@@ -23,6 +23,9 @@
 
 package de.metas.vertical.creditscore.creditpass.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -30,6 +33,7 @@ import lombok.Value;
 @Value
 public class CreditPassConfigPaymentRuleId implements RepoIdAware
 {
+	@JsonCreator
 	public static CreditPassConfigPaymentRuleId ofRepoId(final int repoId)
 	{
 		return new CreditPassConfigPaymentRuleId(repoId);
@@ -47,4 +51,10 @@ public class CreditPassConfigPaymentRuleId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

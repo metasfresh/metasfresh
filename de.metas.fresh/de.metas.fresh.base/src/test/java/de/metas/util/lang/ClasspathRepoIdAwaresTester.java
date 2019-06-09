@@ -50,10 +50,16 @@ public class ClasspathRepoIdAwaresTester
 	private final HashSet<String> skip_ofRepoIdOrNull_classNames = new HashSet<>();
 	private final HashSet<String> skip_serializeAsNumber_classNames = new HashSet<>();
 
-	public ClasspathRepoIdAwaresTester skip_ofRepoId_tests(@NonNull final String className)
+	public ClasspathRepoIdAwaresTester skip(@NonNull final Class<?> clazz)
+	{
+		return skip(clazz.getName());
+	}
+
+	public ClasspathRepoIdAwaresTester skip(@NonNull final String className)
 	{
 		skip_ofRepoId_classNames.add(className);
 		skip_ofRepoIdOrNull_classNames.add(className);
+		skip_serializeAsNumber_classNames.add(className);
 		return this;
 	}
 

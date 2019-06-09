@@ -1,5 +1,8 @@
 package de.metas.shipper.gateway.spi;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -31,6 +34,7 @@ public class DeliveryOrderId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static DeliveryOrderId ofRepoId(final int repoId)
 	{
 		return new DeliveryOrderId(repoId);
@@ -44,5 +48,12 @@ public class DeliveryOrderId implements RepoIdAware
 	private DeliveryOrderId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

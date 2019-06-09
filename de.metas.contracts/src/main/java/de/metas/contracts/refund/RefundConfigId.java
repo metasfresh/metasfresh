@@ -2,6 +2,9 @@ package de.metas.contracts.refund;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -31,6 +34,7 @@ import lombok.Value;
 @Value
 public class RefundConfigId implements RepoIdAware
 {
+	@JsonCreator
 	public static RefundConfigId ofRepoId(int repoId)
 	{
 		return new RefundConfigId(repoId);
@@ -46,5 +50,12 @@ public class RefundConfigId implements RepoIdAware
 	private RefundConfigId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

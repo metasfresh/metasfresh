@@ -1,5 +1,8 @@
 package de.metas.dunning_gateway.spi.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -28,6 +31,7 @@ import lombok.Value;
 @Value
 public class BPartnerId implements RepoIdAware
 {
+	@JsonCreator
 	public static BPartnerId ofRepoId(final int repoId)
 	{
 		return new BPartnerId(repoId);
@@ -43,5 +47,12 @@ public class BPartnerId implements RepoIdAware
 	private BPartnerId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

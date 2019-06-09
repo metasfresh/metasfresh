@@ -2,6 +2,9 @@ package de.metas.vertical.creditscore.base.spi.repository;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /*
  * #%L
  * de.metas.vertical.creditscore.base.spi.repository
@@ -31,6 +34,7 @@ import lombok.Value;
 @Value
 public class TransactionResultId implements RepoIdAware
 {
+	@JsonCreator
 	public static TransactionResultId ofRepoId(final int repoId)
 	{
 		return new TransactionResultId(repoId);
@@ -48,4 +52,10 @@ public class TransactionResultId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

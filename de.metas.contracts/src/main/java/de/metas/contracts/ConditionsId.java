@@ -1,5 +1,8 @@
 package de.metas.contracts;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -31,6 +34,7 @@ public class ConditionsId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static ConditionsId ofRepoId(final int repoId)
 	{
 		return new ConditionsId(repoId);
@@ -44,5 +48,12 @@ public class ConditionsId implements RepoIdAware
 	private ConditionsId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

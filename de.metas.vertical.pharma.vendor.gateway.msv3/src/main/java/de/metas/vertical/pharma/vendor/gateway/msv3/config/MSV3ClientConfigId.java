@@ -1,5 +1,8 @@
 package de.metas.vertical.pharma.vendor.gateway.msv3.config;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -31,6 +34,7 @@ public class MSV3ClientConfigId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static MSV3ClientConfigId ofRepoId(final int repoId)
 	{
 		return new MSV3ClientConfigId(repoId);
@@ -44,5 +48,12 @@ public class MSV3ClientConfigId implements RepoIdAware
 	private MSV3ClientConfigId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

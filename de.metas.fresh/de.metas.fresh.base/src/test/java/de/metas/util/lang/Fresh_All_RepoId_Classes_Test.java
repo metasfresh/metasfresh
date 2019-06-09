@@ -30,21 +30,19 @@ public class Fresh_All_RepoId_Classes_Test
 	public void test()
 	{
 		new ClasspathRepoIdAwaresTester()
-				.skip_serializeAsNumber_tests()
+				.skip(de.metas.bpartner.BPartnerLocationId.class)
+				.skip(de.metas.bpartner.BPartnerContactId.class)
 				//
-				.skip_ofRepoId_tests(de.metas.bpartner.BPartnerLocationId.class.getName())
-				.skip_ofRepoId_tests(de.metas.bpartner.BPartnerContactId.class.getName())
+				.skip(de.metas.phonecall.PhonecallSchemaVersionId.class)
+				.skip(de.metas.phonecall.PhonecallSchemaVersionLineId.class)
 				//
-				.skip_ofRepoId_tests(de.metas.phonecall.PhonecallSchemaVersionId.class.getName())
-				.skip_ofRepoId_tests(de.metas.phonecall.PhonecallSchemaVersionLineId.class.getName())
+				.skip(org.adempiere.warehouse.LocatorId.class)
 				//
-				.skip_ofRepoId_tests(org.adempiere.warehouse.LocatorId.class.getName())
+				.skip(de.metas.customs.CustomsInvoiceLineId.class)
+				.skip(de.metas.shipment.ShipmentDeclarationLineId.class)
 				//
-				.skip_ofRepoId_tests(de.metas.customs.CustomsInvoiceLineId.class.getName())
-				.skip_ofRepoId_tests(de.metas.shipment.ShipmentDeclarationLineId.class.getName())
-				//
-				.skip_ofRepoId_tests(org.eevolution.api.PPOrderRoutingActivityId.class.getName())
-				.skip_ofRepoId_tests(de.metas.material.planning.pporder.PPRoutingActivityId.class.getName())
+				.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
+				.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
 				//
 				.test();
 	}
