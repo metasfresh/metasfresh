@@ -2,11 +2,7 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
   [
     {
       "id": 100013,
-      "asiId": {
-        "repoId": 100008,
-        "none": false,
-        "regular": true
-      },
+      "asiId": 100008,
       "inventoryId": 100012,
       "productId": 40,
       "storageAttributesKey": "10§&§11§&§12",
@@ -17,9 +13,7 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
       "singleHUAggregation": false,
       "inventoryLineHUs": [
         {
-          "id": {
-            "repoId": 100014
-          },
+          "id": 100014,
           "huId": {
             "repoId": 100
           },
@@ -37,9 +31,7 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
           }
         },
         {
-          "id": {
-            "repoId": 100015
-          },
+          "id": 100015,
           "huId": {
             "repoId": 200
           },
