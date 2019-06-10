@@ -40,7 +40,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.vertical.pharma.securpharm.attribute.ScannedAttributeValue;
+import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -113,8 +113,8 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 			final BPartnerId manufacturerId = prod.getManufacturerId();
 			if (!BPartnerId.equals(vendorId, manufacturerId))
 			{
-				final ScannedAttributeValue scannedAttributeValue = ScannedAttributeValue.ofNullableCode(attributes.getValueAsString(AttributeConstants.ATTR_Scanned));
-				if (scannedAttributeValue == ScannedAttributeValue.NO)
+				final SecurPharmAttributesStatus status = SecurPharmAttributesStatus.ofNullableCode(attributes.getValueAsString(AttributeConstants.ATTR_Scanned));
+				if (status == null || status.isUnknown())
 				{
 					return ProcessPreconditionsResolution.rejectWithInternalReason("Vendor is different from manufacturer and product was not scanned");
 				}

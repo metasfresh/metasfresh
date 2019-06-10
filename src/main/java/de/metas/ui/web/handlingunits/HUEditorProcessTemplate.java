@@ -44,6 +44,8 @@ import lombok.NonNull;
  */
 public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 {
+	protected final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+
 	protected final boolean isHUEditorView()
 	{
 		return isViewClass(HUEditorView.class);
@@ -98,7 +100,6 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 
 	protected final Stream<I_M_HU> streamSelectedHUs(@NonNull final HUEditorRowFilter filter)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		final Stream<HuId> huIds = streamSelectedHUIds(filter);
 		return StreamUtils
 				.dice(huIds, 100)
