@@ -60,7 +60,6 @@ public class AttachmentEntryService
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentLogRepository attachmentLogRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
-	private final AttachmentLogFactory attachmentLogFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
 
@@ -68,9 +67,8 @@ public class AttachmentEntryService
 	public static AttachmentEntryService createInstanceForUnitTesting()
 	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final AttachmentLogFactory attachmentLogFactory = new AttachmentLogFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
-		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository(attachmentLogFactory);
+		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository();
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
@@ -78,7 +76,6 @@ public class AttachmentEntryService
 				attachmentEntryRepository,
 				attachmentLogRepository,
 				attachmentEntryFactory,
-				attachmentLogFactory,
 				attachmentMigrationService,
 				attachmentHandlerRegistry);
 	}
@@ -92,14 +89,12 @@ public class AttachmentEntryService
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
-			@NonNull final AttachmentLogFactory attachmentLogFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
 			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
 		this.attachmentLogRepository=attachmentLogRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
-		this.attachmentLogFactory = attachmentLogFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
 	}
@@ -275,7 +270,10 @@ public class AttachmentEntryService
 
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{
-			final AttachmentLog attachmentLog = AttachmentLog.builder().attachmentEntry(attachment).recordRef(tableRecordReference).description((String)null).build();
+			final AttachmentLog attachmentLog = AttachmentLog.builder()
+					                                         .attachmentEntry(attachment)
+					                                         .recordRef(tableRecordReference)
+					                                         .build();
 			attachmentLogRepository.save(attachmentLog);
 			attachmentEntryRepository.delete(withRemovedLinkedRecordAndId);
 		}
@@ -291,8 +289,8 @@ public class AttachmentEntryService
 	{
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
-				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
-				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
+				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
 				.collect(ImmutableList.toImmutableList());
 	}

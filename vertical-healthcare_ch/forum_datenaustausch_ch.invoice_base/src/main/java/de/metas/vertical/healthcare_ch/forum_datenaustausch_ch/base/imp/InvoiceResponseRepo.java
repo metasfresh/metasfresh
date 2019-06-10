@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
@@ -148,9 +149,12 @@ public class InvoiceResponseRepo
 			@NonNull final ImportedInvoiceResponse response,
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
+		final AttachmentTags attachmentTags = AttachmentTags.builder()
+				.tags(response.getAdditionalTags())
+				.build();
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
 				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
-				.tags(response.getAdditionalTags())
+				.tags(attachmentTags)
 				.build();
 
 		attachmentEntryService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);

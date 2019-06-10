@@ -3,8 +3,6 @@ package de.metas.dunning.export;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -18,10 +16,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentTags;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -33,6 +31,7 @@ import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
 import de.metas.util.Services;
 import de.metas.util.lang.SoftwareVersion;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -117,7 +116,7 @@ public class DunningToExportFactory
 			final AttachmentEntryQuery query = AttachmentEntryQuery
 					.builder()
 					.referencedRecord(TableRecordReference.of(dunnedInvoiceRecord))
-					.tagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT)
+					.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 					.build();
 			final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
 			for (final AttachmentEntry attachment : attachments)
@@ -128,7 +127,7 @@ public class DunningToExportFactory
 						.fileName(attachment.getFilename())
 						.mimeType(attachment.getMimeType())
 						.data(attachmentData)
-						.tags(attachment.getTags())
+						.tags(attachment.getTags().toMap())
 						.build();
 				dunningAttachments.add(invoiceAttachment);
 			}

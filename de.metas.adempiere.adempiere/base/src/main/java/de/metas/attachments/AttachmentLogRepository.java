@@ -3,6 +3,7 @@ package de.metas.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment_Log;
 import org.springframework.stereotype.Repository;
 
@@ -32,19 +33,27 @@ import lombok.NonNull;
 @Repository
 public class AttachmentLogRepository
 {
-	private final AttachmentLogFactory attachmentLogFactory;
-
-	public AttachmentLogRepository(AttachmentLogFactory attachmentLogFactory)
-	{
-		this.attachmentLogFactory = attachmentLogFactory;
-	}
-
 	public AttachmentLog save(@NonNull final AttachmentLog attachmentLog)
 	{
 		final I_AD_Attachment_Log attachmentLogRecord;
 		attachmentLogRecord = newInstance(I_AD_Attachment_Log.class);
-		attachmentLogFactory.syncToRecord(attachmentLog, attachmentLogRecord);
+		syncToRecord(attachmentLog, attachmentLogRecord);
 		saveRecord(attachmentLogRecord);
 		return attachmentLog;
+	}
+	
+	private void syncToRecord(AttachmentLog attachmentLog, I_AD_Attachment_Log attachmentLogRecord)
+	{
+		attachmentLogRecord.setContentType(attachmentLog.getContentType());
+		attachmentLogRecord.setDescription(attachmentLog.getDescription());
+		attachmentLogRecord.setFileName(attachmentLog.getFilename());
+		attachmentLogRecord.setType(attachmentLog.getType().name());
+		final String urlToBeSynced = attachmentLog.getUrl() != null ? attachmentLog.getUrl().toASCIIString() : null;
+		attachmentLogRecord.setURL(urlToBeSynced);
+		final ITableRecordReference recordRef = attachmentLog.getRecordRef();
+		attachmentLogRecord.setRecord_ID(recordRef.getRecord_ID());
+		attachmentLogRecord.setAD_Table_ID(recordRef.getAD_Table_ID());
+		AttachmentTags attachmentTags=attachmentLog.getAttachmentTags();
+		attachmentLogRecord.setTags(attachmentTags.getTagsAsString());
 	}
 }

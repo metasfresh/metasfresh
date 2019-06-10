@@ -4,8 +4,6 @@ import java.net.URI;
 
 import org.adempiere.util.lang.ITableRecordReference;
 
-import com.google.common.collect.ImmutableMap;
-
 import de.metas.attachments.AttachmentEntry.Type;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,7 +38,7 @@ public final class AttachmentLog
 	private String filename;
 	private Type type;
 	private URI url;
-	private final ImmutableMap<String, String> tags;
+	private final AttachmentTags attachmentTags;
 	private final ITableRecordReference recordRef;
 	private final String contentType;
 	private final String description;
@@ -53,8 +51,8 @@ public final class AttachmentLog
 	{
 		this.filename = attachmentEntry.getFilename();
 		this.type = attachmentEntry.getType();
-		this.tags = attachmentEntry.getTags();
-		this.attachmentEntry=attachmentEntry;
+		this.attachmentTags = attachmentEntry.getTags();
+		this.attachmentEntry = attachmentEntry;
 		this.contentType = attachmentEntry.getMimeType();
 		this.recordRef = recordRef;
 		this.description = description;
