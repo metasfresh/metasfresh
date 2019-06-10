@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.attachments.json.JSONAttachURLRequest;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -117,8 +118,20 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
-		return getDocumentAttachments(windowIdStr, documentId)
+		final boolean allowDelete = isAllowDeletingAttachments();
+
+		final List<JSONAttachment> attachments = getDocumentAttachments(windowIdStr, documentId)
 				.toJson();
+		attachments.forEach(attachment -> attachment.setAllowDelete(allowDelete));
+
+		return attachments;
+	}
+
+	private boolean isAllowDeletingAttachments()
+	{
+		return userSession
+				.getUserRolePermissions()
+				.hasPermission(IUserRolePermissions.PERMISSION_IsAttachmentDeletionAllowed);
 	}
 
 	@GetMapping("/{id}")
@@ -189,6 +202,10 @@ public class DocumentAttachmentsRestController
 	{
 		userSession.assertLoggedIn();
 
+		if (!isAllowDeletingAttachments())
+		{
+			throw new AdempiereException("Delete not allowed");
+		}
 		final DocumentId entryId = DocumentId.of(entryIdStr);
 		getDocumentAttachments(windowIdStr, documentId)
 				.deleteEntry(entryId);

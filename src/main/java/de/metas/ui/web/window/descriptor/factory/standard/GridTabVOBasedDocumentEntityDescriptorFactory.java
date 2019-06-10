@@ -862,7 +862,19 @@ import lombok.NonNull;
 
 	private static ILogicExpression extractMandatoryLogic(@NonNull final GridFieldVO gridFieldVO)
 	{
-		return gridFieldVO.isMandatoryLogicExpression() ? gridFieldVO.getMandatoryLogic() : ConstantLogicExpression.of(gridFieldVO.isMandatory());
+		if(gridFieldVO.isMandatoryLogicExpression())
+		{
+			return gridFieldVO.getMandatoryLogic();
+		}
+		else if (gridFieldVO.isMandatory())
+		{
+			// consider it mandatory only if is displayed
+			return gridFieldVO.getDisplayLogic();
+		}
+		else
+		{
+			return ConstantLogicExpression.FALSE;
+		}
 	}
 
 	private final void collectSpecialField(final DocumentFieldDescriptor.Builder field)

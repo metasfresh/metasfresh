@@ -2,7 +2,9 @@ package de.metas.ui.web.document.filter.provider.locationAreaSearch;
 
 import java.util.Optional;
 
+import de.metas.logging.LogManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -21,6 +23,7 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -57,6 +60,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 	public static final String PARAM_CountryId = "C_Country_ID";
 	public static final String PARAM_Distance = "Distance";
 
+	private final static Logger logger = LogManager.getLogger(LocationAreaSearchDocumentFilterConverter.class);
+
 	private LocationAreaSearchDocumentFilterConverter()
 	{
 	}
@@ -72,12 +77,14 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		if (descriptor == null)
 		{
 			// shall not happen
+			logger.warn("Cannot convert filter to SQL because parameter {} is not set: {}", PARAM_LocationAreaSearchDescriptor, filter);
 			return null;
 		}
 
 		final GeographicalCoordinates addressCoordinates = getAddressCoordinates(filter).orElse(null);
 		if (addressCoordinates == null)
 		{
+			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", filter);
 			return null;
 		}
 
@@ -123,24 +130,23 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		}
 	}
 
-	private static String sqlGeographicalDistance(
+	@NonNull @SuppressWarnings("SameParameterValue") private static String sqlGeographicalDistance(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final String locationTableAlias,
 			@NonNull final GeographicalCoordinates addressCoordinates,
 			final int distanceInKm)
 	{
-		return new StringBuilder()
-				.append("geographical_distance(")
+		return "geographical_distance("
 				//
-				.append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Latitude).append("::real")
-				.append(",").append(locationTableAlias).append(".").append(I_C_Location.COLUMNNAME_Longitude).append("::real")
+				+ locationTableAlias + "." + I_C_Location.COLUMNNAME_Latitude
+				+ "," + locationTableAlias + "." + I_C_Location.COLUMNNAME_Longitude
 				//
-				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLatitude())).append("::real")
-				.append(",").append(sqlParamsOut.placeholder(addressCoordinates.getLongitude())).append("::real")
+				+ "," + sqlParamsOut.placeholder(addressCoordinates.getLatitude())
+				+ "," + sqlParamsOut.placeholder(addressCoordinates.getLongitude())
 				//
-				.append(") <= ").append(sqlParamsOut.placeholder(distanceInKm)).append("::real")
+				+ ") <= " + sqlParamsOut.placeholder(distanceInKm)
 				//
-				.toString();
+				;
 	}
 
 	private Optional<GeographicalCoordinates> getAddressCoordinates(final DocumentFilter filter)
@@ -178,7 +184,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		final CountryId countryId = filter.getParameterValueAsRepoIdOrNull(PARAM_CountryId, CountryId::ofRepoIdOrNull);
 		if (countryId == null)
 		{
-			return null;
+			throw new FillMandatoryException(PARAM_CountryId);
+			//return null;
 		}
 
 		return Services.get(ICountryDAO.class).retrieveCountryCode2ByCountryId(countryId);

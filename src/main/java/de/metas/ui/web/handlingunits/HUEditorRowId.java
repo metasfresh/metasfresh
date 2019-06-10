@@ -10,6 +10,7 @@ import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
@@ -154,8 +155,9 @@ public final class HUEditorRowId
 	{
 		return rowIds.stream()
 				.map(HUEditorRowId::ofDocumentId)
-				.filter(HUEditorRowId::isHU)
+				// .filter(HUEditorRowId::isHU) // accept even CUs (i.e. product storages)
 				.map(HUEditorRowId::getHuId)
+				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -206,7 +208,7 @@ public final class HUEditorRowId
 		return json;
 	}
 
-	private static final String toJson(final HuId huId, final ProductId storageProductId, final HuId topLevelHUId)
+	private static String toJson(final HuId huId, final ProductId storageProductId, final HuId topLevelHUId)
 	{
 		// IMPORTANT: top level row shall be perfectly convertible to integers, else, a lot of APIs could fail
 

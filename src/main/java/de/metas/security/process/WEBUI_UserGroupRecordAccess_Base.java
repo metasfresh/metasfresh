@@ -1,12 +1,14 @@
 package de.metas.security.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -85,7 +87,7 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 	protected final void grantAccessToSelectedRows()
 	{
 		final Principal principal = getPrincipal();
-		final Access permissionToGrant = getPermission();
+		final Set<Access> permissionsToGrant = getPermissionsToGrant();
 
 		final IView view = getView();
 		getSelectedRowIds()
@@ -94,7 +96,7 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 				.forEach(recordRef -> userGroupRecordAccessService.grantAccess(RecordAccessGrantRequest.builder()
 						.recordRef(recordRef)
 						.principal(principal)
-						.permission(permissionToGrant)
+						.permissions(permissionsToGrant)
 						.build()));
 	}
 
@@ -145,14 +147,22 @@ abstract class WEBUI_UserGroupRecordAccess_Base extends ViewBasedProcessTemplate
 		}
 	}
 
-	private Access getPermission()
+	private Set<Access> getPermissionsToGrant()
 	{
 		final Access permission = getPermissionOrNull();
 		if (permission == null)
 		{
 			throw new FillMandatoryException(PARAM_PermissionCode);
 		}
-		return permission;
+
+		if (Access.WRITE.equals(permission))
+		{
+			return ImmutableSet.of(Access.READ, Access.WRITE);
+		}
+		else
+		{
+			return ImmutableSet.of(permission);
+		}
 	}
 
 	private Access getPermissionOrNull()
