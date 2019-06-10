@@ -99,6 +99,10 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_Distance)
 						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Distance))
 						.setWidgetType(DocumentFieldWidgetType.Integer))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorAddress)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorAddress))
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				//
 				.addInternalParameter(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
 				//
