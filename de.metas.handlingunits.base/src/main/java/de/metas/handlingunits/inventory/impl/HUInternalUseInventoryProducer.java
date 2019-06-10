@@ -27,7 +27,6 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Inventory;
-import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -173,10 +172,6 @@ public class HUInternalUseInventoryProducer
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}
 		}
-		//
-		// Send notifications
-		InventoryUserNotificationsProducer.newInstance()
-				.notifyGenerated(inventories);
 
 		return inventories;
 	}

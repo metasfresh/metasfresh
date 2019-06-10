@@ -41,14 +41,17 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_M_Inventory;
 import org.compiere.util.TimeUtil;
@@ -96,7 +99,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryBL;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
@@ -131,6 +133,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 
 	private final LocatorId warehouseLocatorId;
 	private final DocTypeId inventoryDocTypeId;
@@ -218,7 +221,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				inventoryLine.setQtyInternalUse(qtyInternalUseNew);
 			}
 
-			if (qtyToMoveInDispute.signum() != 0)
+			if (qtyToMoveInDispute.signum() != 0 && candidate.getInOutLineId() != null)
 			{
 				final I_M_InventoryLine inventoryLineInDispute = getCreateInventoryLineInDispute(candidate);
 
@@ -376,15 +379,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 		}
 	}
 
-	private I_M_InventoryLine getCreateInventoryLineInDispute(InventoryLineCandidate candidate)
+	private I_M_InventoryLine getCreateInventoryLineInDispute(final InventoryLineCandidate candidate)
 	{
 		final I_M_InOutLine receiptLine = candidate.getReceiptLine();
+		Check.assumeNotNull(receiptLine, "Only create inventory lines in dispute for HUs which are based on receipts");
 
-		if (receiptLine == null)
-		{
-			return null;
-			// TODO
-		}
 		final I_M_InOutLine originReceiptLineInDispute = create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
 		if (originReceiptLineInDispute == null)
 		{
@@ -481,17 +480,18 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return InventoryLineKey.builder()
 				.topLevelHU(candidate.getTopLevelHUId())
 				.productId(candidate.getProductId())
-				.receiptLine(candidate.receiptLine)
+				.receiptLineId(candidate.getInOutLineId())
 				.build();
 	}
 
 	private I_M_InventoryLine createInventoryLine(@NonNull InventoryLineCandidate candidate)
 	{
 		final I_M_Inventory inventoryHeader = getCreateInventoryHeader(candidate);
+		final ProductId productId = candidate.getProductId();
 
 		final I_M_InventoryLine inventoryLine = newInstance(I_M_InventoryLine.class);
 		inventoryLine.setM_Inventory_ID(inventoryHeader.getM_Inventory_ID());
-		inventoryLine.setM_Product_ID(candidate.getProductId().getRepoId());
+		inventoryLine.setM_Product_ID(productId.getRepoId());
 		inventoryLine.setC_Charge_ID(chargeId);
 		inventoryLine.setM_Locator_ID(warehouseLocatorId.getRepoId());
 		inventoryLine.setC_UOM_ID(candidate.getUomId().getRepoId());
@@ -508,14 +508,10 @@ class InventoryAllocationDestination implements IAllocationDestination
 			final I_M_HU hu = handlingUnitsDAO.getById(candidate.getTopLevelHUId());
 
 			final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(hu);
-			// TODO: create ASI from huProductStorage.getHuId's attributes?!
 
+			final I_M_AttributeSetInstance asiFromStorage = attributeSetInstanceBL.createASIFromAttributeSet(attributeStorage, a -> isAttributeInAttributeSet(AttributeId.ofRepoId(a.getM_Attribute_ID()), productId));
 
-			final AttributeSetId productAttributeSetId = Services.get(IProductBL.class).getAttributeSetId(candidate.getProductId());
-
-
-
-
+			inventoryLine.setM_AttributeSetInstance(asiFromStorage);
 		}
 		else
 		{
@@ -524,6 +520,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		// NOTE: we are not saving here
 		return inventoryLine;
+	}
+
+	private boolean isAttributeInAttributeSet(final AttributeId attributeId, final ProductId productId)
+	{
+		final I_M_Attribute attribute = attributesBL.getAttributeOrNull(productId, attributeId);
+
+		return attribute != null;
+
 	}
 
 	private I_M_Inventory getCreateInventoryHeader(@NonNull final InventoryLineCandidate candidate)
@@ -670,18 +674,29 @@ class InventoryAllocationDestination implements IAllocationDestination
 			@NonNull final I_M_HU tuHU,
 			@NonNull final I_M_InventoryLine inventoryLine)
 	{
-		final I_M_InOutLine receiptLine = create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
-		final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+		final IHUPackingMaterialCollectorSource source;
 
-		if (pmCollectorForCountingTUs == null)
+		if (inventoryLine.getM_InOutLine_ID() > 0)
 		{
-			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
+			final I_M_InOutLine receiptLine = create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+			 source = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+		}
+		else
+		{
+			source = null;
 		}
 
-		pmCollectorForCountingTUs.releasePackingMaterialForHURecursively(tuHU, inOutLineSource);
+	if(pmCollectorForCountingTUs==null)
 
-		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
-		return BigDecimal.valueOf(countTUs);
+	{
+		pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
+	}
+
+	pmCollectorForCountingTUs.releasePackingMaterialForHURecursively(tuHU,source);
+
+	final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
+
+	return BigDecimal.valueOf(countTUs);
 	}
 
 	/**
@@ -697,10 +712,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 		{
 			final I_M_HU parentHU = handlingUnitsDAO.retrieveParent(hu);
 
-			if (parentHU == null) // TODO fix this
+			if (parentHU == null)
 			{
 				return null;
 			}
+
 			return retrieveTUOrNull(parentHU);
 		}
 		else
@@ -760,7 +776,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final ProductId productId;
 
 		@Nullable
-		final I_M_InOutLine receiptLine;
+		final InOutLineId receiptLineId;
 	}
 
 	@Value
