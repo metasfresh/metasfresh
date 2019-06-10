@@ -231,7 +231,7 @@ class MasterWidget extends Component {
   };
 
   render() {
-    const { handleBackdropLock } = this.props;
+    const { handleBackdropLock, onClickOutside } = this.props;
     const { updated, data } = this.state;
     const handleFocusFn = handleBackdropLock ? handleBackdropLock : () => {};
 
@@ -242,7 +242,7 @@ class MasterWidget extends Component {
         data={data}
         handleFocus={() => handleFocusFn(true)}
         handleBlur={() => handleFocusFn(false)}
-        onClickOutside={this.props.onClickOutside}
+        onClickOutside={onClickOutside}
         handlePatch={this.handlePatch}
         handleChange={this.handleChange}
         handleProcess={this.handleProcess}
