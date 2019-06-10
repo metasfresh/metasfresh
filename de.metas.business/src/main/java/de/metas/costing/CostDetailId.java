@@ -4,6 +4,9 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -33,6 +36,7 @@ import lombok.Value;
 @Value
 public class CostDetailId implements RepoIdAware
 {
+	@JsonCreator
 	public static CostDetailId ofRepoId(final int repoId)
 	{
 		return new CostDetailId(repoId);
@@ -58,5 +62,12 @@ public class CostDetailId implements RepoIdAware
 	private CostDetailId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_CostDetail_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

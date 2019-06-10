@@ -5,11 +5,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.Instant;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Repository;
 
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
@@ -17,8 +22,6 @@ import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -47,6 +50,13 @@ public class InvoiceResponseRepo
 {
 	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
 	private static final String MSG_INVOICE_NOT_FOUND_BY_ID_1P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id";
+
+	private final AttachmentEntryService attachmentEntryService;
+
+	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
 
 	/**
 	 * Persists the given {@code importedInvoiceResponse}, if a related invoice can be found.
@@ -151,6 +161,21 @@ public class InvoiceResponseRepo
 			invoiceRecord.setIsInDispute(false);
 		}
 		saveRecord(invoiceRecord);
+	}
+
+	private void attachFileToInvoiceRecord(
+			@NonNull final ImportedInvoiceResponse response,
+			@NonNull final I_C_Invoice invoiceRecord)
+	{
+		final AttachmentTags attachmentTags = AttachmentTags.builder()
+				.tags(response.getAdditionalTags())
+				.build();
+		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
+				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
+				.tags(attachmentTags)
+				.build();
+
+		attachmentEntryService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
 	}
 
 	@SuppressWarnings("WeakerAccess")

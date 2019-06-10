@@ -1,5 +1,7 @@
 package de.metas.shipment;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -36,6 +38,11 @@ public class ShipmentDeclarationId implements RepoIdAware
 	public static ShipmentDeclarationId ofRepoId(final int repoId)
 	{
 		return new ShipmentDeclarationId(repoId);
+	}
+
+	public static ShipmentDeclarationId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

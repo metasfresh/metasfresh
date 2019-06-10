@@ -51,6 +51,11 @@ public class TaxCategoryId implements RepoIdAware
 		}
 	}
 
+	public static TaxCategoryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	public static TaxCategoryId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? ofRepoId(repoId) : null;
