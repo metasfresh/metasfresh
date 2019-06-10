@@ -36,7 +36,7 @@ ORDER BY value
 			<staticText>
 				<reportElement x="23" y="7" width="92" height="11" uuid="0ed57ae5-5609-48ed-bcb5-00f7552cb3c9"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" isBold="true" />
 				</textElement>
 				<text><![CDATA[Produktionsdatum]]></text>
 			</staticText>
@@ -58,7 +58,7 @@ $F{value} +
 			<staticText>
 				<reportElement x="23" y="17" width="38" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" isBold="true" />
 				</textElement>
 				<text><![CDATA[HU-Nr.]]></text>
 			</staticText>
@@ -72,7 +72,7 @@ $F{value} +
 			<staticText>
 				<reportElement x="24" y="61" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" isBold="true" />
 				</textElement>
 				<text><![CDATA[Artikel]]></text>
 			</staticText>
@@ -93,7 +93,7 @@ $F{value} +
 			<staticText>
 				<reportElement x="24" y="71" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" isBold="true" />
 				</textElement>
 				<text><![CDATA[Merkmale]]></text>
 			</staticText>
@@ -107,7 +107,7 @@ $F{value} +
 			<staticText>
 				<reportElement x="24" y="104" width="54" height="11" uuid="9eb8213e-7bb7-42c5-878f-4b3576baaf3c"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gewicht]]></text>
 			</staticText>

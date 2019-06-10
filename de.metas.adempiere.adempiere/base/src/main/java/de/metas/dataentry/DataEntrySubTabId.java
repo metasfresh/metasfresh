@@ -38,6 +38,11 @@ public class DataEntrySubTabId implements RepoIdAware
 		return new DataEntrySubTabId(repoId);
 	}
 
+	public static DataEntrySubTabId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	@JsonCreator

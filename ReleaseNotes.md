@@ -9,6 +9,13 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+# metasfresh 5.107
+
+## Features
+* metasfresh
+
+## Fixes
+* metasfresh
 
 # metasfresh 5.107
 

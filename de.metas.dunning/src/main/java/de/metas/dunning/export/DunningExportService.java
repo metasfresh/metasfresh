@@ -1,7 +1,5 @@
 package de.metas.dunning.export;
 
-import lombok.NonNull;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
 import ch.qos.logback.classic.Level;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning_gateway.api.DunningExportServiceRegistry;
@@ -29,6 +27,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -125,14 +124,16 @@ public class DunningExportService
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
+		final AttachmentTags attachmentTags = AttachmentTags.builder()
+				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
+				.tag(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
+				.tag(DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getDunningExportProviderId())
+				.build();
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
 				.builderFromByteArray(
 						exportResult.getFileName(),
 						byteArrayData)
-				.tag(AttachmentConstants.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
-				.tag(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
-				.tag(DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getDunningExportProviderId())
+				.tags(attachmentTags)
 				.build();
 		return attachmentEntryCreateRequest;
 	}

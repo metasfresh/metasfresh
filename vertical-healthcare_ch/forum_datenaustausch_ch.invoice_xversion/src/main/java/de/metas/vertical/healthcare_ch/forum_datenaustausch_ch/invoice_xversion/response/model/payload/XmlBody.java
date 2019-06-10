@@ -3,7 +3,9 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion
 import javax.annotation.Nullable;
 
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XmlRejected;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLContact;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -33,6 +35,14 @@ import lombok.Value;
 public class XmlBody
 {
 	@Nullable
-	final XmlRejected rejected;
+	XmlRejected rejected;
 
+	@NonNull
+	XMLPatientAddress patient;
+
+	@NonNull
+	XMLParty biller;
+
+	@NonNull
+	XMLContact contact;
 }

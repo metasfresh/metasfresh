@@ -14,7 +14,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1250174837L;
+	private static final long serialVersionUID = 1378068239L;
 
     /** Standard Constructor */
     public X_M_PriceList (Properties ctx, int M_PriceList_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 			setC_Currency_ID (0);
 			setEnforcePriceLimit (false);
 			setIsDefault (false);
+			setIsRoundNetAmountToCurrencyPrecision (true); // Y
 			setIsSOPriceList (false);
 			setIsTaxIncluded (false);
 			setM_PriceList_ID (0);
@@ -296,6 +297,29 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 		return false;
 	}
 
+	/** Set IsRoundNetAmountToCurrencyPrecision.
+		@param IsRoundNetAmountToCurrencyPrecision IsRoundNetAmountToCurrencyPrecision	  */
+	@Override
+	public void setIsRoundNetAmountToCurrencyPrecision (boolean IsRoundNetAmountToCurrencyPrecision)
+	{
+		set_Value (COLUMNNAME_IsRoundNetAmountToCurrencyPrecision, Boolean.valueOf(IsRoundNetAmountToCurrencyPrecision));
+	}
+
+	/** Get IsRoundNetAmountToCurrencyPrecision.
+		@return IsRoundNetAmountToCurrencyPrecision	  */
+	@Override
+	public boolean isRoundNetAmountToCurrencyPrecision () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsRoundNetAmountToCurrencyPrecision);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Verkaufspreisliste.
 		@param IsSOPriceList 
 		This is a Sales Price List
@@ -411,9 +435,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -421,8 +443,7 @@ public class X_M_PriceList extends org.compiere.model.PO implements I_M_PriceLis
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

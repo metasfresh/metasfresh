@@ -82,7 +82,7 @@ public class DocumentPostingBusService
 
 		return Event.builder()
 				.putProperty(PROPERTY_DocumentPostRequest, requestStr)
-				.storeEvent()
+				.shallBeLogged()
 				.build();
 	}
 

@@ -1,11 +1,11 @@
-DROP FUNCTION IF EXISTS geographical_distance(real, real, real, real);
+DROP FUNCTION IF EXISTS geographical_distance(numeric, numeric, numeric, numeric);
 
-CREATE FUNCTION geographical_distance(lat1 real, lon1 real, lat2 real, lon2 real) RETURNS real
+CREATE FUNCTION geographical_distance(lat1 numeric, lon1 numeric, lat2 numeric, lon2 numeric) RETURNS numeric
     LANGUAGE plpgsql IMMUTABLE
 AS
 $$
 DECLARE
-    earth_radius_km CONSTANT real := 6378.1;
+    earth_radius_km CONSTANT numeric := 6378.1;
 BEGIN
     RETURN earth_radius_km * acos(
                     cos(radians(lat1)) *

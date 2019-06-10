@@ -13,6 +13,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -185,13 +186,11 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @param order
-	 * @return precision
-	 */
-	int getPrecision(I_C_Order order);
+	CurrencyPrecision getPricePrecision(I_C_Order order);
+	
+	CurrencyPrecision getAmountPrecision(I_C_Order order);
+
+	CurrencyPrecision getTaxPrecision(I_C_Order order);
 
 	/**
 	 * Is Tax Included in Amount.

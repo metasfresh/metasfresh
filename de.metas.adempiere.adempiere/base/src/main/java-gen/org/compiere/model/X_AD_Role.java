@@ -15,7 +15,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1821128746L;
+	private static final long serialVersionUID = 1996748214L;
 
     /** Standard Constructor */
     public X_AD_Role (Properties ctx, int AD_Role_ID, String trxName)
@@ -40,6 +40,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 			setConfirmQueryRecords (0); // 0
 			setIsAccessAllOrgs (false); // N
 			setIsAllowLoginDateOverride (false); // N
+			setIsAttachmentDeletionAllowed (false); // N
 			setIsAutoRoleLogin (false); // N
 			setIsCanApproveOwnDoc (false);
 			setIsCanExport (true); // Y
@@ -59,7 +60,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 			setName (null);
 			setOverwritePriceLimit (false); // N
 			setPreferenceType (null); // O
-			setUserLevel (null); // __O
+			setUserLevel (null); // _CO
 			setWEBUI_Role (true); // Y
         } */
     }
@@ -693,6 +694,29 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 		return false;
 	}
 
+	/** Set IsAttachmentDeletionAllowed.
+		@param IsAttachmentDeletionAllowed IsAttachmentDeletionAllowed	  */
+	@Override
+	public void setIsAttachmentDeletionAllowed (boolean IsAttachmentDeletionAllowed)
+	{
+		set_Value (COLUMNNAME_IsAttachmentDeletionAllowed, Boolean.valueOf(IsAttachmentDeletionAllowed));
+	}
+
+	/** Get IsAttachmentDeletionAllowed.
+		@return IsAttachmentDeletionAllowed	  */
+	@Override
+	public boolean isAttachmentDeletionAllowed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAttachmentDeletionAllowed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Skip role login page.
 		@param IsAutoRoleLogin 
 		Skip role login page and take the defaults
@@ -1097,9 +1121,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -1107,8 +1129,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

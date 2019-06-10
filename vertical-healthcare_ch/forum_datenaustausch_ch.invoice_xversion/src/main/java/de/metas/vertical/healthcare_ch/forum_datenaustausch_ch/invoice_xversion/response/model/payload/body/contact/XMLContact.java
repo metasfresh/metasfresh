@@ -1,8 +1,8 @@
-package de.metas.attachments;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact;
 
 /*
  * #%L
- * metasfresh-invoice_gateway.spi
+ * metasfresh-pharma
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -22,18 +22,20 @@ package de.metas.attachments;
  * #L%
  */
 
-public class AttachmentConstants
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XMLCompany;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder(toBuilder = true)
+public class XMLContact
 {
-	public static final String TAGNAME_IS_DOCUMENT = "IsDocument";
+	@NonNull
+	final XMLCompany company;
 
-	/**
-	 * if set to {@code true}, it advises the system that
-	 * the respective attachment is a PDF
-	 * and when a PDF is created for the invoice to which it is attached, then this attachment's PDF shall be appended to that invoice's PDF.
-	 */
-	public static final String TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF = "Concatenate_Pdf_to_InvoicePdf";
-
-	public static final String TAGNAME_BPARTNER_RECIPIENT_ID = "C_BPartner_Recipient_ID";
-
-	public static final String TAGNAME_STORED_PREFIX = "Stored_";
+	@Nullable
+	final XMLEmployee employee;
 }

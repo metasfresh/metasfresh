@@ -1,5 +1,7 @@
 package de.metas.inout.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -10,9 +12,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeValue;
 
+import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,6 +43,12 @@ import de.metas.util.Services;
 public class QualityNoteDAO implements IQualityNoteDAO
 {
 	public static String QualityNoteAttribute = "QualityNotice";
+
+	@Override
+	public I_M_QualityNote getById(@NonNull final QualityNoteId qualityNoteId)
+	{
+		return loadOutOfTrx(qualityNoteId, I_M_QualityNote.class);
+	}
 
 	@Override
 	public I_M_QualityNote retrieveQualityNoteForValue(final Properties ctx, final String value)

@@ -115,6 +115,8 @@ public class CustomsInvoiceRepository
 
 		customsInvoiceRecord.setC_Currency_ID(customsInvoice.getCurrencyId().getRepoId());
 
+		customsInvoiceRecord.setBPartnerAddress(customsInvoice.getBpartnerAddress());
+
 		saveRecord(customsInvoiceRecord);
 
 		final CustomsInvoiceId customsInvoiceId = CustomsInvoiceId.ofRepoId(customsInvoiceRecord.getC_Customs_Invoice_ID());

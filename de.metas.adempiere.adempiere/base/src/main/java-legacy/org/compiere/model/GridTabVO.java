@@ -111,7 +111,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	private static boolean loadTabDetails (final GridTabVO vo, final ResultSet rs)
 	{
 		boolean showTrl = "Y".equals(Env.getContext(vo.ctx, "#ShowTrl"));
-		final boolean showAcct = "Y".equals(Env.getContext(vo.ctx, Env.CTXNAME_ShowAcct));
+		final boolean showAcct = true; // "Y".equals(Env.getContext(vo.ctx, Env.CTXNAME_ShowAcct));
 		final boolean showAdvanced = "Y".equals(Env.getContext(vo.ctx, "#ShowAdvanced"));
 		final boolean loadAllLanguages = vo.loadAllLanguages;
 

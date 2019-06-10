@@ -68,13 +68,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * - IsDiscountPrinted
 	 * - PaymentRule
 	 * - C_PaymentTerm_ID
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String bPartner(final ICalloutField calloutField)
 	{
@@ -247,13 +240,6 @@ public class CalloutInvoice extends CalloutEngine
 	/**
 	 * Set Payment Term.
 	 * Payment Term has changed
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String paymentTerm(final ICalloutField calloutField)
 	{
@@ -282,13 +268,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * - PriceList, PriceStd, PriceLimit, C_Currency_ID, EnforcePriceLimit
 	 * - UOM
 	 * Calls Tax
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String product(final ICalloutField calloutField)
 	{
@@ -379,13 +358,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * - updates PriceActual from Charge
 	 * - sets PriceLimit, PriceList to zero
 	 * Calles tax
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String charge(final ICalloutField calloutField)
 	{
@@ -451,13 +423,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * - basis: Product, Charge, BPartner Location
 	 * - sets C_Tax_ID
 	 * Calls Amount
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String tax(final ICalloutField calloutField)
 	{
@@ -533,13 +498,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * Invoice - Amount.
 	 * - called from QtyInvoiced, PriceActual
 	 * - calculates LineNetAmt
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String amt(final ICalloutField calloutField)
 	{
@@ -562,9 +520,9 @@ public class CalloutInvoice extends CalloutEngine
 		// log.warn("amt - init");
 		final int uomToID = invoiceLine.getPrice_UOM_ID(); // 07216 : We convert to the price UOM.
 		final int productID = invoiceLine.getM_Product_ID();
-		final PriceListId priceListID = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		// final int priceListVersionID = calloutField.getTabInfoContextAsInt("M_PriceList_Version_ID"); // task 08908: note that there is no such column in C_Invoice or C_InvoiceLine
-		final CurrencyPrecision stdPrecision = Services.get(IPriceListBL.class).getPricePrecision(priceListID);
+		final CurrencyPrecision pricePrecision = Services.get(IInvoiceBL.class).getPricePrecision(invoice);
 
 		// get values
 		final BigDecimal qtyEntered = invoiceLine.getQtyEntered();
@@ -580,7 +538,7 @@ public class CalloutInvoice extends CalloutEngine
 		final BigDecimal priceLimit = invoiceLine.getPriceLimit();
 		final BigDecimal priceList = invoiceLine.getPriceList();
 
-		log.debug("PriceList=" + priceList + ", Limit=" + priceLimit + ", Precision=" + stdPrecision);
+		log.debug("PriceList=" + priceList + ", Limit=" + priceLimit + ", Precision=" + pricePrecision);
 		log.debug("PriceEntered=" + priceEntered + ", Actual=" + priceActual); // + ", Discount=" + Discount);
 
 		// metas: Gutschrift Grund
@@ -616,7 +574,7 @@ public class CalloutInvoice extends CalloutEngine
 
 				// TODO: PricingBL
 				final MProductPricing pp = new MProductPricing(productID, bPartnerID, qtyInvoiced, isSOTrx);
-				pp.setPriceListId(priceListID);
+				pp.setPriceListId(priceListId);
 				pp.setReferencedObject(invoiceLine); // task 08908: we need to give the pricing context our referenced object, so it can extract the ASI
 				final Timestamp date = invoiceLine.getC_Invoice().getDateInvoiced(); // task 08908: we do not have a PLV-ID in C_Invoice or C_InvoiceLine, so we need to get the invoice's date to
 				// enable the pricing engine to find the PLV
@@ -661,7 +619,7 @@ public class CalloutInvoice extends CalloutEngine
 			priceEntered = (BigDecimal)value;
 
 			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			priceActual = stdPrecision.round(priceEntered);
+			priceActual = pricePrecision.round(priceEntered);
 			//
 			log.debug("amt - PriceEntered=" + priceEntered
 					+ " -> PriceActual=" + priceActual);
@@ -737,7 +695,8 @@ public class CalloutInvoice extends CalloutEngine
 		}
 
 		// Line Net Amt
-		BigDecimal lineNetAmt = stdPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(priceListId);
+		BigDecimal lineNetAmt = netPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
 		log.info("amt = LineNetAmt=" + lineNetAmt);
 
 		invoiceLine.setLineNetAmt(lineNetAmt);
@@ -760,7 +719,7 @@ public class CalloutInvoice extends CalloutEngine
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, stdPrecision.toInt());
+					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, pricePrecision.toInt());
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}
@@ -786,13 +745,6 @@ public class CalloutInvoice extends CalloutEngine
 	 * Invoice Line - Quantity.
 	 * - called from C_UOM_ID, QtyEntered, QtyInvoiced
 	 * - enforces qty UOM relationship
-	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
-	 * @return null or error message
 	 */
 	public String qty(final ICalloutField calloutField)
 	{

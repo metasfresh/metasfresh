@@ -42,14 +42,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_i
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="11" isBold="false"/>
+					<font fontName="Arial" size="11" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="0" y="0" width="328" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
 				<textElement>
-					<font size="9" isBold="false" isUnderline="true"/>
+					<font fontName="Arial" size="9" isBold="false" isUnderline="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
 			</textField>

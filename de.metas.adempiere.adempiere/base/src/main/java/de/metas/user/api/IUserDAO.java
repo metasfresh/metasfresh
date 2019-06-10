@@ -81,4 +81,6 @@ public interface IUserDAO extends ISingletonService
 	Set<UserId> retrieveSystemUserIds();
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
+
+	Set<UserId> getUserIdsByBPartnerId(BPartnerId bpartnerId);
 }

@@ -63,7 +63,7 @@ de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root($P{RECORD_ID
 			<textField>
 				<reportElement uuid="6622332f-b31d-40fc-add3-777b8f875905" x="364" y="165" width="188" height="79"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{addressline1} + "\n" +
 $R{addressline2} + "\n" +

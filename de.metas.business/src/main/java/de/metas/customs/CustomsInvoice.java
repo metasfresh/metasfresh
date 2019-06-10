@@ -62,6 +62,9 @@ public class CustomsInvoice
 	@NonNull
 	BPartnerLocationId bpartnerAndLocationId;
 
+	@NonNull
+	String bpartnerAddress;
+
 	@Nullable
 	UserId userId;
 

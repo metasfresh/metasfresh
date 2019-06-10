@@ -83,7 +83,7 @@ $P{printSingleSelection}
 					<printWhenExpression><![CDATA[$F{isdraft}]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" markup="none">
-					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" pdfFontName="Helvetica-Bold"/>
+					<font fontName="SansSerif" size="48" isBold="true" isItalic="true" isStrikeThrough="false" />
 				</textElement>
 				<text><![CDATA[Entwurf]]></text>
 			</staticText>

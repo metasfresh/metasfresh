@@ -12,9 +12,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
 import de.metas.cache.CCache;
 import de.metas.dunning_gateway.spi.DunningExportClientFactory;
@@ -106,17 +106,18 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 	private Optional<StoreConfig> retrieveForAttachmentEntry0(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final boolean isDocument = attachmentEntry.hasTagSetToTrue(
-				AttachmentConstants.TAGNAME_IS_DOCUMENT);
+		final AttachmentTags tags = attachmentEntry.getTags();
+		final boolean isDocument = tags.hasTagSetToTrue(
+				AttachmentTags.TAGNAME_IS_DOCUMENT);
 		if (!isDocument)
 		{
 			return Optional.empty();
 		}
 
-		final boolean isForumDatenaustauschInvoice = attachmentEntry.hasTagSetToString(
+		final boolean isForumDatenaustauschInvoice = tags.hasTagSetToString(
 				InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
 				ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID);
-		final boolean isForumDatenaustauschDunning = attachmentEntry.hasTagSetToString(
+		final boolean isForumDatenaustauschDunning = tags.hasTagSetToString(
 				DunningExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER,
 				ForumDatenaustauschChConstants.DUNNING_EXPORT_PROVIDER_ID);
 		if (!isForumDatenaustauschInvoice && !isForumDatenaustauschDunning)
@@ -124,7 +125,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 			return Optional.empty();
 		}
 
-		final String bPartnerIdStr = attachmentEntry.getTagValueOrNull(AttachmentConstants.TAGNAME_BPARTNER_RECIPIENT_ID);
+		final String bPartnerIdStr = tags.getTagValueOrNull(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID);
 		if (Check.isEmpty(bPartnerIdStr))
 		{
 			return Optional.empty();
@@ -155,9 +156,10 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 	{
 		final boolean attachmentIsStoredForThefirstTime = !attachmentEntry
 				.getTags()
+				.toMap()
 				.keySet()
 				.stream()
-				.anyMatch(key -> key.startsWith(AttachmentConstants.TAGNAME_STORED_PREFIX));
+				.anyMatch(key -> key.startsWith(AttachmentTags.TAGNAME_STORED_PREFIX));
 
 		byte[] attachmentDataToStore;
 		if (attachmentIsStoredForThefirstTime)

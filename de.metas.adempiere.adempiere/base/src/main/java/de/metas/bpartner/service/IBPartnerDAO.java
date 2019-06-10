@@ -1,5 +1,7 @@
 package de.metas.bpartner.service;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,8 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.location.CountryId;
+import de.metas.user.UserId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -42,6 +45,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.ISingletonService;
@@ -80,6 +84,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+
+	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
 
@@ -260,6 +266,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	String getBPartnerNameById(BPartnerId bpartnerId);
 
+	List<String> getBPartnerNamesByIds(Collection<BPartnerId> bpartnerIds);
+
 	Optional<BPartnerId> retrieveBPartnerIdBy(BPartnerQuery query);
 
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
@@ -285,4 +293,8 @@ public interface IBPartnerDAO extends ISingletonService
 	}
 
 	BPGroupId getBPGroupIdByBPartnerId(BPartnerId bpartnerId);
+
+	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
+
+	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
 }

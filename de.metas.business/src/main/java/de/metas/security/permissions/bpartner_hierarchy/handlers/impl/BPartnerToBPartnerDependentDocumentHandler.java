@@ -8,8 +8,11 @@ import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocument;
 import de.metas.security.permissions.bpartner_hierarchy.handlers.BPartnerDependentDocumentHandler;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,19 +50,20 @@ class BPartnerToBPartnerDependentDocumentHandler implements BPartnerDependentDoc
 	public BPartnerDependentDocument extractBPartnerDependentDocumentFromDocumentObj(Object documentObj)
 	{
 		final I_C_BPartner bpartnerRecord = InterfaceWrapperHelper.create(documentObj, I_C_BPartner.class);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRecord.getC_BPartner_ID());
+		final I_C_BPartner bpartnerRecordOld = InterfaceWrapperHelper.createOld(documentObj, I_C_BPartner.class);
 
 		return BPartnerDependentDocument.builder()
 				.documentRef(TableRecordReference.of(documentObj))
-				.newBPartnerId(bpartnerId)
-				.oldBPartnerId(bpartnerId)
+				.newBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
+				.oldBPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecordOld.getBPartner_Parent_ID()))
 				.build();
 	}
 
 	@Override
-	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(final BPartnerId bpartnerId)
+	public Stream<TableRecordReference> streamRelatedDocumentsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
-		// TODO fetch child BPartners from parent `bpartnerId`
-		return Stream.empty();
+		return Services.get(IBPartnerDAO.class)
+				.streamChildBPartnerIds(bpartnerId)
+				.map(childBPartnerId -> TableRecordReference.of(I_C_BPartner.Table_Name, childBPartnerId));
 	}
 }

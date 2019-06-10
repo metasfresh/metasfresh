@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.X_R_Request;
 import org.eevolution.model.I_DD_Order;
@@ -22,8 +23,7 @@ import de.metas.inout.api.impl.QualityNoteDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.request.api.IRequestDAO;
-import de.metas.request.model.I_R_Request;
+import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -49,13 +49,16 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class RequestDAOTest
+public class RequestBLTest
 {
+	private IRequestBL requestBL;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		this.requestBL = Services.get(IRequestBL.class);
 	}
 
 	@Test
@@ -68,7 +71,7 @@ public class RequestDAOTest
 		final I_R_RequestType soRequestType = createRequestType("RequestType");
 		createQualityNoteAttribute();
 
-		final I_R_Request request = Services.get(IRequestDAO.class).createRequestFromInOutLine(line);
+		final I_R_Request request = requestBL.createRequestFromInOutLine(line);
 
 		assertThat(request.getAD_Org_ID()).isEqualTo(line.getAD_Org_ID());
 		assertThat(request.getM_Product_ID()).isEqualTo(line.getM_Product_ID());
@@ -78,9 +81,9 @@ public class RequestDAOTest
 		assertThat(request.getC_BPartner_ID()).isEqualTo(inout.getC_BPartner_ID());
 		assertThat(request.getAD_User_ID()).isEqualTo(inout.getAD_User_ID());
 		assertThat(request.getDateDelivered()).isEqualTo(inout.getMovementDate());
-		assertThat(request.getSummary()).isEqualTo(RequestDAO.MSG_R_Request_From_InOut_Summary);
+		assertThat(request.getSummary()).isEqualTo(RequestBL.MSG_R_Request_From_InOut_Summary);
 		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
-		assertThat(request.getM_QualityNote()).isNull();
+		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
 		assertThat(request.getPerformanceType()).isNullOrEmpty();
 
 	}
@@ -95,7 +98,7 @@ public class RequestDAOTest
 		final I_R_RequestType soRequestType = createRequestType("RequestType");
 		createQualityNoteAttribute();
 
-		final I_R_Request request = Services.get(IRequestDAO.class).createRequestFromDDOrderLine(line);
+		final I_R_Request request = requestBL.createRequestFromDDOrderLine(line);
 
 		assertThat(request.getAD_Org_ID()).isEqualTo(line.getAD_Org_ID());
 		assertThat(request.getM_Product_ID()).isEqualTo(line.getM_Product_ID());
@@ -107,7 +110,7 @@ public class RequestDAOTest
 		assertThat(request.getDateDelivered()).isEqualTo(ddOrder.getDatePromised());
 		assertThat(request.getSummary()).isEqualTo(line.getDescription());
 		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
-		assertThat(request.getM_QualityNote()).isNull();
+		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
 		assertThat(request.getPerformanceType()).isNullOrEmpty();
 
 	}
@@ -115,15 +118,15 @@ public class RequestDAOTest
 	private I_DD_Order createDDOrder()
 	{
 		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
-		
+
 		ddOrder.setIsSOTrx(true);
-		
+
 		ddOrder.setC_BPartner(createPartner("Partner 2"));
-		
+
 		ddOrder.setAD_User(createUser("User 2"));
-		
+
 		ddOrder.setDatePromised(SystemTime.asDayTimestamp());
-		
+
 		save(ddOrder);
 		return ddOrder;
 	}
@@ -153,7 +156,7 @@ public class RequestDAOTest
 		final I_R_RequestType requestType = newInstance(I_R_RequestType.class);
 		requestType.setName(name);
 		requestType.setInternalName(RequestTypeDAO.InternalName_CustomerComplaint);
-		
+
 		save(requestType);
 		return requestType;
 	}
