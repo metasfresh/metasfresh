@@ -36,35 +36,56 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
-public enum ScannedAttributeValue implements ReferenceListAwareEnum
+public enum SecurPharmAttributesStatus implements ReferenceListAwareEnum
 {
-	NO("N"), //
-	YES("Y"), //
+	UNKNOW("N"), //
+	OK("Y"), //
+	FRAUD("F"), //
 	ERROR("E") //
 	;
 
 	@Getter
 	final String code;
 
-	ScannedAttributeValue(final String code)
+	SecurPharmAttributesStatus(final String code)
 	{
 		this.code = code;
 	}
 
-	public static ScannedAttributeValue ofNullableCode(@Nullable final String code)
+	public static SecurPharmAttributesStatus ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
 
-	public static ScannedAttributeValue ofCode(@NonNull final String code)
+	public static SecurPharmAttributesStatus ofCode(@NonNull final String code)
 	{
-		ScannedAttributeValue type = typesByCode.get(code);
+		final SecurPharmAttributesStatus type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + ScannedAttributeValue.class + " found for code: " + code);
+			throw new AdempiereException("No " + SecurPharmAttributesStatus.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, ScannedAttributeValue> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ScannedAttributeValue::getCode);
+	private static final ImmutableMap<String, SecurPharmAttributesStatus> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), SecurPharmAttributesStatus::getCode);
+
+	public boolean isUnknown()
+	{
+		return this == UNKNOW;
+	}
+
+	public boolean isOK()
+	{
+		return this == OK;
+	}
+
+	public boolean isFraud()
+	{
+		return this == FRAUD;
+	}
+
+	public boolean isError()
+	{
+		return this == ERROR;
+	}
 }

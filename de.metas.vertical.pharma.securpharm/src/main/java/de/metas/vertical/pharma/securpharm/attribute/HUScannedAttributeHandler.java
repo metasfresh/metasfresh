@@ -44,7 +44,7 @@ public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttri
 	@Override
 	public Object generateSeedValue(final IAttributeSet attributeSet, final I_M_Attribute attribute, final Object valueInitialDefault)
 	{
-		return ScannedAttributeValue.NO.getCode();
+		return SecurPharmAttributesStatus.UNKNOW.getCode();
 	}
 
 	@Override
