@@ -265,11 +265,11 @@ class TableItem extends PureComponent {
 
   // @TODO: Is this still needed ?
   handleClickOutside = e => {
-    // const { changeListenOnTrue, rowId, isSelected } = this.props;
-    // if (isSelected) {
-    //   this.handleEditProperty(e);
-    //   changeListenOnTrue();
-    // }
+    const { changeListenOnTrue, isSelected } = this.props;
+    if (isSelected) {
+      this.handleEditProperty(e);
+      changeListenOnTrue();
+    }
   };
 
   renderCells = () => {

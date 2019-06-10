@@ -11,18 +11,63 @@ class AttributesDropdown extends Component {
 
     this.state = {
       patchCallbacks: Map(),
+      focusedField: null,
+      fieldsLength: props.layout.length,
     };
   }
 
   componentDidMount() {
     if (this.form) {
-      const inputs = this.form.getElementsByClassName('js-input-field');
-
-      if (inputs.length) {
-        inputs[0].focus();
-      }
+      this.focusField(0);
     }
   }
+
+  focusField = idx => {
+    const { focusedField } = this.state;
+    const inputs = this.form.getElementsByClassName('js-input-field');
+
+    if (inputs.length) {
+      if (focusedField !== null) {
+        this.blurField(focusedField);
+      }
+
+      this.setState(
+        {
+          focusedField: idx,
+        },
+        () => {
+          inputs[idx] && inputs[idx].focus();
+        }
+      );
+    }
+  };
+
+  blurField = idx => {
+    const inputs = this.form.getElementsByClassName('js-input-field');
+
+    inputs[idx] && inputs[idx].blur();
+  };
+
+  /*
+   * To have a better control of the flow, we set the tabIndex for all inputs to -1
+   * and focus/blur them programmatically. If we reach the end of the fields, modal should
+   * be closed on next tab.
+   */
+  handleKeyDown = e => {
+    const { focusedField, fieldsLength } = this.state;
+    const { onClickOutside } = this.props;
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (focusedField + 1 < fieldsLength) {
+        this.focusField(focusedField + 1);
+      } else {
+        onClickOutside();
+      }
+    }
+  };
 
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
@@ -107,6 +152,7 @@ class AttributesDropdown extends Component {
       <div
         className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
         ref={c => (this.form = c)}
+        onKeyDown={this.handleKeyDown}
       >
         {this.renderFields()}
       </div>
