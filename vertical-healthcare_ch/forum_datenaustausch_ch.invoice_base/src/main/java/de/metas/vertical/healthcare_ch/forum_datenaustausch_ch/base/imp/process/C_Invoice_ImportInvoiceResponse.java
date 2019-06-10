@@ -5,16 +5,18 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
+import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.util.MimeType;
 import org.springframework.context.annotation.Profile;
 
@@ -23,10 +25,6 @@ import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.Recipient;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
@@ -65,17 +63,19 @@ import lombok.NonNull;
 @Profile(ForumDatenaustauschChConstants.PROFILE)
 public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 {
-	private static int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
-	private static int WINDOW_ID_SALES_C_INVOICE_ID = 167; // FIXME Hardcoded
-
 	private static final String MSG_NOT_ALL_FILES_IMPORTED = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImported";
-	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject";
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content";
 
-	private static final String ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
-	private static final String ATTATCHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
-	private static final String ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
+	private static final String ATTACHMENT_TAGNAME_AD_PINSTANCE_ID = "ImportAD_PInstance_ID";
+	private static final String ATTACHMENT_TAGNAME_TIME_MILLIS = "ImportTimeMillis";
+	private static final String ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH = "ImportFileAbsolutePath";
+
+	private final CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
+
+	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
+
+	private final InvoiceRejectionDetailRepo invoiceRejectionDetailRepo = Adempiere.getBean(InvoiceRejectionDetailRepo.class);
+
+	private final ImportInvoiceResponseService importInvoiceResponseService = Adempiere.getBean(ImportInvoiceResponseService.class);
 
 	@Param(mandatory = true, parameterName = "InputDirectory")
 	private String inputFilePath;
@@ -85,12 +85,6 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 	@Param(mandatory = true, parameterName = "OutputDirectory")
 	private String outputFilePath;
-
-	private final CrossVersionServiceRegistry crossVersionServiceRegistry = Adempiere.getBean(CrossVersionServiceRegistry.class);
-
-	private final InvoiceResponseRepo importedInvoiceResponseRepo = Adempiere.getBean(InvoiceResponseRepo.class);
-
-	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	@Override
 	@RunOutOfTrx
@@ -103,12 +97,17 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 		final File outputDirectory = new File(outputFilePath);
 		Check.assume(outputDirectory.isDirectory(), "Parameter OutputDirectory does not denote a directory; OutputDirectory={}", outputDirectory);
-		Check.assume(outputDirectory.canWrite(), "Parameter OutputDirectory is a directory, but this process doies not have write-access; OutputDirectory={}", outputDirectory);
+		Check.assume(outputDirectory.canWrite(), "Parameter OutputDirectory is a directory, but this process does not have write-access; OutputDirectory={}", outputDirectory);
 
 		final FileFilter fileFilter = new WildcardFileFilter(importFileWildcard);
-		final File[] filesToImport = inputDirectory.listFiles(fileFilter);
 
-		final Mutable<Boolean> allFilesImported = new Mutable<Boolean>(true);
+		final File[] filesToImport = Check.assumeNotNull(
+				inputDirectory.listFiles(fileFilter),
+				"filesToImport may not be null; inputDirectory={}; fileFilter={}",
+				inputDirectory,
+				fileFilter);
+
+		final Mutable<Boolean> allFilesImported = new Mutable<>(true);
 
 		for (final File fileToImport : filesToImport)
 		{
@@ -132,14 +131,10 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 		}
 
 		// return "OK" (i.e. don't throw an exception), but notify the user
-		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
-				.builder()
-				.recipient(Recipient.user(getUserId()))
-				.contentADMessage(MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION)
-				.contentADMessageParam(getPinstanceId().getRepoId())
-				.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_AD_PInstance.Table_Name, getPinstanceId()), WINDOW_ID_AD_PInstance_ID))
-				.build();
-		notificationBL.send(userNotificationRequest);
+		final UserId userId = getUserId();
+		final PInstanceId pinstanceId = getPinstanceId();
+		final int repoId = pinstanceId.getRepoId();
+		importInvoiceResponseService.sendNotificationNotAllFilesImported(userId, pinstanceId, repoId);
 
 		return MSG_OK;
 	}
@@ -155,29 +150,34 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			final InvoiceImportClientImpl invoiceImportClientImpl = new InvoiceImportClientImpl(crossVersionServiceRegistry);
 			final ImportedInvoiceResponse response = invoiceImportClientImpl.importInvoiceResponse(request);
 
+			final int billerOrg = importInvoiceResponseService.retrieveOrgByGLN(response.getBillerEan());
+
 			final ImportedInvoiceResponse responseWithTags = response.toBuilder()
-					.additionalTag(ATTATCHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
-					.additionalTag(ATTATCHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
-					.additionalTag(ATTATCHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
+					.additionalTag(ATTACHMENT_TAGNAME_FILE_ABSOLUTE_PATH, fileToImport.toAbsolutePath().toString())
+					.additionalTag(ATTACHMENT_TAGNAME_TIME_MILLIS, Long.toString(SystemTime.millis()))
+					.additionalTag(ATTACHMENT_TAGNAME_AD_PINSTANCE_ID, Integer.toString(getPinstanceId().getRepoId()))
+					.invoiceId(importedInvoiceResponseRepo.retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(response))
+					.billerOrg(billerOrg)
 					.build();
+
+			final InvoiceRejectionDetailId invoiceRejectionDetailId = invoiceRejectionDetailRepo.save(responseWithTags);
 
 			final InvoiceId invoiceId = importedInvoiceResponseRepo.save(responseWithTags);
 			moveFile(fileToImport, outputDirectory);
 			addLog("Imported invoice response file={} with status={} into C_Invoice_ID={}", fileToImport.getFileName().toString(), response.getStatus(), invoiceId.getRepoId());
 
-			if (Status.REJECTED.equals(responseWithTags.getStatus()))
+			if (isInvoiceRejected(responseWithTags))
 			{
-				final Recipient recipient = Recipient.user(getUserId());
-				final UserNotificationRequest userNotificationRequest = UserNotificationRequest
-						.builder()
-						.recipient(recipient)
-						.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
-						.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT)
-						.contentADMessageParam(responseWithTags.getDocumentNumber())
-						.targetAction(TargetRecordAction.ofRecordAndWindow(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId), WINDOW_ID_SALES_C_INVOICE_ID))
-						.build();
-				notificationBL.send(userNotificationRequest);
-				addLog("Send notification to recipient={}", recipient);
+				final Optional<UserId> defaultUserIdOptional = importInvoiceResponseService.retrieveOrgDefaultContactByGLN(responseWithTags.getBillerEan());
+
+				if (defaultUserIdOptional.isPresent())
+				{
+					importInvoiceResponseService.sendNotificationDefaultUserExists(responseWithTags, invoiceRejectionDetailId, defaultUserIdOptional.get());
+				}
+				else
+				{
+					importInvoiceResponseService.sendNotificationDefaultUserDoesNotExist(responseWithTags, invoiceRejectionDetailId, getUserId());
+				}
 			}
 			return true;
 		}
@@ -191,6 +191,11 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 			addLog("{} while processing file {}; AD_Issue_ID={}; Message={};", e.getClass().getSimpleName(), fileToImport.getFileName().toString(), issue.getAD_Issue_ID(), e.getMessage());
 		}
 		return false;
+	}
+
+	private boolean isInvoiceRejected(@NonNull final ImportedInvoiceResponse responseWithTags)
+	{
+		return Status.REJECTED.equals(responseWithTags.getStatus());
 	}
 
 	private ImportInvoiceResponseRequest createRequest(@NonNull final Path fileToImport)

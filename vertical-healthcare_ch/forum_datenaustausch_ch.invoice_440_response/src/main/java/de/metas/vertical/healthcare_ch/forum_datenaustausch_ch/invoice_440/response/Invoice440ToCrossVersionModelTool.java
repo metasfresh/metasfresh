@@ -10,10 +10,18 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlPayload.XmlPayloadBuilder;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse.XmlResponseBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XMLParty;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XMLPatientAddress;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XMLPersonType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XmlBody;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XmlBody.XmlBodyBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XMLCompany;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XmlRejected;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.XmlRejected.XmlRejectedBuilder;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLContact;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLEmployee;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLOnline;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLTelecom;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.rejected.XmlError;
 import lombok.NonNull;
 
@@ -47,7 +55,7 @@ public class Invoice440ToCrossVersionModelTool
 	{
 	}
 
-	public XmlResponse toCrossVersionModel(@NonNull final ResponseType invoice440Response)
+	XmlResponse toCrossVersionModel(@NonNull final ResponseType invoice440Response)
 	{
 		final XmlResponseBuilder builder = XmlResponse.builder();
 
@@ -93,7 +101,115 @@ public class Invoice440ToCrossVersionModelTool
 		{
 			bodyBuilder.rejected(createXmlRejected(body.getRejected()));
 		}
+
+		if (body.getPatient() != null)
+		{
+			bodyBuilder.patient(createXmlPatientAddress(body.getPatient()));
+		}
+
+		if (body.getBiller() != null)
+		{
+			bodyBuilder.biller(createXmlParty(body.getBiller()));
+		}
+
+		if (body.getContact() != null)
+		{
+			bodyBuilder.contact(createXmlContact(body.getContact()));
+		}
+
 		return bodyBuilder.build();
+	}
+
+	private XMLContact createXmlContact(@NonNull final ContactAddressType contact)
+	{
+		final XMLContact.XMLContactBuilder contactBuilder = XMLContact.builder();
+
+		if (contact.getCompany() != null)
+		{
+			contactBuilder.company(createXMLCompany(contact.getCompany()));
+		}
+
+		if (contact.getEmployee() != null)
+		{
+			contactBuilder.employee(createXmlEmployee(contact.getEmployee()));
+		}
+
+		return contactBuilder.build();
+	}
+
+	private XMLEmployee createXmlEmployee(@NonNull final EmployeeType employee)
+	{
+		final XMLEmployee.XMLEmployeeBuilder employeeBuilder = XMLEmployee.builder();
+
+		employeeBuilder.familyName(employee.familyname);
+
+		if (employee.getGivenname() != null)
+		{
+			employeeBuilder.givenName(employee.getGivenname());
+		}
+
+		if (employee.getTelecom() != null)
+		{
+			employeeBuilder.telecom(createXmlTelecom(employee.getTelecom()));
+		}
+
+		if (employee.getOnline() != null)
+		{
+			employeeBuilder.online(createXmlOnline(employee.getOnline()));
+		}
+
+		return employeeBuilder.build();
+	}
+
+	private XMLOnline createXmlOnline(@NonNull final OnlineAddressType online)
+	{
+		return XMLOnline.builder()
+				.email(ImmutableList.copyOf(online.getEmail()))
+				.build();
+	}
+
+	private XMLTelecom createXmlTelecom(@NonNull final TelecomAddressType telecom)
+	{
+		return XMLTelecom.builder()
+				.phone(ImmutableList.copyOf(telecom.getPhone()))
+				.build();
+	}
+
+	private XMLCompany createXMLCompany(@NonNull final CompanyType company)
+	{
+		return XMLCompany.builder()
+				.companyName(company.getCompanyname())
+				.build();
+	}
+
+	private XMLParty createXmlParty(@NonNull final PartyType eanParty)
+	{
+		final XMLParty.XMLPartyBuilder partyBuilder = XMLParty.builder();
+
+		if (eanParty.getEanParty() != null)
+		{
+			partyBuilder.eanParty(eanParty.getEanParty());
+		}
+
+		return partyBuilder.build();
+	}
+
+	private XMLPatientAddress createXmlPatientAddress(@NonNull final PatientAddressType patient)
+	{
+		final XMLPatientAddress.XMLPatientAddressBuilder patientAddressBuilder = XMLPatientAddress.builder();
+		if (patient.getPerson() != null)
+		{
+			patientAddressBuilder.person(createXmlPersonType(patient.getPerson()));
+		}
+		return patientAddressBuilder.build();
+	}
+
+	private XMLPersonType createXmlPersonType(@NonNull final PersonType person)
+	{
+		return XMLPersonType.builder()
+				.familyName(person.getFamilyname())
+				.givenName(person.getGivenname())
+				.build();
 	}
 
 	private XmlRejected createXmlRejected(@NonNull final RejectedType rejected)
