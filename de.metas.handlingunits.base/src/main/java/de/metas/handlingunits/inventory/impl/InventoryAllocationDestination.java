@@ -679,24 +679,24 @@ class InventoryAllocationDestination implements IAllocationDestination
 		if (inventoryLine.getM_InOutLine_ID() > 0)
 		{
 			final I_M_InOutLine receiptLine = create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
-			 source = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+			source = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
 		}
 		else
 		{
 			source = null;
 		}
 
-	if(pmCollectorForCountingTUs==null)
+		if (pmCollectorForCountingTUs == null)
 
-	{
-		pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
-	}
+		{
+			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
+		}
 
-	pmCollectorForCountingTUs.releasePackingMaterialForHURecursively(tuHU,source);
+		pmCollectorForCountingTUs.releasePackingMaterialForHURecursively(tuHU, source);
 
-	final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
+		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
 
-	return BigDecimal.valueOf(countTUs);
+		return BigDecimal.valueOf(countTUs);
 	}
 
 	/**
