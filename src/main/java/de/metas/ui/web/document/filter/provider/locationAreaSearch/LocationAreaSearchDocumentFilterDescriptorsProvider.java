@@ -100,8 +100,9 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Distance))
 						.setWidgetType(DocumentFieldWidgetType.Integer))
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorAddress)
-						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorAddress))
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress)
+						// todo add trl, same as that of the element used in table!
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress))
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				//
 				.addInternalParameter(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
