@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
+import memoize from 'memoize-one';
 
 import RawWidget from '../RawWidget';
 
@@ -12,7 +13,6 @@ class AttributesDropdown extends Component {
     this.state = {
       patchCallbacks: Map(),
       focusedField: null,
-      fieldsLength: props.layout.length,
     };
   }
 
@@ -48,14 +48,30 @@ class AttributesDropdown extends Component {
     inputs[idx] && inputs[idx].blur();
   };
 
+  // Re-run fields length calculation whenever layout changes
+  getFieldsLength = memoize((data, layout) => {
+    let fieldsLength = 0;
+
+    layout.forEach(item => {
+      const widgetData = item.fields.map(elem => data[elem.field] || -1);
+
+      if (widgetData && widgetData.length && widgetData[0].displayed) {
+        fieldsLength += 1;
+      }
+    });
+
+    return fieldsLength;
+  });
+
   /*
    * To have a better control of the flow, we set the tabIndex for all inputs to -1
    * and focus/blur them programmatically. If we reach the end of the fields, modal should
    * be closed on next tab.
    */
   handleKeyDown = e => {
-    const { focusedField, fieldsLength } = this.state;
-    const { onClickOutside } = this.props;
+    const { focusedField } = this.state;
+    const { onClickOutside, layout, data } = this.props;
+    const fieldsLength = this.getFieldsLength(data, layout);
 
     if (e.key === 'Tab') {
       e.preventDefault();
