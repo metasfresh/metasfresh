@@ -46,9 +46,7 @@ public class DefaultAttachmentStoredListener implements AttachmentStoredListener
 	public void attachmentWasStored(@NonNull final AttachmentEntry attachmentEntry, @NonNull final URI storageIdentifier)
 	{
 		final AttachmentTags attachmentTags = attachmentEntry.getTags()
-				.toBuilder()
-				.tag(AttachmentTags.TAGNAME_STORED_PREFIX + SystemTime.millis(), storageIdentifier.toString())
-				.build();
+				.withTag(AttachmentTags.TAGNAME_STORED_PREFIX + SystemTime.millis(), storageIdentifier.toString());
 		final AttachmentEntry attachmentEntryWithStoreInfo = attachmentEntry
 				.toBuilder()
 				.tags(attachmentTags)

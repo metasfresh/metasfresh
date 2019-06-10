@@ -3,16 +3,21 @@ package de.metas.attachments;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Joiner;
+import com.google.common.base.Joiner.MapJoiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
+import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 
@@ -38,8 +43,31 @@ import lombok.Singular;
  * #L%
  */
 
-public class AttachmentTags
+@EqualsAndHashCode
+public final class AttachmentTags
 {
+	public static AttachmentTags ofString(@Nullable final String tagsAsString)
+	{
+		if (Check.isEmpty(tagsAsString, true))
+		{
+			return EMPTY;
+		}
+
+		final Map<String, String> map = TAGS_STRING_SPLITTER.split(tagsAsString.trim());
+		return ofMap(map);
+	}
+
+	public static AttachmentTags ofMap(@NonNull final Map<String, String> map)
+	{
+		if (map.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		return new AttachmentTags(map);
+	}
+
+	public static final AttachmentTags EMPTY = new AttachmentTags();
 
 	public static final String TAGNAME_IS_DOCUMENT = "IsDocument";
 
@@ -49,38 +77,72 @@ public class AttachmentTags
 	 * and when a PDF is created for the invoice to which it is attached, then this attachment's PDF shall be appended to that invoice's PDF.
 	 */
 	public static final String TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF = "Concatenate_Pdf_to_InvoicePdf";
-
 	public static final String TAGNAME_BPARTNER_RECIPIENT_ID = "C_BPartner_Recipient_ID";
-
 	public static final String TAGNAME_STORED_PREFIX = "Stored_";
 
-	public static final String TAGS_SEPARATOR = "\n";
-
-	public static final String TAGS_KEY_VALUE_SEPARATOR = "=";
+	private static final String TAGS_SEPARATOR = "\n";
+	private static final String TAGS_KEY_VALUE_SEPARATOR = "=";
+	private static final MapSplitter TAGS_STRING_SPLITTER = Splitter.on(TAGS_SEPARATOR)
+			.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR);
+	private static final MapJoiner TAGS_STRING_JOINER = Joiner.on(TAGS_SEPARATOR)
+			.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR);
 
 	private final ImmutableMap<String, String> tags;
-	
-	public static final ImmutableMap<String, String> emptyTags=ImmutableMap.of();
 
-	@Builder(toBuilder = true)
+	@Builder
 	private AttachmentTags(@Singular final Map<String, String> tags)
 	{
 		this.tags = ImmutableMap.copyOf(tags);
-		validateTags(tags);
+		assertTagsValid(tags);
 	}
 
-	public Map<String,String> toMap(){
-		return new HashMap<String,String>(tags);
+	private static void assertTagsValid(@NonNull final Map<String, String> tags)
+	{
+		tags.forEach((tagName, tagValue) -> assertTagValid(tagName, tagValue));
 	}
-	
+
+	private static void assertTagValid(final String tagName, final String tagValue)
+	{
+		Check.errorIf(tagName.contains(TAGS_SEPARATOR),
+				"Tags may not contain {}; illegal entry: name={}; value={}",
+				TAGS_SEPARATOR, tagName, tagValue);
+		Check.errorIf(tagName.contains(TAGS_KEY_VALUE_SEPARATOR),
+				"Tags may not contain {}; illegal entry: name={}; value={}",
+				TAGS_KEY_VALUE_SEPARATOR, tagName, tagValue);
+
+		Check.errorIf(tagValue.contains(TAGS_SEPARATOR),
+				"Tags may not contain {}; illegal entry: name={}; value={}",
+				TAGS_SEPARATOR, tagName, tagValue);
+		Check.errorIf(tagValue.contains(TAGS_KEY_VALUE_SEPARATOR),
+				"Tags may not contain {}; illegal entry: name={}; value={}",
+				TAGS_KEY_VALUE_SEPARATOR, tagName, tagValue);
+	}
+
+	private AttachmentTags()
+	{
+		this.tags = ImmutableMap.of();
+	}
+
+	public ImmutableMap<String, String> toMap()
+	{
+		return tags;
+	}
+
+	/**
+	 * @deprecated Please use {@link #getTagsAsString()}
+	 */
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.addValue(tags)
+				.toString();
+	}
+
 	public String getTagsAsString()
 	{
-
-		final String tagsAsString = Joiner
-				.on(TAGS_SEPARATOR)
-				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
-				.join(tags);
-		return tagsAsString;
+		return TAGS_STRING_JOINER.join(tags);
 	}
 
 	/** @return {@code true} if this attachment has a tag with the given name; the label doesn't need to have a value though. */
@@ -103,12 +165,12 @@ public class AttachmentTags
 
 	public boolean hasTagSetToTrue(@NonNull final String tagName)
 	{
-		return StringUtils.toBoolean(tags.get(tagName), false);
+		return StringUtils.toBoolean(getTagValueOrNull(tagName), false);
 	}
 
 	public boolean hasTagSetToString(@NonNull final String tagName, @NonNull final String tagValue)
 	{
-		return Objects.equals(tags.get(tagName), tagValue);
+		return Objects.equals(getTagValueOrNull(tagName), tagValue);
 	}
 
 	public String getTagValue(@NonNull final String tagName)
@@ -135,33 +197,17 @@ public class AttachmentTags
 		return true;
 	}
 
-	public static Map<String, String> getTagsFromString(final String tagsAsString)
+	public AttachmentTags withTag(@NonNull final String tagName, @NonNull final String tagValue)
 	{
-		final Map<String, String> tags;
-		tags = Splitter
-				.on(TAGS_SEPARATOR)
-				.withKeyValueSeparator(TAGS_KEY_VALUE_SEPARATOR)
-				.split(tagsAsString);
-		return tags;
-	}
-
-	private static void validateTags(@NonNull final Map<String, String> tags)
-	{
-		for (final Entry<String, String> tag : tags.entrySet())
+		if (hasTagSetToString(tagName, tagValue))
 		{
-			Check.errorIf(tag.getKey().contains(TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getKey().contains(TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
-
-			Check.errorIf(tag.getValue().contains(TAGS_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					TAGS_SEPARATOR, tag.getKey(), tag.getValue());
-			Check.errorIf(tag.getValue().contains(TAGS_KEY_VALUE_SEPARATOR),
-					"Tags may not contain {}; illegal entry: name={}; value={}",
-					TAGS_KEY_VALUE_SEPARATOR, tag.getKey(), tag.getValue());
+			return this;
+		}
+		else
+		{
+			final HashMap<String, String> map = new HashMap<>(this.tags);
+			map.put(tagName, tagValue);
+			return new AttachmentTags(map);
 		}
 	}
 }

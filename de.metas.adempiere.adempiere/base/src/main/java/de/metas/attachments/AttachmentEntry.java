@@ -63,7 +63,7 @@ public final class AttachmentEntry
 		this.type = type;
 		this.filename = filename != null ? filename : new File(this.name).getName();
 
-		this.tags = tags != null ? tags : AttachmentTags.builder().tags(AttachmentTags.emptyTags).build();
+		this.tags = tags != null ? tags : AttachmentTags.EMPTY;
 
 		this.linkedRecords = linkedRecords;
 

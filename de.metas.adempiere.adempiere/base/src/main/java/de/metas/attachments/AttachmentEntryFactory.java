@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Map;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -14,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -84,7 +82,9 @@ public class AttachmentEntryFactory
 		if (request.getTags() != null)
 		{
 			attachmentEntryRecord.setTags(request.getTags().getTagsAsString());
-		}else {
+		}
+		else
+		{
 			attachmentEntryRecord.setTags(null);
 		}
 		// we need to save for type=Data in order not to loose the byte[] if any.
@@ -97,18 +97,6 @@ public class AttachmentEntryFactory
 
 	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
-		final String tagsAsString = entryRecord.getTags();
-
-		final Map<String, String> tags;
-		if (Check.isEmpty(tagsAsString, true))
-		{
-			tags = ImmutableMap.of();
-		}
-		else
-		{
-			tags = AttachmentTags.getTagsFromString(tagsAsString);
-		}
-		final AttachmentTags attachmentTags = AttachmentTags.builder().tags(tags).build();
 		return AttachmentEntry.builder()
 				.id(AttachmentEntryId.ofRepoIdOrNull(entryRecord.getAD_AttachmentEntry_ID()))
 				.name(entryRecord.getFileName())
@@ -116,7 +104,7 @@ public class AttachmentEntryFactory
 				.filename(entryRecord.getFileName())
 				.mimeType(entryRecord.getContentType())
 				.url(extractUriOrNull(entryRecord))
-				.tags(attachmentTags)
+				.tags(AttachmentTags.ofString(entryRecord.getTags()))
 				.build();
 	}
 

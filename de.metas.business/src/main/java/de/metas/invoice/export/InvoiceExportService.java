@@ -128,7 +128,8 @@ public class InvoiceExportService
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-		final AttachmentTags attachmentTag = AttachmentTags.builder().tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
+		final AttachmentTags attachmentTag = AttachmentTags.builder()
+				.tag(AttachmentTags.TAGNAME_IS_DOCUMENT, StringUtils.ofBoolean(true)) // other than the "input" xml with was more or less just a template, this is a document
 				.tag(AttachmentTags.TAGNAME_BPARTNER_RECIPIENT_ID, Integer.toString(exportResult.getRecipientId().getRepoId()))
 				.tag(InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER, exportResult.getInvoiceExportProviderId())
 				.build();

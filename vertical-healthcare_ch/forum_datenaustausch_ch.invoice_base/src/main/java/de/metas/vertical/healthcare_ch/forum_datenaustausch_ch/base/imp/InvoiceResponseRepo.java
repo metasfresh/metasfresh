@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.Instant;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -20,8 +22,6 @@ import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -50,6 +50,13 @@ public class InvoiceResponseRepo
 {
 	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
 	private static final String MSG_INVOICE_NOT_FOUND_BY_ID_1P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id";
+
+	private final AttachmentEntryService attachmentEntryService;
+
+	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
+	{
+		this.attachmentEntryService = attachmentEntryService;
+	}
 
 	/**
 	 * Persists the given {@code importedInvoiceResponse}, if a related invoice can be found.
