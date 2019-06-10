@@ -84,6 +84,8 @@ export default class Attributes extends Component {
     const { handleBackdropLock } = this.props;
     const { loading } = this.state;
 
+    console.log('HANDLE BACKDROP')
+
     if (!loading) {
       this.setState(
         {
@@ -105,11 +107,9 @@ export default class Attributes extends Component {
   };
 
   handleKeyDown = e => {
-    switch (e.key) {
-      case 'Escape':
-        e.preventDefault();
-        this.handleCompletion();
-        break;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      this.handleCompletion();
     }
   };
 

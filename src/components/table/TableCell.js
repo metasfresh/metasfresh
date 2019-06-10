@@ -108,6 +108,7 @@ class TableCell extends PureComponent {
     this.state = {
       tooltipToggled: false,
       widgetFocused: false,
+      attributesDropdownShown: false,
     };
   }
 
@@ -128,13 +129,14 @@ class TableCell extends PureComponent {
   }
 
   setFocusedWidgetFalse = () => {
+    console.log('TableCell setFocusedWidgetFalse: ', this.props.property)
     this.setState({
       widgetFocused: false,
     });
   };
 
   setFocusedWidgetTrue = callback => {
-    console.log('TableCell enter')
+    console.log('TableCell setFocusedWidgetTrue: ', this.props.property)
     this.setState(
       {
         widgetFocused: true,
@@ -145,6 +147,15 @@ class TableCell extends PureComponent {
         callback && callback();
       }
     );
+  };
+
+  toggleDropdownShown = val => {
+    let attributesDropdownShown =
+      val != null ? val : !this.state.attributesDropdownShown;
+
+    this.setState({
+      attributesDropdownShown,
+    });
   };
 
   widgetTooltipToggle = (field, value) => {
@@ -181,6 +192,28 @@ class TableCell extends PureComponent {
   handleKeyDown = e => {
     const { property, handleKeyDown, widgetData } = this.props;
     const { key } = e;
+    const { attributesDropdownShown } = this.state;
+
+    console.log('TableCell handleKeyDown: ', key, widgetData[0], this.state.widgetFocused)
+    if (widgetData[0].widgetType === 'ProductAttributes') {
+      console.log('HERE1')
+      if (key === 'Enter' && !attributesDropdownShown) {
+        console.log('HERE2')
+        // e.stopPropagation();
+        // this.setState({ attributesDropdownShown: true });
+        this.toggleDropdownShown(true);
+        // return;
+      } else if (key === 'Escape' && attributesDropdownShown) {
+        console.log('HERE4')
+        // this.setState({ attributesDropdownShown: false });
+        this.toggleDropdownShown(false);
+      } else if (attributesDropdownShown) {
+        console.log('HERE3')
+        // e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+    }
 
     if (['Enter', 'Tab', 'Escape'].includes(key)) {
       this.setFocusedWidgetTrue();
@@ -231,6 +264,8 @@ class TableCell extends PureComponent {
       widgetData[0].value && widgetData[0].value.description
         ? widgetData[0].value.description
         : tdValue;
+    const widgetTabIndex =
+      widgetData[0].widgetType === 'ProductAttributes' ? 0 : -1;
     let tdTitle =
       item.widgetType === 'YesNo' ||
       item.widgetType === 'Switch' ||
@@ -270,6 +305,7 @@ class TableCell extends PureComponent {
         onDoubleClick={handleDoubleClick}
         onKeyDown={this.handleKeyDown}
         onFocus={e => {
+          console.log('TableCell onFocus: ', widgetFocused)
           if (!widgetFocused) {
             onCellFocused(e, property, widgetData);
           } else {
@@ -304,10 +340,15 @@ class TableCell extends PureComponent {
             viewId={viewId}
             tabId={mainTable ? null : tabId}
             noLabel={true}
-            tabIndex={-1}
+            tabIndex={widgetTabIndex}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
-            onClickOutside={onClickOutside}
+            onClickOutside={e => {
+              // this.setState({ attributesDropdownShown: false });
+              console.log('TableCell widget onclickoutside')
+              this.toggleDropdownShown(false);
+              onClickOutside(e);
+            }}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}

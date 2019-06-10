@@ -14,6 +14,16 @@ class AttributesDropdown extends Component {
     };
   }
 
+  componentDidMount() {
+    if (this.form) {
+      const inputs = this.form.getElementsByClassName('js-input-field');
+
+      if (inputs.length) {
+        inputs[0].focus();
+      }
+    }
+  }
+
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
 
@@ -94,7 +104,10 @@ class AttributesDropdown extends Component {
 
   render() {
     return (
-      <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
+      <div
+        className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
+        ref={c => (this.form = c)}
+      >
         {this.renderFields()}
       </div>
     );
