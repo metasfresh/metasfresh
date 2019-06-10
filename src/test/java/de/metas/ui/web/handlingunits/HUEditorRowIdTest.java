@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -92,4 +95,18 @@ public class HUEditorRowIdTest
 			assertThat(rowId2).isEqualTo(rowId);
 		}
 	}
+
+	/**
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/1206
+	 */
+	@Test
+	public void test_extractHUIdsOnly_shall_extract_the_HU_from_CUs_too()
+	{
+		final DocumentIdsSelection rowIds = DocumentIdsSelection.of(ImmutableList.of(
+				HUEditorRowId.ofHUStorage(HuId.ofRepoId(10), HuId.ofRepoId(1), ProductId.ofRepoId(100)).toDocumentId() //
+		));
+
+		assertThat(HUEditorRowId.extractHUIdsOnly(rowIds)).containsExactly(HuId.ofRepoId(10));
+	}
+
 }
