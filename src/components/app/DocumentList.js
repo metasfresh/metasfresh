@@ -222,7 +222,7 @@ export class DocumentList extends Component {
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
-
+      // console.log('connectWebSocket', msg);
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
@@ -356,12 +356,14 @@ export class DocumentList extends Component {
               const { allowedCloseActions } = response.data;
 
               if (allowedCloseActions) {
+                // console.log('fetchLayoutAndData dispatch', allowedCloseActions);
                 dispatch(updateRawModal(windowType, { allowedCloseActions }));
               }
 
+              // console.log('fetchLayoutAndData viewId', viewId);
               if (viewId) {
                 this.connectWebSocket(viewId);
-
+                // console.log('fetchLayoutAndData isNewFilter', !isNewFilter);
                 if (!isNewFilter) {
                   this.browseView();
                 } else {
@@ -377,6 +379,7 @@ export class DocumentList extends Component {
       .catch(() => {
         // We have to always update that fields to refresh that view!
         // Check the shouldComponentUpdate method
+        console.log('fetchLayoutAndData catch');
         this.setState(
           {
             data: 'notfound',
@@ -399,6 +402,7 @@ export class DocumentList extends Component {
     // in case of redirect from a notification, first call will have viewId empty
     if (viewId) {
       this.getData(viewId, page, sort).catch(err => {
+        console.log('browseView err', err);
         if (err.response && err.response.status === 404) {
           this.createView();
         }
@@ -436,6 +440,7 @@ export class DocumentList extends Component {
             triggerSpinner: false,
           },
           () => {
+            console.log('createView');
             this.connectWebSocket(response.data.viewId);
             this.getData(response.data.viewId, page, sort);
           }
@@ -446,32 +451,43 @@ export class DocumentList extends Component {
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
-
     filterViewRequest(
       windowType,
       viewId,
       filtersActive.toIndexedSeq().toArray()
-    ).then(response => {
-      const viewId = response.data.viewId;
+    )
+      .then(response => {
+        const viewId = response.data.viewId;
+        // console.log('filterView', viewId);
+        if (isIncluded) {
+          dispatch(setListIncludedView({ windowType, viewId }));
+        }
 
-      if (isIncluded) {
-        dispatch(setListIncludedView({ windowType, viewId }));
-      }
-
-      this.mounted &&
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: viewId,
+              triggerSpinner: false,
+            },
+            () => {
+              this.getData(viewId, page, sort);
+            }
+          );
+      })
+      .catch(() => {
+        console.log('filterView catch');
         this.setState(
           {
-            data: {
-              ...response.data,
-            },
-            viewId: viewId,
             triggerSpinner: false,
           },
           () => {
-            this.getData(viewId, page, sort);
+            // this.createView();
           }
         );
-    });
+      });
   };
 
   /**
@@ -628,6 +644,7 @@ export class DocumentList extends Component {
   };
 
   handleFilterChange = activeFilters => {
+    console.log('handleFilterChange', activeFilters);
     this.setState(
       {
         filtersActive: activeFilters,
@@ -831,7 +848,7 @@ export class DocumentList extends Component {
     }
 
     const showQuickActions = true;
-
+    // console.log('DL render', layout);
     return (
       <div
         className={classnames('document-list-wrapper', {

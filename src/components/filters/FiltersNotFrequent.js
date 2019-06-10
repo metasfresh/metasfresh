@@ -24,7 +24,7 @@ class FiltersNotFrequent extends Component {
     if (target.classList && target.classList.contains('input-dropdown-list')) {
       return;
     }
-
+    console.log('handleClickOutside', widgetShown);
     if (allowOutsideClick && !widgetShown) {
       dropdownToggled();
       this.toggleDropdown(false);
@@ -73,7 +73,7 @@ class FiltersNotFrequent extends Component {
       buttonCaption = captions[0];
       panelCaption = captions[1];
     }
-
+    console.log('filtersNotFrequent render', isOpenDropdown);
     return (
       <div className="filter-wrapper filters-not-frequent">
         <button

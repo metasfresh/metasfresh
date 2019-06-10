@@ -283,7 +283,7 @@ class Filters extends Component {
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
-
+    console.log('Filters applyFilters', valid);
     this.setState(
       {
         notValidFields: !valid,
