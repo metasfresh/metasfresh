@@ -59,6 +59,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 	public static final String PARAM_Postal = "Postal";
 	public static final String PARAM_CountryId = "C_Country_ID";
 	public static final String PARAM_Distance = "Distance";
+	public static final String PARAM_VisitorAddress = "VisitorAddress";
 
 	private final static Logger logger = LogManager.getLogger(LocationAreaSearchDocumentFilterConverter.class);
 
@@ -85,7 +86,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		if (addressCoordinates == null)
 		{
 			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", filter);
-			return null;
+			//			todo add trl for the exception!
+			throw new AdempiereException("Location not found").markAsUserValidationError();
 		}
 
 		final int distanceInKm = extractDistanceInKm(filter);
