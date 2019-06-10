@@ -307,6 +307,10 @@ public final class SqlViewKeyColumnNamesMap
 			final String selectionColumnName = useKeyColumnName ? getSingleKeyColumnName() : getSingleWebuiSelectionColumnName();
 			final String keyColumnName = (sqlColumnPrefix != null ? sqlColumnPrefix : "") + selectionColumnName;
 			final Set<Integer> recordIds = rowIdsConverter != null ? rowIdsConverter.convertToRecordIds(rowIds) : rowIds.toIntSet();
+			if (recordIds.isEmpty())
+			{
+				throw new AdempiereException("No recordIds were extracted from " + rowIds);
+			}
 
 			final List<Object> sqlParams = embedSqlParams ? null : new ArrayList<>();
 			final String sql = DB.buildSqlList(keyColumnName, recordIds, sqlParams);
@@ -394,7 +398,7 @@ public final class SqlViewKeyColumnNamesMap
 		return DocumentId.ofComposedKeyParts(rowIdParts);
 	}
 
-	private final String buildKeyColumnNameEffective(final String keyColumnName, final String sqlColumnPrefix, final boolean useKeyColumnName)
+	private String buildKeyColumnNameEffective(final String keyColumnName, final String sqlColumnPrefix, final boolean useKeyColumnName)
 	{
 		final String selectionColumnName = useKeyColumnName ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
 		if (sqlColumnPrefix != null && !sqlColumnPrefix.isEmpty())
