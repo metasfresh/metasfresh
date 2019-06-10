@@ -10,6 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.107
+
+## Features
+* metasfresh
+  * [#5204](https://github.com/metasfresh/metasfresh/issues/5204) On-the-fly auto-allocate available HUs while creating shipments
+  * [#5208](https://github.com/metasfresh/metasfresh/issues/5208) Attribute Age automatism
+
 # metasfresh 5.106
 
 ## Features
