@@ -82,19 +82,3 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2019-06-10 10:15:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546539
 ;
-
--- 2019-06-10T10:19:45.989
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_AttachmentEntry (AD_AttachmentEntry_ID,AD_Client_ID,AD_Org_ID,ContentType,Created,CreatedBy,FileName,IsActive,Tags,Type,Updated,UpdatedBy) VALUES (540160,0,0,'application/octet-stream',TO_TIMESTAMP('2019-06-10 10:19:45','YYYY-MM-DD HH24:MI:SS'),100,'5524170_migration_2019-06-10_postgresql.sql','Y','','D',TO_TIMESTAMP('2019-06-10 10:19:45','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2019-06-10T10:19:45.996
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_AttachmentEntry SET BinaryData=? WHERE AD_AttachmentEntry_ID=540160
-;
-
--- 2019-06-10T10:19:46.222
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Attachment_MultiRef (AD_AttachmentEntry_ID,AD_Attachment_MultiRef_ID,AD_Client_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,IsActive,Record_ID,Updated,UpdatedBy) VALUES (540160,540023,0,0,276,TO_TIMESTAMP('2019-06-10 10:19:46','YYYY-MM-DD HH24:MI:SS'),100,'Y',576808,TO_TIMESTAMP('2019-06-10 10:19:46','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
