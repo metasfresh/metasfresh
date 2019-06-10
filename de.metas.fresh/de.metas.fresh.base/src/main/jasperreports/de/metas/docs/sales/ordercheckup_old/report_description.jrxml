@@ -6,7 +6,8 @@
 	<property name="ireport.zoom" value="1.6105100000000023"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -23,6 +24,7 @@
 	r.cont_phone,
 	r.cont_fax,
 	r.HandOverLocation,
+	r.HandOverLocationName,
 	r.PreparationDate,
 	r.document_no,
 	r.WarehouseName,
@@ -41,17 +43,42 @@ WHERE
 LIMIT 1
 ;]]>
 	</queryString>
-	<field name="reference" class="java.lang.String"/>
-	<field name="cont_name" class="java.lang.String"/>
-	<field name="cont_phone" class="java.lang.String"/>
-	<field name="cont_fax" class="java.lang.String"/>
-	<field name="handoverlocation" class="java.lang.String"/>
-	<field name="preparationdate" class="java.sql.Timestamp"/>
-	<field name="document_no" class="java.lang.String"/>
-	<field name="warehousename" class="java.lang.String"/>
-	<field name="plantname" class="java.lang.String"/>
-	<field name="reportdocumenttypename" class="java.lang.String"/>
-	<field name="datepromised" class="java.sql.Timestamp"/>
+	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="reference"/>
+	</field>
+	<field name="cont_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
+	</field>
+	<field name="cont_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
+	</field>
+	<field name="cont_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
+	</field>
+	<field name="handoverlocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="handoverlocation"/>
+	</field>
+	<field name="handoverlocationname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="handoverlocationname"/>
+	</field>
+	<field name="preparationdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="preparationdate"/>
+	</field>
+	<field name="document_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="document_no"/>
+	</field>
+	<field name="warehousename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="warehousename"/>
+	</field>
+	<field name="plantname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="plantname"/>
+	</field>
+	<field name="reportdocumenttypename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="reportdocumenttypename"/>
+	</field>
+	<field name="datepromised" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="datepromised"/>
+	</field>
 	<variable name="docno" class="java.lang.String">
 		<variableExpression><![CDATA[]]></variableExpression>
 		<initialValueExpression><![CDATA["Auftragsbestätigung"]]></initialValueExpression>
@@ -116,7 +143,7 @@ LIMIT 1
 				<textElement>
 					<font fontName="Arial" size="10" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{handoverlocation}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{handoverlocationname}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="textField-6" x="90" y="8" width="218" height="13" forecolor="#000000" uuid="2d94c569-3bc2-49b0-a3c8-c3b965d541fb"/>

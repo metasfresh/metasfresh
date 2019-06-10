@@ -1,13 +1,8 @@
-package de.metas.process;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
-
-import de.metas.util.Services;
+package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * metasfresh-pharma
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -27,21 +22,14 @@ import de.metas.util.Services;
  * #L%
  */
 
-public class AD_Window_CopyWindow extends JavaProcess
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder(toBuilder = true)
+public class XMLParty
 {
-	private static final String PARAM_Source_AD_Window_ID = "AD_Window_ID";
-	@Param(parameterName = PARAM_Source_AD_Window_ID, mandatory = true)
-	private AdWindowId sourceWindowId;
-
-	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
-
-	@Override
-	protected String doIt()
-	{
-		final AdWindowId targetWindowId = AdWindowId.ofRepoId(getProcessInfo().getRecord_ID());
-		windowDAO.copyWindow(targetWindowId, sourceWindowId);
-
-		return MSG_OK;
-	}
-
+	@NonNull
+	String eanParty;
 }

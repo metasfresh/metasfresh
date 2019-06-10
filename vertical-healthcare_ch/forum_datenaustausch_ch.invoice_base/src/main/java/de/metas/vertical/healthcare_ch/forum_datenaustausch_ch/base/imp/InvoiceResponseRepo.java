@@ -10,8 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Repository;
 
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
@@ -19,6 +17,8 @@ import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,13 +48,6 @@ public class InvoiceResponseRepo
 	private static final String MSG_INVOICE_NOT_FOUND_2P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found";
 	private static final String MSG_INVOICE_NOT_FOUND_BY_ID_1P = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id";
 
-	private final AttachmentEntryService attachmentEntryService;
-
-	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
-	{
-		this.attachmentEntryService = attachmentEntryService;
-	}
-
 	/**
 	 * Persists the given {@code importedInvoiceResponse}, if a related invoice can be found.
 	 * Lookup is done either via {@link ImportedInvoiceResponse#getInvoiceId()} or via {@link ImportedInvoiceResponse#getDocumentNumber()} and {@link ImportedInvoiceResponse#getInvoiceCreated()}.
@@ -67,9 +60,18 @@ public class InvoiceResponseRepo
 
 		updateInvoiceRecord(importedInvoiceResponse, invoiceRecord);
 
-		attachFileToInvoiceRecord(importedInvoiceResponse, invoiceRecord);
-
 		return InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+	}
+
+	@Nullable
+	public InvoiceId retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
+	{
+		final I_C_Invoice i_c_invoice = retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(importedInvoiceResponse.getDocumentNumber(), importedInvoiceResponse.getInvoiceCreated());
+		if (i_c_invoice != null)
+		{
+			return InvoiceId.ofRepoId(i_c_invoice.getC_Invoice_ID());
+		}
+		return null;
 	}
 
 	private I_C_Invoice retrieveInvoiceRecord(@NonNull final ImportedInvoiceResponse importedInvoiceResponse)
@@ -86,16 +88,10 @@ public class InvoiceResponseRepo
 		return invoiceRecord;
 	}
 
+	@NonNull
 	private I_C_Invoice retrieveInvoiceRecordByDocumentNoAndCreated(@NonNull final String documentNo, @NonNull final Instant created)
 	{
-		final I_C_Invoice invoiceRecord = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Invoice.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Invoice.COLUMN_Created, created)
-				.create()
-				.setRequiredAccess(Access.WRITE)
-				.firstOnly(I_C_Invoice.class);
+		final I_C_Invoice invoiceRecord = retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(documentNo, created);
 
 		if (invoiceRecord != null)
 		{
@@ -111,6 +107,19 @@ public class InvoiceResponseRepo
 
 		throw new InvoiceResponseRepoException(message)
 				.markAsUserValidationError();
+	}
+
+	@Nullable
+	private I_C_Invoice retrieveInvoiceRecordByDocumentNoAndCreatedOrNull(@NonNull final String documentNo, @NonNull final Instant created)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMN_DocumentNo, documentNo)
+				.addEqualsFilter(I_C_Invoice.COLUMN_Created, created)
+				.create()
+				.setRequiredAccess(Access.WRITE)
+				.firstOnly(I_C_Invoice.class);
 	}
 
 	private I_C_Invoice retrieveInvoiceRecordById(@NonNull final InvoiceId invoiceId)
@@ -144,18 +153,7 @@ public class InvoiceResponseRepo
 		saveRecord(invoiceRecord);
 	}
 
-	private void attachFileToInvoiceRecord(
-			@NonNull final ImportedInvoiceResponse response,
-			@NonNull final I_C_Invoice invoiceRecord)
-	{
-		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
-				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
-				.tags(response.getAdditionalTags())
-				.build();
-
-		attachmentEntryService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
-	}
-
+	@SuppressWarnings("WeakerAccess")
 	public static final class InvoiceResponseRepoException extends AdempiereException
 	{
 		private static final long serialVersionUID = -4024895067979792864L;
