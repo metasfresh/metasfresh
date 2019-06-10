@@ -354,7 +354,7 @@ ListWidget.propTypes = {
   initialFocus: PropTypes.any,
   doNotOpenOnFocus: PropTypes.bool,
   setNextProperty: PropTypes.func,
-  disableAutoFocus: PropTypes.func,
+  disableAutofocus: PropTypes.func,
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,

@@ -84,8 +84,6 @@ export default class Attributes extends Component {
     const { handleBackdropLock } = this.props;
     const { loading } = this.state;
 
-    console.log('HANDLE BACKDROP')
-
     if (!loading) {
       this.setState(
         {
@@ -244,6 +242,17 @@ export default class Attributes extends Component {
 
 Attributes.propTypes = {
   patch: PropTypes.func.isRequired,
+  dataId: PropTypes.string,
+  docType: PropTypes.string,
+  entity: PropTypes.string,
+  widgetData: PropTypes.object,
+  tabIndex: PropTypes.number,
+  tabId: PropTypes.string,
+  fieldName: PropTypes.string,
   handleBackdropLock: PropTypes.func,
   isModal: PropTypes.bool,
+  readonly: PropTypes.bool,
+  rowId: PropTypes.string,
+  attributeType: PropTypes.string,
+  onBlur: PropTypes.func,
 };
