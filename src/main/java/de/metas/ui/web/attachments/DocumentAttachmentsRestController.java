@@ -206,7 +206,6 @@ public class DocumentAttachmentsRestController
 		{
 			throw new AdempiereException("Delete not allowed");
 		}
-
 		final DocumentId entryId = DocumentId.of(entryIdStr);
 		getDocumentAttachments(windowIdStr, documentId)
 				.deleteEntry(entryId);

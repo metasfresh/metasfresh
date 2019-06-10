@@ -179,6 +179,7 @@ final class DocumentAttachments
 			attachmentEntryService.unattach(recordRef, entry);
 
 			notifyRelatedDocumentTabsChanged();
+
 		}
 		else if (ID_PREFIX_Archive.equals(idPrefix))
 		{
