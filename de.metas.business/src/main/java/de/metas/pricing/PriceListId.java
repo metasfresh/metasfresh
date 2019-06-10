@@ -1,11 +1,13 @@
 package de.metas.pricing;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,6 +34,7 @@ import javax.annotation.Nullable;
 @Value
 public class PriceListId implements RepoIdAware
 {
+	@JsonCreator
 	public static PriceListId ofRepoId(final int repoId)
 	{
 		if (repoId == NONE.repoId)
@@ -41,7 +44,8 @@ public class PriceListId implements RepoIdAware
 		return new PriceListId(repoId);
 	}
 
-	@Nullable public static PriceListId ofRepoIdOrNull(final int repoId)
+	@Nullable
+	public static PriceListId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
@@ -63,5 +67,12 @@ public class PriceListId implements RepoIdAware
 	public boolean isNone()
 	{
 		return repoId == NONE.repoId;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

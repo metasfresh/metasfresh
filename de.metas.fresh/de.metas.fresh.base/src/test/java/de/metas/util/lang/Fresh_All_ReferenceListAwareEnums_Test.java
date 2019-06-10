@@ -1,15 +1,10 @@
-package de.metas.event.log;
+package de.metas.util.lang;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import org.junit.Test;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.fresh.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -29,31 +24,12 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-public final class EventLogId implements RepoIdAware
+public class Fresh_All_ReferenceListAwareEnums_Test
 {
-	@JsonCreator
-	public static EventLogId ofRepoId(final int repoId)
+	@Test
+	public void test()
 	{
-		return new EventLogId(repoId);
-	}
-
-	public static EventLogId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
-
-	int repoId;
-
-	private EventLogId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_EventLog_ID");
-	}
-
-	@JsonValue
-	@Override
-	public int getRepoId()
-	{
-		return repoId;
+		new ClasspathReferenceListAwareEnumsTester()
+				.test();
 	}
 }

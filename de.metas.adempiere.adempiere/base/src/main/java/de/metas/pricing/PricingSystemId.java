@@ -1,8 +1,10 @@
 package de.metas.pricing;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -30,6 +32,7 @@ import lombok.Value;
 @Value
 public class PricingSystemId implements RepoIdAware
 {
+	@JsonCreator
 	public static PricingSystemId ofRepoId(final int repoId)
 	{
 		if (repoId == NONE.repoId)
@@ -62,5 +65,12 @@ public class PricingSystemId implements RepoIdAware
 	public boolean isNone()
 	{
 		return repoId == NONE.repoId;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

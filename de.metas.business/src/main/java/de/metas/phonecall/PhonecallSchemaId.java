@@ -38,6 +38,11 @@ public class PhonecallSchemaId implements RepoIdAware
 		return new PhonecallSchemaId(repoId);
 	}
 
+	public static PhonecallSchemaId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	private PhonecallSchemaId(final int repoId)

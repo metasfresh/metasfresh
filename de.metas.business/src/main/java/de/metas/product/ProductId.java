@@ -56,6 +56,11 @@ public class ProductId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new ProductId(repoId) : null;
 	}
 
+	public static ProductId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ProductId(repoId) : null;
+	}
+
 	public static Set<ProductId> ofRepoIds(final Collection<Integer> repoIds)
 	{
 		return repoIds.stream()

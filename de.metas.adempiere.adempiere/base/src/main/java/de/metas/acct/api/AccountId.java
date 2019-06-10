@@ -44,7 +44,6 @@ public class AccountId implements RepoIdAware
 		return new AccountId(repoId);
 	}
 
-	@JsonCreator
 	public static AccountId ofRepoIdOrNull(final int repoId)
 	{
 		if (repoId <= 0)

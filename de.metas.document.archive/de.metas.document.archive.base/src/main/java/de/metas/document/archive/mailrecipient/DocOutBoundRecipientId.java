@@ -1,8 +1,10 @@
 package de.metas.document.archive.mailrecipient;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -32,6 +34,7 @@ public class DocOutBoundRecipientId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static DocOutBoundRecipientId ofRepoId(final int repoId)
 	{
 		return new DocOutBoundRecipientId(repoId);
@@ -49,5 +52,12 @@ public class DocOutBoundRecipientId implements RepoIdAware
 	private DocOutBoundRecipientId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
