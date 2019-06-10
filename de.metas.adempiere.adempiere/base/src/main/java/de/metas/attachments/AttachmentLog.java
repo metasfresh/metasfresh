@@ -1,26 +1,14 @@
 package de.metas.attachments;
 
 import java.net.URI;
-import java.util.Date;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.attachments.AttachmentEntry.AttachmentEntryBuilder;
 import de.metas.attachments.AttachmentEntry.Type;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocation;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.BPartnerLocation.BPartnerLocationBuilder;
-import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 
@@ -67,7 +55,6 @@ public final class AttachmentLog
 		this.type = attachmentEntry.getType();
 		this.tags = attachmentEntry.getTags();
 		this.attachmentEntry=attachmentEntry;
-//		this.attachmentId = attachmentEntry.getId();
 		this.contentType = attachmentEntry.getMimeType();
 		this.recordRef = recordRef;
 		this.description = description;

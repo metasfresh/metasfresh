@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_Log;
 import org.springframework.stereotype.Service;
 
