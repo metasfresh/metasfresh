@@ -816,6 +816,9 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 .meta-icon-calendar {
     font-size: 18px;
     line-height: 1.2;
+    position: absolute;
+    right: 10px;
+    pointer-events: none;
 }
 
 .lookup-tooltip {
