@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
@@ -38,7 +40,7 @@ import lombok.ToString;
  */
 
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(exclude = { "yyMMdd" })
 public final class ExpirationDate
 {
 	@JsonCreator
@@ -61,6 +63,11 @@ public final class ExpirationDate
 	public static ExpirationDate ofLocalDate(@NonNull final LocalDate date)
 	{
 		return new ExpirationDate(toYYMMDD(date), date);
+	}
+
+	public static ExpirationDate ofNullableLocalDate(@Nullable final LocalDate date)
+	{
+		return date != null ? ofLocalDate(date) : null;
 	}
 
 	private static final DateTimeFormatter FORMAT_yyMMdd = DateTimeFormatter.ofPattern("yyMMdd");
