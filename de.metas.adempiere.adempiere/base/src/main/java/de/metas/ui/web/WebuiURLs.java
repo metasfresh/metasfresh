@@ -4,9 +4,11 @@ import java.util.Map;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +47,7 @@ public class WebuiURLs
 	}
 
 	// services
+	private static final Logger logger = LogManager.getLogger(WebuiURLs.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String PARAM_windowId = "windowId";
@@ -72,6 +75,7 @@ public class WebuiURLs
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))
 		{
+			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
 		}
 

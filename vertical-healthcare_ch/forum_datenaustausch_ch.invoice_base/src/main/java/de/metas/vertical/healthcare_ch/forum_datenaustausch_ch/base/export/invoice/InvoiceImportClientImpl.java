@@ -6,7 +6,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.Objects;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.RejectedError;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.XmlBody;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLEmployee;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.payload.body.contact.XMLTelecom;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.invoice_gateway.spi.InvoiceImportClient;
@@ -21,6 +28,8 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlPayload;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -49,7 +58,6 @@ import lombok.NonNull;
  * The importing process that we currently have is in the same module and knows to use this implementation.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class InvoiceImportClientImpl implements InvoiceImportClient
 {
@@ -82,27 +90,130 @@ public class InvoiceImportClientImpl implements InvoiceImportClient
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(inputStreamToUse);
 		inputStreamToUse.reset();
 
-		final CrossVersionResponseConverter converter = crossVersionServiceRegistry.getResponseConverterForXsdName(xsdName);
+		final CrossVersionResponseConverter converter = crossVersionServiceRegistry.getResponseConverterForXsdName(Objects.requireNonNull(xsdName));
 
 		final XmlResponse xInvoiceResponse = converter.toCrossVersionResponse(inputStreamToUse);
 
 		final XmlPayload payload = xInvoiceResponse.getPayload();
 		final XmlInvoice invoice = payload.getInvoice();
+		final XmlBody body = payload.getBody();
 
 		final Instant invoiceCreatedTimestamp = Instant.ofEpochSecond(invoice.getRequestTimestamp().longValue());
 
 		final ImportedInvoiceResponseBuilder builder = ImportedInvoiceResponse
 				.builder()
-				.documentNumber(invoice.getRequestId())
+				.documentNumber(invoice.getRequestId()) //invoiceNo
 				.invoiceCreated(invoiceCreatedTimestamp)
+				.client(getClient(body))
+				.invoiceRecipient(getRecipient(body))
+				.reason(getErrors(body))
+				.explanation(getExplanation(body))
+				.responsiblePerson(getResponsiblePerson(body))
+				.phone(getPhone(body))
+				.email(getEmail(body))
+				.billerEan(getBillerEan(body))
 				.request(request);
 
-		if (payload.getBody().getRejected() != null)
+		if (body.getRejected() != null)
 		{
 			builder.status(Status.REJECTED);
 		}
 
 		return builder.build();
+	}
+
+	@NonNull
+	private String getClient(@NonNull final XmlBody body)
+	{
+		return body.getPatient().getPerson().getFamilyName() + " " + body.getPatient().getPerson().getGivenName();
+	}
+
+	@NonNull
+	private String getBillerEan(@NonNull final XmlBody body)
+	{
+		return body.getBiller().getEanParty();
+	}
+
+	@Nullable
+	private String getEmail(@NonNull final XmlBody body)
+	{
+		if (body.getContact().getEmployee() != null)
+			if (body.getContact().getEmployee().getOnline() != null)
+			{
+				return Joiner
+						.on("; ")
+						.join(body.getContact().getEmployee().getOnline().getEmail());
+			}
+		return null;
+	}
+
+	@Nullable
+	private String getPhone(@NonNull final XmlBody body)
+	{
+		final XMLEmployee employee = body.getContact().getEmployee();
+		if (employee != null)
+		{
+			final XMLTelecom employeeTelecom = employee.getTelecom();
+			if (employeeTelecom != null)
+			{
+				return Joiner
+						.on("; ")
+						.join(employeeTelecom.getPhone());
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	private String getResponsiblePerson(@NonNull final XmlBody body)
+	{
+		String response = "";
+
+		final XMLEmployee employee = body.getContact().getEmployee();
+
+		if (employee != null)
+		{
+			response += employee.getFamilyName();
+			if (employee.getGivenName() != null)
+			{
+				response += " " + employee.getGivenName();
+			}
+		}
+
+		if (response.isEmpty())
+		{
+			return null;
+		}
+		return response;
+	}
+
+	@Nullable
+	private String getExplanation(final XmlBody body)
+	{
+		if (body.getRejected() != null)
+		{
+			return body.getRejected().getExplanation();
+		}
+		return null;
+	}
+
+	@NonNull
+	private String getRecipient(@NonNull final XmlBody body)
+	{
+		return body.getContact().getCompany().getCompanyName();
+	}
+
+	@SuppressWarnings("UnstableApiUsage")
+	private ImmutableList<RejectedError> getErrors(@NonNull final XmlBody body)
+	{
+		if (body.getRejected() != null)
+		{
+			return body.getRejected().getErrors()
+					.stream()
+					.map(it -> new RejectedError(it.getCode(), it.getText()))
+					.collect(ImmutableList.toImmutableList());
+		}
+		return ImmutableList.of();
 	}
 
 }

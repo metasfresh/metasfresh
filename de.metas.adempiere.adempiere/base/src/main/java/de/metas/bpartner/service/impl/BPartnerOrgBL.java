@@ -23,14 +23,18 @@ package de.metas.bpartner.service.impl;
  */
 
 
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.user.UserId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -101,6 +105,18 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	}
 
 	@Override
+	public Optional<UserId> retrieveUserInChargeOrNull(@NonNull final OrgId orgId)
+	{
+		final I_AD_User user = retrieveUserInChargeOrNull(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		if (user != null)
+		{
+			return Optional.of(UserId.ofRepoId(user.getAD_User_ID()));
+		}
+		return Optional.empty();
+	}
+
+	@Override
+	@Deprecated
 	public I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);

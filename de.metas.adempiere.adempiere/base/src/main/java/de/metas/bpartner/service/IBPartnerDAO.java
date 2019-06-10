@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.user.UserId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -83,6 +84,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+
+	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, String externalId);
 
