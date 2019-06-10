@@ -1,15 +1,14 @@
 package de.metas.attachments.storeattachment;
 
-import lombok.NonNull;
-
 import java.net.URI;
 
 import org.springframework.stereotype.Component;
 
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,13 +45,14 @@ public class DefaultAttachmentStoredListener implements AttachmentStoredListener
 	@Override
 	public void attachmentWasStored(@NonNull final AttachmentEntry attachmentEntry, @NonNull final URI storageIdentifier)
 	{
+		final AttachmentTags attachmentTags = attachmentEntry.getTags()
+				.withTag(AttachmentTags.TAGNAME_STORED_PREFIX + SystemTime.millis(), storageIdentifier.toString());
 		final AttachmentEntry attachmentEntryWithStoreInfo = attachmentEntry
 				.toBuilder()
-				.tag(AttachmentConstants.TAGNAME_STORED_PREFIX + SystemTime.millis(), storageIdentifier.toString())
+				.tags(attachmentTags)
 				.build();
 
 		attachmentEntryService.save(attachmentEntryWithStoreInfo);
 	}
-
 
 }

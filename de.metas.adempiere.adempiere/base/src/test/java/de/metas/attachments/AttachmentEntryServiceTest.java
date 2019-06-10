@@ -130,15 +130,17 @@ public class AttachmentEntryServiceTest
 				.builderFromByteArray(
 						"bPartnerAttachment_eith_tags",
 						"bPartnerAttachment_with_tags.data".getBytes())
-				.tag("tag1Name", "tag1Value")
-				.tag("tag2Name", "tag2Value")
+				.tags(AttachmentTags.builder()
+						.tag("tag1Name", "tag1Value")
+						.tag("tag2Name", "tag2Value")
+						.build())
 				.build();
 
 		// invoke the method under test
 		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, requestWithTags);
 
-		assertThat(newEntry.getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
-		assertThat(newEntry.getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
+		assertThat(newEntry.getTags().getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
+		assertThat(newEntry.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
 
 		return newEntry;
 	}
@@ -148,16 +150,21 @@ public class AttachmentEntryServiceTest
 	{
 		final AttachmentEntry attachmentEntry = createNewAttachment_with_tags_performTest();
 
-		final AttachmentEntry attachmentEntryWithAdditionalTag = attachmentEntry.toBuilder().tag("tag3Name", "tag3Value").build();
+		final AttachmentEntry attachmentEntryWithAdditionalTag = attachmentEntry.toBuilder()
+				.tags(AttachmentTags.builder()
+						.tag("tag3Name", "tag3Value")
+						.tag("tag2Name", "tag2Value")
+						.build())
+				.build();
 
 		// invoke the method under test
 		attachmentEntryService.save(attachmentEntryWithAdditionalTag);
 
 		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getId());
 
-		assertThat(result.getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
-		assertThat(result.getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
-		assertThat(result.getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
+		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
+		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
+		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
 
 		assertThat(attachmentEntryWithAdditionalTag.getLinkedRecords()).isEqualTo(attachmentEntry.getLinkedRecords());
 	}

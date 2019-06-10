@@ -36,7 +36,7 @@ public class InventoryId implements RepoIdAware
 
 	public static InventoryId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new InventoryId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;

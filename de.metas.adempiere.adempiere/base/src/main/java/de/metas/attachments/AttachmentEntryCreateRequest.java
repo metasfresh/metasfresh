@@ -1,16 +1,9 @@
 package de.metas.attachments;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-import lombok.Value;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 
 import javax.activation.DataSource;
 
@@ -20,6 +13,11 @@ import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -164,6 +162,5 @@ public class AttachmentEntryCreateRequest
 	byte[] data;
 	URI url;
 
-	@Singular
-	Map<String, String> tags;
+	AttachmentTags tags;
 }

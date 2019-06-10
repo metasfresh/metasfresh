@@ -53,6 +53,11 @@ public class ProductBOMId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new ProductBOMId(repoId) : null;
 	}
 
+	public static ProductBOMId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ProductBOMId(repoId) : null;
+	}
+
 	public static Optional<ProductBOMId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));

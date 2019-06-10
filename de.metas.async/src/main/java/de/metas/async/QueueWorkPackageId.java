@@ -2,6 +2,9 @@ package de.metas.async;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
@@ -30,9 +33,15 @@ import lombok.Value;
 @Value
 public class QueueWorkPackageId implements RepoIdAware
 {
+	@JsonCreator
 	public static QueueWorkPackageId ofRepoId(final int repoId)
 	{
 		return new QueueWorkPackageId(repoId);
+	}
+
+	public static QueueWorkPackageId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;
@@ -40,5 +49,12 @@ public class QueueWorkPackageId implements RepoIdAware
 	private QueueWorkPackageId(final int repoId)
 	{
 		this.repoId = assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
