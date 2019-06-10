@@ -153,6 +153,7 @@ public class AttachmentEntryServiceTest
 		final AttachmentEntry attachmentEntryWithAdditionalTag = attachmentEntry.toBuilder()
 				.tags(AttachmentTags.builder()
 						.tag("tag3Name", "tag3Value")
+						.tag("tag2Name", "tag2Value")
 						.build())
 				.build();
 
@@ -161,7 +162,7 @@ public class AttachmentEntryServiceTest
 
 		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getId());
 
-		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
+		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
 		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
 		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
 
