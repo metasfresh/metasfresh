@@ -31,7 +31,7 @@ const createDummyTableProps = function(tableProps) {
   };
 };
 
-describe.only("Table in Tab component", () => {
+describe("Table in Tab component", () => {
   describe("rendering tests:", () => {
     it("renders without errors", () => {
       const initialState = { windowHandler: {
@@ -53,12 +53,12 @@ describe.only("Table in Tab component", () => {
       const html = wrapper.html();
     });
 
-    it("cells widgets are rendered when necessary", () => {
+    it.skip("cells widgets are rendered when necessary", () => {
 
     });
   });
 
-  describe("Rows navigation tests:", () => {
+  describe.skip("Rows navigation tests:", () => {
     it("Cell is selected and row focused", () => {
     });
 
