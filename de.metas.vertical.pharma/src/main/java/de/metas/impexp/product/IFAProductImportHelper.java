@@ -13,6 +13,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.location.ICountryDAO;
+import de.metas.product.IProductDAO;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery;
 import de.metas.tax.api.ITaxDAO.TaxCategoryQuery.VATType;
@@ -35,12 +36,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -84,7 +85,14 @@ import lombok.experimental.UtilityClass;
 
 		product.setProductType(X_I_Product.PRODUCTTYPE_Item);
 		product.setC_UOM(Services.get(IUOMDAO.class).retrieveEachUOM(Env.getCtx()));
-		product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		if (importRecord.getM_Product_Category_ID() > 0)
+		{
+			product.setM_Product_Category_ID(importRecord.getM_Product_Category_ID());
+		}
+		else
+		{
+			product.setM_Product_Category(Services.get(IProductDAO.class).retrieveDefaultProductCategory(Env.getCtx()));
+		}
 
 		InterfaceWrapperHelper.save(product);
 

@@ -3,9 +3,11 @@
  */
 package de.metas.letter;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -39,6 +41,7 @@ public class BoilerPlateId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static BoilerPlateId ofRepoId(final int repoId)
 	{
 		return new BoilerPlateId(repoId);
@@ -51,11 +54,18 @@ public class BoilerPlateId implements RepoIdAware
 
 	private BoilerPlateId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_BoilerPlate_ID");
 	}
 
-	public static int toRepoIdOr(final BoilerPlateId locationId, final int defaultValue)
+	public static int toRepoId(final BoilerPlateId id)
 	{
-		return locationId != null ? locationId.getRepoId() : defaultValue;
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

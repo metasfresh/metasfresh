@@ -4,6 +4,9 @@ import static de.metas.util.Check.assumeGreaterThanZero;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.RepoIdAware;
@@ -54,9 +57,15 @@ public class InventoryLineHU
 	@Value
 	public static class InventoryLineHUId implements RepoIdAware
 	{
+		@JsonCreator
 		public static InventoryLineHUId ofRepoId(int repoId)
 		{
 			return new InventoryLineHUId(repoId);
+		}
+
+		public static InventoryLineHUId ofRepoIdOrNull(@Nullable final int repoId)
+		{
+			return repoId > 0 ? ofRepoId(repoId) : null;
 		}
 
 		int repoId;
@@ -64,6 +73,13 @@ public class InventoryLineHU
 		private InventoryLineHUId(int repoId)
 		{
 			this.repoId = assumeGreaterThanZero(repoId, "inventoryLineHUId");
+		}
+
+		@Override
+		@JsonValue
+		public int getRepoId()
+		{
+			return repoId;
 		}
 	}
 

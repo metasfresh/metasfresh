@@ -2,6 +2,9 @@ package de.metas.material.planning;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,6 +37,7 @@ import lombok.Value;
 @Value
 public class ResourceTypeId implements RepoIdAware
 {
+	@JsonCreator
 	public static ResourceTypeId ofRepoId(final int repoId)
 	{
 		return new ResourceTypeId(repoId);
@@ -59,5 +63,12 @@ public class ResourceTypeId implements RepoIdAware
 	private ResourceTypeId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "S_ResourceType_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

@@ -1,5 +1,9 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice_Rejection_Detail;
+import org.springframework.stereotype.Repository;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -23,13 +27,12 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
  */
 
 import com.google.common.base.Joiner;
+
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice_Rejection_Detail;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public class InvoiceRejectionDetailRepo
@@ -81,7 +84,7 @@ public class InvoiceRejectionDetailRepo
 	{
 		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
 				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
-				.tags(response.getAdditionalTags())
+				.tags(AttachmentTags.ofMap(response.getAdditionalTags()))
 				.build();
 
 		attachmentEntryService.createNewAttachment(invoiceRejectionDetail, attachmentEntryCreateRequest);

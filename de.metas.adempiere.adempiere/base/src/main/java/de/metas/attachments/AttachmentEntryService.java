@@ -3,19 +3,14 @@ package de.metas.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -32,6 +27,10 @@ import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderServic
 import de.metas.attachments.migration.AttachmentMigrationService;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
 /*
  * #%L
@@ -59,6 +58,7 @@ import de.metas.util.collections.CollectionUtils;
 public class AttachmentEntryService
 {
 	private final AttachmentEntryRepository attachmentEntryRepository;
+	private final AttachmentLogRepository attachmentLogRepository;
 	private final AttachmentEntryFactory attachmentEntryFactory;
 	private final AttachmentMigrationService attachmentMigrationService;
 	private final RecordToReferenceProviderService attachmentHandlerRegistry;
@@ -68,11 +68,13 @@ public class AttachmentEntryService
 	{
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
 		final AttachmentEntryRepository attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory);
+		final AttachmentLogRepository attachmentLogRepository = new AttachmentLogRepository();
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
 		return new AttachmentEntryService(
 				attachmentEntryRepository,
+				attachmentLogRepository,
 				attachmentEntryFactory,
 				attachmentMigrationService,
 				attachmentHandlerRegistry);
@@ -85,11 +87,13 @@ public class AttachmentEntryService
 	 */
 	public AttachmentEntryService(
 			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
+			@NonNull final AttachmentLogRepository attachmentLogRepository,
 			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
 			@NonNull final AttachmentMigrationService attachmentMigrationService,
 			@NonNull final RecordToReferenceProviderService attachmentHandlerRegistry)
 	{
 		this.attachmentEntryRepository = attachmentEntryRepository;
+		this.attachmentLogRepository=attachmentLogRepository;
 		this.attachmentEntryFactory = attachmentEntryFactory;
 		this.attachmentMigrationService = attachmentMigrationService;
 		this.attachmentHandlerRegistry = attachmentHandlerRegistry;
@@ -266,6 +270,11 @@ public class AttachmentEntryService
 
 		if (withRemovedLinkedRecordAndId.getLinkedRecords().isEmpty())
 		{
+			final AttachmentLog attachmentLog = AttachmentLog.builder()
+					                                         .attachmentEntry(attachment)
+					                                         .recordRef(tableRecordReference)
+					                                         .build();
+			attachmentLogRepository.save(attachmentLog);
 			attachmentEntryRepository.delete(withRemovedLinkedRecordAndId);
 		}
 		return withRemovedLinkedRecordAndId;
@@ -280,8 +289,8 @@ public class AttachmentEntryService
 	{
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
-				.filter(e -> e.hasAllTagsSetToTrue(query.getTagsSetToTrue()))
-				.filter(e -> e.hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
+				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
+				.filter(e -> e.getTags().hasAllTagsSetToAnyValue(query.getTagsSetToAnyValue()))
 				.filter(e -> Check.isEmpty(query.getMimeType(), true) || Objects.equals(e.getMimeType(), query.getMimeType()))
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -40,6 +40,11 @@ public class DataEntrySectionId implements RepoIdAware
 		return new DataEntrySectionId(repoId);
 	}
 
+	public static DataEntrySectionId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	@JsonCreator

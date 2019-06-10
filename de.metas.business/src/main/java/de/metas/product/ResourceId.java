@@ -2,6 +2,9 @@ package de.metas.product;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -34,6 +37,7 @@ import lombok.Value;
 @Value
 public class ResourceId implements RepoIdAware
 {
+	@JsonCreator
 	public static ResourceId ofRepoId(final int repoId)
 	{
 		return new ResourceId(repoId);
@@ -59,5 +63,12 @@ public class ResourceId implements RepoIdAware
 	private ResourceId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "S_Resource_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }
