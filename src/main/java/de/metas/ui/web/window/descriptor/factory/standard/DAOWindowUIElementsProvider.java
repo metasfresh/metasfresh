@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
 import java.util.List;
-import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
@@ -10,9 +10,9 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.X_AD_UI_Element;
-import org.compiere.util.Env;
 
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,10 +41,9 @@ final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 	private final transient IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
 	@Override
-	public List<I_AD_UI_Section> getUISections(final int AD_Tab_ID)
+	public List<I_AD_UI_Section> getUISections(final AdTabId adTabId)
 	{
-		final Properties ctx = Env.getCtx();
-		return windowDAO.retrieveUISections(ctx, AD_Tab_ID);
+		return windowDAO.retrieveUISections(adTabId);
 	}
 
 	@Override
@@ -66,7 +65,7 @@ final class DAOWindowUIElementsProvider implements IWindowUIElementsProvider
 	}
 
 	@Override
-	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(final int adTabId)
+	public List<I_AD_UI_Element> getUIElementsOfTypeLabels(@NonNull final AdTabId adTabId)
 	{
 		return windowDAO.retrieveUIElementsQueryByTabId(adTabId)
 				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementType, X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels)

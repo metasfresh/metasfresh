@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -135,7 +136,7 @@ public class LayoutFactory
 		_adWindowId = gridTabVO.getAD_Window_ID();
 		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
-		final int templateTabId = Util.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID());
+		final AdTabId templateTabId = AdTabId.ofRepoId(Util.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID()));
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
