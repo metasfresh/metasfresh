@@ -1,13 +1,12 @@
 package de.metas.document.archive.spi.impl;
 
-import lombok.NonNull;
-
 import org.springframework.stereotype.Component;
 
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.automaticlinksharing.TableRecordRefProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,6 +44,6 @@ public class ReferenceableDocOutboundLogsProvider extends TableRecordRefProvider
 	@Override
 	protected boolean isExpandOnAttachmentEntry(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		return attachmentEntry.hasTagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT);
+		return attachmentEntry.getTags().hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT);
 	}
 }

@@ -1,8 +1,10 @@
 package org.adempiere.mm.attributes;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -32,6 +34,7 @@ public class AttributeValueId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static AttributeValueId ofRepoId(final int repoId)
 	{
 		return new AttributeValueId(repoId);
@@ -50,5 +53,12 @@ public class AttributeValueId implements RepoIdAware
 	private AttributeValueId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

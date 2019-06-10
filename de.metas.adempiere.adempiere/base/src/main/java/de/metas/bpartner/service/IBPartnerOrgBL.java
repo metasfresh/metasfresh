@@ -22,8 +22,10 @@ package de.metas.bpartner.service;
  * #L%
  */
 
+import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.user.UserId;
 import org.adempiere.ad.trx.api.ITrx;
 import de.metas.location.CountryId;
 import org.adempiere.service.OrgId;
@@ -71,14 +73,23 @@ public interface IBPartnerOrgBL extends ISingletonService
 	 */
 	I_C_BPartner_Location retrieveOrgBPLocation(Properties ctx, int orgId, String trxName);
 
+
 	/**
-	 * Returns the default contact of the given <code>orgId</code>'s bpartner. If there is no bpartner and/or user, then the user with the ID defined in {@link #AD_User_In_Charge_DEFAULT_ID} is
-	 * returned.
+	 * Returns the default UserId of the given <code>orgId</code>'s bpartner.
+	 */
+	Optional<UserId> retrieveUserInChargeOrNull(@NonNull final OrgId orgId);
+
+
+	/**
+	 * Returns the default contact of the given <code>orgId</code>'s bpartner.
+	 *
+	 * @deprecated Please use instead {@link #retrieveUserInChargeOrNull(OrgId)}
 	 *
 	 * @param ctx
 	 * @param orgId
 	 * @param trxName
 	 * @return
 	 */
+	@Deprecated
 	I_AD_User retrieveUserInChargeOrNull(Properties ctx, int orgId, String trxName);
 }

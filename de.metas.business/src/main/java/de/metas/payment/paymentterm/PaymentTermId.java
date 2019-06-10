@@ -1,8 +1,10 @@
 package de.metas.payment.paymentterm;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -30,6 +32,7 @@ import lombok.Value;
 @Value
 public class PaymentTermId implements RepoIdAware
 {
+	@JsonCreator
 	public static PaymentTermId ofRepoId(final int repoId)
 	{
 		return new PaymentTermId(repoId);
@@ -50,5 +53,12 @@ public class PaymentTermId implements RepoIdAware
 	private PaymentTermId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

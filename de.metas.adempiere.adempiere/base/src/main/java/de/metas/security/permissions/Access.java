@@ -1,5 +1,6 @@
 package de.metas.security.permissions;
 
+import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -24,7 +25,7 @@ import lombok.Value;
 @Value
 public final class Access implements ReferenceListAwareEnum
 {
-	public static final Access LOGIN = new Access("LOGIN", null);
+	public static final Access LOGIN = new Access("LOGIN", "L");
 	public static final Access READ = new Access("READ", X_AD_User_Record_Access.ACCESS_Read);
 	public static final Access WRITE = new Access("WRITE", X_AD_User_Record_Access.ACCESS_Write);
 	public static final Access REPORT = new Access("REPORT", X_AD_User_Record_Access.ACCESS_Report);
@@ -44,6 +45,11 @@ public final class Access implements ReferenceListAwareEnum
 			throw new AdempiereException("No Access found for code: " + code);
 		}
 		return access;
+	}
+
+	public static Set<Access> values()
+	{
+		return ALL_ACCESSES;
 	}
 
 	private final String name;

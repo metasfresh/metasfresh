@@ -38,6 +38,11 @@ public class DataEntryFieldId implements RepoIdAware
 		return new DataEntryFieldId(repoId);
 	}
 
+	public static DataEntryFieldId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	@JsonCreator

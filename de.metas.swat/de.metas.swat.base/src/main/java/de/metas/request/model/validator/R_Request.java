@@ -14,6 +14,8 @@ import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
+import de.metas.inout.QualityNoteId;
+import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.security.IRoleDAO;
@@ -96,7 +98,13 @@ public class R_Request
 	@CalloutMethod(columnNames = { de.metas.request.model.I_R_Request.COLUMNNAME_M_QualityNote_ID })
 	public void onQualityNoteChanged(final de.metas.request.model.I_R_Request request)
 	{
-		final I_M_QualityNote qualityNote = request.getM_QualityNote();
+		final QualityNoteId qualityNoteId = QualityNoteId.ofRepoIdOrNull(request.getM_QualityNote_ID());
+		if (qualityNoteId == null)
+		{
+			// nothing to do
+			return;
+		}
+		final I_M_QualityNote qualityNote = Services.get(IQualityNoteDAO.class).getById(qualityNoteId);
 		if (qualityNote == null)
 		{
 			// nothing to do

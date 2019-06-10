@@ -38,6 +38,11 @@ public class AdUISectionId implements RepoIdAware
 		return new AdUISectionId(repoId);
 	}
 
+	public static AdUISectionId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	private AdUISectionId(final int repoId)

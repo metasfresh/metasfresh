@@ -170,6 +170,7 @@ public final class ProcessInfo implements Serializable
 	private final OrgId orgId;
 	private final UserId userId;
 	private final RoleId roleId;
+	@Getter
 	private final AdWindowId adWindowId;
 
 	private final int windowNo;
@@ -486,7 +487,7 @@ public final class ProcessInfo implements Serializable
 
 	public int getAD_Window_ID()
 	{
-		return AdWindowId.toRepoId(adWindowId);
+		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
 	private static final ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)

@@ -310,7 +310,9 @@ public final class TableRecordReference implements ITableRecordReference
 	 * @param recordId
 	 */
 	@JsonCreator
-	public TableRecordReference(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
+	public TableRecordReference(
+			@JsonProperty("tableName") final String tableName,
+			@JsonProperty("recordId") final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		this.tableName = tableName;

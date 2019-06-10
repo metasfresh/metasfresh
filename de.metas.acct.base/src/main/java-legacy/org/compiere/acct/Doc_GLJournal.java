@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
@@ -33,6 +34,8 @@ import de.metas.acct.doc.AcctDocContext;
 import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.tax.ITaxAccountable;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 
 /**
@@ -218,7 +221,26 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 		docLine.setC_Tax_ID(0); // avoid setting C_Tax_ID by default
 		docLine.setAcctSchemaId(acctSchemaId);
+
+		final Quantity qty = extractQty(glJournalLine);
+		if (qty != null)
+		{
+			docLine.setQty(qty);
+		}
+		
 		return docLine;
+	}
+
+	private static Quantity extractQty(final I_GL_JournalLine glJournalLine)
+	{
+		final int uomId = glJournalLine.getC_UOM_ID();
+		if (uomId <= 0)
+		{
+			return null;
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
+		return Quantity.of(glJournalLine.getQty(), uom);
 	}
 
 	/**************************************************************************

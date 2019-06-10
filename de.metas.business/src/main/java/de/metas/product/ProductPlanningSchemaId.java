@@ -49,6 +49,11 @@ public class ProductPlanningSchemaId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new ProductPlanningSchemaId(repoId) : null;
 	}
 
+	public static ProductPlanningSchemaId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ProductPlanningSchemaId(repoId) : null;
+	}
+
 	public static int toRepoId(final ProductPlanningSchemaId id)
 	{
 		return id != null ? id.getRepoId() : -1;

@@ -1,14 +1,12 @@
-package de.metas.request.api;
+package de.metas.util.lang;
 
-import org.compiere.model.I_R_RequestType;
-
-import de.metas.util.ISingletonService;
+import org.junit.Test;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.fresh.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -17,20 +15,21 @@ import de.metas.util.ISingletonService;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IRequestTypeDAO extends ISingletonService
+public class Fresh_All_ReferenceListAwareEnums_Test
 {
-
-	I_R_RequestType retrieveVendorRequestType();
-
-	I_R_RequestType retrieveCustomerRequestType();
-
+	@Test
+	public void test()
+	{
+		new ClasspathReferenceListAwareEnumsTester()
+				.test();
+	}
 }

@@ -252,21 +252,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			}
 
 			@Override
-			public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location()
-			{
-				return receiptSchedule.getC_BPartner_Location();
-			}
-
-			@Override
 			public int getC_BPartner_ID()
 			{
 				return receiptSchedule.getC_BPartner_ID();
-			}
-
-			@Override
-			public org.compiere.model.I_C_BPartner getC_BPartner()
-			{
-				return receiptSchedule.getC_BPartner();
 			}
 
 			@Override
@@ -279,12 +267,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			public int getAD_User_ID()
 			{
 				return receiptSchedule.getAD_User_ID();
-			}
-
-			@Override
-			public org.compiere.model.I_AD_User getAD_User()
-			{
-				return receiptSchedule.getAD_User();
 			}
 		};
 	}
@@ -307,21 +289,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			}
 
 			@Override
-			public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location()
-			{
-				return getC_BPartner_Location_Effective(receiptSchedule);
-			}
-
-			@Override
 			public int getC_BPartner_ID()
 			{
 				return getC_BPartner_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public org.compiere.model.I_C_BPartner getC_BPartner()
-			{
-				return getC_BPartner_Effective(receiptSchedule);
 			}
 
 			@Override
@@ -334,12 +304,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			public int getAD_User_ID()
 			{
 				return getAD_User_Effective_ID(receiptSchedule);
-			}
-
-			@Override
-			public org.compiere.model.I_AD_User getAD_User()
-			{
-				return getAD_User_Effective(receiptSchedule);
 			}
 		};
 	}

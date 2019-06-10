@@ -48,6 +48,8 @@ import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IPriceListDAO extends ISingletonService
 {
 	public static final int M_PricingSystem_ID_None = PricingSystemId.NONE.getRepoId();
@@ -90,7 +92,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param date
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
-	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, Boolean processed);
+	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

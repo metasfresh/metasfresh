@@ -4,11 +4,12 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -36,6 +37,7 @@ import lombok.Value;
 @Value
 public class OrderLineId implements RepoIdAware
 {
+	@JsonCreator
 	public static OrderLineId ofRepoId(final int repoId)
 	{
 		return new OrderLineId(repoId);
@@ -66,5 +68,12 @@ public class OrderLineId implements RepoIdAware
 	private OrderLineId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

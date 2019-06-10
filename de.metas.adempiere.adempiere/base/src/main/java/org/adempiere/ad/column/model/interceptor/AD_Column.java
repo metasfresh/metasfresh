@@ -4,9 +4,14 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 
+import de.metas.i18n.po.POTrlRepository;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
@@ -88,4 +93,34 @@ public class AD_Column
 		elementTranslationBL.updateColumnTranslationsFromElement(elementId);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_IsTranslated })
+	public void assertTrlColumnExists(final I_AD_Column adColumn)
+	{
+		if (!adColumn.isTranslated())
+		{
+			return;
+		}
+
+		if (!DisplayType.isText(adColumn.getAD_Reference_ID()))
+		{
+			throw new AdempiereException("Only text columns are translatable");
+		}
+
+		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+		if (adTablesRepo.isVirtualColumn(adColumn))
+		{
+			throw new AdempiereException("Virtual columns are not translatable");
+		}
+
+		final String tableName = adTablesRepo.retrieveTableName(adColumn.getAD_Table_ID());
+		final String trlTableName = POTrlRepository.toTrlTableName(tableName);
+		final String columnName = adColumn.getColumnName();
+
+		if (!DB.isDBColumnPresent(trlTableName, columnName))
+		{
+			throw new AdempiereException("Before marking the column as translatable make sure " + trlTableName + "." + columnName + " exists."
+					+"\n If not, please manually create the table and/or column.");
+		}
+	}
 }

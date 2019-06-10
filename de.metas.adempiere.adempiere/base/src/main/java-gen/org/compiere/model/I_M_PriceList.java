@@ -357,6 +357,29 @@ public interface I_M_PriceList
     public static final String COLUMNNAME_IsPresentForProduct = "IsPresentForProduct";
 
 	/**
+	 * Set IsRoundNetAmountToCurrencyPrecision.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsRoundNetAmountToCurrencyPrecision (boolean IsRoundNetAmountToCurrencyPrecision);
+
+	/**
+	 * Get IsRoundNetAmountToCurrencyPrecision.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isRoundNetAmountToCurrencyPrecision();
+
+    /** Column definition for IsRoundNetAmountToCurrencyPrecision */
+    public static final org.adempiere.model.ModelColumn<I_M_PriceList, Object> COLUMN_IsRoundNetAmountToCurrencyPrecision = new org.adempiere.model.ModelColumn<I_M_PriceList, Object>(I_M_PriceList.class, "IsRoundNetAmountToCurrencyPrecision", null);
+    /** Column name IsRoundNetAmountToCurrencyPrecision */
+    public static final String COLUMNNAME_IsRoundNetAmountToCurrencyPrecision = "IsRoundNetAmountToCurrencyPrecision";
+
+	/**
 	 * Set Verkaufspreisliste.
 	 * This is a Sales Price List
 	 *
@@ -462,7 +485,6 @@ public interface I_M_PriceList
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -472,7 +494,6 @@ public interface I_M_PriceList
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

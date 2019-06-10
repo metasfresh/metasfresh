@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -180,12 +181,12 @@ public class OrderLineBL implements IOrderLineBL
 
 		final boolean taxIncluded = isTaxIncluded(ol);
 		final BigDecimal lineAmout = ol.getLineNetAmt();
-		final int taxPrecision = getPrecision(ol);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(ol);
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision);
+		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision.toInt());
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 
@@ -317,10 +318,10 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = ol.getC_Order();
 		final int priceListId = order.getM_PriceList_ID();
-		final CurrencyPrecision precision = Services.get(IPriceListBL.class).getPricePrecision(priceListId);
+		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
 		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
-		lineNetAmt = precision.roundIfNeeded(lineNetAmt);
+		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
 		ol.setLineNetAmt(lineNetAmt);
@@ -548,10 +549,24 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public int getPrecision(final org.compiere.model.I_C_OrderLine orderLine)
+	public CurrencyPrecision getPricePrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		return Services.get(IOrderBL.class).getPrecision(order);
+		return Services.get(IOrderBL.class).getPricePrecision(order);
+	}
+
+	@Override
+	public CurrencyPrecision getAmountPrecision(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		return Services.get(IOrderBL.class).getAmountPrecision(order);
+	}
+
+	@Override
+	public CurrencyPrecision getTaxPrecision(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		return Services.get(IOrderBL.class).getTaxPrecision(order);
 	}
 
 	@Override
@@ -665,8 +680,8 @@ public class OrderLineBL implements IOrderLineBL
 					.build();
 		}
 
-		final int stdPrecision = getPrecision(orderLine);
-		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, stdPrecision);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
+		final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
 				.productId(productId)
@@ -693,7 +708,6 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	/**
-	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/4535
 	 */
 	@Override

@@ -28,6 +28,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -80,7 +82,7 @@ import de.metas.util.time.SystemTime;
  *
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * @see [ http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962 ]
  * @version $Id: MOrder.java,v 1.5 2006/10/06 00:42:24 jjanke Exp $
  *
  * @author Teo Sarca, www.arhipac.ro
@@ -514,7 +516,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 *            <ul>
 	 *            <li>the new other line's <code>Ref_OrderLine_ID</code> is set to <code>fromLine</code>'s ID
 	 *            <li>if <code>fromLine</code> has a product with <code>AD_Org_ID!=0</code> and of fromLine's <code>AD_Org_ID</code> is different from this order's <code>AD_Org_ID</code>, then
-	 *            {@link IProductDAO#retrieveMappedProductIdOrNull(I_M_Product, I_AD_Org)} is called, to get the other org's pendant product.
+	 *            {@link IProductDAO#retrieveMappedProductIdOrNull(ProductId, OrgId)} is called, to get the other org's pendant product.
 	 *            </ul>
 	 * @param copyASI
 	 * @param fromLine
@@ -849,18 +851,6 @@ public class MOrder extends X_C_Order implements IDocument
 		return LegacyAdapters.convertToPOArray(inOuts, MInOut.class);
 	}	// getShipments
 
-	/**
-	 * Get Currency Precision
-	 *
-	 * @return precision
-	 *
-	 * @deprecated Please use {@link IOrderBL#getPrecision(I_C_Order)}.
-	 */
-	@Deprecated
-	public int getPrecision()
-	{
-		return Services.get(IOrderBL.class).getPrecision(this);
-	}	// getPrecision
 
 	/**
 	 * Get Document Status
@@ -1439,7 +1429,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * Reserve Inventory.
 	 * Counterpart: MInOut.completeIt()
 	 *
-	 * @param dt document type or null
+	 * @param docType document type or null
 	 * @param lines order lines (ordered by M_Product_ID for deadlock prevention)
 	 * @return true if (un) reserved
 	 */
@@ -1616,9 +1606,9 @@ public class MOrder extends X_C_Order implements IDocument
 			final int taxId = line.getC_Tax_ID();
 			if (!taxIds.contains(taxId))
 			{
-				final int taxPrecision = Services.get(IOrderLineBL.class).getPrecision(line);
+				final CurrencyPrecision taxPrecision = Services.get(IOrderLineBL.class).getTaxPrecision(line);
 				final boolean taxIncluded = Services.get(IOrderLineBL.class).isTaxIncluded(line);
-				final MOrderTax oTax = MOrderTax.get(line, taxPrecision, false, trxName);	// current Tax
+				final MOrderTax oTax = MOrderTax.get(line, taxPrecision.toInt(), false, trxName);	// current Tax
 				oTax.setIsTaxIncluded(taxIncluded);
 				if (!oTax.calculateTaxFromLines())
 				{
@@ -1644,15 +1634,15 @@ public class MOrder extends X_C_Order implements IDocument
 				final MTax[] cTaxes = tax.getChildTaxes(false);
 				for (final MTax cTax : cTaxes)
 				{
-					final int taxPrecision = Services.get(IOrderBL.class).getPrecision(this);
+					final CurrencyPrecision taxPrecision = Services.get(IOrderBL.class).getTaxPrecision(this);
 					final boolean taxIncluded = Services.get(IOrderBL.class).isTaxIncluded(this, cTax);
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision);
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
 					newOTax.setC_Order_ID(getC_Order_ID());
 					newOTax.setC_Tax_ID(cTax.getC_Tax_ID());
-					newOTax.setPrecision(taxPrecision);
+					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
 					newOTax.setTaxAmt(taxAmt);
@@ -1858,7 +1848,6 @@ public class MOrder extends X_C_Order implements IDocument
 
 	/**
 	 * Set the definite <code>DocumentNo</code> and <code>DateOrdered</code> after completed, both according to this order's <code>C_DocType</code>.<br>
-	 * Also invokes {@link IOrderBL#setPOReferenceIfRequired(I_C_Order)} (task 09667).
 	 */
 	private void setDefiniteDocumentNo()
 	{
