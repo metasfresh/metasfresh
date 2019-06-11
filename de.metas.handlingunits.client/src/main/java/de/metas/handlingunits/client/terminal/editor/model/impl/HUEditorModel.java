@@ -87,6 +87,7 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.logging.LogManager;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
@@ -1307,6 +1308,11 @@ public class HUEditorModel implements IDisposable
 		// Refresh the HUKeys
 		if (!inventories.isEmpty())
 		{
+			//
+			// Send notifications
+			InventoryUserNotificationsProducer.newInstance()
+					.notifyGenerated(inventories);
+
 			refreshSelectedHUKeys();
 		}
 	}
