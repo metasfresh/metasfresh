@@ -67,6 +67,9 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 	@Param(parameterName = "Distance", mandatory = true)
 	private BigDecimal distance;
 
+	@Param(parameterName = "VisitorsAddress")
+	private boolean visitorsAddress;
+
 	@Override protected String doIt()
 	{
 		final I_C_Location location = getSelectedLocationOrFirstAvailable();
@@ -92,12 +95,14 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 				.build());
 	}
 
-	@NonNull private WindowId getWindowId()
+	@NonNull
+	private WindowId getWindowId()
 	{
 		return WindowId.of(getProcessInfo().getAdWindowId().getRepoId());
 	}
 
-	@NonNull private DocumentFilter createAreaSearchFilter(final I_C_Location location)
+	@NonNull
+	private DocumentFilter createAreaSearchFilter(final I_C_Location location)
 	{
 		final ITranslatableString countryName = Services.get(ICountryDAO.class).getCountryNameById(CountryId.ofRepoId(location.getC_Country_ID()));
 
@@ -115,6 +120,7 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Postal, location.getPostal()))
 				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_CountryId, LookupValue.IntegerLookupValue.of(location.getC_Country_ID(), countryName, null)))
 				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_Distance, distance))
+				.addParameter(DocumentFilterParam.ofNameEqualsValue(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress, visitorsAddress))
 				.build();
 	}
 
