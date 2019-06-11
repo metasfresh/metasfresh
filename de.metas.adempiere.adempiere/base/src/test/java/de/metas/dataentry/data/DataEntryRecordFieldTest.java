@@ -4,7 +4,7 @@ import static de.metas.dataentry.data.DataEntryRecordTestConstants.CREATED_UPDAT
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 
 import org.junit.Test;
 
@@ -62,9 +62,9 @@ public class DataEntryRecordFieldTest
 	}
 
 	@Test
-	public void createDataEntryRecordField_ZonedDateTime()
+	public void createDataEntryRecordField_LocalDate()
 	{
-		final DataEntryRecordField<ZonedDateTime> result1 = DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, DataEntryRecordTestConstants.DATE_TIME);
-		assertThat(result1.getValue()).isEqualTo(DataEntryRecordTestConstants.DATE_TIME);
+		final DataEntryRecordField<LocalDate> result1 = DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, DataEntryRecordTestConstants.DATE);
+		assertThat(result1.getValue()).isEqualTo(DataEntryRecordTestConstants.DATE);
 	}
 }

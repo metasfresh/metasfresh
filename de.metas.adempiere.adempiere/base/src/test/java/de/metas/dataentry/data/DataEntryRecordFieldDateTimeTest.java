@@ -3,7 +3,6 @@ package de.metas.dataentry.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -35,19 +34,19 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
-public class DataEntryRecordFieldDateTest
+public class DataEntryRecordFieldDateTimeTest
 {
 	/**
-	 * Create two different instances that consist of equal primitives; make sure the two instances are equal.
+	 * Create two different instances that consist of the same primitives; make sure the two instances are equal.
 	 */
 	@Test
 	public void equals()
 	{
 		final long millis = SystemTime.millis();
 
-		final LocalDate date1 = LocalDate.of(2019, 06, 11);
-		final LocalDate date2 = LocalDate.of(2019, 06, 11);
-		assertThat(date1).isEqualTo(date2);// guard
+		final ZonedDateTime time1 = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("CET"));
+		final ZonedDateTime time2 = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.of("CET"));
+		assertThat(time1).isEqualTo(time2);// guard
 
 		final DataEntryFieldId id1 = DataEntryFieldId.ofRepoId(10);
 		final DataEntryFieldId id2 = DataEntryFieldId.ofRepoId(10);
@@ -63,8 +62,8 @@ public class DataEntryRecordFieldDateTest
 		final CreatedUpdatedInfo createdUpdatedInfo2 = CreatedUpdatedInfo.of(createdTime2, UserId.ofRepoId(10), updatedTime2, UserId.ofRepoId(20));
 		assertThat(createdUpdatedInfo1).isEqualTo(createdUpdatedInfo2); // guard
 
-		final DataEntryRecordFieldDate value1 = DataEntryRecordFieldDate.of(id1, createdUpdatedInfo1, date1);
-		final DataEntryRecordFieldDate value2 = DataEntryRecordFieldDate.of(id2, createdUpdatedInfo2, date2);
+		final DataEntryRecordFieldDateTime value1 = DataEntryRecordFieldDateTime.of(id1, createdUpdatedInfo1, time1);
+		final DataEntryRecordFieldDateTime value2 = DataEntryRecordFieldDateTime.of(id2, createdUpdatedInfo2, time2);
 
 		// invoke the method under test
 		assertThat(value1).isEqualTo(value2);
