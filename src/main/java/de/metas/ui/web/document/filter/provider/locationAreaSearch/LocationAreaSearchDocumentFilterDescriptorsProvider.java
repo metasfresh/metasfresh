@@ -49,7 +49,7 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 
 	private DocumentFilterDescriptor filterDescriptor;
 
-	public LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final LocationAreaSearchDescriptor descriptor)
+	LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final LocationAreaSearchDescriptor descriptor)
 	{
 		this.descriptor = descriptor;
 	}
@@ -101,7 +101,6 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 						.setWidgetType(DocumentFieldWidgetType.Integer))
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress)
-						// todo add trl, same as that of the element used in table!
 						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress))
 						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				//
@@ -110,6 +109,7 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 				.build();
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{

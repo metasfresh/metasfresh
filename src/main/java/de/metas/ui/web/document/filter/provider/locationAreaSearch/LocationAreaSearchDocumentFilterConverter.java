@@ -51,6 +51,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 {
 	public static final transient LocationAreaSearchDocumentFilterConverter instance = new LocationAreaSearchDocumentFilterConverter();
 
+	private static final String MSG_NoCoordinatesFoundForTheGivenLocation= "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
+
 	public static final String FILTER_ID = "location-area-search";
 
 	public static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
@@ -86,8 +88,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		if (addressCoordinates == null)
 		{
 			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", filter);
-			//			todo add trl for the exception!
-			throw new AdempiereException("Location not found").markAsUserValidationError();
+			throw new AdempiereException(MSG_NoCoordinatesFoundForTheGivenLocation).markAsUserValidationError();
 		}
 
 		final String visitorAddressQuery = constructVisitorAddressQuery(filter);
