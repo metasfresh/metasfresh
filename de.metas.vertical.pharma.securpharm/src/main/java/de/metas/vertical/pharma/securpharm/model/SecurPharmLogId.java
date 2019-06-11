@@ -1,5 +1,8 @@
 package de.metas.vertical.pharma.securpharm.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -29,9 +32,15 @@ import lombok.Value;
 @Value
 public class SecurPharmLogId implements RepoIdAware
 {
+	@JsonCreator
 	public static SecurPharmLogId ofRepoId(final int repoId)
 	{
 		return new SecurPharmLogId(repoId);
+	}
+
+	public static SecurPharmLogId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	int repoId;
@@ -39,5 +48,12 @@ public class SecurPharmLogId implements RepoIdAware
 	private SecurPharmLogId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

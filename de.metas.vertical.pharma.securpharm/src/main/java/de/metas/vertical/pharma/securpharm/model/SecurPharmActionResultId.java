@@ -23,6 +23,11 @@
 
 package de.metas.vertical.pharma.securpharm.model;
 
+import javax.annotation.Nullable;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -30,6 +35,17 @@ import lombok.Value;
 @Value
 public class SecurPharmActionResultId implements RepoIdAware
 {
+	@JsonCreator
+	public static SecurPharmActionResultId ofRepoId(final int repoId)
+	{
+		return new SecurPharmActionResultId(repoId);
+	}
+
+	public static SecurPharmActionResultId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	int repoId;
 
 	private SecurPharmActionResultId(final int repoId)
@@ -37,12 +53,14 @@ public class SecurPharmActionResultId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
 	}
 
-	public static SecurPharmActionResultId ofRepoId(final int repoId)
+	@Override
+	@JsonValue
+	public int getRepoId()
 	{
-		return new SecurPharmActionResultId(repoId);
+		return repoId;
 	}
 
-	public static int toRepoId(final SecurPharmActionResultId id)
+	public static int toRepoId(@Nullable final SecurPharmActionResultId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

@@ -25,6 +25,8 @@ package de.metas.vertical.pharma.securpharm.model;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -32,13 +34,6 @@ import lombok.Value;
 @Value
 public class SecurPharmConfigId implements RepoIdAware
 {
-	int repoId;
-
-	private SecurPharmConfigId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
-	}
-
 	public static SecurPharmConfigId ofRepoId(final int repoId)
 	{
 		return new SecurPharmConfigId(repoId);
@@ -54,4 +49,17 @@ public class SecurPharmConfigId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
+	int repoId;
+
+	private SecurPharmConfigId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }
