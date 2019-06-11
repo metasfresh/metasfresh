@@ -1098,6 +1098,13 @@ export function handleProcessResponse(response, type, id) {
           case 'openView':
             await dispatch(closeModal());
 
+            if (!action.modalOverlay) {
+              window.open(
+                `/window/${action.windowId}/?viewId=${action.viewId}`
+              );
+              return;
+            }
+
             await dispatch(
               openRawModal(action.windowId, action.viewId, action.profileId)
             );
