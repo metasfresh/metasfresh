@@ -14,6 +14,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.acct.api.ActivityId;
@@ -88,7 +90,12 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		}
 
 		final Timestamp movementDate = Env.getDate(getCtx());
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
+		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(husToDestroy, movementDate, ActivityId.ofRepoIdOrNull(-1), null, true, true);
+
+		//
+		// Send notifications
+		InventoryUserNotificationsProducer.newInstance()
+				.notifyGenerated(inventories);
 
 		huIdsDestroyed = husToDestroy
 				.stream()

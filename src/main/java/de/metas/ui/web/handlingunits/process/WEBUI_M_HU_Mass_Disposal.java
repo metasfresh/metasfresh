@@ -10,11 +10,12 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_M_Inventory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -61,10 +62,10 @@ public class WEBUI_M_HU_Mass_Disposal extends HUEditorProcessTemplate implements
 	@Param(parameterName = I_M_Inventory.COLUMNNAME_C_Activity_ID)
 	private int p_C_Activity_ID;
 
-	@Param( parameterName = I_M_Inventory.COLUMNNAME_Description)
+	@Param(parameterName = I_M_Inventory.COLUMNNAME_Description)
 	private String p_Description;
 
-	@Param (parameterName = "IsComplete")
+	@Param(parameterName = "IsComplete")
 	private boolean p_IsCompleteInventory;
 
 	@Override
@@ -101,13 +102,19 @@ public class WEBUI_M_HU_Mass_Disposal extends HUEditorProcessTemplate implements
 		final Timestamp movementDate = Env.getDate(getCtx());
 
 		final ActivityId activityId = ActivityId.ofRepoIdOrNull(p_C_Activity_ID);
-		huInventoryBL.moveToGarbage(husToDestroy, movementDate, activityId, p_Description, p_IsCompleteInventory, false);
+
+		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(husToDestroy, movementDate, activityId, p_Description, p_IsCompleteInventory, false);
 
 		huIdsDestroyed = husToDestroy
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+
+		//
+		// Send notifications
+		InventoryUserNotificationsProducer.newInstance()
+				.notifyGenerated(inventories);
 
 		return MSG_OK;
 	}
