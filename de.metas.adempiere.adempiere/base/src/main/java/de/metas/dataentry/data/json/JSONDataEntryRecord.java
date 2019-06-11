@@ -1,7 +1,7 @@
 package de.metas.dataentry.data.json;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class JSONDataEntryRecord
 {
-	Map<Integer, ZonedDateTime> dates;
+	Map<Integer, LocalDate> dates;
 
 	Map<Integer, DataEntryListValueId> listValues;
 
@@ -53,7 +53,7 @@ public class JSONDataEntryRecord
 	@Builder
 	@JsonCreator
 	private JSONDataEntryRecord(
-			@Singular @JsonProperty("dates") final Map<Integer, ZonedDateTime> dates,
+			@Singular @JsonProperty("dates") final Map<Integer, LocalDate> dates,
 			@Singular @JsonProperty("listValues") final Map<Integer, DataEntryListValueId> listValues,
 			@Singular @JsonProperty("numbers") final Map<Integer, BigDecimal> numbers,
 			@Singular @JsonProperty("strings") final Map<Integer, String> strings,
