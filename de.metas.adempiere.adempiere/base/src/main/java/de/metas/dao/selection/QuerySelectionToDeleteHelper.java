@@ -1,21 +1,22 @@
 package de.metas.dao.selection;
 
-import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.model.IQuery;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.dao.selection.model.I_T_Query_Selection_Pagination;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -80,7 +81,7 @@ public class QuerySelectionToDeleteHelper
 	}
 
 	/** Inserts the uuids in a hardcoded way, with one DB statement per 1000 uuids */
-	private static void scheduleDeleteSelectionsNow(final Set<String> uuids)
+	private static void scheduleDeleteSelectionsNow(@NonNull final Set<String> uuids)
 	{
 		if (uuids.isEmpty())
 		{
@@ -134,63 +135,68 @@ public class QuerySelectionToDeleteHelper
 
 	public static void deleteScheduledSelections()
 	{
-		//
+		Services
+				.get(ITrxManager.class)
+				.runInNewTrx(trxName -> deleteScheduledSelections0());
+	}
+
+	private static void deleteScheduledSelections0()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final PlainContextAware inheritedTrx = PlainContextAware.newWithThreadInheritedTrx();
+
 		// Tag scheduled IDs
 		final String executorId = UUID.randomUUID().toString();
 		{
-			Services.get(IQueryBL.class)
-			.createQueryBuilder(I_T_Query_Selection_ToDelete.class)
-			.addEqualsFilter(I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID, null)
-			.create()
-			.updateDirectly(new ISqlQueryUpdater<I_T_Query_Selection_ToDelete>()
-			{
+			final ICompositeQueryUpdater<I_T_Query_Selection_ToDelete> updater = queryBL
+					.createCompositeQueryUpdater(I_T_Query_Selection_ToDelete.class)
+					.addSetColumnValue(I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID, executorId);
 
-				@Override
-				public boolean update(I_T_Query_Selection_ToDelete model)
-				{
-					// TODO Auto-generated method stub
-					return false;
-				}
+			final int count = queryBL
+					.createQueryBuilder(I_T_Query_Selection_ToDelete.class, inheritedTrx)
+					.addEqualsFilter(I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID, null)
+					.create()
+					.updateDirectly(updater);
 
-				@Override
-				public String getSql(Properties ctx, List<Object> params)
-				{
-					// TODO Auto-generated method stub
-					return null;
-				}
-			});
-
-			final String sql = "UPDATE " + I_T_Query_Selection_ToDelete.Table_Name + " SET "
-					+ I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
-					+ " WHERE " + I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + " IS NULL";
-			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
 			if (count <= 0)
 			{
 				return;
 			}
-
 			logger.trace("Tagged {} selectionIds to be deleted", count);
 		}
 
-		//
+		final IQuery<I_T_Query_Selection_ToDelete> selectionToDeleteQuery = queryBL
+				.createQueryBuilder(I_T_Query_Selection_ToDelete.class, inheritedTrx)
+				.addEqualsFilter(I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID, executorId)
+				.create();
+
 		// Delete from T_Query_Selection
 		{
-			final String sql = "DELETE FROM " + I_T_Query_Selection.Table_Name + " t "
-					+ "\n WHERE EXISTS (SELECT 1 FROM " + I_T_Query_Selection_ToDelete.Table_Name + " s "
-					+ "\n       WHERE "
-					+ "\n           s." + I_T_Query_Selection_ToDelete.COLUMNNAME_UUID + "=t." + I_T_Query_Selection.COLUMNNAME_UUID
-					+ "\n           AND s." + I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + "=?"
-					+ "\n )";
-			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+			final int count = queryBL.createQueryBuilder(I_T_Query_Selection.class)
+					.addInSubQueryFilter(
+							I_T_Query_Selection.COLUMN_UUID,
+							I_T_Query_Selection_ToDelete.COLUMN_UUID,
+							selectionToDeleteQuery)
+					.create()
+					.deleteDirectly();
 			logger.trace("Deleted {} rows from {}", count, I_T_Query_Selection.Table_Name);
 		}
 
-		//
+		// Delete from T_Query_Selection_Pagination
+		{
+			final int count = queryBL.createQueryBuilder(I_T_Query_Selection_Pagination.class)
+					.addInSubQueryFilter(
+							I_T_Query_Selection_Pagination.COLUMN_UUID,
+							I_T_Query_Selection_ToDelete.COLUMN_UUID,
+							selectionToDeleteQuery)
+					.create()
+					.deleteDirectly();
+			logger.trace("Deleted {} rows from {}", count, I_T_Query_Selection.Table_Name);
+		}
+
 		// Delete scheduled IDs
 		{
-			final String sql = "DELETE FROM " + I_T_Query_Selection_ToDelete.Table_Name
-					+ " WHERE " + I_T_Query_Selection_ToDelete.COLUMNNAME_Executor_UUID + "=?";
-			final int count = DB.executeUpdateEx(sql, new Object[] { executorId }, ITrx.TRXNAME_None);
+			final int count = selectionToDeleteQuery.deleteDirectly();
 			logger.trace("Deleted {} rows from {}", count, I_T_Query_Selection_ToDelete.Table_Name);
 		}
 	}

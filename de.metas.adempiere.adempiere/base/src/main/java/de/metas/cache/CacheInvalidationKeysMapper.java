@@ -16,12 +16,12 @@ import de.metas.cache.model.CacheInvalidateRequest;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,7 +36,7 @@ import de.metas.cache.model.CacheInvalidateRequest;
 public interface CacheInvalidationKeysMapper<K>
 {
 	/**
-	 * Provide a possibly empty collection of cache keys for the give table record reference.
+	 * Provide a possibly empty collection of cache keys for the given table record reference.
 	 * Allows {@link CCache#resetForRecordId(TableRecordReference)} to only remove a limited number of cached entries.
 	 * <p>
 	 * Implementors can assume that

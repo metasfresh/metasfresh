@@ -58,7 +58,7 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 	}
 
 	@Override
-	public JsonBPartnerComposite retrieveBPartner(@NonNull final String bpartnerIdentifier)
+	public Optional<JsonBPartnerComposite> retrieveBPartner(@NonNull final String bpartnerIdentifier)
 	{
 		final JsonBPartnerCompositeBuilder result = JsonBPartnerComposite.builder();
 
@@ -105,13 +105,13 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		final JsonContact contact2 = createMockContact("c2");
 		result.contact(contact2);
 
-		return result.build();
+		return Optional.of(result.build());
 	}
 
 	@Override
-	public JsonBPartnerLocation retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier)
+	public Optional<JsonBPartnerLocation> retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier)
 	{
-		return createMockLocation("l" + Long.toString(nextMetasFreshId().getValue()), "DE");
+		return Optional.of(createMockLocation("l" + Long.toString(nextMetasFreshId().getValue()), "DE"));
 	}
 
 	private JsonBPartnerLocation createMockLocation(
@@ -134,9 +134,9 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 	}
 
 	@Override
-	public JsonContact retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
+	public Optional<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
 	{
-		return createMockContact("c" + Long.toString(nextMetasFreshId().getValue()));
+		return Optional.of(createMockContact("c" + Long.toString(nextMetasFreshId().getValue())));
 	}
 
 	private JsonContact createMockContact(@NonNull final String prefix)
@@ -164,14 +164,14 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		if (Check.isEmpty(next))
 		{
 			pagingDescriptor.nextPage(MOCKED_NEXT); // will return the first page with the 2nd page's identifier
-			compositeList.item(retrieveBPartner("1234"));
+			compositeList.item(retrieveBPartner("1234").get());
 		}
 		else
 		{
 			if (MOCKED_NEXT.equals(next))
 			{
 				pagingDescriptor.nextPage(null); // will return the 2nd and last page
-				compositeList.item(retrieveBPartner("1235"));
+				compositeList.item(retrieveBPartner("1235").get());
 			}
 			else
 			{

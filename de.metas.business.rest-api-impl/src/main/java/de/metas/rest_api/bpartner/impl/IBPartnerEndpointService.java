@@ -34,11 +34,11 @@ import de.metas.rest_api.bpartner.JsonContactList;
 public interface IBPartnerEndpointService
 {
 
-	JsonBPartnerComposite retrieveBPartner(String bpartnerIdentifier);
+	Optional<JsonBPartnerComposite> retrieveBPartner(String bpartnerIdentifier);
 
-	JsonBPartnerLocation retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier);
+	Optional<JsonBPartnerLocation> retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier);
 
-	JsonContact retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier);
+	Optional<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier);
 
 	Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(Long epochTimestampMillis, String next);
 

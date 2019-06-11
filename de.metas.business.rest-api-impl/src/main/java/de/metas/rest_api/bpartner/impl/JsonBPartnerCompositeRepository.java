@@ -1,11 +1,10 @@
 package de.metas.rest_api.bpartner.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.util.Collection;
 import java.util.List;
-
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -13,20 +12,24 @@ import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
+import de.metas.cache.CacheInvalidationKeysMapper;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -54,33 +57,59 @@ import lombok.NonNull;
 @Repository
 public class JsonBPartnerCompositeRepository
 {
-	// TODO avoid n+1 problem when loding >1 bpartner's
+	private final CacheInvalidationKeysMapper<BPartnerId> invalidationKeysMapper = new CacheInvalidationKeysMapper<BPartnerId>()
+	{
+		@Override
+		public Collection<BPartnerId> computeKeysToInvalidate(@NonNull final TableRecordReference recordRef)
+		{
+			if (I_C_BPartner.Table_Name.equals(recordRef.getTableName()))
+			{
+				return ImmutableList.of(BPartnerId.ofRepoId(recordRef.getRecord_ID()));
+			}
+
+			if (I_C_BPartner_Location.Table_Name.equals(recordRef.getTableName()))
+			{
+				final I_C_BPartner_Location bpartnerLocationRecord = recordRef.getModel(I_C_BPartner_Location.class);
+				return ImmutableList.of(BPartnerId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID()));
+			}
+
+			if (I_AD_User.Table_Name.equals(recordRef.getTableName()))
+			{
+				final I_AD_User userRecord = recordRef.getModel(I_AD_User.class);
+				if (userRecord.getC_BPartner_ID() <= 0)
+				{
+					return ImmutableList.of();
+				}
+				return ImmutableList.of(BPartnerId.ofRepoId(userRecord.getC_BPartner_ID()));
+			}
+
+			throw new AdempiereException("Given recordRef has unexpected tableName=" + recordRef.getTableName() + "; recordRef=" + recordRef);
+		}
+	};
+
+	private final CCache<BPartnerId, JsonBPartnerComposite> cache = CCache
+			.<BPartnerId, JsonBPartnerComposite> builder()
+			.cacheName("JsonBPartnerComposite")
+			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
+			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
+			.additionalTableNameToResetFor(I_AD_User.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(500)
+			.invalidationKeysMapper(invalidationKeysMapper)
+			.build();
 
 	public JsonBPartnerComposite getById(@NonNull final BPartnerId bPartnerId)
 	{
-		final I_C_BPartner bpartnerRecord = loadOutOfTrx(bPartnerId, I_C_BPartner.class);
-
-		final JsonBPartnerCompositeBuilder jsonBPartnerComposite = JsonBPartnerComposite.builder();
-		jsonBPartnerComposite.bpartner(ofRecord(bpartnerRecord));
-
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final List<I_C_BPartner_Location> bPartnerLocationRecords = bPartnerDAO.retrieveBPartnerLocations(bPartnerId);
-		for (final I_C_BPartner_Location bPartnerLocationRecord : bPartnerLocationRecords)
-		{
-			jsonBPartnerComposite.location(ofRecord(bPartnerLocationRecord));
-		}
-
-		final List<I_AD_User> contactRecords = bPartnerDAO.retrieveContacts(bpartnerRecord);
-		for (final I_AD_User contactRecord : contactRecords)
-		{
-			jsonBPartnerComposite.contact(ofRecord(contactRecord));
-		}
-
-		return jsonBPartnerComposite.build();
+		return CollectionUtils.singleElement(getByIds(ImmutableList.of(bPartnerId)));
 	}
 
 	public ImmutableList<JsonBPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
+	{
+		final Collection<JsonBPartnerComposite> result = cache.getAllOrLoad(bPartnerIds, this::getByIds0);
+		return ImmutableList.copyOf(result);
+	}
+
+	private ImmutableMap<BPartnerId, JsonBPartnerComposite> getByIds0(final Collection<BPartnerId> bPartnerIds)
 	{
 		final List<I_C_BPartner> bPartnerRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
@@ -105,7 +134,7 @@ public class JsonBPartnerCompositeRepository
 				.list();
 		final ImmutableListMultimap<Integer, I_AD_User> id2Contacts = Multimaps.index(contactRecords, I_AD_User::getC_BPartner_ID);
 
-		final ImmutableList.Builder<JsonBPartnerComposite> result = ImmutableList.builder();
+		final Builder<BPartnerId, JsonBPartnerComposite> result = ImmutableMap.<BPartnerId, JsonBPartnerComposite> builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
@@ -117,7 +146,7 @@ public class JsonBPartnerCompositeRepository
 					.locations(ofLocationRecords(id2Locations.get(id)))
 					.build();
 
-			result.add(jsonBPartnerComposite);
+			result.put(BPartnerId.ofRepoId(id), jsonBPartnerComposite);
 		}
 		return result.build();
 	}

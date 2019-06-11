@@ -3,11 +3,14 @@ package de.metas.rest_api;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
 
+import java.util.Objects;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -51,6 +54,22 @@ public class JsonExternalId
 			return null;
 		}
 		return new JsonExternalId(value);
+	}
+
+	public static boolean isEqualTo(
+			@Nullable final JsonExternalId jsonExternalId,
+			@Nullable final ExternalId externalId)
+	{
+		if (jsonExternalId == null && externalId == null)
+		{
+			return true;
+		}
+		if (jsonExternalId == null ^ externalId == null)
+		{
+			return false; // one is null, the other one isn't
+		}
+
+		return Objects.equals(jsonExternalId.getValue(), externalId.getValue());
 	}
 
 	private JsonExternalId(@NonNull final String value)

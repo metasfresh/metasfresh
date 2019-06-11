@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Optional;
+
 import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -41,6 +43,14 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
+	public Optional<User> getBy(UserQuery userQuery)
+	{
+		if (userQuery.getUserId() != null)
+		{
+			return Optional.ofNullable(getByIdInTrx(userQuery.getUserId()));
+		}
+	}
+
 	public User getByIdInTrx(@NonNull final UserId userId)
 	{
 		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);

@@ -1,9 +1,12 @@
 package de.metas.rest_api;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -57,5 +60,14 @@ public class MetasfreshId
 	public long getValue()
 	{
 		return value;
+	}
+
+	public boolean isEqualTo(@Nullable final RepoIdAware otherId)
+	{
+		if (otherId == null)
+		{
+			return false;
+		}
+		return otherId.getRepoId() == value;
 	}
 }

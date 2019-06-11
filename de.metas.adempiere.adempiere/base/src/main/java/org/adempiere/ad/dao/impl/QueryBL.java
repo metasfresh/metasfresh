@@ -113,7 +113,7 @@ public class QueryBL implements IQueryBL
 	@Override
 	public <T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(final Class<T> modelClass)
 	{
-		return new CompositeQueryUpdater<>(modelClass);
+		return new CompositeQueryUpdater<T>();
 	}
 
 	@Override

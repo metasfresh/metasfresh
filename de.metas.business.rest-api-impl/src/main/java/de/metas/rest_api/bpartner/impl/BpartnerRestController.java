@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,8 +87,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier)
 	{
-		final JsonBPartnerComposite result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
-		return ResponseEntity.ok(result);
+		final Optional<JsonBPartnerComposite> result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
+		if (result.isPresent())
+		{
+			return ResponseEntity.ok(result.get());
+		}
+		return new ResponseEntity<JsonBPartnerComposite>(
+				(JsonBPartnerComposite)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	//
@@ -109,8 +116,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifier)
 	{
-		final JsonBPartnerLocation location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
-		return ResponseEntity.ok(location);
+		final Optional<JsonBPartnerLocation> location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
+		if (location.isPresent())
+		{
+			return ResponseEntity.ok(location.get());
+		}
+		return new ResponseEntity<JsonBPartnerLocation>(
+				(JsonBPartnerLocation)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	@ApiResponses(value = {
@@ -131,8 +144,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final JsonContact contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
-		return ResponseEntity.ok(contact);
+		final Optional<JsonContact> contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
+		if (contact.isPresent())
+		{
+			return ResponseEntity.ok(contact.get());
+		}
+		return new ResponseEntity<JsonContact>(
+				(JsonContact)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	@ApiResponses(value = {
@@ -169,7 +188,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
-	@PostMapping
+	@PutMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(
 			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
