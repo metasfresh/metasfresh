@@ -28,6 +28,7 @@ import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentTags;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
@@ -217,10 +218,11 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 
 		final String fileName = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
+		final AttachmentTags attachmentTags = AttachmentTags.builder().tags(extractTags(tagKeyValuePairs)).build();
 
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest
 				.builderFromByteArray(fileName, data)
-				.tags(extractTags(tagKeyValuePairs))
+				.tags(attachmentTags)
 				.build();
 
 		final AttachmentEntry attachmentEntry = olCandsService.addAttachment(query, request);

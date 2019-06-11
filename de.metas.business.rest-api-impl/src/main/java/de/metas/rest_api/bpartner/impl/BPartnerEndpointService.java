@@ -34,6 +34,7 @@ import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
 import de.metas.rest_api.model.I_C_BPartner_Recent_ID;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
@@ -278,7 +279,7 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 	@Override
 	public JsonContact retrieveContact(String contactIdentifier)
 	{
-
+Services.get(IUserDAO.class);
 		// TODO Auto-generated method stub
 		return null;
 	}

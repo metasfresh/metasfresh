@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.IntFunction;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -75,7 +76,8 @@ public class RepoIdAwares
 		return id;
 	}
 
-	private static RepoIdAwareDescriptor getRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
+	@VisibleForTesting
+	static RepoIdAwareDescriptor getRepoIdAwareDescriptor(final Class<? extends RepoIdAware> repoIdClass)
 	{
 		return repoIdAwareDescriptors.computeIfAbsent(repoIdClass, k -> createRepoIdAwareDescriptor(k));
 	}
@@ -84,8 +86,22 @@ public class RepoIdAwares
 	{
 		try
 		{
-			final Method ofRepoIdMethod = repoIdClass.getMethod("ofRepoId", int.class);
-			final Method ofRepoIdOrNullMethod = repoIdClass.getMethod("ofRepoIdOrNull", int.class);
+			final Method ofRepoIdMethod = getMethodOrNull(repoIdClass, "ofRepoId", int.class);
+			if (ofRepoIdMethod == null)
+			{
+				throw Check.newException("No method ofRepoId(int) found for " + repoIdClass);
+			}
+
+			Method ofRepoIdOrNullMethod = getMethodOrNull(repoIdClass, "ofRepoIdOrNull", int.class);
+			if (ofRepoIdOrNullMethod == null)
+			{
+				ofRepoIdOrNullMethod = getMethodOrNull(repoIdClass, "ofRepoIdOrNull", Integer.class);
+			}
+			if (ofRepoIdOrNullMethod == null)
+			{
+				throw Check.newException("No method ofRepoIdOrNull(int) or ofRepoIdOrNull(Integer) found for " + repoIdClass);
+			}
+			final Method ofRepoIdOrNullMethodFinal = ofRepoIdOrNullMethod;
 
 			return RepoIdAwareDescriptor.builder()
 					.ofRepoIdFunction(repoId -> {
@@ -101,11 +117,11 @@ public class RepoIdAwares
 					.ofRepoIdOrNullFunction(repoId -> {
 						try
 						{
-							return (RepoIdAware)ofRepoIdOrNullMethod.invoke(null, repoId);
+							return (RepoIdAware)ofRepoIdOrNullMethodFinal.invoke(null, repoId);
 						}
 						catch (final Exception ex)
 						{
-							throw mkEx("Failed invoking " + ofRepoIdOrNullMethod + " with repoId=" + repoId, ex);
+							throw mkEx("Failed invoking " + ofRepoIdOrNullMethodFinal + " with repoId=" + repoId, ex);
 						}
 					})
 					.build();
@@ -116,6 +132,26 @@ public class RepoIdAwares
 			ex2.initCause(ex);
 			throw ex2;
 		}
+	}
+
+	private static Method getMethodOrNull(
+			@NonNull final Class<? extends RepoIdAware> repoIdClass,
+			@NonNull final String methodName,
+			final Class<?>... parameterTypes)
+	{
+		try
+		{
+			return repoIdClass.getMethod(methodName, parameterTypes);
+		}
+		catch (final NoSuchMethodException e)
+		{
+			return null;
+		}
+		catch (final SecurityException e)
+		{
+			throw new RuntimeException(e);
+		}
+
 	}
 
 	private static final RuntimeException mkEx(final String msg, final Throwable cause)
@@ -132,7 +168,8 @@ public class RepoIdAwares
 
 	@Value
 	@Builder
-	private static class RepoIdAwareDescriptor
+	@VisibleForTesting
+	static class RepoIdAwareDescriptor
 	{
 		@NonNull
 		IntFunction<RepoIdAware> ofRepoIdFunction;

@@ -48,7 +48,11 @@ public class UserRepository
 		if (userQuery.getUserId() != null)
 		{
 			return Optional.ofNullable(getByIdInTrx(userQuery.getUserId()));
+		}else if (userQuery.getExternalId() != null)
+		{
+
 		}
+
 	}
 
 	public User getByIdInTrx(@NonNull final UserId userId)

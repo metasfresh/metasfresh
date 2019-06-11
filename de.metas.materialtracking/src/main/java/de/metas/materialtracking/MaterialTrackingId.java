@@ -4,6 +4,9 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -36,6 +39,7 @@ public class MaterialTrackingId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static MaterialTrackingId ofRepoId(final int repoId)
 	{
 		return new MaterialTrackingId(repoId);
@@ -44,6 +48,11 @@ public class MaterialTrackingId implements RepoIdAware
 	public static MaterialTrackingId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new MaterialTrackingId(repoId) : null;
+	}
+
+	public static MaterialTrackingId ofRepoIdOrNull(@Nullable final int repoId)
+	{
+		return repoId > 0 ? new MaterialTrackingId(repoId) : null;
 	}
 
 	private MaterialTrackingId(final int repoId)
@@ -59,5 +68,12 @@ public class MaterialTrackingId implements RepoIdAware
 	public static int toRepoId(final MaterialTrackingId materialTrackingId)
 	{
 		return materialTrackingId != null ? materialTrackingId.getRepoId() : -1;
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

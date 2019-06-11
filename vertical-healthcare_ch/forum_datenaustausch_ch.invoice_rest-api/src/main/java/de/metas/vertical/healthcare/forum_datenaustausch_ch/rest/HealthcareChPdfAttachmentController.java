@@ -1,10 +1,8 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.attachments.AttachmentConstants.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
+import static de.metas.attachments.AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
 import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTATCHMENT_TAGNAME_EXPORT_PROVIDER;
-
-import lombok.NonNull;
 
 import java.io.IOException;
 
@@ -27,6 +25,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDate
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 /*
  * #%L

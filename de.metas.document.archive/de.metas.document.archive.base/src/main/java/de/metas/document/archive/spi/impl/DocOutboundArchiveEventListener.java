@@ -3,8 +3,6 @@ package de.metas.document.archive.spi.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-import lombok.NonNull;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,10 +24,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.attachments.AttachmentConstants;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentTags;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -41,6 +39,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
@@ -261,7 +260,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final AttachmentEntryQuery query = AttachmentEntryQuery
 				.builder()
 				.referencedRecord(from)
-				.tagSetToTrue(AttachmentConstants.TAGNAME_IS_DOCUMENT)
+				.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 				.build();
 		final List<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
 

@@ -2,11 +2,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   [
     {
       "id": 100012,
-      "asiId": {
-        "repoId": 100009,
-        "regular": true,
-        "none": false
-      },
+      "asiId": 100009,
       "inventoryId": 100002,
       "productId": 40,
       "storageAttributesKey": "10§&§11",
@@ -17,12 +13,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "singleHUAggregation": false,
       "inventoryLineHUs": [
         {
-          "id": {
-            "repoId": 100013
-          },
-          "huId": {
-            "repoId": 100
-          },
+          "id": 100013,
+          "huId": 100,
           "qtyBook": {
             "qty": 10,
             "sourceQty": 10,
@@ -37,12 +29,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           }
         },
         {
-          "id": {
-            "repoId": 100014
-          },
-          "huId": {
-            "repoId": 200
-          },
+          "id": 100014,
+          "huId": 200,
           "qtyBook": {
             "qty": 1,
             "sourceQty": 1,
@@ -60,11 +48,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     },
     {
       "id": 100019,
-      "asiId": {
-        "repoId": 100015,
-        "regular": true,
-        "none": false
-      },
+      "asiId": 100015,
       "inventoryId": 100002,
       "productId": 40,
       "storageAttributesKey": "10§&§11§&§12",
@@ -75,12 +59,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "singleHUAggregation": false,
       "inventoryLineHUs": [
         {
-          "id": {
-            "repoId": 100020
-          },
-          "huId": {
-            "repoId": 300
-          },
+          "id": 100020,
+          "huId": 300,
           "qtyBook": {
             "qty": 2,
             "sourceQty": 2,
@@ -104,11 +84,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   [
     {
       "id": 100013,
-      "asiId": {
-        "repoId": 100009,
-        "regular": true,
-        "none": false
-      },
+      "asiId": 100009,
       "inventoryId": 100002,
       "productId": 40,
       "storageAttributesKey": "10§&§11§&§12",
@@ -119,9 +95,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "singleHUAggregation": true,
       "inventoryLineHUs": [
         {
-          "huId": {
-            "repoId": 300
-          },
+          "huId": 300,
           "qtyBook": {
             "qty": 2,
             "sourceQty": 2,
@@ -139,11 +113,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     },
     {
       "id": 100017,
-      "asiId": {
-        "repoId": 100014,
-        "regular": true,
-        "none": false
-      },
+      "asiId": 100014,
       "inventoryId": 100002,
       "productId": 40,
       "storageAttributesKey": "10§&§11",
@@ -154,9 +124,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "singleHUAggregation": true,
       "inventoryLineHUs": [
         {
-          "huId": {
-            "repoId": 100
-          },
+          "huId": 100,
           "qtyBook": {
             "qty": 10,
             "sourceQty": 10,
@@ -174,11 +142,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
     },
     {
       "id": 100021,
-      "asiId": {
-        "repoId": 100018,
-        "regular": true,
-        "none": false
-      },
+      "asiId": 100018,
       "inventoryId": 100002,
       "productId": 40,
       "storageAttributesKey": "10§&§11",
@@ -189,9 +153,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
       "singleHUAggregation": true,
       "inventoryLineHUs": [
         {
-          "huId": {
-            "repoId": 200
-          },
+          "huId": 200,
           "qtyBook": {
             "qty": 1,
             "sourceQty": 1,
