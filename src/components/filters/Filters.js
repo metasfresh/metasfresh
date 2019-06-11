@@ -283,7 +283,6 @@ class Filters extends Component {
   // eslint-disable-next-line no-unused-vars
   applyFilters = ({ isActive, captionValue, ...filter }, cb) => {
     const valid = this.isFilterValid(filter);
-    console.log('Filters applyFilters', valid);
     this.setState(
       {
         notValidFields: !valid,
@@ -382,7 +381,13 @@ class Filters extends Component {
   // RENDERING FILTERS -------------------------------------------------------
 
   render() {
-    const { filterData, windowType, viewId, resetInitialValues } = this.props;
+    const {
+      filterData,
+      windowType,
+      viewId,
+      resetInitialValues,
+      error,
+    } = this.props;
     const { frequentFilters, notFrequentFilters } = this.sortFilters(
       filterData
     );
@@ -418,6 +423,7 @@ class Filters extends Component {
               active={activeFilter}
               dropdownToggled={this.dropdownToggled}
               filtersWrapper={this.filtersWrapper}
+              error={error}
             />
           )}
           {!!notFrequentFilters.length && (
@@ -437,6 +443,7 @@ class Filters extends Component {
               active={activeFilter}
               dropdownToggled={this.dropdownToggled}
               filtersWrapper={this.filtersWrapper}
+              error={error}
             />
           )}
         </div>
@@ -449,7 +456,8 @@ Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
   resetInitialValues: PropTypes.func.isRequired,
   viewId: PropTypes.string,
-
+  error: PropTypes.bool,
+  updateDocList: PropTypes.func,
   // this should be an immutable Map
   filtersActive: PropTypes.any,
   filterData: PropTypes.any,
