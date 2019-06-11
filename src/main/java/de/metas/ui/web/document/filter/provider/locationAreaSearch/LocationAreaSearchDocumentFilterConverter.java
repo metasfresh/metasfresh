@@ -51,6 +51,8 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 {
 	public static final transient LocationAreaSearchDocumentFilterConverter instance = new LocationAreaSearchDocumentFilterConverter();
 
+	private static final String MSG_NoCoordinatesFoundForTheGivenLocation= "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
+
 	public static final String FILTER_ID = "location-area-search";
 
 	public static final String PARAM_LocationAreaSearchDescriptor = "LocationAreaSearchDescriptor";
@@ -59,6 +61,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 	public static final String PARAM_Postal = "Postal";
 	public static final String PARAM_CountryId = "C_Country_ID";
 	public static final String PARAM_Distance = "Distance";
+	public static final String PARAM_VisitorsAddress = "VisitorsAddress";
 
 	private final static Logger logger = LogManager.getLogger(LocationAreaSearchDocumentFilterConverter.class);
 
@@ -85,8 +88,10 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		if (addressCoordinates == null)
 		{
 			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", filter);
-			return null;
+			throw new AdempiereException(MSG_NoCoordinatesFoundForTheGivenLocation).markAsUserValidationError();
 		}
+
+		final String visitorAddressQuery = constructVisitorAddressQuery(filter);
 
 		final int distanceInKm = extractDistanceInKm(filter);
 
@@ -97,6 +102,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 					+ " FROM " + I_C_Location.Table_Name + " l"
 					+ " WHERE "
 					+ " l." + I_C_Location.COLUMNNAME_C_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					// no visitorAddressQuery here
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -108,6 +114,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 					+ " WHERE "
 					+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+					+ visitorAddressQuery
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -121,6 +128,7 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 					+ " WHERE "
 					+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 					+ " AND bpl." + I_C_BPartner_Location.COLUMNNAME_IsActive + "='Y'"
+					+ visitorAddressQuery
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
 		}
@@ -128,6 +136,22 @@ public class LocationAreaSearchDocumentFilterConverter implements SqlDocumentFil
 		{
 			throw new AdempiereException("Unknown " + descriptor.getType());
 		}
+	}
+
+	@NonNull
+	private String constructVisitorAddressQuery(@NonNull final DocumentFilter filter)
+	{
+		final boolean isVisitorAddress = filter.getParameterValueAsBoolean(PARAM_VisitorsAddress, false);
+		final String visitorAddressQuery;
+		if (isVisitorAddress)
+		{
+			visitorAddressQuery = " AND bpl." + I_C_BPartner_Location.COLUMNNAME_VisitorsAddress + "='Y' ";
+		}
+		else
+		{
+			visitorAddressQuery = "";
+		}
+		return visitorAddressQuery;
 	}
 
 	@NonNull @SuppressWarnings("SameParameterValue") private static String sqlGeographicalDistance(

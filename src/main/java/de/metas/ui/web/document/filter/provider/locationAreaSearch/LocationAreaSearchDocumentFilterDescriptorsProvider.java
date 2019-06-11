@@ -49,7 +49,7 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 
 	private DocumentFilterDescriptor filterDescriptor;
 
-	public LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final LocationAreaSearchDescriptor descriptor)
+	LocationAreaSearchDocumentFilterDescriptorsProvider(@NonNull final LocationAreaSearchDescriptor descriptor)
 	{
 		this.descriptor = descriptor;
 	}
@@ -99,12 +99,17 @@ class LocationAreaSearchDocumentFilterDescriptorsProvider implements DocumentFil
 						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_Distance)
 						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_Distance))
 						.setWidgetType(DocumentFieldWidgetType.Integer))
+				.addParameter(DocumentFilterParamDescriptor.builder()
+						.setFieldName(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress)
+						.setDisplayName(msgBL.translatable(LocationAreaSearchDocumentFilterConverter.PARAM_VisitorsAddress))
+						.setWidgetType(DocumentFieldWidgetType.YesNo))
 				//
 				.addInternalParameter(LocationAreaSearchDocumentFilterConverter.PARAM_LocationAreaSearchDescriptor, descriptor)
 				//
 				.build();
 	}
 
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
