@@ -52,6 +52,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -149,7 +150,7 @@ public class HUInternalUseInventoryProducerTests
 
 		assertThat(inventories.size()).isEqualTo(1);
 
-		final int inventoryId = inventories.get(0).getM_Inventory_ID();
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
 
 		final List<I_M_InventoryLine> linesForInventoryId = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 
@@ -193,7 +194,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(inventory.getMovementDate()).isEqualTo(movementDate);
 		assertThat(inventory.getDocStatus()).isEqualTo(X_M_Inventory.DOCSTATUS_Completed);
 
-		final int inventoryId = inventories.get(0).getM_Inventory_ID();
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
 
 		final List<I_M_InventoryLine> linesForInventoryId = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 
@@ -261,7 +262,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(inventory.getMovementDate()).isEqualTo(movementDate);
 		assertThat(inventory.getDocStatus()).isEqualTo(X_M_Inventory.DOCSTATUS_Completed);
 
-		final int inventoryId = inventory.getM_Inventory_ID();
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 
 		final List<I_M_InventoryLine> linesForInventoryId = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 
@@ -318,7 +319,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(inventory.getMovementDate()).isEqualTo(movementDate);
 		assertThat(inventory.getDocStatus()).isEqualTo(X_M_Inventory.DOCSTATUS_Completed);
 
-		final int inventoryId = inventory.getM_Inventory_ID();
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
 
 		final List<I_M_InventoryLine> linesForInventoryId = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class);
 
