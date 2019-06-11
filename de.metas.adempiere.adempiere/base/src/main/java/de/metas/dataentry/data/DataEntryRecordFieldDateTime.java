@@ -1,6 +1,7 @@
 package de.metas.dataentry.data;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
 import javax.annotation.Nullable;
 
 import de.metas.dataentry.DataEntryFieldId;
@@ -33,26 +34,26 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class DataEntryRecordFieldDate extends DataEntryRecordField<LocalDate>
+public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDateTime>
 {
 	@Getter
-	private final LocalDate value;
+	private final ZonedDateTime value;
 
-	public static DataEntryRecordFieldDate of(
+	public static DataEntryRecordFieldDateTime of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
-			@Nullable final LocalDate value)
+			@Nullable final ZonedDateTime value)
 	{
-		return new DataEntryRecordFieldDate(
+		return new DataEntryRecordFieldDateTime(
 				dataEntryFieldId,
 				createdUpdatedInfo,
 				value);
 	}
 
-	private DataEntryRecordFieldDate(
+	private DataEntryRecordFieldDateTime(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
-			@Nullable final LocalDate value)
+			@Nullable final ZonedDateTime value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);
 		this.value = value;
