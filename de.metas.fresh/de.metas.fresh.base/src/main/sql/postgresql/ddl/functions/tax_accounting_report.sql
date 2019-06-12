@@ -8,10 +8,12 @@ dateacct date,
 documentno character varying(40),
 taxname character varying(60),
 taxrate numeric,
-taxamt numeric, 
+amt numeric, 
 taxbaseamt numeric, 
+taxamt  numeric, 
 vatcode character varying(10),
 doctype character varying,
+bpName character varying,
 endsaldo numeric,
 param_startdate date,
 param_enddate date,
@@ -29,6 +31,7 @@ SELECT
 	x.dateacct::date, x.documentno, x.taxname, x.taxrate,
 	x.amt , 
 	COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric)) as taxbaseamt, 
+	COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt,0::numeric)) as taxamt, 
 
 	x.vatcode, x.DocType_DisplayName, x.bpName,
 	x.endsaldo AS endsaldo,
@@ -53,6 +56,10 @@ SELECT
 	i.taxbaseamt AS inv_baseamt,
 	gl.taxbaseamt AS gl_baseamt,
 	hdr.taxbaseamt AS hdr_baseamt,
+	
+	i.taxamt AS inv_taxamt,
+	gl.taxamt AS gl_taxamt,
+	hdr.taxamt AS hdr_taxamt,
 
 	fa.vatcode AS vatcode,
 	( 	CASE WHEN (fa.C_DocType_ID!=0 AND fa.C_DocType_ID IS NOT NULL) THEN
@@ -97,7 +104,7 @@ where ta.isActive = 'Y'
 
 --if invoice
 LEFT OUTER JOIN
-( SELECT inv_tax.taxbaseamt, i.c_invoice_id, inv_tax.c_tax_id FROM c_invoice i
+( SELECT inv_tax.taxbaseamt, i.c_invoice_id, inv_tax.c_tax_id, inv_tax.taxamt FROM c_invoice i
   JOIN C_InvoiceTax inv_tax on i.c_invoice_id=inv_tax.c_invoice_id and inv_tax.isActive = 'Y'
   WHERE i.isActive = 'Y'
  ) i ON fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id
@@ -105,6 +112,7 @@ LEFT OUTER JOIN
 --if gl journal
 LEFT OUTER JOIN (SELECT
 (CASE WHEN gll.dr_autotaxaccount='Y' THEN gll.dr_taxbaseamt WHEN cr_autotaxaccount='Y' THEN gll.cr_taxbaseamt END) AS taxbaseamt,
+(CASE WHEN gll.dr_autotaxaccount='Y' THEN gll.dr_taxamt WHEN cr_autotaxaccount='Y' THEN gll.cr_taxamt END) AS taxamt,
 gl.gl_journal_id, gll.gl_journalline_id, COALESCE (gll.dr_tax_id, gll.cr_tax_id) AS tax_id
 FROM gl_journal gl
 JOIN GL_JournalLine gll ON gl.gl_journal_id = gll.gl_journal_id and gll.isActive = 'Y'
@@ -113,7 +121,8 @@ WHERE gl.isActive = 'Y'
 
 --if allocationHdr
 LEFT OUTER JOIN (
-SELECT hdr.C_AllocationHdr_ID, hdrl.C_AllocationLine_ID, 0::numeric as taxbaseamt -- leave taxbaseamt empty for now in allocationhdr
+SELECT hdr.C_AllocationHdr_ID, hdrl.C_AllocationLine_ID, 0::numeric as taxbaseamt,  -- leave taxbaseamt empty for now in allocationhdr
+0::numeric as taxamt -- leave taxamt empty for now in allocationhdr
 FROM C_AllocationHdr hdr
 JOIN C_AllocationLine hdrl on hdr.C_AllocationHdr_ID = hdrl.C_AllocationHdr_ID and hdrl.isActive = 'Y'
 WHERE hdr.isActive = 'Y'
@@ -138,8 +147,9 @@ GROUP BY
 	x.dateacct::date, x.documentno, x.taxname, x.taxrate,
 	x.amt , 
 	COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric)), 
+	COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt,0::numeric)),
 
-	x.vatcode, x.DocType_DisplayName, x.endsaldo,
+	x.vatcode, x.DocType_DisplayName, x.bpName, x.endsaldo,
 	x.startdate::date , x.enddate::date,
 	x.param_konto, x.param_vatcode, x.param_org,
 	
