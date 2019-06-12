@@ -23,18 +23,26 @@
 
 package de.metas.vertical.pharma.securpharm.process;
 
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
+import org.compiere.Adempiere;
+
+import de.metas.handlingunits.HuId;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
-public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
+public class M_Securpharm_Productdata_Result_Retry extends JavaProcess implements IProcessPrecondition
 {
+	protected final SecurPharmService securPharmService = Adempiere.getBean(SecurPharmService.class);
 
-	private final IHandlingUnitsDAO handlingUnitsBL = Services.get(IHandlingUnitsDAO.class);
+	public static final String PARAM_DataMatrix = "dataMatrix";
+	@Param(mandatory = true, parameterName = PARAM_DataMatrix)
+	private String dataMatrixString;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -52,6 +60,8 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No SecurPharm config");
 		}
 
+		//
+		// Retry makes sense only if the SecurPharm product has errors (i.e. was not acquired yet)
 		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(context.getSingleSelectedRecordId());
 		final SecurPharmProduct product = securPharmService.getProductById(productDataResultId);
 		if (!product.isError())
@@ -63,11 +73,29 @@ public class M_Securpharm_Productdata_Result_Retry extends M_HU_SecurpharmScan
 	}
 
 	@Override
-	protected I_M_HU getHandlingUnit()
+	protected String doIt()
+	{
+		final DataMatrixCode dataMatrix = getDataMatrix();
+		final HuId huId = getHuId();
+
+		securPharmService
+				.newHUScanner()
+				// TODO: advice the scanner to update the existing SecurPharm product
+				.scanAndUpdateHUAttributes(dataMatrix, huId);
+
+		return MSG_OK;
+	}
+
+	private HuId getHuId()
 	{
 		final SecurPharmProductId productId = SecurPharmProductId.ofRepoId(getRecord_ID());
 		final SecurPharmProduct product = securPharmService.getProductById(productId);
-
-		return handlingUnitsBL.getById(product.getHuId());
+		return product.getHuId();
 	}
+
+	private final DataMatrixCode getDataMatrix()
+	{
+		return DataMatrixCode.ofString(dataMatrixString);
+	}
+
 }
