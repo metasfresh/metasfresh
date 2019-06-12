@@ -1,11 +1,7 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 
-describe('Create Product Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40', function() {
-  beforeEach(function() {
-    // login before each test
-    cy.loginByForm();
-  });
-
+// Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40
+describe('Create Product', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
   const productName = `ProductName ${timestamp}`;
   const productValue = `ProductNameValue ${timestamp}`;
@@ -32,6 +28,22 @@ describe('Create Product Masterdata for Automatic End2End Tests with cypress htt
 
     cy.openAdvancedEdit();
     cy.writeIntoTextField('DocumentNote', '{selectall}{backspace}blah-blah-blah');
+    cy.pressDoneButton();
+  });
+
+  it(`Set product's CU-TU allocation`, function() {
+    const addNewText = Cypress.messages.window.addNew.caption;
+
+    cy.selectTab('M_HU_PI_Item_Product');
+
+    cy.get('.tabs-wrapper .form-flex-align .btn')
+      .contains(addNewText)
+      .should('exist')
+      .click();
+
+    cy.selectInListField('M_HU_PI_Item_ID', 'IFCO', 'IFCO 6410');
+    cy.writeIntoStringField('Qty', '1');
+    cy.selectDateViaPicker('ValidFrom');
     cy.pressDoneButton();
   });
 });

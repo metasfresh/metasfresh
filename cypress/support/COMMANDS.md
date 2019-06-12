@@ -36,6 +36,7 @@
 - writeIntoTextField: insert text in a textarea
 - writeIntoLookupListField
 - selectInListField
+- selectDateViaPicker: open date picker and select date (atm works for today only)
 
 ** Action
 
