@@ -29,6 +29,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 
+import javax.annotation.Nullable;
+
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.RoutingService;
@@ -77,7 +79,10 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	}
 
 	@Override
-	public int calculateDurationDays(final PPRoutingId routingId, final ResourceId plantId, final BigDecimal qty)
+	public int calculateDurationDays(
+			@NonNull final PPRoutingId routingId,
+			@Nullable final ResourceId plantId,
+			@NonNull final BigDecimal qty)
 	{
 		if (plantId == null)
 		{

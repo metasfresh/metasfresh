@@ -11,6 +11,8 @@ import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -144,7 +146,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 		}
 	}
 
-	private static Range<LocalDate> toValidDateRange(final Timestamp from, final Timestamp to)
+	private static Range<LocalDate> toValidDateRange(@Nullable final Timestamp from, @Nullable final Timestamp to)
 	{
 		if (from == null)
 		{
@@ -187,7 +189,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.name(activityRecord.getName())
 				.validDates(toValidDateRange(activityRecord.getValidFrom(), activityRecord.getValidTo()))
 				//
-				.resourceId(ResourceId.ofRepoId(activityRecord.getS_Resource_ID()))
+				.resourceId(ResourceId.ofRepoIdOrNull(activityRecord.getS_Resource_ID())) // S_Resource_ID == null might not make sense in this case, but it's allowed
 				//
 				.durationUnit(durationUnit)
 				.queuingTime(Duration.of(activityRecord.getQueuingTime(), durationUnit))

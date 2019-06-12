@@ -57,6 +57,7 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
@@ -347,7 +348,10 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void createOrderRouting(@NonNull final I_PP_Order ppOrderRecord)
 	{
+		final ResourceId defaultResourceIdOrNull = extractDefaultResourceIdOrNull(ppOrderRecord);
+
 		final PPOrderRouting orderRouting = CreateOrderRoutingCommand.builder()
+				.defaultResourceId(defaultResourceIdOrNull)
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
@@ -357,6 +361,24 @@ public class PPOrderBL implements IPPOrderBL
 
 		final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
 		orderRoutingsRepo.save(orderRouting);
+	}
+
+	private ResourceId extractDefaultResourceIdOrNull(@NonNull final I_PP_Order ppOrderRecord)
+	{
+		final ResourceId result;
+		if (ppOrderRecord.getS_Resource_ID() > 0)
+		{
+			result = ResourceId.ofRepoId(ppOrderRecord.getS_Resource_ID());
+		}
+		else if (ppOrderRecord.getPP_Product_Planning_ID() > 0)
+		{
+			result = ResourceId.ofRepoIdOrNull(ppOrderRecord.getPP_Product_Planning().getS_Resource_ID());
+		}
+		else
+		{
+			result = null;
+		}
+		return result;
 	}
 
 	@Override

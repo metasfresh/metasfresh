@@ -99,8 +99,6 @@ public interface IPPOrderBL extends ISingletonService
 	/**
 	 * Sets manufacturing order's document type(s).
 	 *
-	 * @param ppOrder
-	 * @param docBaseType
 	 * @param docSubType document sub-type or {@link IDocTypeDAO#DOCSUBTYPE_Any}
 	 * @throws DocTypeNotFoundException if no document type was found
 	 */
@@ -117,6 +115,10 @@ public interface IPPOrderBL extends ISingletonService
 
 	void changeScheduling(PPOrderScheduleChangeRequest request);
 
+	/**
+	 * Note about the routing's {@code S_Ressource_ID}: if some of the {@code PP_Order}'s {@code AD_WorkFlow}'s activities don't have a resource,
+	 * then attempt to fall back to the {@code PP_Order}'s resource or to the {@code PP_POrder}'s {@code PP_Product_Planning}'s resource for those activities.
+	 */
 	void createOrderRouting(I_PP_Order ppOrder);
 
 	void closeAllActivities(PPOrderId orderId);

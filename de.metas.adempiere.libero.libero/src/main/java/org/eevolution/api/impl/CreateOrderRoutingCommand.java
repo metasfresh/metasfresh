@@ -1,8 +1,13 @@
 package org.eevolution.api.impl;
 
+import static de.metas.util.Check.assumeNotNull;
+import static org.compiere.util.Util.coalesce;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalUnit;
+
+import javax.annotation.Nullable;
 
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRouting.PPOrderRoutingBuilder;
@@ -22,6 +27,7 @@ import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -54,6 +60,10 @@ final class CreateOrderRoutingCommand
 	private final IPPRoutingRepository routingsRepo = Services.get(IPPRoutingRepository.class);
 
 	private final PPRouting routing;
+
+	/** Optional, used as fallback if some activities of the given {@link #routing} have no resource set. */
+	private final ResourceId defaultResourceId;
+
 	private final PPOrderId ppOrderId;
 	private final LocalDateTime dateStartSchedule;
 	private final Quantity qtyOrdered;
@@ -61,13 +71,15 @@ final class CreateOrderRoutingCommand
 	@Builder
 	public CreateOrderRoutingCommand(
 			@NonNull final PPRoutingId routingId,
+			@Nullable final ResourceId defaultResourceId,
 			@NonNull final PPOrderId ppOrderId,
 			//
 			@NonNull final Quantity qtyOrdered,
 			@NonNull final LocalDateTime dateStartSchedule)
 	{
-		routing = routingsRepo.getById(routingId);
+		this.routing = routingsRepo.getById(routingId);
 		this.ppOrderId = ppOrderId;
+		this.defaultResourceId = defaultResourceId;
 
 		this.qtyOrdered = qtyOrdered;
 		this.dateStartSchedule = dateStartSchedule;
@@ -146,11 +158,12 @@ final class CreateOrderRoutingCommand
 				.qtyPerBatch(routing.getQtyPerBatch());
 	}
 
-	public PPOrderRoutingActivity createPPOrderRoutingActivity(final PPRoutingActivity activity)
+	public PPOrderRoutingActivity createPPOrderRoutingActivity(@NonNull final PPRoutingActivity activity)
 	{
 		final TemporalUnit durationUnit = activity.getDurationUnit();
 		final Duration durationPerOneUnit = activity.getDurationPerOneUnit();
 		final int unitsPerCycle = activity.getUnitsPerCycle();
+
 		final Duration durationRequired = WorkingTime.builder()
 				.durationPerOneUnit(durationPerOneUnit)
 				.unitsPerCycle(unitsPerCycle)
@@ -160,6 +173,9 @@ final class CreateOrderRoutingCommand
 				.getDuration();
 
 		final Quantity zero = qtyOrdered.toZero();
+
+		final ResourceId resourceId = coalesce(activity.getResourceId(), defaultResourceId);
+		assumeNotNull(resourceId, "Every PPRoutingActivity needs a resource, or defaultResourceId a needs to be given; activity={}; this={}", activity, this);
 
 		return PPOrderRoutingActivity.builder()
 				.id(null) // n/a
@@ -171,7 +187,7 @@ final class CreateOrderRoutingCommand
 				//
 				.milestone(activity.isMilestone())
 				//
-				.resourceId(activity.getResourceId())
+				.resourceId(resourceId)
 				//
 				.status(PPOrderRoutingActivityStatus.NOT_STARTED)
 				//
