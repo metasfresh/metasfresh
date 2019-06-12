@@ -56,10 +56,10 @@ import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Resu
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductDetails;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmLogId;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
@@ -182,6 +182,7 @@ public class SecurPharmResultRepository
 		// Response
 		record.setRequestEndTime(TimeUtil.asTimestamp(log.getResponseTime()));
 		record.setResponseCode(log.getResponseCode() != null ? log.getResponseCode().value() : 0);
+		record.setResponseText(log.getResponseData());
 
 		//
 		record.setTransactionIDClient(log.getClientTransactionId());

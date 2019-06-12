@@ -26,7 +26,6 @@ package de.metas.vertical.pharma.securpharm.process;
 import org.compiere.Adempiere;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -36,12 +35,12 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 // TODO move to webui for HU splitting and view update
 public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondition
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	protected final SecurPharmService securPharmService = Adempiere.getBean(SecurPharmService.class);
 
@@ -67,7 +66,7 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
 		final HuId huId = HuId.ofRepoId(context.getSingleSelectedRecordId());
-		final SecurPharmHUAttributesScanner scanner = newScanner();
+		final SecurPharmHUAttributesScanner scanner = securPharmService.newHUScanner();
 		if (!scanner.isEligible(huId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("HU not eligible");
@@ -82,18 +81,11 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 		final DataMatrixCode dataMatrix = getDataMatrix();
 		final I_M_HU handlingUnit = getHandlingUnit();
 
-		newScanner().scanAndUpdate(dataMatrix, handlingUnit);
+		securPharmService
+				.newHUScanner()
+				.scanAndUpdateHUAttributes(dataMatrix, handlingUnit);
 
 		return MSG_OK;
-	}
-
-	private SecurPharmHUAttributesScanner newScanner()
-	{
-		return SecurPharmHUAttributesScanner.builder()
-				.securPharmService(securPharmService)
-				.handlingUnitsBL(handlingUnitsBL)
-				.handlingUnitsRepo(handlingUnitsRepo)
-				.build();
 	}
 
 	protected I_M_HU getHandlingUnit()
@@ -104,6 +96,11 @@ public class M_HU_SecurpharmScan extends JavaProcess implements IProcessPrecondi
 
 	protected final DataMatrixCode getDataMatrix()
 	{
+		// FIXME: DEBUG!!!!
+		if (true)
+		{
+			return DataMatrixCode.ofBase64Encoded("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
+		}
 		return DataMatrixCode.ofString(dataMatrixString);
 	}
 }

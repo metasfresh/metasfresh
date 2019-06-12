@@ -34,6 +34,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryId;
@@ -274,5 +276,17 @@ public class SecurPharmService
 		}
 
 		return product.isDecommissioned();
+	}
+
+	public SecurPharmHUAttributesScanner newHUScanner()
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+
+		return SecurPharmHUAttributesScanner.builder()
+				.securPharmService(this)
+				.handlingUnitsBL(handlingUnitsBL)
+				.handlingUnitsRepo(handlingUnitsRepo)
+				.build();
 	}
 }
