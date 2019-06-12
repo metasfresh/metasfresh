@@ -370,6 +370,13 @@
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
+				<reportElement x="489" y="0" width="80" height="20" uuid="32b42174-c631-4ec9-82f0-de6bcf560eb9"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
 				<reportElement x="434" y="0" width="55" height="20" uuid="54f96ea7-b31a-4158-9037-be149c76287d"/>
 				<textElement>
 					<font size="8"/>
@@ -403,17 +410,27 @@
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<pageFooter>
-		<band height="50" splitType="Stretch">
-			<textField pattern="#,##0.00">
-				<reportElement x="489" y="-20" width="80" height="20" uuid="32b42174-c631-4ec9-82f0-de6bcf560eb9"/>
-				<textElement textAlignment="Right">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
-			</textField>
-		</band>
+		<band height="40" splitType="Stretch"/>
 	</pageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="45" splitType="Stretch">
+			<subreport>
+				<reportElement x="0" y="0" width="802" height="40" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
+				<subreportParameter name="c_period_id">
+					<subreportParameterExpression><![CDATA[$P{c_period_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_VAT_Code_ID">
+					<subreportParameterExpression><![CDATA[$P{C_VAT_Code_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="account_id">
+					<subreportParameterExpression><![CDATA[$P{account_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="AD_Org_ID">
+					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/reports/tax_accounting/report_recap.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</summary>
 </jasperReport>
