@@ -25,8 +25,8 @@ package de.metas.vertical.pharma.securpharm.model.schema;
 
 public enum ProductPackageState
 {
-	INACTIVE, //
 	ACTIVE, //
+	FRAUD, //
 	UNKNOWN //
 	;
 
@@ -36,7 +36,7 @@ public enum ProductPackageState
 		{
 			return "Y";
 		}
-		else if (this == INACTIVE)
+		else if (this == FRAUD)
 		{
 			return "N";
 		}
@@ -54,7 +54,7 @@ public enum ProductPackageState
 		}
 		else if ("N".equals(yesNoString))
 		{
-			return INACTIVE;
+			return FRAUD;
 		}
 		else
 		{
