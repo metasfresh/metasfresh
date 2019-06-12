@@ -26,25 +26,20 @@ package de.metas.ui.web.handlingunits.process;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
-import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.process.M_HU_SecurpharmScan;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromCustomer
 {
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 	@Autowired
 	private SecurPharmService securPharmService;
 
-	@Param(mandatory = true, parameterName = M_HU_SecurpharmScan.PARAM_DataMatrix)
+	@Param(mandatory = true, parameterName = WEBUI_M_HU_SecurPharmScan.PARAM_DataMatrix)
 	private String dataMatrixCode;
 
 	@Override
