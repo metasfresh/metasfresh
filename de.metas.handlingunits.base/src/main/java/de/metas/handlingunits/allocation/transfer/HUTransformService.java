@@ -1056,6 +1056,8 @@ public class HUTransformService
 				@Nullable final Boolean keepNewCUsUnderSameParent,
 				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
+			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
+			
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;
