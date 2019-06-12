@@ -24,7 +24,7 @@
 			<staticText>
 				<reportElement uuid="a0dc8c27-5b7c-4f0c-b89d-5f344cd3d07e" x="0" y="0" width="284" height="40"/>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Statistik für monatliche Lagermeldung]]></text>
 			</staticText>
@@ -58,35 +58,35 @@
 			<staticText>
 				<reportElement uuid="c347424e-2fcf-41a0-83a0-28e1a7f0f7e9" x="1" y="0" width="169" height="12"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Produkt]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="76ed996f-a233-475b-b4a0-2fa80fd85f27" x="290" y="0" width="92" height="12"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Empfangene Menge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="fee597be-db7b-4c71-9fcd-338740f0c3ab" x="382" y="0" width="90" height="12"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Ausgelagerte Menge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="77af1e73-0865-4fb1-a75b-e0dac29c4cee" x="472" y="0" width="83" height="12"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Differenz]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="bdaca201-f380-4bae-87b8-4ae127a31c38" x="170" y="0" width="120" height="12"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Ausprägung Merkmals-Satz]]></text>
 			</staticText>

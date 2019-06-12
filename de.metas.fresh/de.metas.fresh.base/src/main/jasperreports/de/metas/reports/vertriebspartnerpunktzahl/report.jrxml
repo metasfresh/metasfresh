@@ -174,7 +174,7 @@ ORDER BY
 			<staticText>
 				<reportElement uuid="e59f2295-35f1-40d9-b03b-887a89d7c804" x="176" y="15" width="203" height="16"/>
 				<textElement textAlignment="Center">
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Vertriebspartnerpunktzahl]]></text>
 			</staticText>
