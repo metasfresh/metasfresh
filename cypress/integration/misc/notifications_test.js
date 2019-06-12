@@ -3,16 +3,17 @@ describe('Test notifications', function() {
     cy.visit('/');
   });
 
-  it('Test if older notifications are visible', function() {
-    cy.getDOMNotificationsNumber().should('not.equal', 0);
+  // Depending on the DB, we might have some notifications already or not
+  // it('Test if older notifications are visible', function() {
+  //   cy.getDOMNotificationsNumber().should('not.equal', 0);
 
-    cy.window()
-      .its('store')
-      .invoke('getState')
-      .then(state => {
-        assert.notEqual(state.appHandler.inbox.unreadCount, 0);
-      });
-  });
+  //   cy.window()
+  //     .its('store')
+  //     .invoke('getState')
+  //     .then(state => {
+  //       assert.notEqual(state.appHandler.inbox.unreadCount, 0);
+  //     });
+  // });
 
   it('Check if new notifications are added correctly', function() {
     cy.newNotification(null, 1).then(notifObj => {

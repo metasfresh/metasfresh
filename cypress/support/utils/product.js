@@ -154,7 +154,6 @@ function applyProductCategory(productCategory) {
     cy.writeIntoStringField('Name', productCategory.name);
 
     // Value is updateable
-    cy.clearField('Value');
     cy.writeIntoStringField('Value', productCategory.value);
   });
 }
@@ -171,7 +170,6 @@ function applyProductPrice(price) {
       true /*modal*/
     );
 
-    cy.clearField('PriceStd');
     cy.writeIntoStringField('PriceStd', price.priceStd, false /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
 
     // @TODO This approach doesn't work correctly
