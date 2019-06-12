@@ -64,17 +64,17 @@ import lombok.NonNull;
  */
 public final class Quantity implements Comparable<Quantity>
 {
-	public static final Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uom)
+	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uom)
 	{
 		return of(new BigDecimal(qty), uom);
 	}
 
-	public static final Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
 	{
 		return new Quantity(qty, uom);
 	}
 
-	public static final Quantity of(final int qty, @NonNull final I_C_UOM uom)
+	public static Quantity of(final int qty, @NonNull final I_C_UOM uom)
 	{
 		return of(BigDecimal.valueOf(qty), uom);
 	}
@@ -196,7 +196,9 @@ public final class Quantity implements Comparable<Quantity>
 	public boolean equals(Object obj)
 	{
 		if (this == obj)
+		{
 			return true;
+		}
 
 		final Quantity other = EqualsBuilder.getOther(this, obj);
 		if (other == null)
@@ -339,7 +341,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quatity's C_UOM_ID
 	 */
-	public final int getSource_UOM_ID()
+	public int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}
@@ -348,7 +350,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @param uom
 	 * @return ZERO quantity (using given UOM)
 	 */
-	public static final Quantity zero(final I_C_UOM uom)
+	public static Quantity zero(final I_C_UOM uom)
 	{
 		return new Quantity(ZERO, uom, ZERO, uom);
 	}
@@ -365,6 +367,15 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		return new Quantity(ZERO, uom, ZERO, sourceUom);
 	}
+	
+	public Quantity toOne()
+	{
+		if (BigDecimal.ONE.compareTo(qty) == 0)
+		{
+			return this;
+		}
+		return new Quantity(BigDecimal.ONE, uom);
+	}
 
 	public Quantity toZeroIfNegative()
 	{
@@ -375,7 +386,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @param uom
 	 * @return infinite quantity (using given UOM)
 	 */
-	public static final Quantity infinite(final I_C_UOM uom)
+	public static Quantity infinite(final I_C_UOM uom)
 	{
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, uom);
 	}
