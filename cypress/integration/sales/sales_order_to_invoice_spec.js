@@ -84,6 +84,9 @@ describe('New sales order test', function() {
 
   describe('create an invoice', function() {
     it("Zoom to the sales order's invoice candidate", function() {
+      // TODO: This is erally, really bad ! Unfortunately right now I see no way of fixing this, unless we'll
+      // get a push notification from the server that would update this panel
+      cy.wait(10000); // wait a bit for the invoice candidate(s) to be created, just like the user would
       cy.get('body').type('{alt}6'); // open referenced-records-sidelist
 
       cy.server();
@@ -93,7 +96,8 @@ describe('New sales order test', function() {
       cy.route('GET', `/rest/api/documentView/${invoiceCandidates.windowId}/*?firstRow=0&pageLength=*`).as(
         getDataAlias
       );
-      cy.selectReference('C_Order_C_Invoice_Candidate', 10000).click();
+
+      cy.selectReference('C_Order_C_Invoice_Candidate').click();
       cy.wait(`@${getDataAlias}`);
     });
 
@@ -120,10 +124,10 @@ describe('New sales order test', function() {
     });
 
     it('Zoom to the new invoice', function() {
+      cy.getNotificationModal();
       cy.getDOMNotificationsNumber().then(number => {
         expect(number).to.equal(1);
 
-        cy.getNotificationModal();
         cy.server();
 
         const invoiceCandidateTab = `tab-${timestamp}`;

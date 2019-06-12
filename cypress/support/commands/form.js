@@ -2,7 +2,7 @@
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
 
-  if (!(stringValue).match) {
+  if (!stringValue.match) {
     return stringValue;
   }
   return stringValue.replace(regex, '');
@@ -130,6 +130,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     }
     cy.get(path)
       .find('input')
+      .type('{selectall}')
       .type(`${stringValue}`)
       .type('{enter}');
 
@@ -190,10 +191,14 @@ Cypress.Commands.add(
 
       cy.get(path).within(el => {
         if (el.find('.lookup-widget-wrapper input').length) {
-          return cy
-            .get('input')
-            .clear()
-            .type(partialValue);
+          return (
+            cy
+              .get('input')
+              // we can't use `clear` here as sometimes it triggers request to the server
+              // and then the whole flov becomes flaky
+              .type('{selectall}')
+              .type(partialValue)
+          );
         }
 
         return cy.get('.lookup-dropdown').click();
