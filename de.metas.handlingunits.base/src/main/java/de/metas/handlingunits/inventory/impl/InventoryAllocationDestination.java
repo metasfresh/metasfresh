@@ -457,6 +457,12 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final int inventoryId = inventory.getM_Inventory_ID();
 		final HUPackingMaterialsCollector packingMaterialsCollector = getPackingMaterialsCollectorForInventory(inventoryId);
 
+		if(packingMaterialsCollector == null)
+		{
+			// the HU was probably a virtual one (CU only). Nothing to move
+			return;
+		}
+
 		huEmptiesService.newEmptiesMovementProducer()
 				.setEmptiesMovementDirectionAuto()
 				.addCandidates(packingMaterialsCollector.getAndClearCandidates())
