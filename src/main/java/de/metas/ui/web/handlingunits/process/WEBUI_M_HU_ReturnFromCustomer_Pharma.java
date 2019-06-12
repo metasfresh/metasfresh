@@ -34,7 +34,7 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.process.M_HU_SecurpharmScan;
-import de.metas.vertical.pharma.securpharm.process.SecurPharmHUAttributesScanner;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromCustomer
@@ -71,21 +71,12 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 	protected String doIt()
 	{
 		final DataMatrixCode dataMatrix = getDataMatrix();
-		final SecurPharmHUAttributesScanner scanner = newScanner();
+		final SecurPharmHUAttributesScanner scanner = securPharmService.newHUScanner();
 
 		streamSelectedHUs(Select.ONLY_TOPLEVEL)
-				.forEach(hu -> scanner.scanAndUpdate(dataMatrix, hu));
+				.forEach(hu -> scanner.scanAndUpdateHUAttributes(dataMatrix, hu));
 
 		return super.doIt();
-	}
-
-	private SecurPharmHUAttributesScanner newScanner()
-	{
-		return SecurPharmHUAttributesScanner.builder()
-				.securPharmService(securPharmService)
-				.handlingUnitsBL(handlingUnitsBL)
-				.handlingUnitsRepo(handlingUnitsRepo)
-				.build();
 	}
 
 	protected final DataMatrixCode getDataMatrix()
