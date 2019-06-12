@@ -56,7 +56,7 @@ group by o.ad_org_id,o.name,l.address1,l.city,l.postal]]>
 			<staticText>
 				<reportElement x="0" y="4" width="240" height="19" uuid="4ebcfb4e-3822-4d4e-9d2e-18413d30677d"/>
 				<textElement>
-					<font size="14" isBold="true"/>
+					<font size="14" fontName="Arial" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Arbeitszeit]]></text>
 			</staticText>
