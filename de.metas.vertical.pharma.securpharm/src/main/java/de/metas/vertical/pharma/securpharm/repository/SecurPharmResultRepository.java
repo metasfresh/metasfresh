@@ -103,8 +103,8 @@ public class SecurPharmResultRepository
 		record.setActiveStatus(productDetails != null ? productDetails.getActiveStatus().toYesNoString() : null);
 		record.setInactiveReason(productDetails != null ? productDetails.getInactiveReason() : null);
 
-		record.setIsDecommissioned(productDetails.isDecommissioned());
-		record.setDecommissionedServerTransactionId(productDetails.getDecommissionedServerTransactionId());
+		record.setIsDecommissioned(productDetails != null ? productDetails.isDecommissioned() : false);
+		record.setDecommissionedServerTransactionId(productDetails != null ? productDetails.getDecommissionedServerTransactionId() : null);
 
 		saveRecord(record);
 		final SecurPharmProductId productDataResultId = SecurPharmProductId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID());
