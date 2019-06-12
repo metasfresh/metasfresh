@@ -74,7 +74,7 @@
 			<textField>
 				<reportElement x="0" y="0" width="801" height="12" uuid="c5c2b0b3-cac6-47f6-b6f4-b76071876a57"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -84,7 +84,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
 			</textField>
@@ -93,7 +93,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -102,7 +102,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipmentdate}]]></textFieldExpression>
 			</textField>
@@ -111,7 +111,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 			</textField>
@@ -121,7 +121,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_doctype}  != null ? $F{p_doctype}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -131,7 +131,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_startdate} + " - "+ $F{p_enddate}]]></textFieldExpression>
 			</textField>
@@ -141,7 +141,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_bpartner}  != null ? $F{p_bpartner}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -150,7 +150,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{complaints}]]></textFieldExpression>
 			</textField>
@@ -160,7 +160,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{performance}]]></textFieldExpression>
 			</textField>
@@ -170,7 +170,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipment}]]></textFieldExpression>
 			</textField>
@@ -179,7 +179,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_qualitynote}  != null ? $F{p_qualitynote}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -189,7 +189,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_performancetype}  != null ? $F{p_performancetype}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -199,7 +199,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_ismaterialreturned}  != null ? $F{p_ismaterialreturned}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -208,7 +208,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_status}  != null ? $F{p_status}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -218,7 +218,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
 			</textField>
@@ -228,7 +228,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_product}  != null ? $F{p_product}  : $R{all}]]></textFieldExpression>
 			</textField>
@@ -238,7 +238,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
@@ -247,7 +247,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -256,14 +256,14 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="0" y="91" width="45" height="12" isPrintWhenDetailOverflows="true" uuid="a1fc9b39-b1f2-4d33-8ac1-0d1e46036ecb"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
@@ -273,7 +273,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_nr}]]></textFieldExpression>
 			</textField>
@@ -283,7 +283,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 			</textField>
@@ -292,7 +292,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{inout_docno}]]></textFieldExpression>
 			</textField>
@@ -301,7 +301,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product_nr}]]></textFieldExpression>
 			</textField>
@@ -311,7 +311,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
@@ -320,7 +320,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{complaint}]]></textFieldExpression>
 			</textField>
@@ -335,7 +335,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{performance}]]></textFieldExpression>
 			</textField>
@@ -350,7 +350,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipment}]]></textFieldExpression>
 			</textField>
@@ -359,7 +359,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{result}]]></textFieldExpression>
 			</textField>
@@ -369,7 +369,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{status}]]></textFieldExpression>
 			</textField>
@@ -378,7 +378,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>
@@ -387,7 +387,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[""]]></textFieldExpression>
 			</textField>

@@ -36,7 +36,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="70" width="140" height="12" uuid="e66e65da-d363-4774-a4bd-bfdd3a8fc1f1"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{p_value} + $F{p_value}]]></textFieldExpression>
 			</textField>
@@ -45,28 +45,28 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Bottom">
-					<font size="13" isBold="true"/>
+					<font size="13" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="58" width="140" height="12" uuid="7e2b7596-5cb4-4564-b08d-e42b987b7f32"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qty} + " Kg"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="82" width="140" height="7" uuid="40f7a3f9-5a8a-4afb-9a63-735a4ec66a5a"/>
 				<textElement>
-					<font size="5" isBold="true"/>
+					<font size="5" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="93" width="140" height="46" uuid="efb42090-528b-4071-81c2-0441bf21a2cf"/>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ingredient} +" " + $F{ingredient}]]></textFieldExpression>
 			</textField>
@@ -75,49 +75,49 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="8" isBold="true"/>
+					<font size="8" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ingredient_fr} +" " + $F{ingredient_trl}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="192" width="80" height="8" uuid="da6df427-aa40-450a-b8b4-f361b9006336"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{best_before}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="201" width="80" height="8" uuid="cd17e7bc-5d1e-4503-bba5-fcce8c945b5a"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{best_before_fr}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="88" y="192" width="60" height="17" uuid="8e331d2b-0aa7-4aa3-b080-0267de138dc6"/>
 				<textElement verticalAlignment="Bottom">
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{best_before}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="210" width="100" height="8" uuid="9656f03b-a678-44db-a8e1-f5ea4e56d072"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{temperature} +" / "+ "conserver à: " + $F{temperature}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="219" width="100" height="8" uuid="805585ae-8622-4337-90ac-02981ddf845c"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{manufacturer} + " / " + $R{manufacturer_fr} + " / " + $R{manufacturer_it}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="228" width="100" height="8" uuid="4126d0cd-d110-4420-84ec-4afe4fcd8e6c"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
@@ -126,21 +126,21 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement rotation="Left">
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lot_nr}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="50" width="140" height="8" uuid="37b9c391-4a48-4aba-b062-58011ae3cdbe"/>
 				<textElement>
-					<font size="6" isBold="true"/>
+					<font size="6" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{isbio}.equals("N") ? "" : $R{bio}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="8" y="40" width="140" height="10" uuid="fa7e671c-1e54-47d7-b5c6-db7b7621261b"/>
 				<textElement>
-					<font size="7" isBold="true"/>
+					<font size="7" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name_trl}]]></textFieldExpression>
 			</textField>
