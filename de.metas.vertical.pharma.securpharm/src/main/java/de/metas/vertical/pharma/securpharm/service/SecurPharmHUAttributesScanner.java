@@ -2,14 +2,18 @@ package de.metas.vertical.pharma.securpharm.service;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IContextAware;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -56,9 +60,15 @@ import lombok.Value;
 
 public class SecurPharmHUAttributesScanner
 {
+	//
+	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHandlingUnitsDAO handlingUnitsRepo;
 	private final SecurPharmService securPharmService;
+
+	//
+	// Status
+	private final Set<HuId> extractedCUIds = new HashSet<>();
 
 	@Builder
 	private SecurPharmHUAttributesScanner(
@@ -96,15 +106,25 @@ public class SecurPharmHUAttributesScanner
 		return true;
 	}
 
+	public void scanAndUpdateHUAttributes(@NonNull final DataMatrixCode dataMatrix, @NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsRepo.getById(huId);
+		scanAndUpdateHUAttributes(dataMatrix, hu);
+	}
+
 	public void scanAndUpdateHUAttributes(@NonNull final DataMatrixCode dataMatrix, @NonNull final I_M_HU hu)
 	{
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final SecurPharmProduct scannedProduct = securPharmService.getAndSaveProduct(dataMatrix, huId);
 
+		//
+		// Case: error while scanning
 		if (scannedProduct.isError())
 		{
 			updateHUAttributes(hu, HUAttributesUpdateRequest.ERROR);
 		}
+		//
+		// Case: product is OK
 		else if (scannedProduct.isActive())
 		{
 			updateHUAttributes(hu, HUAttributesUpdateRequest.builder()
@@ -114,7 +134,9 @@ public class SecurPharmHUAttributesScanner
 					.skipUpdatingSerialNo(true)
 					.build());
 		}
-		else // FRAUD
+		//
+		// Case: product is NOT OK (FRAUD)
+		else
 		{
 			final I_M_HU cu = extractOneCU(hu);
 
@@ -125,7 +147,14 @@ public class SecurPharmHUAttributesScanner
 					.skipUpdatingSerialNo(false)
 					.serialNo(scannedProduct.getProductDetails().getSerialNumber())
 					.build());
+
+			extractedCUIds.add(HuId.ofRepoId(cu.getM_HU_ID()));
 		}
+	}
+
+	public Set<HuId> getExtractedCUIds()
+	{
+		return ImmutableSet.copyOf(extractedCUIds);
 	}
 
 	private I_M_HU extractOneCU(@NonNull final I_M_HU hu)
@@ -211,7 +240,7 @@ public class SecurPharmHUAttributesScanner
 	{
 		public static final HUAttributesUpdateRequest ERROR = builder()
 				.status(SecurPharmAttributesStatus.ERROR)
-				.skipUpdatingSerialNo(false)
+				.skipUpdatingSerialNo(true)
 				.build();
 
 		@NonNull
