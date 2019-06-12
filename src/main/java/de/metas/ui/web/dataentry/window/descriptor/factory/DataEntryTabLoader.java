@@ -484,9 +484,8 @@ public class DataEntryTabLoader
 				.fieldType(FieldType.CREATED_UPDATED_INFO)
 				.build();
 
-		return DocumentFieldDescriptor.builder(fieldName)
-				// .setCaption(dataEntryField.getCaption())
-				// .setDescription(dataEntryField.getDescription())
+		return DocumentFieldDescriptor
+				.builder(fieldName)
 				.setWidgetType(ofFieldType(FieldType.CREATED_UPDATED_INFO))
 				.setLookupDescriptorProvider(LookupDescriptorProviders.NULL)
 				.addCharacteristic(Characteristic.PublicField)
@@ -514,7 +513,7 @@ public class DataEntryTabLoader
 		switch (fieldType)
 		{
 			case DATE:
-				return DocumentFieldWidgetType.ZonedDateTime;
+				return DocumentFieldWidgetType.Date;
 			case LIST:
 				return DocumentFieldWidgetType.List;
 			case NUMBER:
