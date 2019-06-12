@@ -107,20 +107,24 @@ class AttributesDropdown extends Component {
     const { patchCallbacks } = this.state;
     const updatedCallbacks = patchCallbacks.set(id, true);
 
-    this.setState(
-      {
-        patchCallbacks: updatedCallbacks,
-      },
-      () => {
-        handlePatch(prop, value, attrId, () => {
-          const resolvedCallbacks = this.state.patchCallbacks.delete(id);
+    return new Promise(res => {
+      this.setState(
+        {
+          patchCallbacks: updatedCallbacks,
+        },
+        () => {
+          return handlePatch(prop, value, attrId, () => {
+            const resolvedCallbacks = this.state.patchCallbacks.delete(id);
 
-          this.setState({
-            patchCallbacks: resolvedCallbacks,
+            res();
+
+            this.setState({
+              patchCallbacks: resolvedCallbacks,
+            });
           });
-        });
-      }
-    );
+        }
+      );
+    });
   };
 
   renderFields = () => {
