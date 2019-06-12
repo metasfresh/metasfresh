@@ -30,7 +30,7 @@ SELECT
 	x.amt , 
 	COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric)) as taxbaseamt, 
 
-	x.vatcode, x.DocType_DisplayName,
+	x.vatcode, x.DocType_DisplayName, x.bpName,
 	x.endsaldo AS endsaldo,
 	x.startdate::date as param_startdate, x.enddate::date as param_endtdate,
 	x.param_konto, x.param_vatcode, x.param_org,
@@ -48,6 +48,7 @@ SELECT
 	tax.name AS taxname,
 	tax.rate AS taxrate,
 
+	bp.name as bpName, 
 	
 	i.taxbaseamt AS inv_baseamt,
 	gl.taxbaseamt AS gl_baseamt,
@@ -84,6 +85,8 @@ JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id and ev.isActive =
 JOIN ad_table t ON fa.ad_table_id=t.ad_table_id and t.isActive = 'Y'
 JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
 JOIN c_period p ON p.c_period_id=$1 and p.isActive = 'Y'
+
+LEFT OUTER JOIN c_bpartner bp on fa.c_bpartner_id = bp.c_bpartner_id
 
 --Show all accounts, not only tax accounts
 LEFT OUTER JOIN (select distinct vc.Account_ID as C_ElementValue_ID
