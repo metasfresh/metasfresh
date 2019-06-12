@@ -42,7 +42,7 @@ public interface IBPartnerEndpointService
 
 	Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(Long epochTimestampMillis, String next);
 
-	JsonContact retrieveContact(String contactIdentifier);
+	Optional<JsonContact> retrieveContact(String contactIdentifier);
 
 	Optional<JsonContactList> retrieveContactsSince(Long epochTimestampMillis, String next);
 

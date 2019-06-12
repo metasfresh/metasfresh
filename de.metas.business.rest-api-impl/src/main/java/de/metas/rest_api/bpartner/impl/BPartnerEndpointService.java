@@ -34,7 +34,11 @@ import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
 import de.metas.rest_api.model.I_C_BPartner_Recent_ID;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.user.api.IUserDAO;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserQuery;
+import de.metas.user.UserQuery.UserQueryBuilder;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
@@ -67,20 +71,24 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 {
 
 	private final JsonBPartnerCompositeRepository jsonBPartnerCompositeRepository;
+	private final UserRepository userRepository;
 
-	public BPartnerEndpointService(@NonNull final JsonBPartnerCompositeRepository jsonBPartnerCompositeRepository)
+	public BPartnerEndpointService(
+			@NonNull final JsonBPartnerCompositeRepository jsonBPartnerCompositeRepository,
+			@NonNull final UserRepository userRepository)
 	{
 		this.jsonBPartnerCompositeRepository = jsonBPartnerCompositeRepository;
+		this.userRepository = userRepository;
 
 	}
 
 	@Override
 	public Optional<JsonBPartnerComposite> retrieveBPartner(@NonNull final String bpartnerIdentifier)
 	{
-		final BPartnerQueryBuilder query = createBPartnerQuery(bpartnerIdentifier);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query.build());
+		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query);
 		if (!bBartnerId.isPresent())
 		{
 			return Optional.empty();
@@ -95,10 +103,10 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 			@NonNull final String locationIdentifierStr)
 	{
 
-		final BPartnerQueryBuilder query = createBPartnerQuery(bpartnerIdentifierStr);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifierStr);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query.build());
+		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query);
 		if (!bBartnerId.isPresent())
 		{
 			return Optional.empty();
@@ -139,10 +147,10 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 			@NonNull final String bpartnerIdentifierStr,
 			@NonNull final String contactIdentifierStr)
 	{
-		final BPartnerQueryBuilder query = createBPartnerQuery(bpartnerIdentifierStr);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifierStr);
 		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query.build());
+		final Optional<BPartnerId> bBartnerId = bPartnerDAO.retrieveBPartnerIdBy(query);
 		if (!bBartnerId.isPresent())
 		{
 			return Optional.empty();
@@ -159,7 +167,7 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		return result;
 	}
 
-	private BPartnerQueryBuilder createBPartnerQuery(@NonNull final String bpartnerIdentifier)
+	private BPartnerQuery createBPartnerQuery(@NonNull final String bpartnerIdentifier)
 	{
 		final BPartnerQueryBuilder query = BPartnerQuery.builder();
 
@@ -182,7 +190,7 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 			default:
 				throw new AdempiereException("Unexpected type=" + identifier.getType());
 		}
-		return query;
+		return query.build();
 	}
 
 	private boolean isContactMatches(
@@ -277,11 +285,46 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 	}
 
 	@Override
-	public JsonContact retrieveContact(String contactIdentifier)
+	public Optional<JsonContact> retrieveContact(@NonNull final String contactIdentifier)
 	{
-Services.get(IUserDAO.class);
+		final UserQuery userQuery = createUserQuery(contactIdentifier);
+
+		final Optional<User> userOpt = userRepository.getBy(userQuery);
+		if(!userOpt.isPresent())
+		{
+			return Optional.empty();
+		}
+		final User user = userOpt.get();
+		JsonContact.builder()
+		.email(user.getEmailAddress())
+		.externalId(user.get)
+		.build();
+
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private UserQuery createUserQuery(@NonNull final String contactIdentifier)
+	{
+		final UserQueryBuilder query = UserQuery.builder();
+
+		final IdentifierString identifier = IdentifierString.of(contactIdentifier);
+		switch (identifier.getType())
+		{
+			case EXTERNAL_ID:
+				query.externalId(ExternalId.of(identifier.getValue()));
+				break;
+			case VALUE:
+				query.value(identifier.getValue());
+				break;
+			case METASFRESH_ID:
+				final int repoId = Integer.parseInt(identifier.getValue());
+				query.userId(UserId.ofRepoId(repoId));
+				break;
+			default:
+				throw new AdempiereException("Unexpected type=" + identifier.getType());
+		}
+		return query.build();
 	}
 
 	@Override

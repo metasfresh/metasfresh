@@ -6,6 +6,7 @@ import static de.metas.util.Check.isEmpty;
 import javax.annotation.Nullable;
 
 import de.metas.util.rest.ExternalId;
+import lombok.Builder;
 import lombok.Value;
 
 /*
@@ -31,6 +32,7 @@ import lombok.Value;
  */
 
 @Value
+@Builder
 public class UserQuery
 {
 	/** If set, it overrides the other query parameters */
