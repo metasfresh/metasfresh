@@ -44,7 +44,15 @@ where taxbaseamt > 0;]]>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band splitType="Stretch"/>
+		<band height="30" splitType="Stretch">
+			<textField>
+				<reportElement x="1" y="0" width="79" height="20" uuid="ab05efaf-1e02-4b58-8859-672d5a58a1e2"/>
+				<textElement>
+					<font size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{recap}]]></textFieldExpression>
+			</textField>
+		</band>
 	</title>
 	<pageHeader>
 		<band height="21" splitType="Stretch">
