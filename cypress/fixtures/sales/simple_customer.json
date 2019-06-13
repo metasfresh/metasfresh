@@ -3,6 +3,7 @@
   "isVendor": false,
   "isCustomer": true,
   "customerPricingSystem": "Testpreisliste Kunden",
+  "customerDiscountSchema": "DiscountSchemaTest",
   "bPartnerLocations": [
     {
       "name": "Address1",
