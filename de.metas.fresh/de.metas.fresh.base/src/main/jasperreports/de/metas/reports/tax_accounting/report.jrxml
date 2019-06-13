@@ -129,7 +129,7 @@
 					<textFieldExpression><![CDATA[$V{amt_vat_sum}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00">
-					<reportElement x="580" y="10" width="91" height="20" uuid="52662b3c-f30e-4c4c-8233-eb2c1be80745"/>
+					<reportElement x="580" y="10" width="96" height="20" uuid="52662b3c-f30e-4c4c-8233-eb2c1be80745"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
@@ -174,7 +174,7 @@
 					<textFieldExpression><![CDATA[$V{amt_acct_sum}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00">
-					<reportElement x="580" y="1" width="90" height="20" uuid="5a6eefbd-4318-45e0-932b-6ea2d2a7a4a2"/>
+					<reportElement x="580" y="1" width="96" height="20" uuid="5a6eefbd-4318-45e0-932b-6ea2d2a7a4a2"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
@@ -224,7 +224,7 @@
 			</textField>
 			<textField>
 				<reportElement x="434" y="120" width="55" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
@@ -385,7 +385,7 @@
 			</textField>
 			<textField pattern="#,##0.00">
 				<reportElement x="434" y="0" width="55" height="20" uuid="54f96ea7-b31a-4158-9037-be149c76287d"/>
-				<textElement>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
@@ -429,7 +429,7 @@
 	<summary>
 		<band height="45" splitType="Stretch">
 			<subreport>
-				<reportElement x="0" y="0" width="802" height="40" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
+				<reportElement x="0" y="12" width="802" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
 				<subreportParameter name="c_period_id">
 					<subreportParameterExpression><![CDATA[$P{c_period_id}]]></subreportParameterExpression>
 				</subreportParameter>

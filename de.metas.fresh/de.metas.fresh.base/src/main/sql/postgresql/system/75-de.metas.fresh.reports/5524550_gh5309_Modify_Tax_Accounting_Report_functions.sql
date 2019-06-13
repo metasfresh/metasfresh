@@ -132,51 +132,52 @@ LANGUAGE sql STABLE;
 
 
 
-DROP FUNCTION IF EXISTS report.tax_accounting_report_recap( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric);
+
+DROP FUNCTION IF EXISTS report.tax_accounting_report_recap( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric );
 CREATE OR REPLACE FUNCTION report.tax_accounting_report_recap(IN c_period_id numeric, IN vatcode numeric,
                                                               IN account_id  numeric, IN org_id numeric)
   RETURNS TABLE(
-    kontono    character varying(40),
-    kontoname  character varying(60),
+    taxname    character varying,
+    taxrate    numeric,
+    vatcode    character varying,
     taxbaseamt numeric,
     taxamt     numeric
   )
 AS
 $$
-
+select
+  taxname,
+  taxrate,
+  vatcode,
+  sum(taxbaseamt),
+  sum(taxamt)
+FROM
+(
 SELECT
-  x.kontono,
-  x.kontoname,
-  sum(COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt, 0 :: numeric))) as taxbaseamt,
-  sum(COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt, 0 :: numeric)))     as taxamt
+  documentno,
+  taxname,
+  taxrate,
+  x.vatcode,
+  COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt, 0 :: numeric)) as taxbaseamt,
+  COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt, 0 :: numeric))    as taxamt
 FROM
   (
     SELECT
-      ev.value       AS kontono,
-      ev.name        AS kontoname,
-
+      fa.documentno,
+      tax.name       AS taxname,
+      tax.rate       AS taxrate,
       i.taxbaseamt   AS inv_baseamt,
       gl.taxbaseamt  AS gl_baseamt,
       hdr.taxbaseamt AS hdr_baseamt,
-
       i.taxamt       AS inv_taxamt,
       gl.taxamt      AS gl_taxamt,
-      hdr.taxamt     AS hdr_taxamt
+      hdr.taxamt     AS hdr_taxamt,
+      fa.vatcode     AS vatcode
 
     FROM public.fact_acct fa
       -- gh #489: explicitly select from public.fact_acct, bacause the function de_metas_acct.Fact_Acct_EndingBalance expects it.
-
-      JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id and ev.isActive = 'Y'
+      JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id and tax.isActive = 'Y'
       JOIN c_period p ON p.c_period_id = $1 and p.isActive = 'Y'
-
-      --Show all accounts, not only tax accounts
-      LEFT OUTER JOIN (select distinct vc.Account_ID as C_ElementValue_ID
-                       from C_Tax_Acct ta
-                         inner join C_ValidCombination vc on (vc.C_ValidCombination_ID in
-                                                              (ta.T_Liability_Acct, ta.T_Receivables_Acct, ta.T_Due_Acct, ta.T_Credit_Acct, ta.T_Expense_Acct))
-                                                             and vc.isActive = 'Y'
-                       where ta.isActive = 'Y'
-                      ) ta ON ta.C_ElementValue_ID = ev.C_ElementValue_ID
 
       --if invoice
       LEFT OUTER JOIN
@@ -240,10 +241,13 @@ FROM
 
 
   ) x
-GROUP BY
-  x.kontono, x.kontoname
-ORDER BY kontono
-
+GROUP BY vatcode, taxrate, taxname, documentno,
+  COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt, 0 :: numeric)),
+  COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt, 0 :: numeric))
+ORDER BY vatcode, taxrate, documentno
+  ) s
+GROUP BY vatcode, taxname, taxrate
 $$
 LANGUAGE sql
 STABLE;
+
