@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -22,7 +21,6 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
-import de.metas.handlingunits.attributes.sscc18.ISSCC18CodeDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
@@ -44,7 +42,6 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.MutableDocumentFieldChangedEvent;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -298,13 +295,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<String> getSSCC18()
 	{
-		final I_M_Attribute sscc18Attribute = Services.get(ISSCC18CodeDAO.class).retrieveSSCC18Attribute();
-		if (!attributesStorage.hasAttribute(sscc18Attribute))
+		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_SSCC18_Value))
 		{
 			return Optional.empty();
 		}
 
-		final String sscc18 = attributesStorage.getValueAsString(sscc18Attribute);
+		final String sscc18 = attributesStorage.getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value);
 		if (Check.isEmpty(sscc18, true))
 		{
 			return Optional.empty();
@@ -315,14 +311,12 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	public Optional<Date> getBestBeforeDate()
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute bestBeforeDateAttribute = attributeDAO.retrieveAttributeByValue(HUAttributeConstants.ATTR_BestBeforeDate);
-		if (!attributesStorage.hasAttribute(bestBeforeDateAttribute))
+		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate))
 		{
 			return Optional.empty();
 		}
 
-		final Date bestBeforeDate = attributesStorage.getValueAsDate(bestBeforeDateAttribute);
+		final Date bestBeforeDate = attributesStorage.getValueAsDate(HUAttributeConstants.ATTR_BestBeforeDate);
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
@@ -330,7 +324,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	{
 		return attributesStorage.getValue(attributeName);
 	}
-	
+
 	public String getValueAsString(@NonNull final String attributeName)
 	{
 		return attributesStorage.getValueAsString(attributeName);
@@ -347,7 +341,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	@EqualsAndHashCode
 	private static final class AttributeStorage2ExecutionEventsForwarder implements IAttributeStorageListener
 	{
-		public static final void bind(final IAttributeStorage storage, final DocumentPath documentPath)
+		public static void bind(final IAttributeStorage storage, final DocumentPath documentPath)
 		{
 			final AttributeStorage2ExecutionEventsForwarder forwarder = new AttributeStorage2ExecutionEventsForwarder(documentPath);
 			storage.addListener(forwarder);
@@ -360,7 +354,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			this.documentPath = documentPath;
 		}
 
-		private final void forwardEvent(final IAttributeStorage storage, final IAttributeValue attributeValue)
+		private void forwardEvent(final IAttributeStorage storage, final IAttributeValue attributeValue)
 		{
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollector();
 
