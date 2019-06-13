@@ -63,7 +63,7 @@ For my local minikube (with webui-api running in my IDE)
 
 ...edit the `cypress/config.js` like this:
 
-```json
+```javascript
 module.exports = {
   API_URL: 'http://localhost:8080/rest/api',
   WS_URL:  'http://localhost:8080/stomp',
@@ -81,7 +81,7 @@ For a dev-instance (dev133 in this example)
 
 ...edit the `cypress/config.js` like this:
 
-```json
+```javascript
 module.exports = {
   API_URL: 'https://dev133.metasfresh.com/rest/api/',
   WS_URL:  'https://dev133.metasfresh.com/stomp',
