@@ -336,6 +336,10 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return attributesStorage.getValueAsString(attributeName);
 	}
 
+	public boolean hasAttribute(@NonNull final String attributeName)
+	{
+		return attributesStorage.hasAttribute(attributeName);
+	}
 
 	/**
 	 * Intercepts {@link IAttributeStorage} events and forwards them to {@link Execution#getCurrentDocumentChangesCollector()}.
