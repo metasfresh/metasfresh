@@ -86,16 +86,22 @@
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<variable name="baseamt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
 	</variable>
 	<variable name="baseamt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
 	</variable>
 	<variable name="amt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxamt}]]></variableExpression>
 	</variable>
 	<variable name="amt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxamt}]]></variableExpression>
+	</variable>
+	<variable name="novat_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+	</variable>
+	<variable name="novat_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
+		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
 	</variable>
 	<group name="vatcode_group">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
@@ -109,7 +115,7 @@
 					<textFieldExpression><![CDATA[$F{vatcode} !=null ? $F{vatcode} : $R{no_vatcode}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00">
-					<reportElement x="489" y="10" width="80" height="20" uuid="ce9ee0cf-3874-49d4-8f03-9e1946af64a2"/>
+					<reportElement x="489" y="10" width="91" height="20" uuid="ce9ee0cf-3874-49d4-8f03-9e1946af64a2"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
@@ -122,6 +128,13 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$V{amt_vat_sum}]]></textFieldExpression>
 				</textField>
+				<textField evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00">
+					<reportElement x="580" y="10" width="91" height="20" uuid="52662b3c-f30e-4c4c-8233-eb2c1be80745"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{novat_vat_sum}]]></textFieldExpression>
+				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
@@ -131,7 +144,7 @@
 	<group name="account_group">
 		<groupExpression><![CDATA[$F{kontono}]]></groupExpression>
 		<groupHeader>
-			<band height="20">
+			<band height="21">
 				<textField>
 					<reportElement x="0" y="0" width="70" height="20" uuid="0e98b97d-7a0c-44e8-a6c8-cc18afe15c34"/>
 					<textElement>
@@ -147,7 +160,7 @@
 					<textFieldExpression><![CDATA[$F{kontoname}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00">
-					<reportElement x="490" y="0" width="79" height="20" uuid="ef6e52a8-4675-4e21-ab13-14c2e17be64d"/>
+					<reportElement x="490" y="0" width="90" height="20" uuid="ef6e52a8-4675-4e21-ab13-14c2e17be64d"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
@@ -159,6 +172,13 @@
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{amt_acct_sum}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00">
+					<reportElement x="580" y="1" width="90" height="20" uuid="5a6eefbd-4318-45e0-932b-6ea2d2a7a4a2"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{novat_acct_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -210,14 +230,14 @@
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="489" y="120" width="80" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="489" y="120" width="91" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="569" y="120" width="107" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
+				<reportElement x="580" y="120" width="96" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -364,13 +384,6 @@
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="489" y="0" width="80" height="20" uuid="32b42174-c631-4ec9-82f0-de6bcf560eb9"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
-			</textField>
-			<textField pattern="#,##0.00">
 				<reportElement x="434" y="0" width="55" height="20" uuid="54f96ea7-b31a-4158-9037-be149c76287d"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
@@ -392,11 +405,18 @@
 				<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="569" y="0" width="106" height="20" uuid="1f45bf74-d605-4c4d-b3f0-e5876ba9a6ba"/>
+				<reportElement x="489" y="0" width="91" height="20" uuid="1f45bf74-d605-4c4d-b3f0-e5876ba9a6ba"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}.subtract($F{taxamt})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="580" y="0" width="96" height="20" uuid="32b42174-c631-4ec9-82f0-de6bcf560eb9"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

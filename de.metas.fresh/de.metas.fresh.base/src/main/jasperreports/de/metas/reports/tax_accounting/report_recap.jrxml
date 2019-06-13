@@ -106,7 +106,7 @@ where taxbaseamt > 0;]]>
 				<textFieldExpression><![CDATA[$F{kontoname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="490" y="0" width="79" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
+				<reportElement x="570" y="0" width="106" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
@@ -120,11 +120,11 @@ where taxbaseamt > 0;]]>
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00">
-				<reportElement x="569" y="0" width="106" height="15" uuid="9ed91fe9-02ae-4154-bd70-d28995175271"/>
+				<reportElement x="490" y="0" width="80" height="15" uuid="9ed91fe9-02ae-4154-bd70-d28995175271"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}.subtract($F{taxamt})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
