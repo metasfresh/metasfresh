@@ -32,6 +32,8 @@ describe('New user tests', function() {
   it(`Set user's password`, function() {
     users.visit();
 
+    users.getHeaderFilter('Lastname').click();
+
     users.getRowWithValue(customLastName).click();
 
     cy.executeHeaderActionWithDialog('AD_User_ChangePassword');

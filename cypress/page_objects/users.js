@@ -9,6 +9,7 @@ class Users extends Metasfresh {
     this.rowSelector = 'tbody tr';
     this.listHeader = '.document-list-header';
     this.selectedRows = '.row-selected';
+    this.tableHeader = '.table thead tr';
   }
 
   visit() {
@@ -32,6 +33,10 @@ class Users extends Metasfresh {
 
   getRowWithValue(val) {
     return cy.get(this.tableRows).contains(val);
+  }
+
+  getHeaderFilter(name) {
+    return cy.get(this.tableHeader).contains(name);
   }
 
   clickListHeader() {
