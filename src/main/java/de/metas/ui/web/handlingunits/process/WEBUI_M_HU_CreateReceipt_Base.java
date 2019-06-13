@@ -29,7 +29,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
-import de.metas.product.Product;
 import de.metas.product.ProductRepository;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributes;
@@ -88,11 +87,23 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	@Override
 	protected final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
-		if (!document.isHUStatusPlanning())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Only planning HUs can be received");
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> rejectIfNotPlanningHUStatus(document),
+				() -> rejectIfMandatoryAttributesAreNotFilled(document),
+				() -> rejectIfSecurPharmAttributesAreNotOK(document));
+	}
 
+	private static ProcessPreconditionsResolution rejectIfNotPlanningHUStatus(final HUEditorRow document)
+	{
+		return document.isHUStatusPlanning()
+				? ProcessPreconditionsResolution.accept()
+				: ProcessPreconditionsResolution.rejectWithInternalReason("Only planning HUs can be received");
+	}
+
+	private ProcessPreconditionsResolution rejectIfMandatoryAttributesAreNotFilled(final HUEditorRow document)
+	{
+		//
+		// Make sure all mandatory attributes are filled
 		final HUEditorRowAttributes attributes = document.getAttributes();
 		for (final String mandatoryAttributeName : attributes.getMandatoryAttributeNames())
 		{
@@ -106,27 +117,49 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 			}
 		}
 
-		if (securPharmService.hasConfig())
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution rejectIfSecurPharmAttributesAreNotOK(final HUEditorRow document)
+	{
+		//
+		// OK if this is not a Pharma product
+		final HUEditorRowAttributes attributes = document.getAttributes();
+		if (!attributes.hasAttribute(AttributeConstants.ATTR_SecurPharmScannedStatus))
 		{
-			final BPartnerId vendorId = document.getBPartnerId();
-			final Product prod = productRepository.getById(document.getProductId());
-			final BPartnerId manufacturerId = prod.getManufacturerId();
-			if (!BPartnerId.equals(vendorId, manufacturerId))
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		//
+		// NOK if SecurPharm connection is not configured and we deal with a pharma product
+		if (!securPharmService.hasConfig())
+		{
+			return ProcessPreconditionsResolution.reject("SecurPharm not configured");
+		}
+
+		//
+		// NOK if not scanned and vendor != manufacturer
+		final BPartnerId vendorId = document.getBPartnerId();
+		final BPartnerId manufacturerId = productRepository
+				.getById(document.getProductId())
+				.getManufacturerId();
+		if (!BPartnerId.equals(vendorId, manufacturerId))
+		{
+			final SecurPharmAttributesStatus status = SecurPharmAttributesStatus.ofNullableCodeOrKnown(attributes.getValueAsString(AttributeConstants.ATTR_SecurPharmScannedStatus));
+			if (status.isUnknown())
 			{
-				final SecurPharmAttributesStatus status = SecurPharmAttributesStatus.ofNullableCode(attributes.getValueAsString(AttributeConstants.ATTR_Scanned));
-				if (status == null || status.isUnknown())
-				{
-					return ProcessPreconditionsResolution.rejectWithInternalReason("Vendor is different from manufacturer and product was not scanned");
-				}
+				return ProcessPreconditionsResolution.reject("Vendor is different from manufacturer and product was not scanned (SecurPharm)");
 			}
 		}
 
+		//
+		// OK
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	@RunOutOfTrx // IHUReceiptScheduleBL.processReceiptSchedules creates its own transaction
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		// Generate material receipts
 		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();
