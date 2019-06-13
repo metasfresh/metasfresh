@@ -5,6 +5,7 @@ export class BPartner {
     this.isVendor = false;
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
+    this.customerDiscountSchema = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
@@ -43,6 +44,12 @@ export class BPartner {
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
+    return this;
+  }
+
+  setCustomerDiscountSchema(customerDiscountSchema) {
+    cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
+    this.customerDiscountSchema = customerDiscountSchema;
     return this;
   }
 
