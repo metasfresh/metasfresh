@@ -16,6 +16,11 @@ describe('Create test: discount schema set to bpartner, https://github.com/metas
 
     cy.log('Now going to verify that the discount schema was set correctly');
     cy.selectTab('Customer');
-    cy.get('table td').contains('DiscountSchemaTest');
+    cy.get('table tr')
+      .eq(0)
+      .get('td')
+      .eq(7)
+      //.debug();
+      .should('contain', 'DiscountSchemaTest');
   });
 });
