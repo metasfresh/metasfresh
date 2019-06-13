@@ -56,34 +56,6 @@ where taxbaseamt > 0;]]>
 				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="71" y="0" width="59" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{docno}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="130" y="0" width="125" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="255" y="0" width="180" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="435" y="0" width="55" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
-					<font size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
-			</textField>
-			<textField>
 				<reportElement x="490" y="0" width="80" height="20" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement textAlignment="Right">
 					<font size="9" isBold="true"/>
@@ -110,7 +82,7 @@ where taxbaseamt > 0;]]>
 		<band splitType="Stretch"/>
 	</columnHeader>
 	<detail>
-		<band height="16">
+		<band height="20">
 			<textField>
 				<reportElement x="0" y="0" width="70" height="15" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee"/>
 				<textElement>
@@ -138,6 +110,13 @@ where taxbaseamt > 0;]]>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00">
+				<reportElement x="569" y="0" width="106" height="15" uuid="9ed91fe9-02ae-4154-bd70-d28995175271"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxbaseamt}.subtract($F{taxamt})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

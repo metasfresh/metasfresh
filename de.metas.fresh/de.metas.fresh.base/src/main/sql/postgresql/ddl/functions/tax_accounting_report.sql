@@ -1,4 +1,3 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying);
 DROP FUNCTION IF EXISTS report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6));
 CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying (6))
 RETURNS TABLE ( 
@@ -8,13 +7,11 @@ dateacct date,
 documentno character varying(40),
 taxname character varying(60),
 taxrate numeric,
-amt numeric, 
 taxbaseamt numeric, 
 taxamt  numeric, 
 vatcode character varying(10),
 doctype character varying,
 bpName character varying,
-endsaldo numeric,
 param_startdate date,
 param_enddate date,
 param_konto character varying,
@@ -29,12 +26,10 @@ $$
 SELECT 
 	x.kontono,x.kontoname,
 	x.dateacct::date, x.documentno, x.taxname, x.taxrate,
-	x.amt , 
-	COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric)) as taxbaseamt, 
-	COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt,0::numeric)) as taxamt, 
+	sum(COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric))) as taxbaseamt, 
+	sum(COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt,0::numeric))) as taxamt, 
 
 	x.vatcode, x.DocType_DisplayName, x.bpName,
-	x.endsaldo AS endsaldo,
 	x.startdate::date as param_startdate, x.enddate::date as param_endtdate,
 	x.param_konto, x.param_vatcode, x.param_org,
 	
@@ -75,10 +70,6 @@ SELECT
 		END
 	) AS DocType_DisplayName,
 
-	(fa.amtacctdr - fa.amtacctcr) AS amt,
-	
-	de_metas_acct.Fact_Acct_EndingBalance(fa) as endsaldo,
-	
 	p.startdate::date, p.enddate::date,
 	(CASE WHEN $3 IS NULL THEN NULL ELSE (SELECT value||' - '||name from C_ElementValue WHERE C_ElementValue_ID = $3 and isActive = 'Y') END) AS param_konto, 
 	(CASE WHEN $2 IS NULL THEN NULL ELSE (SELECT vatcode FROM C_Vat_Code WHERE C_Vat_Code_ID = $2 and isActive = 'Y') END) AS param_vatcode,
@@ -139,23 +130,15 @@ WHERE fa.c_period_id = $1
 
 
 )x
-WHERE 
-x.amt IS NOT NULL 
-
 GROUP BY
-	x.kontono,x.kontoname,
-	x.dateacct::date, x.documentno, x.taxname, x.taxrate,
-	x.amt , 
-	COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt,0::numeric)), 
-	COALESCE(COALESCE(coalesce(x.inv_taxamt, x.gl_taxamt), x.hdr_taxamt,0::numeric)),
-
-	x.vatcode, x.DocType_DisplayName, x.bpName, x.endsaldo,
+	x.kontono,x.kontoname, x.documentno,
+	x.dateacct::date,  x.taxname, x.taxrate,
+	x.vatcode, x.DocType_DisplayName, x.bpName,
 	x.startdate::date , x.enddate::date,
 	x.param_konto, x.param_vatcode, x.param_org,
-	
 	x.ad_org_id
 
-ORDER BY vatcode,kontono,documentno
+ORDER BY kontono,documentno, vatcode
 
 $$ 
 LANGUAGE sql STABLE;
