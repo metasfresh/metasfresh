@@ -26,7 +26,7 @@
 	$P{account_id},
 	$P{AD_Org_ID}
 )
-where taxbaseamt > 0;]]>
+where taxbaseamt > 0 or taxamt>0;]]>
 	</queryString>
 	<field name="kontono" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="kontono"/>
