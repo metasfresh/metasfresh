@@ -9,7 +9,7 @@ declare namespace Cypress {
      * @param fieldName name of the field is question
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      */
-    assertFieldNotShown(fieldName: string, modal: boolean): Chainable<any>
+    assertFieldNotShown(fieldName: string, modal?: boolean): Chainable<any>
 
     /**
      * @param fieldName name of the field is question
@@ -41,7 +41,7 @@ declare namespace Cypress {
      *  cy.log(`Description = ${fieldValue}`)
      * });
      */
-    getFieldValue(fieldName: string, modal: boolean): Chainable<any>
+    getFieldValue(fieldName: string, modal?: boolean): Chainable<any>
 
     /**
      * @param fieldName name of the field is question
@@ -52,7 +52,7 @@ declare namespace Cypress {
      *  cy.log(`IsDefault = ${checkBoxValue}`)
      * });
      */
-    isChecked(fieldName: string, modal: boolean): Chainable<any>
+    isChecked(fieldName: string, modal?: boolean): Chainable<any>
 
     /**
      * Open the advanced edit overlay via ALT+E shortcut
@@ -62,9 +62,13 @@ declare namespace Cypress {
     /**
      * Presses a single document's add-new-button to create a new subrow / included document
      *
-     * @param aliasToStoreNewDocumentId the name of the alias in which the command will store the new record's ID; example " { documentId: 1000001 }";
+     * @param includedDocumentIdAliasName optional; default value: 'newIncludedDocumentId'; the name of the alias in which the command will store the new record's ID; example " { documentId: 1000001 }";
      *
      * @example
+     *
+     * // press the button to open the new sub-record's modal dialog using the default documentId
+     * cy.pressAddNewButton()
+     *
      * // press the button to open the new sub-record's modal dialog
      * cy.pressAddNewButton('myNewIncludedDcumentId')
      *
@@ -77,7 +81,7 @@ declare namespace Cypress {
      *   cy.log(`going to do things with the included document we added just before; newIncludedDocument=${JSON.stringify(newIncludedDocument)}`)
      * })
      */
-    pressAddNewButton(includedDocumentIdAliasName: string): Chainable<any>
+    pressAddNewButton(includedDocumentIdAliasName?: string): Chainable<any>
 
     /**
      *
@@ -86,7 +90,7 @@ declare namespace Cypress {
      *
      * @example cy.processDocument('Complete', 'Completed');
      */
-    processDocument(action: string, expectedStatus: string)
+    processDocument(action: string, expectedStatus?: string)
 
     /**
      * Select an item in a list field
@@ -99,7 +103,7 @@ declare namespace Cypress {
      * // select a certain flatrate condition is a process dialog
      * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
      */
-    selectInListField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
+    selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string): Chainable<any>
 
     /**
      * Select a reference (zoom-to-target) from the reference-sidelist
@@ -117,7 +121,7 @@ declare namespace Cypress {
      * @param windowId the metasfresh AD_Window_ID of the window to visit
      * @param recordId optional; the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
      *
-     * @param documentIdAliasName the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW; default: visitedDocumentId
+     * @param documentIdAliasName optional; default: visitedDocumentId; the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
      *
      * @example
      * // create a new business partner document
@@ -128,7 +132,7 @@ declare namespace Cypress {
      * })
      *
      */
-    visitWindow(windowId: BigInteger, recordId: string, documentIdAliasName: string): Chainable<any>
+    visitWindow(windowId: string, recordId?: string, documentIdAliasName?: string): Chainable<any>
 
     /**
      * Wait for the response to a particular patch where a particular field value was set
@@ -148,7 +152,8 @@ declare namespace Cypress {
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch.
      */
-    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList: boolean, modal: boolean, rewriteUrl: String): Chainable<any>
+    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList?: boolean, modal?: boolean, rewriteUrl?: String): Chainable<any>
+
 
     /**
      * Write a string into an input field. Assert that the frontend performs a PATCH request with the given value.
@@ -165,7 +170,7 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoStringField('Description', 'myname', true)
      */
-    writeIntoStringField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string, noRequest: boolean): Chainable<any>
+    writeIntoStringField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, noRequest?: boolean): Chainable<any>
 
     /**
      * Write a string into a text area
@@ -181,7 +186,17 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoTextField('Description', 'myname', true)
      */
-    writeIntoTextField(fieldName: string, stringValue: string, modal: boolean): Chainable<any>
+    writeIntoTextField(fieldName: string, stringValue: string, modal?: boolean): Chainable<any>
 
+
+    // /**
+    //  * Click on a checkbox field
+    //  *
+    //  * @param fieldName
+    //  * @param expectedPatchValue
+    //  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+    //  * @param rewriteUrl
+    //  */
+    // clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
   }
 }
