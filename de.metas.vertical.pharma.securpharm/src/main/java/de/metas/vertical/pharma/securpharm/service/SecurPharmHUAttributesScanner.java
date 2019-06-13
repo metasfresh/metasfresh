@@ -93,11 +93,11 @@ public class SecurPharmHUAttributesScanner
 		}
 
 		final IAttributeStorage attributeStorage = getHUAttributes(hu);
-		if (
-		// !attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo) ||
-		!attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
+		if (!attributeStorage.hasAttribute(AttributeConstants.ATTR_SecurPharmScannedStatus)
+				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_LotNr)
 				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-				|| !attributeStorage.hasAttribute(AttributeConstants.ATTR_Scanned))
+		// !attributeStorage.hasAttribute(AttributeConstants.ATTR_SerialNo)
+		)
 		{
 			// return ProcessPreconditionsResolution.rejectWithInternalReason("attributes missing");
 			return false;
@@ -221,12 +221,18 @@ public class SecurPharmHUAttributesScanner
 			@NonNull final IAttributeStorage huAttributes,
 			@NonNull final HUAttributesUpdateRequest from)
 	{
-		huAttributes.setValue(AttributeConstants.ATTR_Scanned, from.getStatus().getCode());
+		huAttributes.setValue(AttributeConstants.ATTR_SecurPharmScannedStatus, from.getStatus().getCode());
 
-		final ExpirationDate bestBeforeDate = from.getBestBeforeDate();
-		huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate != null ? bestBeforeDate.toLocalDate() : null);
+		if (!from.isSkipUpdatingBestBeforeDate())
+		{
+			final ExpirationDate bestBeforeDate = from.getBestBeforeDate();
+			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate != null ? bestBeforeDate.toLocalDate() : null);
+		}
 
-		huAttributes.setValue(AttributeConstants.ATTR_LotNr, from.getLotNo());
+		if (!from.isSkipUpdatingLotNo())
+		{
+			huAttributes.setValue(AttributeConstants.ATTR_LotNr, from.getLotNo());
+		}
 
 		if (!from.isSkipUpdatingSerialNo())
 		{
@@ -240,15 +246,20 @@ public class SecurPharmHUAttributesScanner
 	{
 		public static final HUAttributesUpdateRequest ERROR = builder()
 				.status(SecurPharmAttributesStatus.ERROR)
+				// UPDATE just the status field, skip the others
+				.skipUpdatingBestBeforeDate(true)
+				.skipUpdatingLotNo(true)
 				.skipUpdatingSerialNo(true)
 				.build();
 
 		@NonNull
 		SecurPharmAttributesStatus status;
 
+		boolean skipUpdatingBestBeforeDate;
 		@Nullable
 		ExpirationDate bestBeforeDate;
 
+		boolean skipUpdatingLotNo;
 		@Nullable
 		String lotNo;
 

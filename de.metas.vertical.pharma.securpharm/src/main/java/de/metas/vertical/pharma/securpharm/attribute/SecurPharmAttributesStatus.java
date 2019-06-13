@@ -52,9 +52,10 @@ public enum SecurPharmAttributesStatus implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static SecurPharmAttributesStatus ofNullableCode(@Nullable final String code)
+	@NonNull
+	public static SecurPharmAttributesStatus ofNullableCodeOrKnown(@Nullable final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return code != null ? ofCode(code) : UNKNOW;
 	}
 
 	public static SecurPharmAttributesStatus ofCode(@NonNull final String code)
