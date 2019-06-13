@@ -391,6 +391,7 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
       }
 
       const actualFieldValue = fieldsByName[fieldName].value;
+      // @TODO: Why is this check written like that ? Sometimes we get an object value, and not string
       if (!isString(actualFieldValue)) {
         cy.log(
           `4 waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}'; the current response body's field has ${fieldName}=${actualFieldValue}; I don't know how do check if non-string values are correct; stop waiting`
