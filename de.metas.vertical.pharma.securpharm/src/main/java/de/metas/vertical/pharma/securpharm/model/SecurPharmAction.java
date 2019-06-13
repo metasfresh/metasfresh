@@ -25,12 +25,12 @@ package de.metas.vertical.pharma.securpharm.model;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 
-public enum DecommissionAction implements ReferenceListAwareEnum
+public enum SecurPharmAction implements ReferenceListAwareEnum
 {
 	// TODO check if action for UNDO is ok
 	// FIXME: add values to X_M_Securpharm_Action_Result.Action's list
-	DESTROY, //
-	UNDO_DISPENSE //
+	DECOMMISSION, //
+	UNDO_DECOMMISSION //
 	;
 
 	@Override
@@ -39,7 +39,7 @@ public enum DecommissionAction implements ReferenceListAwareEnum
 		return name();
 	}
 
-	public static DecommissionAction ofCode(final String code)
+	public static SecurPharmAction ofCode(final String code)
 	{
 		return valueOf(code);
 	}

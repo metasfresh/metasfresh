@@ -9,7 +9,9 @@ import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmResultRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
 
 /*
  * #%L
@@ -61,10 +63,12 @@ public class SecurPharmServiceManualTest
 		final SecurPharmConfigRespository configRespository = PlainSecurPharmConfigRespository.ofDefaultSandboxProperties();
 		final SecurPharmClientFactory clientFactory = new SecurPharmClientFactory(configRespository);
 
-		final SecurPharmResultRepository resultRepository = new SecurPharmResultRepository();
-		final InventoryLineRepository inventoryRepo = new InventoryLineRepository();
-		final SecurPharmResultService resultService = new SecurPharmResultService(resultRepository, inventoryRepo);
-
-		return new SecurPharmService(clientFactory, resultService, configRespository);
+		return new SecurPharmService(
+				clientFactory,
+				configRespository,
+				new SecurPharmProductRepository(),
+				new SecurPharmaActionRepository(),
+				new SecurPharmLogRepository(),
+				new InventoryLineRepository());
 	}
 }

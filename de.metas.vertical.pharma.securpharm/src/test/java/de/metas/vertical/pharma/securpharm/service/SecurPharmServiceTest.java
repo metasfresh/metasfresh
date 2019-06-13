@@ -30,13 +30,13 @@ import java.time.LocalDate;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpMethod;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
@@ -51,29 +51,41 @@ import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
 import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
 import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
 
 public class SecurPharmServiceTest
 {
-
-	@InjectMocks
 	private SecurPharmService underTest;
 
 	@Mock
 	private SecurPharmClientFactory clientFactory;
-
-	@Mock
-	private SecurPharmResultService resultService;
-
-	@Mock
-	private SecurPharmConfigRespository configRespository;
-
 	@Mock
 	private SecurPharmClient client;
+	@Mock
+	private SecurPharmConfigRespository configRespository;
+	@Mock
+	private SecurPharmProductRepository productsRepo;
+	@Mock
+	private SecurPharmaActionRepository actionsRepo;
+	@Mock
+	private SecurPharmLogRepository logsRepo;
+	@Mock
+	private InventoryLineRepository inventoryRepo;
 
 	@Before
 	public void initMocks()
 	{
 		MockitoAnnotations.initMocks(this);
+
+		underTest = new SecurPharmService(
+				clientFactory,
+				configRespository,
+				productsRepo,
+				actionsRepo,
+				logsRepo,
+				inventoryRepo);
 	}
 
 	@Test

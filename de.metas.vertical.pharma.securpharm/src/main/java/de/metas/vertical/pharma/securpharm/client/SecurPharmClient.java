@@ -51,7 +51,7 @@ import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionClientResponse;
-import de.metas.vertical.pharma.securpharm.model.DecommissionAction;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmAction;
 import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
 import de.metas.vertical.pharma.securpharm.model.ProductDetails;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
@@ -278,7 +278,7 @@ public class SecurPharmClient
 	public DecommisionClientResponse decommission(@NonNull final ProductDetails productDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareActionURL(productDetails, DecommissionAction.DESTROY, clientTransactionId);
+		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION, clientTransactionId);
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
 
 		return DecommisionClientResponse.builder()
@@ -292,7 +292,7 @@ public class SecurPharmClient
 			@NonNull final String serverTransactionId)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareActionURL(productDetails, DecommissionAction.UNDO_DISPENSE, clientTransactionId)
+		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.UNDO_DECOMMISSION, clientTransactionId)
 				.queryParam(QUERY_PARAM_TRX, serverTransactionId);
 
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
@@ -359,7 +359,7 @@ public class SecurPharmClient
 
 	private UriComponentsBuilder prepareActionURL(
 			@NonNull final ProductDetails productDetails,
-			@NonNull final DecommissionAction action,
+			@NonNull final SecurPharmAction action,
 			@NonNull final String clientTransactionId)
 	{
 		return prepareProductURL(productDetails, clientTransactionId)

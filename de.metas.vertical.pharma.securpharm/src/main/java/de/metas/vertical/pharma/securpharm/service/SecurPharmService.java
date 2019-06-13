@@ -26,17 +26,19 @@ package de.metas.vertical.pharma.securpharm.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_Inventory;
+import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryId;
 import de.metas.notification.INotificationBL;
@@ -50,6 +52,7 @@ import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommisionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.model.ProductDetails;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
@@ -57,6 +60,9 @@ import de.metas.vertical.pharma.securpharm.model.UndoDecommissionClientResponse;
 import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
 import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
+import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
 import lombok.NonNull;
 
 @Service
@@ -65,17 +71,27 @@ public class SecurPharmService
 	private static final String MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE = "SecurpharmActionResultErrorNotificationMessage";
 
 	private final SecurPharmClientFactory clientFactory;
-	private final SecurPharmResultService resultService;
 	private final SecurPharmConfigRespository configRespository;
+	private final SecurPharmProductRepository productsRepo;
+	private final SecurPharmaActionRepository actionsRepo;
+	private final SecurPharmLogRepository logsRepo;
+	private final InventoryLineRepository inventoryRepo;
 
 	public SecurPharmService(
 			@NonNull final SecurPharmClientFactory clientFactory,
-			@NonNull final SecurPharmResultService resultService,
-			@NonNull final SecurPharmConfigRespository configRespository)
+			@NonNull final SecurPharmConfigRespository configRespository,
+			@NonNull final SecurPharmProductRepository productsRepo,
+			@NonNull final SecurPharmaActionRepository actionsRepo,
+			@NonNull final SecurPharmLogRepository logsRepo,
+			@NonNull final InventoryLineRepository inventoryRepo)
 	{
 		this.clientFactory = clientFactory;
-		this.resultService = resultService;
 		this.configRespository = configRespository;
+
+		this.productsRepo = productsRepo;
+		this.actionsRepo = actionsRepo;
+		this.logsRepo = logsRepo;
+		this.inventoryRepo = inventoryRepo;
 	}
 
 	public boolean hasConfig()
@@ -85,12 +101,26 @@ public class SecurPharmService
 
 	public SecurPharmProduct getProductById(@NonNull final SecurPharmProductId id)
 	{
-		return resultService.getProductById(id);
+		return productsRepo.getProductById(id);
 	}
 
 	public Collection<SecurPharmProduct> getProductsByInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		return resultService.getProductsByInventoryId(inventoryId);
+		final Set<HuId> huIds = getHUIdsByInventoryId(inventoryId);
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return productsRepo.getProductsByHuIds(huIds);
+	}
+
+	private Set<HuId> getHUIdsByInventoryId(final InventoryId inventoryId)
+	{
+		return inventoryRepo.getByInventoryId(inventoryId)
+				.stream()
+				.flatMap(inventoryLine -> inventoryLine.getHUIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public SecurPharmProduct getAndSaveProduct(
@@ -123,7 +153,8 @@ public class SecurPharmService
 				.productDetails(productDetails)
 				.huId(huId)
 				.build();
-		resultService.save(product, logs);
+		productsRepo.save(product);
+		logsRepo.saveProductLogs(logs, product.getId());
 
 		if (product.isError())
 		{
@@ -154,7 +185,7 @@ public class SecurPharmService
 
 	public void decommissionProductsByInventoryId(final InventoryId inventoryId)
 	{
-		final Collection<SecurPharmProduct> products = resultService.getProductsByInventoryId(inventoryId);
+		final Collection<SecurPharmProduct> products = getProductsByInventoryId(inventoryId);
 		if (products.isEmpty())
 		{
 			return;
@@ -182,20 +213,23 @@ public class SecurPharmService
 				.productDataResultId(product.getId())
 				.serverTransactionId(clientResponse.getServerTransactionId())
 				.build();
-
-		resultService.save(response, ImmutableList.of(clientResponse.getLog()));
+		final SecurPharmActionResultId actionId = actionsRepo.save(response);
+		logsRepo.saveActionLog(
+				clientResponse.getLog(),
+				response.getProductDataResultId(),
+				actionId);
 
 		if (!response.isError())
 		{
 			product.productDecommissioned(response.getServerTransactionId());
-			resultService.save(product);
+			productsRepo.save(product);
 		}
 		else
 		{
 			sendNotification(
 					client.getSupportUserId(),
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
-					TableRecordReference.of(I_M_Inventory.Table_Name, response.getInventoryId()));
+					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
 		}
 	}
 
@@ -216,7 +250,7 @@ public class SecurPharmService
 
 	public void undoDecommissionProductsByInventoryId(final InventoryId inventoryId)
 	{
-		final Collection<SecurPharmProduct> products = resultService.getProductsByInventoryId(inventoryId);
+		final Collection<SecurPharmProduct> products = getProductsByInventoryId(inventoryId);
 		if (products.isEmpty())
 		{
 			return;
@@ -246,20 +280,23 @@ public class SecurPharmService
 				.productDataResultId(product.getId())
 				.serverTransactionId(clientResponse.getServerTransactionId())
 				.build();
-
-		resultService.save(response, ImmutableList.of(clientResponse.getLog()));
+		final SecurPharmActionResultId actionId = actionsRepo.save(response);
+		logsRepo.saveActionLog(
+				clientResponse.getLog(),
+				response.getProductDataResultId(),
+				actionId);
 
 		if (!response.isError())
 		{
 			product.productDecommissionUndo(clientResponse.getServerTransactionId());
-			resultService.save(product);
+			productsRepo.save(product);
 		}
 		else
 		{
 			sendNotification(
 					client.getSupportUserId(),
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
-					TableRecordReference.of(I_M_Inventory.Table_Name, response.getInventoryId()));
+					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
 		}
 	}
 

@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
@@ -39,6 +40,7 @@ import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
 import lombok.NonNull;
 
 @Repository
+@Primary
 public class DatabaseBackedSecurPharmConfigRespository implements SecurPharmConfigRespository
 {
 	private final CCache<Integer, Optional<SecurPharmConfigId>> defaultConfigIdCache = CCache.<Integer, Optional<SecurPharmConfigId>> builder()
