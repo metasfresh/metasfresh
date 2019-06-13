@@ -1,7 +1,7 @@
 {
-    "Name": "DiscountSchemaTest",
-    "DiscountType": [{
+    "name": "DiscountSchemaTest",
+    "discountType": [{
         "Base_PricingSystem_ID": "Testpreise Lieferanten"
     }],
-    "ValidFrom": "01/01/2019"
+    "validFrom": "01/01/2019"
 }
