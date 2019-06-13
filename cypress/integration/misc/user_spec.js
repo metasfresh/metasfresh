@@ -4,6 +4,7 @@ import { users } from '../../page_objects/users';
 describe('New user tests', function() {
   const timestamp = new Date().getTime();
   let customLastName = null;
+  let customEmail = null;
   let userJSON = null;
   let user = null;
 
@@ -11,11 +12,12 @@ describe('New user tests', function() {
     cy.fixture('user/user.json').then(userJson => {
       userJSON = userJson;
       customLastName = `${userJSON.lastName}_${timestamp}`;
+      customEmail = `${timestamp}_${userJSON.email}`;
     });
   });
 
   it('Create a user', function() {
-    user = new User({ ...userJSON, lastName: customLastName });
+    user = new User({ ...userJSON, lastName: customLastName, email: customEmail });
     user.apply();
 
     cy.get('form-field-Login').should('not.exist');
@@ -37,7 +39,8 @@ describe('New user tests', function() {
     users.getRowWithValue(customLastName).click();
 
     cy.executeHeaderActionWithDialog('AD_User_ChangePassword');
-    cy.writeIntoStringField('NewPassword', user.password);
-    cy.writeIntoStringField('NewPasswordRetype', user.password);
+    cy.writeIntoStringField('NewPassword', user.password, false, null, true);
+    cy.writeIntoStringField('NewPasswordRetype', user.password, false, null, true);
+    cy.pressStartButton();
   });
 });
