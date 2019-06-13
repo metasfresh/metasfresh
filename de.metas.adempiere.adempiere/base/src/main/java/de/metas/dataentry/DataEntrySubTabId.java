@@ -2,6 +2,10 @@ package de.metas.dataentry;
 
 import static de.metas.util.Check.assumeGreaterThanZero;
 
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -56,5 +60,10 @@ public class DataEntrySubTabId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final DataEntrySubTabId id1, @Nullable final DataEntrySubTabId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

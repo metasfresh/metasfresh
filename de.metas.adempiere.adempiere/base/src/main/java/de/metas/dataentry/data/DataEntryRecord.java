@@ -10,7 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -54,7 +54,7 @@ public class DataEntryRecord
 	/** May be empty if not yet persisted */
 	final Optional<DataEntryRecordId> id;
 	final DataEntrySubTabId dataEntrySubTabId;
-	final ITableRecordReference mainRecord;
+	final TableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
@@ -63,7 +63,7 @@ public class DataEntryRecord
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
-			@NonNull final ITableRecordReference mainRecord,
+			@NonNull final TableRecordReference mainRecord,
 			@NonNull final DataEntrySubTabId dataEntrySubTabId,
 			@Nullable final List<DataEntryRecordField<?>> fields,
 			final boolean readOnly)

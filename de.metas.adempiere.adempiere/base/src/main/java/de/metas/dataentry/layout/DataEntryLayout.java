@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -24,12 +26,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,6 +58,11 @@ public class DataEntryLayout
 		this.tabs = ImmutableList.copyOf(tabs);
 	}
 
+	public boolean isEmpty()
+	{
+		return tabs.isEmpty();
+	}
+
 	public Set<DataEntrySubTabId> getSubTabIds()
 	{
 		return tabs.stream()
@@ -63,9 +70,12 @@ public class DataEntryLayout
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public boolean isEmpty()
+	public DataEntrySubTab getSubTabById(@NonNull final DataEntrySubTabId subTabId)
 	{
-		return tabs.isEmpty();
+		return tabs.stream()
+				.map(tab -> tab.getSubTabById(subTabId).orElse(null))
+				.filter(Predicates.notNull())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("@NotFound@ " + subTabId + " in " + this));
 	}
-
 }

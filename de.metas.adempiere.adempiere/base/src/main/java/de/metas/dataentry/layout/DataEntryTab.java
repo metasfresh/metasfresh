@@ -4,6 +4,7 @@ import static de.metas.util.Check.assumeNotEmpty;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -82,6 +83,13 @@ public class DataEntryTab
 		return tabs.stream()
 				.flatMap(DataEntryTab::streamSubTabIds)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	Optional<DataEntrySubTab> getSubTabById(@NonNull final DataEntrySubTabId subTabId)
+	{
+		return subTabs.stream()
+				.filter(subTab -> DataEntrySubTabId.equals(subTab.getId(), subTabId))
+				.findFirst();
 	}
 
 	@Value
