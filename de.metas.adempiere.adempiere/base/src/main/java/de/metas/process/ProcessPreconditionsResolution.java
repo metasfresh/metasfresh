@@ -51,12 +51,12 @@ public final class ProcessPreconditionsResolution
 	 */
 	public static final String MSG_NO_ROWS_SELECTED = "ProcessPreconditionsResolution_NoRowsSelected";
 
-	public static final ProcessPreconditionsResolution accept()
+	public static ProcessPreconditionsResolution accept()
 	{
 		return ACCEPTED;
 	}
 
-	public static final ProcessPreconditionsResolution reject()
+	public static ProcessPreconditionsResolution reject()
 	{
 		return REJECTED_UnknownReason;
 	}
@@ -67,7 +67,7 @@ public final class ProcessPreconditionsResolution
 	 * @param reason
 	 * @return
 	 */
-	public static final ProcessPreconditionsResolution reject(@NonNull final ITranslatableString reason)
+	public static ProcessPreconditionsResolution reject(@NonNull final ITranslatableString reason)
 	{
 		final boolean accepted = false;
 		final boolean internal = false;
@@ -84,7 +84,7 @@ public final class ProcessPreconditionsResolution
 	 * @deprecated please use {@link #reject(ITranslatableString)} instead; see issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/510">metasfresh-webui-api#510</a>.
 	 */
 	@Deprecated
-	public static final ProcessPreconditionsResolution reject(final String reasonStr)
+	public static ProcessPreconditionsResolution reject(final String reasonStr)
 	{
 		if (Check.isEmpty(reasonStr, true))
 		{
@@ -103,7 +103,7 @@ public final class ProcessPreconditionsResolution
 	 * @param reasonStr this string will be used as-is (not translated)
 	 * @return
 	 */
-	public static final ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
+	public static ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
 	{
 		if (Check.isEmpty(reasonStr, true))
 		{
@@ -117,7 +117,7 @@ public final class ProcessPreconditionsResolution
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
-	public static final ProcessPreconditionsResolution rejectBecauseNoSelection()
+	public static ProcessPreconditionsResolution rejectBecauseNoSelection()
 	{
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
@@ -126,7 +126,7 @@ public final class ProcessPreconditionsResolution
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
 	}
 
-	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
+	public static ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
 	{
 		final boolean accepted = false;
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
@@ -141,9 +141,24 @@ public final class ProcessPreconditionsResolution
 	 * @param accept
 	 * @return if <code>accept</code> is true then returns {@link #accepted} else {@link #reject()}.
 	 */
-	public static final ProcessPreconditionsResolution acceptIf(final boolean accept)
+	public static ProcessPreconditionsResolution acceptIf(final boolean accept)
 	{
 		return accept ? ACCEPTED : REJECTED_UnknownReason;
+	}
+
+	@SafeVarargs
+	public static ProcessPreconditionsResolution firstRejectOrElseAccept(@NonNull final Supplier<ProcessPreconditionsResolution>... suppliers)
+	{
+		for (final Supplier<ProcessPreconditionsResolution> supplier : suppliers)
+		{
+			final ProcessPreconditionsResolution resolution = supplier.get();
+			if (resolution.isRejected())
+			{
+				return resolution;
+			}
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	private static final ProcessPreconditionsResolution ACCEPTED = new ProcessPreconditionsResolution(true, null, false, null);
