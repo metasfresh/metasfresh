@@ -1,6 +1,5 @@
 import { confirmCalendarDay } from '../functions';
 
-
 // thx to https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace
 function removeSubstringsWithCurlyBrackets(stringValue) {
   const regex = /{.*}/gi;
@@ -127,6 +126,15 @@ Cypress.Commands.add('selectDateViaPicker', fieldName => {
     .click();
 });
 
+/**
+ * Function to fill in text inputs
+ *
+ * @param {string} fieldName - name of the field
+ * @param {string} stringValue - value to put into field
+ * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+ * @param {string} rewriteUrl - use custom url for the request
+ * @param {boolean} noRequest - if set to true, don't wait for the response from the server
+ */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   describe('Enter value into string field', function() {
     const aliasName = `writeIntoStringField-${new Date().getTime()}`;
@@ -159,7 +167,12 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
 });
 
 /**
- * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+ * Function to fill in textareas
+ *
+ * @param {string} fieldName - name of the field
+ * @param {string} stringValue - value to put into field
+ * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+ * @param {string} rewriteUrl - use custom url for the request
  */
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
   describe('Enter value into text field', function() {
