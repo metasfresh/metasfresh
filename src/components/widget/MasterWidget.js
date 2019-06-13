@@ -161,6 +161,14 @@ class MasterWidget extends Component {
     } = this.props;
     const dateParse = ['Date', 'DateTime', 'Time'];
     let currRowId = rowId;
+    let value;
+    let checkWidgetType = widgetType === 'CostPrice';
+
+    if (checkWidgetType) {
+      if (/[0-9]+([\.,][0-9]+)?/.test(val)) {
+        value = val.replace(',', '.');
+      }
+    }
 
     this.setState(
       {
@@ -174,7 +182,14 @@ class MasterWidget extends Component {
         if (rowId === 'NEW') {
           currRowId = relativeDocId;
         }
-        updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
+        updatePropertyValue(
+          property,
+          checkWidgetType ? value : val,
+          tabId,
+          currRowId,
+          isModal,
+          entity
+        );
       }
     );
   };
