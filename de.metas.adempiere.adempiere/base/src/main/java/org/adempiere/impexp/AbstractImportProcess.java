@@ -160,7 +160,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return getParameters().getParameterAsBool(PARAM_DeleteOldImported);
 	}
 
-	protected String getImportKeyColumnName()
+	protected final String getImportKeyColumnName()
 	{
 		return getImportTableName() + "_ID";
 	}
