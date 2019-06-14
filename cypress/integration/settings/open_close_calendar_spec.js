@@ -36,18 +36,15 @@ describe('Filter calendar periods', function() {
 
 describe('Actions on selected item', function() {
   it('open/close action - close periods', function() {
-    cy.get('.header-left-side > .btn-square').click();
-    cy.get('#headerAction_C_Period_Process').click();
-    cy.get(
-      '.window-wrapper > :nth-child(1) > .form-group > .col-sm-9 > .input-body-container > .input-dropdown-container > .input-dropdown > .input-editable > .input-field'
-    ).click();
-    cy.get('[data-test-id="CClose Period"]').click();
-    cy.get('.items-row-2 > :nth-child(2)').click();
+    cy.executeHeaderAction('C_Period_Process');
+    cy.selectInListField('PeriodAction', 'Close Period', false, null, true);
+    cy.pressStartButton();
+    cy.wait(500);
   });
 
   it('open/close action - open periods', function() {
-    cy.get('.header-left-side > .btn-square').click();
-    cy.get('#headerAction_C_Period_Process').click();
-    cy.get('.items-row-2 > :nth-child(2)').click();
+    cy.executeHeaderAction('C_Period_Process');
+    cy.wait(700);
+    cy.pressStartButton();
   });
 });
