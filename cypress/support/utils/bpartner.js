@@ -163,6 +163,9 @@ function applyBPartner(bPartner) {
           cy.clickOnCheckBox('IsCustomer');
         }
       });
+      if (bPartner.customerDiscountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema);
+      }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
       }

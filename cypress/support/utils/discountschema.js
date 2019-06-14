@@ -47,7 +47,7 @@ export class DiscountBreak {
 }
 
 function applyDiscountSchema(discountSchema) {
-  describe(`Create new dicscount schema ${discountSchema.name}`, function() {
+  describe(`Create new discount schema ${discountSchema.name}`, function() {
     cy.visitWindow(233, 'NEW');
     cy.writeIntoStringField('Name', discountSchema.name);
     cy.selectInListField('DiscountType', 'Breaks');
