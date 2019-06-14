@@ -43,11 +43,14 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice_Rejection_Detail;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Optional;
@@ -106,45 +109,58 @@ class ImportInvoiceResponseService
 	}
 
 	// package visibility
-	void sendNotificationDefaultUserExists(@NonNull final ImportedInvoiceResponse responseWithTags, final InvoiceRejectionDetailId invoiceRejectionDetailId, final UserId userId)
+	void sendNotificationDefaultUserExists(
+			@NonNull final ImportedInvoiceResponse responseWithTags,
+			final InvoiceRejectionDetailId invoiceRejectionDetailId,
+			final List<UserId> userIds)
 	{
-		final Recipient recipient = Recipient.user(userId);
-		final User user = userRepository.getByIdInTrx(userId);
+		for (final UserId userId : userIds)
+		{
+			final Recipient recipient = Recipient.user(userId);
+			final User user = userRepository.getByIdInTrx(userId);
 
-		final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
+			final TableRecordReference invoiceRef = TableRecordReference.of(I_C_Invoice_Rejection_Detail.Table_Name, invoiceRejectionDetailId);
 
-		final UserNotificationRequest userNotificationRequest = UserNotificationRequest
-				.builder()
-				.topic(INVOICE_EVENTBUS_TOPIC)
-				.recipient(recipient)
-				.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
-				.subjectADMessageParam(responseWithTags.getDocumentNumber())
-				.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS)
-				.contentADMessageParam(user.getName())
-				.contentADMessageParam(invoiceRef)
-				.targetAction(TargetRecordAction.of(invoiceRef))
-				.build();
+			final UserNotificationRequest userNotificationRequest = UserNotificationRequest
+					.builder()
+					.topic(INVOICE_EVENTBUS_TOPIC)
+					.recipient(recipient)
+					.subjectADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT)
+					.subjectADMessageParam(responseWithTags.getDocumentNumber())
+					.contentADMessage(MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS)
+					.contentADMessageParam(user.getName())
+					.contentADMessageParam(invoiceRef)
+					.targetAction(TargetRecordAction.of(invoiceRef))
+					.build();
 
-		notificationBL.send(userNotificationRequest);
-		log.info("Send notification to recipient={}", recipient);
+			notificationBL.send(userNotificationRequest);
+			log.info("Send notification to recipient={}", recipient);
+		}
 	}
 
 	// package visibility
-	Optional<UserId> retrieveOrgDefaultContactByGLN(final String gln)
+	List<UserId> retrieveOrgDefaultContactByGLN(@NonNull final String gln)
 	{
-		final List<Integer> bpartnerIds = Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final List<Integer> bpartnerIds = queryBL
 				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMN_GLN, gln)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID) // just to have an predictable order
 				.create()
 				.listDistinct(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, Integer.class);
 
-		return bpartnerIds.stream()
-				.map(BPartnerId::ofRepoId)
-				.map(ibPartnerDAO::getDefaultContactId)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.findFirst();
+		return queryBL
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_User.COLUMN_C_BPartner_ID, bpartnerIds)
+				.addEqualsFilter(I_AD_User.COLUMN_IsSubjectMatterContact, true)
+				.orderBy(I_AD_User.COLUMN_AD_User_ID)
+				.create()
+				.listIds().stream().map(UserId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
 	}
 
 	// package visibility
