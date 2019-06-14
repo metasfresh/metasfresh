@@ -8,9 +8,4 @@ npm-debug.log*
 cypress-git-repo
 debug.log
 .metadata
-cypress/config.js_template
-cypress/integration/currency/currency_activate_spec.js
-cypress/integration/sales/sales_order_spec.js
-cypress/config.js_template
-cypress/config.js_template
-cypress/config.js_template
+cypress/config.js
