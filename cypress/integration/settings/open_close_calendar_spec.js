@@ -16,22 +16,14 @@ describe('Filter calendar periods', function() {
   });
 
   it('change year', function() {
-    // cy.selectInListField('C_Year_ID', '2018', true);
-    cy.get('.form-field-C_Year_ID > :nth-child(2) > .input-body-container > .input-dropdown-container').click();
-    cy.get('div.input-dropdown-list')
-      .get('div.input-dropdown-list-option.ignore-react-onclickoutside')
-      .contains('2018')
-      .click();
+    cy.selectInListField('C_Year_ID', '2018', false, null, true);
   });
   it('write name', function() {
-    // cy.writeIntoStringField('Name', 'Dez-18', true);
-    cy.get('.input-body-container > .input-block > .input-field')
-      .click()
-      .type('Dez-18');
+    cy.writeIntoStringField('Name', 'Dez-18', false, null, true);
   });
 
   it('Apply filter', function() {
-    cy.clickButtonWithText("Apply");
+    cy.clickButtonWithText('Apply');
   });
 
   it('enter in item', function() {
