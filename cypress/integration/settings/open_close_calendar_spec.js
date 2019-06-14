@@ -1,5 +1,5 @@
 describe('Filter calendar periods', function() {
-  it('open page', function() {
+  before(function() {
     cy.visit('/window/540349');
   });
 
