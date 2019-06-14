@@ -5,6 +5,7 @@ export class BPartner {
     this.isVendor = false;
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
+    this.customerDiscountSchema = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
@@ -43,6 +44,12 @@ export class BPartner {
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
+    return this;
+  }
+
+  setCustomerDiscountSchema(customerDiscountSchema) {
+    cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
+    this.customerDiscountSchema = customerDiscountSchema;
     return this;
   }
 
@@ -156,6 +163,9 @@ function applyBPartner(bPartner) {
           cy.clickOnCheckBox('IsCustomer');
         }
       });
+      if (bPartner.customerDiscountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema);
+      }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
       }
