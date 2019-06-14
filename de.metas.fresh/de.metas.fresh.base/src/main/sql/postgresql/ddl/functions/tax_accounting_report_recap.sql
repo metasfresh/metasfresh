@@ -101,7 +101,8 @@ FROM
 
           LEFT OUTER JOIN C_Vat_Code vat on vat.C_Vat_Code_ID = $2 and vat.isActive = 'Y'
 
-        WHERE fa.c_period_id = $1
+        WHERE fa.line_id is null and fa.C_Tax_id is not null
+              AND fa.c_period_id = $1
               AND fa.postingtype IN ('A', 'Y')
               AND fa.ad_org_id = $4
               AND (CASE WHEN vat.vatcode IS NULL

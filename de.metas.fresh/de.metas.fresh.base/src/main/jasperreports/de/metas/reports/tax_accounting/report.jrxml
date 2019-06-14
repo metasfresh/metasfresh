@@ -432,7 +432,7 @@
 	<summary>
 		<band height="45" splitType="Stretch">
 			<subreport>
-				<reportElement x="0" y="12" width="802" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
+				<reportElement x="-20" y="12" width="842" height="30" uuid="4ac5f482-9c3d-46c6-bd43-eb84d6b272f4"/>
 				<subreportParameter name="c_period_id">
 					<subreportParameterExpression><![CDATA[$P{c_period_id}]]></subreportParameterExpression>
 				</subreportParameter>
