@@ -5,12 +5,8 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.List;
 
-import de.metas.process.PInstanceId;
-import de.metas.user.UserId;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import org.adempiere.ad.service.IErrorManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
@@ -26,13 +22,17 @@ import de.metas.invoice_gateway.spi.model.imp.ImportInvoiceResponseRequest;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice.InvoiceImportClientImpl;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailRepo;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo.InvoiceResponseRepoException;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
@@ -168,15 +168,15 @@ public class C_Invoice_ImportInvoiceResponse extends JavaProcess
 
 			if (isInvoiceRejected(responseWithTags))
 			{
-				final Optional<UserId> defaultUserIdOptional = importInvoiceResponseService.retrieveOrgDefaultContactByGLN(responseWithTags.getBillerEan());
+				final List<UserId> userIds = importInvoiceResponseService.retrieveOrgDefaultContactByGLN(responseWithTags.getBillerEan());
 
-				if (defaultUserIdOptional.isPresent())
+				if (userIds.isEmpty())
 				{
-					importInvoiceResponseService.sendNotificationDefaultUserExists(responseWithTags, invoiceRejectionDetailId, defaultUserIdOptional.get());
+					importInvoiceResponseService.sendNotificationDefaultUserDoesNotExist(responseWithTags, invoiceRejectionDetailId, getUserId());
 				}
 				else
 				{
-					importInvoiceResponseService.sendNotificationDefaultUserDoesNotExist(responseWithTags, invoiceRejectionDetailId, getUserId());
+					importInvoiceResponseService.sendNotificationDefaultUserExists(responseWithTags, invoiceRejectionDetailId, userIds);
 				}
 			}
 			return true;
