@@ -59,6 +59,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
@@ -69,6 +70,10 @@ import lombok.NonNull;
 public class ADWindowDAO implements IADWindowDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
+
+	private CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId> builder()
+			.tableName(I_AD_Window.Table_Name)
+			.build();
 
 	@Override
 	public ITranslatableString retrieveWindowName(final AdWindowId adWindowId)
@@ -99,12 +104,34 @@ public class ADWindowDAO implements IADWindowDAO
 	public String retrieveInternalWindowName(final int adWindowId)
 	{
 		final I_AD_Window window = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Window.class, Env.getCtx(), ITrx.TRXNAME_None)
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
 				.create()
 				.firstOnly(I_AD_Window.class);
 		return window.getInternalName();
+	}
+
+	@Override
+	public AdWindowId getWindowIdByInternalName(@NonNull final String internalName)
+	{
+		return windowIdsByInternalName.getOrLoad(internalName, this::retrieveWindowIdByInternalName);
+	}
+
+	private AdWindowId retrieveWindowIdByInternalName(@NonNull final String internalName)
+	{
+		Check.assumeNotEmpty(internalName, "internalName is not empty");
+		final AdWindowId windowId = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_Window.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstIdOnly(AdWindowId::ofRepoIdOrNull);
+		if (windowId == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Window_ID@ (@InternalName@=" + internalName + ")");
+		}
+		return windowId;
 	}
 
 	@Override
@@ -989,6 +1016,5 @@ public class ADWindowDAO implements IADWindowDAO
 				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
 				.create()
 				.delete();
-
 	}
 }
