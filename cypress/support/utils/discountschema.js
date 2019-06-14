@@ -19,6 +19,12 @@ export class DiscountSchema {
     return this;
   }
 
+  setName(name) {
+    cy.log(`DiscountSchemaBuilder - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
   addDiscountBreak(discountBreak) {
     cy.log(`DiscountSchemaBuilder - add discountBreak = ${discountBreak}`);
     this.discountBreaks.push(discountBreak);
