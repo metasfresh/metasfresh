@@ -49,17 +49,17 @@ export class SalesInvoice {
 
 
     // cannot set the packingItem
-    // cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
-    // cy.writeIntoStringField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem);
-    // cy.writeIntoTextField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, true);
+    cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
+    cy.writeIntoStringField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem);
+    cy.writeIntoTextField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, true);
 
-    // cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
-    // cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, false);
-    // cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, false);
-    // cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, true);
+    cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
+    cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, false);
+    cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, false);
+    cy.writeIntoLookupListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, true);
 
-    // cy.selectInListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem,  true);
-    // cy.selectInListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem,  false);
+    cy.selectInListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem,  true);
+    cy.selectInListField("M_HU_PI_Item_Product_ID", salesInvoiceLine.packingItem,  false);
 
     cy.pressDoneButton();
   }

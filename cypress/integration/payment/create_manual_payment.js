@@ -51,16 +51,16 @@ describe('Create a manual Payment for a Sales Invoice', function () {
   });
 
 
-  // it('Creates a Sales Order and Invoice', () => {
-  //   new SalesInvoice(customerName, salesInvoiceTargetDocumentType)
-  //     .addLine(new SalesInvoiceLine()
-  //       .setProduct('Convenience Salat 250g_P002737')
-  //       .setQuantity(6)
-  //       .setPackingItem('IFCO 6410 x 10 Stk')
-  //       .setTuQuantity(1)
-  //     )
-  //     .apply();
-  // });
+  it('Creates a Sales Order and Invoice', () => {
+    new SalesInvoice(customerName, salesInvoiceTargetDocumentType)
+      .addLine(new SalesInvoiceLine()
+        .setProduct('Convenience Salat 250g_P002737')
+        .setQuantity(6)
+        .setPackingItem('IFCO 6410 x 10 Stk')
+        .setTuQuantity(1)
+      )
+      .apply();
+  });
 
 
 
