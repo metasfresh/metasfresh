@@ -198,5 +198,15 @@ declare namespace Cypress {
     //  * @param rewriteUrl
     //  */
     // clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
+
+
+    /**
+     * Press an overlay's "Done" button. Fail if there is a confirm dialog since that means the record could not be saved.
+     *
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    pressDoneButton(waitBeforePress: number): Chainable<any>
+
+
   }
 }
