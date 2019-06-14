@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -122,19 +123,11 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
-	public String retrieveTableName(final int adTableId)
+	public String retrieveTableName(@NonNull final AdTableId adTableId)
 	{
 		final Properties ctx = Env.getCtx();
-
-		// guard against 0 AD_Table_ID
-		if (adTableId <= 0)
-		{
-			return null;
-		}
-
 		@SuppressWarnings("deprecation")
-		final String tableName = MTable.getTableName(ctx, adTableId);
-
+		final String tableName = MTable.getTableName(ctx, adTableId.getRepoId());
 		return tableName;
 	}
 
