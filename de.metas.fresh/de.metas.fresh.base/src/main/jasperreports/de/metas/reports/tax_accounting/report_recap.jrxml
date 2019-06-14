@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -33,8 +33,7 @@
 	$P{C_VAT_Code_ID},
 	$P{account_id},
 	$P{AD_Org_ID}
-)
-]]>
+)]]>
 	</queryString>
 	<field name="taxname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
@@ -97,7 +96,7 @@
 			</textField>
 			<textField>
 				<reportElement x="434" y="0" width="55" height="20" uuid="b2980ab1-9c3a-47fe-9e0f-214a1e9a0ece"/>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>

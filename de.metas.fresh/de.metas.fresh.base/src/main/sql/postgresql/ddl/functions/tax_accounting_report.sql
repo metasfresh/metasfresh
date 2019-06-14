@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS report.tax_accounting_report( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric, IN showdetails character varying, IN ad_language character varying(6) );
 CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, IN vatcode numeric,
                                                         IN account_id  numeric, IN org_id numeric,
@@ -16,7 +15,7 @@ CREATE OR REPLACE FUNCTION report.tax_accounting_report(IN c_period_id numeric, 
     taxbaseamt       numeric,
     taxamt           numeric,
     taxamtperaccount numeric,
-	IsTaxLine        character varying,
+    IsTaxLine        character varying,
     param_startdate  date,
     param_enddate    date,
     param_konto      character varying,
@@ -74,8 +73,8 @@ FROM
          then (fa.amtacctdr - fa.amtacctcr)
        else 0
        end)                                                        AS taxamtperaccount,
-	   
-	   
+
+
       (case
        when fa.line_id is null and fa.C_Tax_id is not null
          then 'Y'
@@ -124,12 +123,19 @@ FROM
       --if invoice
       LEFT OUTER JOIN
       (SELECT
-         inv_tax.taxbaseamt,
+         (case when dt.docbasetype <> 'APC'
+           then inv_tax.taxbaseamt
+          else (-1) * inv_tax.taxbaseamt
+          end) as taxbaseamt,
+         (case when dt.docbasetype <> 'APC'
+           then inv_tax.taxamt
+          else (-1) * inv_tax.taxamt
+          end) as taxamt,
          i.c_invoice_id,
-         inv_tax.c_tax_id,
-         inv_tax.taxamt
+         inv_tax.c_tax_id
        FROM c_invoice i
          JOIN C_InvoiceTax inv_tax on i.c_invoice_id = inv_tax.c_invoice_id and inv_tax.isActive = 'Y'
+         join C_DocType dt on dt.C_DocType_ID = i.C_DocTypeTarget_id
        WHERE i.isActive = 'Y'
       ) i ON fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id
 

@@ -47,12 +47,19 @@ FROM
           --if invoice
           LEFT OUTER JOIN
           (SELECT
-             inv_tax.taxbaseamt,
+             (case when dt.docbasetype <> 'APC'
+               then inv_tax.taxbaseamt
+              else (-1) * inv_tax.taxbaseamt
+              end) as taxbaseamt,
+             (case when dt.docbasetype <> 'APC'
+               then inv_tax.taxamt
+              else (-1) * inv_tax.taxamt
+              end) as taxamt,
              i.c_invoice_id,
-             inv_tax.c_tax_id,
-             inv_tax.taxamt
+             inv_tax.c_tax_id
            FROM c_invoice i
              JOIN C_InvoiceTax inv_tax on i.c_invoice_id = inv_tax.c_invoice_id and inv_tax.isActive = 'Y'
+             join C_DocType dt on dt.C_DocType_ID = i.C_DocTypeTarget_id
            WHERE i.isActive = 'Y'
           ) i
             ON fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id

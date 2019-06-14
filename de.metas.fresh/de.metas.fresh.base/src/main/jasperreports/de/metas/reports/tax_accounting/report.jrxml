@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="c_period_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -92,7 +92,7 @@
 		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
 	</variable>
 	<variable name="baseamt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
+		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamtperaccount})]]></variableExpression>
 	</variable>
 	<variable name="amt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxamtperaccount}]]></variableExpression>
