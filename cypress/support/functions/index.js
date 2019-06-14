@@ -1,10 +1,10 @@
 const toggleFrequentFilters = () => {
-  cy.clickElementWithClass('.filters-frequent .toggle-filters');
+  cy.clickElementWithClass('.filters-frequent .toggle-filters', true);
   cy.get('.filter-widget').should('exist');
 };
 
 const toggleNotFrequentFilters = () => {
-  cy.clickElementWithClass('.filters-not-frequent .toggle-filters');
+  cy.clickElementWithClass('.filters-not-frequent .toggle-filters', true);
   cy.get('.filter-menu').should('exist');
 };
 
