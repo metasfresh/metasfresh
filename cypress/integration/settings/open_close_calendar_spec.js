@@ -1,18 +1,14 @@
+import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
+
 describe('Filter calendar periods', function() {
   before(function() {
     cy.visit('/window/540349');
   });
 
   it('press filter button', function() {
-    cy.get('div')
-      .should('have.class', 'filter-wrapper')
-      .get('button')
-      .contains('Filter')
-      .click({ force: true })
-      .get('div.filters-overlay')
-      .get('ul.filter-menu')
-      .get('li.filter-option-default')
-      .click({ force: true });
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    applyFilters();
   });
 
   it('change year', function() {
