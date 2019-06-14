@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erptest.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="c_period_id" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -34,6 +34,9 @@
 	$P{ad_language}
 );]]>
 	</queryString>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	</field>
 	<field name="kontono" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="kontono"/>
 	</field>
@@ -52,20 +55,20 @@
 	<field name="taxrate" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="taxrate"/>
 	</field>
+	<field name="bpname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bpname"/>
+	</field>
 	<field name="taxbaseamt" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt"/>
 	</field>
 	<field name="taxamt" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
 	</field>
-	<field name="vatcode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	<field name="taxamtperaccount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamtperaccount"/>
 	</field>
-	<field name="doctype" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="doctype"/>
-	</field>
-	<field name="bpname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="bpname"/>
+	<field name="istaxline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="istaxline"/>
 	</field>
 	<field name="param_startdate" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_startdate"/>
@@ -92,7 +95,7 @@
 		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
 	</variable>
 	<variable name="amt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxamt}]]></variableExpression>
+		<variableExpression><![CDATA[$F{taxamtperaccount}]]></variableExpression>
 	</variable>
 	<variable name="amt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxamt}]]></variableExpression>
@@ -101,7 +104,7 @@
 		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
 	</variable>
 	<variable name="novat_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
+		<variableExpression><![CDATA[($F{istaxline}.equals("Y") ? $F{taxbaseamt} : new BigDecimal(0))]]></variableExpression>
 	</variable>
 	<group name="vatcode_group">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
