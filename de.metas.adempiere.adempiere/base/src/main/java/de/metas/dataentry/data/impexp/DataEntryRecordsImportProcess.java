@@ -137,6 +137,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 
 		final boolean newDataEntryRecord = state.isNewDataEntryRecord();
 		dataEntryRecordRepo.save(state.getDataEntryRecord());
+		importRecord.setDataEntry_Record_ID(state.getDataEntryRecord().getId().get().getRepoId());
 
 		return newDataEntryRecord ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
