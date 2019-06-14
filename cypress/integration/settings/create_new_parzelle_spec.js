@@ -1,6 +1,9 @@
 describe('Create new Parzelle/Allotment', function() {
-  it('open new parzelle', function() {
+  before(function() {
     cy.visit('/window/540210');
+  });
+
+  it('open new parzelle', function() {
     cy.clickHeaderNav('new');
   });
 
