@@ -131,7 +131,7 @@ group
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true"/>
+						<font size="8" fontName="Arial" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Endbestand]]></text>
 				</staticText>

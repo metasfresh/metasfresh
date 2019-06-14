@@ -25,9 +25,9 @@ Here come the actual release notes:
   * [#5276](https://github.com/metasfresh/metasfresh/issues/5276) Finetuning dunning window
   * [#5282](https://github.com/metasfresh/metasfresh/issues/5282) WARN if webui.frontend.url is not configured
   * [#5285](https://github.com/metasfresh/metasfresh/issues/5285) Make sure AD_Column.IsTranslatable could be set when the column is eligible
-  * [#5288](https://github.com/metasfresh/metasfresh/issues/5288) customization tool: Process to add/update a field to selected UI element group
+  * [#5288](https://github.com/metasfresh/metasfresh/issues/5288) Customization tool: Process to add/update a field to selected UI element group
   * [#5290](https://github.com/metasfresh/metasfresh/issues/5290) Fix BPartner->Vendor wrong tab name
-  * [#5291](https://github.com/metasfresh/metasfresh/issues/5291) automated test: make sure RepoIds are correctly defined
+  * [#5291](https://github.com/metasfresh/metasfresh/issues/5291) Automated test: make sure RepoIds are correctly defined
 
 * metasfresh-webui-frontend
   * [#2284](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2284) Make OpenViewAction open data in a new browser tab

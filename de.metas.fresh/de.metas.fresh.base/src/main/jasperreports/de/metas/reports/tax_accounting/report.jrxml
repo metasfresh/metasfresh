@@ -89,7 +89,7 @@
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<variable name="baseamt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamt})]]></variableExpression>
+		<variableExpression><![CDATA[$V{novat_vat_sum}.add($V{amt_vat_sum})]]></variableExpression>
 	</variable>
 	<variable name="baseamt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
 		<variableExpression><![CDATA[$F{taxbaseamt}.add($F{taxamtperaccount})]]></variableExpression>
