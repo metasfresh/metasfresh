@@ -1,3 +1,5 @@
+import { getLanguageSpecific } from './utils';
+
 export class Product {
   constructor(name) {
     cy.log(`Product - set name = ${name}`);
@@ -101,21 +103,25 @@ function applyProduct(product) {
       }
     });
 
-    cy.getFieldValue('ProductType').then(productType => {
-      if (product.productType != productType) {
-        cy.selectInListField('ProductType', product.productType);
+    cy.getFieldValue('ProductType').then(productTypeValue => {
+      const productType = getLanguageSpecific(product, 'productType');
+
+      if (productType != productTypeValue) {
+        cy.selectInListField('ProductType', productType);
       }
     });
 
     cy.getFieldValue('C_UOM_ID').then(uomValue => {
-      if (product.c_uom && product.c_uom != uomValue) {
-        cy.selectInListField('C_UOM_ID', product.c_uom);
+      const c_uom = getLanguageSpecific(product, 'c_uom');
+
+      if (c_uom && c_uom != uomValue) {
+        cy.selectInListField('C_UOM_ID', c_uom);
       }
     });
 
     if (product.prices.length > 0) {
-      product.prices.forEach(function(product) {
-        applyProductPrice(product);
+      product.prices.forEach(function(price) {
+        applyProductPrice(price);
       });
       cy.get('table tbody tr').should('have.length', product.prices.length);
     }
@@ -160,12 +166,14 @@ function applyProductCategory(productCategory) {
 
 function applyProductPrice(price) {
   describe(`Create new Product Price ${price.m_pricelist_version}`, function() {
+    const m_pricelist_version = getLanguageSpecific(price, 'm_pricelist_version');
+
     cy.get('#tab_M_ProductPrice').click();
     cy.pressAddNewButton();
     cy.writeIntoLookupListField(
       'M_PriceList_Version_ID',
-      price.m_pricelist_version,
-      price.m_pricelist_version,
+      m_pricelist_version,
+      m_pricelist_version,
       false /*typeList*/,
       true /*modal*/
     );
