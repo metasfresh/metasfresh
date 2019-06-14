@@ -1,7 +1,6 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.dataentry.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -15,7 +14,7 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1535848060L;
+	private static final long serialVersionUID = -870631534L;
 
     /** Standard Constructor */
     public X_I_DataEntry_Record (Properties ctx, int I_DataEntry_Record_ID, String trxName)
@@ -239,6 +238,56 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_SubTab_Name);
 	}
 
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_Tab getDataEntry_Tab() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Tab_ID, de.metas.dataentry.model.I_DataEntry_Tab.class);
+	}
+
+	@Override
+	public void setDataEntry_Tab(de.metas.dataentry.model.I_DataEntry_Tab DataEntry_Tab)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Tab_ID, de.metas.dataentry.model.I_DataEntry_Tab.class, DataEntry_Tab);
+	}
+
+	/** Set Eingaberegister.
+		@param DataEntry_Tab_ID Eingaberegister	  */
+	@Override
+	public void setDataEntry_Tab_ID (int DataEntry_Tab_ID)
+	{
+		if (DataEntry_Tab_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_Tab_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_Tab_ID, Integer.valueOf(DataEntry_Tab_ID));
+	}
+
+	/** Get Eingaberegister.
+		@return Eingaberegister	  */
+	@Override
+	public int getDataEntry_Tab_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Tab_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Eingaberegister Name.
+		@param DataEntry_Tab_Name Eingaberegister Name	  */
+	@Override
+	public void setDataEntry_Tab_Name (java.lang.String DataEntry_Tab_Name)
+	{
+		set_Value (COLUMNNAME_DataEntry_Tab_Name, DataEntry_Tab_Name);
+	}
+
+	/** Get Eingaberegister Name.
+		@return Eingaberegister Name	  */
+	@Override
+	public java.lang.String getDataEntry_Tab_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_Tab_Name);
+	}
+
 	/** Set External ID.
 		@param ExternalId External ID	  */
 	@Override
@@ -408,60 +457,6 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Datum.
-		@param ValueDate Datum	  */
-	@Override
-	public void setValueDate (java.sql.Timestamp ValueDate)
-	{
-		set_Value (COLUMNNAME_ValueDate, ValueDate);
-	}
-
-	/** Get Datum.
-		@return Datum	  */
-	@Override
-	public java.sql.Timestamp getValueDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValueDate);
-	}
-
-	/** Set Zahlwert.
-		@param ValueNumber 
-		Numeric Value
-	  */
-	@Override
-	public void setValueNumber (java.math.BigDecimal ValueNumber)
-	{
-		set_Value (COLUMNNAME_ValueNumber, ValueNumber);
-	}
-
-	/** Get Zahlwert.
-		@return Numeric Value
-	  */
-	@Override
-	public java.math.BigDecimal getValueNumber () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Stringwert.
-		@param ValueStr Stringwert	  */
-	@Override
-	public void setValueStr (java.lang.String ValueStr)
-	{
-		set_Value (COLUMNNAME_ValueStr, ValueStr);
-	}
-
-	/** Get Stringwert.
-		@return Stringwert	  */
-	@Override
-	public java.lang.String getValueStr () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueStr);
 	}
 
 	/** Set Window Internal Name.

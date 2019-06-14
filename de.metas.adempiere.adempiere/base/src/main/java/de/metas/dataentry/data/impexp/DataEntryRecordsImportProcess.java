@@ -5,7 +5,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
@@ -16,6 +18,7 @@ import org.compiere.util.Env;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
@@ -24,10 +27,14 @@ import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.dataentry.layout.DataEntrySubTab;
+import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.dataentry.model.X_I_DataEntry_Record;
+import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -60,6 +67,8 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 	private final DataEntryLayoutRepository dataEntryLayoutRepo = Adempiere.getBean(DataEntryLayoutRepository.class);
 	private final DataEntryRecordRepository dataEntryRecordRepo = Adempiere.getBean(DataEntryRecordRepository.class);
 
+	private final RecordIdLookup externalIdResolver = new RecordIdLookup();
+
 	@Override
 	public Class<I_I_DataEntry_Record> getImportModelClass()
 	{
@@ -91,8 +100,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		// TODO: resolve AD_Window_ID, SubTab_ID, Field_ID, AD_Table_ID, Record_ID....
-		
+		// nothing here
 	}
 
 	@Override
@@ -107,9 +115,11 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 			@NonNull final I_I_DataEntry_Record importRecord,
 			final boolean isInsertOnly_NOTUSED)
 	{
+		resolveIds(importRecord);
+
 		final TableRecordReference recordRef = TableRecordReference.of(importRecord.getAD_Table_ID(), importRecord.getRecord_ID());
 		final DataEntrySubTabId subTabId = DataEntrySubTabId.ofRepoId(importRecord.getDataEntry_SubTab_ID());
-		State state = (State)stateHolder.getValue();
+		ImportState state = (ImportState)stateHolder.getValue();
 
 		if (state != null && !state.isMatching(recordRef, subTabId))
 		{
@@ -118,7 +128,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		if (state == null)
 		{
 			final AdWindowId adWindowId = AdWindowId.ofRepoId(importRecord.getAD_Window_ID());
-			state = newState(recordRef, adWindowId, subTabId);
+			state = newImportState(recordRef, adWindowId, subTabId);
 			stateHolder.setValue(state);
 		}
 
@@ -131,7 +141,130 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		return newDataEntryRecord ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
 
-	private State newState(
+	private void resolveIds(@NonNull final I_I_DataEntry_Record importRecord)
+	{
+		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(importRecord.getAD_Window_ID());
+		if (adWindowId == null)
+		{
+			String windowInternalName = importRecord.getWindowInternalName();
+			if (Check.isEmpty(windowInternalName, true))
+			{
+				throw new FillMandatoryException(I_I_DataEntry_Record.COLUMNNAME_WindowInternalName);
+			}
+
+			adWindowId = Services.get(IADWindowDAO.class).getWindowIdByInternalName(windowInternalName);
+			importRecord.setAD_Window_ID(adWindowId.getRepoId());
+		}
+
+		final DataEntryLayoutRepository dataEntryLayoutRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
+		final DataEntryLayout layout = dataEntryLayoutRepository.getByWindowId(adWindowId);
+
+		//
+		// AD_Table_ID, Record_ID
+		importRecord.setAD_Table_ID(layout.getMainTableId().getRepoId());
+		int recordId = importRecord.getRecord_ID();
+		if (recordId <= 0)
+		{
+			final String externalId = importRecord.getExternalId();
+			if (!Check.isEmpty(externalId, true))
+			{
+				recordId = externalIdResolver.getRecordId(layout.getMainTableId(), externalId);
+				importRecord.setRecord_ID(recordId);
+			}
+			else
+			{
+				throw new AdempiereException("@NonFound@ @Record_ID@");
+			}
+		}
+
+		//
+		// DataEntryTab:
+		DataEntryTabId tabId = DataEntryTabId.ofRepoIdOrNull(importRecord.getDataEntry_Tab_ID());
+		final DataEntryTab tab;
+		if (tabId == null)
+		{
+			final String tabNamePattern = importRecord.getDataEntry_Tab_Name();
+			tab = layout.getFirstTabMatching(currentTab -> isMatching(currentTab, tabNamePattern))
+					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_Tab_ID@"));
+			tabId = tab.getId();
+			importRecord.setDataEntry_Tab_ID(tabId.getRepoId());
+		}
+		else
+		{
+			tab = layout.getTabById(tabId);
+		}
+
+		//
+		// DataEntrySubTab:
+		DataEntrySubTabId subTabId = DataEntrySubTabId.ofRepoIdOrNull(importRecord.getDataEntry_SubTab_ID());
+		final DataEntrySubTab subTab;
+		if (subTabId == null)
+		{
+			final String subTabNamePattern = importRecord.getDataEntry_SubTab_Name();
+			subTab = tab.getFirstSubTabMatching(currentSubTab -> isMatching(currentSubTab, subTabNamePattern))
+					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_SubTab_ID@"));
+			subTabId = subTab.getId();
+			importRecord.setDataEntry_SubTab_ID(subTabId.getRepoId());
+		}
+		else
+		{
+			subTab = tab.getSubTabById(subTabId);
+		}
+
+		//
+		// DataEntryField:
+		DataEntryFieldId fieldId = DataEntryFieldId.ofRepoIdOrNull(importRecord.getDataEntry_Field_ID());
+		final DataEntryField field;
+		if (fieldId == null)
+		{
+			final String fieldNamePattern = importRecord.getFieldName();
+			field = subTab.getFirstFieldMatching(currentField -> isMatching(currentField, fieldNamePattern))
+					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_Field_ID@"));
+			fieldId = field.getId();
+			importRecord.setDataEntry_Field_ID(fieldId.getRepoId());
+		}
+		else
+		{
+			field = subTab.getFieldById(fieldId);
+		}
+	}
+
+	private static boolean isMatching(@NonNull final DataEntryTab tab, @NonNull final String tabNamePattern)
+	{
+		return tabNamePattern.equalsIgnoreCase(tab.getInternalName())
+				|| isMatching(tab.getCaption(), tabNamePattern);
+	}
+
+	private static boolean isMatching(@NonNull final DataEntrySubTab subTab, @NonNull final String tabNamePattern)
+	{
+		return tabNamePattern.equalsIgnoreCase(subTab.getInternalName())
+				|| isMatching(subTab.getCaption(), tabNamePattern);
+	}
+
+	private static boolean isMatching(@NonNull final DataEntryField field, @NonNull final String fieldNamePattern)
+	{
+		return isMatching(field.getCaption(), fieldNamePattern);
+	}
+
+	private static boolean isMatching(final ITranslatableString trl, final String pattern)
+	{
+		if (trl.getDefaultValue().equalsIgnoreCase(pattern))
+		{
+			return true;
+		}
+
+		for (final String adLanguage : trl.getAD_Languages())
+		{
+			if (trl.translate(adLanguage).equalsIgnoreCase(pattern))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private ImportState newImportState(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final DataEntrySubTabId subTabId)
@@ -139,7 +272,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		final DataEntryLayout layout = dataEntryLayoutRepo.getByWindowId(adWindowId);
 		final DataEntrySubTab subTab = layout.getSubTabById(subTabId);
 
-		return State.builder()
+		return ImportState.builder()
 				.subTab(subTab)
 				.dataEntryRecord(DataEntryRecord.builder()
 						.mainRecord(recordRef)
@@ -160,7 +293,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 	@Builder
 	@Getter
 	@ToString
-	private static class State
+	private static class ImportState
 	{
 		@NonNull
 		private final DataEntrySubTab subTab;

@@ -1,9 +1,12 @@
 package de.metas.dataentry.layout;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.base.Predicates;
@@ -11,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.dataentry.DataEntrySubTabId;
+import de.metas.dataentry.DataEntryTabId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -41,26 +45,40 @@ import lombok.Value;
 @Value
 public class DataEntryLayout
 {
-	public static DataEntryLayout empty(@NonNull final AdWindowId windowId)
+	public static DataEntryLayout empty(@NonNull final AdWindowId windowId, @NonNull final AdTableId mainTableId)
 	{
-		return builder().windowId(windowId).build();
+		return builder().windowId(windowId).mainTableId(mainTableId).build();
 	}
 
 	AdWindowId windowId;
+	AdTableId mainTableId;
 	ImmutableList<DataEntryTab> tabs;
 
 	@Builder
 	private DataEntryLayout(
 			@NonNull final AdWindowId windowId,
+			@NonNull final AdTableId mainTableId,
 			@NonNull @Singular final List<DataEntryTab> tabs)
 	{
 		this.windowId = windowId;
+		this.mainTableId = mainTableId;
 		this.tabs = ImmutableList.copyOf(tabs);
 	}
 
 	public boolean isEmpty()
 	{
 		return tabs.isEmpty();
+	}
+
+	public DataEntryTab getTabById(@NonNull final DataEntryTabId tabId)
+	{
+		return getFirstTabMatching(tab -> DataEntryTabId.equals(tab.getId(), tabId))
+				.orElseThrow(() -> new AdempiereException("@NotFound@ " + tabId + " in " + this));
+	}
+
+	public Optional<DataEntryTab> getFirstTabMatching(@NonNull final Predicate<DataEntryTab> predicate)
+	{
+		return tabs.stream().filter(predicate).findFirst();
 	}
 
 	public Set<DataEntrySubTabId> getSubTabIds()
@@ -73,7 +91,7 @@ public class DataEntryLayout
 	public DataEntrySubTab getSubTabById(@NonNull final DataEntrySubTabId subTabId)
 	{
 		return tabs.stream()
-				.map(tab -> tab.getSubTabById(subTabId).orElse(null))
+				.map(tab -> tab.getSubTabByIdIfPresent(subTabId).orElse(null))
 				.filter(Predicates.notNull())
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("@NotFound@ " + subTabId + " in " + this));

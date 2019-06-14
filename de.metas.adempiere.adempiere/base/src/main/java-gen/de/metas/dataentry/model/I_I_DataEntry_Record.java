@@ -261,6 +261,56 @@ public interface I_I_DataEntry_Record
     public static final String COLUMNNAME_DataEntry_SubTab_Name = "DataEntry_SubTab_Name";
 
 	/**
+	 * Set Eingaberegister.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Tab_ID (int DataEntry_Tab_ID);
+
+	/**
+	 * Get Eingaberegister.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Tab_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_Tab getDataEntry_Tab();
+
+	public void setDataEntry_Tab(de.metas.dataentry.model.I_DataEntry_Tab DataEntry_Tab);
+
+    /** Column definition for DataEntry_Tab_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Tab> COLUMN_DataEntry_Tab_ID = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Tab>(I_I_DataEntry_Record.class, "DataEntry_Tab_ID", de.metas.dataentry.model.I_DataEntry_Tab.class);
+    /** Column name DataEntry_Tab_ID */
+    public static final String COLUMNNAME_DataEntry_Tab_ID = "DataEntry_Tab_ID";
+
+	/**
+	 * Set Eingaberegister Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Tab_Name (java.lang.String DataEntry_Tab_Name);
+
+	/**
+	 * Get Eingaberegister Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataEntry_Tab_Name();
+
+    /** Column definition for DataEntry_Tab_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_DataEntry_Tab_Name = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "DataEntry_Tab_Name", null);
+    /** Column name DataEntry_Tab_Name */
+    public static final String COLUMNNAME_DataEntry_Tab_Name = "DataEntry_Tab_Name";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -506,77 +556,6 @@ public interface I_I_DataEntry_Record
     public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, org.compiere.model.I_AD_User>(I_I_DataEntry_Record.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set Datum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueDate (java.sql.Timestamp ValueDate);
-
-	/**
-	 * Get Datum.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getValueDate();
-
-    /** Column definition for ValueDate */
-    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_ValueDate = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "ValueDate", null);
-    /** Column name ValueDate */
-    public static final String COLUMNNAME_ValueDate = "ValueDate";
-
-	/**
-	 * Set Zahlwert.
-	 * Numeric Value
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueNumber (java.math.BigDecimal ValueNumber);
-
-	/**
-	 * Get Zahlwert.
-	 * Numeric Value
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getValueNumber();
-
-    /** Column definition for ValueNumber */
-    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_ValueNumber = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "ValueNumber", null);
-    /** Column name ValueNumber */
-    public static final String COLUMNNAME_ValueNumber = "ValueNumber";
-
-	/**
-	 * Set Stringwert.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setValueStr (java.lang.String ValueStr);
-
-	/**
-	 * Get Stringwert.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getValueStr();
-
-    /** Column definition for ValueStr */
-    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_ValueStr = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "ValueStr", null);
-    /** Column name ValueStr */
-    public static final String COLUMNNAME_ValueStr = "ValueStr";
 
 	/**
 	 * Set Window Internal Name.
