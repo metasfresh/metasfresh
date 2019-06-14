@@ -234,9 +234,10 @@ Cypress.Commands.add(
 /**
  * Select the given list value in a static list.
  *
- * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
  */
-Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null) => {
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
   describe('Select value in list field', function() {
     cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
@@ -256,8 +257,10 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
       .find('.input-dropdown')
       .click();
 
-    cy.contains('.input-dropdown-list-option', listValue)
-      .click()
-      .waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
+    cy.contains('.input-dropdown-list-option', listValue).click()
+
+    if (!skipRequest) {
+      cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
+    }
   });
 });
