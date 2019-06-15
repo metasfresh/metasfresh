@@ -1,16 +1,27 @@
-DROP FUNCTION IF EXISTS report.tax_accounting_report_recap( IN c_period_id numeric, IN vatcode numeric, IN account_id numeric, IN org_id numeric );
-CREATE OR REPLACE FUNCTION report.tax_accounting_report_recap(IN c_period_id numeric, IN vatcode numeric,
-                                                              IN account_id  numeric, IN org_id numeric)
+-- FUNCTION: report.tax_accounting_report_recap(numeric, numeric, numeric, numeric)
+
+--DROP FUNCTION report.tax_accounting_report_recap(numeric, numeric, numeric, numeric);
+
+CREATE OR REPLACE FUNCTION report.tax_accounting_report_recap(
+	c_period_id numeric,
+	vatcode numeric,
+	account_id numeric,
+	org_id numeric)
   RETURNS TABLE(
+    ad_org_id  numeric, 
     taxname    character varying,
     taxrate    numeric,
     vatcode    character varying,
     taxbaseamt numeric,
-    taxamt     numeric
-  )
-AS
-$$
+    taxamt     numeric) 
+    LANGUAGE 'sql'
+
+    COST 100
+    STABLE 
+    ROWS 1000
+AS $BODY$
 select
+  $4, /*return the AD_Org_ID the function was called with; some invoking part of jasper expects it*/
   taxname,
   taxrate,
   vatcode,
@@ -113,7 +124,6 @@ FROM
                    ELSE $3 = fa.account_id END)
               AND fa.isActive = 'Y'
 
-
       ) x
     GROUP BY vatcode, taxrate, taxname, documentno,
       COALESCE(COALESCE(coalesce(x.inv_baseamt, x.gl_baseamt), x.hdr_baseamt, 0 :: numeric)),
@@ -121,6 +131,5 @@ FROM
     ORDER BY vatcode, taxrate, documentno
   ) s
 GROUP BY vatcode, taxname, taxrate
-$$
-LANGUAGE sql
-STABLE;
+$BODY$;
+
