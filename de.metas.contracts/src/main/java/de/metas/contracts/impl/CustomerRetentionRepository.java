@@ -118,12 +118,20 @@ public class CustomerRetentionRepository
 
 	public I_C_Customer_Retention retrieveCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
-		return queryBL.createQueryBuilder(I_C_Customer_Retention.class)
+		final I_C_Customer_Retention firstOnly = queryBL.createQueryBuilder(I_C_Customer_Retention.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Customer_Retention.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
 				.create()
 				.firstOnly(I_C_Customer_Retention.class);
+		if (firstOnly != null)
+		{
+			return firstOnly;
+		}
+		else
+		{
+			return createNewCustomerRetention(bpartnerId);
+		}
 	}
 
 	public boolean isNewCustomer(@NonNull final BPartnerId bpartnerId)
@@ -209,6 +217,11 @@ public class CustomerRetentionRepository
 
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+
+		if (!hasCustomerRetention(bpartnerId))
+		{
+			createNewCustomerRetention(bpartnerId);
+		}
 
 		if (!isNewCustomer(bpartnerId))
 		{

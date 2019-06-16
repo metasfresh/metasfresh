@@ -10,12 +10,43 @@ Additional notes:
 
 Here come the actual release notes:
 # metasfresh 5.107
-
 ## Features
 * metasfresh
+  * [#5204](https://github.com/metasfresh/metasfresh/issues/5204) On-the-fly auto-allocate available HUs while creating shipments
+  * [#5208](https://github.com/metasfresh/metasfresh/issues/5208) Attribute Age automatism
+  * [#5210](https://github.com/metasfresh/metasfresh/issues/5210) Customs Document
+  * [#5231](https://github.com/metasfresh/metasfresh/issues/5231) Import Replenishments
+  * [#5237](https://github.com/metasfresh/metasfresh/issues/5237) Attribute "Herkunft" is not updated after country change
+  * [#5238](https://github.com/metasfresh/metasfresh/issues/5238) Finetuning Area Search: Params from selected BPartner>>Location
+  * [#5239](https://github.com/metasfresh/metasfresh/issues/5239) Jasper for Customs Invoice
+  * [#5261](https://github.com/metasfresh/metasfresh/issues/5261) Prevent Users from Accidentally deleting attachment files
+  * [#5262](https://github.com/metasfresh/metasfresh/issues/5262) Adjustments for Specifications
+  * [#5265](https://github.com/metasfresh/metasfresh/issues/5265) Show different Bestellkontrolle views in Jasper based on type
+  * [#5276](https://github.com/metasfresh/metasfresh/issues/5276) Finetuning dunning window
+  * [#5282](https://github.com/metasfresh/metasfresh/issues/5282) WARN if webui.frontend.url is not configured
+  * [#5285](https://github.com/metasfresh/metasfresh/issues/5285) Make sure AD_Column.IsTranslatable could be set when the column is eligible
+  * [#5288](https://github.com/metasfresh/metasfresh/issues/5288) Customization tool: Process to add/update a field to selected UI element group
+  * [#5290](https://github.com/metasfresh/metasfresh/issues/5290) Fix BPartner->Vendor wrong tab name
+  * [#5291](https://github.com/metasfresh/metasfresh/issues/5291) Automated test: make sure RepoIds are correctly defined
+
+* metasfresh-webui-frontend
+  * [#2284](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2284) Make OpenViewAction open data in a new browser tab
+  * [#2287](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2287) Add a confirmation popup before deleting attachment file
 
 ## Fixes
+
 * metasfresh
+  * [#5280](https://github.com/metasfresh/metasfresh/issues/5280) Enable MetasfreshIssueAppender when the system is ready for it
+  * [#5284](https://github.com/metasfresh/metasfresh/issues/5284) Non-Barcode Order-Checkup doesn't show C_BPartner_Location.Name
+
+* metasfresh-webui-api
+  * [#1206](https://github.com/metasfresh/metasfresh-webui-api/issues/1206) HU Transform and Serial Number Processes don't start
+
+* metasfresh-webui-frontend
+  * [#2149](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2149) Decimal value .00 not added to product price at first
+  * [#2232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2232) Wrong Button color after first Date click in Range Widget
+  * [#2274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2274) Calendar icon should react to clicks
+  * [#2279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2279) Patching broken for Attributes widget
 
 # metasfresh 5.106
 
