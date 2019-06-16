@@ -368,9 +368,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "ZonedDateTime",
+              "widgetType" : "Date",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.ZonedDateTime",
+              "valueClass" : "java.time.LocalDate",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1286,9 +1286,9 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "key" : false,
               "calculated" : false,
               "parentLink" : false,
-              "widgetType" : "ZonedDateTime",
+              "widgetType" : "Date",
               "allowShowPassword" : false,
-              "valueClass" : "java.time.ZonedDateTime",
+              "valueClass" : "java.time.LocalDate",
               "lookupDescriptorProvider" : {
                 "numericKey" : false
               },
@@ -1887,7 +1887,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   ]
 ]
 
-
 de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor=[
   [
     {
@@ -2179,7 +2178,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "value" : "dateField11_description",
                                   "anyLanguage" : false
                                 },
-                                "widgetType" : "ZonedDateTime",
+                                "widgetType" : "Date",
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
@@ -2645,7 +2644,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                   "value" : "dateField21_description",
                                   "anyLanguage" : false
                                 },
-                                "widgetType" : "ZonedDateTime",
+                                "widgetType" : "Date",
                                 "allowShowPassword" : false,
                                 "multilineText" : false,
                                 "multilineTextLines" : 0,
@@ -2971,7 +2970,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             {
                               "caption" : "dateField11_caption",
                               "description" : "dateField11_description",
-                              "widgetType" : "DateTime",
+                              "widgetType" : "Date",
                               "size" : null,
                               "viewEditorRenderMode" : "always",
                               "fields" : [
@@ -3167,7 +3166,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                             {
                               "caption" : "dateField21_caption",
                               "description" : "dateField21_description",
-                              "widgetType" : "DateTime",
+                              "widgetType" : "Date",
                               "size" : null,
                               "viewEditorRenderMode" : "always",
                               "fields" : [
@@ -3252,3 +3251,4 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
     }
   ]
 ]
+

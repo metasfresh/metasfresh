@@ -250,6 +250,23 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 					.orElseThrow(() -> new AdempiereException("Unable to retrieve dataEntryRecord for query=" + dataEntryRecordQuery));
 		}
 
+		boolean refreshNeeded = updateDataEntryRecord(document, dataEntryRecord);
+		dataEntryRecordRepository.save(dataEntryRecord);
+
+		if (refreshNeeded) // at least one value was changed
+		{
+			refreshFromDataEntryRecord(document, Optional.of(dataEntryRecord));
+		}
+
+		// Notify the parent document that one of it's children were saved (copied from SqlDocumentsRepository)
+		document.getParentDocument().onChildSaved(document);
+
+		return SaveResult.SAVED;
+
+	}
+
+	private boolean updateDataEntryRecord(@NonNull final Document document, @NonNull final DataEntryRecord dataEntryRecord)
+	{
 		boolean refreshNeeded = false;
 
 		final UserId userId = UserId.ofRepoId(Env.getAD_User_ID(document.getCtx()));
@@ -272,18 +289,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 			final boolean valueChanged = dataEntryRecord.setRecordField(dataEntryFieldId, userId, dataEntryFieldValue);
 			refreshNeeded = refreshNeeded || valueChanged;
 		}
-		dataEntryRecordRepository.save(dataEntryRecord);
-
-		if (refreshNeeded) // at least one value was changed
-		{
-			refreshFromDataEntryRecord(document, Optional.of(dataEntryRecord));
-		}
-
-		// Notify the parent document that one of it's children were saved (copied from SqlDocumentsRepository)
-		document.getParentDocument().onChildSaved(document);
-
-		return SaveResult.SAVED;
-
+		return refreshNeeded;
 	}
 
 	private static DataEntryRecord createDataEntryRecord(@NonNull final Document document)
