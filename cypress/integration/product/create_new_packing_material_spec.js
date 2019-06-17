@@ -1,35 +1,27 @@
+import { products } from '../../page_objects/products';
+
 describe('create new packing material', function() {
+  let text;
+
   before(function() {
-    cy.visit('/window/140');
+    products.visit();
+    products.verifyElements();
   });
 
   it('open new product', function() {
     cy.clickHeaderNav(Cypress.messages.window.new.caption);
   });
 
-  let text;
-
   it('config product', function() {
     cy.writeIntoStringField('Name', 'TestPackingMaterial');
     cy.selectInListField('M_Product_Category_ID', '24_Gebinde');
     cy.getFieldValue('Value').then(val => (text = val));
-    cy.wait(500);
   });
 
-  it('open packing material area', function() {
-    cy.visit('/window/540192');
-  });
+  it('configure new packing material', function() {
+    cy.visit('/window/540192/NEW');
 
-  it('open new packing material', function() {
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
-  });
-
-  it('config packing material', function() {
     cy.writeIntoStringField('Name', 'TestPackingMaterial');
     cy.selectInListField('M_Product_ID', text);
-  });
-
-  it('done', function() {
-    cy.wait(1000);
   });
 });
