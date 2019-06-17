@@ -12,12 +12,7 @@ describe('create new packing material', function() {
   it('config product', function() {
     cy.writeIntoStringField('Name', 'TestPackingMaterial');
     cy.selectInListField('M_Product_Category_ID', '24_Gebinde');
-    cy.get('.form-field-Value')
-      .find('input')
-      .invoke('val')
-      .then(val => {
-        text = val;
-      });
+    cy.getFieldValue('Value').then(val => (text = val));
     cy.wait(500);
   });
 
