@@ -49,6 +49,9 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 
 		<mockito.version>2.7.22</mockito.version>
+		
+		<!-- with 5.4.2 we can't run junit tests from eclipse ("no tests found") -->
+		<junit-jupiter.version>5.4.0</junit-jupiter.version>
 	</properties>
 
 	<modules>
@@ -118,6 +121,11 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 				<exclusion>
+					<!-- exclude it here; explicitly add it fuzrther down; workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
+					<groupId>org.junit.platform</groupId>
+					<artifactId>junit-platform-launcher</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>org.mockito</groupId>
 					<artifactId>mockito-core</artifactId>
 				</exclusion>
@@ -149,32 +157,32 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>junit-jupiter-params</artifactId>
 				</exclusion>
 			</exclusions>
-			<version>5.4.0</version>
+			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.vintage</groupId>
 			<artifactId>junit-vintage-engine</artifactId>
-			<version>5.4.0</version>
+			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-params</artifactId>
-			<version>5.4.0</version>
+			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
-		
 
-		<!--
-		we currently don't use this mockito version
+		<!-- workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=545849 -->
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>2.23.4</version>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.4.1</version>
 			<scope>test</scope>
 		</dependency>
-		-->
+
+
+
 	</dependencies>
 
 	<dependencyManagement>
