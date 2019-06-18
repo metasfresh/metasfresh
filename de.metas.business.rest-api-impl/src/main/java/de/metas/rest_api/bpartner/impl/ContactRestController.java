@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -116,7 +116,7 @@ public class ContactRestController implements ContactRestEndpoint
 
 			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
 			@RequestParam(name = "since", required = false) //
-			@NonNull final Long epochTimestampMillis,
+			@Nullable final Long epochTimestampMillis,
 
 			@ApiParam(value = NEXT_DOC, allowEmptyValue = true) //
 			@RequestParam(name = "next", required = false) //
@@ -138,7 +138,7 @@ public class ContactRestController implements ContactRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
 	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
-	@PostMapping
+	@PutMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
 			@RequestBody @NonNull final JsonContactUpsertRequest contacts)

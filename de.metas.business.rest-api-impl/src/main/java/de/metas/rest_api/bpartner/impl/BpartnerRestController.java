@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -238,7 +237,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
 	@ApiOperation("Create of update a location for a particular bpartner. If the location exists, then the properties that are *not* specified are left untouched.")
-	@PostMapping("{bpartnerIdentifier}/location")
+	@PutMapping("{bpartnerIdentifier}/location")
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
 
@@ -277,7 +276,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
 	})
 	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
-	@PostMapping("{bpartnerIdentifier}/contact")
+	@PutMapping("{bpartnerIdentifier}/contact")
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
 

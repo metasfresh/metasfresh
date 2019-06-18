@@ -1,32 +1,32 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.bpartner.model;
+package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_BPartner_Recent_ID
+/** Generated Model for C_BPartner_Recent_V
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public class X_C_BPartner_Recent_ID extends org.compiere.model.PO implements I_C_BPartner_Recent_ID, org.compiere.model.I_Persistent 
+public class X_C_BPartner_Recent_V extends org.compiere.model.PO implements I_C_BPartner_Recent_V, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1656181635L;
+	private static final long serialVersionUID = -1462980482L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Recent_ID (Properties ctx, int C_BPartner_Recent_ID_ID, String trxName)
+    public X_C_BPartner_Recent_V (Properties ctx, int C_BPartner_Recent_V_ID, String trxName)
     {
-      super (ctx, C_BPartner_Recent_ID_ID, trxName);
-      /** if (C_BPartner_Recent_ID_ID == 0)
+      super (ctx, C_BPartner_Recent_V_ID, trxName);
+      /** if (C_BPartner_Recent_V_ID == 0)
         {
         } */
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Recent_ID (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BPartner_Recent_V (Properties ctx, ResultSet rs, String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -60,9 +60,9 @@ public class X_C_BPartner_Recent_ID extends org.compiere.model.PO implements I_C
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
 	/** Get Geschäftspartner.
@@ -72,6 +72,28 @@ public class X_C_BPartner_Recent_ID extends org.compiere.model.PO implements I_C
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set C_BPartner_Recent_V_ID.
+		@param C_BPartner_Recent_V_ID C_BPartner_Recent_V_ID	  */
+	@Override
+	public void setC_BPartner_Recent_V_ID (int C_BPartner_Recent_V_ID)
+	{
+		if (C_BPartner_Recent_V_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Recent_V_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Recent_V_ID, Integer.valueOf(C_BPartner_Recent_V_ID));
+	}
+
+	/** Get C_BPartner_Recent_V_ID.
+		@return C_BPartner_Recent_V_ID	  */
+	@Override
+	public int getC_BPartner_Recent_V_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Recent_V_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

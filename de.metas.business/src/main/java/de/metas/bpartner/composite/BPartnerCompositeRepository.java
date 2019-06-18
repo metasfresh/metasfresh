@@ -27,6 +27,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Recent_V;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
@@ -43,7 +44,6 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
-import de.metas.bpartner.model.I_C_BPartner_Recent_ID;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CachingKeysMapper;
@@ -254,20 +254,20 @@ public class BPartnerCompositeRepository
 			@Nullable final Long epochTimestampMillis,
 			@Nullable final String nextPageId)
 	{
-		final QueryResultPage<I_C_BPartner_Recent_ID> page;
+		final QueryResultPage<I_C_BPartner_Recent_V> page;
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		if (isEmpty(nextPageId, true))
 		{
 			final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(epochTimestampMillis));
-			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_ID.class)
-					.addCompareFilter(I_C_BPartner_Recent_ID.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
+			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
+					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
 					.create()
-					.paginate(I_C_BPartner_Recent_ID.class, BPARTNER_PAGE_SIZE);
+					.paginate(I_C_BPartner_Recent_V.class, BPARTNER_PAGE_SIZE);
 		}
 		else
 		{
-			page = queryBL.retrieveNextPage(I_C_BPartner_Recent_ID.class, nextPageId);
+			page = queryBL.retrieveNextPage(I_C_BPartner_Recent_V.class, nextPageId);
 		}
 
 		return page
