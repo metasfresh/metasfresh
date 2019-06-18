@@ -24,7 +24,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -51,14 +53,17 @@ import lombok.Value;
 @Value
 public class DataEntryRecord
 {
-	/** May be empty if not yet persisted */
-	final Optional<DataEntryRecordId> id;
 	final DataEntrySubTabId dataEntrySubTabId;
 	final TableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
 	final boolean readOnly;
+	
+	/** May be empty if not yet persisted */
+	@Setter(AccessLevel.NONE)
+	@NonFinal
+	Optional<DataEntryRecordId> id;
 
 	@Builder
 	private DataEntryRecord(
@@ -138,6 +143,11 @@ public class DataEntryRecord
 		{
 			throw new AdempiereException("Changing readonly instance is not allowed: " + this);
 		}
+	}
+	
+	void setId(@NonNull final DataEntryRecordId id)
+	{
+		this.id = Optional.of(id);
 	}
 
 	/**
