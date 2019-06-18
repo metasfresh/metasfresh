@@ -11,6 +11,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Tab;
 import org.slf4j.Logger;
@@ -88,6 +89,11 @@ public class DataEntryLayoutRepository
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
 
 		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(adWindowId.getRepoId());
+		if (firstADTab == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Tab_ID@: (@AD_Window_ID@: " + adWindowId.getRepoId() + ")");
+		}
+
 		final AdTableId mainTableId = AdTableId.ofRepoId(firstADTab.getAD_Table_ID());
 		final String mainTableName = Services.get(IADTableDAO.class).retrieveTableName(mainTableId);
 
