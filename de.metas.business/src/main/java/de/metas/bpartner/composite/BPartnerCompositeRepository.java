@@ -466,7 +466,7 @@ public class BPartnerCompositeRepository
 				.id(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 				.name(bpartnerRecord.getName())
 				.parentId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
-				// .phone(bpartnerRecord.get)
+				.phone(bpartnerRecord.getPhone2())
 				.url(bpartnerRecord.getURL())
 				.build();
 	}
@@ -573,7 +573,7 @@ public class BPartnerCompositeRepository
 		bpartnerRecord.setName(bpartner.getName());
 
 		bpartnerRecord.setBPartner_Parent_ID(BPartnerId.toRepoId(bpartner.getParentId()));
-		// bpartnerRecord.setPhone(bpartner.getPhone()) TODO
+		bpartnerRecord.setPhone2(bpartner.getPhone());
 		bpartnerRecord.setURL(bpartner.getUrl());
 		bpartnerRecord.setValue(bpartner.getValue());
 
