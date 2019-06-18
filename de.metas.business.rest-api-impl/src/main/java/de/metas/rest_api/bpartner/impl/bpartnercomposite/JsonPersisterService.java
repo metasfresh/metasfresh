@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 
 import java.util.Collection;
@@ -9,7 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IOrgDAO;
+import org.adempiere.service.IOrgDAO.OrgQuery;
+import org.adempiere.service.OrgId;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -32,14 +38,15 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.MissingPropertyException;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.rest.ExternalId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -83,7 +90,7 @@ public class JsonPersisterService
 		private ShortTermContactIndex(@NonNull final BPartnerComposite bpartnerComposite)
 		{
 			this.bpartnerComposite = bpartnerComposite;
-			this.bpartnerId = bpartnerComposite.getBpartner().getId(); // after syncJsonToBPartner, we can assume that it has an id!
+			this.bpartnerId = bpartnerComposite.getBpartner().getId();  // might be null; we synched to BPartner, but didn't yet save it
 
 			this.id2Contact = new HashMap<>();
 			this.externalId2Contact = new HashMap<>();
@@ -98,7 +105,7 @@ public class JsonPersisterService
 		private BPartnerContact extract(@NonNull final JsonContact jsonContact)
 		{
 			final BPartnerContactId bpartnerContactId;
-			if (jsonContact.getMetasfreshId() != null)
+			if (jsonContact.getMetasfreshId() != null && bpartnerId != null)
 			{
 				bpartnerContactId = BPartnerContactId.ofRepoId(bpartnerId, jsonContact.getMetasfreshId().getValue());
 			}
@@ -138,7 +145,7 @@ public class JsonPersisterService
 		private ShortTermLocationIndex(@NonNull final BPartnerComposite bpartnerComposite)
 		{
 			this.bpartnerComposite = bpartnerComposite;
-			this.bpartnerId = bpartnerComposite.getBpartner().getId(); // after syncJsonToBPartner, we can assume that it has an id!
+			this.bpartnerId = bpartnerComposite.getBpartner().getId(); // might be null; we synched to BPartner, but didn't yet save it
 			this.id2Location = new HashMap<>();
 			this.externalId2Location = new HashMap<>();
 			this.gln2Location = new HashMap<>();
@@ -154,7 +161,7 @@ public class JsonPersisterService
 		private BPartnerLocation extract(@NonNull final JsonBPartnerLocation jsonBPartnerLocation)
 		{
 			final BPartnerLocationId bpartnerLocationId;
-			if (jsonBPartnerLocation.getMetasfreshId() != null)
+			if (jsonBPartnerLocation.getMetasfreshId() != null && bpartnerId != null)
 			{
 				bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, jsonBPartnerLocation.getMetasfreshId().getValue());
 			}
@@ -252,11 +259,15 @@ public class JsonPersisterService
 		return result.build();
 	}
 
-	public BPartnerComposite persist(@NonNull final JsonBPartnerComposite jsonBPartnerComposite)
+	public BPartnerComposite persist(
+			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys = extractBPartnerLookupKeys(jsonBPartnerComposite);
 
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerLookupKeys);
+
+		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), defaultSyncAdvise);
 
 		final BPartnerComposite bpartnerComposite;
 		if (optionalBPartnerComposite.isPresent())
@@ -266,16 +277,22 @@ public class JsonPersisterService
 		}
 		else
 		{
+			if (effectiveSyncAdvise.isFailIfNotExists())
+			{
+				throw new MissingResourceException("bpartner");
+			}
 			// create new aggregation root
 			bpartnerComposite = BPartnerComposite.builder().build();
 		}
 
-		syncJsonToBPartnerComposite(jsonBPartnerComposite, bpartnerComposite);
+		syncJsonToBPartnerComposite(jsonBPartnerComposite, bpartnerComposite, effectiveSyncAdvise);
 
 		return bpartnerComposite;
 	}
 
-	public BPartnerContact persist(@NonNull final JsonContact jsonContact)
+	public BPartnerContact persist(
+			@NonNull final JsonContact jsonContact,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final BPartnerContactQuery contactQuery = createContactQuery(jsonContact);
 		final Optional<ContactIdAndBPartner> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
@@ -294,6 +311,10 @@ public class JsonPersisterService
 		}
 		else
 		{
+			if (parentSyncAdvise.isFailIfNotExists())
+			{
+				throw new MissingResourceException("jsonContact");
+			}
 			if (jsonContact.getMetasfreshBPartnerId() == null)
 			{
 				throw new MissingPropertyException("JsonContact.metasfreshBPartnerId", jsonContact);
@@ -306,7 +327,7 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 		}
 
-		syncJsonToContact(jsonContact, contact);
+		syncJsonToContact(jsonContact, contact, parentSyncAdvise);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
@@ -316,7 +337,8 @@ public class JsonPersisterService
 	/** Adds or update a given location. Leaves all unrelated location of the same bpartner untouched */
 	public Optional<MetasfreshId> persist(
 			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final JsonBPartnerLocation jsonBPartnerLocation)
+			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
+			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
 		if (optBPartnerComposite.isPresent())
@@ -333,7 +355,7 @@ public class JsonPersisterService
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		syncJsonLocation(jsonBPartnerLocation, SyncAdvise.IfNotExists.CREATE, shortTermIndex);
+		syncJsonLocation(jsonBPartnerLocation, defaultSyncAdvise, shortTermIndex);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
@@ -346,7 +368,8 @@ public class JsonPersisterService
 
 	public Optional<MetasfreshId> persist(
 			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final JsonContact jsonContact)
+			@NonNull final JsonContact jsonContact,
+			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
 		if (optBPartnerComposite.isPresent())
@@ -357,13 +380,13 @@ public class JsonPersisterService
 		final ExternalId externalId = JsonConverters.fromJsonOrNull(jsonContact.getExternalId());
 		if (externalId == null)
 		{
-			throw new AdempiereException("missing externalId-blah"); // TODO
+			throw new MissingPropertyException("jsonContact.externalId", jsonContact);
 		}
 
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
 
-		syncJsonContact(jsonContact, SyncAdvise.IfNotExists.CREATE, shortTermIndex);
+		syncJsonContact(jsonContact, defaultSyncAdvise, shortTermIndex);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
@@ -376,7 +399,7 @@ public class JsonPersisterService
 
 	private void syncJsonContact(
 			@NonNull final JsonContact jsonContact,
-			@NonNull final SyncAdvise.IfNotExists ifNotExists,
+			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermContactIndex shortTermIndex)
 	{
 		final BPartnerContact existingContact = shortTermIndex.extract(jsonContact);
@@ -389,47 +412,19 @@ public class JsonPersisterService
 		}
 		else
 		{
-			if (IfNotExists.FAIL.equals(ifNotExists))
+			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new AdempiereException("blah"); // TODO
+				throw new MissingResourceException("jsonContact");
 			}
 			contact = BPartnerContact.builder().build();
 			shortTermIndex.getBpartnerComposite().getContacts().add(contact);
 		}
-		syncJsonToContact(jsonContact, contact);
+		syncJsonToContact(jsonContact, contact, parentSyncAdvise);
 	}
-
-	// private BPartnerCompositeQuery createBPartnerQuery(@NonNull final String bpartnerIdentifier)
-	// {
-	// final BPartnerCompositeQueryBuilder query = BPartnerCompositeQuery.builder()
-	// .onlyOrgId(Env.getOrgId())
-	// .onlyOrgId(OrgId.ANY);
-	//
-	// final IdentifierString identifier = IdentifierString.of(bpartnerIdentifier);
-	// switch (identifier.getType())
-	// {
-	// case EXTERNAL_ID:
-	// query.externalId(ExternalId.of(identifier.getValue()));
-	// break;
-	// case VALUE:
-	// query.bpartnerValue(identifier.getValue());
-	// break;
-	// case GLN:
-	// query.locationGln(identifier.getValue());
-	// break;
-	// case METASFRESH_ID:
-	// final int repoId = Integer.parseInt(identifier.getValue());
-	// query.bPartnerId(BPartnerId.ofRepoId(repoId));
-	// break;
-	// default:
-	// throw new AdempiereException("Unexpected type=" + identifier.getType());
-	// }
-	// return query.build();
-	// }
 
 	private void syncJsonLocation(
 			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
-			@NonNull final SyncAdvise.IfNotExists ifNotExists,
+			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
 		final BPartnerLocation existingLocation = shortTermIndex.extract(jsonBPartnerLocation);
@@ -442,47 +437,89 @@ public class JsonPersisterService
 		}
 		else
 		{
-			if (IfNotExists.FAIL.equals(ifNotExists))
+			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new AdempiereException("blah"); // TODO
+				throw new MissingResourceException("bpartnerLocation");
 			}
 			location = BPartnerLocation.builder().build();
 			shortTermIndex.getBpartnerComposite().getLocations().add(location);
 		}
-		syncJsonToLocation(jsonBPartnerLocation, location);
+
+		syncJsonToLocation(jsonBPartnerLocation, location, parentSyncAdvise);
 	}
 
 	private void syncJsonToBPartnerComposite(
 			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
-			@NonNull final BPartnerComposite bpartnerComposite)
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO syncJsonToOrg - make sure that user is authorized!
 		// final JsonOrganization jsonOrg = jsonBPartnerComposite.getOrg();
 
-		syncJsonToBPartner(jsonBPartnerComposite, bpartnerComposite);
+		syncJsonToOrg(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
-		syncJsonToLocations(jsonBPartnerComposite, bpartnerComposite);
+		syncJsonToBPartner(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
-		syncJsonToContacts(jsonBPartnerComposite, bpartnerComposite);
+		syncJsonToLocations(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
+
+		syncJsonToContacts(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 	}
 
+	private void syncJsonToOrg(
+			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final boolean hasOrgId = bpartnerComposite.getOrgId() != null;
+
+		if (hasOrgId && !syncAdvise.getIfExists().isUpdate())
+		{
+			return;
+		}
+
+		final OrgId orgId;
+		final String orgCode = jsonBPartnerComposite.getOrgCode();
+		if (!isEmpty(orgCode, true))
+		{
+			orgId = Services.get(IOrgDAO.class)
+					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
+					.orElse(Env.getOrgId());
+		}
+		else
+		{
+			orgId = Env.getOrgId();
+		}
+		bpartnerComposite.setOrgId(orgId);
+	}
+
 	private void syncJsonToBPartner(
 			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
-			@NonNull final BPartnerComposite bpartnerComposite)
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final JsonBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
 
 		// note that if the BPartner wouldn't exists, we weren't here
-		final IfExists ifExistsAdvise = jsonBPartner.getSyncAdvise().getIfExists();
+		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+
+		final BPartner bpartner = bpartnerComposite.getBpartner();
+		if (bpartner == null && effCompositeSyncAdvise.isFailIfNotExists())
+		{
+			throw new MissingResourceException("JsonBPartner");
+		}
+
+		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartner.getSyncAdvise(), effCompositeSyncAdvise);
+		final IfExists ifExistsAdvise = effectiveSyncAdvise.getIfExists();
+
 		if (!ifExistsAdvise.isUpdate())
 		{
 			return; // nothing to do
 		}
 
 		final boolean isUpdateRemove = ifExistsAdvise.isUpdateRemove();
-		final BPartner bpartner = bpartnerComposite.getBpartner();
 
 		// code / value
 		if (!isEmpty(jsonBPartner.getCode(), true))
@@ -517,7 +554,9 @@ public class JsonPersisterService
 		// group
 		if (!isEmpty(jsonBPartner.getGroup(), true))
 		{
-			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
+			final Optional<BPGroup> optionalBPGroup = bpGroupRepository
+					.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
+
 			final BPGroup bpGroup;
 			if (optionalBPGroup.isPresent())
 			{
@@ -594,9 +633,11 @@ public class JsonPersisterService
 
 	private void syncJsonToContact(
 			@NonNull final JsonContact jsonBPartnerContact,
-			@NonNull final BPartnerContact contact)
+			@NonNull final BPartnerContact contact,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final boolean isUpdateRemove = jsonBPartnerContact.getSyncAdvise().getIfExists().isUpdateRemove();
+		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
+		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
 		// email
 		if (!isEmpty(jsonBPartnerContact.getEmail(), true))
@@ -665,18 +706,19 @@ public class JsonPersisterService
 
 	private void syncJsonToContacts(
 			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
-			@NonNull final BPartnerComposite bpartnerComposite)
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
 
-		final SyncAdvise syncAdvise = jsonBPartnerComposite.getSyncAdvise();
+		final SyncAdvise compositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		for (final JsonContact jsonBPartnerContact : jsonBPartnerComposite.getContacts())
 		{
-			syncJsonContact(jsonBPartnerContact, syncAdvise.getIfNotExists(), shortTermIndex);
+			syncJsonContact(jsonBPartnerContact, compositeSyncAdvise, shortTermIndex);
 		}
 
-		if (syncAdvise.getIfExists().isUpdateRemove())
+		if (compositeSyncAdvise.getIfExists().isUpdateRemove())
 		{
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getContacts().removeAll(shortTermIndex.getRemainingContacts());
@@ -685,9 +727,13 @@ public class JsonPersisterService
 
 	private void syncJsonToLocation(
 			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
-			@NonNull final BPartnerLocation location)
+			@NonNull final BPartnerLocation location,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final boolean isUpdateRemove = jsonBPartnerLocation.getSyncAdvise().getIfExists().isUpdateRemove();
+
+		final SyncAdvise syncAdvise = coalesce(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
+
+		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
 		// address1
 		if (!isEmpty(jsonBPartnerLocation.getAddress1(), true))
@@ -792,15 +838,16 @@ public class JsonPersisterService
 
 	private void syncJsonToLocations(
 			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
-			@NonNull final BPartnerComposite bpartnerComposite)
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		final SyncAdvise syncAdvise = jsonBPartnerComposite.getSyncAdvise();
+		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		for (final JsonBPartnerLocation jsonBPartnerLocation : jsonBPartnerComposite.getLocations())
 		{
-			syncJsonLocation(jsonBPartnerLocation, syncAdvise.getIfNotExists(), shortTermIndex);
+			syncJsonLocation(jsonBPartnerLocation, syncAdvise, shortTermIndex);
 		}
 
 		if (syncAdvise.getIfExists().isUpdateRemove())

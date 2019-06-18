@@ -1,12 +1,9 @@
 package de.metas.rest_api.bpartner;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -144,11 +141,5 @@ public class JsonBPartner
 		this.url = url;
 		this.group = group;
 		this.syncAdvise = syncAdvise;
-	}
-
-	@JsonIgnore
-	public SyncAdvise getSyncAdvise()
-	{
-		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

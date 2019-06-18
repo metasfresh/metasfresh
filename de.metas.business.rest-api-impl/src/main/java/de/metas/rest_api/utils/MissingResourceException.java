@@ -21,27 +21,35 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public class MissingPropertyException extends AdempiereException
+public class MissingResourceException extends AdempiereException
 {
 	private static final long serialVersionUID = -3485523266695546853L;
 
-	public MissingPropertyException(
-			@NonNull final String propertyName,
-			@Nullable final Object objectWithMissingProperty)
+	public MissingResourceException(@NonNull final String resourceName)
 	{
-		super(assumeNotEmpty(propertyName, "Parameter 'propertyName may not be null"));
+		this(resourceName, null);
+	}
+
+	public MissingResourceException(
+			@NonNull final String resourceName,
+			@Nullable final Object parentResource)
+	{
+		super(assumeNotEmpty(resourceName, "Parameter 'resourceName may not be null"));
 
 		appendParametersToMessage();
-		setParameter("objectWithMissingProperty", objectWithMissingProperty);
+		if (parentResource != null)
+		{
+			setParameter("parentResource", parentResource);
+		}
 	}
+
 }

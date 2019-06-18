@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
@@ -90,8 +92,10 @@ public class SyncAdvise
 		}
 	}
 
+	@JsonInclude(Include.NON_NULL)
 	IfNotExists ifNotExists;
 
+	@JsonInclude(Include.NON_NULL)
 	IfExists ifExists;
 
 	@Builder

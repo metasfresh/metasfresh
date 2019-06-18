@@ -28,6 +28,7 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
@@ -176,13 +177,14 @@ class ContactRestControllerTest
 
 		final JsonContact jsonContact = JsonContact.builder()
 				.name("jsonContact.name")
+				.code("jsonContact.code")
 				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
 				.build();
 
 		final JsonExternalId upsertExternalId = JsonExternalId.of("externalId-1");
 
 		final JsonContactUpsertRequest upsertRequest = JsonContactUpsertRequest.builder()
-				.ifExists(IfExists.UPDATE_MERGE)
+				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())
 				.requestItem(JsonContactUpsertRequestItem
 						.builder()
 						.externalId(upsertExternalId)

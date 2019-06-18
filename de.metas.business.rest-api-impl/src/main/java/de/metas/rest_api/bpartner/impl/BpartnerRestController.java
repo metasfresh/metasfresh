@@ -25,6 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
@@ -38,6 +41,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -206,11 +210,15 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
+		final SyncAdvise defaultSyncAdvise = bpartners.getSyncAdvise();
+
 		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
 		for (final JsonBPartnerUpsertRequestItem requestItem : bpartners.getRequestItems())
 		{
-			final BPartnerComposite syncToMetasfresh = persister.persist(requestItem.getEffectiveBPartnerComposite());
+			final BPartnerComposite syncToMetasfresh = persister.persist(
+					requestItem.getEffectiveBPartnerComposite(),
+					defaultSyncAdvise);
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(syncToMetasfresh.getBpartner().getId());
 
@@ -229,6 +237,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
+	@ApiOperation("Create of update a location for a particular bpartner. If the location exists, then the properties that are *not* specified are left untouched.")
 	@PostMapping("{bpartnerIdentifier}/location")
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
@@ -240,7 +249,10 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestBody @NonNull final JsonBPartnerLocation jsonLocation)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<MetasfreshId> jsonLocationId = persister.persist(bpartnerIdentifier, jsonLocation);
+		final Optional<MetasfreshId> jsonLocationId = persister.persist(
+				bpartnerIdentifier,
+				jsonLocation,
+				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		if (!jsonLocationId.isPresent())
 		{
@@ -264,6 +276,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
 	})
+	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PostMapping("{bpartnerIdentifier}/contact")
 	@Override
 	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
@@ -276,7 +289,10 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	{
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<MetasfreshId> jsonContactId = persister.persist(bpartnerIdentifier, jsonContact);
+		final Optional<MetasfreshId> jsonContactId = persister.persist(
+				bpartnerIdentifier,
+				jsonContact,
+				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		if (!jsonContactId.isPresent())
 		{

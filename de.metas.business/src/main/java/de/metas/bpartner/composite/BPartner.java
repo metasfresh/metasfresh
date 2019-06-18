@@ -94,15 +94,15 @@ public class BPartner
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 		if (isEmpty(value, true))
 		{
-			result.add(ITranslatableString.constant("Missing value"));
+			result.add(ITranslatableString.constant("bpartner.value"));
 		}
 		if (isEmpty(name, true))
 		{
-			result.add(ITranslatableString.constant("Missing name"));
+			result.add(ITranslatableString.constant("bpartner.name"));
 		}
 		if (groupId == null)
 		{
-			result.add(ITranslatableString.constant("Missing groupId"));
+			result.add(ITranslatableString.constant("bpartner.groupId"));
 		}
 		return result.build();
 	}

@@ -243,7 +243,7 @@ public class JsonRetrieverService
 		}
 		if (byQuery.getItems().isEmpty())
 		{
-			ImmutableMap.of();
+			return ImmutableMap.of();
 		}
 
 		final ImmutableMap.Builder<BPartnerCompositeLookupKey, BPartnerComposite> result = ImmutableMap.builder();

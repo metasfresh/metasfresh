@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -44,15 +46,16 @@ public class JsonContactUpsertRequest
 {
 	List<JsonContactUpsertRequestItem> requestItems;
 
-	SyncAdvise.IfExists ifExists;
+	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
 	@JsonCreator
 	@Builder
 	public JsonContactUpsertRequest(
 			@Singular @JsonProperty("requestItems") final List<JsonContactUpsertRequestItem> requestItems,
-			@Nullable @JsonProperty("ifExists") final SyncAdvise.IfExists ifExists)
+			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.ifExists = coalesce(ifExists, SyncAdvise.IfExists.UPDATE_MERGE);
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

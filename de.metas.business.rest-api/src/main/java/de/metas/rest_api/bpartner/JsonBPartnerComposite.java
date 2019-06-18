@@ -5,11 +5,11 @@ import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -71,7 +70,7 @@ public final class JsonBPartnerComposite
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty(required = false)
 	@JsonInclude(Include.NON_NULL)
-	JsonOrganization org;
+	String orgCode;
 
 	JsonBPartner bpartner;
 
@@ -82,20 +81,21 @@ public final class JsonBPartnerComposite
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonContact> contacts;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
+			+ BPARTER_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerComposite(
-			@JsonProperty("org") @Nullable final JsonOrganization org,
+			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonBPartnerLocation> locations,
 			@JsonProperty("contacts") @Singular final List<JsonContact> contacts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
-		this.org = org;
+		this.orgCode = orgCode;
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
@@ -120,14 +120,12 @@ public final class JsonBPartnerComposite
 
 	public JsonBPartnerComposite withExternalId(@NonNull final JsonExternalId externalId)
 	{
+		if (Objects.equals(externalId, bpartner.getExternalId()))
+		{
+			return this; // nothing to do
+		}
 		return toBuilder()
 				.bpartner(bpartner.toBuilder().externalId(externalId).build())
 				.build();
-	}
-
-	@JsonIgnore
-	public SyncAdvise getSyncAdvise()
-	{
-		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

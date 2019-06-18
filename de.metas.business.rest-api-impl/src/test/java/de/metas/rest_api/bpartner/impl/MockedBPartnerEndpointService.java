@@ -3,8 +3,6 @@ package de.metas.rest_api.bpartner.impl;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
@@ -44,8 +42,7 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class MockedBPartnerEndpointService implements IBPartnerEndpointService
+public class MockedBPartnerEndpointService
 {
 
 	public static final String MOCKED_NEXT = UUID.randomUUID().toString();
@@ -57,19 +54,19 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		return MetasfreshId.of(metasfreshIdCounter++);
 	}
 
-	@Override
-	public Optional<JsonBPartnerComposite> retrieveBPartner(@NonNull final String bpartnerIdentifier)
+	public JsonBPartnerComposite createBPartner(@NonNull final String bpartnerIdentifier)
 	{
 		final JsonBPartnerCompositeBuilder result = JsonBPartnerComposite.builder();
 
 		final JsonBPartnerBuilder bPartner = JsonBPartner
 				.builder()
-				.companyName("companyName")
-				.name("name")
-				.language("de_CH")
+				.companyName("bPartner.companyName")
+				.name("bPartner.name")
+				.group("bPartner.group")
+				.language("bPartner.de_CH")
 				.parentId(MetasfreshId.of(1))
-				.phone("phone")
-				.url("url");
+				.phone("bPartner.phone")
+				.url("bPartner.url");
 
 		if (bpartnerIdentifier.startsWith("ext"))
 		{
@@ -105,10 +102,9 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		final JsonContact contact2 = createMockContact("c2");
 		result.contact(contact2);
 
-		return Optional.of(result.build());
+		return result.build();
 	}
 
-	@Override
 	public Optional<JsonBPartnerLocation> retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier)
 	{
 		return Optional.of(createMockLocation("l" + Long.toString(nextMetasFreshId().getValue()), "DE"));
@@ -133,7 +129,6 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 				.build();
 	}
 
-	@Override
 	public Optional<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
 	{
 		return Optional.of(createMockContact("c" + Long.toString(nextMetasFreshId().getValue())));
@@ -151,7 +146,6 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		return contact;
 	}
 
-	@Override
 	public Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(Long epochTimestampMillis, String next)
 	{
 		final JsonPagingDescriptorBuilder pagingDescriptor = JsonPagingDescriptor.builder()
@@ -164,14 +158,14 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		if (Check.isEmpty(next))
 		{
 			pagingDescriptor.nextPage(MOCKED_NEXT); // will return the first page with the 2nd page's identifier
-			compositeList.item(retrieveBPartner("1234").get());
+			compositeList.item(createBPartner("1234"));
 		}
 		else
 		{
 			if (MOCKED_NEXT.equals(next))
 			{
 				pagingDescriptor.nextPage(null); // will return the 2nd and last page
-				compositeList.item(retrieveBPartner("1235").get());
+				compositeList.item(createBPartner("1235"));
 			}
 			else
 			{
@@ -183,13 +177,11 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 		return Optional.of(compositeList.build());
 	}
 
-	@Override
 	public Optional<JsonContact> retrieveContact(String contactIdentifier)
 	{
 		return Optional.of(createMockContact("c1"));
 	}
 
-	@Override
 	public Optional<JsonContactList> retrieveContactsSince(Long epochTimestampMillis, String next)
 	{
 		JsonContactList list = JsonContactList

@@ -53,10 +53,6 @@ public class JsonBPartnerLocation
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
-//	@JsonInclude(Include.NON_NULL)
-//	@ApiModelProperty(dataType = "java.lang.Integer")
-//	private MetasfreshId metasfreshBPartnerId;
-
 	private String address1;
 
 	@JsonInclude(Include.NON_EMPTY)

@@ -23,9 +23,9 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 
 /*
  * #%L
@@ -49,7 +49,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 public final class BPartnerComposite
 {
 	OrgId orgId;

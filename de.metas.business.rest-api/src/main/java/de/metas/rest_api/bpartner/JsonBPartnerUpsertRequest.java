@@ -40,7 +40,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 @ApiModel
 public class JsonBPartnerUpsertRequest
 {
@@ -50,6 +49,7 @@ public class JsonBPartnerUpsertRequest
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
+	@Builder
 	public JsonBPartnerUpsertRequest(
 			@Singular @JsonProperty("requestItems") final List<JsonBPartnerUpsertRequestItem> requestItems,
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)

@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
@@ -33,6 +36,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -133,6 +137,7 @@ public class ContactRestController implements ContactRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
+	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PostMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
@@ -144,7 +149,9 @@ public class ContactRestController implements ContactRestEndpoint
 
 		for (final JsonContactUpsertRequestItem requestItem : contacts.getRequestItems())
 		{
-			final BPartnerContact bpartnerContact = persister.persist(requestItem.getEffectiveContact());
+			final BPartnerContact bpartnerContact = persister.persist(
+					requestItem.getEffectiveContact(),
+					SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
 

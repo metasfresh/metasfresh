@@ -543,9 +543,9 @@ public class BPartnerCompositeRepository
 		final BPartner bpartner = bpartnerComposite.getBpartner();
 		saveBPartner(bpartner);
 
-		saveBPartnerLocations(bpartnerComposite.getLocations(), bpartner.getId());
+		saveBPartnerLocations(bpartner.getId(), bpartnerComposite.getLocations());
 
-		saveBPartnerContacts(bpartnerComposite.getContacts(), bpartner.getId());
+		saveBPartnerContacts(bpartner.getId(), bpartnerComposite.getContacts());
 	}
 
 	final void saveBPartner(@NonNull final BPartner bpartner)
@@ -584,8 +584,8 @@ public class BPartnerCompositeRepository
 	}
 
 	private void saveBPartnerLocations(
-			@NonNull final List<BPartnerLocation> bpartnerLocations,
-			@NonNull final BPartnerId bpartnerId)
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final List<BPartnerLocation> bpartnerLocations)
 	{
 		final ArrayList<BPartnerLocationId> savedBPartnerLocationIds = new ArrayList<>();
 		for (final BPartnerLocation bPartnerLocation : bpartnerLocations)
@@ -618,8 +618,6 @@ public class BPartnerCompositeRepository
 
 		final I_C_Location locationRecord = loadOrNew(LocationId.ofRepoIdOrNull(bpartnerLocationRecord.getC_Location_ID()), I_C_Location.class);
 		locationRecord.setIsActive(true);
-
-		bpartnerLocationRecord.setC_Location(locationRecord);
 
 		locationRecord.setAddress1(bpartnerLocation.getAddress1());
 		locationRecord.setAddress2(bpartnerLocation.getAddress2());
@@ -666,6 +664,9 @@ public class BPartnerCompositeRepository
 		locationRecord.setPostal(bpartnerLocation.getPostal());
 		locationRecord.setRegionName(bpartnerLocation.getRegion());
 
+		saveRecord(locationRecord);
+
+		bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		saveRecord(bpartnerLocationRecord);
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
@@ -673,8 +674,8 @@ public class BPartnerCompositeRepository
 	}
 
 	private void saveBPartnerContacts(
-			@NonNull final List<BPartnerContact> contacts,
-			@NonNull final BPartnerId bpartnerId)
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final List<BPartnerContact> contacts)
 	{
 		final ArrayList<BPartnerContactId> savedBPartnerContactIds = new ArrayList<>();
 		for (final BPartnerContact bpartnerContact : contacts)
