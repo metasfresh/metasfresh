@@ -207,6 +207,12 @@ declare namespace Cypress {
      */
     pressDoneButton(waitBeforePress: number): Chainable<any>
 
-
+    /**
+     * Select a tab by its name.
+     *
+     * @param tabName the name of the tab
+     * @param forced optional, default = false;
+     */
+    selectTab(tabName: string, forced?: boolean): Chainable<any>
   }
 }
