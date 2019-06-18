@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -57,6 +58,7 @@ public class DataEntrySubTab
 	ImmutableList<DataEntrySection> sections;
 
 	@Getter(AccessLevel.NONE)
+	@JsonIgnore
 	ImmutableMap<DataEntryFieldId, DataEntryField> fieldsById;
 
 	@Builder
