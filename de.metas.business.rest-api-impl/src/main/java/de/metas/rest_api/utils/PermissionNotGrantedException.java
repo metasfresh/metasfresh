@@ -1,8 +1,8 @@
 package de.metas.rest_api.utils;
 
-import lombok.NonNull;
-
 import org.adempiere.exceptions.AdempiereException;
+
+import lombok.NonNull;
 
 /*
  * #%L

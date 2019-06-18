@@ -1,11 +1,12 @@
-package de.metas.bpartner;
+package de.metas.bpartner.service;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import lombok.Builder;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -31,6 +32,7 @@ import javax.annotation.Nullable;
 
 /**
  * Composition of bpartner-id, location-id and contact-id. These three in conjunction are used in many documents.
+ * So, actually just a bunch of IDs. Not DDD at all.
  */
 @Value
 public final class BPartnerInfo

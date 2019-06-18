@@ -1,5 +1,8 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -42,7 +46,7 @@ public class JsonBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			dataType = "java.lang.Long", //
+			dataType = "java.lang.Integer", //
 			value = "This translates to <code>C_BPartner.C_BPartner_ID</code>. If set, the system will attempt a lookup.\n"
 					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
 					+ "If the lookup does not succeed, it will fail.")
@@ -83,7 +87,7 @@ public class JsonBPartner
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
-			dataType = "java.lang.Long")
+			dataType = "java.lang.Integer")
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId parentId;
 
@@ -99,11 +103,18 @@ public class JsonBPartner
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			value = "Name of the business partner's group")
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
+	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@JsonInclude(Include.NON_NULL)
+	SyncAdvise syncAdvise;
+
 	@JsonCreator
-	@Builder
+	@Builder(toBuilder = true)
 	private JsonBPartner(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
@@ -115,7 +126,8 @@ public class JsonBPartner
 			@JsonProperty("phone") @Nullable final String phone,
 			@JsonProperty("language") @Nullable final String language,
 			@JsonProperty("url") @Nullable final String url,
-			@JsonProperty("group") @Nullable final String group)
+			@JsonProperty("group") @Nullable final String group,
+			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
@@ -130,10 +142,10 @@ public class JsonBPartner
 		this.language = language;
 		this.url = url;
 		this.group = group;
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 
 		// both id, externalId and code may be empty if this instance belongs to a JsonBPArtnerInfo that has a location with has a GLN.
 
 		// errorIf(isEmpty(code, true) && isEmpty(externalId, true), "At least one of code and externalId need to be non-empty; name={}; companyName={}", name, companyName);
 	}
-
 }

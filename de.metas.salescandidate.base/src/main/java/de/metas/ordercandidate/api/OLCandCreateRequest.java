@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
 
-import de.metas.bpartner.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PricingSystemId;

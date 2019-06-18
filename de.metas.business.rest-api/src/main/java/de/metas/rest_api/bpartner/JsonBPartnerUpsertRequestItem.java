@@ -43,6 +43,8 @@ public class JsonBPartnerUpsertRequestItem
 	@NonNull
 	JsonExternalId externalId;
 
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonBPartnerComposite bpartnerComposite;
 
@@ -53,5 +55,10 @@ public class JsonBPartnerUpsertRequestItem
 	{
 		this.externalId = externalId;
 		this.bpartnerComposite = bpartnerComposite;
+	}
+
+	public JsonBPartnerComposite getEffectiveBPartnerComposite()
+	{
+		return getBpartnerComposite().withExternalId(getExternalId());
 	}
 }

@@ -18,10 +18,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
@@ -31,6 +34,9 @@ import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItem;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponse.JsonUpsertResponseBuilder;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.util.rest.MetasfreshRestAPIConstants;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -59,17 +65,22 @@ import lombok.NonNull;
  * #L%
  */
 
+@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner")
 @RestController
 @Profile(Profiles.PROFILE_App)
-// the spelling "Bpartner" is to avoid swagger spelling it "b-partner-rest.."
+// the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
 	private final IBPartnerEndpointService bPartnerEndpointservice;
+	private final JsonServiceFactory jsonPersisterServiceFactory;
 
-	public BpartnerRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice)
+	public BpartnerRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
+			@NonNull final JsonServiceFactory jsonPersisterServiceFactory)
 	{
+		this.jsonPersisterServiceFactory = jsonPersisterServiceFactory;
 		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
+
 	}
 
 	//
@@ -191,16 +202,21 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(
-			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
 			@RequestBody @NonNull final JsonBPartnerUpsertRequest bpartners)
 	{
+		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+
 		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
 		for (final JsonBPartnerUpsertRequestItem requestItem : bpartners.getRequestItems())
 		{
+			final BPartnerComposite syncToMetasfresh = persister.persist(requestItem.getEffectiveBPartnerComposite());
+
+			final MetasfreshId metasfreshId = MetasfreshId.of(syncToMetasfresh.getBpartner().getId());
+
 			final JsonUpsertResponseItem responseItem = JsonUpsertResponseItem.builder()
 					.externalId(requestItem.getExternalId())
-					.metasfreshId(MockDataUtil.nextMetasFreshId())
+					.metasfreshId(metasfreshId)
 					.build();
 			response.responseItem(responseItem);
 		}
@@ -221,19 +237,32 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonBPartnerLocation location)
+			@RequestBody @NonNull final JsonBPartnerLocation jsonLocation)
 	{
-		final JsonUpsertResponseItem resonseItem = JsonUpsertResponseItem.builder()
-				.externalId(location.getExternalId())
-				.metasfreshId(MockDataUtil.nextMetasFreshId())
+		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final Optional<MetasfreshId> jsonLocationId = persister.persist(bpartnerIdentifier, jsonLocation);
+
+		if (!jsonLocationId.isPresent())
+		{
+			return new ResponseEntity<JsonUpsertResponseItem>(
+					(JsonUpsertResponseItem)null,
+					HttpStatus.NOT_FOUND);
+		}
+
+		final JsonUpsertResponseItem result = JsonUpsertResponseItem.builder()
+				.externalId(jsonLocation.getExternalId())
+				.metasfreshId(jsonLocationId.get())
 				.build();
-		return new ResponseEntity<>(resonseItem, HttpStatus.CREATED);
+		return new ResponseEntity<JsonUpsertResponseItem>(
+				result,
+				HttpStatus.CREATED);
 	}
 
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated contact"),
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
-			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
 	})
 	@PostMapping("{bpartnerIdentifier}/contact")
 	@Override
@@ -243,13 +272,26 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonContact contact)
+			@RequestBody @NonNull final JsonContact jsonContact)
 	{
-		final JsonUpsertResponseItem resonseItem = JsonUpsertResponseItem.builder()
-				.externalId(contact.getExternalId())
-				.metasfreshId(MockDataUtil.nextMetasFreshId())
+
+		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final Optional<MetasfreshId> jsonContactId = persister.persist(bpartnerIdentifier, jsonContact);
+
+		if (!jsonContactId.isPresent())
+		{
+			return new ResponseEntity<JsonUpsertResponseItem>(
+					(JsonUpsertResponseItem)null,
+					HttpStatus.NOT_FOUND);
+		}
+
+		final JsonUpsertResponseItem result = JsonUpsertResponseItem.builder()
+				.externalId(jsonContact.getExternalId())
+				.metasfreshId(jsonContactId.get())
 				.build();
-		return new ResponseEntity<>(resonseItem, HttpStatus.CREATED);
+		return new ResponseEntity<JsonUpsertResponseItem>(
+				result,
+				HttpStatus.CREATED);
 	}
 
 }

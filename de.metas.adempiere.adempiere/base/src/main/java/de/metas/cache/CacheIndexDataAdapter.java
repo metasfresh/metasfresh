@@ -1,16 +1,14 @@
-package de.metas.bpartner;
+package de.metas.cache;
 
-import de.metas.location.LocationId;
+import java.util.Collection;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,15 +26,11 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder(toBuilder = true)
-public class BPartnerLocation
+public interface CacheIndexDataAdapter<RK, CK, V>
 {
-	@NonNull
-	LocationId locationId;
+	Collection<CK> extractCKs(V record);
 
-	BPartnerLocationId id;
+	RK extractRK(V record);
 
-	@NonNull
-	BPartnerId bpartnerId;
+	RK extractRK(TableRecordReference recordRef);
 }

@@ -38,11 +38,13 @@ import lombok.Value;
 public class JsonContactUpsertRequestItem
 {
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the business partner to upsert.", //
+			value = "External system's ID of the contact to upsert.", //
 			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonContact contact;
 
@@ -53,5 +55,10 @@ public class JsonContactUpsertRequestItem
 	{
 		this.externalId = externalId;
 		this.contact = contact;
+	}
+
+	public JsonContact getEffectiveContact()
+	{
+		return getContact().withExternalId(getExternalId());
 	}
 }

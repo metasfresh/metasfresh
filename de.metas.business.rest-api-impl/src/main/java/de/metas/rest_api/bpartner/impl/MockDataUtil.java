@@ -28,7 +28,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class MockDataUtil
 {
-	private static long metasfreshIdCounter = 1;
+	private static int metasfreshIdCounter = 1;
 
 	public MetasfreshId nextMetasFreshId()
 	{

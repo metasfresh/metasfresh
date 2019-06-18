@@ -50,7 +50,7 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 
 	public static final String MOCKED_NEXT = UUID.randomUUID().toString();
 
-	private static long metasfreshIdCounter = 1;
+	private static int metasfreshIdCounter = 1;
 
 	public MetasfreshId nextMetasFreshId()
 	{
@@ -67,7 +67,7 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 				.companyName("companyName")
 				.name("name")
 				.language("de_CH")
-				.parentId(MetasfreshId.of(1l))
+				.parentId(MetasfreshId.of(1))
 				.phone("phone")
 				.url("url");
 
@@ -184,9 +184,9 @@ public class MockedBPartnerEndpointService implements IBPartnerEndpointService
 	}
 
 	@Override
-	public JsonContact retrieveContact(String contactIdentifier)
+	public Optional<JsonContact> retrieveContact(String contactIdentifier)
 	{
-		return createMockContact("c1");
+		return Optional.of(createMockContact("c1"));
 	}
 
 	@Override

@@ -64,16 +64,29 @@ public class SyncAdvise
 
 	public enum IfExists
 	{
-		UPDATE(true),
+		/** Insert update data that is specified, but leave additional pre-existing data untouched */
+		UPDATE_MERGE(true, false),
 
-		DONT_UPDATE(false);
+		/** Insert update data that is specified, and unset or remove additional pre-existing data */
+		UPDATE_REMOVE(false, true),
+
+		DONT_UPDATE(false, false);
 
 		@Getter
-		private final boolean update;
+		private final boolean updateMerge;
 
-		private IfExists(boolean update)
+		@Getter
+		private final boolean updateRemove;
+
+		private IfExists(boolean updateMerge, boolean updateRemove)
 		{
-			this.update = update;
+			this.updateMerge = updateMerge;
+			this.updateRemove = updateRemove;
+		}
+
+		public boolean isUpdate()
+		{
+			return updateMerge || updateRemove;
 		}
 	}
 

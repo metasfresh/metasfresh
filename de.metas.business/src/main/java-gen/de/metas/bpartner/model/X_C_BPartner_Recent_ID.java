@@ -1,5 +1,5 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.rest_api.model;
+package de.metas.bpartner.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;

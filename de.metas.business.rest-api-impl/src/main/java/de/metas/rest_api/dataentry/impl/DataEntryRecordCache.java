@@ -6,26 +6,23 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CacheIndex;
+import de.metas.cache.CacheIndexDataAdapter;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordId;
 import de.metas.dataentry.data.DataEntryRecordQuery;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.model.I_DataEntry_Record;
-import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -58,17 +55,18 @@ final class DataEntryRecordCache
 {
 	private final DataEntryRecordRepository recordsRepo;
 
-	private final DataEntryRecordIdIndex dataEntryRecordIdIndex = new DataEntryRecordIdIndex();
+	private final CacheIndex<DataEntryRecordId, CacheKey, DataEntryRecord> dataEntryRecordIdIndex = new CacheIndex<>(new DataEntryRecordIdIndex());
+
 	private final CCache<CacheKey, DataEntryRecord> cache;
 
 	public DataEntryRecordCache(@NonNull final DataEntryRecordRepository recordsRepo, final int cacheCapacity)
 	{
 		this.recordsRepo = recordsRepo;
-		cache = CCache.<CacheKey, DataEntryRecord> builder()
+		this.cache = CCache.<CacheKey, DataEntryRecord> builder()
 				.tableName(I_DataEntry_Record.Table_Name)
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(cacheCapacity)
-				.invalidationKeysMapper(dataEntryRecordIdIndex::getCacheKeysByTableRecordReference)
+				.invalidationKeysMapper(dataEntryRecordIdIndex::computeCachingKeys)
 				.removalListener(dataEntryRecordIdIndex::remove)
 				.build();
 	}
@@ -105,7 +103,9 @@ final class DataEntryRecordCache
 			return ImmutableMap.of();
 		}
 
-		final Map<CacheKey, DataEntryRecord> recordsMap = Maps.uniqueIndex(records, record -> extractCacheKey(record));
+		final Map<CacheKey, DataEntryRecord> recordsMap = Maps.uniqueIndex(
+				records,
+				record -> CollectionUtils.singleElement(dataEntryRecordIdIndex.getAdapter().extractCKs(record)));
 
 		dataEntryRecordIdIndex.add(records);
 
@@ -131,11 +131,11 @@ final class DataEntryRecordCache
 		return subTabIds;
 	}
 
-	private static CacheKey extractCacheKey(final DataEntryRecord record)
-	{
-		final int mainRecordId = record.getMainRecord().getRecord_ID();
-		return CacheKey.of(mainRecordId, record.getDataEntrySubTabId());
-	}
+//	private static CacheKey extractCacheKey(final DataEntryRecord record)
+//	{
+//		final int mainRecordId = record.getMainRecord().getRecord_ID();
+//		return CacheKey.of(mainRecordId, record.getDataEntrySubTabId());
+//	}
 
 	//
 	//
@@ -160,72 +160,97 @@ final class DataEntryRecordCache
 
 	@ToString
 	@VisibleForTesting
-	static final class DataEntryRecordIdIndex
+	static final class DataEntryRecordIdIndex implements CacheIndexDataAdapter<DataEntryRecordId, CacheKey, DataEntryRecord>
 	{
-		private static final Logger logger = LogManager.getLogger(DataEntryRecordIdIndex.class);
-
-		private final HashMultimap<DataEntryRecordId, CacheKey> map = HashMultimap.create();
-
-		private synchronized Collection<CacheKey> getCacheKeys(final DataEntryRecordId entryRecordId)
+		@Override
+		public List<CacheKey> extractCKs(DataEntryRecord record)
 		{
-			final Set<CacheKey> cacheKeys = map.get(entryRecordId);
-			logger.trace("Returning {} for {}", cacheKeys, entryRecordId);
-			return cacheKeys;
+			final CacheKey singleCacheKey = CacheKey.of(record.getMainRecord().getRecord_ID(), record.getDataEntrySubTabId());
+			return ImmutableList.of(singleCacheKey);
 		}
 
-		private synchronized void add(final Multimap<? extends DataEntryRecordId, ? extends CacheKey> multimap)
+		@Override
+		public DataEntryRecordId extractRK(DataEntryRecord record)
 		{
-			logger.trace("Adding to index: {}", multimap);
-			map.putAll(multimap);
+			return record.getId().get();
 		}
 
-		private synchronized void remove(final DataEntryRecordId entryRecordId, final CacheKey key)
+		@Override
+		public DataEntryRecordId extractRK(TableRecordReference recordRef)
 		{
-			logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
-			map.remove(entryRecordId, key);
+			return DataEntryRecordId.ofRepoId(recordRef.getRecord_ID());
 		}
 
-		private synchronized int size()
-		{
-			return map.size();
-		}
-
-		//
-		// ------------
-		//
-
-		public Collection<CacheKey> getCacheKeysByTableRecordReference(final TableRecordReference recordRef)
-		{
-			if (!I_DataEntry_Record.Table_Name.equals(recordRef.getTableName()))
-			{
-				logger.warn("Invalid {}. Returning no cache keys", recordRef);
-				return ImmutableSet.of();
-			}
-			final DataEntryRecordId entryRecordId = DataEntryRecordId.ofRepoId(recordRef.getRecord_ID());
-
-			return getCacheKeys(entryRecordId);
-		}
-
-		public void add(final Collection<DataEntryRecord> records)
-		{
-			if (records.isEmpty())
-			{
-				return;
-			}
-
-			final Multimap<? extends DataEntryRecordId, ? extends CacheKey> //
-			multimap = records.stream()
-					.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-							record -> record.getId().get(),
-							record -> extractCacheKey(record)));
-
-			add(multimap);
-		}
-
-		public void remove(final CacheKey key, final DataEntryRecord record)
-		{
-			final DataEntryRecordId entryRecordId = record.getId().get();
-			remove(entryRecordId, key);
-		}
 	}
+
+//	@ToString
+//	@VisibleForTesting
+//	static final class DataEntryRecordIdIndexOld
+//	{
+//		private static final Logger logger = LogManager.getLogger(DataEntryRecordIdIndex.class);
+//
+//		private final HashMultimap<DataEntryRecordId, CacheKey> map = HashMultimap.create();
+//
+//		private synchronized Collection<CacheKey> getCacheKeys(final DataEntryRecordId entryRecordId)
+//		{
+//			final Set<CacheKey> cacheKeys = map.get(entryRecordId);
+//			logger.trace("Returning {} for {}", cacheKeys, entryRecordId);
+//			return cacheKeys;
+//		}
+//
+//		private synchronized void add(final Multimap<? extends DataEntryRecordId, ? extends CacheKey> multimap)
+//		{
+//			logger.trace("Adding to index: {}", multimap);
+//			map.putAll(multimap);
+//		}
+//
+//		private synchronized void remove(final DataEntryRecordId entryRecordId, final CacheKey key)
+//		{
+//			logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
+//			map.remove(entryRecordId, key);
+//		}
+//
+//		private synchronized int size()
+//		{
+//			return map.size();
+//		}
+//
+//		//
+//		// ------------
+//		//
+//
+//		public Collection<CacheKey> getCacheKeysByTableRecordReference(final TableRecordReference recordRef)
+//		{
+//			if (!I_DataEntry_Record.Table_Name.equals(recordRef.getTableName()))
+//			{
+//				logger.warn("Invalid {}. Returning no cache keys", recordRef);
+//				return ImmutableSet.of();
+//			}
+//			final DataEntryRecordId entryRecordId = DataEntryRecordId.ofRepoId(recordRef.getRecord_ID());
+//
+//			return getCacheKeys(entryRecordId);
+//		}
+//
+//		public void add(final Collection<DataEntryRecord> records)
+//		{
+//			if (records.isEmpty())
+//			{
+//				return;
+//			}
+//
+//			final Multimap<? extends DataEntryRecordId, ? extends CacheKey> //
+//			multimap = records.stream()
+//					.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+//							record -> record.getId().get(),
+//							record -> extractCacheKey(record)));
+//
+//			add(multimap);
+//		}
+//
+//		public void remove(final CacheKey key, final DataEntryRecord record)
+//		{
+//			final DataEntryRecordId entryRecordId = record.getId().get();
+//			remove(entryRecordId, key);
+//		}
+//	}
 }

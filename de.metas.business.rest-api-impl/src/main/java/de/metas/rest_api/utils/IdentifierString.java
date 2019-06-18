@@ -2,6 +2,7 @@ package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.assumeNotEmpty;
 
+import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.rest.ExternalId;
@@ -95,6 +96,13 @@ public class IdentifierString
 		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.EXTERNAL_ID, this);
 
 		return ExternalId.of(value);
+	}
+
+	public JsonExternalId asJsonExternalId()
+	{
+		Check.assume(Type.EXTERNAL_ID.equals(type), "The type of this instace needs to be {}; this={}", Type.EXTERNAL_ID, this);
+
+		return JsonExternalId.of(value);
 	}
 
 	public MetasfreshId asMetasfreshId()

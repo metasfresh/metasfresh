@@ -8,7 +8,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.MoreObjects;
 
-import de.metas.bpartner.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;

@@ -1,6 +1,7 @@
 package de.metas.dao.selection.pagination;
 
 import java.time.Instant;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -49,4 +50,18 @@ public class QueryResultPage<T>
 
 	@NonNull
 	ImmutableList<T> items;
+
+	public <R> QueryResultPage<R> mapTo(@NonNull final Function<T, R> mapper)
+	{
+		final ImmutableList<R> mappedItems = items.stream()
+				.map(mapper)
+				.collect(ImmutableList.toImmutableList());
+
+		return new QueryResultPage<R>(currentPageDescriptor, nextPageDescriptor, totalSize, resultTimestamp, mappedItems);
+	}
+
+	public <R> QueryResultPage<R> withItems(@NonNull final ImmutableList<R> replacementItems)
+	{
+		return new QueryResultPage<R>(currentPageDescriptor, nextPageDescriptor, totalSize, resultTimestamp, replacementItems);
+	}
 }

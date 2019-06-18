@@ -47,7 +47,7 @@ public class JsonBPartnerUpsertResponseItemTest
 	{
 		final JsonUpsertResponseItem item = JsonUpsertResponseItem.builder()
 				.externalId(JsonExternalId.of("12345"))
-				.metasfreshId(MetasfreshId.of(23l))
+				.metasfreshId(MetasfreshId.of(23))
 				.build();
 		final JSONObjectMapper<JsonUpsertResponseItem> m = JSONObjectMapper.forClass(JsonUpsertResponseItem.class);
 

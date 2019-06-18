@@ -51,7 +51,7 @@ public class JsonBPartnerUpsertRequestItemTest
 				.bpartnerComposite(JsonBPartnerComposite.builder()
 						.bpartner(JsonBPartner.builder()
 								.code("code")
-								.metasfreshId(MetasfreshId.of(123L))
+								.metasfreshId(MetasfreshId.of(123))
 								.build())
 						.build())
 				.build();

@@ -45,5 +45,4 @@ public interface IBPartnerEndpointService
 	Optional<JsonContact> retrieveContact(String contactIdentifier);
 
 	Optional<JsonContactList> retrieveContactsSince(Long epochTimestampMillis, String next);
-
 }

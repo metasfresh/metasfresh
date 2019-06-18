@@ -1,5 +1,8 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,8 +12,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -45,8 +50,11 @@ public class JsonContact
 	JsonExternalId externalId;
 
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(dataType = "java.lang.Long")
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshBPartnerId;
+
+	@JsonInclude(Include.NON_NULL)
+	String code;
 
 	@JsonInclude(Include.NON_NULL)
 	String name;
@@ -63,25 +71,40 @@ public class JsonContact
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@Builder
+	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@JsonInclude(Include.NON_NULL)
+	SyncAdvise syncAdvise;
+
+	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonContact(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
+			@JsonProperty("code") @Nullable final String code,
 			@JsonProperty("name") final String name,
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone)
+			@JsonProperty("phone") final String phone,
+			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
+		this.code = code;
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
+
+	public JsonContact withExternalId(@NonNull final JsonExternalId externalId)
+	{
+		return toBuilder().externalId(externalId).build();
+	}
+
 }

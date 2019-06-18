@@ -34,7 +34,6 @@ import de.metas.dataentry.model.I_DataEntry_Section;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.dataentry.model.X_DataEntry_Field;
-import de.metas.rest_api.dataentry.impl.DataEntryRestController;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntryResponse;
 import de.metas.user.UserId;
 import lombok.NonNull;

@@ -5,12 +5,10 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.rest_api.bpartner.JsonBPartnerInfo;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import lombok.Builder;
 import lombok.Value;
 

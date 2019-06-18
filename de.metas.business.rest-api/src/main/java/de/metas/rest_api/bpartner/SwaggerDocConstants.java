@@ -43,4 +43,6 @@ public class SwaggerDocConstants
 
 	public static final String SINCE_DOC = "Optional epoch timestamp in ms. The enpoint returns all resources that were created or modified *after* the given time.";
 
+	public static final String BPARTER_SYNC_ADVISE_DOC = "Defaults to READ_ONLY, if not specified";
+
 }

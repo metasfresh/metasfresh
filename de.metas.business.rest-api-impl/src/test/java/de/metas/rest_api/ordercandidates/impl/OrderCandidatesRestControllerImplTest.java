@@ -32,10 +32,6 @@ import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.impl.JsonConverters;
-import de.metas.rest_api.ordercandidates.impl.JsonOLCandUtil;
-import de.metas.rest_api.ordercandidates.impl.MasterdataProviderFactory;
-import de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 

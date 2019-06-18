@@ -1,5 +1,8 @@
 package de.metas.util.rest;
 
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isEmpty;
+
 import javax.annotation.Nullable;
 
 import lombok.NonNull;
@@ -37,12 +40,26 @@ public class ExternalId
 		return new ExternalId(value);
 	}
 
+	public static ExternalId ofOrNull(@Nullable final String value)
+	{
+		if (isEmpty(value, true))
+		{
+			return null;
+		}
+		return new ExternalId(value);
+	}
+
 	public static String toValue(@Nullable final ExternalId externalId)
 	{
-		if(externalId==null)
+		if (externalId == null)
 		{
 			return null;
 		}
 		return externalId.getValue();
+	}
+
+	private ExternalId(@NonNull final String value)
+	{
+		this.value = assumeNotEmpty(value, "Given parameter 'value may not be empty");
 	}
 }

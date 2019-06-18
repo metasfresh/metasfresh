@@ -1,5 +1,8 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -9,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -39,7 +43,7 @@ import lombok.Value;
 public class JsonBPartnerLocation
 {
 	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(dataType = "java.lang.Long")
+	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshId;
 
 	@ApiModelProperty(allowEmptyValue = true, //
@@ -48,9 +52,9 @@ public class JsonBPartnerLocation
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
-	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(dataType = "java.lang.Long")
-	private MetasfreshId metasfreshBPartnerId;
+//	@JsonInclude(Include.NON_NULL)
+//	@ApiModelProperty(dataType = "java.lang.Integer")
+//	private MetasfreshId metasfreshBPartnerId;
 
 	private String address1;
 
@@ -74,12 +78,16 @@ public class JsonBPartnerLocation
 			value = "This translates to `C_BPartner_Location.GLN`.")
 	private String gln;
 
+	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@JsonInclude(Include.NON_NULL)
+	SyncAdvise syncAdvise;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerLocation(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
+			//@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
 			@JsonProperty("postal") final String postal,
@@ -88,12 +96,13 @@ public class JsonBPartnerLocation
 			@JsonProperty("region") final String region,
 			@JsonProperty("city") final String city,
 			@JsonProperty("countryCode") @Nullable final String countryCode,
-			@JsonProperty("gln") @Nullable final String gln)
+			@JsonProperty("gln") @Nullable final String gln,
+			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
-		this.metasfreshBPartnerId = metasfreshBPartnerId;
+		//this.metasfreshBPartnerId = metasfreshBPartnerId;
 
 		this.address1 = address1;
 		this.address2 = address2;
@@ -103,5 +112,7 @@ public class JsonBPartnerLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

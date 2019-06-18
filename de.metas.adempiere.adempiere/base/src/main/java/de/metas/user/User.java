@@ -1,15 +1,16 @@
 package de.metas.user;
 
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -80,6 +81,9 @@ public class User
 	@NonNull
 	Language language;
 
+	@Nullable
+	ExternalId externalId;
+
 	@Builder(toBuilder = true)
 	private User(
 			@Nullable final UserId id,
@@ -92,7 +96,8 @@ public class User
 			@Nullable final String phone,
 			@Nullable final Language userLanguage,
 			@Nullable final Language bPartnerLanguage,
-			@NonNull final Language language)
+			@NonNull final Language language,
+			@NonNull final ExternalId externalId)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
@@ -105,6 +110,7 @@ public class User
 		this.userLanguage = userLanguage;
 		this.bPartnerLanguage = bPartnerLanguage;
 		this.language = language;
+		this.externalId = externalId;
 
 		Check.assume(
 				userLanguage == null || userLanguage.equals(language),

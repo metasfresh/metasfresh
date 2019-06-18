@@ -24,9 +24,9 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerInfo;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -220,7 +220,7 @@ public class BPartnerMasterDataProviderTest
 		bpLocationRecord.setGLN("jsonBPartnerLocation.GLN");
 		saveRecord(bpLocationRecord);
 
-		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE).build();
+		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build();
 		final JsonBPartnerInfo jsonBPartnerInfoToUse = jsonBPartnerInfo.toBuilder().syncAdvise(syncAdvise).build();
 
 		// invoke the method under test

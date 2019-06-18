@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner.impl;
 
 import java.util.Collection;
 import java.util.List;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -18,8 +19,8 @@ import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.cache.CacheInvalidationKeysMapper;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CachingKeysMapper;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
@@ -57,10 +58,10 @@ import lombok.NonNull;
 @Repository
 public class JsonBPartnerCompositeRepository
 {
-	private final CacheInvalidationKeysMapper<BPartnerId> invalidationKeysMapper = new CacheInvalidationKeysMapper<BPartnerId>()
+	private final CachingKeysMapper<BPartnerId> invalidationKeysMapper = new CachingKeysMapper<BPartnerId>()
 	{
 		@Override
-		public Collection<BPartnerId> computeKeysToInvalidate(@NonNull final TableRecordReference recordRef)
+		public Collection<BPartnerId> computeCachingKeys(@NonNull final TableRecordReference recordRef)
 		{
 			if (I_C_BPartner.Table_Name.equals(recordRef.getTableName()))
 			{
@@ -185,7 +186,6 @@ public class JsonBPartnerCompositeRepository
 				.countryCode(locationRecord.getC_Country().getCountryCode())
 				.externalId(JsonExternalId.ofOrNull(bPartnerLocationRecord.getExternalId()))
 				.gln(bPartnerLocationRecord.getGLN())
-				.metasfreshBPartnerId(MetasfreshId.of(bPartnerLocationRecord.getC_BPartner_ID()))
 				.metasfreshId(MetasfreshId.of(bPartnerLocationRecord.getC_BPartner_Location_ID()))
 				.poBox(locationRecord.getPOBox())
 				.postal(locationRecord.getPostal())

@@ -1,11 +1,10 @@
 package de.metas.dataentry.data;
 
+import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static de.metas.dataentry.data.DataEntryRecordTestConstants.*;
 
 import java.math.BigDecimal;
-
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;

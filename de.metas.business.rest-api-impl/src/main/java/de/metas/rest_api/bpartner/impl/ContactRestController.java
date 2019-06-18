@@ -20,11 +20,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonContactList;
 import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
+import de.metas.rest_api.bpartner.JsonContactUpsertRequestItem;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
+import de.metas.rest_api.bpartner.JsonUpsertResponse.JsonUpsertResponseBuilder;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
@@ -61,10 +67,14 @@ public class ContactRestController implements ContactRestEndpoint
 {
 
 	private final IBPartnerEndpointService bPartnerEndpointservice;
+	private final JsonServiceFactory jsonPersisterServiceFactory;
 
-	public ContactRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice)
+	public ContactRestController(
+			@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
+			@NonNull final JsonServiceFactory jsonPersisterServiceFactory)
 	{
 		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
+		this.jsonPersisterServiceFactory = jsonPersisterServiceFactory;
 	}
 
 	@ApiResponses(value = {
@@ -80,8 +90,14 @@ public class ContactRestController implements ContactRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final JsonContact mockContact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
-		return ResponseEntity.ok(mockContact);
+		final Optional<JsonContact> contact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
+		if (contact.isPresent())
+		{
+			return ResponseEntity.ok(contact.get());
+		}
+		return new ResponseEntity<JsonContact>(
+				(JsonContact)null,
+				HttpStatus.NOT_FOUND);
 	}
 
 	@ApiResponses(value = {
@@ -120,13 +136,25 @@ public class ContactRestController implements ContactRestEndpoint
 	@PostMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
-			// the requestBody annotation needs to be present it here; otherwise, at least swagger doesn't get it
 			@RequestBody @NonNull final JsonContactUpsertRequest contacts)
 	{
-		final JsonUpsertResponse response = JsonUpsertResponse.builder()
-				.responseItem(JsonUpsertResponseItem.builder().build())
-				.build();
+		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
-		return new ResponseEntity<>(response, HttpStatus.CREATED);
+		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+
+		for (final JsonContactUpsertRequestItem requestItem : contacts.getRequestItems())
+		{
+			final BPartnerContact bpartnerContact = persister.persist(requestItem.getEffectiveContact());
+
+			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
+
+			final JsonUpsertResponseItem responseItem = JsonUpsertResponseItem
+					.builder()
+					.externalId(requestItem.getExternalId())
+					.metasfreshId(metasfreshId)
+					.build();
+			response.responseItem(responseItem);
+		}
+		return new ResponseEntity<>(response.build(), HttpStatus.CREATED);
 	}
 }

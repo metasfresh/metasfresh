@@ -1,4 +1,4 @@
-package de.metas.rest_api.model;
+package de.metas.bpartner.model;
 
 
 /** Generated Interface for C_BPartner_Recent_ID

@@ -1,9 +1,6 @@
 package de.metas.rest_api.bpartner;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 /*
  * #%L
@@ -27,7 +24,6 @@ import de.metas.util.rest.MetasfreshRestAPIConstants;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner")
 public interface BPartnerRestEndpoint
 {
 

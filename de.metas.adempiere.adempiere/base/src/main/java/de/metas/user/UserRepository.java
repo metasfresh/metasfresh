@@ -4,10 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -18,6 +14,7 @@ import de.metas.i18n.Language;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.rest.ExternalId;
 import lombok.NonNull;
 
 /*
@@ -45,35 +42,6 @@ import lombok.NonNull;
 @Repository
 public class UserRepository
 {
-	public Optional<User> getBy(@NonNull final UserQuery userQuery)
-	{
-		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (userQuery.getUserId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_AD_User_ID, userQuery.getUserId());
-		}
-		else if (userQuery.getExternalId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_ExternalId, userQuery.getExternalId().getValue());
-		}
-		else if (!Check.isEmpty(userQuery.getValue(), true))
-		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_Value, userQuery.getValue().trim());
-		}
-
-		final I_AD_User userRecord = queryBuilder
-				.create()
-				.firstOnlyOrNull(I_AD_User.class);
-		if (userRecord == null)
-		{
-			return Optional.empty();
-		}
-		return Optional.of(ofRecord(userRecord));
-	}
-
 	public User getByIdInTrx(@NonNull final UserId userId)
 	{
 		final I_AD_User userRecord = load(userId.getRepoId(), I_AD_User.class);
@@ -95,6 +63,8 @@ public class UserRepository
 		return User.builder()
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID()))
 				.id(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.externalId(ExternalId.ofOrNull(userRecord.getExternalId()))
+
 				.name(userRecord.getName())
 				.firstName(userRecord.getFirstname())
 				.lastName(userRecord.getLastname())

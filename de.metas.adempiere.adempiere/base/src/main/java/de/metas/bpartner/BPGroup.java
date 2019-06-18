@@ -1,13 +1,11 @@
-package de.metas.user;
-
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
+package de.metas.bpartner;
 
 import javax.annotation.Nullable;
 
-import de.metas.util.rest.ExternalId;
-import lombok.Builder;
-import lombok.Value;
+import org.adempiere.service.OrgId;
+
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -31,28 +29,15 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class UserQuery
+@Data(staticConstructor = "of")
+public class BPGroup
 {
-	/** If set, it overrides the other query parameters */
-	UserId userId;
+	@NonNull
+	private final OrgId orgId;
 
-	/** If set, it overrides the {@code value} parameter */
-	ExternalId externalId;
+	@Nullable
+	private final BPGroupId id;
 
-	String value;
-
-	private UserQuery(
-			@Nullable final UserId userId,
-			@Nullable final ExternalId externalId,
-			@Nullable final String value)
-	{
-		this.userId = userId;
-		this.externalId = externalId;
-		this.value = value;
-
-		assume(userId != null || externalId != null || !isEmpty(value, true),
-				"At least one of the parameters 'userId, externalId and value needs to be non-null/non-empty");
-	}
+	@NonNull
+	private String name;
 }

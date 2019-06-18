@@ -31,9 +31,11 @@ import de.metas.cache.model.CacheInvalidateRequest;
 /**
  * Provide an implementation to the {@link CCache} to enable the cache to be "selective".
  * With an implementation provided, {@link CacheInvalidateRequest}s that are only about particular records don't have to cause the full cache to be reset.
+ *
+ * @param CK the type of the caching keys
  */
 @FunctionalInterface
-public interface CacheInvalidationKeysMapper<K>
+public interface CachingKeysMapper<CK>
 {
 	/**
 	 * Provide a possibly empty collection of cache keys for the given table record reference.
@@ -43,7 +45,7 @@ public interface CacheInvalidationKeysMapper<K>
 	 * <li>the given {@code recordRef} is never {@code null} and
 	 * <li>every key this method returns will be invalidated in the cache.
 	 */
-	Collection<K> computeKeysToInvalidate(TableRecordReference recordRef);
+	Collection<CK> computeCachingKeys(TableRecordReference recordRef);
 
 	/** If this method returns <code>true</code>, then the whole cache needs resetting. */
 	default boolean isResetAll(TableRecordReference recordRef)

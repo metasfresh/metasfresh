@@ -29,8 +29,6 @@ import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.dataentry.impl.DataEntryRecordCache;
-import de.metas.rest_api.dataentry.impl.DataEntryRecordsMap;
 import de.metas.rest_api.dataentry.impl.DataEntryRecordCache.DataEntryRecordIdIndex;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;

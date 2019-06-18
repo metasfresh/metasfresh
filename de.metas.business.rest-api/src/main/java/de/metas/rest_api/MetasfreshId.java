@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -34,9 +35,9 @@ import lombok.Value;
 @Value
 public class MetasfreshId
 {
-	long value;
+	int value;
 
-	public static MetasfreshId ofOrNull(long id)
+	public static MetasfreshId ofOrNull(int id)
 	{
 		if (id <= 0)
 		{
@@ -45,19 +46,33 @@ public class MetasfreshId
 		return of(id);
 	}
 
-	public static MetasfreshId of(long id)
+	public static MetasfreshId ofOrNull(@Nullable final RepoIdAware id)
+	{
+		if (id ==null)
+		{
+			return null;
+		}
+		return new MetasfreshId(id.getRepoId());
+	}
+
+	public static MetasfreshId of(int id)
 	{
 		return new MetasfreshId(id);
 	}
 
+	public static MetasfreshId of(@NonNull final RepoIdAware id)
+	{
+		return new MetasfreshId(id.getRepoId());
+	}
+
 	@JsonCreator
-	private MetasfreshId(long value)
+	private MetasfreshId(int value)
 	{
 		this.value = Check.assumeGreaterThanZero(value, "value");
 	}
 
 	@JsonValue
-	public long getValue()
+	public int getValue()
 	{
 		return value;
 	}

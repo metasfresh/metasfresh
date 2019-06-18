@@ -29,8 +29,8 @@ import com.google.common.collect.HashBiMap;
 import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerInfo;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
@@ -176,7 +176,7 @@ public class BPartnerMasterDataProvider
 			final IfExists ifExists = jsonBPartnerInfo.getSyncAdvise().getIfExists();
 			switch (ifExists)
 			{
-				case UPDATE:
+				case UPDATE_MERGE:
 					final BPartnerMasterDataContext childContext = context
 							.setIfNotNull(bPartnerInfo.getBpartnerId())
 							.setIfNotNull(bPartnerInfo.getBpartnerLocationId())

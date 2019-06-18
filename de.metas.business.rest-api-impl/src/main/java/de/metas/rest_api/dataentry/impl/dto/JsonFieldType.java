@@ -1,5 +1,7 @@
 package de.metas.rest_api.dataentry.impl.dto;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * metasfresh-pharma
@@ -24,10 +26,9 @@ package de.metas.rest_api.dataentry.impl.dto;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+
 import de.metas.dataentry.FieldType;
 import lombok.Getter;
-
-import java.util.Arrays;
 
 public enum JsonFieldType
 {

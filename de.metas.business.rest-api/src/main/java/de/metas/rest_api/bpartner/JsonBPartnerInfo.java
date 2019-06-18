@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,6 +51,7 @@ public final class JsonBPartnerInfo
 	@JsonInclude(Include.NON_NULL)
 	JsonContact contact;
 
+	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)
@@ -71,5 +74,4 @@ public final class JsonBPartnerInfo
 				lokupValuesAreOk,
 				"At least one of bpartner.code, bpartner.externalId or location.gln needs to be non-empty; this={}", this);
 	}
-
 }
