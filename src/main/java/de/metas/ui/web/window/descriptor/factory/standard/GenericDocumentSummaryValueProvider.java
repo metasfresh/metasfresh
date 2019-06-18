@@ -102,7 +102,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed extracting summary field names for record's lookup for {}", entityDescriptor, ex);
+			logger.warn("Failed extracting summary field names for record's lookup for {}. Ignored.", entityDescriptor, ex);
 			return ImmutableList.of();
 		}
 	}
@@ -202,7 +202,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 		// return " / " + summary; // don't prefix with "/". That shall be done by frontend if and when needed
 	}
 
-	private static interface FieldValueExtractor
+	private interface FieldValueExtractor
 	{
 		String getFieldName();
 
