@@ -23,6 +23,7 @@ import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordId;
+import de.metas.dataentry.data.DataEntryRecordQuery;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayout;
@@ -158,8 +159,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 			importRecord.setAD_Window_ID(adWindowId.getRepoId());
 		}
 
-		final DataEntryLayoutRepository dataEntryLayoutRepository = Adempiere.getBean(DataEntryLayoutRepository.class);
-		final DataEntryLayout layout = dataEntryLayoutRepository.getByWindowId(adWindowId);
+		final DataEntryLayout layout = dataEntryLayoutRepo.getByWindowId(adWindowId);
 
 		//
 		// AD_Table_ID, Record_ID
@@ -274,12 +274,18 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		final DataEntryLayout layout = dataEntryLayoutRepo.getByWindowId(adWindowId);
 		final DataEntrySubTab subTab = layout.getSubTabById(subTabId);
 
-		return ImportState.builder()
-				.subTab(subTab)
-				.dataEntryRecord(DataEntryRecord.builder()
+		final DataEntryRecord dataEntryRecord = dataEntryRecordRepo.getBy(DataEntryRecordQuery.builder()
+				.dataEntrySubTabId(subTab.getId())
+				.recordId(recordRef.getRecord_ID())
+				.build())
+				.orElseGet(() -> DataEntryRecord.builder()
 						.mainRecord(recordRef)
 						.dataEntrySubTabId(subTabId)
-						.build())
+						.build());
+
+		return ImportState.builder()
+				.subTab(subTab)
+				.dataEntryRecord(dataEntryRecord)
 				.updatedBy(Env.getLoggedUserId())
 				.build();
 	}
