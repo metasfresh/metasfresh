@@ -11,11 +11,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -23,22 +19,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -53,11 +41,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -65,11 +49,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -111,11 +91,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -123,22 +99,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -153,11 +121,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -165,11 +129,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -211,11 +171,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -223,22 +179,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -253,11 +201,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -265,11 +209,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -311,11 +251,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -323,22 +259,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -353,11 +281,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -365,11 +289,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -411,11 +331,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -423,22 +339,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -453,11 +361,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -465,11 +369,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -511,11 +411,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -523,22 +419,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -553,11 +441,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -565,11 +449,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -611,11 +491,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -623,22 +499,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -653,11 +521,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -665,11 +529,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -711,11 +571,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -723,22 +579,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -753,11 +601,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -765,11 +609,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -811,11 +651,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -823,22 +659,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -853,11 +681,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -865,11 +689,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -911,11 +731,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -923,22 +739,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -953,11 +761,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -965,11 +769,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1011,11 +811,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1023,22 +819,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1053,11 +841,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1065,11 +849,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1111,11 +891,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1123,22 +899,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1153,11 +921,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1165,11 +929,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1211,11 +971,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1223,22 +979,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1253,11 +1001,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1265,11 +1009,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1311,11 +1051,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1323,22 +1059,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1353,11 +1081,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1365,11 +1089,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1411,11 +1131,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1423,22 +1139,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1453,11 +1161,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1465,11 +1169,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1511,11 +1211,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1523,22 +1219,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1553,11 +1241,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1565,11 +1249,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1611,11 +1291,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1623,22 +1299,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1653,11 +1321,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1665,11 +1329,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1711,11 +1371,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1723,22 +1379,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1753,11 +1401,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1765,11 +1409,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1811,11 +1451,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1823,22 +1459,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1853,11 +1481,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1865,11 +1489,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1911,11 +1531,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -1923,22 +1539,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -1953,11 +1561,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -1965,11 +1569,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2011,11 +1611,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2023,22 +1619,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2053,11 +1641,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2065,11 +1649,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2116,11 +1696,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2128,22 +1704,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2158,11 +1726,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2170,11 +1734,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2216,11 +1776,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2228,22 +1784,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2258,11 +1806,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2270,11 +1814,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2316,11 +1856,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2328,22 +1864,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2358,11 +1886,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2370,11 +1894,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2416,11 +1936,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2428,22 +1944,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2458,11 +1966,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2470,11 +1974,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2516,11 +2016,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2528,22 +2024,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2558,11 +2046,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2570,11 +2054,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2616,11 +2096,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2628,22 +2104,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2658,11 +2126,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2670,11 +2134,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2716,11 +2176,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2728,22 +2184,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2758,11 +2206,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2770,11 +2214,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2816,11 +2256,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2828,22 +2264,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2858,11 +2286,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2870,11 +2294,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2916,11 +2336,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -2928,22 +2344,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -2958,11 +2366,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -2970,11 +2374,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3016,11 +2416,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3028,22 +2424,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3058,11 +2446,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3070,11 +2454,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3116,11 +2496,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3128,22 +2504,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3158,11 +2526,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3170,11 +2534,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3216,11 +2576,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3228,22 +2584,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3258,11 +2606,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3270,11 +2614,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3316,11 +2656,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3328,22 +2664,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3358,11 +2686,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3370,11 +2694,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3416,11 +2736,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3428,22 +2744,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3458,11 +2766,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3470,11 +2774,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3516,11 +2816,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3528,22 +2824,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3558,11 +2846,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3570,11 +2854,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3616,11 +2896,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3628,22 +2904,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3658,11 +2926,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3670,11 +2934,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3716,11 +2976,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3728,22 +2984,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3758,11 +3006,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3770,11 +3014,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3816,11 +3056,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3828,22 +3064,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3858,11 +3086,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3870,11 +3094,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3916,11 +3136,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -3928,22 +3144,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -3958,11 +3166,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -3970,11 +3174,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -4016,11 +3216,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4028,22 +3224,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -4058,11 +3246,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -4070,11 +3254,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -4116,11 +3296,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "bpartner" : {
           "externalId" : "EAN-2011234567890",
           "name" : "Biller AG",
-          "companyName" : "Biller AG",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "companyName" : "Biller AG"
         },
         "location" : {
           "externalId" : "EAN-2011234567890_singleAddress",
@@ -4128,22 +3304,14 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "postal" : null,
           "city" : "Frenkendorf",
           "countryCode" : "CH",
-          "gln" : "2011234567890",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "gln" : "2011234567890"
         },
         "contact" : {
           "metasfreshId" : null,
           "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
           "lastName" : "Biller AG",
-          "email" : "info@biller.ch",
-          "syncAdvise" : {
-            "ifNotExists" : "FAIL",
-            "ifExists" : "DONT_UPDATE"
-          }
+          "email" : "info@biller.ch"
         },
         "syncAdvise" : {
           "ifNotExists" : "FAIL",
@@ -4158,11 +3326,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     "bpartner" : {
       "bpartner" : {
         "externalId" : "EAN-7634567890000",
-        "name" : "Krankenkasse AG",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "name" : "Krankenkasse AG"
       },
       "location" : {
         "externalId" : "EAN-7634567890000_singleAddress",
@@ -4170,11 +3334,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
         "postal" : null,
         "city" : "Basel",
         "countryCode" : "CH",
-        "gln" : "7634567890000",
-        "syncAdvise" : {
-          "ifNotExists" : "FAIL",
-          "ifExists" : "DONT_UPDATE"
-        }
+        "gln" : "7634567890000"
       },
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
