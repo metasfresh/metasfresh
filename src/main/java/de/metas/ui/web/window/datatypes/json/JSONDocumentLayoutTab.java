@@ -166,7 +166,9 @@ public final class JSONDocumentLayoutTab
 		internalName = includedTabLayout.getInternalName();
 
 		final String adLanguage = jsonOpts.getAD_Language();
-		if (jsonOpts.isDebugShowColumnNamesForCaption() && tabId != null)
+		if (jsonOpts.isDebugShowColumnNamesForCaption()
+				&& tabId != null
+				&& gridLayout != null)
 		{
 			caption = new StringBuilder()
 					.append("[")
