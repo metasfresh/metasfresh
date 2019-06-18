@@ -205,15 +205,15 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@PutMapping
 	@Override
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(
-			@RequestBody @NonNull final JsonBPartnerUpsertRequest bpartners)
+			@RequestBody @NonNull final JsonBPartnerUpsertRequest bpartnerUpsertRequest)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		final SyncAdvise defaultSyncAdvise = bpartners.getSyncAdvise();
+		final SyncAdvise defaultSyncAdvise = bpartnerUpsertRequest.getSyncAdvise();
 
 		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
-		for (final JsonBPartnerUpsertRequestItem requestItem : bpartners.getRequestItems())
+		for (final JsonBPartnerUpsertRequestItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
 			final BPartnerComposite syncToMetasfresh = persister.persist(
 					requestItem.getEffectiveBPartnerComposite(),

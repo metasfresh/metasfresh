@@ -106,7 +106,7 @@ class BpartnerRestControllerTest
 	}
 
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -262,16 +262,16 @@ class BpartnerRestControllerTest
 						.build())
 				.build();
 
-		final JsonBPartnerUpsertRequest bpartners = JsonBPartnerUpsertRequest.builder()
+		final JsonBPartnerUpsertRequest bpartnerUpsertRequest = JsonBPartnerUpsertRequest.builder()
 				.syncAdvise(SyncAdvise.builder()
 						.ifExists(IfExists.UPDATE_MERGE)
 						.ifNotExists(IfNotExists.CREATE)
 						.build())
 				.requestItem(requestItem)
 				.build();
-
+		//JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
-		final ResponseEntity<JsonUpsertResponse> result = bpartnerRestController.createOrUpdateBPartner(bpartners);
+		final ResponseEntity<JsonUpsertResponse> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		final MetasfreshId metasfreshId = assertUpsertResultOK(result, externalId);
 		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
