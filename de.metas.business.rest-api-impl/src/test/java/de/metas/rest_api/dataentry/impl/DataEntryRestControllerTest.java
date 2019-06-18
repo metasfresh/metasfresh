@@ -7,8 +7,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Tab;
@@ -90,11 +92,16 @@ class DataEntryRestControllerTest
 		final I_C_BPartner bPartner = createBPartner("G0002");
 
 		final int inexistentWindowId = 55555;
-		final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
-		assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
-		assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId)).doesNotContain(String.valueOf(bPartner.getC_BPartner_ID()));
-		assertThat(shouldBeEmpty.getResult()).isNull();
-		expect(shouldBeEmpty).toMatchSnapshot();
+		assertThatThrownBy(() -> {
+			dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
+		})
+				.isInstanceOf(AdempiereException.class)
+				.hasMessage("@NotFound@ @AD_Tab_ID@: (@AD_Window_ID@: 55555)");
+		// final JsonDataEntryResponse shouldBeEmpty = dataEntryRestController.getByRecordId0(AdWindowId.ofRepoId(inexistentWindowId), bPartner.getC_BPartner_ID(), Env.getLanguage().getAD_Language()).getBody();
+		// assertThat(shouldBeEmpty.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
+		// assertThat(shouldBeEmpty.getError()).contains(String.valueOf(inexistentWindowId)).doesNotContain(String.valueOf(bPartner.getC_BPartner_ID()));
+		// assertThat(shouldBeEmpty.getResult()).isNull();
+		// expect(shouldBeEmpty).toMatchSnapshot();
 	}
 
 	@Test

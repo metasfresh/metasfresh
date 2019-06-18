@@ -4,8 +4,12 @@ import static de.metas.util.Check.assumeNotEmpty;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -82,6 +86,22 @@ public class DataEntryTab
 		return tabs.stream()
 				.flatMap(DataEntryTab::streamSubTabIds)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public DataEntrySubTab getSubTabById(@NonNull final DataEntrySubTabId subTabId)
+	{
+		return getSubTabByIdIfPresent(subTabId)
+				.orElseThrow(() -> new AdempiereException("@NotFound@ " + subTabId + " in " + this));
+	}
+
+	Optional<DataEntrySubTab> getSubTabByIdIfPresent(@NonNull final DataEntrySubTabId subTabId)
+	{
+		return getFirstSubTabMatching(subTab -> DataEntrySubTabId.equals(subTab.getId(), subTabId));
+	}
+
+	public Optional<DataEntrySubTab> getFirstSubTabMatching(@NonNull final Predicate<DataEntrySubTab> predicate)
+	{
+		return subTabs.stream().filter(predicate).findFirst();
 	}
 
 	@Value

@@ -38,6 +38,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
               "initiallyClosed": true,
               "lines": [
                 {
+                  "seqNo": 10,
                   "fields": [
                     {
                       "id": 100012,
@@ -171,6 +172,7 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
               "initiallyClosed": false,
               "lines": [
                 {
+                  "seqNo": 10,
                   "fields": [
                     {
                       "id": 100008,

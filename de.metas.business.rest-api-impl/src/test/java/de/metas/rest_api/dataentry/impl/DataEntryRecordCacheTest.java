@@ -83,7 +83,7 @@ public class DataEntryRecordCacheTest
 	}
 
 	private DataEntryRecordId createEntryRecord(
-			final ITableRecordReference mainRecord,
+			final TableRecordReference mainRecord,
 			final DataEntrySubTabId subTabId,
 			final String fieldValue)
 	{
