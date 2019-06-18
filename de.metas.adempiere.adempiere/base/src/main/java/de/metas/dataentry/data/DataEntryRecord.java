@@ -10,7 +10,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -24,7 +24,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -51,19 +53,22 @@ import lombok.Value;
 @Value
 public class DataEntryRecord
 {
-	/** May be empty if not yet persisted */
-	final Optional<DataEntryRecordId> id;
 	final DataEntrySubTabId dataEntrySubTabId;
-	final ITableRecordReference mainRecord;
+	final TableRecordReference mainRecord;
 
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
 	final boolean readOnly;
+	
+	/** May be empty if not yet persisted */
+	@Setter(AccessLevel.NONE)
+	@NonFinal
+	Optional<DataEntryRecordId> id;
 
 	@Builder
 	private DataEntryRecord(
 			@Nullable final DataEntryRecordId id,
-			@NonNull final ITableRecordReference mainRecord,
+			@NonNull final TableRecordReference mainRecord,
 			@NonNull final DataEntrySubTabId dataEntrySubTabId,
 			@Nullable final List<DataEntryRecordField<?>> fields,
 			final boolean readOnly)
@@ -138,6 +143,11 @@ public class DataEntryRecord
 		{
 			throw new AdempiereException("Changing readonly instance is not allowed: " + this);
 		}
+	}
+	
+	void setId(@NonNull final DataEntryRecordId id)
+	{
+		this.id = Optional.of(id);
 	}
 
 	/**

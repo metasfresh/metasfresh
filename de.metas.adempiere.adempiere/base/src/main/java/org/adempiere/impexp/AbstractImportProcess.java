@@ -50,6 +50,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 
 import ch.qos.logback.classic.Level;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -68,10 +70,10 @@ import lombok.NonNull;
  */
 public abstract class AbstractImportProcess<ImportRecordType> implements IImportProcess<ImportRecordType>
 {
-	public static enum ImportRecordResult
+	public enum ImportRecordResult
 	{
 		Inserted, Updated, Nothing,
-	};
+	}
 
 	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
@@ -89,8 +91,9 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	private Properties _ctx;
 	private IParams _parameters = IParams.NULL;
 	private ILoggable loggable = LoggerLoggable.of(log, Level.INFO);
-	
-	@Getter(lazy=true) private final DBFunctions dbFunctions = createDBFunctions();
+
+	@Getter(lazy = true)
+	private final DBFunctions dbFunctions = createDBFunctions();
 
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setCtx(final Properties ctx)
@@ -123,13 +126,12 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	{
 		return _parameters;
 	}
-	
+
 	private DBFunctions createDBFunctions()
 	{
 		return dbFunctionsRepo.retrieveByTableName(getImportTableName());
 	}
 
-	
 	@Override
 	public final AbstractImportProcess<ImportRecordType> setLoggable(final ILoggable loggable)
 	{
@@ -158,7 +160,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return getParameters().getParameterAsBool(PARAM_DeleteOldImported);
 	}
 
-	protected String getImportKeyColumnName()
+	protected final String getImportKeyColumnName()
 	{
 		return getImportTableName() + "_ID";
 	}
@@ -349,7 +351,6 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 						if (error != null)
 						{
 							reportError(importRecord, error.getLocalizedMessage());
-							InterfaceWrapperHelper.markStaled(importRecord); // just in case some BL wants to get values from it
 						}
 						else if (recordImportResult == ImportRecordResult.Inserted)
 						{
@@ -364,7 +365,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 			}
 
 			afterImport();
-			
+
 		}
 		catch (final SQLException e)
 		{
@@ -387,7 +388,7 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 
 	protected abstract ImportRecordResult importRecord(final IMutable<Object> state, final ImportRecordType importRecord, final boolean isInsertOnly) throws Exception;
 
-	protected final void reportError(final ImportRecordType importRecord, final String errorMsg)
+	private final void reportError(final ImportRecordType importRecord, final String errorMsg)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(importRecord);
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
@@ -406,6 +407,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 				ITrx.TRXNAME_ThreadInherited,
 				0, // no timeOut
 				(ISqlUpdateReturnProcessor)null);
+
+		InterfaceWrapperHelper.markStaled(importRecord); // just in case some BL wants to get values from it
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, CacheInvalidateMultiRequest.fromTableNameAndRecordId(tableName, importRecordId));
 	}
 
 	protected final int markNotImportedAllWithErrors()
@@ -429,11 +434,11 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 	{
 		// nothing to do here
 	}
-	
+
 	protected final void runSQLAfterRowImport(@NonNull final ImportRecordType importRecord)
 	{
 		final List<DBFunction> functions = getDbFunctions().getAvailableAfterRowFunctions();
-		final Optional<Integer> dataImportId =  Optional.ofNullable(InterfaceWrapperHelper.getValueOrNull(importRecord, COLUMNNAME_C_DataImport_ID));
+		final Optional<Integer> dataImportId = Optional.ofNullable(InterfaceWrapperHelper.getValueOrNull(importRecord, COLUMNNAME_C_DataImport_ID));
 		final Optional<Integer> recordId = InterfaceWrapperHelper.getValue(importRecord, getImportKeyColumnName());
 		functions.forEach(function -> DBFunctionHelper.doDBFunctionCall(function, dataImportId.orElse(0), recordId.orElse(0)));
 	}

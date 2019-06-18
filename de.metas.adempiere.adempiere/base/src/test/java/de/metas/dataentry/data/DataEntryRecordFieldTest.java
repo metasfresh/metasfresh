@@ -8,7 +8,11 @@ import java.time.LocalDate;
 
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableMultimap;
+
 import de.metas.dataentry.DataEntryFieldId;
+import de.metas.dataentry.DataEntryListValueId;
+import de.metas.dataentry.FieldType;
 
 /*
  * #%L
@@ -66,5 +70,44 @@ public class DataEntryRecordFieldTest
 	{
 		final DataEntryRecordField<LocalDate> result1 = DataEntryRecordField.createDataEntryRecordField(DataEntryFieldId.ofRepoId(1), CREATED_UPDATED_INFO, DataEntryRecordTestConstants.DATE);
 		assertThat(result1.getValue()).isEqualTo(DataEntryRecordTestConstants.DATE);
+	}
+
+	@Test
+	public void convertValueToFieldType_MakeSureCoversAllDataTypes()
+	{
+		final ImmutableMultimap<Class<?>, Object> testValuesByClass = ImmutableMultimap.<Class<?>, Object> builder()
+				.put(Integer.class, 1234)
+				.put(Integer.class, "1234")
+				//
+				.put(String.class, "some dummy")
+				.put(String.class, 111)
+				.put(String.class, new BigDecimal("1234.55"))
+				//
+				.put(BigDecimal.class, new BigDecimal("123.456"))
+				.put(BigDecimal.class, "123.456")
+				.put(BigDecimal.class, 123)
+				//
+				.put(Boolean.class, Boolean.TRUE)
+				.put(Boolean.class, "Y")
+				.put(Boolean.class, "N")
+				.put(Boolean.class, "true")
+				.put(Boolean.class, "false")
+				//
+				.put(DataEntryListValueId.class, DataEntryListValueId.ofRepoId(1))
+				.put(DataEntryListValueId.class, "123")
+				.put(DataEntryListValueId.class, 123)
+				.put(DataEntryListValueId.class, new BigDecimal("123"))
+				//
+				.build();
+
+		for (final FieldType fieldType : FieldType.values())
+		{
+			final Class<?> valueType = fieldType.getClazz();
+			for (Object value : testValuesByClass.get(valueType))
+			{
+				final Object valueConv = DataEntryRecordField.convertValueToFieldType(value, fieldType);
+				assertThat(valueConv).isInstanceOf(valueType);
+			}
+		}
 	}
 }

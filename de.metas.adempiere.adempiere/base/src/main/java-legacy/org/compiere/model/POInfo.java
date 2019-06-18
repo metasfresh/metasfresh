@@ -27,6 +27,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -66,6 +67,11 @@ public final class POInfo implements Serializable
 	{
 		final Properties ctx_NOTUSED = null;
 		return getPOInfo(ctx_NOTUSED, AD_Table_ID, ITrx.TRXNAME_None);
+	}
+
+	public static POInfo getPOInfo(@NonNull final AdTableId tableId)
+	{
+		return getPOInfo(tableId.getRepoId());
 	}
 
 	/**
@@ -110,30 +116,25 @@ public final class POInfo implements Serializable
 	 */
 	public static POInfo getPOInfo(final Properties ctx_NOTUSED, final int AD_Table_ID, final String trxName)
 	{
-		return s_cache.get(AD_Table_ID, new Callable<Optional<POInfo>>()
-		{
-			@Override
-			public Optional<POInfo> call()
+		return s_cache.get(AD_Table_ID, (Callable<Optional<POInfo>>)() -> {
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final POInfo poInfo = new POInfo(AD_Table_ID, trxName);
+			stopwatch.stop();
+
+			final boolean valid = poInfo.getColumnCount() > 0;
+			if (!valid)
 			{
-				final Stopwatch stopwatch = Stopwatch.createStarted();
-				final POInfo poInfo = new POInfo(AD_Table_ID, trxName);
-				stopwatch.stop();
-
-				final boolean valid = poInfo.getColumnCount() > 0;
-				if (!valid)
-				{
-					logger.debug("Found no valid POInfo for AD_Table_ID={}; it took {}; add 'absent' result to cache; trxName={}", AD_Table_ID, stopwatch, trxName);
-					return Optional.absent();
-				}
-				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
-
-				logger.debug("Found POInfo for AD_Table_ID={} (TableName={}); it took {}; add result to cache; trxName={}", AD_Table_ID, poInfo.getTableName(),stopwatch, trxName);
-
-				// Update the cache by tablename
-				s_cacheByTableNameUC.put(poInfo.getTableNameUC(), poInfoOptional);
-
-				return poInfoOptional;
+				logger.debug("Found no valid POInfo for AD_Table_ID={}; it took {}; add 'absent' result to cache; trxName={}", AD_Table_ID, stopwatch, trxName);
+				return Optional.absent();
 			}
+			final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
+
+			logger.debug("Found POInfo for AD_Table_ID={} (TableName={}); it took {}; add result to cache; trxName={}", AD_Table_ID, poInfo.getTableName(), stopwatch, trxName);
+
+			// Update the cache by tablename
+			s_cacheByTableNameUC.put(poInfo.getTableNameUC(), poInfoOptional);
+
+			return poInfoOptional;
 		}).orNull();
 	}   // getPOInfo
 
@@ -154,29 +155,24 @@ public final class POInfo implements Serializable
 		}
 
 		final String tableNameUC = tableName.toUpperCase();
-		return s_cacheByTableNameUC.get(tableNameUC, new Callable<Optional<POInfo>>()
-		{
-			@Override
-			public Optional<POInfo> call()
+		return s_cacheByTableNameUC.get(tableNameUC, (Callable<Optional<POInfo>>)() -> {
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final POInfo poInfo = new POInfo(tableName, trxName);
+			stopwatch.stop();
+
+			final boolean valid = poInfo.getColumnCount() > 0;
+			if (!valid)
 			{
-				final Stopwatch stopwatch = Stopwatch.createStarted();
-				final POInfo poInfo = new POInfo(tableName, trxName);
-				stopwatch.stop();
-
-				final boolean valid = poInfo.getColumnCount() > 0;
-				if (!valid)
-				{
-					logger.debug("Found no valid POInfo for TableNameUC={}; it took {}; add 'absent' result to cache; trxName={}", tableNameUC, stopwatch, trxName);
-					return Optional.absent();
-				}
-				final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
-
-				logger.debug("Loaded POInfo for TableName={} (AD_Table_ID={}); it took {}; add result to cache; trxName={}", tableName, poInfo.getAD_Table_ID(), stopwatch, trxName);
-				// Update the cache by AD_Table_ID
-				s_cache.put(poInfo.getAD_Table_ID(), poInfoOptional);
-
-				return poInfoOptional;
+				logger.debug("Found no valid POInfo for TableNameUC={}; it took {}; add 'absent' result to cache; trxName={}", tableNameUC, stopwatch, trxName);
+				return Optional.absent();
 			}
+			final Optional<POInfo> poInfoOptional = Optional.of(poInfo);
+
+			logger.debug("Loaded POInfo for TableName={} (AD_Table_ID={}); it took {}; add result to cache; trxName={}", tableName, poInfo.getAD_Table_ID(), stopwatch, trxName);
+			// Update the cache by AD_Table_ID
+			s_cache.put(poInfo.getAD_Table_ID(), poInfoOptional);
+
+			return poInfoOptional;
 		}).orNull();
 	}   // getPOInfo
 
@@ -251,7 +247,7 @@ public final class POInfo implements Serializable
 	 *
 	 * @param trxName
 	 */
-	private final void loadInfo(final String trxName)
+	private void loadInfo(final String trxName)
 	{
 		final List<POInfoColumn> list = new ArrayList<>(20);
 		final StringBuilder sql = new StringBuilder();
@@ -296,9 +292,13 @@ public final class POInfo implements Serializable
 		{
 			pstmt = DB.prepareStatement(sql.toString(), trxName);
 			if (m_AD_Table_ID <= 0)
+			{
 				pstmt.setString(1, m_TableName);
+			}
 			else
+			{
 				pstmt.setInt(1, m_AD_Table_ID);
+			}
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -487,7 +487,9 @@ public final class POInfo implements Serializable
 	public String toString(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return "POInfo[" + getTableName() + "-(InvalidColumnIndex=" + index + ")]";
+		}
 		return "POInfo[" + getTableName() + "-" + m_columns[index].toString() + "]";
 	}   // toString
 
@@ -656,7 +658,9 @@ public final class POInfo implements Serializable
 		for (int i = 0; i < m_columns.length; i++)
 		{
 			if (AD_Column_ID == m_columns[i].AD_Column_ID)
+			{
 				return i;
+			}
 		}
 		return -1;
 	}   // getColumnIndex
@@ -686,7 +690,9 @@ public final class POInfo implements Serializable
 	public POInfoColumn getColumn(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index];
 	}   // getColumn
 
@@ -707,7 +713,9 @@ public final class POInfo implements Serializable
 	public String getColumnName(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index].getColumnName();
 	}   // getColumnName
 
@@ -822,7 +830,9 @@ public final class POInfo implements Serializable
 	public String getColumnLabel(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index].getColumnLabel();
 	}   // getColumnLabel
 
@@ -835,7 +845,9 @@ public final class POInfo implements Serializable
 	public String getColumnDescription(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index].getColumnDescription();
 	}   // getColumnDescription
 
@@ -848,7 +860,9 @@ public final class POInfo implements Serializable
 	public Class<?> getColumnClass(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index].ColumnClass;
 	}   // getColumnClass
 
@@ -877,7 +891,9 @@ public final class POInfo implements Serializable
 	public int getColumnDisplayType(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return DisplayType.String;
+		}
 		return m_columns[index].DisplayType;
 	}   // getColumnDisplayType
 
@@ -900,7 +916,9 @@ public final class POInfo implements Serializable
 	public String getDefaultLogic(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return null;
+		}
 		return m_columns[index].DefaultLogic;
 	}   // getDefaultLogic
 
@@ -913,7 +931,9 @@ public final class POInfo implements Serializable
 	public boolean isColumnMandatory(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsMandatory;
 	}   // isMandatory
 
@@ -929,7 +949,9 @@ public final class POInfo implements Serializable
 	public int getColumnReferenceValueId(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return -1;
+		}
 		return m_columns[index].AD_Reference_Value_ID;
 	}
 
@@ -954,7 +976,9 @@ public final class POInfo implements Serializable
 	private int getColumnValRuleId(final int columnIndex)
 	{
 		if (columnIndex < 0 || columnIndex >= m_columns.length)
+		{
 			return -1;
+		}
 		return m_columns[columnIndex].getAD_Val_Rule_ID();
 	}
 
@@ -970,7 +994,9 @@ public final class POInfo implements Serializable
 	public boolean isColumnUpdateable(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsUpdateable;
 	}   // isUpdateable
 
@@ -1041,7 +1067,9 @@ public final class POInfo implements Serializable
 	public boolean isKey(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsKey;
 	}   // isKey
 
@@ -1069,7 +1097,9 @@ public final class POInfo implements Serializable
 	public boolean isColumnParent(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsParent;
 	}   // isColumnParent
 
@@ -1088,7 +1118,9 @@ public final class POInfo implements Serializable
 	public boolean isEncrypted(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsEncrypted;
 	}   // isEncrypted
 
@@ -1101,7 +1133,9 @@ public final class POInfo implements Serializable
 	public boolean isAllowLogging(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsAllowLogging;
 	} // isAllowLogging
 
@@ -1114,7 +1148,9 @@ public final class POInfo implements Serializable
 	public int getFieldLength(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return 0;
+		}
 		return m_columns[index].FieldLength;
 	}   // getFieldLength
 
@@ -1144,14 +1180,18 @@ public final class POInfo implements Serializable
 	public String validate(final int index, final Object value)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return "RangeError";
+		}
 		// Mandatory (i.e. not null
 		if (m_columns[index].IsMandatory && value == null)
 		{
 			return "IsMandatory";
 		}
 		if (value == null)
+		{
 			return null;
+		}
 
 		// Length ignored
 
@@ -1162,7 +1202,9 @@ public final class POInfo implements Serializable
 			try
 			{
 				if (m_columns[index].ValueMin_BD != null)
+				{
 					value_BD = new BigDecimal(value.toString());
+				}
 			}
 			catch (Exception ex)
 			{
@@ -1197,7 +1239,9 @@ public final class POInfo implements Serializable
 			try
 			{
 				if (m_columns[index].ValueMax_BD != null)
+				{
 					value_BD = new BigDecimal(value.toString());
+				}
 			}
 			catch (Exception ex)
 			{
@@ -1231,7 +1275,9 @@ public final class POInfo implements Serializable
 	public boolean isLazyLoading(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return true;
+		}
 		return m_columns[index].IsLazyLoading;
 	}
 
@@ -1246,7 +1292,7 @@ public final class POInfo implements Serializable
 		return sql;
 	}
 
-	private final String buildSqlSelect()
+	private String buildSqlSelect()
 	{
 		final StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ")
@@ -1255,16 +1301,20 @@ public final class POInfo implements Serializable
 		return sql.toString();
 	}
 
-	private final String buildSqlSelectColumns()
+	private String buildSqlSelectColumns()
 	{
 		final StringBuilder sql = new StringBuilder();
 		final int size = getColumnCount();
 		for (int i = 0; i < size; i++)
 		{
 			if (isLazyLoading(i))
+			{
 				continue;
+			}
 			if (sql.length() > 0)
+			{
 				sql.append(",");
+			}
 			sql.append(getColumnSqlForSelect(i)); // Normal and Virtual Column
 		}
 
@@ -1274,7 +1324,7 @@ public final class POInfo implements Serializable
 	/**
 	 * @return all columns to select in SQL format (i.e. ColumnName1, ColumnName2 ....)
 	 */
-	public final String getSqlSelectColumns()
+	public String getSqlSelectColumns()
 	{
 		return sqlSelectColumns;
 	}
@@ -1292,7 +1342,9 @@ public final class POInfo implements Serializable
 	public boolean isCalculated(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsCalculated;
 	}
 
@@ -1360,7 +1412,9 @@ public final class POInfo implements Serializable
 	public boolean isUseDocSequence(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
+		{
 			return false;
+		}
 		return m_columns[index].IsUseDocumentSequence;
 	}
 
@@ -1399,7 +1453,7 @@ public final class POInfo implements Serializable
 		return sqlSelectByKeys;
 	}
 
-	private final String buildSqlSelectByKeys()
+	private String buildSqlSelectByKeys()
 	{
 		final StringBuilder sql = new StringBuilder();
 		sql.append(getSqlSelect());
@@ -1420,7 +1474,7 @@ public final class POInfo implements Serializable
 		return sqlWhereClauseByKeys;
 	}
 
-	private final String buildSqlWhereClauseByKeys()
+	private String buildSqlWhereClauseByKeys()
 	{
 		final StringBuilder sb = new StringBuilder();
 		for (final String keyColumnName : m_keyColumnNames)

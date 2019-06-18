@@ -5,13 +5,19 @@ import static de.metas.util.Check.fail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
+import de.metas.util.NumberUtils;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -104,5 +110,69 @@ public abstract class DataEntryRecordField<T>
 		}
 
 		return result;
+	}
+
+	public static Object convertValueToFieldType(
+			@Nullable final Object value,
+			@NonNull final FieldType type)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		final Class<?> typeClass = type.getClazz();
+		if (typeClass.isInstance(value))
+		{
+			return value;
+		}
+		else if (Integer.class.equals(typeClass))
+		{
+			final Integer valueConv = NumberUtils.asInteger(value, null);
+			if (valueConv == null)
+			{
+				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + Integer.class);
+			}
+			return valueConv;
+		}
+		else if (BigDecimal.class.equals(typeClass))
+		{
+			final BigDecimal valueConv = NumberUtils.asBigDecimal(value, null);
+			if (valueConv == null)
+			{
+				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + BigDecimal.class);
+			}
+			return valueConv;
+		}
+		else if (String.class.equals(typeClass))
+		{
+			return value.toString();
+		}
+		else if (Boolean.class.equals(typeClass))
+		{
+			final Boolean valueConv = StringUtils.toBoolean(value, null);
+			if (valueConv == null)
+			{
+				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + Boolean.class);
+			}
+			return valueConv;
+		}
+		else if (LocalDate.class.equals(typeClass))
+		{
+			return TimeUtil.asLocalDate(value);
+		}
+		else if (DataEntryListValueId.class.equals(typeClass))
+		{
+			final Integer repoId = NumberUtils.asInteger(value, null);
+			if (repoId == null)
+			{
+				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + Integer.class);
+			}
+			return DataEntryListValueId.ofRepoId(repoId);
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert `" + value + "` from " + value.getClass() + " to " + typeClass);
+		}
 	}
 }

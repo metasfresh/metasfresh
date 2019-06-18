@@ -1,11 +1,8 @@
-package de.metas.dataentry.layout;
+package de.metas.dataentry.data.impexp;
 
-import com.google.common.collect.ImmutableList;
+import org.compiere.process.AbstractImportJavaProcess;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import de.metas.dataentry.model.I_I_DataEntry_Record;
 
 /*
  * #%L
@@ -17,25 +14,24 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-@Builder
-public class DataEntryLine
+public class DataEntryRecordsImportProcessLauncher extends AbstractImportJavaProcess<I_I_DataEntry_Record>
 {
-	int seqNo;
-	
-	@NonNull
-	@Singular
-	ImmutableList<DataEntryField> fields;
+
+	public DataEntryRecordsImportProcessLauncher()
+	{
+		super(I_I_DataEntry_Record.class);
+	}
+
 }
