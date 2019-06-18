@@ -9,6 +9,7 @@ export class BPartner {
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
+    this.bank = undefined;
   }
 
   setName(name) {
@@ -50,6 +51,12 @@ export class BPartner {
   setCustomerDiscountSchema(customerDiscountSchema) {
     cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
     this.customerDiscountSchema = customerDiscountSchema;
+    return this;
+  }
+
+  setBank(bank) {
+    cy.log(`BPartner - set Bank = ${bank}`);
+    this.bank = bank;
     return this;
   }
 
@@ -185,6 +192,14 @@ function applyBPartner(bPartner) {
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
+    if (bPartner.bank) {
+      cy.selectTab('C_BP_BankAccount');
+      cy.pressAddNewButton();
+      cy.get('#lookup_C_Bank_ID input').type(bPartner.bank);
+      cy.contains('.input-dropdown-list-option', bPartner.bank).click();
+      cy.writeIntoStringField('A_Name', 'Test Account');
+      cy.pressDoneButton();
+    }
   });
 }
 
@@ -220,3 +235,11 @@ function applyContact(bPartnerContact) {
   }
   cy.pressDoneButton();
 }
+
+// function applyBank(bPartner){
+//   cy.selectTab('C_BP_BankAccount');
+//   cy.pressAddNewButton();
+//   cy.writeIntoStringField('#C_Bank_ID text', bPartner.bank);
+//   cy.writeIntoStringField('A_Name', 'Test Account');
+//   cy.pressDoneButton();
+// }
