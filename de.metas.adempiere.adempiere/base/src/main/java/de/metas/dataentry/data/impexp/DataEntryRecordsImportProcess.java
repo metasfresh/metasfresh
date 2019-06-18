@@ -22,6 +22,7 @@ import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
+import de.metas.dataentry.data.DataEntryRecordId;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayout;
@@ -136,8 +137,8 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		state.setFieldValue(fieldId, importRecord.getFieldValue());
 
 		final boolean newDataEntryRecord = state.isNewDataEntryRecord();
-		dataEntryRecordRepo.save(state.getDataEntryRecord());
-		importRecord.setDataEntry_Record_ID(state.getDataEntryRecord().getId().get().getRepoId());
+		final DataEntryRecordId dataEntryRecordId = dataEntryRecordRepo.save(state.getDataEntryRecord());
+		importRecord.setDataEntry_Record_ID(dataEntryRecordId.getRepoId());
 
 		return newDataEntryRecord ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
 	}
