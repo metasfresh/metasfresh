@@ -248,7 +248,8 @@ public class DataEntryLayoutRepository
 	{
 		final ImmutableList<I_DataEntry_Field> fieldRecords = retrieveFieldRecords(lineRecord);
 
-		final DataEntryLineBuilder line = DataEntryLine.builder();
+		final DataEntryLineBuilder line = DataEntryLine.builder()
+				.seqNo(lineRecord.getSeqNo());
 
 		for (final I_DataEntry_Field fieldRecord : fieldRecords)
 		{

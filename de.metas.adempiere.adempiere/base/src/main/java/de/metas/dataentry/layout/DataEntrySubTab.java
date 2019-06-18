@@ -1,8 +1,6 @@
 package de.metas.dataentry.layout;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -89,10 +87,5 @@ public class DataEntrySubTab
 			throw new AdempiereException("@NotFound@ " + fieldId + " in " + this);
 		}
 		return field;
-	}
-
-	public Optional<DataEntryField> getFirstFieldMatching(@NonNull final Predicate<DataEntryField> predicate)
-	{
-		return fieldsById.values().stream().filter(predicate).findFirst();
 	}
 }

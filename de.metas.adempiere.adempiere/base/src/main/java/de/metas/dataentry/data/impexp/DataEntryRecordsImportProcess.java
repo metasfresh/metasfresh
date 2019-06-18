@@ -18,7 +18,6 @@ import org.compiere.util.Env;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.DataEntryTabId;
 import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
@@ -28,12 +27,14 @@ import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.layout.DataEntryLayoutRepository;
+import de.metas.dataentry.layout.DataEntryLine;
+import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.dataentry.model.X_I_DataEntry_Record;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -146,8 +147,9 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 
 	private void resolveIds(@NonNull final I_I_DataEntry_Record importRecord)
 	{
-		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(importRecord.getAD_Window_ID());
-		if (adWindowId == null)
+		//
+		// Window
+		final AdWindowId adWindowId;
 		{
 			String windowInternalName = importRecord.getWindowInternalName();
 			if (Check.isEmpty(windowInternalName, true))
@@ -159,6 +161,8 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 			importRecord.setAD_Window_ID(adWindowId.getRepoId());
 		}
 
+		//
+		// DataEntry Layout
 		final DataEntryLayout layout = dataEntryLayoutRepo.getByWindowId(adWindowId);
 
 		//
@@ -181,89 +185,92 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 
 		//
 		// DataEntryTab:
-		DataEntryTabId tabId = DataEntryTabId.ofRepoIdOrNull(importRecord.getDataEntry_Tab_ID());
 		final DataEntryTab tab;
-		if (tabId == null)
 		{
-			final String tabNamePattern = importRecord.getDataEntry_Tab_Name();
-			tab = layout.getFirstTabMatching(currentTab -> isMatching(currentTab, tabNamePattern))
+			final NamePattern tabNamePattern = NamePattern.ofStringOrAny(importRecord.getDataEntry_Tab_Name());
+			if (tabNamePattern.isAny())
+			{
+				throw new FillMandatoryException("DataEntry_Tab_Name");
+			}
+			tab = layout.getFirstTabMatching(tabNamePattern::isMatching)
 					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_Tab_ID@"));
-			tabId = tab.getId();
-			importRecord.setDataEntry_Tab_ID(tabId.getRepoId());
-		}
-		else
-		{
-			tab = layout.getTabById(tabId);
+			importRecord.setDataEntry_Tab_ID(tab.getId().getRepoId());
 		}
 
 		//
 		// DataEntrySubTab:
-		DataEntrySubTabId subTabId = DataEntrySubTabId.ofRepoIdOrNull(importRecord.getDataEntry_SubTab_ID());
 		final DataEntrySubTab subTab;
-		if (subTabId == null)
 		{
-			final String subTabNamePattern = importRecord.getDataEntry_SubTab_Name();
-			subTab = tab.getFirstSubTabMatching(currentSubTab -> isMatching(currentSubTab, subTabNamePattern))
+			final NamePattern subTabNamePattern = NamePattern.ofStringOrAny(importRecord.getDataEntry_SubTab_Name());
+			if (subTabNamePattern.isAny())
+			{
+				throw new FillMandatoryException("DataEntry_SubTab_Name");
+			}
+
+			subTab = tab.getFirstSubTabMatching(subTabNamePattern::isMatching)
 					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_SubTab_ID@"));
-			subTabId = subTab.getId();
-			importRecord.setDataEntry_SubTab_ID(subTabId.getRepoId());
-		}
-		else
-		{
-			subTab = tab.getSubTabById(subTabId);
+			importRecord.setDataEntry_SubTab_ID(subTab.getId().getRepoId());
 		}
 
 		//
-		// DataEntryField:
-		DataEntryFieldId fieldId = DataEntryFieldId.ofRepoIdOrNull(importRecord.getDataEntry_Field_ID());
-		final DataEntryField field;
-		if (fieldId == null)
+		// Section, Line, Field
+		final NamePattern sectionPattern = NamePattern.ofStringOrAny(importRecord.getDataEntry_Section_Name());
+		final NamePattern linePattern = NamePattern.ofStringOrAny(importRecord.getDataEntry_Line_Name());
+		final NamePattern fieldNamePattern = NamePattern.ofStringOrAny(importRecord.getFieldName());
+		if (fieldNamePattern.isAny())
 		{
-			final String fieldNamePattern = importRecord.getFieldName();
-			field = subTab.getFirstFieldMatching(currentField -> isMatching(currentField, fieldNamePattern))
-					.orElseThrow(() -> new AdempiereException("@NotFound@ @DataEntry_Field_ID@"));
-			fieldId = field.getId();
-			importRecord.setDataEntry_Field_ID(fieldId.getRepoId());
+			throw new FillMandatoryException("FieldName");
+		}
+		//
+		DataEntryField field = null;
+		for (final DataEntrySection currentSection : subTab.getSections())
+		{
+			if (!sectionPattern.isMatching(currentSection))
+			{
+				continue;
+			}
+
+			importRecord.setDataEntry_Section_ID(currentSection.getId().getRepoId());
+
+			for (final DataEntryLine currentLine : currentSection.getLines())
+			{
+				if (!linePattern.isMatching(currentLine))
+				{
+					continue;
+				}
+
+				// importRecord.setDataEntry_Line_ID(currentLine.getId().getRepoId()); // N/A
+
+				for (final DataEntryField currentField : currentLine.getFields())
+				{
+					if (!fieldNamePattern.isMatching(currentField))
+					{
+						continue;
+					}
+
+					if (field != null)
+					{
+						throw new AdempiereException(TranslatableStringBuilder.newInstance()
+								.append("More than one matching field found: ")
+								.append(field.getCaption()).append(", ").append(currentField.getCaption())
+								.build());
+					}
+
+					importRecord.setDataEntry_Field_ID(currentField.getId().getRepoId());
+
+					field = currentField;
+				}
+			}
+		}
+		//
+		if (field == null)
+		{
+			throw new AdempiereException("@NotFound@ @DataEntry_Field_ID@");
 		}
 		else
 		{
-			field = subTab.getFieldById(fieldId);
+			importRecord.setDataEntry_Field_ID(field.getId().getRepoId());
 		}
-	}
-
-	private static boolean isMatching(@NonNull final DataEntryTab tab, @NonNull final String tabNamePattern)
-	{
-		return tabNamePattern.equalsIgnoreCase(tab.getInternalName())
-				|| isMatching(tab.getCaption(), tabNamePattern);
-	}
-
-	private static boolean isMatching(@NonNull final DataEntrySubTab subTab, @NonNull final String tabNamePattern)
-	{
-		return tabNamePattern.equalsIgnoreCase(subTab.getInternalName())
-				|| isMatching(subTab.getCaption(), tabNamePattern);
-	}
-
-	private static boolean isMatching(@NonNull final DataEntryField field, @NonNull final String fieldNamePattern)
-	{
-		return isMatching(field.getCaption(), fieldNamePattern);
-	}
-
-	private static boolean isMatching(final ITranslatableString trl, final String pattern)
-	{
-		if (trl.getDefaultValue().equalsIgnoreCase(pattern))
-		{
-			return true;
-		}
-
-		for (final String adLanguage : trl.getAD_Languages())
-		{
-			if (trl.translate(adLanguage).equalsIgnoreCase(pattern))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private ImportState newImportState(

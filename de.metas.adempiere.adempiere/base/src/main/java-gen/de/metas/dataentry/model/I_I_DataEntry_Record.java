@@ -73,7 +73,7 @@ public interface I_I_DataEntry_Record
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_Table_ID (int AD_Table_ID);
@@ -83,7 +83,7 @@ public interface I_I_DataEntry_Record
 	 * Database Table information
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Table_ID();
@@ -184,6 +184,56 @@ public interface I_I_DataEntry_Record
     public static final String COLUMNNAME_DataEntry_Field_ID = "DataEntry_Field_ID";
 
 	/**
+	 * Set Zeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Line_ID (int DataEntry_Line_ID);
+
+	/**
+	 * Get Zeile.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Line_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_Line getDataEntry_Line();
+
+	public void setDataEntry_Line(de.metas.dataentry.model.I_DataEntry_Line DataEntry_Line);
+
+    /** Column definition for DataEntry_Line_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Line> COLUMN_DataEntry_Line_ID = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Line>(I_I_DataEntry_Record.class, "DataEntry_Line_ID", de.metas.dataentry.model.I_DataEntry_Line.class);
+    /** Column name DataEntry_Line_ID */
+    public static final String COLUMNNAME_DataEntry_Line_ID = "DataEntry_Line_ID";
+
+	/**
+	 * Set Zeile Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Line_Name (java.lang.String DataEntry_Line_Name);
+
+	/**
+	 * Get Zeile Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataEntry_Line_Name();
+
+    /** Column definition for DataEntry_Line_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_DataEntry_Line_Name = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "DataEntry_Line_Name", null);
+    /** Column name DataEntry_Line_Name */
+    public static final String COLUMNNAME_DataEntry_Line_Name = "DataEntry_Line_Name";
+
+	/**
 	 * Set DataEntry_Record.
 	 *
 	 * <br>Type: Search
@@ -211,10 +261,60 @@ public interface I_I_DataEntry_Record
     public static final String COLUMNNAME_DataEntry_Record_ID = "DataEntry_Record_ID";
 
 	/**
+	 * Set Sektion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID);
+
+	/**
+	 * Get Sektion.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Section_ID();
+
+	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section();
+
+	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section);
+
+    /** Column definition for DataEntry_Section_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Section> COLUMN_DataEntry_Section_ID = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, de.metas.dataentry.model.I_DataEntry_Section>(I_I_DataEntry_Record.class, "DataEntry_Section_ID", de.metas.dataentry.model.I_DataEntry_Section.class);
+    /** Column name DataEntry_Section_ID */
+    public static final String COLUMNNAME_DataEntry_Section_ID = "DataEntry_Section_ID";
+
+	/**
+	 * Set Sektion Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Section_Name (java.lang.String DataEntry_Section_Name);
+
+	/**
+	 * Get Sektion Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataEntry_Section_Name();
+
+    /** Column definition for DataEntry_Section_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object> COLUMN_DataEntry_Section_Name = new org.adempiere.model.ModelColumn<I_I_DataEntry_Record, Object>(I_I_DataEntry_Record.class, "DataEntry_Section_Name", null);
+    /** Column name DataEntry_Section_Name */
+    public static final String COLUMNNAME_DataEntry_Section_Name = "DataEntry_Section_Name";
+
+	/**
 	 * Set Unterregister.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setDataEntry_SubTab_ID (int DataEntry_SubTab_ID);
@@ -223,7 +323,7 @@ public interface I_I_DataEntry_Record
 	 * Get Unterregister.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getDataEntry_SubTab_ID();
@@ -380,7 +480,7 @@ public interface I_I_DataEntry_Record
     public static final String COLUMNNAME_FieldValue = "FieldValue";
 
 	/**
-	 * Set Import Data Entry Record.
+	 * Set Import - Erweiterte Dateneingabe.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -389,7 +489,7 @@ public interface I_I_DataEntry_Record
 	public void setI_DataEntry_Record_ID (int I_DataEntry_Record_ID);
 
 	/**
-	 * Get Import Data Entry Record.
+	 * Get Import - Erweiterte Dateneingabe.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -507,7 +607,7 @@ public interface I_I_DataEntry_Record
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setRecord_ID (int Record_ID);
@@ -517,7 +617,7 @@ public interface I_I_DataEntry_Record
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getRecord_ID();

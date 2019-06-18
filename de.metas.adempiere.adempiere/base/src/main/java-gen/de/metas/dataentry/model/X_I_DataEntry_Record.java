@@ -14,7 +14,7 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -870631534L;
+	private static final long serialVersionUID = -31639530L;
 
     /** Standard Constructor */
     public X_I_DataEntry_Record (Properties ctx, int I_DataEntry_Record_ID, String trxName)
@@ -22,12 +22,9 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
       super (ctx, I_DataEntry_Record_ID, trxName);
       /** if (I_DataEntry_Record_ID == 0)
         {
-			setAD_Table_ID (0);
-			setDataEntry_SubTab_ID (0);
 			setI_DataEntry_Record_ID (0);
 			setI_IsImported (null); // N
 			setProcessed (false); // N
-			setRecord_ID (0);
         } */
     }
 
@@ -155,6 +152,56 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 	}
 
 	@Override
+	public de.metas.dataentry.model.I_DataEntry_Line getDataEntry_Line() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Line_ID, de.metas.dataentry.model.I_DataEntry_Line.class);
+	}
+
+	@Override
+	public void setDataEntry_Line(de.metas.dataentry.model.I_DataEntry_Line DataEntry_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Line_ID, de.metas.dataentry.model.I_DataEntry_Line.class, DataEntry_Line);
+	}
+
+	/** Set Zeile.
+		@param DataEntry_Line_ID Zeile	  */
+	@Override
+	public void setDataEntry_Line_ID (int DataEntry_Line_ID)
+	{
+		if (DataEntry_Line_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_Line_ID, Integer.valueOf(DataEntry_Line_ID));
+	}
+
+	/** Get Zeile.
+		@return Zeile	  */
+	@Override
+	public int getDataEntry_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Zeile Name.
+		@param DataEntry_Line_Name Zeile Name	  */
+	@Override
+	public void setDataEntry_Line_Name (java.lang.String DataEntry_Line_Name)
+	{
+		set_Value (COLUMNNAME_DataEntry_Line_Name, DataEntry_Line_Name);
+	}
+
+	/** Get Zeile Name.
+		@return Zeile Name	  */
+	@Override
+	public java.lang.String getDataEntry_Line_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_Line_Name);
+	}
+
+	@Override
 	public de.metas.dataentry.model.I_DataEntry_Record getDataEntry_Record() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_DataEntry_Record_ID, de.metas.dataentry.model.I_DataEntry_Record.class);
@@ -186,6 +233,56 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.dataentry.model.I_DataEntry_Section getDataEntry_Section() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class);
+	}
+
+	@Override
+	public void setDataEntry_Section(de.metas.dataentry.model.I_DataEntry_Section DataEntry_Section)
+	{
+		set_ValueFromPO(COLUMNNAME_DataEntry_Section_ID, de.metas.dataentry.model.I_DataEntry_Section.class, DataEntry_Section);
+	}
+
+	/** Set Sektion.
+		@param DataEntry_Section_ID Sektion	  */
+	@Override
+	public void setDataEntry_Section_ID (int DataEntry_Section_ID)
+	{
+		if (DataEntry_Section_ID < 1) 
+			set_Value (COLUMNNAME_DataEntry_Section_ID, null);
+		else 
+			set_Value (COLUMNNAME_DataEntry_Section_ID, Integer.valueOf(DataEntry_Section_ID));
+	}
+
+	/** Get Sektion.
+		@return Sektion	  */
+	@Override
+	public int getDataEntry_Section_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DataEntry_Section_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Sektion Name.
+		@param DataEntry_Section_Name Sektion Name	  */
+	@Override
+	public void setDataEntry_Section_Name (java.lang.String DataEntry_Section_Name)
+	{
+		set_Value (COLUMNNAME_DataEntry_Section_Name, DataEntry_Section_Name);
+	}
+
+	/** Get Sektion Name.
+		@return Sektion Name	  */
+	@Override
+	public java.lang.String getDataEntry_Section_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_Section_Name);
 	}
 
 	@Override
@@ -336,8 +433,8 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 		return (java.lang.String)get_Value(COLUMNNAME_FieldValue);
 	}
 
-	/** Set Import Data Entry Record.
-		@param I_DataEntry_Record_ID Import Data Entry Record	  */
+	/** Set Import - Erweiterte Dateneingabe.
+		@param I_DataEntry_Record_ID Import - Erweiterte Dateneingabe	  */
 	@Override
 	public void setI_DataEntry_Record_ID (int I_DataEntry_Record_ID)
 	{
@@ -347,8 +444,8 @@ public class X_I_DataEntry_Record extends org.compiere.model.PO implements I_I_D
 			set_ValueNoCheck (COLUMNNAME_I_DataEntry_Record_ID, Integer.valueOf(I_DataEntry_Record_ID));
 	}
 
-	/** Get Import Data Entry Record.
-		@return Import Data Entry Record	  */
+	/** Get Import - Erweiterte Dateneingabe.
+		@return Import - Erweiterte Dateneingabe	  */
 	@Override
 	public int getI_DataEntry_Record_ID () 
 	{
