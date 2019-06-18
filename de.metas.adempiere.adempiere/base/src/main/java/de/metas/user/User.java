@@ -38,50 +38,38 @@ import lombok.Value;
 public class User
 {
 	/** can be null for not-yet-saved users */
-	@Nullable
 	UserId id;
 
-	@Nullable
 	BPartnerId bpartnerId;
 
-	@NonNull
 	String name;
 
-	@Nullable
 	String firstName;
 
-	@Nullable
 	String lastName;
 
-	@Nullable
 	String emailAddress;
 
-	@Nullable
 	LocalDate birthday;
 
-	@Nullable
 	String phone;
 
 	/**
 	 * Changes are persisted by the repo!
 	 */
-	@Nullable
 	Language userLanguage;
 
 	/**
 	 * Read-only; changes are <b>not</b> persisted by the repo!
 	 */
-	@Nullable
 	Language bPartnerLanguage;
 
 	/**
 	 * Either the user's or bPartner's or context's or base language. Never {@code null}.
 	 * Read-only; changes are <b>not</b> persisted by the repo!
 	 */
-	@NonNull
 	Language language;
 
-	@Nullable
 	ExternalId externalId;
 
 	@Builder(toBuilder = true)
@@ -97,7 +85,7 @@ public class User
 			@Nullable final Language userLanguage,
 			@Nullable final Language bPartnerLanguage,
 			@NonNull final Language language,
-			@NonNull final ExternalId externalId)
+			@Nullable final ExternalId externalId)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
