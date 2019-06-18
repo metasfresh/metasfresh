@@ -222,6 +222,8 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 			throw new FillMandatoryException("FieldName");
 		}
 		//
+		DataEntrySection section = null;
+		DataEntryLine line = null;
 		DataEntryField field = null;
 		for (final DataEntrySection currentSection : subTab.getSections())
 		{
@@ -252,12 +254,16 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 					{
 						throw new AdempiereException(TranslatableStringBuilder.newInstance()
 								.append("More than one matching field found: ")
-								.append(field.getCaption()).append(", ").append(currentField.getCaption())
+								.append(section.getCaption()).append(" - ").append(line.getSeqNo()).append(" - ").append(field.getCaption())
+								.append(", ")
+								.append(currentSection.getCaption()).append(" - ").append(currentLine.getSeqNo()).append(" - ").append(currentField.getCaption())
 								.build());
 					}
 
 					importRecord.setDataEntry_Field_ID(currentField.getId().getRepoId());
 
+					section = currentSection;
+					line = currentLine;
 					field = currentField;
 				}
 			}
