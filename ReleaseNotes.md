@@ -9,6 +9,24 @@ Additional notes:
  * You can also follow us on twitter: @metasfresh (english), @metasfreshDE (german)
 
 Here come the actual release notes:
+
+# metasfresh 5.108
+## Features
+* metasfresh
+  * [#5233](https://github.com/metasfresh/metasfresh/issues/5233) Separate eMail Text for Notifications
+
+* metasfresh-e2e
+  * [#92](https://github.com/metasfresh/metasfresh-e2e/issues/92) Cypress tests shall not be sensitive to menu language
+  * [#100](https://github.com/metasfresh/metasfresh-e2e/issues/100) Create a new user and set a password
+  * [#104](https://github.com/metasfresh/metasfresh-e2e/issues/104) Create command for selecting a date from calendar icon
+
+## Fixes
+* metasfresh
+  * [#5313](https://github.com/metasfresh/metasfresh/issues/5313) Automatischer Debitorenlisten-Export mit falschen Formaten
+  * [#5296](https://github.com/metasfresh/metasfresh/issues/5296) Exception on invoicing an invoice candidate
+
+## Fixes
+
 # metasfresh 5.107
 ## Features
 * metasfresh
