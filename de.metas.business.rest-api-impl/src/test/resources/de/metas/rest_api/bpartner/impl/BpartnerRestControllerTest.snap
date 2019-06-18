@@ -9,6 +9,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "name": "bPartner.name",
       "companyName": "bPartner.companyName",
       "parentId": 1,
+      "phone": "bPartner.phone",
       "language": {
         "m_name": "Deutsch",
         "m_AD_Language": "de_DE",
@@ -87,6 +88,136 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "email": "c2_email@email.net",
         "phone": "c2_phone"
+      }
+    ],
+    "orgId": 10
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact=[
+  {
+    "bpartner": {
+      "id": 20,
+      "externalId": {
+        "value": "fghij"
+      },
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 100001
+    },
+    "locations": [
+      {
+        "id": {
+          "repoId": 40,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "bpartnerLocation.externalId"
+        },
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "postal": "locationRecord.postal",
+        "poBox": "locationRecord.poBox",
+        "region": "locationRecord.regionName",
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln"
+      }
+    ],
+    "contacts": [
+      {
+        "id": {
+          "repoId": 30,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "abcde"
+        },
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
+      },
+      {
+        "id": {
+          "repoId": 100005,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "newContact-_externalId"
+        },
+        "email": "newContact-_email@email.net",
+        "phone": "newContact-_phone"
+      }
+    ],
+    "orgId": 10
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation=[
+  {
+    "bpartner": {
+      "id": 20,
+      "externalId": {
+        "value": "fghij"
+      },
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 100001
+    },
+    "locations": [
+      {
+        "id": {
+          "repoId": 40,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "bpartnerLocation.externalId"
+        },
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "postal": "locationRecord.postal",
+        "poBox": "locationRecord.poBox",
+        "region": "locationRecord.regionName",
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln"
+      },
+      {
+        "id": {
+          "repoId": 100007,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "newLocation-_externalId"
+        },
+        "address1": "newLocation-_address1",
+        "address2": "newLocation-_address2",
+        "postal": "newLocation-_postal",
+        "poBox": "newLocation-_poBox",
+        "region": "newLocation-_region",
+        "city": "newLocation-_city",
+        "countryCode": "DE",
+        "gln": "newLocation-_gln"
+      }
+    ],
+    "contacts": [
+      {
+        "id": {
+          "repoId": 30,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "abcde"
+        },
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
       }
     ],
     "orgId": 10

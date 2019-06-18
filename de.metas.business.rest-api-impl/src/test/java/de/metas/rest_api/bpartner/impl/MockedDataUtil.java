@@ -1,24 +1,17 @@
 package de.metas.rest_api.bpartner.impl;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.JsonPagingDescriptor;
-import de.metas.rest_api.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
-import de.metas.rest_api.bpartner.JsonBPartnerCompositeList.JsonBPartnerCompositeListBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
-import de.metas.rest_api.bpartner.JsonContactList;
-import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -42,9 +35,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class MockedBPartnerEndpointService
+@UtilityClass
+public class MockedDataUtil
 {
-
 	public static final String MOCKED_NEXT = UUID.randomUUID().toString();
 
 	private static int metasfreshIdCounter = 1;
@@ -54,7 +47,7 @@ public class MockedBPartnerEndpointService
 		return MetasfreshId.of(metasfreshIdCounter++);
 	}
 
-	public JsonBPartnerComposite createBPartner(@NonNull final String bpartnerIdentifier)
+	public JsonBPartnerComposite createMockBPartner(@NonNull final String bpartnerIdentifier)
 	{
 		final JsonBPartnerCompositeBuilder result = JsonBPartnerComposite.builder();
 
@@ -105,12 +98,7 @@ public class MockedBPartnerEndpointService
 		return result.build();
 	}
 
-	public Optional<JsonBPartnerLocation> retrieveBPartnerLocation(String bpartnerIdentifier, String locationIdentifier)
-	{
-		return Optional.of(createMockLocation("l" + Long.toString(nextMetasFreshId().getValue()), "DE"));
-	}
-
-	private JsonBPartnerLocation createMockLocation(
+	public JsonBPartnerLocation createMockLocation(
 			@NonNull final String prefix,
 			@NonNull final String countryCode)
 	{
@@ -129,12 +117,7 @@ public class MockedBPartnerEndpointService
 				.build();
 	}
 
-	public Optional<JsonContact> retrieveBPartnerContact(String bpartnerIdentifier, String contactIdentifier)
-	{
-		return Optional.of(createMockContact("c" + Long.toString(nextMetasFreshId().getValue())));
-	}
-
-	private JsonContact createMockContact(@NonNull final String prefix)
+	public JsonContact createMockContact(@NonNull final String prefix)
 	{
 		final JsonContact contact = JsonContact.builder()
 				.metasfreshId(nextMetasFreshId())
@@ -144,55 +127,5 @@ public class MockedBPartnerEndpointService
 				.phone(prefix + "_phone")
 				.build();
 		return contact;
-	}
-
-	public Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(Long epochTimestampMillis, String next)
-	{
-		final JsonPagingDescriptorBuilder pagingDescriptor = JsonPagingDescriptor.builder()
-				.pageSize(1)
-				.totalSize(2)
-				.resultTimestamp(SystemTime.millis());
-
-		final JsonBPartnerCompositeListBuilder compositeList = JsonBPartnerCompositeList.builder();
-
-		if (Check.isEmpty(next))
-		{
-			pagingDescriptor.nextPage(MOCKED_NEXT); // will return the first page with the 2nd page's identifier
-			compositeList.item(createBPartner("1234"));
-		}
-		else
-		{
-			if (MOCKED_NEXT.equals(next))
-			{
-				pagingDescriptor.nextPage(null); // will return the 2nd and last page
-				compositeList.item(createBPartner("1235"));
-			}
-			else
-			{
-				return Optional.ofNullable(null);
-			}
-		}
-
-		compositeList.pagingDescriptor(pagingDescriptor.build());
-		return Optional.of(compositeList.build());
-	}
-
-	public Optional<JsonContact> retrieveContact(String contactIdentifier)
-	{
-		return Optional.of(createMockContact("c1"));
-	}
-
-	public Optional<JsonContactList> retrieveContactsSince(Long epochTimestampMillis, String next)
-	{
-		JsonContactList list = JsonContactList
-				.builder()
-				.contact(createMockContact("c1"))
-				.pagingDescriptor(JsonPagingDescriptor.builder()
-						.pageSize(40)
-						.totalSize(1)
-						.resultTimestamp(SystemTime.millis())
-						.build())
-				.build();
-		return Optional.of(list);
 	}
 }

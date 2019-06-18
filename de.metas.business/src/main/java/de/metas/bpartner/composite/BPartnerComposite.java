@@ -52,13 +52,13 @@ import lombok.Singular;
 @Data
 public final class BPartnerComposite
 {
-	OrgId orgId;
+	private OrgId orgId;
 
-	BPartner bpartner;
+	private BPartner bpartner;
 
-	List<BPartnerLocation> locations;
+	private final List<BPartnerLocation> locations;
 
-	List<BPartnerContact> contacts;
+	private final List<BPartnerContact> contacts;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -161,6 +161,14 @@ public final class BPartnerComposite
 		return getLocations()
 				.stream()
 				.filter(l -> externalId.equals(l.getExternalId()))
+				.findAny();
+	}
+
+	public Optional<BPartnerContact> extractContact(@NonNull final ExternalId externalId)
+	{
+		return getContacts()
+				.stream()
+				.filter(c -> externalId.equals(c.getExternalId()))
 				.findAny();
 	}
 }

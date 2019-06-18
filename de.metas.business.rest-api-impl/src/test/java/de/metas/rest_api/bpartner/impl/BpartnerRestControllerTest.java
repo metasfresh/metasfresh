@@ -7,6 +7,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -24,10 +26,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerCompositeQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
+import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
+import de.metas.bpartner.composite.BPartnerContactQuery;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
@@ -40,6 +49,9 @@ import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.utils.JsonConverters;
+import de.metas.util.rest.ExternalId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -71,7 +83,7 @@ class BpartnerRestControllerTest
 	private static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	private static final int AD_ORG_ID = 10;
 	private static final String AD_USER_EXTERNAL_ID = "abcde";
-	private static final String C_BBPARTNER_EXTERNAL_ID = "fghij";
+	private static final String C_BPARTNER_EXTERNAL_ID = "fghij";
 
 	private static final int C_BPARTNER_ID = 20;
 	private static final int AD_USER_ID = 30;
@@ -110,7 +122,7 @@ class BpartnerRestControllerTest
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setC_BPartner_ID(C_BPARTNER_ID);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setExternalId(C_BBPARTNER_EXTERNAL_ID);
+		bpartnerRecord.setExternalId(C_BPARTNER_EXTERNAL_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
 		bpartnerRecord.setValue("bpartnerRecord.value");
 		bpartnerRecord.setC_BP_Group(bpGroupRecord);
@@ -168,7 +180,7 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_ext()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BBPARTNER_EXTERNAL_ID);
+		final ResponseEntity<JsonBPartnerComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BPARTNER_EXTERNAL_ID);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonBPartnerComposite resultBody = result.getBody();
@@ -205,7 +217,7 @@ class BpartnerRestControllerTest
 	{
 		// invoke the method under test
 		final ResponseEntity<JsonContact> result = bpartnerRestController.retrieveBPartnerContact(
-				"ext-" + C_BBPARTNER_EXTERNAL_ID,
+				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				Integer.toString(AD_USER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
@@ -219,7 +231,7 @@ class BpartnerRestControllerTest
 	{
 		// invoke the method under test
 		final ResponseEntity<JsonBPartnerLocation> result = bpartnerRestController.retrieveBPartnerLocation(
-				"ext-" + C_BBPARTNER_EXTERNAL_ID,
+				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				"gln-" + C_BPARTNER_LOCATION_GLN);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
@@ -234,8 +246,9 @@ class BpartnerRestControllerTest
 		createCountryRecord("CH");
 		createCountryRecord("DE");
 
-		final JsonBPartnerComposite bpartnerComposite = new MockedBPartnerEndpointService()
-				.createBPartner("ext-" + C_BBPARTNER_EXTERNAL_ID + "_2");
+		final String externalId = C_BPARTNER_EXTERNAL_ID + "_2";
+		final JsonBPartnerComposite bpartnerComposite = MockedDataUtil
+				.createMockBPartner("ext-" + externalId);
 
 		final JsonBPartner bpartner = bpartnerComposite.getBpartner()
 				.toBuilder()
@@ -243,7 +256,7 @@ class BpartnerRestControllerTest
 				.build();
 
 		final JsonBPartnerUpsertRequestItem requestItem = JsonBPartnerUpsertRequestItem.builder()
-				.externalId(JsonExternalId.of(C_BBPARTNER_EXTERNAL_ID + "_2"))
+				.externalId(JsonExternalId.of(externalId))
 				.bpartnerComposite(bpartnerComposite.toBuilder()
 						.bpartner(bpartner)
 						.build())
@@ -260,24 +273,91 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonUpsertResponse> result = bpartnerRestController.createOrUpdateBPartner(bpartners);
 
+		final MetasfreshId metasfreshId = assertUpsertResultOK(result, externalId);
+		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
+
+		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
+		expect(persistedResult).toMatchSnapshot();
+	}
+
+	private MetasfreshId assertUpsertResultOK(final ResponseEntity<JsonUpsertResponse> result, final String externalId)
+	{
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
 		final JsonUpsertResponse resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
 		final JsonUpsertResponseItem responseItem = resultBody.getResponseItems().get(0);
-		assertThat(responseItem.getExternalId()).isEqualTo(JsonExternalId.of(C_BBPARTNER_EXTERNAL_ID + "_2"));
+		assertThat(responseItem.getExternalId()).isEqualTo(JsonExternalId.of(externalId));
 
-		BPartnerId bpartnerId = BPartnerId.ofRepoId(responseItem.getMetasfreshId().getValue());
+		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		return metasfreshId;
+	}
 
-		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
+	private void createCountryRecord(@NonNull final String countryCode)
+	{
+		final I_C_Country deCountryRecord = newInstance(I_C_Country.class);
+		deCountryRecord.setCountryCode(countryCode);
+		saveRecord(deCountryRecord);
+	}
+
+	@Test
+	void createOrUpdateContact()
+	{
+		final JsonContact jsonContact = MockedDataUtil.createMockContact("newContact-");
+		assertThat(jsonContact.getExternalId()).isNotNull(); // guard
+
+		// invoke the method under test
+		final ResponseEntity<JsonUpsertResponseItem> result = bpartnerRestController.createOrUpdateContact("gln-" + C_BPARTNER_LOCATION_GLN, jsonContact);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+
+		final JsonUpsertResponseItem responseItem = result.getBody();
+
+		assertThat(responseItem.getExternalId()).isEqualTo(jsonContact.getExternalId());
+
+		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+
+		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().externalId(JsonConverters.fromJsonOrNull(jsonContact.getExternalId())).build();
+		final Optional<ContactIdAndBPartner> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
+		assertThat(optContactIdAndBPartner).isPresent();
+
+		final BPartnerContactId resultContactId = optContactIdAndBPartner.get().getBpartnerContactId();
+		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
+
+		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
 		expect(persistedResult).toMatchSnapshot();
 	}
 
-	private void createCountryRecord(final String de)
+	@Test
+	void createOrUpdateLocation()
 	{
-		final I_C_Country deCountryRecord = newInstance(I_C_Country.class);
-		deCountryRecord.setCountryCode(de);
-		saveRecord(deCountryRecord);
+		createCountryRecord("DE");
+		final JsonBPartnerLocation jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
+		assertThat(jsonLocation.getExternalId()).isNotNull(); // guard
+
+		// invoke the method under test
+		final ResponseEntity<JsonUpsertResponseItem> result = bpartnerRestController.createOrUpdateLocation("ext-" + C_BPARTNER_EXTERNAL_ID, jsonLocation);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+
+		final JsonUpsertResponseItem responseItem = result.getBody();
+
+		assertThat(responseItem.getExternalId()).isEqualTo(jsonLocation.getExternalId());
+
+		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+
+		final BPartnerCompositeQuery query = BPartnerCompositeQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
+		final QueryResultPage<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);
+
+		assertThat(persistedPage.getItems()).hasSize(1);
+
+		final BPartnerComposite persistedResult = persistedPage.getItems().get(0);
+		final Optional<BPartnerLocation> persistedLocation = persistedResult.extractLocation(JsonConverters.fromJsonOrNull(jsonLocation.getExternalId()));
+		assertThat(persistedLocation).isPresent();
+
+		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
+
+		expect(persistedResult).toMatchSnapshot();
 	}
 }

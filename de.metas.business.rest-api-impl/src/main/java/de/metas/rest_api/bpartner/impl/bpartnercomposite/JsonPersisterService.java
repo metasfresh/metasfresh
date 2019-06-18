@@ -341,7 +341,7 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
-		if (optBPartnerComposite.isPresent())
+		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
 		}
@@ -372,7 +372,7 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
-		if (optBPartnerComposite.isPresent())
+		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
 		}
@@ -390,11 +390,11 @@ public class JsonPersisterService
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
-		final BPartnerLocation bpartnerLocation = bpartnerComposite
-				.extractLocation(externalId)
+		final BPartnerContact bpartnerContact = bpartnerComposite
+				.extractContact(externalId)
 				.get(); // it's there; we just made sure
 
-		return Optional.of(MetasfreshId.of(bpartnerLocation.getId()));
+		return Optional.of(MetasfreshId.of(bpartnerContact.getId()));
 	}
 
 	private void syncJsonContact(
