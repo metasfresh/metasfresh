@@ -27,8 +27,7 @@
             "metasfreshId": 1,
             "poBox": "string",
             "postal": "string",
-            "region": "string",
-            "state": "string"
+            "region": "string"
           }
         ],
         "contacts": [
@@ -46,7 +45,7 @@
     }
   ],
   "syncAdvise": {
-    "ifExists": "UPDATE",
+    "ifExists": "UPDATE_MERGE",
     "ifNotExists": "CREATE"
   }
 }

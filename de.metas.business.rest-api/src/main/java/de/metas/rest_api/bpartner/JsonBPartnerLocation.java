@@ -58,18 +58,20 @@ public class JsonBPartnerLocation
 
 	private String address1;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	private String address2;
 
+	@JsonInclude(Include.NON_EMPTY)
 	private String poBox;
 
 	private String postal;
 
 	private String city;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	private String district;
 
+	@JsonInclude(Include.NON_EMPTY)
 	private String region;
 
 	private String countryCode;

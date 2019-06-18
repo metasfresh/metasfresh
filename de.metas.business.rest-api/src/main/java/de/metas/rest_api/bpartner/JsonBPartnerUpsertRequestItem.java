@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
@@ -57,6 +58,7 @@ public class JsonBPartnerUpsertRequestItem
 		this.bpartnerComposite = bpartnerComposite;
 	}
 
+	@JsonIgnore
 	public JsonBPartnerComposite getEffectiveBPartnerComposite()
 	{
 		return getBpartnerComposite().withExternalId(getExternalId());

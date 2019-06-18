@@ -16,7 +16,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -49,7 +49,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -105,7 +105,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -138,7 +138,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -194,7 +194,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -227,7 +227,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -283,7 +283,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -316,7 +316,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -372,7 +372,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -405,7 +405,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -461,7 +461,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -494,7 +494,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -550,7 +550,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -583,7 +583,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -639,7 +639,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -672,7 +672,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -728,7 +728,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -761,7 +761,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -817,7 +817,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -850,7 +850,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -906,7 +906,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -939,7 +939,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -995,7 +995,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1028,7 +1028,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1084,7 +1084,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1117,7 +1117,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1173,7 +1173,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1206,7 +1206,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1262,7 +1262,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1295,7 +1295,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1351,7 +1351,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1384,7 +1384,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1440,7 +1440,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1473,7 +1473,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1529,7 +1529,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1562,7 +1562,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1618,7 +1618,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1651,7 +1651,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1707,7 +1707,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1740,7 +1740,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },
@@ -1796,7 +1796,7 @@
           "address2" : null,
           "postal" : null,
           "city" : "Frenkendorf",
-          "state" : null,
+          "region" : null,
           "countryCode" : "CH",
           "gln" : "2011234567890"
         },
@@ -1829,7 +1829,7 @@
         "address2" : null,
         "postal" : null,
         "city" : "Basel",
-        "state" : null,
+        "region" : null,
         "countryCode" : "CH",
         "gln" : "7634567890000"
       },

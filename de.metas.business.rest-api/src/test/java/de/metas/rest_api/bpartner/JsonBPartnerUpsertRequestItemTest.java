@@ -46,7 +46,7 @@ public class JsonBPartnerUpsertRequestItemTest
 	@Test
 	public void serializeDeserialize()
 	{
-		JsonBPartnerUpsertRequestItem item = JsonBPartnerUpsertRequestItem.builder()
+		final JsonBPartnerUpsertRequestItem item = JsonBPartnerUpsertRequestItem.builder()
 				.externalId(JsonExternalId.of("12345"))
 				.bpartnerComposite(JsonBPartnerComposite.builder()
 						.bpartner(JsonBPartner.builder()
