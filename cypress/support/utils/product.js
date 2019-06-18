@@ -25,7 +25,13 @@ export class Product {
     return this;
   }
 
-  setStocked(isPurchased) {
+  setStocked(isStocked) {
+    cy.log(`Product - set isStocked = ${isStocked}`);
+    this.isStocked = isStocked;
+    return this;
+  }
+
+  setPurchased(isPurchased) {
     cy.log(`Product - set isPurchased = ${isPurchased}`);
     this.isPurchased = isPurchased;
     return this;
