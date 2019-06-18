@@ -13,6 +13,16 @@ export class SalesInvoice {
     return this;
   }
 
+  setDocumentAction(documentAction) {
+    this.documentAction = documentAction;
+    return this;
+  }
+
+  setDocumentStatus(documentStatus) {
+    this.documentStatus = documentStatus;
+    return this;
+  }
+
   apply() {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     this.applySalesInvoice(this);
@@ -38,28 +48,37 @@ export class SalesInvoice {
       salesInvoice.lines.forEach(line => {
         SalesInvoice.applyLine(line);
       });
+
+      cy.processDocument('Complete', 'Completed');
+
+      if (salesInvoice.documentAction) {
+        if (salesInvoice.documentStatus) {
+          cy.processDocument(salesInvoice.documentAction, salesInvoice.documentStatus);
+        } else {
+          cy.processDocument(salesInvoice.documentAction);
+        }
+      }
+
+
     });
   }
 
   static applyLine(salesInvoiceLine) {
+    cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
     cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
+    if (salesInvoiceLine.packingItem) {
+      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, true, true);
+    }
 
-    // cannot set the packingItem
-    cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
-    // cy.writeIntoStringField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem);
-    // cy.writeIntoTextField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, true);
-
-    // cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, true);
-    // cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,true, false);
-    // cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, false);
-    // cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem,false, true);
-
-    // cy.selectInListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, true);
-    // cy.selectInListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, false);
+    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true, null, true);
+    if (salesInvoiceLine.tuQuantity) {
+      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
+    }
 
     cy.pressDoneButton();
+
   }
 }
 
