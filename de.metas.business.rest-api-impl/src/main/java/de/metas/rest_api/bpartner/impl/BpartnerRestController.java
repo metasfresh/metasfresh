@@ -76,10 +76,10 @@ import lombok.NonNull;
 public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
-	private final IBPartnerEndpointService bPartnerEndpointservice;
+	private final BPartnerEndpointService bPartnerEndpointservice;
 	private final JsonServiceFactory jsonServiceFactory;
 
-	public BpartnerRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
+	public BpartnerRestController(@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.jsonServiceFactory = jsonServiceFactory;

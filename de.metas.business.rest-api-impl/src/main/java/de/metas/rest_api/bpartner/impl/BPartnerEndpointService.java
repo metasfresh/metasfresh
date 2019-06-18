@@ -5,7 +5,6 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -49,8 +48,7 @@ import lombok.NonNull;
  */
 
 @Service
-@Primary
-public class BPartnerEndpointService implements IBPartnerEndpointService
+public class BPartnerEndpointService
 {
 	private final JsonRetrieverService jsonRetriever;
 
@@ -59,14 +57,12 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		this.jsonRetriever = jsonServiceFactory.createRetriever(); // we can have one long-term-instance
 	}
 
-	@Override
 	public Optional<JsonBPartnerComposite> retrieveBPartner(@NonNull final String bpartnerIdentifierStr)
 	{
 		final Optional<JsonBPartnerComposite> optBpartnerComposite = jsonRetriever.retrieveJsonBPartnerComposite(bpartnerIdentifierStr);
 		return optBpartnerComposite;
 	}
 
-	@Override
 	public Optional<JsonBPartnerLocation> retrieveBPartnerLocation(
 			@NonNull final String bpartnerIdentifierStr,
 			@NonNull final String locationIdentifierStr)
@@ -105,7 +101,6 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		}
 	}
 
-	@Override
 	public Optional<JsonContact> retrieveBPartnerContact(
 			@NonNull final String bpartnerIdentifierStr,
 			@NonNull final String contactIdentifierStr)
@@ -144,7 +139,6 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		}
 	}
 
-	@Override
 	public Optional<JsonBPartnerCompositeList> retrieveBPartnersSince(
 			@Nullable final Long epochMilli,
 			@Nullable final String nextPageId)
@@ -174,7 +168,6 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		return Optional.of(result);
 	}
 
-	@Override
 	public Optional<JsonContactList> retrieveContactsSince(
 			@Nullable final Long epochMilli,
 			@Nullable final String nextPageId)
@@ -205,7 +198,6 @@ public class BPartnerEndpointService implements IBPartnerEndpointService
 		return Optional.of(result);
 	}
 
-	@Override
 	public Optional<JsonContact> retrieveContact(@NonNull final String contactIdentifierStr)
 	{
 		return jsonRetriever.retrieveContact(contactIdentifierStr);

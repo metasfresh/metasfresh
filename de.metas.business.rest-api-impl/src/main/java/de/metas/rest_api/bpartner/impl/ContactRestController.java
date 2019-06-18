@@ -70,11 +70,11 @@ import lombok.NonNull;
 public class ContactRestController implements ContactRestEndpoint
 {
 
-	private final IBPartnerEndpointService bPartnerEndpointservice;
+	private final BPartnerEndpointService bPartnerEndpointservice;
 	private final JsonServiceFactory jsonServiceFactory;
 
 	public ContactRestController(
-			@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
+			@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
