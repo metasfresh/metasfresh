@@ -73,12 +73,12 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 {
 
 	private final IBPartnerEndpointService bPartnerEndpointservice;
-	private final JsonServiceFactory jsonPersisterServiceFactory;
+	private final JsonServiceFactory jsonServiceFactory;
 
 	public BpartnerRestController(@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
-			@NonNull final JsonServiceFactory jsonPersisterServiceFactory)
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
-		this.jsonPersisterServiceFactory = jsonPersisterServiceFactory;
+		this.jsonServiceFactory = jsonServiceFactory;
 		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
 
 	}
@@ -204,7 +204,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(
 			@RequestBody @NonNull final JsonBPartnerUpsertRequest bpartners)
 	{
-		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
@@ -239,7 +239,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			@RequestBody @NonNull final JsonBPartnerLocation jsonLocation)
 	{
-		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 		final Optional<MetasfreshId> jsonLocationId = persister.persist(bpartnerIdentifier, jsonLocation);
 
 		if (!jsonLocationId.isPresent())
@@ -275,7 +275,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestBody @NonNull final JsonContact jsonContact)
 	{
 
-		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 		final Optional<MetasfreshId> jsonContactId = persister.persist(bpartnerIdentifier, jsonContact);
 
 		if (!jsonContactId.isPresent())

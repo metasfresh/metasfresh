@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -77,13 +76,6 @@ public final class BPartnerComposite
 
 		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
 		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
-
-		final boolean lokupValuesAreOk = !isEmpty(bpartner.getValue(), true)
-				|| bpartner.getExternalId() != null
-				|| !extractLocationGlns().isEmpty();
-		Check.errorUnless(
-				lokupValuesAreOk,
-				"At least one of bpartner.code, bpartner.externalId or one location.gln needs to be non-empty; this={}", this);
 	}
 
 	public ImmutableList<String> extractLocationGlns()
@@ -133,7 +125,22 @@ public final class BPartnerComposite
 
 		if (orgId == null)
 		{
-			result.add(ITranslatableString.constant("Missing orgId"));
+			result.add(ITranslatableString.constant("Missing BPartnerComposite.orgId"));
+		}
+
+		if (bpartner == null)
+		{
+			result.add(ITranslatableString.constant("Missing BPartnerComposite.bpartner"));
+		}
+		else
+		{
+			final boolean lokupValuesAreOk = !isEmpty(bpartner.getValue(), true)
+					|| bpartner.getExternalId() != null
+					|| !extractLocationGlns().isEmpty();
+			if (!lokupValuesAreOk)
+			{
+				result.add(ITranslatableString.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
+			}
 		}
 
 		result.addAll(bpartner.validate());

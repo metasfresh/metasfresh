@@ -37,12 +37,11 @@ import lombok.NonNull;
  */
 
 /**
- *
  * @param <RK> key/id of the cached data ("record key")
  * @param <CK> cache key
  * @param <V> cached data ("value")
  */
-public class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
+public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 {
 	private static final Logger logger = LogManager.getLogger(CacheIndex.class);
 

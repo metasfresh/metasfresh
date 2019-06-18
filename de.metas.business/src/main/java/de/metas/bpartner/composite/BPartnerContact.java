@@ -7,11 +7,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -54,7 +52,6 @@ public class BPartnerContact
 	@JsonInclude(Include.NON_NULL)
 	private String phone;
 
-	private final BPartnerId bpartnerId;
 
 	@Builder(toBuilder = true)
 	private BPartnerContact(
@@ -64,8 +61,7 @@ public class BPartnerContact
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone,
-			@JsonProperty("bpartnerId") @NonNull final BPartnerId bpartnerId)
+			@JsonProperty("phone") final String phone)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -74,7 +70,6 @@ public class BPartnerContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
-		this.bpartnerId = bpartnerId;
 	}
 
 	public BPartnerContact deepCopy()

@@ -14,11 +14,7 @@ de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestTest.deserialize=[
             "phone": "string",
             "language": "string",
             "url": "string",
-            "group": "string",
-            "syncAdvise": {
-              "ifNotExists": "FAIL",
-              "ifExists": "DONT_UPDATE"
-            }
+            "group": "string"
           },
           "locations": [
             {
@@ -32,11 +28,7 @@ de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestTest.deserialize=[
               "region": "string",
               "city": "string",
               "countryCode": "string",
-              "gln": "string",
-              "syncAdvise": {
-                "ifNotExists": "FAIL",
-                "ifExists": "DONT_UPDATE"
-              }
+              "gln": "string"
             }
           ],
           "contacts": [
@@ -47,17 +39,9 @@ de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestTest.deserialize=[
               "firstName": "string",
               "lastName": "string",
               "email": "string",
-              "phone": "string",
-              "syncAdvise": {
-                "ifNotExists": "FAIL",
-                "ifExists": "DONT_UPDATE"
-              }
+              "phone": "string"
             }
-          ],
-          "syncAdvise": {
-            "ifNotExists": "FAIL",
-            "ifExists": "DONT_UPDATE"
-          }
+          ]
         }
       }
     ],

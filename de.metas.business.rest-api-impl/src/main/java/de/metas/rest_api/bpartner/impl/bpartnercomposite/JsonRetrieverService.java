@@ -5,6 +5,8 @@ import static de.metas.util.Check.isEmpty;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
@@ -19,14 +21,14 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeQuery;
-import de.metas.bpartner.composite.BPartnerCompositeRepository;
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerContactQuery;
-import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerCompositeQuery.BPartnerCompositeQueryBuilder;
+import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerContactQuery.BPartnerContactQueryBuilder;
+import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.i18n.Language;
@@ -34,9 +36,9 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
+import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
@@ -94,7 +96,9 @@ public class JsonRetrieverService
 		return retrieveBPartnerComposite(bpartnerIdentifierStr).map(this::toJson);
 	}
 
-	public Optional<QueryResultPage<JsonBPartnerComposite>> retrieveJsonBPartnerComposites(final String nextPageId, final SinceQuery sinceRequest)
+	public Optional<QueryResultPage<JsonBPartnerComposite>> retrieveJsonBPartnerComposites(
+			@Nullable final String nextPageId,
+			@Nullable final SinceQuery sinceRequest)
 	{
 		final QueryResultPage<BPartnerComposite> page;
 		if (isEmpty(nextPageId, true))
@@ -157,13 +161,16 @@ public class JsonRetrieverService
 
 	private JsonContact toJson(@NonNull final BPartnerContact contact)
 	{
+		final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
+		final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+
 		return JsonContact.builder()
 				.email(contact.getEmail())
 				.externalId(JsonConverters.toJsonOrNull(contact.getExternalId()))
 				.firstName(contact.getFirstName())
 				.lastName(contact.getLastName())
-				.metasfreshBPartnerId(MetasfreshId.of(contact.getBpartnerId()))
-				.metasfreshId(MetasfreshId.of(contact.getId().getRepoId()))
+				.metasfreshBPartnerId(metasfreshBPartnerId)
+				.metasfreshId(metasfreshId)
 				.name(contact.getName())
 				.phone(contact.getPhone())
 				.build();

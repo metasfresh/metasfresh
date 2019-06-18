@@ -88,7 +88,7 @@ public class IdentifierString
 			@NonNull final String value)
 	{
 		this.type = type;
-		this.value = assumeNotEmpty("Parameter value may not be empty", value);
+		this.value = assumeNotEmpty(value, "Parameter value may not be empty");
 	}
 
 	public ExternalId asExternalId()

@@ -1,0 +1,149 @@
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerContact=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerLocation=[
+  {
+    "metasfreshId": 40,
+    "externalId": "bpartnerLocation.externalId",
+    "address1": "locationRecord.address1",
+    "address2": "locationRecord.address2",
+    "postal": "locationRecord.postal",
+    "poBox": "locationRecord.poBox",
+    "district": "postalRecord.district",
+    "region": "locationRecord.regionName",
+    "city": "locationRecord.city",
+    "countryCode": "countryRecord.countryCode",
+    "gln": "bpartnerLocationRecord.gln"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=[
+  {
+    "bpartner": {
+      "metasfreshId": 20,
+      "externalId": "fghij",
+      "code": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "group": "bpGroupRecord.name"
+    },
+    "locations": [
+      {
+        "metasfreshId": 40,
+        "externalId": "bpartnerLocation.externalId",
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "postal": "locationRecord.postal",
+        "poBox": "locationRecord.poBox",
+        "district": "postalRecord.district",
+        "region": "locationRecord.regionName",
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln"
+      }
+    ],
+    "contacts": [
+      {
+        "metasfreshId": 30,
+        "externalId": "abcde",
+        "metasfreshBPartnerId": 20,
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=[
+  {
+    "bpartner": {
+      "metasfreshId": 20,
+      "externalId": "fghij",
+      "code": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "group": "bpGroupRecord.name"
+    },
+    "locations": [
+      {
+        "metasfreshId": 40,
+        "externalId": "bpartnerLocation.externalId",
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "postal": "locationRecord.postal",
+        "poBox": "locationRecord.poBox",
+        "district": "postalRecord.district",
+        "region": "locationRecord.regionName",
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln"
+      }
+    ],
+    "contacts": [
+      {
+        "metasfreshId": 30,
+        "externalId": "abcde",
+        "metasfreshBPartnerId": 20,
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
+  {
+    "bpartner": {
+      "metasfreshId": 20,
+      "externalId": "fghij",
+      "code": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "group": "bpGroupRecord.name"
+    },
+    "locations": [
+      {
+        "metasfreshId": 40,
+        "externalId": "bpartnerLocation.externalId",
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "postal": "locationRecord.postal",
+        "poBox": "locationRecord.poBox",
+        "district": "postalRecord.district",
+        "region": "locationRecord.regionName",
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln"
+      }
+    ],
+    "contacts": [
+      {
+        "metasfreshId": 30,
+        "externalId": "abcde",
+        "metasfreshBPartnerId": 20,
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
+      }
+    ]
+  }
+]

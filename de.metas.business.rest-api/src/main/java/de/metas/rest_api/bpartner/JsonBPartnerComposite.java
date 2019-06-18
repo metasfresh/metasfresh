@@ -9,6 +9,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -98,7 +99,7 @@ public final class JsonBPartnerComposite
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = syncAdvise;
 
 		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
 				|| bpartner.getExternalId() != null
@@ -122,5 +123,11 @@ public final class JsonBPartnerComposite
 		return toBuilder()
 				.bpartner(bpartner.toBuilder().externalId(externalId).build())
 				.build();
+	}
+
+	@JsonIgnore
+	public SyncAdvise getSyncAdvise()
+	{
+		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

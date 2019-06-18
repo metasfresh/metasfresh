@@ -162,6 +162,10 @@ public class QueryBL implements IQueryBL
 			@NonNull final Class<T> clazz,
 			@NonNull final String next)
 	{
+		if(Adempiere.isUnitTestMode())
+		{
+			return POJOQuery.getPage(clazz,next);
+		}
 		return Adempiere
 				.getBean(PaginationService.class)
 				.loadPage(clazz, next);

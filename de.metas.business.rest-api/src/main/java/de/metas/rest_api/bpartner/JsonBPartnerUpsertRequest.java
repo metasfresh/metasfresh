@@ -1,7 +1,7 @@
 package de.metas.rest_api.bpartner;
 
 import static de.metas.util.lang.CoalesceUtil.coalesce;
-
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -45,6 +46,7 @@ public class JsonBPartnerUpsertRequest
 {
 	List<JsonBPartnerUpsertRequestItem> requestItems;
 
+	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

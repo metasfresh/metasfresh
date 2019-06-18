@@ -29,7 +29,6 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.bpartner.impl.BPartnerMasterDataProvider;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.product.impl.ProductMasterDataProvider;
@@ -136,7 +135,7 @@ public final class MasterdataProvider
 			final String code = json.getCode();
 			if (Check.isEmpty(code, true))
 			{
-				throw new MissingPropertyException("Missing 'code' property; JsonOrganization={}", json);
+				throw new MissingPropertyException("JsonOrganization.code", json);
 			}
 
 			final OrgQuery query = OrgQuery.builder()

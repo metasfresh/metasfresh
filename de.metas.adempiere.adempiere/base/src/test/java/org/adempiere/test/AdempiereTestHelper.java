@@ -3,6 +3,8 @@ package org.adempiere.test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,7 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.util.Properties;
-
+import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -131,6 +133,8 @@ public class AdempiereTestHelper
 
 		// Make sure staticInit was called
 		staticInit();
+
+		POJOQuery.clear_UUID_TO_PAGE();
 
 		// Make sure database is clean
 		POJOLookupMap.resetAll();

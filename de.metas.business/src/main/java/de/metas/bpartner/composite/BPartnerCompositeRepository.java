@@ -420,6 +420,7 @@ public class BPartnerCompositeRepository
 			final int id = bPartnerRecord.getC_BPartner_ID();
 
 			final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
+					.orgId(OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID()))
 					.bpartner(ofRecord(bPartnerRecord))
 					.contacts(ofContactRecords(id2Contacts.get(id)))
 					.locations(ofLocationRecords(id2Locations.get(id)))
@@ -510,12 +511,13 @@ public class BPartnerCompositeRepository
 
 	private BPartnerContact ofRecord(@NonNull final I_AD_User contactRecord)
 	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
+				.id(BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID()))
 				.email(contactRecord.getEMail())
 				.externalId(ExternalId.ofOrNull(contactRecord.getExternalId()))
 				.firstName(contactRecord.getFirstname())
 				.lastName(contactRecord.getLastname())
-				.bpartnerId(BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID()))
 				.name(contactRecord.getName())
 				.phone(contactRecord.getPhone())
 				.build();

@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner.impl;
+package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -44,6 +44,7 @@ import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.impl.BPartnerMasterDataContext;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.PermissionService;
@@ -391,7 +392,7 @@ public class BPartnerMasterDataProvider
 		}
 		else if (isNew)
 		{
-			throw new MissingPropertyException("Missing property Name; JsonBPartner={}", from);
+			throw new MissingPropertyException("JsonBPartner.name", from);
 		}
 
 		bpartnerRecord.setIsCustomer(true);
@@ -495,7 +496,7 @@ public class BPartnerMasterDataProvider
 			final String countryCode = json.getCountryCode();
 			if (Check.isEmpty(countryCode))
 			{
-				throw new MissingPropertyException("Missing propery CountryCode; JsonBPartnerLocation={}", json);
+				throw new MissingPropertyException("JsonBPartnerLocation.countryCode", json);
 			}
 			final CountryId countryId = countryRepo.getCountryIdByCountryCode(countryCode);
 

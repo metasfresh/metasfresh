@@ -1,0 +1,74 @@
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=[
+  {
+    "id": {
+      "repoId": 100002,
+      "bpartnerId": 20
+    },
+    "externalId": {
+      "value": "externalId-1"
+    }
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
+  {
+    "metasfreshId": 30,
+    "externalId": "abcde",
+    "metasfreshBPartnerId": 20,
+    "name": "bpartnerRecord.name",
+    "firstName": "bpartnerRecord.firstName",
+    "lastName": "bpartnerRecord.lastName",
+    "email": "bpartnerRecord.email",
+    "phone": "bpartnerRecord.phone"
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=[
+  {
+    "resultTimestamp": 1560866562494,
+    "totalSize": 1,
+    "pageSize": 1,
+    "contacts": [
+      {
+        "metasfreshId": 30,
+        "externalId": "abcde",
+        "metasfreshBPartnerId": 20,
+        "name": "bpartnerRecord.name",
+        "firstName": "bpartnerRecord.firstName",
+        "lastName": "bpartnerRecord.lastName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone"
+      }
+    ]
+  }
+]

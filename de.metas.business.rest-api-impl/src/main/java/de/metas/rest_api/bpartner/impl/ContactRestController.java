@@ -67,14 +67,14 @@ public class ContactRestController implements ContactRestEndpoint
 {
 
 	private final IBPartnerEndpointService bPartnerEndpointservice;
-	private final JsonServiceFactory jsonPersisterServiceFactory;
+	private final JsonServiceFactory jsonServiceFactory;
 
 	public ContactRestController(
 			@NonNull final IBPartnerEndpointService bpIbPartnerEndpointservice,
-			@NonNull final JsonServiceFactory jsonPersisterServiceFactory)
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.bPartnerEndpointservice = bpIbPartnerEndpointservice;
-		this.jsonPersisterServiceFactory = jsonPersisterServiceFactory;
+		this.jsonServiceFactory = jsonServiceFactory;
 	}
 
 	@ApiResponses(value = {
@@ -140,7 +140,7 @@ public class ContactRestController implements ContactRestEndpoint
 	{
 		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
 
-		final JsonPersisterService persister = jsonPersisterServiceFactory.createPersister();
+		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		for (final JsonContactUpsertRequestItem requestItem : contacts.getRequestItems())
 		{

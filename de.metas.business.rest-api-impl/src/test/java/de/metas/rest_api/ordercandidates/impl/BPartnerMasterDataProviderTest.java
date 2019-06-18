@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner.impl;
+package de.metas.rest_api.ordercandidates.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -35,6 +35,7 @@ import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.ordercandidates.impl.BPartnerMasterDataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 

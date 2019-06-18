@@ -6,6 +6,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -115,6 +116,12 @@ public class JsonBPartnerLocation
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = syncAdvise;
+	}
+
+	@JsonIgnore
+	public SyncAdvise getSyncAdvise()
+	{
+		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

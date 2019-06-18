@@ -117,7 +117,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	public static final POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
+	public static POJOLookupMap getInMemoryDatabaseForModel(final Class<?> modelClass)
 	{
 		final POJOLookupMap database = get();
 		if (database == null)
@@ -133,7 +133,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return database;
 	}
 
-	public static final POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
+	public static POJOLookupMap getInMemoryDatabaseForTableName(final String tableName)
 	{
 		final POJOLookupMap database = get();
 		if (database == null)
@@ -432,7 +432,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		});
 	}
 
-	private final void runInTrx(final String trxName, final TrxRunnable runnable)
+	private void runInTrx(final String trxName, final TrxRunnable runnable)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (trxManager.isNull(trxName))
@@ -850,7 +850,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		interceptor.initialize(this, client);
 	}
 
-	private final void fireModelChanged(final Object model, final ModelChangeType changeType)
+	private void fireModelChanged(final Object model, final ModelChangeType changeType)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 		final CompositeModelInterceptor interceptors = tableName2interceptors.get(tableName);
@@ -873,7 +873,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		}
 	}
 
-	public final void fireDocumentChange(final Object doc, final DocTimingType timing)
+	public void fireDocumentChange(final Object doc, final DocTimingType timing)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(doc);
 		final CompositeModelInterceptor interceptors = tableName2interceptors.get(tableName);
@@ -944,7 +944,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 	private ObjectName jmxName = null;
 
-	private final void registerJMX()
+	private void registerJMX()
 	{
 		final MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 		final JMXPOJOLookupMap jmxBean = new JMXPOJOLookupMap(this);
@@ -992,7 +992,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		this.jmxName = name;
 	}
 
-	private final void unregisterJMX()
+	private void unregisterJMX()
 	{
 		if (jmxName == null)
 		{
@@ -1029,7 +1029,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		appliesExcludeTablePrefixes.add(tablenamePrefix);
 	}
 
-	public final boolean appliesToTableName(final String tableName)
+	public boolean appliesToTableName(final String tableName)
 	{
 		//
 		// Check excludes
@@ -1062,7 +1062,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return false;
 	}
 
-	public final boolean appliesToModelClass(final Class<?> modelClass)
+	public boolean appliesToModelClass(final Class<?> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(modelClass);
 		if (tableName == null)

@@ -39,20 +39,20 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 @ApiModel
 public class JsonContactUpsertRequest
 {
 	List<JsonContactUpsertRequestItem> requestItems;
 
-	SyncAdvise syncAdvise;
+	SyncAdvise.IfExists ifExists;
 
 	@JsonCreator
+	@Builder
 	public JsonContactUpsertRequest(
 			@Singular @JsonProperty("requestItems") final List<JsonContactUpsertRequestItem> requestItems,
-			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+			@Nullable @JsonProperty("ifExists") final SyncAdvise.IfExists ifExists)
 	{
 		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.ifExists = coalesce(ifExists, SyncAdvise.IfExists.UPDATE_MERGE);
 	}
 }

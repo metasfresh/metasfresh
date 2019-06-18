@@ -2,8 +2,6 @@ package de.metas.rest_api.utils;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.util.StringUtils;
-
 /*
  * #%L
  * de.metas.ordercandidate.rest-api-impl
@@ -31,8 +29,11 @@ public class MissingPropertyException extends AdempiereException
 {
 	private static final long serialVersionUID = -3485523266695546853L;
 
-	public MissingPropertyException(final String msg, final Object... params)
+	public MissingPropertyException(final String propertyName, Object objectWithMissingProperty)
 	{
-		super(StringUtils.formatMessage(msg, params));
+		super(propertyName);
+
+		appendParametersToMessage();
+		setParameter("objectWithMissingProperty", objectWithMissingProperty);
 	}
 }

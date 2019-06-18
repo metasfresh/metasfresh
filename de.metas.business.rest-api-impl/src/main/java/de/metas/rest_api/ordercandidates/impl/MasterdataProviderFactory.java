@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import org.springframework.stereotype.Service;
 
-import de.metas.rest_api.bpartner.impl.BPartnerMasterDataProvider;
 import de.metas.rest_api.product.impl.ProductMasterDataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import lombok.Builder;

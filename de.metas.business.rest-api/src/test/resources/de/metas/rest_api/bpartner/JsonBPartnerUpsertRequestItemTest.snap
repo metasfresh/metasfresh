@@ -4,15 +4,7 @@ de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItemTest.serializeDeserializ
     "bpartnerComposite": {
       "bpartner": {
         "metasfreshId": 123,
-        "code": "code",
-        "syncAdvise": {
-          "ifNotExists": "FAIL",
-          "ifExists": "DONT_UPDATE"
-        }
-      },
-      "syncAdvise": {
-        "ifNotExists": "FAIL",
-        "ifExists": "DONT_UPDATE"
+        "code": "code"
       }
     }
   }

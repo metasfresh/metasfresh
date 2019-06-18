@@ -38,6 +38,7 @@ import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.user.UserId;
 import de.metas.util.rest.ExternalId;
 import lombok.Getter;
@@ -295,16 +296,13 @@ public class JsonPersisterService
 		{
 			if (jsonContact.getMetasfreshBPartnerId() == null)
 			{
-				throw new AdempiereException("missing bpartner-id-blah"); // TODO
+				throw new MissingPropertyException("JsonContact.metasfreshBPartnerId", jsonContact);
 			}
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(jsonContact.getMetasfreshBPartnerId().getValue());
 
 			bpartnerComposite = bpartnerCompositeRepository.getById(bpartnerId);
 
-			contact = BPartnerContact
-					.builder()
-					.bpartnerId(bpartnerId)
-					.build();
+			contact = BPartnerContact.builder().build();
 			bpartnerComposite.getContacts().add(contact);
 		}
 

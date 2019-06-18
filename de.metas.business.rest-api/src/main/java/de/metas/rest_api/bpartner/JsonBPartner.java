@@ -6,6 +6,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -142,10 +143,12 @@ public class JsonBPartner
 		this.language = language;
 		this.url = url;
 		this.group = group;
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = syncAdvise;
+	}
 
-		// both id, externalId and code may be empty if this instance belongs to a JsonBPArtnerInfo that has a location with has a GLN.
-
-		// errorIf(isEmpty(code, true) && isEmpty(externalId, true), "At least one of code and externalId need to be non-empty; name={}; companyName={}", name, companyName);
+	@JsonIgnore
+	public SyncAdvise getSyncAdvise()
+	{
+		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }
