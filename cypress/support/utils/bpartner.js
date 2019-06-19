@@ -235,11 +235,3 @@ function applyContact(bPartnerContact) {
   }
   cy.pressDoneButton();
 }
-
-// function applyBank(bPartner){
-//   cy.selectTab('C_BP_BankAccount');
-//   cy.pressAddNewButton();
-//   cy.writeIntoStringField('#C_Bank_ID text', bPartner.bank);
-//   cy.writeIntoStringField('A_Name', 'Test Account');
-//   cy.pressDoneButton();
-// }
