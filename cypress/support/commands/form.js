@@ -59,7 +59,7 @@ Cypress.Commands.add('isChecked', (fieldName, modal) => {
       path = `.panel-modal ${path}`;
     }
     return cy.get(path).then(el => {
-      if (el.find('checked').length) {
+      if (el.find('checked').length || el.find('.checked').length) {
         return true;
       }
       return false;
