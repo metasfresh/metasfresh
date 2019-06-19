@@ -3,6 +3,8 @@
  */
 package org.adempiere.exceptions;
 
+import static de.metas.util.Check.isEmpty;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -106,7 +108,7 @@ public class DBUniqueConstraintException extends DBException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		if (index != null)
+		if (index != null && !isEmpty(index.getErrorMsg(), true))
 		{
 			final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
 
