@@ -22,12 +22,12 @@ CREATE INDEX IF NOT EXISTS AD_User_Updated ON AD_User (Updated);
 
 -- 2019-06-07T22:34:39.832
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_EntityType (Processing,AD_Client_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_EntityType_ID,IsDisplayed,AD_Org_ID,EntityType,Name) VALUES ('N',0,'Y',TO_TIMESTAMP('2019-06-07 22:34:39','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2019-06-07 22:34:39','YYYY-MM-DD HH24:MI:SS'),100,540251,'Y',0,'de.metas.rest_api','de.metas.rest_api')
-;
+--INSERT INTO AD_EntityType (Processing,AD_Client_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,AD_EntityType_ID,IsDisplayed,AD_Org_ID,EntityType,Name) VALUES ('N',0,'Y',TO_TIMESTAMP('2019-06-07 22:34:39','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2019-06-07 22:34:39','YYYY-MM-DD HH24:MI:SS'),100,540251,'Y',0,'D','D')
+--;
 
 -- 2019-06-07T22:35:00.250
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table (LoadSeq,AccessLevel,AD_Client_ID,CreatedBy,IsActive,Created,Updated,IsSecurityEnabled,IsDeleteable,IsHighVolume,IsView,ImportTable,IsChangeLog,ReplicationType,CopyColumnsFromTable,ACTriggerLength,UpdatedBy,IsAutocomplete,IsDLM,AD_Org_ID,AD_Table_ID,EntityType,TableName,PersonalDataCategory,IsEnableRemoteCacheInvalidation,Name) VALUES (0,'4',0,100,'Y',TO_TIMESTAMP('2019-06-07 22:35:00','YYYY-MM-DD HH24:MI:SS'),TO_TIMESTAMP('2019-06-07 22:35:00','YYYY-MM-DD HH24:MI:SS'),'N','Y','N','N','N','N','L','N',0,100,'N','N',0,541370,'de.metas.rest_api','C_BPartner_Recent_ID','NP','N','C_BPartner_Recent_ID')
+INSERT INTO AD_Table (LoadSeq,AccessLevel,AD_Client_ID,CreatedBy,IsActive,Created,Updated,IsSecurityEnabled,IsDeleteable,IsHighVolume,IsView,ImportTable,IsChangeLog,ReplicationType,CopyColumnsFromTable,ACTriggerLength,UpdatedBy,IsAutocomplete,IsDLM,AD_Org_ID,AD_Table_ID,EntityType,TableName,PersonalDataCategory,IsEnableRemoteCacheInvalidation,Name) VALUES (0,'4',0,100,'Y',TO_TIMESTAMP('2019-06-07 22:35:00','YYYY-MM-DD HH24:MI:SS'),TO_TIMESTAMP('2019-06-07 22:35:00','YYYY-MM-DD HH24:MI:SS'),'N','Y','N','N','N','N','L','N',0,100,'N','N',0,541370,'D','C_BPartner_Recent_ID','NP','N','C_BPartner_Recent_ID')
 ;
 
 -- 2019-06-07T22:35:00.251
@@ -42,7 +42,7 @@ INSERT INTO AD_Sequence (CurrentNext,IsAudited,StartNewYear,IsActive,IsTableID,C
 
 -- 2019-06-07T22:35:21.766
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,Help,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Name,Description) VALUES (19,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-06-07 22:35:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-06-07 22:35:21','YYYY-MM-DD HH24:MI:SS'),100,'N','N',541370,'N','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.',568199,'N','N','N','N','N','N','N','N',0,0,187,'de.metas.rest_api','N','N','C_BPartner_ID','N','Geschäftspartner','Bezeichnet einen Geschäftspartner')
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,Help,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Name,Description) VALUES (19,10,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-06-07 22:35:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-06-07 22:35:21','YYYY-MM-DD HH24:MI:SS'),100,'N','N',541370,'N','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.',568199,'N','N','N','N','N','N','N','N',0,0,187,'D','N','N','C_BPartner_ID','N','Geschäftspartner','Bezeichnet einen Geschäftspartner')
 ;
 
 -- 2019-06-07T22:35:21.767
@@ -57,7 +57,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-06-07T22:35:33.209
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,Help,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Name,Description) VALUES (16,7,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-06-07 22:35:33','YYYY-MM-DD HH24:MI:SS'),100,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-06-07 22:35:33','YYYY-MM-DD HH24:MI:SS'),100,'N','N',541370,'N','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.',568200,'N','N','N','N','N','N','N','N',0,0,607,'de.metas.rest_api','N','N','Updated','N','Aktualisiert','Datum, an dem dieser Eintrag aktualisiert wurde')
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,Help,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsRangeFilter,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,AD_Org_ID,AD_Element_ID,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Name,Description) VALUES (16,7,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2019-06-07 22:35:33','YYYY-MM-DD HH24:MI:SS'),100,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2019-06-07 22:35:33','YYYY-MM-DD HH24:MI:SS'),100,'N','N',541370,'N','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.',568200,'N','N','N','N','N','N','N','N',0,0,607,'D','N','N','Updated','N','Aktualisiert','Datum, an dem dieser Eintrag aktualisiert wurde')
 ;
 
 -- 2019-06-07T22:35:33.212
@@ -77,5 +77,5 @@ UPDATE AD_Table SET IsDeleteable='N', IsView='Y',Updated=TO_TIMESTAMP('2019-06-0
 
 -- 2019-06-07T22:36:12.575
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_EntityType SET ModelPackage='de.metas.rest_api.model',Updated=TO_TIMESTAMP('2019-06-07 22:36:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_EntityType_ID=540251
-;
+--UPDATE AD_EntityType SET ModelPackage='de.metas.rest_api.model',Updated=TO_TIMESTAMP('2019-06-07 22:36:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_EntityType_ID=540251
+--;
