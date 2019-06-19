@@ -1,7 +1,9 @@
-package de.metas.vertical.pharma.securpharm.model;
+package de.metas.vertical.pharma.securpharm.client;
 
 import javax.annotation.Nullable;
 
+import de.metas.vertical.pharma.securpharm.model.ProductDetails;
+import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
