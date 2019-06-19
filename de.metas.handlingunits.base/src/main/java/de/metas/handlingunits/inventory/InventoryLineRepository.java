@@ -83,17 +83,14 @@ public class InventoryLineRepository
 		return ofRecord(inventoryLineRecord);
 	}
 
-	public ImmutableList<InventoryLine> getByInventoryId(@NonNull final InventoryId inventoryId)
+	public InventoryLines getByInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final Collection<I_M_InventoryLine> inventoryLineRecords = getInventoryLineRecordsFor(inventoryId);
+		final List<InventoryLine> inventoryLines = getInventoryLineRecordsFor(inventoryId)
+				.stream()
+				.map(this::ofRecord)
+				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList.Builder<InventoryLine> result = ImmutableList.builder();
-		for (final I_M_InventoryLine inventoryLineRecord : inventoryLineRecords)
-		{
-			result.add(ofRecord(inventoryLineRecord));
-		}
-
-		return result.build();
+		return InventoryLines.ofList(inventoryLines);
 	}
 
 	private InventoryLine ofRecord(@NonNull final I_M_InventoryLine inventoryLineRecord)

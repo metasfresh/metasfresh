@@ -148,7 +148,7 @@ class InventoryLineRepositoryTest
 		// invoke the method under test
 		inventoryLineRepository.save(inventoryLine);
 
-		final ImmutableList<InventoryLine> reloadedResult = inventoryLineRepository.getByInventoryId(inventoryId);
+		final ImmutableList<InventoryLine> reloadedResult = inventoryLineRepository.getByInventoryId(inventoryId).toList();
 		expect(reloadedResult).toMatchSnapshot();
 	}
 

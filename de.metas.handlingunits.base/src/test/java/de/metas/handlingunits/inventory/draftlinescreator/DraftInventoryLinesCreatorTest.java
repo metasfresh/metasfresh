@@ -12,7 +12,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
-import java.util.stream.Stream;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -130,7 +129,7 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId);
+		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId).toList();
 		expect(result).toMatchSnapshot();
 	}
 
@@ -144,34 +143,28 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId);
+		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId).toList();
 		expect(result).toMatchSnapshot();
 	}
 
 	private HUsForInventoryStrategy createTestStrategy()
 	{
-		final HUsForInventoryStrategy strategy = new HUsForInventoryStrategy()
-		{
+		final HUsForInventoryStrategy strategy = () -> {
+			final HuForInventoryLineBuilder builder = HuForInventoryLine
+					.builder()
+					.orgId(OrgId.ofRepoId(5))
+					.huId(HuId.ofRepoId(100))
+					.locatorId(locatorId)
+					.productId(ProductId.ofRepoId(40))
+					.quantity(qtyTen)
+					.storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID));
 
-			@Override
-			public Stream<HuForInventoryLine> streamHus()
-			{
-				final HuForInventoryLineBuilder builder = HuForInventoryLine
-						.builder()
-						.orgId(OrgId.ofRepoId(5))
-						.huId(HuId.ofRepoId(100))
-						.locatorId(locatorId)
-						.productId(ProductId.ofRepoId(40))
-						.quantity(qtyTen)
-						.storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID));
+			final HuForInventoryLine hu1 = builder.build();
 
-				final HuForInventoryLine hu1 = builder.build();
+			final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantity(qtyOne).build();
+			final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantity(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
 
-				final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantity(qtyOne).build();
-				final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantity(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
-
-				return ImmutableList.of(hu1, hu2, hu3).stream();
-			}
+			return ImmutableList.of(hu1, hu2, hu3).stream();
 		};
 		return strategy;
 	}

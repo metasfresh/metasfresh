@@ -19,8 +19,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -99,8 +97,8 @@ public class InventoryLineRecordService
 	{
 		final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
 
-		final InventoryId inventoryId = createInventoryId(inventoryRecord);
-		final ImmutableList<InventoryLine> inventoryLines = inventoryLineRepository.getByInventoryId(inventoryId);
+		final InventoryId inventoryId = extractInventoryId(inventoryRecord);
+		final InventoryLines inventoryLines = inventoryLineRepository.getByInventoryId(inventoryId);
 
 		for (final InventoryLine inventoryLine : inventoryLines)
 		{
@@ -381,7 +379,7 @@ public class InventoryLineRecordService
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(inventoryRecord);
 
 		// note that the loaded lines' M_Inventory's docType is still the old one
-		final ImmutableList<InventoryLine> inventoryLines = inventoryLineRepository.getByInventoryId(createInventoryId(inventoryRecord));
+		final InventoryLines inventoryLines = inventoryLineRepository.getByInventoryId(extractInventoryId(inventoryRecord));
 		for (final InventoryLine inventoryLine : inventoryLines)
 		{
 			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
@@ -390,7 +388,7 @@ public class InventoryLineRecordService
 		}
 	}
 
-	private InventoryId createInventoryId(final I_M_Inventory inventoryRecord)
+	private static InventoryId extractInventoryId(final I_M_Inventory inventoryRecord)
 	{
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}

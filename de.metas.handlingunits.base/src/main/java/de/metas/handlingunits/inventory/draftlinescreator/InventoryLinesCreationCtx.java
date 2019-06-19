@@ -74,6 +74,7 @@ public class InventoryLinesCreationCtx
 
 		preExistingInventoryLines = inventoryLineRepository
 				.getByInventoryId(inventoryId)
+				.toList()
 				.stream()
 				.filter(il -> !il.getInventoryLineHUs().isEmpty())
 				.collect(GuavaCollectors.toImmutableMapByKey(inventoryLineAggregator::createAggregationKey));

@@ -33,7 +33,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -117,10 +116,9 @@ public class SecurPharmService
 
 	private Set<HuId> getHUIdsByInventoryId(final InventoryId inventoryId)
 	{
-		return inventoryRepo.getByInventoryId(inventoryId)
-				.stream()
-				.flatMap(inventoryLine -> inventoryLine.getHUIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		return inventoryRepo
+				.getByInventoryId(inventoryId)
+				.getHuIds();
 	}
 
 	public SecurPharmProduct getAndSaveProduct(
