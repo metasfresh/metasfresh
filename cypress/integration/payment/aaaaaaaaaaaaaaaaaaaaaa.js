@@ -21,8 +21,8 @@
  */
 
 
-describe('Create a manual Payment for a Sales Invoice', function () {
-  it('Creates a Sales Order and Invoice', function () {
+describe('y u no say yes?', function () {
+  it('(┛◉Д◉)┛彡┻━┻', function () {
 
 
     // cy.visitWindow('167', '1000166'); // this happens on tbp localhost
