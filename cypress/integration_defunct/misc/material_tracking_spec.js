@@ -1,9 +1,4 @@
 describe('material tracking test', function() {
-    before(function() {
-        // login before each test
-        cy.loginByForm();
-    });
-
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     
     const lagerKonfName = `${timestamp} Lagerkonf (Cypress Test)`;

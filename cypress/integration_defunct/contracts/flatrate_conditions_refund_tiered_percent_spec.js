@@ -5,11 +5,6 @@ import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 
 describe('Create tiered percent-based (TP) refund conditions', function() {
-  before(function() {
-    // login before each test and open the flatrate conditions window
-    cy.loginByForm();
-  });
-
   it('Create tiered percent-based refund conditions and a vendor with a respective contract', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
 

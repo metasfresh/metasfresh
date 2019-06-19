@@ -5,11 +5,6 @@ import { DiscountSchema } from '../../support/utils/discountschema';
 import config from '../../config';
 
 describe('purchase - vendor spec', function() {
-  before(function() {
-    // login before each test
-    cy.loginByForm();
-  });
-
   const timestamp = new Date().getTime(); // used in the document names, for ordering
   const vendorName = `Vendor ${timestamp}`;
 

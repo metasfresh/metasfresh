@@ -1,9 +1,4 @@
 describe('Create test: payment term, https://github.com/metasfresh/metasfresh-e2e/issues/45', function() {
-  before(function() {
-    // login before each test
-    cy.loginByForm();
-  });
-
   it('Create a new Payment Term', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const paymenttermName = `ListPaymentTermName ${timestamp}`;

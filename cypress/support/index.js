@@ -32,7 +32,7 @@ Cypress.on('emit:counterpartTranslations', messages => {
 });
 
 before(function() {
-  cy.loginByForm();
+  cy.loginViaAPI();
 
   Cypress.Cookies.defaults({
     whitelist: ['SESSION', 'isLogged'],

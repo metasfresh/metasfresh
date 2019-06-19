@@ -5,11 +5,6 @@ import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 
 describe('Create subscription flatrate conditions for three 1-year-periods', function() {
-    before(function() {
-        // login before each test and open the flatrate conditions window
-        cy.loginByForm();
-    });
-
     it('Create subscription flatrate conditions for three 1-year-periods', function () 
     {
         const timestamp = new Date().getTime(); // used in the document names, for ordering

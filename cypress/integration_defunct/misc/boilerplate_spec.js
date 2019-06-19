@@ -1,11 +1,6 @@
 /// <reference types="Cypress" />
 
 describe('New boiler plate (textsnippet) test', function() {
-    before(function() {
-        // login before each test
-        cy.loginByForm();
-    });
-
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const boilerPlateName = `${timestamp}_Name_Cypress_Test`; // name needs to match regex ^[a-zA-Z0-9-_+]+?
     const boilerPlateSubject = `${timestamp} Subject (Cypress Test)`;
