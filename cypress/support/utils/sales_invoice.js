@@ -49,8 +49,6 @@ export class SalesInvoice {
         SalesInvoice.applyLine(line);
       });
 
-      cy.processDocument('Complete', 'Completed');
-
       if (salesInvoice.documentAction) {
         if (salesInvoice.documentStatus) {
           cy.processDocument(salesInvoice.documentAction, salesInvoice.documentStatus);

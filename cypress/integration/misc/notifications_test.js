@@ -25,6 +25,11 @@ describe('Test notifications', function() {
 
         expect(notificationsInboxString).to.include(notifObj.message);
       });
+
+      cy.exec
     });
   });
 });
+
+
+asta
