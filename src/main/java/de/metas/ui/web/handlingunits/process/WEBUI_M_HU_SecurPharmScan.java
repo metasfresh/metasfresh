@@ -10,7 +10,7 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
