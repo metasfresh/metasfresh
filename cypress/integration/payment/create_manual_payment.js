@@ -49,7 +49,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
   });
   */
 
-  it('Creates a Sales Order and Invoice', () => {
+  it('Creates a Sales Order and Invoice', function () {
     new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
       .addLine(
         new SalesInvoiceLine()
@@ -67,42 +67,66 @@ describe('Create a manual Payment for a Sales Invoice', function () {
       .setDocumentStatus('Completed')
       .apply();
 
+
+    // save values needed for the next step
     cy.getFieldValue('DocumentNo').then(documentNumber => {
       salesInvoiceNumber = documentNumber;
     });
+
+    cy.get(".header-breadcrumb-sitename").then(si => {
+      salesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2], 10); // the format is "DOC_NO MM/DD/YYYY total"
+    });
   });
 
-  // it('Creates a manual Payment', () => {
-  //   cy.visitWindow('195', 'NEW');
-  //
-  //   cy.writeIntoLookupListField('C_BPartner_ID', bPartnerName, bPartnerName);
-  //
-  //   cy.getFieldValue('DocumentNo').should('be.empty');
-  //   cy.selectInListField('C_DocType_ID', paymentDocumentType);
-  //   cy.getFieldValue('DocumentNo').should('not.be.empty');
-  //
-  //   // cy.getFieldValue('DocumentNo').then(documentNumber => {
-  //   // @kuba this is not working
-  //   // cy.getFieldValue('PayAmt').should('equal', salesInvoiceTotalAmount); // todo how do i even equal?!!?!!
-  //   cy.getFieldValue('PayAmt').then(val => {
-  //     const cast = parseInt(val, 10);
-  //     assert.equal(cast, salesInvoiceTotalAmount);
-  //   });
-  //
-  //   // salesInvoiceNumber = 145824; // todo this has to be read somehow from the previously created sales invoice;
-  //   cy.writeIntoLookupListField('C_Invoice_ID', salesInvoiceNumber, salesInvoiceNumber);
-  //
-  //   // @kuba this is not working either
-  //   // salesInvoiceTotalAmount = 2.2; // todo this has to be read somehow from the previously created sales invoice;
-  //   // cy.getFieldValue('PayAmt').should('equal', salesInvoiceTotalAmount); // todo how do i even equal?!!?!!
-  //
-  //   // cy.getFieldValue('PayAmt').then(val => {
-  //   //   const cast = parseInt(val, 10);
-  //   //   cast.should('equal', salesInvoiceTotalAmount);
-  //   // });
-  //   // });
-  // });
+
+  it('Creates a manual Payment', function () {
+    cy.visitWindow('195', 'NEW');
+
+    cy.writeIntoLookupListField('C_BPartner_ID', bPartnerName, bPartnerName);
+
+    cy.getFieldValue('DocumentNo').should('be.empty');
+    cy.selectInListField('C_DocType_ID', paymentDocumentType);
+    cy.getFieldValue('DocumentNo').should('not.be.empty');
+
+    cy.getFieldValue('PayAmt').then(val => {
+      const cast = parseFloat(val);
+      assert.equal(cast, 0);
+    });
+
+    cy.writeIntoLookupListField('C_Invoice_ID', salesInvoiceNumber, salesInvoiceNumber);
+
+    cy.processDocument('Complete', 'Completed');
+  });
+
+  it('Checks the paid and discount amount', function () {
+    // check the paid amount (payAmount+discount amount!)
+    // discount amount is taken from the advanced edit dialog of the line
+    cy.selectTab('C_AllocationLine');
+    cy.selectSingleTabRow();
+    cy.openAdvancedEdit();
 
 
+    let discountAmount;
+    cy.getFieldValue('DiscountAmt', true).then(val => {
+      discountAmount = parseFloat(val);
+    });
 
+    cy.getFieldValue('Amount').then(val => {
+      const cast = parseFloat(val);
+      assert.equal(val, salesInvoiceTotalAmount - discountAmount);
+    });
+
+    cy.pressDoneButton();
+  });
+
+  it('Checks the new Sales Invoice', function () {
+    cy.selectTab('C_AllocationLine');
+    cy.selectSingleTabRow();
+
+
+    // todo @kuba here
+
+    cy.get('.context-menu-item').contains('Zoom into').click();
+
+  });
 });
