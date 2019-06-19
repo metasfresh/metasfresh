@@ -1,7 +1,8 @@
 package de.metas.bpartner.composite;
 
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -87,7 +88,7 @@ import lombok.Value;
 @Repository
 public class BPartnerCompositeRepository
 {
-	private static final int BPARTNER_PAGE_SIZE = 50;
+	// private static final int BPARTNER_PAGE_SIZE = 50;
 
 	private final CachingKeysMapper<BPartnerId> invalidationKeysMapper = new CachingKeysMapper<BPartnerId>()
 	{
@@ -192,66 +193,115 @@ public class BPartnerCompositeRepository
 		BPartnerComposite bpartnerComposite;
 	}
 
+	public enum SinceEntity
+	{
+		CONTACT_ONLY, ALL;
+	}
+
 	@Value
 	public static class SinceQuery
 	{
-		public enum SinceEntity
+		public static SinceQuery anyEntity(@Nullable final Instant sinceInstant, final int pageSize)
 		{
-			CONTACT_ONLY, ALL;
+			return new SinceQuery(SinceEntity.ALL, sinceInstant, pageSize);
 		}
 
-		public static SinceQuery anyEntity(@Nullable final Long epochMilli)
+		public static SinceQuery onlyContacts(@Nullable final Instant sinceInstant, final int pageSize)
 		{
-			return new SinceQuery(SinceEntity.ALL, epochMilli);
-		}
-
-		public static SinceQuery onlyContacts(@Nullable final Long epochMilli)
-		{
-			return new SinceQuery(SinceEntity.CONTACT_ONLY, epochMilli);
+			return new SinceQuery(SinceEntity.CONTACT_ONLY, sinceInstant, pageSize);
 		}
 
 		SinceEntity sinceEntity;
 
-		long epochMilli;
+		Instant sinceInstant;
+
+		int pageSize;
 
 		private SinceQuery(
 				@NonNull final SinceEntity sinceEntity,
-				@Nullable final Long epochMilli)
+				@NonNull final Instant sinceInstant,
+				final int pageSize)
 		{
 			this.sinceEntity = sinceEntity;
-			this.epochMilli = coalesce(epochMilli, 0L);
+			this.sinceInstant = sinceInstant;
+			this.pageSize = assumeGreaterThanZero(pageSize, "pageSize");
 		}
 	}
 
-	public QueryResultPage<BPartnerComposite> getSince(@NonNull final SinceQuery sinceRequest)
+	@Value
+	public static class NextPageQuery
+	{
+		public static NextPageQuery anyEntityOrNull(@Nullable final String nextPageId)
+		{
+			if (isEmpty(nextPageId, true))
+			{
+				return null;
+			}
+			return new NextPageQuery(SinceEntity.ALL, nextPageId);
+		}
+
+		public static NextPageQuery onlyContactsOrNull(@Nullable final String nextPageId)
+		{
+			if (isEmpty(nextPageId, true))
+			{
+				return null;
+			}
+			return new NextPageQuery(SinceEntity.CONTACT_ONLY, nextPageId);
+		}
+
+		SinceEntity sinceEntity;
+
+		String nextPageId;
+
+		private NextPageQuery(
+				@NonNull final SinceEntity sinceEntity,
+				@NonNull final String nextPageId)
+		{
+			this.sinceEntity = sinceEntity;
+			this.nextPageId = assumeNotEmpty(nextPageId, "nextPageId");
+		}
+	}
+
+	public QueryResultPage<BPartnerComposite> getSince(@NonNull final SinceQuery sinceQuery)
 	{
 		final QueryResultPage<BPartnerId> page;
-		switch (sinceRequest.getSinceEntity())
+		switch (sinceQuery.getSinceEntity())
 		{
 			case ALL:
-				page = retrievePageAllEntities(sinceRequest.getEpochMilli(), null);
+				page = retrievePageAllEntities(sinceQuery, null);
 				break;
 			case CONTACT_ONLY:
-				page = retrievePageOnlyContactEntities(sinceRequest.getEpochMilli(), null);
+				page = retrievePageOnlyContactEntities(sinceQuery, null);
 				break;
 			default:
-				throw new AdempiereException("Unexpected sinceEntity=" + sinceRequest.getSinceEntity());
+				throw new AdempiereException("Unexpected sinceEntity=" + sinceQuery.getSinceEntity());
 		}
 
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
 		return page.withItems(bpartnerComposites);
 	}
 
-	public QueryResultPage<BPartnerComposite> getNextPage(@NonNull final String nextPageId)
+	public QueryResultPage<BPartnerComposite> getNextPage(@NonNull final NextPageQuery nextPageQuery)
 	{
-		final QueryResultPage<BPartnerId> page = retrievePageAllEntities(null, nextPageId);
+		final QueryResultPage<BPartnerId> page;
+		switch (nextPageQuery.getSinceEntity())
+		{
+			case ALL:
+				page = retrievePageAllEntities(null, nextPageQuery.getNextPageId());
+				break;
+			case CONTACT_ONLY:
+				page = retrievePageOnlyContactEntities(null, nextPageQuery.getNextPageId());
+				break;
+			default:
+				throw new AdempiereException("Unexpected sinceEntity=" + nextPageQuery.getSinceEntity());
+		}
 
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
 		return page.withItems(bpartnerComposites);
 	}
 
 	private QueryResultPage<BPartnerId> retrievePageAllEntities(
-			@Nullable final Long epochTimestampMillis,
+			@Nullable final SinceQuery sinceQuery,
 			@Nullable final String nextPageId)
 	{
 		final QueryResultPage<I_C_BPartner_Recent_V> page;
@@ -259,11 +309,11 @@ public class BPartnerCompositeRepository
 
 		if (isEmpty(nextPageId, true))
 		{
-			final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(epochTimestampMillis));
+			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
 			page = queryBL.createQueryBuilder(I_C_BPartner_Recent_V.class)
 					.addCompareFilter(I_C_BPartner_Recent_V.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
 					.create()
-					.paginate(I_C_BPartner_Recent_V.class, BPARTNER_PAGE_SIZE);
+					.paginate(I_C_BPartner_Recent_V.class, sinceQuery.getPageSize());
 		}
 		else
 		{
@@ -275,21 +325,21 @@ public class BPartnerCompositeRepository
 	}
 
 	private QueryResultPage<BPartnerId> retrievePageOnlyContactEntities(
-			@Nullable final Long epochMilli,
+			@Nullable final SinceQuery sinceQuery,
 			@Nullable final String nextPageId)
 	{
 		final QueryResultPage<I_AD_User> page;
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		if (isEmpty(nextPageId, true))
 		{
-			final Timestamp timestamp = Timestamp.from(Instant.ofEpochMilli(epochMilli));
+			final Timestamp timestamp = Timestamp.from(sinceQuery.getSinceInstant());
 			page = queryBL
 					.createQueryBuilder(I_AD_User.class)
 					.addOnlyActiveRecordsFilter()
 					.addCompareFilter(I_AD_User.COLUMN_Updated, Operator.GREATER_OR_EQUAL, timestamp)
 					.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null)
 					.create()
-					.paginate(I_AD_User.class, BPARTNER_PAGE_SIZE);
+					.paginate(I_AD_User.class, sinceQuery.getPageSize());
 		}
 		else
 		{
@@ -299,24 +349,22 @@ public class BPartnerCompositeRepository
 		return page.mapTo(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()));
 	}
 
-	public QueryResultPage<BPartnerComposite> getByQuery(@NonNull final BPartnerCompositeQuery query)
+	public ImmutableList<BPartnerComposite> getByQuery(@NonNull final BPartnerCompositeQuery query)
 	{
-		final QueryResultPage<BPartnerId> pageWithIds = getIdsByQuery(query);
+		final List<BPartnerId> pageWithIds = getIdsByQuery(query);
 
-		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(pageWithIds.getItems());
-		return pageWithIds.withItems(bpartnerComposites);
+		return getByIds(pageWithIds);
 	}
 
-	private QueryResultPage<BPartnerId> getIdsByQuery(@NonNull final BPartnerCompositeQuery query)
+	private ImmutableList<BPartnerId> getIdsByQuery(@NonNull final BPartnerCompositeQuery query)
 	{
 		final IQuery<I_C_BPartner> bpartnerRecordQuery = createBPartnerRecordQuery(query);
-		final QueryResultPage<I_C_BPartner> page = bpartnerRecordQuery.paginate(I_C_BPartner.class, BPARTNER_PAGE_SIZE);
 
 		final ImmutableList<BPartnerId> bPartnerIds = bpartnerRecordQuery.listIds().stream()
 				.map(BPartnerId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		return page.withItems(bPartnerIds);
+		return bPartnerIds;
 	}
 
 	private IQuery<I_C_BPartner> createBPartnerRecordQuery(@NonNull final BPartnerCompositeQuery query)

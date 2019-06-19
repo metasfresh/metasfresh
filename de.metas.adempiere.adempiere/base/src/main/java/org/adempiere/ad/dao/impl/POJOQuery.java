@@ -1035,18 +1035,19 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		PageDescriptor nextPageDescriptor = pages.size() > 1 ? currentPageDescriptor.createNext() : null;
 		final QueryResultPage<ET> firstQueryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(0)));
+		UUID_TO_PAGE.put(firstQueryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), firstQueryResultPage);
 
 		currentPageDescriptor = nextPageDescriptor;
 
 		for (int i = 1; i < pages.size(); i++)
 		{
-			nextPageDescriptor = pages.size() > i ? currentPageDescriptor.createNext() : null;
+			final boolean lastPage = pages.size() <= i + 1;
+			nextPageDescriptor = lastPage ? null : currentPageDescriptor.createNext();
 			final QueryResultPage<ET> queryResultPage = new QueryResultPage<ET>(currentPageDescriptor, nextPageDescriptor, bigList.size(), resultTimestamp, ImmutableList.copyOf(pages.get(i)));
 			UUID_TO_PAGE.put(queryResultPage.getCurrentPageDescriptor().getPageIdentifier().getCombinedUid(), queryResultPage);
 
 			currentPageDescriptor = nextPageDescriptor;
 		}
-
 		return firstQueryResultPage;
 	}
 

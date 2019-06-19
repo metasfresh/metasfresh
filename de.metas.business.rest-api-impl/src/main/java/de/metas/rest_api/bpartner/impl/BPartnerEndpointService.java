@@ -1,15 +1,19 @@
 package de.metas.rest_api.bpartner.impl;
 
+import java.time.Instant;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Objects;
 
+import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonPagingDescriptor;
@@ -23,6 +27,7 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -50,6 +55,7 @@ import lombok.NonNull;
 @Service
 public class BPartnerEndpointService
 {
+	public static final String SYSCFG_BPARTNER_PAGE_SIZE = "de.metas.rest_api.bpartner.PageSize";
 	private final JsonRetrieverService jsonRetriever;
 
 	public BPartnerEndpointService(@NonNull final JsonServiceFactory jsonServiceFactory)
@@ -143,9 +149,13 @@ public class BPartnerEndpointService
 			@Nullable final Long epochMilli,
 			@Nullable final String nextPageId)
 	{
-		final SinceQuery sinceRequest = SinceQuery.anyEntity(epochMilli);
+		final SinceQuery sinceQuery = SinceQuery.anyEntity(
+				extractInstant(epochMilli),
+				getPageSize());
 
-		final Optional<QueryResultPage<JsonBPartnerComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageId, sinceRequest);
+		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
+
+		final Optional<QueryResultPage<JsonBPartnerComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
 		if (!optionalPage.isPresent())
 		{
 			return Optional.empty();
@@ -172,9 +182,13 @@ public class BPartnerEndpointService
 			@Nullable final Long epochMilli,
 			@Nullable final String nextPageId)
 	{
-		final SinceQuery sinceRequest = SinceQuery.onlyContacts(epochMilli);
+		final SinceQuery sinceQuery = SinceQuery.onlyContacts(
+				extractInstant(epochMilli),
+				getPageSize());
 
-		final Optional<QueryResultPage<JsonBPartnerComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageId, sinceRequest);
+		final NextPageQuery nextPageQuery = NextPageQuery.onlyContactsOrNull(nextPageId);
+
+		final Optional<QueryResultPage<JsonBPartnerComposite>> optionalPage = jsonRetriever.retrieveJsonBPartnerComposites(nextPageQuery, sinceQuery);
 		if (!optionalPage.isPresent())
 		{
 			return Optional.empty();
@@ -196,6 +210,24 @@ public class BPartnerEndpointService
 				.build();
 
 		return Optional.of(result);
+	}
+
+	private Instant extractInstant(@Nullable final Long epochMilli)
+	{
+		if (epochMilli == null || epochMilli <= 0)
+		{
+			return Instant.EPOCH;
+		}
+		return Instant.ofEpochMilli(epochMilli);
+	}
+
+	private int getPageSize()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue(
+				SYSCFG_BPARTNER_PAGE_SIZE,
+				50,
+				Env.getAD_Client_ID(),
+				Env.getOrgId().getRepoId());
 	}
 
 	public Optional<JsonContact> retrieveContact(@NonNull final String contactIdentifierStr)

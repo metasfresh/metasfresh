@@ -1,7 +1,10 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
+import static de.metas.util.Check.assumeNotEmpty;
+
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,23 +32,25 @@ import lombok.Value;
 @Value
 public class BPartnerCompositeLookupKey
 {
-	public static BPartnerCompositeLookupKey ofMetasfreshId(MetasfreshId metasfreshId)
+	public static BPartnerCompositeLookupKey ofMetasfreshId(@NonNull final MetasfreshId metasfreshId)
 	{
 		return new BPartnerCompositeLookupKey(metasfreshId, null, null, null);
 	}
 
-	public static BPartnerCompositeLookupKey ofJsonExternalId(JsonExternalId jsonExternalId)
+	public static BPartnerCompositeLookupKey ofJsonExternalId(@NonNull final JsonExternalId jsonExternalId)
 	{
 		return new BPartnerCompositeLookupKey(null, jsonExternalId, null, null);
 	}
 
-	public static BPartnerCompositeLookupKey ofCode(String code)
+	public static BPartnerCompositeLookupKey ofCode(@NonNull final String code)
 	{
-		return new BPartnerCompositeLookupKey(null, null, code, null);
+		assumeNotEmpty(code, "Given parameter 'code' may not be empty");
+		return new BPartnerCompositeLookupKey(null, null, code.trim(), null);
 	}
 
-	public static BPartnerCompositeLookupKey ofGln(String gln)
+	public static BPartnerCompositeLookupKey ofGln(@NonNull final String gln)
 	{
+		assumeNotEmpty(gln, "Given parameter 'gln' may not be empty");
 		return new BPartnerCompositeLookupKey(null, null, null, gln);
 	}
 
@@ -56,4 +61,18 @@ public class BPartnerCompositeLookupKey
 	String code;
 
 	String gln;
+
+	private BPartnerCompositeLookupKey(
+			MetasfreshId metasfreshId,
+			JsonExternalId jsonExternalId,
+			String code,
+			String gln)
+	{
+		this.metasfreshId = metasfreshId;
+		this.jsonExternalId = jsonExternalId;
+		this.code = code;
+		this.gln = gln;
+	}
+
+
 }

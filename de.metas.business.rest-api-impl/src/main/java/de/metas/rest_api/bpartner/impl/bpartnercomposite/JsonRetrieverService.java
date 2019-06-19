@@ -3,6 +3,7 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -24,6 +25,7 @@ import de.metas.bpartner.composite.BPartnerCompositeQuery;
 import de.metas.bpartner.composite.BPartnerCompositeQuery.BPartnerCompositeQueryBuilder;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
+import de.metas.bpartner.composite.BPartnerCompositeRepository.NextPageQuery;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.SinceQuery;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactQuery;
@@ -97,11 +99,11 @@ public class JsonRetrieverService
 	}
 
 	public Optional<QueryResultPage<JsonBPartnerComposite>> retrieveJsonBPartnerComposites(
-			@Nullable final String nextPageId,
+			@Nullable final NextPageQuery nextPageQuery,
 			@Nullable final SinceQuery sinceRequest)
 	{
 		final QueryResultPage<BPartnerComposite> page;
-		if (isEmpty(nextPageId, true))
+		if (nextPageQuery == null)
 		{
 			page = bpartnerCompositeRepository.getSince(sinceRequest);
 		}
@@ -109,7 +111,7 @@ public class JsonRetrieverService
 		{
 			try
 			{
-				page = bpartnerCompositeRepository.getNextPage(nextPageId);
+				page = bpartnerCompositeRepository.getNextPage(nextPageQuery);
 			}
 			catch (final UnknownPageIdentifierException e)
 			{
@@ -234,14 +236,14 @@ public class JsonRetrieverService
 	{
 		final BPartnerCompositeQuery query = createBPartnerQuery(bpartnerLookupKeys);
 
-		final QueryResultPage<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
-		if (byQuery.getItems().size() > 1)
+		final List<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
+		if (byQuery.size() > 1)
 		{
-			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.getItems().size())
+			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
 					.setParameter("BPartnerIdLookupKeys", bpartnerLookupKeys);
 		}
-		if (byQuery.getItems().isEmpty())
+		if (byQuery.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
@@ -249,7 +251,7 @@ public class JsonRetrieverService
 		final ImmutableMap.Builder<BPartnerCompositeLookupKey, BPartnerComposite> result = ImmutableMap.builder();
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
 		{
-			result.put(bpartnerLookupKey, byQuery.getItems().get(0));
+			result.put(bpartnerLookupKey, CollectionUtils.singleElement(byQuery));
 		}
 		return result.build();
 	}
@@ -288,7 +290,6 @@ public class JsonRetrieverService
 		}
 		return query.build();
 	}
-
 
 	public Optional<JsonContact> retrieveContact(@NonNull final String contactIdentifierStr)
 	{

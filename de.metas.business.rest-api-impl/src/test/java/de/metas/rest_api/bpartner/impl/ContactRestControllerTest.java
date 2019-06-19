@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.*;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -10,9 +11,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,6 @@ import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonContactUpsertRequestItem;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -62,10 +61,7 @@ import de.metas.util.time.SystemTime;
 
 class ContactRestControllerTest
 {
-	private static final int AD_ORG_ID = 10;
-	private static final String AD_USER_EXTERNAL_ID = "abcde";
-	private static final int C_BPARTNER_ID = 20;
-	private static final int AD_USER_ID = 30;
+
 
 	private ContactRestController contactRestController;
 
@@ -84,7 +80,7 @@ class ContactRestControllerTest
 	}
 
 	@BeforeEach
-	public void init()
+	void init()
 	{
 		AdempiereTestHelper.get().init();
 
@@ -94,31 +90,54 @@ class ContactRestControllerTest
 		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
-		bpGroupRecord.setName("bpGroupRecord.name");
+		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
-		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
-		bpartnerRecord.setC_BPartner_ID(C_BPARTNER_ID);
-		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("bpartnerRecord.value");
-		bpartnerRecord.setC_BP_Group(bpGroupRecord);
-		saveRecord(bpartnerRecord);
-
-		final I_AD_User contactRecord = newInstance(I_AD_User.class);
-		contactRecord.setAD_Org_ID(AD_ORG_ID);
-		contactRecord.setAD_User_ID(AD_USER_ID);
-		contactRecord.setC_BPartner(bpartnerRecord);
-		contactRecord.setExternalId(AD_USER_EXTERNAL_ID);
-		contactRecord.setValue("bpartnerRecord.value");
-		contactRecord.setName("bpartnerRecord.name");
-		contactRecord.setLastname("bpartnerRecord.lastName");
-		contactRecord.setFirstname("bpartnerRecord.firstName");
-		contactRecord.setEMail("bpartnerRecord.email");
-		contactRecord.setPhone("bpartnerRecord.phone");
-		saveRecord(contactRecord);
+		createBPartnerData(0);
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
+	}
+
+	@Test
+	void retrieveContactsSince()
+	{
+		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
+		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
+		sysConfigRecord.setValue("2");
+		saveRecord(sysConfigRecord);
+
+		createBPartnerData(1);
+		createBPartnerData(2);
+		createBPartnerData(3);
+		createBPartnerData(4);
+
+		// invoke the method under test
+		final ResponseEntity<JsonContactList> page1 = contactRestController.retrieveContactsSince(0L, null);
+
+		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonContactList page1Body = page1.getBody();
+		assertThat(page1Body.getContacts()).hasSize(2);
+
+		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
+		assertThat(page2Id).isNotEmpty();
+
+		final ResponseEntity<JsonContactList> page2 = contactRestController.retrieveContactsSince(null, page2Id);
+
+		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonContactList page2Body = page2.getBody();
+		assertThat(page2Body.getContacts()).hasSize(2);
+
+		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
+		assertThat(page3Id).isNotEmpty();
+
+		final ResponseEntity<JsonContactList> page3 = contactRestController.retrieveContactsSince(null, page3Id);
+
+		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonContactList page3Body = page3.getBody();
+		assertThat(page3Body.getContacts()).hasSize(1);
+
+		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 	}
 
 	@Test
@@ -153,19 +172,6 @@ class ContactRestControllerTest
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonContact resultBody = result.getBody();
-
-		expect(resultBody).toMatchSnapshot();
-	}
-
-	@Test
-	void retrieveContactsSince()
-	{
-		SystemTime.setTimeSource(() -> 1560866562494L);
-
-		final ResponseEntity<JsonContactList> result = contactRestController.retrieveContactsSince(0L, null);
-
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContactList resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}

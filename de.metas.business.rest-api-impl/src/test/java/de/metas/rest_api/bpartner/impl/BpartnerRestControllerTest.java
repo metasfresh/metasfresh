@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.*;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -10,13 +11,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,6 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
@@ -34,7 +33,6 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
@@ -42,6 +40,7 @@ import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.JsonBPartner;
 import de.metas.rest_api.bpartner.JsonBPartnerComposite;
+import de.metas.rest_api.bpartner.JsonBPartnerCompositeList;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequest;
 import de.metas.rest_api.bpartner.JsonBPartnerUpsertRequestItem;
@@ -77,17 +76,6 @@ import lombok.NonNull;
 
 class BpartnerRestControllerTest
 {
-	private static final String C_COUNTRY_RECORD_COUNTRY_CODE = "countryRecord.countryCode";
-	private static final String BP_GROUP_RECORD_NAME = "bpGroupRecord.name";
-	private static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
-	private static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
-	private static final int AD_ORG_ID = 10;
-	private static final String AD_USER_EXTERNAL_ID = "abcde";
-	private static final String C_BPARTNER_EXTERNAL_ID = "fghij";
-
-	private static final int C_BPARTNER_ID = 20;
-	private static final int AD_USER_ID = 30;
-	private static final int C_BBPARTNER_LOCATION_ID = 40;
 
 	private BpartnerRestController bpartnerRestController;
 
@@ -116,65 +104,16 @@ class BpartnerRestControllerTest
 		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
+		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
-		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
-		bpartnerRecord.setC_BPartner_ID(C_BPARTNER_ID);
-		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setExternalId(C_BPARTNER_EXTERNAL_ID);
-		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("bpartnerRecord.value");
-		bpartnerRecord.setC_BP_Group(bpGroupRecord);
-		saveRecord(bpartnerRecord);
-
-		final I_AD_User contactRecord = newInstance(I_AD_User.class);
-		contactRecord.setAD_Org_ID(AD_ORG_ID);
-		contactRecord.setAD_User_ID(AD_USER_ID);
-		contactRecord.setC_BPartner(bpartnerRecord);
-		contactRecord.setExternalId(AD_USER_EXTERNAL_ID);
-		contactRecord.setValue("bpartnerRecord.value");
-		contactRecord.setName("bpartnerRecord.name");
-		contactRecord.setLastname("bpartnerRecord.lastName");
-		contactRecord.setFirstname("bpartnerRecord.firstName");
-		contactRecord.setEMail("bpartnerRecord.email");
-		contactRecord.setPhone("bpartnerRecord.phone");
-		saveRecord(contactRecord);
-
-		final I_C_Country countryRecord = newInstance(I_C_Country.class);
-		countryRecord.setCountryCode(C_COUNTRY_RECORD_COUNTRY_CODE);
-		saveRecord(countryRecord);
-
-		final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
-		postalRecord.setC_Country(countryRecord);
-		postalRecord.setPostal("postalRecord.postal");
-		postalRecord.setDistrict("postalRecord.district");
-		saveRecord(postalRecord);
-
-		final I_C_Location locationRecord = newInstance(I_C_Location.class);
-		locationRecord.setC_Postal(postalRecord);
-		locationRecord.setC_Country(countryRecord);
-		locationRecord.setAddress1("locationRecord.address1");
-		locationRecord.setAddress2("locationRecord.address2");
-		locationRecord.setPOBox("locationRecord.poBox");
-		locationRecord.setPostal("locationRecord.postal");
-		locationRecord.setCity("locationRecord.city");
-		locationRecord.setRegionName("locationRecord.regionName");
-		locationRecord.setAddress2("locationRecord.address2");
-		locationRecord.setAddress2("locationRecord.address2");
-		saveRecord(locationRecord);
-
-		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpartnerLocationRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerLocationRecord.setC_BPartner_Location_ID(C_BBPARTNER_LOCATION_ID);
-		bpartnerLocationRecord.setC_BPartner(bpartnerRecord);
-		bpartnerLocationRecord.setC_Location(locationRecord);
-		bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN);
-		bpartnerLocationRecord.setExternalId(C_BPARTNER_LOCATION_EXTERNAL_ID);
-		saveRecord(bpartnerLocationRecord);
+		createBPartnerData(0);
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
+
+
 
 	@Test
 	void retrieveBPartner_ext()
@@ -269,7 +208,7 @@ class BpartnerRestControllerTest
 						.build())
 				.requestItem(requestItem)
 				.build();
-		//JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
+		// JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
 		final ResponseEntity<JsonUpsertResponse> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
@@ -348,16 +287,57 @@ class BpartnerRestControllerTest
 		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerCompositeQuery query = BPartnerCompositeQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
-		final QueryResultPage<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);
+		final ImmutableList<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);
 
-		assertThat(persistedPage.getItems()).hasSize(1);
+		assertThat(persistedPage).hasSize(1);
 
-		final BPartnerComposite persistedResult = persistedPage.getItems().get(0);
+		final BPartnerComposite persistedResult = persistedPage.get(0);
 		final Optional<BPartnerLocation> persistedLocation = persistedResult.extractLocation(JsonConverters.fromJsonOrNull(jsonLocation.getExternalId()));
 		assertThat(persistedLocation).isPresent();
 
 		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
 
 		expect(persistedResult).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnersSince()
+	{
+		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
+		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
+		sysConfigRecord.setValue("2");
+		saveRecord(sysConfigRecord);
+
+		createBPartnerData(1);
+		createBPartnerData(2);
+		createBPartnerData(3);
+		createBPartnerData(4);
+
+		// invoke the method under test
+		final ResponseEntity<JsonBPartnerCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
+
+		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonBPartnerCompositeList page1Body = page1.getBody();
+		assertThat(page1Body.getItems()).hasSize(2);
+
+		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
+		assertThat(page2Id).isNotEmpty();
+
+		final ResponseEntity<JsonBPartnerCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
+
+		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonBPartnerCompositeList page2Body = page2.getBody();
+		assertThat(page2Body.getItems()).hasSize(2);
+
+		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
+		assertThat(page3Id).isNotEmpty();
+
+		final ResponseEntity<JsonBPartnerCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
+
+		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonBPartnerCompositeList page3Body = page3.getBody();
+		assertThat(page3Body.getItems()).hasSize(1);
+
+		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 	}
 }
