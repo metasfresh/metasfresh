@@ -54,6 +54,12 @@ public class RestResponseEntityExceptionHandler
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
+	@ExceptionHandler(MissingResourceException.class)
+	public ResponseEntity<String> handleMissingPropertyException(@NonNull final MissingResourceException e)
+	{
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
 	@ExceptionHandler(DBUniqueConstraintException.class)
 	public ResponseEntity<String> handleDBUniqueConstraintException(@NonNull final DBUniqueConstraintException e)
 	{
