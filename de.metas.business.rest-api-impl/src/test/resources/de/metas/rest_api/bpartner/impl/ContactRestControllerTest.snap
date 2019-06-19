@@ -6,7 +6,8 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
     },
     "externalId": {
       "value": "externalId-1"
-    }
+    },
+    "name": "jsonContact.name"
   }
 ]
 

@@ -648,8 +648,8 @@ public class BPartnerCompositeRepository
 			else
 			{
 				// prefer C_Postal records that have no district set
-				postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
 			}
+			postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
 
 			final I_C_Postal postalRecord = postalQueryBuilder.create().first();
 			locationRecord.setC_Postal(postalRecord);
@@ -705,7 +705,7 @@ public class BPartnerCompositeRepository
 		final I_AD_User bpartnerContactRecord = loadOrNew(bpartnerContact.getId(), I_AD_User.class);
 		bpartnerContactRecord.setIsActive(true);
 		bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
-
+		bpartnerContactRecord.setName(bpartnerContact.getName());
 		bpartnerContactRecord.setEMail(bpartnerContact.getEmail());
 		bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 		bpartnerContactRecord.setFirstname(bpartnerContact.getFirstName());

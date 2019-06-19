@@ -23,8 +23,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "leftToRight": true,
         "decimalPoint": false,
+        "leftToRight": true,
         "baseLanguage": true
       },
       "url": "bPartner.url",
@@ -75,6 +75,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "c1_externalId"
         },
+        "name": "c1_name",
         "email": "c1_email@email.net",
         "phone": "c1_phone"
       },
@@ -86,6 +87,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "c2_externalId"
         },
+        "name": "c2_name",
         "email": "c2_email@email.net",
         "phone": "c2_phone"
       }
@@ -148,6 +150,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "externalId": {
           "value": "newContact-_externalId"
         },
+        "name": "newContact-_name",
         "email": "newContact-_email@email.net",
         "phone": "newContact-_phone"
       }
