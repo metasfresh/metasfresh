@@ -8,6 +8,7 @@ import static java.lang.Integer.parseInt;
 import java.util.List;
 
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -25,13 +26,13 @@ import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecordRepository;
 import de.metas.dataentry.data.json.JSONDataEntryRecordMapper;
 import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.layout.DataEntrySection;
 import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
-import de.metas.dataentry.layout.DataEntryLayout;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
@@ -120,6 +121,7 @@ public class DataEntryTabLoaderTest
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
 				.createLayoutDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
+						.mainTableId(AdTableId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
 
@@ -135,6 +137,7 @@ public class DataEntryTabLoaderTest
 		final List<DocumentLayoutDetailDescriptor> descriptors = dataEntryTabLoader
 				.createLayoutDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
+						.mainTableId(AdTableId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
 
@@ -151,6 +154,7 @@ public class DataEntryTabLoaderTest
 		final List<DocumentEntityDescriptor> descriptors = dataEntryTabLoader
 				.createTabEntityDescriptors(DataEntryLayout.builder()
 						.windowId(AdWindowId.ofRepoId(1))
+						.mainTableId(AdTableId.ofRepoId(1))
 						.tab(dataEntryTab)
 						.build());
 

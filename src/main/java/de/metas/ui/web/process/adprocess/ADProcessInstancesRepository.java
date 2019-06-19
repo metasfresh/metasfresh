@@ -164,6 +164,11 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		final DocumentId adPInstanceId = DocumentId.of(processInfo.getPinstanceId());
 
 		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
+		if (processClassInstance == null)
+		{
+			throw new AdempiereException("No process instance created for " + processInfo);
+		}
+
 		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{
 			//
@@ -234,7 +239,6 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				tableName = view.getTableNameOrNull(null);
 				recordId = -1;
 			}
-
 
 			final boolean emptyTableName = Check.isEmpty(tableName);
 			if (viewDocumentIds.isEmpty() || emptyTableName)
