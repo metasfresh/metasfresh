@@ -33,6 +33,8 @@ import lombok.Value;
 @Builder
 public class DataEntryLine
 {
+	int seqNo;
+	
 	@NonNull
 	@Singular
 	ImmutableList<DataEntryField> fields;

@@ -377,7 +377,8 @@ public abstract class AbstractExcelExporter
 		if (DisplayType.isDate(displayType))
 		{
 			final DataFormat dataFormat = getDataFormat();
-			style.setDataFormat(dataFormat.getFormat("DD.MM.YYYY"));
+			style.setDataFormat(dataFormat.getFormat(this.getLanguage().getDateFormat().toPattern()));
+
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
