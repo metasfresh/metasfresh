@@ -1,12 +1,6 @@
-package de.metas.vertical.pharma.securpharm.client;
+package de.metas.vertical.pharma.securpharm.config;
 
-import javax.annotation.Nullable;
-
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.product.ProductDetails;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.Optional;
 
 /*
  * #%L
@@ -30,23 +24,9 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class DecommisionClientResponse
+public interface SecurPharmConfigRespository
 {
-	@Nullable
-	ProductDetails productDetails;
-
-	@NonNull
-	SecurPharmLog log;
-
-	public boolean isError()
-	{
-		return getLog().isError() || getProductDetails() == null;
-	}
-
-	public String getServerTransactionId()
-	{
-		return getLog().getServerTransactionId();
-	}
+	Optional<SecurPharmConfig> getDefaultConfig();
+	
+	SecurPharmConfig getById(SecurPharmConfigId id);
 }

@@ -48,19 +48,17 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmAction;
-import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
-import de.metas.vertical.pharma.securpharm.model.ProductDetails;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
-import de.metas.vertical.pharma.securpharm.model.schema.APIResponse;
-import de.metas.vertical.pharma.securpharm.model.schema.Package;
-import de.metas.vertical.pharma.securpharm.model.schema.Product;
-import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
-import de.metas.vertical.pharma.securpharm.model.schema.Result;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmAction;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonAPIResponse;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonPackage;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonProduct;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonProductPackageState;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonResult;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.ProductCodeType;
+import de.metas.vertical.pharma.securpharm.product.ProductDetails;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -113,7 +111,7 @@ public class SecurPharmClient
 		return getConfig().getSupportUserId();
 	}
 
-	public DecodeDataMatrixResponse decodeDataMatrix(@NonNull final DataMatrixCode dataMatrix)
+	public DecodeDataMatrixClientResponse decodeDataMatrix(@NonNull final DataMatrixCode dataMatrix)
 	{
 		final String clientTransactionId = newClientTransactionId();
 		final UriComponentsBuilder url = UriComponentsBuilder.fromPath(API_RELATIVE_PATH_UIS)
@@ -126,13 +124,13 @@ public class SecurPharmClient
 				? extractProductDetailsFromAPIResponse(responseAndLogData.getResponse())
 				: null;
 
-		return DecodeDataMatrixResponse.builder()
+		return DecodeDataMatrixClientResponse.builder()
 				.log(log)
 				.productDetails(productDetails)
 				.build();
 	}
 
-	public VerifyProductResponse verifyProduct(@NonNull final ProductDetails requestProductDetails)
+	public VerifyProductClientResponse verifyProduct(@NonNull final ProductDetails requestProductDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
 		final UriComponentsBuilder url = prepareProductURL(requestProductDetails, clientTransactionId);
@@ -140,12 +138,12 @@ public class SecurPharmClient
 		final APIReponseWithLog responseAndLogData = getFromUrl(url, clientTransactionId);
 
 		final SecurPharmLog log = responseAndLogData.getLog();
-		final APIResponse response = responseAndLogData.getResponse();
+		final JsonAPIResponse response = responseAndLogData.getResponse();
 		final ProductDetails responseProductDetails = !log.isError()
 				? extractProductDetailsFromAPIResponse(response)
 				: null;
 
-		return VerifyProductResponse.builder()
+		return VerifyProductClientResponse.builder()
 				.resultCode(response.getResultCode())
 				.resultMessage(response.getResultMessage())
 				.productDetails(responseProductDetails)
@@ -171,7 +169,7 @@ public class SecurPharmClient
 				.requestUrl(config.getPharmaAPIBaseUrl() + url.build())
 				.requestMethod(HttpMethod.GET);
 
-		APIResponse apiResponse = null;
+		JsonAPIResponse apiResponse = null;
 		try
 		{
 			final ResponseEntity<String> response = performRequest(url, HttpMethod.GET);
@@ -180,7 +178,7 @@ public class SecurPharmClient
 			log.responseData(apiResponseString);
 			log.responseTime(Instant.now());
 
-			apiResponse = fromJsonString(apiResponseString, APIResponse.class);
+			apiResponse = fromJsonString(apiResponseString, JsonAPIResponse.class);
 			log.serverTransactionId(apiResponse.getServerTransactionId());
 			log.error(response.getStatusCode() != HttpStatus.OK);
 		}
@@ -189,7 +187,7 @@ public class SecurPharmClient
 			logger.debug("Got HTTP client error", ex);
 
 			final String apiResponseString = ex.getResponseBodyAsString();
-			apiResponse = fromJsonStringOrNull(apiResponseString, APIResponse.class);
+			apiResponse = fromJsonStringOrNull(apiResponseString, JsonAPIResponse.class);
 
 			log.error(true);
 			log.responseCode(ex.getStatusCode());
@@ -200,11 +198,11 @@ public class SecurPharmClient
 		{
 			logger.debug("Got unknown error", ex);
 
-			final Result apiResponseResult = new Result();
+			final JsonResult apiResponseResult = new JsonResult();
 			apiResponseResult.setCode("?");
 			apiResponseResult.setMessage(ex.getMessage());
 
-			apiResponse = new APIResponse();
+			apiResponse = new JsonAPIResponse();
 			apiResponse.setRes(apiResponseResult);
 
 			log.error(true);
@@ -216,10 +214,10 @@ public class SecurPharmClient
 		return APIReponseWithLog.of(log.build(), apiResponse);
 	}
 
-	private static ProductDetails extractProductDetailsFromAPIResponse(@NonNull final APIResponse apiResponse)
+	private static ProductDetails extractProductDetailsFromAPIResponse(@NonNull final JsonAPIResponse apiResponse)
 	{
-		final Product product = apiResponse.getProd();
-		final Package pack = apiResponse.getPack();
+		final JsonProduct product = apiResponse.getProd();
+		final JsonPackage pack = apiResponse.getPack();
 
 		final ProductDetails.ProductDetailsBuilder productDetailsBuilder = ProductDetails.builder()
 				.lot(product.getLot())
@@ -228,7 +226,7 @@ public class SecurPharmClient
 				.expirationDate(product.getExpirationDate())
 				.serialNumber(pack.getSerialNumber());
 
-		final ProductPackageState activeStatus = Util.coalesce(pack.getState(), ProductPackageState.UNKNOWN);
+		final JsonProductPackageState activeStatus = Util.coalesce(pack.getState(), JsonProductPackageState.UNKNOWN);
 		productDetailsBuilder.activeStatus(activeStatus);
 
 		if (pack.getReasons() != null)
@@ -319,7 +317,7 @@ public class SecurPharmClient
 			log.responseCode(response.getStatusCode());
 			log.responseData(apiResponseString);
 
-			final APIResponse apiResponse = fromJsonString(apiResponseString, APIResponse.class);
+			final JsonAPIResponse apiResponse = fromJsonString(apiResponseString, JsonAPIResponse.class);
 			log.serverTransactionId(apiResponse.getServerTransactionId());
 
 			if (response.getStatusCode() == HttpStatus.OK && apiResponse.isTransactionSet())
@@ -395,6 +393,6 @@ public class SecurPharmClient
 		@NonNull
 		SecurPharmLog log;
 		@NonNull
-		APIResponse response;
+		JsonAPIResponse response;
 	}
 }

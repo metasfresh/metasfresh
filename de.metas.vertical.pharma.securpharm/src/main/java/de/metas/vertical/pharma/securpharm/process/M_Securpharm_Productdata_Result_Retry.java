@@ -31,9 +31,9 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 public class M_Securpharm_Productdata_Result_Retry extends JavaProcess implements IProcessPrecondition

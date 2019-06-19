@@ -22,8 +22,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.schema.AuthResponse;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonAuthResponse;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import lombok.NonNull;
 
 /*
@@ -67,7 +67,7 @@ final class SecurPharmClientAuthenticator
 
 	@NonNull
 	private final SecurPharmConfig config;
-	private AuthResponse _authResponse; // lazy
+	private JsonAuthResponse _authResponse; // lazy
 
 	private SecurPharmClientAuthenticator(@NonNull final SecurPharmConfig config)
 	{
@@ -84,9 +84,9 @@ final class SecurPharmClientAuthenticator
 		return getAuthResponse().getAccessToken();
 	}
 
-	private synchronized AuthResponse getAuthResponse()
+	private synchronized JsonAuthResponse getAuthResponse()
 	{
-		AuthResponse authResponse = _authResponse;
+		JsonAuthResponse authResponse = _authResponse;
 
 		if (authResponse == null
 				|| authResponse.isExpired())
@@ -102,7 +102,7 @@ final class SecurPharmClientAuthenticator
 		getAuthResponse();
 	}
 
-	private static AuthResponse authenticate(@NonNull final SecurPharmConfig config)
+	private static JsonAuthResponse authenticate(@NonNull final SecurPharmConfig config)
 	{
 		try
 		{
@@ -124,8 +124,8 @@ final class SecurPharmClientAuthenticator
 
 			final HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-			final ResponseEntity<AuthResponse> response = restTemplate.postForEntity(config.getAuthBaseUrl() + AUTH_RELATIVE_PATH, request, AuthResponse.class);
-			final AuthResponse authResponse = response.getBody();
+			final ResponseEntity<JsonAuthResponse> response = restTemplate.postForEntity(config.getAuthBaseUrl() + AUTH_RELATIVE_PATH, request, JsonAuthResponse.class);
+			final JsonAuthResponse authResponse = response.getBody();
 			if (response.getStatusCode() == HttpStatus.OK)
 			{
 				return authResponse;

@@ -32,8 +32,9 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DecommisionClientResponse
+public class DecodeDataMatrixClientResponse
 {
+	/** Set if not error */
 	@Nullable
 	ProductDetails productDetails;
 
@@ -42,11 +43,6 @@ public class DecommisionClientResponse
 
 	public boolean isError()
 	{
-		return getLog().isError() || getProductDetails() == null;
-	}
-
-	public String getServerTransactionId()
-	{
-		return getLog().getServerTransactionId();
+		return getProductDetails() == null;
 	}
 }

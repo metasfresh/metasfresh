@@ -9,11 +9,12 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.junit.Ignore;
 
 import de.metas.user.UserId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import lombok.ToString;
 
 /*
@@ -39,6 +40,7 @@ import lombok.ToString;
  */
 
 @ToString
+@Ignore
 public class PlainSecurPharmConfigRespository implements SecurPharmConfigRespository
 {
 	public static PlainSecurPharmConfigRespository ofDefaultSandboxProperties()

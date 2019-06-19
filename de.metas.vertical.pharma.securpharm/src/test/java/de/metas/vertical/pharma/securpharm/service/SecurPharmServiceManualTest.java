@@ -5,13 +5,13 @@ import org.junit.Ignore;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
 
 /*
  * #%L

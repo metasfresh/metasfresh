@@ -1,12 +1,13 @@
-package de.metas.vertical.pharma.securpharm.client;
+package de.metas.vertical.pharma.securpharm.actions;
 
 import javax.annotation.Nullable;
 
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.product.ProductDetails;
+import de.metas.inventory.InventoryId;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -32,21 +33,22 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DecommisionClientResponse
+public class UndoDecommissionResponse
 {
-	@Nullable
-	ProductDetails productDetails;
+	//
+	// Actual response
+	boolean error;
 
 	@NonNull
-	SecurPharmLog log;
+	String serverTransactionId;
 
-	public boolean isError()
-	{
-		return getLog().isError() || getProductDetails() == null;
-	}
+	//
+	// From Request
+	@Nullable
+	@NonFinal
+	InventoryId inventoryId;
 
-	public String getServerTransactionId()
-	{
-		return getLog().getServerTransactionId();
-	}
+	@Nullable
+	@NonFinal
+	SecurPharmProductId productDataResultId;
 }

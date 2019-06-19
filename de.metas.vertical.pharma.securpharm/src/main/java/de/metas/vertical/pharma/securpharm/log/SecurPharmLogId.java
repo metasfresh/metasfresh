@@ -1,11 +1,10 @@
-package de.metas.vertical.pharma.securpharm.client;
+package de.metas.vertical.pharma.securpharm.log;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.product.ProductDetails;
-import lombok.Builder;
-import lombok.NonNull;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
@@ -31,22 +30,30 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class DecommisionClientResponse
+public class SecurPharmLogId implements RepoIdAware
 {
-	@Nullable
-	ProductDetails productDetails;
-
-	@NonNull
-	SecurPharmLog log;
-
-	public boolean isError()
+	@JsonCreator
+	public static SecurPharmLogId ofRepoId(final int repoId)
 	{
-		return getLog().isError() || getProductDetails() == null;
+		return new SecurPharmLogId(repoId);
 	}
 
-	public String getServerTransactionId()
+	public static SecurPharmLogId ofRepoIdOrNull(final int repoId)
 	{
-		return getLog().getServerTransactionId();
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	int repoId;
+
+	private SecurPharmLogId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

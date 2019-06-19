@@ -25,10 +25,8 @@ package de.metas.vertical.pharma.securpharm.client;
 
 import org.junit.Ignore;
 
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.service.PlainSecurPharmConfigRespository;
 
 @Ignore
@@ -50,11 +48,11 @@ public class SecurPharmClientManualTest
 		final DataMatrixCode code = DataMatrixCode.ofBase64Encoded("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
 		System.out.println("Sending code: " + code);
 
-		final DecodeDataMatrixResponse decodeResponse = client.decodeDataMatrix(code);
+		final DecodeDataMatrixClientResponse decodeResponse = client.decodeDataMatrix(code);
 		System.out.println("decode response: " + decodeResponse);
 
 		System.out.println("verifying product: " + decodeResponse.getProductDetails());
-		VerifyProductResponse verifyResponse = client.verifyProduct(decodeResponse.getProductDetails());
+		VerifyProductClientResponse verifyResponse = client.verifyProduct(decodeResponse.getProductDetails());
 		System.out.println("verify response: " + verifyResponse);
 	}
 }

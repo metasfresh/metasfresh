@@ -28,9 +28,9 @@ import org.springframework.stereotype.Service;
 
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import lombok.NonNull;
 
 @Service

@@ -38,22 +38,22 @@ import org.springframework.http.HttpMethod;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
 import de.metas.user.UserId;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
-import de.metas.vertical.pharma.securpharm.model.ProductCodeType;
-import de.metas.vertical.pharma.securpharm.model.ProductDetails;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
-import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
-import de.metas.vertical.pharma.securpharm.model.schema.ProductPackageState;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.client.VerifyProductClientResponse;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonExpirationDate;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonProductPackageState;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.ProductCodeType;
+import de.metas.vertical.pharma.securpharm.product.ProductDetails;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
 
 public class SecurPharmServiceTest
 {
@@ -95,8 +95,8 @@ public class SecurPharmServiceTest
 		Mockito.when(clientFactory.createClient()).thenReturn(client);
 
 		final ProductDetails productDetails = ProductDetails.builder()
-				.activeStatus(ProductPackageState.ACTIVE)
-				.expirationDate(ExpirationDate.ofLocalDate(LocalDate.now()))
+				.activeStatus(JsonProductPackageState.ACTIVE)
+				.expirationDate(JsonExpirationDate.ofLocalDate(LocalDate.now()))
 				.lot("lot")
 				.productCode("product code")
 				.productCodeType(ProductCodeType.GTIN)
@@ -104,13 +104,13 @@ public class SecurPharmServiceTest
 				.build();
 
 		Mockito.when(client.decodeDataMatrix(dataMatrix))
-				.thenReturn(DecodeDataMatrixResponse.builder()
+				.thenReturn(DecodeDataMatrixClientResponse.builder()
 						.productDetails(productDetails)
 						.log(generateDummyLog())
 						.build());
 
 		Mockito.when(client.verifyProduct(productDetails))
-				.thenReturn(VerifyProductResponse.builder()
+				.thenReturn(VerifyProductClientResponse.builder()
 						.resultCode("200")
 						.productDetails(productDetails)
 						.log(generateDummyLog())

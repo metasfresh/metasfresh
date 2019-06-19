@@ -1,10 +1,8 @@
-package de.metas.vertical.pharma.securpharm.client;
+package de.metas.vertical.pharma.securpharm.product;
 
-import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.product.ProductDetails;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -31,22 +29,31 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class DecommisionClientResponse
+public class DataMatrixCode
 {
-	@Nullable
-	ProductDetails productDetails;
-
-	@NonNull
-	SecurPharmLog log;
-
-	public boolean isError()
+	public static DataMatrixCode ofBase64Encoded(@NonNull final String codeBase64Encoded)
 	{
-		return getLog().isError() || getProductDetails() == null;
+		final String code = new String(Base64.getDecoder().decode(codeBase64Encoded.getBytes()));
+		return new DataMatrixCode(code);
 	}
 
-	public String getServerTransactionId()
+	public static DataMatrixCode ofString(@NonNull final String code)
 	{
-		return getLog().getServerTransactionId();
+		return new DataMatrixCode(code);
 	}
+
+	private final String code;
+
+	private DataMatrixCode(@NonNull final String code)
+	{
+		this.code = code;
+	}
+
+	public String toBase64Url()
+	{
+		return Base64.getEncoder()
+				.withoutPadding()
+				.encodeToString(code.getBytes(StandardCharsets.UTF_8));
+	}
+
 }

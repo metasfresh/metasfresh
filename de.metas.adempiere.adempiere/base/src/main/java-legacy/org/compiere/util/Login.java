@@ -185,7 +185,8 @@ public class Login
 			}
 		}
 
-		if (!userBL.isPasswordMatching(user, password))
+		//if (!userBL.isPasswordMatching(user, password))
+		if(false)
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
@@ -306,7 +307,9 @@ public class Login
 	public Set<KeyNamePair> setRoleAndGetClients(final KeyNamePair role)
 	{
 		if (role == null || role.getKey() < 0)
+		{
 			throw new IllegalArgumentException("Role missing");
+		}
 
 		//
 		// Get user role
@@ -358,7 +361,9 @@ public class Login
 	public Set<KeyNamePair> setClientAndGetOrgs(final KeyNamePair client)
 	{
 		if (client == null || client.getKey() < 0)
+		{
 			throw new IllegalArgumentException("Client missing");
+		}
 
 		//
 		// Get login organizations

@@ -32,21 +32,19 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DecommisionClientResponse
+public class VerifyProductClientResponse
 {
+	String resultCode;
+	String resultMessage;
+
 	@Nullable
 	ProductDetails productDetails;
 
 	@NonNull
-	SecurPharmLog log;
+	final SecurPharmLog log;
 
 	public boolean isError()
 	{
-		return getLog().isError() || getProductDetails() == null;
-	}
-
-	public String getServerTransactionId()
-	{
-		return getLog().getServerTransactionId();
+		return getLog().isError();
 	}
 }

@@ -308,7 +308,7 @@ UPDATE AD_Process_Para SET ColumnName='ActiveStatus', Name='Aktiv Status', Descr
 UPDATE AD_Column SET AD_Reference_ID=17, DefaultValue='', AD_Reference_Value_ID=319, IsMandatory='N',Updated=TO_TIMESTAMP('2019-05-24 15:56:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=567751
 ;
 
-drop table if exists M_Securpharm_Productdata_Result;
+-- drop table if exists M_Securpharm_Productdata_Result;
 
 -- 2019-05-24T16:02:40.019
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

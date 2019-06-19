@@ -8,7 +8,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmConfigId;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
 
 /*
  * #%L

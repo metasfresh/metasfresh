@@ -45,24 +45,24 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionResultId;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
+import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
 import de.metas.vertical.pharma.securpharm.client.DecommisionClientResponse;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.client.UndoDecommissionClientResponse;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.DecodeDataMatrixResponse;
-import de.metas.vertical.pharma.securpharm.model.DecommissionResponse;
-import de.metas.vertical.pharma.securpharm.model.ProductDetails;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmActionResultId;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProductId;
-import de.metas.vertical.pharma.securpharm.model.UndoDecommissionResponse;
-import de.metas.vertical.pharma.securpharm.model.VerifyProductResponse;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmConfigRespository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmLogRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmProductRepository;
-import de.metas.vertical.pharma.securpharm.repository.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.client.VerifyProductClientResponse;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
+import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.ProductDetails;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
 import lombok.NonNull;
 
 @Service
@@ -133,7 +133,7 @@ public class SecurPharmService
 
 		//
 		// Decode datamatrix
-		final DecodeDataMatrixResponse decodeResult = client.decodeDataMatrix(datamatrix);
+		final DecodeDataMatrixClientResponse decodeResult = client.decodeDataMatrix(datamatrix);
 		logs.add(decodeResult.getLog());
 		ProductDetails productDetails = decodeResult.getProductDetails();
 		boolean error = decodeResult.isError();
@@ -142,7 +142,7 @@ public class SecurPharmService
 		// Verify product
 		if (!error)
 		{
-			final VerifyProductResponse verifyResult = client.verifyProduct(productDetails);
+			final VerifyProductClientResponse verifyResult = client.verifyProduct(productDetails);
 			logs.add(verifyResult.getLog());
 			productDetails = verifyResult.getProductDetails();
 			error = verifyResult.isError();

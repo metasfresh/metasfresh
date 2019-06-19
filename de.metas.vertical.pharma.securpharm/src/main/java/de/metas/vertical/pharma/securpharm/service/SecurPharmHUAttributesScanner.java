@@ -29,9 +29,9 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
-import de.metas.vertical.pharma.securpharm.model.DataMatrixCode;
-import de.metas.vertical.pharma.securpharm.model.SecurPharmProduct;
-import de.metas.vertical.pharma.securpharm.model.schema.ExpirationDate;
+import de.metas.vertical.pharma.securpharm.client.schema.JsonExpirationDate;
+import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -225,7 +225,7 @@ public class SecurPharmHUAttributesScanner
 
 		if (!from.isSkipUpdatingBestBeforeDate())
 		{
-			final ExpirationDate bestBeforeDate = from.getBestBeforeDate();
+			final JsonExpirationDate bestBeforeDate = from.getBestBeforeDate();
 			huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate != null ? bestBeforeDate.toLocalDate() : null);
 		}
 
@@ -257,7 +257,7 @@ public class SecurPharmHUAttributesScanner
 
 		boolean skipUpdatingBestBeforeDate;
 		@Nullable
-		ExpirationDate bestBeforeDate;
+		JsonExpirationDate bestBeforeDate;
 
 		boolean skipUpdatingLotNo;
 		@Nullable
