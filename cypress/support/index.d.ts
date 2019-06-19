@@ -214,5 +214,13 @@ declare namespace Cypress {
      * @param forced optional, default = false;
      */
     selectTab(tabName: string, forced?: boolean): Chainable<any>
+
+
+    /**
+     *   Select the only row in the currently selected tab
+     */
+    selectSingleTabRow(): Chainable<any>
+
+
   }
 }
