@@ -82,7 +82,17 @@ public interface IADTableDAO extends ISingletonService
 	 * @param adTableId
 	 * @return the name for the given <code>AD_Table_ID</code> or <code>null</code> if the given ID is less or equal zero
 	 */
-	String retrieveTableName(int adTableId);
+	String retrieveTableName(AdTableId adTableId);
+
+	default String retrieveTableName(final int adTableId)
+	{
+		// guard against 0 AD_Table_ID
+		if (adTableId <= 0)
+		{
+			return null;
+		}
+		return retrieveTableName(AdTableId.ofRepoId(adTableId));
+	}
 
 	/**
 	 * @param tableName, can be case insensitive
@@ -169,6 +179,6 @@ public interface IADTableDAO extends ISingletonService
 	boolean isStandardColumn(String columnName);
 
 	Set<String> getTableNamesWithRemoteCacheInvalidation();
-	
+
 	int getTypeaheadMinLength(String tableName);
 }

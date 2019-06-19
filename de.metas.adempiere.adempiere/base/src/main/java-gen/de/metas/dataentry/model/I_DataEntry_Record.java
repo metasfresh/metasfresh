@@ -128,6 +128,29 @@ public interface I_DataEntry_Record
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set DataEntry_Record.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setDataEntry_Record_ID (int DataEntry_Record_ID);
+
+	/**
+	 * Get DataEntry_Record.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getDataEntry_Record_ID();
+
+    /** Column definition for DataEntry_Record_ID */
+    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_DataEntry_Record_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "DataEntry_Record_ID", null);
+    /** Column name DataEntry_Record_ID */
+    public static final String COLUMNNAME_DataEntry_Record_ID = "DataEntry_Record_ID";
+
+	/**
 	 * Set DataEntry_RecordData.
 	 * Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
 	 *
@@ -151,29 +174,6 @@ public interface I_DataEntry_Record
     public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_DataEntry_RecordData = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "DataEntry_RecordData", null);
     /** Column name DataEntry_RecordData */
     public static final String COLUMNNAME_DataEntry_RecordData = "DataEntry_RecordData";
-
-	/**
-	 * Set DataEntry_Record.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setDataEntry_Record_ID (int DataEntry_Record_ID);
-
-	/**
-	 * Get DataEntry_Record.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getDataEntry_Record_ID();
-
-    /** Column definition for DataEntry_Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_DataEntry_Record, Object> COLUMN_DataEntry_Record_ID = new org.adempiere.model.ModelColumn<I_DataEntry_Record, Object>(I_DataEntry_Record.class, "DataEntry_Record_ID", null);
-    /** Column name DataEntry_Record_ID */
-    public static final String COLUMNNAME_DataEntry_Record_ID = "DataEntry_Record_ID";
 
 	/**
 	 * Set Unterregister.

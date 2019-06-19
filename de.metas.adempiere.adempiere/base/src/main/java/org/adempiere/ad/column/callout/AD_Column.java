@@ -191,6 +191,11 @@ public class AD_Column
 			updateQtyColumn(column);
 		}
 
+		else if (columnName.endsWith("Number"))
+		{
+			updateNumberColumn(column);
+		}
+
 		else if (columnName.toUpperCase().startsWith("IS")
 				|| Pattern.matches("(Allow)[A-Z].*", columnName)
 				|| Pattern.matches("(Has)[A-Z].*", columnName))
@@ -301,7 +306,12 @@ public class AD_Column
 	{
 		column.setAD_Reference_ID(DisplayType.Quantity);
 		column.setFieldLength(10);
+	}
 
+	private static void updateNumberColumn(final I_AD_Column column)
+	{
+		column.setAD_Reference_ID(DisplayType.Number);
+		column.setFieldLength(10);
 	}
 
 	private static void updateFlagColumn(final I_AD_Column column)

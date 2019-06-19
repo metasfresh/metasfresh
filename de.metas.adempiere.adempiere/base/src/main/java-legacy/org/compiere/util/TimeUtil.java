@@ -1597,6 +1597,10 @@ public class TimeUtil
 		{
 			return (LocalDate)obj;
 		}
+		else if (obj instanceof String)
+		{
+			return LocalDate.parse(obj.toString());
+		}
 		else
 		{
 			return asLocalDateTime(obj).toLocalDate();

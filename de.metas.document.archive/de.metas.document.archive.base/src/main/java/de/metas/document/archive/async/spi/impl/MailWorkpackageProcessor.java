@@ -1,7 +1,10 @@
 package de.metas.document.archive.async.spi.impl;
 
+import static de.metas.util.Check.isEmpty;
+
 import java.util.List;
 import java.util.Properties;
+import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 
@@ -13,6 +16,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
@@ -40,7 +44,6 @@ import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -169,8 +172,8 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			else
 			{
-				final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
-				email.addAttachment(tableName + "_" + docOutboundLogRecord.getRecord_ID() + ".pdf", attachment);
+				final String pdfFileName = computePdfFileName(docOutboundLogRecord);
+				email.addAttachment(pdfFileName, attachment);
 
 				mailBL.send(email);
 				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
@@ -196,6 +199,39 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 					bcc,
 					statusText);
 		}
+	}
+
+	private String computePdfFileName(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final StringJoiner fileNameParts = new StringJoiner("-");
+
+		if (docOutboundLogRecord.getAD_Org_ID() > 0)
+		{
+			fileNameParts.add(docOutboundLogRecord.getAD_Org().getName());
+		}
+
+		if (docOutboundLogRecord.getC_DocType_ID() > 0)
+		{
+			final I_C_DocType docType = InterfaceWrapperHelper.translate(docOutboundLogRecord.getC_DocType(), I_C_DocType.class);
+			fileNameParts.add(docType.getName());
+		}
+		else
+		{
+			final I_AD_Table table = InterfaceWrapperHelper.translate(docOutboundLogRecord.getAD_Table(), I_AD_Table.class);
+			fileNameParts.add(table.getName());
+		}
+
+		if (!isEmpty(docOutboundLogRecord.getDocumentNo(), true))
+		{
+			fileNameParts.add(docOutboundLogRecord.getDocumentNo());
+		}
+		else
+		{
+			fileNameParts.add(Integer.toString(docOutboundLogRecord.getRecord_ID()));
+		}
+
+		final String pdfFileName = fileNameParts.toString();
+		return pdfFileName + ".pdf";
 	}
 
 	private boolean isHTMLMessage(final String message)

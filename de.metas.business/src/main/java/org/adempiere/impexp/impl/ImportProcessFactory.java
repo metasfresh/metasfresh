@@ -49,6 +49,8 @@ import org.compiere.model.I_I_User;
 import com.google.common.base.Supplier;
 
 import de.metas.bpartner.impexp.BPartnerImportProcess;
+import de.metas.dataentry.data.impexp.DataEntryRecordsImportProcess;
+import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.location.impexp.PostalCodeImportProcess;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
@@ -73,6 +75,7 @@ public class ImportProcessFactory implements IImportProcessFactory
 		registerImportProcess(I_I_BPartner_GlobalID.class, BPartnerGlobalIDImportProcess.class);
 		registerImportProcess(I_I_Replenish.class, ReplenishmentImportProcess.class);
 		registerImportProcess(I_I_Postal.class, PostalCodeImportProcess.class);
+		registerImportProcess(I_I_DataEntry_Record.class, DataEntryRecordsImportProcess.class);
 	}
 
 	@Override
