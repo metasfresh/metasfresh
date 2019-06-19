@@ -49,10 +49,12 @@ public class PageDescriptorRepository
 				.firstOnly(I_T_Query_Selection_Pagination.class);
 
 		return PageDescriptor.builder()
+				.selectionUid(pageDescriptorRecord.getUUID())
+				.selectionTime(TimeUtil.asInstant(pageDescriptorRecord.getResult_Time()))
+				.totalSize(pageDescriptorRecord.getTotal_Size())
+				.pageSize(pageDescriptorRecord.getPage_Size())
 				.offset(pageDescriptorRecord.getPage_Offset())
 				.pageUid(pageDescriptorRecord.getPage_Identifier())
-				.selectionUid(pageDescriptorRecord.getUUID())
-				.pageSize(pageDescriptorRecord.getPage_Size())
 				.build();
 	}
 
