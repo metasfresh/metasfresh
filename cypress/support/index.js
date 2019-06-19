@@ -31,6 +31,10 @@ Cypress.on('emit:counterpartTranslations', messages => {
   Cypress.messages = messages;
 });
 
+Cypress.on('window:alert', text => {
+  cy.log(`Alert modal confirmed: ${text}`);
+});
+
 before(function() {
   cy.loginViaAPI();
 

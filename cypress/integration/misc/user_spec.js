@@ -43,17 +43,12 @@ describe('New user tests', function() {
     users.getRowWithValue(customLastName).click();
 
     cy.executeHeaderActionWithDialog('AD_User_ChangePassword');
+
+    // stupid hack, because otherwise after selecting all in NewPassword there's a request
+    // with empty OldPassword. Go figure...
+    cy.get('.form-field-OldPassword').click();
     cy.writeIntoStringField('NewPassword', user.password, false, null, true);
-
-    cy.get('.modal-content-wrapper .btn-icon')
-      .eq(1)
-      .click();
-
     cy.writeIntoStringField('NewPasswordRetype', user.password, false, null, true);
-
-    cy.get('.modal-content-wrapper .btn-icon')
-      .eq(2)
-      .click();
 
     cy.pressStartButton();
     cy.get('.modal-content-wrapper').should('not.exist');
