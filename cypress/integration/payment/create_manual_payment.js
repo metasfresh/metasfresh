@@ -4,9 +4,9 @@
 // import {object} from 'prop-types';
 // import {BPartner} from '../../support/utils/bpartner';
 // import {salesInvoices} from '../../page_objects/sales_invoices';
-import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
+import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
 
-describe('Create a manual Payment for a Sales Invoice', function () {
+describe('Create a manual Payment for a Sales Invoice', function() {
   // const timestamp = new Date().getTime();
   // const productName = `Sales Order-to-Invoice Test ${timestamp}`;
   // const bPartnerName = `Sales Order-to-Invoice Test ${timestamp}`;
@@ -49,7 +49,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
   });
   */
 
-  it('Creates a Sales Order and Invoice', function () {
+  it('Creates a Sales Order and Invoice', function() {
     new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
       .addLine(
         new SalesInvoiceLine()
@@ -58,28 +58,22 @@ describe('Create a manual Payment for a Sales Invoice', function () {
           .setPackingItem('IFCO 6410 x 10 Stk')
           .setTuQuantity(2)
       )
-      .addLine(
-        new SalesInvoiceLine()
-          .setProduct('IFCO 6410_P001512')
-          .setQuantity(2)
-      )
+      .addLine(new SalesInvoiceLine().setProduct('IFCO 6410_P001512').setQuantity(2))
       .setDocumentAction('Complete')
       .setDocumentStatus('Completed')
       .apply();
-
 
     // save values needed for the next step
     cy.getFieldValue('DocumentNo').then(documentNumber => {
       salesInvoiceNumber = documentNumber;
     });
 
-    cy.get(".header-breadcrumb-sitename").then(si => {
+    cy.get('.header-breadcrumb-sitename').then(si => {
       salesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2], 10); // the format is "DOC_NO MM/DD/YYYY total"
     });
   });
 
-
-  it('Creates a manual Payment', function () {
+  it('Creates a manual Payment', function() {
     cy.visitWindow('195', 'NEW');
 
     cy.writeIntoLookupListField('C_BPartner_ID', bPartnerName, bPartnerName);
@@ -98,13 +92,12 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     cy.processDocument('Complete', 'Completed');
   });
 
-  it('Checks the paid and discount amount', function () {
+  it('Checks the paid and discount amount', function() {
     // check the paid amount (payAmount+discount amount!)
     // discount amount is taken from the advanced edit dialog of the line
     cy.selectTab('C_AllocationLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
-
 
     let discountAmount;
     cy.getFieldValue('DiscountAmt', true).then(val => {
@@ -112,21 +105,24 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     });
 
     cy.getFieldValue('Amount').then(val => {
-      const cast = parseFloat(val);
-      assert.equal(val, salesInvoiceTotalAmount - discountAmount);
+      const value = parseFloat(val).toFixed(2);
+      const amount = parseFloat(salesInvoiceTotalAmount - discountAmount).toFixed(2);
+      assert.equal(value, amount);
     });
 
     cy.pressDoneButton();
   });
 
-  it('Checks the new Sales Invoice', function () {
+  it('Checks the new Sales Invoice', function() {
     cy.selectTab('C_AllocationLine');
-    cy.selectSingleTabRow();
+    cy.get('.table-flex-wrapper')
+      .find('tbody td')
+      .contains(salesInvoiceNumber)
+      .click()
+      .trigger('contextmenu');
 
-
-    // todo @kuba here
-
-    cy.get('.context-menu-item').contains('Zoom into').click();
-
+    cy.get('.context-menu-item')
+      .contains('Zoom Into')
+      .click();
   });
 });
