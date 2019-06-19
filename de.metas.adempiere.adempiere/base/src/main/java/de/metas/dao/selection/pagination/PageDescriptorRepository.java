@@ -66,7 +66,7 @@ public class PageDescriptorRepository
 		record.setTotal_Size(pageDescriptor.getTotalSize());
 		record.setPage_Size(pageDescriptor.getPageSize());
 		record.setPage_Offset(pageDescriptor.getOffset());
-		record.setPage_Identifier(pageIdentifier.getSelectionUid());
+		record.setPage_Identifier(pageIdentifier.getPageUid());
 		saveRecord(record);
 	}
 }
