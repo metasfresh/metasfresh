@@ -269,10 +269,34 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
       .find('.input-dropdown')
       .click();
 
-    cy.contains('.input-dropdown-list-option', listValue).click()
+    cy.get('.input-dropdown-list-option')
+      .contains(listValue)
+      .click();
 
     if (!skipRequest) {
       cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
     }
+  });
+});
+
+Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
+  describe('Select value in list field', function() {
+    cy.log(`selectInListField - fieldName=${fieldName}; listValue=${index}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
+      .find('.input-dropdown')
+      .click();
+
+    cy.get('.input-dropdown-list-option').then(options => {
+      for (let i = 0; i < options.length; i += 1) {
+        if (i === index) {
+          cy.get(options[i]).click();
+        }
+      }
+    });
   });
 });
