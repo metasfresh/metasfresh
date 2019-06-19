@@ -59,7 +59,7 @@ public class PageDescriptor
 				selectionTime);
 	}
 
-	/** Create another page descriptor for the next paged. */
+	/** Create another page descriptor for the next page. */
 	public PageDescriptor createNext()
 	{
 		return PageDescriptor.builder()
@@ -67,6 +67,7 @@ public class PageDescriptor
 				.pageUid(UIDStringUtil.createNext())
 				.offset(offset + pageSize)
 				.pageSize(pageSize)
+				.selectionTime(selectionTime)
 				.build();
 	}
 

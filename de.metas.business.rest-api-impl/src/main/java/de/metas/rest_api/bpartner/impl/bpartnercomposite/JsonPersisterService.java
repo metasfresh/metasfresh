@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.IOrgDAO.OrgQuery;
 import org.adempiere.service.OrgId;
@@ -349,7 +348,7 @@ public class JsonPersisterService
 		final ExternalId externalId = JsonConverters.fromJsonOrNull(jsonBPartnerLocation.getExternalId());
 		if (externalId == null)
 		{
-			throw new AdempiereException("missing externalId-blah"); // TODO
+			throw new MissingPropertyException("externalId", jsonBPartnerLocation);
 		}
 
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
@@ -453,9 +452,6 @@ public class JsonPersisterService
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		// TODO syncJsonToOrg - make sure that user is authorized!
-		// final JsonOrganization jsonOrg = jsonBPartnerComposite.getOrg();
-
 		syncJsonToOrg(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
 
 		syncJsonToBPartner(jsonBPartnerComposite, bpartnerComposite, parentSyncAdvise);
@@ -679,7 +675,7 @@ public class JsonPersisterService
 			contact.setLastName(null);
 		}
 
-		// metasfreshBPartnerId - never updated; TODO: check if the ID is consistent
+		// metasfreshBPartnerId - never updated;
 
 		// metasfreshId - never updated;
 
