@@ -132,6 +132,9 @@ public final class ProcessInfo implements Serializable
 		reportApplySecuritySettings = builder.isReportApplySecuritySettings();
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
+		type = builder.getType();
+		JSONPath = builder.getJSONPath();
+
 		if (builder.isLoadParametersFromDB())
 		{
 			this.parameters = null; // to be loaded on demand
@@ -219,6 +222,10 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
+	@Getter
+	private final String type;
+	@Getter
+	private final String JSONPath;
 
 	/** Process result */
 	@Getter
@@ -238,6 +245,8 @@ public final class ProcessInfo implements Serializable
 				.add("reportTemplate", reportTemplate.orElse(null))
 				.add("reportLanguage", reportLanguage)
 				.add("jrDesiredOutputType", jrDesiredOutputType)
+				.add("JSONPath", JSONPath)
+				.add("type", type)
 				.toString();
 	}
 
@@ -631,8 +640,8 @@ public final class ProcessInfo implements Serializable
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
 
 		compositeFilter.addFilter(whereFilter)
-				.addFilter(clientFilter)
-				.addFilter(orgFilter);
+		.addFilter(clientFilter)
+		.addFilter(orgFilter);
 
 		return compositeFilter;
 	}
@@ -718,6 +727,11 @@ public final class ProcessInfo implements Serializable
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
+
+		@Getter
+		private String type = null;
+		@Getter
+		private String JSONPath  = null;
 
 		private List<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
@@ -1355,6 +1369,19 @@ public final class ProcessInfo implements Serializable
 		{
 			return jrDesiredOutputType;
 		}
+
+		public ProcessInfoBuilder setType(@NonNull final String type)
+		{
+			this.type = type;
+			return this;
+		}
+
+		public ProcessInfoBuilder setJSONPath(@Nullable final String JSONPath)
+		{
+			this.JSONPath = JSONPath;
+			return this;
+		}
+
 
 		private Language getReportLanguage()
 		{

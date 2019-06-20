@@ -87,6 +87,8 @@ public class LocalJasperServer implements IJasperServer
 				.setReportTemplatePath(processInfo.getReportTemplate().orElse(null))
 				.setSQLStatement(processInfo.getSQLStatement().orElse(null))
 				.setApplySecuritySettings(processInfo.isReportApplySecuritySettings())
+				.setType(processInfo.getType())
+				.setJSONPath(processInfo.getJSONPath())
 				.build();
 
 		//
@@ -98,7 +100,7 @@ public class LocalJasperServer implements IJasperServer
 			engine.report(reportContext, out);
 			return out.toByteArray();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import java.util.Set;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Process;
+import org.compiere.model.X_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -48,6 +50,8 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -61,12 +65,14 @@ import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
+import lombok.NonNull;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.data.JsonDataSource;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
@@ -82,8 +88,10 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
+	private static final String SYSCONFIG_RESTAPI_URL = "API_URL";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
+	private static final String MSG_URLnotValid = "URLnotValid";
 
 	/**
 	 * Desired output type.
@@ -96,14 +104,14 @@ public class JasperEngine extends AbstractReportEngine
 	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
-	public void report(final ReportContext reportContext, final OutputStream out)
+	public void report(@NonNull final ReportContext reportContext, @NonNull final OutputStream out)
 	{
 		try
 		{
 			final JasperPrint jasperPrint = createJasperPrint(reportContext);
 			createOutput(out, jasperPrint, reportContext.getOutputType());
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -132,38 +140,55 @@ public class JasperEngine extends AbstractReportEngine
 		final Map<String, Object> jrParameters = createJRParameters(reportContext);
 		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
-		Connection conn = null;
-		try
+		// JSON Data source
+		if (X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType())
+				&& !Check.isEmpty(reportContext.getJSONPath(), true))
 		{
-			//
-			// Create jasper's JDBC connection
-			conn = getConnection();
-			final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
-					+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
-
-			final String securityWhereClause;
-			if (reportContext.isApplySecuritySettings())
-			{
-				final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
-				final String tableName = reportContext.getTableNameOrNull();
-				securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ);
-			}
-			else
-			{
-				securityWhereClause = null;
-			}
-
-			final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
+			final InputStream is = getURLInputStream(getJasperJSONURL(reportContext));
+			final JsonDataSource dataSource = new JsonDataSource(is);
 
 			//
 			// Fill the report
-			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn, jasperLoader);
+			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, dataSource, jasperLoader);
 			return jasperPrint;
+
 		}
-		finally
+		else
 		{
-			DB.close(conn);
-			conn = null;
+			Connection conn = null;
+			try
+			{
+
+				//
+				// Create jasper's JDBC connection
+				conn = getConnection();
+				final String sqlQueryInfo = "jasper main report=" + jasperReport.getProperty(JRPROPERTY_ReportPath)
+				+ ", AD_PInstance_ID=" + reportContext.getPinstanceId();
+
+				final String securityWhereClause;
+				if (reportContext.isApplySecuritySettings())
+				{
+					final IUserRolePermissions userRolePermissions = reportContext.getUserRolePermissions();
+					final String tableName = reportContext.getTableNameOrNull();
+					securityWhereClause = userRolePermissions.getOrgWhere(tableName, Access.READ);
+				}
+				else
+				{
+					securityWhereClause = null;
+				}
+
+				final JasperJdbcConnection jasperConn = new JasperJdbcConnection(conn, sqlQueryInfo, securityWhereClause);
+
+				//
+				// Fill the report
+				final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperConn, jasperLoader);
+				return jasperPrint;
+			}
+			finally
+			{
+				DB.close(conn);
+				conn = null;
+			}
 		}
 	}
 
@@ -262,7 +287,7 @@ public class JasperEngine extends AbstractReportEngine
 	 */
 	private final Language getParam_Language(final Map<String, Object> jrParameters)
 	{
-		Object langParam = jrParameters.get(PARAM_REPORT_LANGUAGE);
+		final Object langParam = jrParameters.get(PARAM_REPORT_LANGUAGE);
 		Language currLang = null;
 		if (langParam instanceof String)
 		{
@@ -459,7 +484,7 @@ public class JasperEngine extends AbstractReportEngine
 			jrParameters.put(JRParameter.REPORT_RESOURCE_BUNDLE, resourceBundle);
 			return true;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.warn("Failed loading resource bundle for base name: " + resourceBundleName + ", " + locale + ". Skipping", e);
 		}
@@ -470,16 +495,18 @@ public class JasperEngine extends AbstractReportEngine
 	private void createOutput(final OutputStream out, final JasperPrint jasperPrint, OutputType outputType) throws JRException, IOException
 	{
 		if (outputType == null)
+		{
 			outputType = DEFAULT_OutputType;
+		}
 
 		if (OutputType.PDF == outputType)
 		{
-			byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
+			final byte[] data = JasperExportManager.exportReportToPdf(jasperPrint);
 			out.write(data);
 		}
 		else if (OutputType.HTML == outputType)
 		{
-			File file = File.createTempFile("JasperPrint", ".html");
+			final File file = File.createTempFile("JasperPrint", ".html");
 			JasperExportManager.exportReportToHtmlFile(jasperPrint, file.getAbsolutePath());
 			// TODO: handle image links
 
@@ -538,5 +565,55 @@ public class JasperEngine extends AbstractReportEngine
 		}
 
 		exporter.exportReport();
+	}
+
+	private String getAPI_URL()
+	{
+		final String url = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_RESTAPI_URL, "");
+		if (Check.isEmpty(url, true) || "-".equals(url))
+		{
+			log.warn("{} is not configured. JAsper JSOn reports will not work", SYSCONFIG_RESTAPI_URL);
+			return null;
+		}
+
+		return url.trim();
+	}
+
+	private String getJasperJSONURL(@NonNull final ReportContext reportContext)
+	{
+		String url = getAPI_URL();
+		if (url == null)
+		{
+			return null;
+		}
+
+		final String path = reportContext.getJSONPath();
+		if (Check.isEmpty(path, true) || "-".equals(path))
+		{
+			return null;
+		}
+
+		// parse variables
+
+		url = url + path;
+
+		return url;
+	}
+
+	private static InputStream getURLInputStream(String reportURL)
+	{
+
+		InputStream is = null;
+		try
+		{
+			final URL url = new URL(reportURL);
+			is = url.openStream();
+		}
+		catch (final IOException e)
+		{
+			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
+			throw new AdempiereException(errorMsg);
+		}
+		return is;
 	}
 }

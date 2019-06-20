@@ -19,6 +19,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,8 +61,10 @@ public final class ReportContext
 	private final String reportTemplatePath;
 	private final String sqlStatement;
 	private final boolean applySecuritySettings;
+	private final String type;
+	private final String JSONPath;
 
-	private ReportContext(final Builder builder)
+	private ReportContext(@NonNull final Builder builder)
 	{
 		ctx = builder.ctx;
 
@@ -78,6 +81,8 @@ public final class ReportContext
 		reportTemplatePath = builder.reportTemplatePath;
 		sqlStatement = builder.sqlStatement;
 		applySecuritySettings = builder.applySecuritySettings;
+		JSONPath = builder.JSONPath;
+		type = builder.type;
 	}
 
 	@Override
@@ -95,6 +100,8 @@ public final class ReportContext
 				.add("reportTemplatePath", reportTemplatePath)
 				.add("sqlStatement", sqlStatement)
 				.add("applySecuritySettings", applySecuritySettings)
+				.add("JSONPath", JSONPath)
+				.add("type", type)
 				.toString();
 	}
 
@@ -172,6 +179,16 @@ public final class ReportContext
 		return processInfoParameters;
 	}
 
+	public String getType()
+	{
+		return type;
+	}
+
+	public String getJSONPath()
+	{
+		return JSONPath;
+	}
+
 	public static final class Builder
 	{
 		private Properties ctx;
@@ -184,6 +201,8 @@ public final class ReportContext
 		private String reportTemplatePath;
 		private String sqlStatement;
 		private boolean applySecuritySettings;
+		private String type;
+		private String JSONPath;
 
 		private Builder()
 		{
@@ -225,6 +244,19 @@ public final class ReportContext
 			return this;
 		}
 
+		public Builder setType(@NonNull final String type)
+		{
+			this.type = type;
+			return this;
+		}
+
+		public Builder setJSONPath(final String JSONPath)
+		{
+			this.JSONPath = JSONPath;
+			return this;
+		}
+
+
 		public Builder setRecord(final int AD_Table_ID, final int Record_ID)
 		{
 			this.AD_Table_ID = AD_Table_ID;
@@ -249,6 +281,8 @@ public final class ReportContext
 			this.applySecuritySettings = applySecuritySettings;
 			return this;
 		}
+
+
 
 		private final List<ProcessInfoParameter> getProcessInfoParameters()
 		{

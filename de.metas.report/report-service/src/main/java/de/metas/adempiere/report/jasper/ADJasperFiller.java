@@ -10,12 +10,12 @@ package de.metas.adempiere.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,9 +27,11 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import de.metas.logging.LogManager;
+import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JasperFillManager;
@@ -58,7 +60,7 @@ import net.sf.jasperreports.engine.JasperReport;
 	public JasperPrint fillReport(
 			final JasperReport jasperReport,
 			final Map<String, Object> parameters,
-			final Connection connection,
+			final Object source,
 			final ClassLoader jasperLoader) throws JRException
 	{
 		final Map<String, Object> paramsFixed = new HashMap<String, Object>(parameters);
@@ -66,17 +68,30 @@ import net.sf.jasperreports.engine.JasperReport;
 
 		final Thread currentThread = Thread.currentThread();
 		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
-		
+
 		// Set the jasper loader as thread context classloader.
 		// We do this to workaround the issue from net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle(),
 		// which is not fetching the right classloader.
 		// More, that method is executed a separate thread for sub-reports, so fetching resource bundles will fail.
 		currentThread.setContextClassLoader(jasperLoader);
-		
+
 		try
 		{
-			final JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
-			return jasperPrint;
+			if (source instanceof Connection)
+			{
+				final Connection connection = (Connection)source;
+				return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
+			}
+			else if (source instanceof JRDataSource)
+			{
+				final JRDataSource jrDataSource = (JRDataSource)source;
+				return JasperFillManager.fillReport(jasperReport, paramsFixed, jrDataSource);
+			}
+			else
+			{
+				throw new AdempiereException("No valid connection!");
+			}
+
 		}
 		finally
 		{
@@ -108,7 +123,7 @@ import net.sf.jasperreports.engine.JasperReport;
 			else
 			{
 				// indirect: parameter name in Jasper report differs from Adempiere by upper/lower case
-				for (String name : params.keySet())
+				for (final String name : params.keySet())
 				{
 					if (jrParamName.equalsIgnoreCase(name))
 					{
