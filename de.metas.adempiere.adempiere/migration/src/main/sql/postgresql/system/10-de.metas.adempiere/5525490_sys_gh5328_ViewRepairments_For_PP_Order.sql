@@ -1,6 +1,6 @@
-﻿-- View: "de.metas.materialtracking".pp_order_materialtracking_id
+-- View: "de.metas.materialtracking".pp_order_materialtracking_id
 
--- DROP VIEW "de.metas.materialtracking".pp_order_materialtracking_id;
+ DROP VIEW  IF EXISTS "de.metas.materialtracking".pp_order_materialtracking_id;
 
 CREATE OR REPLACE VIEW "de.metas.materialtracking".pp_order_materialtracking_id AS 
  SELECT 
@@ -86,4 +86,72 @@ CREATE OR REPLACE VIEW "de.metas.materialtracking".pp_order_materialtracking_id 
    LEFT JOIN C_OrderLine ol on ppo.C_OrderLine_ID = ol.C_OrderLine_ID
    LEFT JOIN C_Order o on ol.C_Order_Id = o.C_Order_ID
   WHERE mtr.ad_table_id = get_table_id('PP_Order'::character varying);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+DELETE FROM AD_MENU 
+where AD_MENU_ID IN ( select m.AD_MENU_ID from AD_MENU m 
+JOIN ad_process p on m.AD_Process_ID = p.AD_Process_ID
+JOIN ad_printformat pf on p.ad_printformat_ID = pf.ad_printformat_ID
+JOIN AD_ReportView rv on pf.AD_ReportView_ID = rv.AD_ReportView_ID
+WHERE rv.AD_ReportView_ID = 53001);
+
+
+
+
+
+DELETE FROM ad_process 
+where ad_process_ID IN ( select p.AD_Process_ID from ad_process p 
+JOIN ad_printformat pf on p.ad_printformat_ID = pf.ad_printformat_ID
+JOIN AD_ReportView rv on pf.AD_ReportView_ID = rv.AD_ReportView_ID
+WHERE rv.AD_ReportView_ID = 53001);
+
+
+
+
+
+
+
+DELETE FROM ad_printformat 
+where ad_printformat_ID IN ( select pf.ad_printformat_ID
+from  ad_printformat pf 
+JOIN AD_ReportView rv on pf.AD_ReportView_ID = rv.AD_ReportView_ID
+WHERE rv.AD_ReportView_ID = 53001);
+
+
+
+
+
+
+
+
+
+DELETE FROM AD_ReportView WHERE AD_ReportView_ID = 53001;
+
+
+
+
+
+
+
+
+
+  
+DROP VIEW IF EXISTS rv_pp_order;
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
