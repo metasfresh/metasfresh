@@ -1,6 +1,8 @@
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
+import static org.eevolution.model.I_PP_Order.COLUMNNAME_IsApproved;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -480,6 +482,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 			 return 0;
 		return ii.intValue();
 	}
+
 
 	@Override
 	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
