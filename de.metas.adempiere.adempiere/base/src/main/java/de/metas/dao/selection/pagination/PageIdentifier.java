@@ -41,10 +41,10 @@ public class PageIdentifier
 	private static final Splitter SPLITTER = Splitter.on(SEPARATOR).trimResults();
 	private static final Joiner JOINER = Joiner.on(SEPARATOR);
 
-	public static PageIdentifier ofCombinedString(@NonNull String combineString)
+	public static PageIdentifier ofCombinedString(@NonNull String completePageId)
 	{
-		final List<String> split = SPLITTER.splitToList(combineString);
-		assume(split.size() == 2, "Param combinedString needs to consist of two components; split={}", split);
+		final List<String> split = SPLITTER.splitToList(completePageId);
+		assume(split.size() == 2, "Param completePageId needs to consist of two components; completePageId={}", completePageId);
 
 		return new PageIdentifier(split.get(0), split.get(1));
 	}

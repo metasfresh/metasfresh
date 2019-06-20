@@ -10,8 +10,10 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -264,40 +266,74 @@ public class BPartnerCompositeRepository
 
 	public QueryResultPage<BPartnerComposite> getSince(@NonNull final SinceQuery sinceQuery)
 	{
-		final QueryResultPage<BPartnerId> page;
 		switch (sinceQuery.getSinceEntity())
 		{
 			case ALL:
-				page = retrievePageAllEntities(sinceQuery, null);
-				break;
+				return getCompleteBPartnerCompositsSince(sinceQuery);
 			case CONTACT_ONLY:
-				page = retrievePageOnlyContactEntities(sinceQuery, null);
-				break;
+				return getContactFilteredBPartnerComposites(sinceQuery);
 			default:
 				throw new AdempiereException("Unexpected sinceEntity=" + sinceQuery.getSinceEntity());
 		}
-
-		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
-		return page.withItems(bpartnerComposites);
 	}
 
 	public QueryResultPage<BPartnerComposite> getNextPage(@NonNull final NextPageQuery nextPageQuery)
 	{
-		final QueryResultPage<BPartnerId> page;
 		switch (nextPageQuery.getSinceEntity())
 		{
 			case ALL:
-				page = retrievePageAllEntities(null, nextPageQuery.getNextPageId());
-				break;
+				return getCompleteBPartnerCompositesNextPage(nextPageQuery);
 			case CONTACT_ONLY:
-				page = retrievePageOnlyContactEntities(null, nextPageQuery.getNextPageId());
-				break;
+				return getContactFilteredBPartnerCompositesNextPage(nextPageQuery);
 			default:
 				throw new AdempiereException("Unexpected sinceEntity=" + nextPageQuery.getSinceEntity());
 		}
 
+	}
+
+	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositsSince(final SinceQuery sinceQuery)
+	{
+		final QueryResultPage<BPartnerId> page = retrievePageAllEntities(sinceQuery, null);
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
 		return page.withItems(bpartnerComposites);
+	}
+
+	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerComposites(final SinceQuery sinceQuery)
+	{
+		final QueryResultPage<BPartnerContactId> page = retrievePageOnlyContactEntities(sinceQuery, null);
+
+		return extractContactFilteredBPartnerComposites(page);
+	}
+
+	private QueryResultPage<BPartnerComposite> extractContactFilteredBPartnerComposites(final QueryResultPage<BPartnerContactId> page)
+	{
+		final ImmutableList<BPartnerContactId> contactIdsToReturn = page.getItems();
+
+		final Set<BPartnerId> distinctBPartnerIds = contactIdsToReturn.stream()
+				.map(BPartnerContactId::getBpartnerId)
+				.collect(Collectors.toSet());
+		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(distinctBPartnerIds);
+
+		for (final BPartnerComposite bpartnerComposite : bpartnerComposites)
+		{
+			bpartnerComposite.retainContacts(new HashSet<>(contactIdsToReturn));
+		}
+
+		return page.withItems(bpartnerComposites);
+	}
+
+	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositesNextPage(final NextPageQuery nextPageQuery)
+	{
+		final QueryResultPage<BPartnerId> page = retrievePageAllEntities(null, nextPageQuery.getNextPageId());
+		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
+		return page.withItems(bpartnerComposites);
+	}
+
+	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerCompositesNextPage(final NextPageQuery nextPageQuery)
+	{
+		final QueryResultPage<BPartnerContactId> page = retrievePageOnlyContactEntities(null, nextPageQuery.getNextPageId());
+
+		return extractContactFilteredBPartnerComposites(page);
 	}
 
 	private QueryResultPage<BPartnerId> retrievePageAllEntities(
@@ -324,7 +360,7 @@ public class BPartnerCompositeRepository
 				.mapTo(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()));
 	}
 
-	private QueryResultPage<BPartnerId> retrievePageOnlyContactEntities(
+	private QueryResultPage<BPartnerContactId> retrievePageOnlyContactEntities(
 			@Nullable final SinceQuery sinceQuery,
 			@Nullable final String nextPageId)
 	{
@@ -346,7 +382,7 @@ public class BPartnerCompositeRepository
 			page = queryBL.retrieveNextPage(I_AD_User.class, nextPageId);
 		}
 
-		return page.mapTo(record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()));
+		return page.mapTo(record -> BPartnerContactId.ofRepoId(record.getC_BPartner_ID(), record.getAD_User_ID()));
 	}
 
 	public ImmutableList<BPartnerComposite> getByQuery(@NonNull final BPartnerCompositeQuery query)

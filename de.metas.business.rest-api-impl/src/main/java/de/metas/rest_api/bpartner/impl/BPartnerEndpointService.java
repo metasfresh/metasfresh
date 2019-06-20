@@ -202,7 +202,8 @@ public class BPartnerEndpointService
 				.flatMap(bpc -> bpc.getContacts().stream())
 				.collect(ImmutableList.toImmutableList());
 
-		final JsonPagingDescriptor jsonPagingDescriptor = JsonConverters.createJsonPagingDescriptor(page);
+		final QueryResultPage<JsonContact> sizeAdjustedPage = page.withItems(jsonContacts);
+		final JsonPagingDescriptor jsonPagingDescriptor = JsonConverters.createJsonPagingDescriptor(sizeAdjustedPage);
 
 		final JsonContactList result = JsonContactList.builder()
 				.contacts(jsonContacts)

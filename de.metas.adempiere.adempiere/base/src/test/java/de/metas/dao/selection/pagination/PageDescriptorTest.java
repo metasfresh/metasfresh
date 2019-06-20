@@ -44,6 +44,7 @@ class PageDescriptorTest
 		assertThat(nextPd.getPageIdentifier()).isNotEqualTo(pd.getPageIdentifier());
 		assertThat(nextPd.getPageIdentifier().getSelectionUid()).isEqualTo(pd.getPageIdentifier().getSelectionUid());
 
+		assertThat(nextPd.getTotalSize()).isEqualTo(pd.getTotalSize());
 		assertThat(nextPd.getPageSize()).isEqualTo(pd.getPageSize());
 		assertThat(nextPd.getSelectionTime()).isEqualTo(time);
 	}

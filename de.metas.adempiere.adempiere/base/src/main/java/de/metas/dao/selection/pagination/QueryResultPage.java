@@ -62,6 +62,11 @@ public class QueryResultPage<T>
 
 	public <R> QueryResultPage<R> withItems(@NonNull final ImmutableList<R> replacementItems)
 	{
-		return new QueryResultPage<R>(currentPageDescriptor, nextPageDescriptor, totalSize, resultTimestamp, replacementItems);
+		return new QueryResultPage<R>(
+				currentPageDescriptor.withSize(replacementItems.size()),
+				nextPageDescriptor,
+				totalSize,
+				resultTimestamp,
+				replacementItems);
 	}
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -170,5 +171,11 @@ public final class BPartnerComposite
 				.stream()
 				.filter(c -> externalId.equals(c.getExternalId()))
 				.findAny();
+	}
+
+	/** Changes this instance by removing all contacts whose IDs are not in the given set */
+	public void retainContacts(@NonNull final Set<BPartnerContactId> contactIdsToRetain)
+	{
+		contacts.removeIf(contact -> !contactIdsToRetain.contains(contact.getId()));
 	}
 }

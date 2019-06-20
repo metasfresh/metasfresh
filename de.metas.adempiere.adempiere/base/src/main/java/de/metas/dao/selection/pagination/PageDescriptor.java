@@ -67,6 +67,7 @@ public class PageDescriptor
 				.pageUid(UIDStringUtil.createNext())
 				.offset(offset + pageSize)
 				.pageSize(pageSize)
+				.totalSize(totalSize)
 				.selectionTime(selectionTime)
 				.build();
 	}
@@ -93,5 +94,21 @@ public class PageDescriptor
 
 		this.totalSize = totalSize;
 		this.selectionTime = selectionTime;
+	}
+
+	public PageDescriptor withSize(final int adjustedSize)
+	{
+		if (pageSize == adjustedSize)
+		{
+			return this;
+		}
+		return PageDescriptor.builder()
+				.selectionUid(pageIdentifier.getSelectionUid())
+				.pageUid(pageIdentifier.getPageUid())
+				.offset(offset)
+				.pageSize(adjustedSize)
+				.totalSize(totalSize)
+				.selectionTime(selectionTime)
+				.build();
 	}
 }
