@@ -221,6 +221,10 @@ declare namespace Cypress {
      */
     selectSingleTabRow(): Chainable<any>
 
+    /**
+     * Mark all current notifications as read in the API and reset counter.
+     */
+    readAllNotifications(): Chainable<any>
 
   }
 }
