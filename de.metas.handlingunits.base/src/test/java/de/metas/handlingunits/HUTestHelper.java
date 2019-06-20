@@ -7,6 +7,7 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -970,9 +971,9 @@ public class HUTestHelper
 
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(ctx, I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
+		final I_M_HU_PackingMaterial packingMaterial = newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName(name);
-		packingMaterial.setM_Product(product);
+		packingMaterial.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(packingMaterial);
 
 		return packingMaterial;
@@ -1155,7 +1156,7 @@ public class HUTestHelper
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 
 		itemDefProduct.setIsAllowAnyProduct(true);
-		itemDefProduct.setM_Product(null);
+		itemDefProduct.setM_Product_ID(-1);
 
 		itemDefProduct.setIsInfiniteCapacity(true);
 		itemDefProduct.setQty(null);

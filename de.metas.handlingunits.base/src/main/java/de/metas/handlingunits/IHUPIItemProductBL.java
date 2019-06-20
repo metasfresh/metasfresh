@@ -79,5 +79,4 @@ public interface IHUPIItemProductBL extends ISingletonService
 		final UomId uomId = UomId.ofRepoIdOrNull(itemProduct.getC_UOM_ID());
 		return uomId != null ? Services.get(IUOMDAO.class).getById(uomId) : null;
 	}
-
 }

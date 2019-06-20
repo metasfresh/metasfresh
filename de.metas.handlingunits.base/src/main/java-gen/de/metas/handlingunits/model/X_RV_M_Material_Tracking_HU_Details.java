@@ -15,7 +15,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -743392659L;
+	private static final long serialVersionUID = -2140827135L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
@@ -301,18 +301,6 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

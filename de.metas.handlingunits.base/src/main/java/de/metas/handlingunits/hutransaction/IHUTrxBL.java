@@ -45,6 +45,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -195,6 +197,14 @@ public interface IHUTrxBL extends ISingletonService
 		final UomId uomId = UomId.ofRepoIdOrNull(trxLine.getC_UOM_ID());
 		return uomId != null
 				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
+	}
+
+	static I_M_Product extractProductOrNull(@NonNull final I_M_HU_Trx_Line trxLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(trxLine.getM_Product_ID());
+		return productId != null
+				? Services.get(IProductDAO.class).getById(productId)
 				: null;
 	}
 }

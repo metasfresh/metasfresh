@@ -569,7 +569,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setM_TU_HU_PI(data.helper.huDefVirtual);
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.ONE);
-		lutuConfiguration.setM_Product(data.helper.pSalad); // differs from real world
+		lutuConfiguration.setM_Product_ID(data.helper.pSalad.getM_Product_ID()); // differs from real world
 		lutuConfiguration.setC_UOM_ID(data.helper.uomEach.getC_UOM_ID());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(new BigDecimal("252"));

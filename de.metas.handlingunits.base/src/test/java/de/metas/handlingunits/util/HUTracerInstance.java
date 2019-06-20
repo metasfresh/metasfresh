@@ -33,6 +33,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.handlingunits.IHUContext;
@@ -52,6 +53,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -256,7 +258,8 @@ public class HUTracerInstance
 
 	public void dump(final PrintStream out, final String linePrefix, final I_M_HU_Storage storage)
 	{
-		final String productStr = storage.getM_Product().getName();
+		final I_M_Product storageProduct = Services.get(IProductDAO.class).getById(storage.getM_Product_ID());
+		final String productStr = storageProduct.getName();
 		final BigDecimal qty = storage.getQty();
 		final I_C_UOM uom = IHUStorageBL.extractUOM(storage);
 		final String uomStr = uom.getUOMSymbol();
@@ -342,10 +345,12 @@ public class HUTracerInstance
 
 	public String toString(final I_M_HU_Trx_Line trxLine)
 	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(trxLine.getM_Product_ID());
+
 		final I_M_HU_Trx_Line parentTrxLine = trxLine.getParent_HU_Trx_Line();
 		return "ID=" + trxLine.getM_HU_Trx_Line_ID()
 				+ ", Item=" + toStringPath(trxLine.getM_HU_Item()) // NOPMD no need for toString warnings to fire up, due to it being a custom toString
-				+ ", Product=" + trxLine.getM_Product().getName()
+				+ ", Product=" + product.getName()
 				+ ", Qty=" + trxLine.getQty()
 				+ ", Parent_ID=" + (parentTrxLine == null ? "-" : parentTrxLine.getM_HU_Trx_Line_ID())
 				+ ", Table/Record_ID=" + trxLine.getAD_Table_ID() + "/" + trxLine.getRecord_ID();

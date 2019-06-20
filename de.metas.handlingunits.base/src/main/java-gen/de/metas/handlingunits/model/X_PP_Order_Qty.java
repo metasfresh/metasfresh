@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1228600546L;
+	private static final long serialVersionUID = -1688408714L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -144,18 +144,6 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

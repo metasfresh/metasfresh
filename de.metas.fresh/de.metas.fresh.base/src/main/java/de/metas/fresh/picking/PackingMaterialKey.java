@@ -162,7 +162,7 @@ public class PackingMaterialKey extends TerminalKey
 			sb.append("\n").append("Restrictions(" + restrictions.size() + "):");
 			for (final I_M_HU_PI_Item_Product r : restrictions)
 			{
-				sb.append("\n").append("Product=" + r.getM_Product() + ", BPartner=" + r.getC_BPartner_ID() + ", M_HU_PI_Item_Product_ID=" + r.getM_HU_PI_Item_Product_ID());
+				sb.append("\n").append("Product=" + r.getM_Product_ID() + ", BPartner=" + r.getC_BPartner_ID() + ", M_HU_PI_Item_Product_ID=" + r.getM_HU_PI_Item_Product_ID());
 			}
 		}
 		return sb.toString();

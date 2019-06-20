@@ -15,7 +15,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1472326355L;
+	private static final long serialVersionUID = 34461145L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage_Snapshot (Properties ctx, int M_HU_Item_Storage_Snapshot_ID, String trxName)
@@ -159,18 +159,6 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

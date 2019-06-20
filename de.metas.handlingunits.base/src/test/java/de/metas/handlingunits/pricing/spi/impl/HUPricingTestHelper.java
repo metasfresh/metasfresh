@@ -1,13 +1,14 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_M_Product;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.pricing.service.impl.PricingTestHelper;
@@ -71,9 +72,11 @@ public class HUPricingTestHelper extends PricingTestHelper
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final String name)
 	{
-		final I_M_HU_PI_Item_Product piip = InterfaceWrapperHelper.create(Env.getCtx(), I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
+		final I_M_Product product = getDefaultProduct();
+		
+		final I_M_HU_PI_Item_Product piip = newInstanceOutOfTrx(I_M_HU_PI_Item_Product.class);
 		piip.setName(name);
-		piip.setM_Product(getDefaultProduct());
+		piip.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(piip);
 		return piip;
 	}

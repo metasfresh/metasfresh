@@ -628,7 +628,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		final I_M_HU_Storage huStorage = newInstance(I_M_HU_Storage.class);
 		huStorage.setM_HU(hu);
-		huStorage.setM_Product(pFolie);
+		huStorage.setM_Product_ID(pFolie.getM_Product_ID());
 		huStorage.setC_UOM_ID(uomMillimeter.getC_UOM_ID());
 		huStorage.setQty(new BigDecimal(qtyOfFolie));
 		Services.get(IHandlingUnitsBL.class)

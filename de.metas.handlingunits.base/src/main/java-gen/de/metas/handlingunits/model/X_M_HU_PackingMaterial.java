@@ -15,7 +15,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1923611453L;
+	private static final long serialVersionUID = -1979035311L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (Properties ctx, int M_HU_PackingMaterial_ID, String trxName)
@@ -298,18 +298,6 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.

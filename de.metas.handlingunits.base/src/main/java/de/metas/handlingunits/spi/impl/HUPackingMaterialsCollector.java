@@ -515,7 +515,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final int materialTrackingId,
 			final I_M_HU hu)
 	{
-		final I_M_Product product = huPackingMaterial.getM_Product();
+		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(huPackingMaterial);
 
 		// 07734: also include the M_Material_Tracking if one was collected.
 		final I_M_Material_Tracking material_Tracking;

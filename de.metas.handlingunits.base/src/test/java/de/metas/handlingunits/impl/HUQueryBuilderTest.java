@@ -109,7 +109,7 @@ public class HUQueryBuilderTest
 
 		final I_M_HU_Storage hu_storage = newInstance(I_M_HU_Storage.class);
 		hu_storage.setM_HU(hu);
-		hu_storage.setM_Product(product);
+		hu_storage.setM_Product_ID(product.getM_Product_ID());
 		save(hu_storage);
 
 		return hu;

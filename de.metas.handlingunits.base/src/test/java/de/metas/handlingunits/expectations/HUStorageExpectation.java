@@ -36,6 +36,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.IProductDAO;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -108,7 +109,8 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 
 		if (_product != null)
 		{
-			assertModelEquals(messageToUse.expect("Product"), _product, storage.getM_Product());
+			final I_M_Product storageProduct = Services.get(IProductDAO.class).getById(storage.getM_Product_ID());
+			assertModelEquals(messageToUse.expect("Product"), _product, storageProduct);
 		}
 		if (_qty != null)
 		{

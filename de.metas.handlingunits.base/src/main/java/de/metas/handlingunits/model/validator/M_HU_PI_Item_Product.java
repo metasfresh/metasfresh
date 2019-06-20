@@ -69,7 +69,7 @@ public class M_HU_PI_Item_Product
 	{
 		if (itemProduct.isAllowAnyProduct())
 		{
-			itemProduct.setM_Product(null);
+			itemProduct.setM_Product_ID(-1);
 			itemProduct.setIsInfiniteCapacity(true);
 		}
 	}

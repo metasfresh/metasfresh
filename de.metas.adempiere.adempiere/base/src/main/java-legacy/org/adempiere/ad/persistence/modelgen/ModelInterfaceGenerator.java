@@ -117,6 +117,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_AD_Org")
 			.add("org.compiere.model.I_C_UOM")
 			.add("org.compiere.model.I_C_BPartner")
+			.add("org.compiere.model.I_M_Product")
 //			.add("org.compiere.model.I_M_Warehouse")
 //			.add("org.compiere.model.I_M_Locator")
 			.add("org.compiere.model.I_C_DocType")

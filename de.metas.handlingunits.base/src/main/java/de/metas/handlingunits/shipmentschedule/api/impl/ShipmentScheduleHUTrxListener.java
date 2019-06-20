@@ -12,6 +12,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -65,7 +67,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 					+ "\n @VHU_ID@: " + handlingUnitsBL.getDisplayName(vhu)
 					+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(trxLine.getM_HU())
 					+ "\n @M_HU_Trx_Line_ID@: " + trxLine
-					+ "\n @M_HU_Trx_Line_ID@ - @M_Product_ID@: " + trxLine.getM_Product()
+					+ "\n @M_HU_Trx_Line_ID@ - @M_Product_ID@: " + Services.get(IProductBL.class).getProductValueAndName(ProductId.ofRepoIdOrNull(trxLine.getM_Product_ID()))
 					+ "\n @M_HU_Trx_Line_ID@ - @Qty@: " + trxLine.getQty());
 		}
 

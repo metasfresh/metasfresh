@@ -15,7 +15,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 376582784L;
+	private static final long serialVersionUID = 351049644L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -339,18 +339,6 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
