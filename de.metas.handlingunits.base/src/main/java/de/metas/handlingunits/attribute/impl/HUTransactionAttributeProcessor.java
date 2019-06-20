@@ -45,6 +45,7 @@ import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_ASI;
 import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_HU;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -63,7 +64,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 
 	private IReference<I_M_HU_Trx_Hdr> _trxHdrRef;
 
-	private final Map<String, IHUTrxAttributeProcessor> tableName2trxAttributeProcessors = new HashMap<String, IHUTrxAttributeProcessor>();
+	private final Map<String, IHUTrxAttributeProcessor> tableName2trxAttributeProcessors = new HashMap<>();
 
 	//
 	// Config: shall we also save M_HU_Trx_Attribute?
@@ -134,7 +135,7 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU_Trx_Attribute> huTrxAttributes = new ArrayList<I_M_HU_Trx_Attribute>(attributeTrxs.size());
+		final List<I_M_HU_Trx_Attribute> huTrxAttributes = new ArrayList<>(attributeTrxs.size());
 		for (final IHUTransactionAttribute attributeTrx : attributeTrxs)
 		{
 			final I_M_HU_Trx_Attribute huTrxAttribute = createTrxAttribute(attributeTrx);
@@ -169,8 +170,9 @@ public class HUTransactionAttributeProcessor implements IHUTransactionAttributeP
 		huTrxAttribute.setOperation(attributeTrx.getOperation());
 
 		// Attribute & PI Attribute
-		huTrxAttribute.setM_Attribute(attributeTrx.getM_Attribute());
-		huTrxAttribute.setM_HU_PI_Attribute(attributeTrx.getM_HU_PI_Attribute());
+		final I_M_HU_PI_Attribute huPIAttribute = attributeTrx.getM_HU_PI_Attribute();
+		huTrxAttribute.setM_Attribute_ID(attributeTrx.getM_Attribute().getM_Attribute_ID());
+		huTrxAttribute.setM_HU_PI_Attribute_ID(huPIAttribute != null ? huPIAttribute.getM_HU_PI_Attribute_ID() : -1);
 		huTrxAttribute.setM_HU_Attribute(attributeTrx.getM_HU_Attribute());
 
 		// Value

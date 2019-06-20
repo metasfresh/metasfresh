@@ -88,7 +88,7 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 		final I_M_HU_Attribute huAttributeExisting = retrieveHUAttribute(huAttributesDAO, huTrxAttribute);
 		if (huAttributeExisting == null)
 		{
-			throw new InvalidAttributeValueException("Retrieved HUAttribute cannot be null (" + huTrxAttribute.getM_Attribute() + "): " + huTrxAttribute);
+			throw new InvalidAttributeValueException("Retrieved HUAttribute cannot be null (" + huTrxAttribute.getM_Attribute_ID() + "): " + huTrxAttribute);
 		}
 		huAttributesDAO.delete(huAttributeExisting);
 	}
