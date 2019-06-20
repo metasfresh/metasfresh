@@ -1,6 +1,7 @@
 export class PriceList {
   constructor(name) {
     this.name = name;
+    this.priceListVersions = [];
   }
 
   setName(name) {
@@ -40,26 +41,78 @@ export class PriceList {
     return this;
   }
 
+  addPriceListVersion(priceListVersion) {
+    cy.log(`PriceList - add priceListVersion = ${priceListVersion}`);
+    this.priceListVersions.push(priceListVersion);
+    return this;
+  }
+
   apply() {
     cy.log(`PriceList - apply - START (name=${this.name})`);
-    applyPriceList(this);
+    PriceList.applyPriceList(this);
     cy.log(`PriceList - apply - END (name=${this.name})`);
     return this;
   }
+
+
+  static applyPriceList(priceList) {
+    describe(`Create new PriceList ${priceList.name}`, function () {
+      cy.visitWindow('540321', 'NEW', 'priceListObj');
+      cy.writeIntoStringField('Name', priceList.name);
+      cy.selectInListField('C_Country_ID', priceList.country);
+      cy.selectInListField('C_Currency_ID', priceList.currency);
+      cy.get('.form-field-PricePrecision')
+        .find('input')
+        .clear()
+        .type(priceList.pricePrecision);
+      cy.selectInListField('M_PricingSystem_ID', priceList.priceSystem);
+      cy.writeIntoStringField('Description', priceList.description);
+
+
+      priceList.priceListVersions.forEach(version => {
+        PriceList.applyPriceListVersion(version);
+      });
+    });
+  }
+
+
+  static applyPriceListVersion(priceListVersion) {
+    describe(`Create new PriceListVersion ${priceListVersion.name}`, function () {
+      cy.selectTab('M_PriceList_Version');
+      cy.pressAddNewButton();
+      cy.writeIntoStringField('Name', `${priceListVersion.name} ${priceListVersion.validFrom}`, true, null, true);
+      cy.writeIntoStringField('ValidFrom', `${priceListVersion.validFrom}{enter}`, true, null, true);
+      cy.pressDoneButton();
+    });
+  }
 }
 
-function applyPriceList(priceList) {
-  describe(`Create new PriceList ${priceList.name}`, function () {
-    cy.visitWindow('540321', 'NEW', 'priceListObj');
-    cy.writeIntoStringField('Name', priceList.name);
-    // cy.selectInListField('C_Country_ID', `none`);
-    cy.selectInListField('C_Country_ID', priceList.country);
-    cy.selectInListField('C_Currency_ID', priceList.currency);
-    cy.get('.form-field-PricePrecision')
-      .find('input')
-      .clear()
-      .type(priceList.pricePrecision);
-    cy.selectInListField('M_PricingSystem_ID', priceList.priceSystem);
-    cy.writeIntoStringField('Description', priceList.description);
-  });
+export class PriceListVersion {
+  constructor(name, plDocId) {
+    this.n = name;
+  }
+
+  setName(name) {
+    cy.log(`PriceListVersion - set n = ${name}`);
+    this.n = name;
+    return this;
+  }
+
+  setDescription(description) {
+    cy.log(`PriceListVersion - set Description = ${description}`);
+    this.description = description;
+    return this;
+  }
+
+  setActive(isActive) {
+    cy.log(`PriceListVersion - set isActive = ${isActive}`);
+    this.isActive = isActive;
+    return this;
+  }
+
+  setValidFrom(validFrom) {
+    cy.log(`PriceListVersion - set ValidFrom = ${validFrom}`);
+    this.validFrom = validFrom;
+    return this;
+  }
 }
