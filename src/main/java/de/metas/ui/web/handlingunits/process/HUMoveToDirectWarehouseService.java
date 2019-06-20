@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
@@ -135,7 +136,7 @@ public class HUMoveToDirectWarehouseService
 			// Move the HU
 			final I_M_Movement movement = new HUMovementBuilder()
 					.setContextInitial(PlainContextAware.newWithThreadInheritedTrx())
-					.setWarehouseFrom(hu.getM_Locator().getM_Warehouse())
+					.setWarehouseFrom(IHandlingUnitsBL.extractWarehouse(hu))
 					.setWarehouseTo(targetWarehouse)
 					.setMovementDate(getMovementDate())
 					.setDescription(getDescription())

@@ -263,7 +263,7 @@ public class WebuiHUTransformParametersFiller
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
 		final ProductId productId = cuRow.getProductId();
-		final I_C_BPartner bPartner = IHandlingUnitsBL.extractBPartner(cuRow.getM_HU());
+		final I_C_BPartner bPartner = IHandlingUnitsBL.extractBPartnerOrNull(cuRow.getM_HU());
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
 				Env.getCtx(),
@@ -434,7 +434,7 @@ public class WebuiHUTransformParametersFiller
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(), 
 				null, 
-				IHandlingUnitsBL.extractBPartner(tuHU));
+				IHandlingUnitsBL.extractBPartnerOrNull(tuHU));
 
 		return luPIItems;
 	}
