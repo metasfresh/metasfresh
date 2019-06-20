@@ -1,5 +1,6 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { BillOfMaterial } from '../../support/utils/billOfMaterial';
+import { applyFilters, toggleNotFrequentFilters, selectNotFrequentFilterWidget } from '../../support/functions';
 
 describe('Create Product', function() {
   const timestamp = new Date().getTime();
@@ -53,5 +54,24 @@ describe('Create Product', function() {
         .apply();
     });
     cy.visitWindow('140');
+    cy.log('Now going to verify that the BOM was set correctly');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('Name', productName, false, null, true);
+    applyFilters();
+    cy.wait(3000);
+    cy.get('table tr')
+      .eq(1)
+      .dblclick();
+    cy.isChecked('IsBOM');
+    /**Below is the implementation of how to check IsBOM field directly from the table, without entering the record. */
+    // cy.get('table tr')
+    //   .eq(0)
+    //   .get('td')
+    //   .eq(9)
+    //   .get('.cell-text-wrapper.yesno-cell')
+    //   .eq(4)
+    //   .get('i')
+    //   .should('have.class', 'meta-icon-checkbox-1');
   });
 });
