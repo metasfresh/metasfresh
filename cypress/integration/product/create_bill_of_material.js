@@ -46,13 +46,16 @@ describe('Create Product', function() {
     });
   });
 
-  it('Create a new Bill of Material', function() {
+  it('Create a new Bill of Material, add a component and verify BOM', function() {
     cy.fixture('product/bill_of_material.json').then(billMaterialJson => {
       Object.assign(new BillOfMaterial(), billMaterialJson)
         .setProduct(productName)
         .setProductComponent(productComponentName)
         .apply();
     });
+    cy.executeHeaderActionWithDialog('PP_Product_BOM');
+    cy.wait(2000);
+    cy.pressStartButton();
     cy.visitWindow('140');
     cy.log('Now going to verify that the BOM was set correctly');
     toggleNotFrequentFilters();
@@ -64,6 +67,7 @@ describe('Create Product', function() {
       .eq(1)
       .dblclick();
     cy.isChecked('IsBOM');
+    cy.isChecked('IsVerified');
     /**Below is the implementation of how to check IsBOM field directly from the table, without entering the record. */
     // cy.get('table tr')
     //   .eq(0)
