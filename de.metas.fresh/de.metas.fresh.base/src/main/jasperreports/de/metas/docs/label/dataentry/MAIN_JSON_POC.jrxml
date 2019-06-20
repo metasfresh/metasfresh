@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MIAN_JSON_POC" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\JSONWebServiceAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<queryString language="json">
+		<![CDATA[result.tabs.subtabs.sections]]>
+	</queryString>
+	<field name="id" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="id"/>
+		<fieldDescription><![CDATA[id]]></fieldDescription>
+	</field>
+	<field name="caption" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="caption"/>
+		<fieldDescription><![CDATA[caption]]></fieldDescription>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="description"/>
+		<fieldDescription><![CDATA[description]]></fieldDescription>
+	</field>
+	<field name="initially_closed" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="initially_closed"/>
+		<fieldDescription><![CDATA[initially_closed]]></fieldDescription>
+	</field>
+	<field name="lines" class="java.lang.String">
+		<property name="net.sf.jasperreports.json.field.expression" value="lines"/>
+		<fieldDescription><![CDATA[lines]]></fieldDescription>
+	</field>
+	<detail>
+		<band height="45" splitType="Stretch">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" stretchType="ContainerHeight" x="0" y="8" width="540" height="32" isPrintWhenDetailOverflows="true" uuid="633aeeca-e559-4f1b-86ba-a975cd9f0e9f"/>
+				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("lines")]]></dataSourceExpression>
+				<subreportExpression><![CDATA["de/metas/docs/label/dataentry/JSON_POC.jasper"
+]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>
