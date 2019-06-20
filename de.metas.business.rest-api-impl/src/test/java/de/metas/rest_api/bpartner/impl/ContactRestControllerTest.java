@@ -31,11 +31,11 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.bpartner.JsonContact;
-import de.metas.rest_api.bpartner.JsonContactList;
-import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
-import de.metas.rest_api.bpartner.JsonContactUpsertRequestItem;
-import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.bpartner.request.JsonContactUpsertRequest;
+import de.metas.rest_api.bpartner.request.JsonContactUpsertRequestItem;
+import de.metas.rest_api.bpartner.response.JsonContactList;
+import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 

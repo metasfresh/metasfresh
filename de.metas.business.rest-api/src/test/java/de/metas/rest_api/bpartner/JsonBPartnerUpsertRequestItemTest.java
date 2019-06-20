@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequestItem;
 import de.metas.util.JSONObjectMapper;
 
 /*

@@ -2,6 +2,10 @@ package de.metas.rest_api.bpartner;
 
 import org.springframework.http.ResponseEntity;
 
+import de.metas.rest_api.bpartner.request.JsonContactUpsertRequest;
+import de.metas.rest_api.bpartner.response.JsonContactList;
+import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
+
 /*
  * #%L
  * de.metas.business.rest-api

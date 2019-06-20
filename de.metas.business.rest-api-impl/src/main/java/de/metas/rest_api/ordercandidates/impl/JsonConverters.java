@@ -18,7 +18,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.pricing.PricingSystemId;
-import de.metas.rest_api.bpartner.JsonBPartnerInfo;
+import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;

@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.ordercandidates;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
@@ -10,6 +10,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.bpartner.JsonBPartner;
+import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

@@ -111,6 +111,7 @@ public class JsonBPartner
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonBPartner(
@@ -139,7 +140,6 @@ public class JsonBPartner
 		this.phone = phone;
 		this.language = language;
 		this.url = url;
-		this.group = group;
-		this.syncAdvise = syncAdvise;
+		this.group = group;		this.syncAdvise = syncAdvise;
 	}
 }

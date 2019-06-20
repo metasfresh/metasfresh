@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.bpartner.JsonBPartnerLocation;
 import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;

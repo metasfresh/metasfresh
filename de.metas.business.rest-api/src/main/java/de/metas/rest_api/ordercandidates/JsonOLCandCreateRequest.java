@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.bpartner.JsonBPartnerInfo;
 import de.metas.rest_api.product.JsonProductInfo;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModelProperty;

@@ -52,21 +52,6 @@ import lombok.Value;
 @Value
 public final class JsonBPartnerComposite
 {
-	public static JsonBPartnerComposite ofOrNull(@Nullable final JsonBPartnerInfo jsonBPartnerInfo)
-	{
-		if (jsonBPartnerInfo == null)
-		{
-			return null;
-		}
-		return JsonBPartnerComposite.builder()
-				.bpartner(jsonBPartnerInfo.getBpartner())
-				.contact(jsonBPartnerInfo.getContact())
-				.location(jsonBPartnerInfo.getLocation())
-				.syncAdvise(jsonBPartnerInfo.getSyncAdvise())
-				.build();
-
-	}
-
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty(required = false)
 	@JsonInclude(Include.NON_NULL)

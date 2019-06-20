@@ -1,22 +1,16 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.response;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
-import de.metas.rest_api.JsonPagingDescriptor;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.ordercandidate.rest-api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,14 +30,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonBPartnerCompositeList
+public final class JsonUpsertResponse
 {
-	@JsonInclude(Include.NON_NULL)
-	@JsonUnwrapped
-	@NonNull
-	JsonPagingDescriptor pagingDescriptor;
-
-	@JsonInclude(Include.ALWAYS)
 	@Singular
-	List<JsonBPartnerComposite> items;
+	List<JsonUpsertResponseItem> responseItems;
 }

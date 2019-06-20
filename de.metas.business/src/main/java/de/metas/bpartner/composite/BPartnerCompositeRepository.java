@@ -291,21 +291,21 @@ public class BPartnerCompositeRepository
 
 	}
 
-	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositsSince(final SinceQuery sinceQuery)
+	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositsSince(@NonNull final SinceQuery sinceQuery)
 	{
 		final QueryResultPage<BPartnerId> page = retrievePageAllEntities(sinceQuery, null);
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
 		return page.withItems(bpartnerComposites);
 	}
 
-	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerComposites(final SinceQuery sinceQuery)
+	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerComposites(@NonNull final SinceQuery sinceQuery)
 	{
 		final QueryResultPage<BPartnerContactId> page = retrievePageOnlyContactEntities(sinceQuery, null);
 
 		return extractContactFilteredBPartnerComposites(page);
 	}
 
-	private QueryResultPage<BPartnerComposite> extractContactFilteredBPartnerComposites(final QueryResultPage<BPartnerContactId> page)
+	private QueryResultPage<BPartnerComposite> extractContactFilteredBPartnerComposites(@NonNull final QueryResultPage<BPartnerContactId> page)
 	{
 		final ImmutableList<BPartnerContactId> contactIdsToReturn = page.getItems();
 
@@ -322,14 +322,14 @@ public class BPartnerCompositeRepository
 		return page.withItems(bpartnerComposites);
 	}
 
-	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositesNextPage(final NextPageQuery nextPageQuery)
+	private QueryResultPage<BPartnerComposite> getCompleteBPartnerCompositesNextPage(@NonNull final NextPageQuery nextPageQuery)
 	{
 		final QueryResultPage<BPartnerId> page = retrievePageAllEntities(null, nextPageQuery.getNextPageId());
 		final ImmutableList<BPartnerComposite> bpartnerComposites = getByIds(page.getItems());
 		return page.withItems(bpartnerComposites);
 	}
 
-	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerCompositesNextPage(final NextPageQuery nextPageQuery)
+	private QueryResultPage<BPartnerComposite> getContactFilteredBPartnerCompositesNextPage(@NonNull final NextPageQuery nextPageQuery)
 	{
 		final QueryResultPage<BPartnerContactId> page = retrievePageOnlyContactEntities(null, nextPageQuery.getNextPageId());
 

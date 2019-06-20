@@ -1,16 +1,24 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.response;
+
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.bpartner.JsonContact;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,9 +37,20 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public final class JsonUpsertResponse
+public class JsonContactList
 {
-	@Singular
-	List<JsonUpsertResponseItem> responseItems;
+	@JsonUnwrapped
+	JsonPagingDescriptor pagingDescriptor;
+
+	List<JsonContact> contacts;
+
+	@Builder
+	private JsonContactList(
+			@NonNull final JsonPagingDescriptor pagingDescriptor,
+			@Singular final List<JsonContact> contacts)
+	{
+		this.pagingDescriptor = pagingDescriptor;
+		this.contacts = coalesce(contacts, ImmutableList.of());
+	}
+
 }

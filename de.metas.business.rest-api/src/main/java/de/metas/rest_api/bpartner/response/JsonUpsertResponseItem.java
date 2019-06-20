@@ -1,10 +1,10 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
-import io.swagger.annotations.ApiModel;
+import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,31 +34,24 @@ import lombok.Value;
 
 @Value
 @Builder
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
-public class JsonContactUpsertRequestItem
+public class JsonUpsertResponseItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the contact to upsert.", //
+	@ApiModelProperty(//
+			value = "The external id from the respective update request",//
 			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
-	@NonNull
-	JsonContact contact;
+	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
+			dataType = "java.lang.Long")
+	MetasfreshId metasfreshId;
 
 	@JsonCreator
-	public JsonContactUpsertRequestItem(
-			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
-			@NonNull @JsonProperty("contact") JsonContact contact)
+	private JsonUpsertResponseItem(
+			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
+			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
 	{
 		this.externalId = externalId;
-		this.contact = contact;
-	}
-
-	public JsonContact getEffectiveContact()
-	{
-		return getContact().withExternalId(getExternalId());
+		this.metasfreshId = metasfreshId;
 	}
 }

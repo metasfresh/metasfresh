@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequest;
 import de.metas.util.JSONObjectMapper;
 
 /*

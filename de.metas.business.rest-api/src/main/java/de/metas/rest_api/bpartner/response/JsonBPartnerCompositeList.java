@@ -1,13 +1,16 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.response;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
-import io.swagger.annotations.ApiModelProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+
+import de.metas.rest_api.JsonPagingDescriptor;
+import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -34,24 +37,14 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonUpsertResponseItem
+public class JsonBPartnerCompositeList
 {
-	@ApiModelProperty(//
-			value = "The external id from the respective update request",//
-			dataType = "java.lang.String")
+	@JsonInclude(Include.NON_NULL)
+	@JsonUnwrapped
 	@NonNull
-	JsonExternalId externalId;
+	JsonPagingDescriptor pagingDescriptor;
 
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
-			dataType = "java.lang.Long")
-	MetasfreshId metasfreshId;
-
-	@JsonCreator
-	private JsonUpsertResponseItem(
-			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
-			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
-	{
-		this.externalId = externalId;
-		this.metasfreshId = metasfreshId;
-	}
+	@JsonInclude(Include.ALWAYS)
+	@Singular
+	List<JsonBPartnerComposite> items;
 }
