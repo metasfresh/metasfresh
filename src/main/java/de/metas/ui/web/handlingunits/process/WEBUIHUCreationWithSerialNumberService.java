@@ -202,7 +202,7 @@ public class WEBUIHUCreationWithSerialNumberService
 
 	private int calculateTUCapacity(final I_M_HU parentHU)
 	{
-		final I_M_HU_PI_Item_Product huPIP = parentHU.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPIP = IHandlingUnitsBL.extractPIItemProductOrNull(parentHU);
 
 		if (huPIP == null)
 		{
