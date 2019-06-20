@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -23,18 +24,24 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Inventory;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -110,6 +117,19 @@ public class InventoryRepository
 
 	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
+		final I_M_Inventory inventoryRecord = Services.get(IInventoryDAO.class).getById(inventoryId);
+		return toInventory(inventoryRecord);
+	}
+
+	public Inventory toInventory(@NonNull final org.compiere.model.I_M_Inventory inventoryRecord)
+	{
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
+		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
+		if (docBaseAndSubType == null)
+		{
+			throw new AdempiereException("Failed extracting DocBaseType and DocSubType from " + inventoryRecord);
+		}
+
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
 		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
 
@@ -121,8 +141,26 @@ public class InventoryRepository
 				.collect(ImmutableList.toImmutableList());
 
 		return Inventory.builder()
+				.id(inventoryId)
+				.docBaseAndSubType(docBaseAndSubType)
 				.lines(inventoryLines)
 				.build();
+	}
+
+	public static DocBaseAndSubType extractDocBaseAndSubTypeOrNull(@Nullable final I_M_Inventory inventoryRecord)
+	{
+		if (inventoryRecord == null)
+		{
+			return null; // nothing to extract
+		}
+
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(inventoryRecord.getC_DocType_ID());
+		if (docTypeId == null)
+		{
+			return null; // nothing to extract
+		}
+
+		return Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(docTypeId);
 	}
 
 	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
@@ -162,8 +200,7 @@ public class InventoryRepository
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
 				.asiId(asiId)
-				.storageAttributesKey(storageAttributesKey)
-				.inventoryId(InventoryId.ofRepoId(inventoryLineRecord.getM_Inventory_ID()));
+				.storageAttributesKey(storageAttributesKey);
 
 		final HUAggregationType huAggregationType = HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 		lineBuilder.huAggregationType(huAggregationType);
@@ -265,27 +302,56 @@ public class InventoryRepository
 				.build();
 	}
 
-	public void save(@NonNull final Inventory inventoryLines)
+	public void save(@NonNull final Inventory inventory)
 	{
-		final HashMap<InventoryLineId, I_M_InventoryLine> existingInventoryLineRecords = getInventoryLineRecordsByIds(inventoryLines.getInventoryLineIds());
-
-		for (final InventoryLine inventoryLine : inventoryLines)
-		{
-			final I_M_InventoryLine existingLineRecord = existingInventoryLineRecords.get(inventoryLine.getId());
-			saveInventoryLine(inventoryLine, existingLineRecord);
-		}
+		saveInventoryLines(inventory);
 	}
 
-	public void saveInventoryLine(@NonNull final InventoryLine inventoryLine)
+	void saveInventoryLines(@NonNull final Inventory inventory)
+	{
+		final InventoryId inventoryId = inventory.getId();
+		saveInventoryLines(inventory.getLines(), inventoryId);
+	}
+
+	private void saveInventoryLines(
+			@NonNull final List<InventoryLine> lines,
+			@NonNull final InventoryId inventoryId)
+	{
+		final ImmutableSet<InventoryLineId> inventoryLineIds = extractInventoryLineIds(lines);
+		final HashMap<InventoryLineId, I_M_InventoryLine> existingInventoryLineRecords = getInventoryLineRecordsByIds(inventoryLineIds);
+
+		for (final InventoryLine inventoryLine : lines)
+		{
+			final I_M_InventoryLine existingLineRecord = existingInventoryLineRecords.remove(inventoryLine.getId());
+			saveInventoryLine(inventoryLine, inventoryId, existingLineRecord);
+		}
+
+		InterfaceWrapperHelper.deleteAll(existingInventoryLineRecords.values());
+	}
+
+	private static ImmutableSet<InventoryLineId> extractInventoryLineIds(final List<InventoryLine> lines)
+	{
+		return lines.stream()
+				.map(InventoryLine::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void saveInventoryLine(
+			@NonNull final InventoryLine inventoryLine,
+			@NonNull final InventoryId inventoryId)
 	{
 		final I_M_InventoryLine existingLineRecord = inventoryLine.getId() != null
 				? getInventoryLineRecordById(inventoryLine.getId())
 				: null;
 
-		saveInventoryLine(inventoryLine, existingLineRecord);
+		saveInventoryLine(inventoryLine, inventoryId, existingLineRecord);
 	}
 
-	private void saveInventoryLine(@NonNull final InventoryLine inventoryLine, @Nullable final I_M_InventoryLine existingLineRecord)
+	private void saveInventoryLine(
+			@NonNull final InventoryLine inventoryLine,
+			@NonNull final InventoryId inventoryId,
+			@Nullable final I_M_InventoryLine existingLineRecord)
 	{
 		final I_M_InventoryLine lineRecord;
 		if (existingLineRecord != null)
@@ -298,7 +364,7 @@ public class InventoryRepository
 		}
 
 		lineRecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
-		lineRecord.setM_Inventory_ID(inventoryLine.getInventoryId().getRepoId());
+		lineRecord.setM_Inventory_ID(inventoryId.getRepoId());
 
 		final AttributesKey storageAttributesKey = inventoryLine.getStorageAttributesKey();
 

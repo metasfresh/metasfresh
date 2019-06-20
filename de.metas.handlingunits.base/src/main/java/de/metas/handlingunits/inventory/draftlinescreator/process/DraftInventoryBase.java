@@ -5,13 +5,15 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregator;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
+import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -44,7 +46,7 @@ import de.metas.util.Services;
 
 public abstract class DraftInventoryBase extends JavaProcess implements IProcessPrecondition
 {
-	private final InventoryLineRepository inventoryLineRepository = Adempiere.getBean(InventoryLineRepository.class);
+	private final InventoryRepository inventoryRepo = Adempiere.getBean(InventoryRepository.class);
 
 	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = Adempiere.getBean(InventoryLineAggregatorFactory.class);
 
@@ -70,8 +72,9 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 	@Override
 	final protected String doIt()
 	{
-		final I_M_Inventory inventoryRecord = getRecord(I_M_Inventory.class);
-		final I_C_DocType docTypeRecord = inventoryRecord.getC_DocType();
+		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
+		final I_M_Inventory inventoryRecord = Services.get(IInventoryDAO.class).getById(inventoryId);
+		final I_C_DocType docTypeRecord = Services.get(IDocTypeDAO.class).getById(inventoryRecord.getC_DocType_ID());
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		final HUsForInventoryStrategy strategy = createStrategy(inventoryRecord);
@@ -84,10 +87,10 @@ public abstract class DraftInventoryBase extends JavaProcess implements IProcess
 				inventoryRecord.getDocStatus(), inventoryRecord);
 
 		final InventoryLinesCreationCtx draftLines = InventoryLinesCreationCtx.builder()
-				.inventoryId(InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID()))
-				.strategy(strategy)
-				.inventoryLineRepository(inventoryLineRepository)
+				.inventory(inventoryRepo.getById(inventoryId))
+				.inventoryRepo(inventoryRepo)
 				.inventoryLineAggregator(inventoryLineAggregator)
+				.strategy(strategy)
 				.build();
 
 		final DraftInventoryLinesCreator draftLinesCreator = new DraftInventoryLinesCreator(draftLines);

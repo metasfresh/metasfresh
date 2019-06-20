@@ -21,16 +21,17 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.reducers.Reducers;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
@@ -57,10 +58,11 @@ import lombok.experimental.NonFinal;
  */
 
 @Value
+@ToString(doNotUseGetters = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLine
 {
-	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
+	/** If not null then {@link InventoryRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
 	@Nullable
 	@NonFinal
 	InventoryLineId id;
@@ -68,12 +70,9 @@ public class InventoryLine
 	@NonNull
 	OrgId orgId;
 
-	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}. */
+	/** If not null then {@link InventoryRepository#save(InventoryLine)} will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}. */
 	@Nullable
 	AttributeSetInstanceId asiId;
-
-	@NonNull
-	InventoryId inventoryId;
 
 	@NonNull
 	ProductId productId;
@@ -95,7 +94,6 @@ public class InventoryLine
 	@Builder(toBuilder = true)
 	private InventoryLine(
 			@Nullable final InventoryLineId id,
-			@NonNull final InventoryId inventoryId,
 			@NonNull final OrgId orgId,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
@@ -108,7 +106,6 @@ public class InventoryLine
 		this.id = id;
 		this.orgId = orgId;
 		this.asiId = asiId;
-		this.inventoryId = inventoryId;
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 		this.locatorId = locatorId;
@@ -119,24 +116,13 @@ public class InventoryLine
 	}
 
 	private static InventoryType extractInventoryType(
-			@NonNull final List<InventoryLineHU> inventoryLineHUs,
+			@NonNull final List<InventoryLineHU> lineHUs,
 			@NonNull final InventoryType defaultInventoryTypeWhenEmpty)
 	{
-		final Set<InventoryType> inventoryTypes = inventoryLineHUs.stream()
+		return lineHUs.stream()
 				.map(InventoryLineHU::getInventoryType)
-				.collect(ImmutableSet.toImmutableSet());
-		if (inventoryTypes.isEmpty())
-		{
-			return defaultInventoryTypeWhenEmpty;
-		}
-		else if (inventoryTypes.size() == 1)
-		{
-			return inventoryTypes.iterator().next();
-		}
-		else
-		{
-			throw new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + inventoryLineHUs);
-		}
+				.reduce(Reducers.distinct(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)))
+				.orElse(defaultInventoryTypeWhenEmpty);
 	}
 
 	void setId(@NonNull final InventoryLineId id)
@@ -173,6 +159,20 @@ public class InventoryLine
 				.map(InventoryLineHU::getHuId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Quantity getMovementQty()
+	{
+		if (getInventoryType().isInternalUse())
+		{
+			return getQtyInternalUse().get();
+		}
+		else
+		{
+			final Quantity qtyCount = getQtyCount().get();
+			final Quantity qtyBook = getQtyBook().get();
+			return qtyCount.subtract(qtyBook);
+		}
 	}
 
 	public Optional<Quantity> getQtyInternalUse()

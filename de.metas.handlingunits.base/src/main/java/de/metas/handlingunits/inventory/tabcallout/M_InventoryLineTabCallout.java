@@ -7,6 +7,7 @@ import org.compiere.model.I_M_Inventory;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.inventory.InventoryLineRecordService;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
 import lombok.NonNull;
@@ -43,7 +44,7 @@ public class M_InventoryLineTabCallout extends TabCalloutAdapter
 		final I_M_InventoryLine inventoryLineRecord = calloutRecord.getModel(I_M_InventoryLine.class);
 		final I_M_Inventory inventoryRecord = inventoryLineRecord.getM_Inventory();
 
-		final DocBaseAndSubType docBaseAndSubType = InventoryLineRecordService.extractDocBaseAndSubType(inventoryRecord);
+		final DocBaseAndSubType docBaseAndSubType = InventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
 		if (docBaseAndSubType == null)
 		{
 			return;

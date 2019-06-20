@@ -29,13 +29,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
-import de.metas.handlingunits.inventory.InventoryLines;
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.SingleHUInventoryLineAggregator;
+import de.metas.inventory.AggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
@@ -75,8 +78,8 @@ class DraftInventoryLinesCreatorTest
 
 	private LocatorId locatorId;
 
-	private InventoryLineRepository inventoryLineRepository;
-	private InventoryId inventoryId;
+	private InventoryRepository inventoryRepo;
+	// private InventoryId inventoryId;
 
 	@BeforeAll
 	static void beforeAll()
@@ -95,55 +98,65 @@ class DraftInventoryLinesCreatorTest
 	{
 		AdempiereTestHelper.get().init();
 
+		inventoryRepo = new InventoryRepository();
+
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
-		saveRecord(inventoryRecord);
-		inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
-
 		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
 		saveRecord(warehouseRecord);
+
 		final I_M_Locator locatorRecord = newInstance(I_M_Locator.class);
 		locatorRecord.setM_Warehouse(warehouseRecord);
 		saveRecord(locatorRecord);
-
-		InventoryTestHelper.createAttributeValues();
-
 		locatorId = LocatorId.ofRecord(locatorRecord);
 
-		inventoryLineRepository = new InventoryLineRepository();
+		InventoryTestHelper.createAttributeValues();
 
 		qtyOne = Quantity.of(ONE, uomRecord);
 		qtyTwo = Quantity.of(TWO, uomRecord);
 		qtyTen = Quantity.of(TEN, uomRecord);
 	}
 
+	private InventoryId createInventoryRecord(final DocBaseAndSubType docBaseAndSubType)
+	{
+		final DocTypeId docTypeId = InventoryTestHelper.createDocType(docBaseAndSubType);
+
+		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
+		saveRecord(inventoryRecord);
+		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
+	}
+
 	@Test
 	void execute_SingleHUInventoryLineAggregator()
 	{
+		final InventoryId inventoryId = createInventoryRecord(AggregationType.SINGLE_HU.getDocBaseAndSubType());
 		final InventoryLinesCreationCtx ctx = createContext(
+				inventoryId,
 				createTestStrategy(),
 				SingleHUInventoryLineAggregator.INSTANCE);
 
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final InventoryLines result = inventoryLineRepository.getByInventoryId(inventoryId);
+		final Inventory result = inventoryRepo.getById(inventoryId);
 		expect(result).toMatchSnapshot();
 	}
 
 	@Test
 	void execute_MultipleHUInventoryLineAggregator()
 	{
+		final InventoryId inventoryId = createInventoryRecord(AggregationType.SINGLE_HU.getDocBaseAndSubType());
 		final InventoryLinesCreationCtx ctx = createContext(
+				inventoryId,
 				createTestStrategy(),
 				MultipleHUInventoryLineAggregator.INSTANCE);
 
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final InventoryLines result = inventoryLineRepository.getByInventoryId(inventoryId);
+		final Inventory result = inventoryRepo.getById(inventoryId);
 		expect(result).toMatchSnapshot();
 	}
 
@@ -170,14 +183,14 @@ class DraftInventoryLinesCreatorTest
 	}
 
 	private InventoryLinesCreationCtx createContext(
+			@NonNull final InventoryId inventoryId,
 			@NonNull final HUsForInventoryStrategy strategy,
 			@NonNull final InventoryLineAggregator aggregator)
 	{
-		final InventoryLinesCreationCtx ctx = InventoryLinesCreationCtx
-				.builder()
+		final InventoryLinesCreationCtx ctx = InventoryLinesCreationCtx.builder()
+				.inventory(inventoryRepo.getById(inventoryId))
+				.inventoryRepo(inventoryRepo)
 				.inventoryLineAggregator(aggregator)
-				.inventoryLineRepository(inventoryLineRepository)
-				.inventoryId(inventoryId)
 				.strategy(strategy)
 				.build();
 		return ctx;

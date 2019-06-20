@@ -36,7 +36,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpMethod;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
@@ -72,7 +72,7 @@ public class SecurPharmServiceTest
 	@Mock
 	private SecurPharmLogRepository logsRepo;
 	@Mock
-	private InventoryLineRepository inventoryRepo;
+	private InventoryRepository inventoryRepo;
 
 	@Before
 	public void initMocks()

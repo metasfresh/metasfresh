@@ -12,7 +12,9 @@ import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
@@ -39,6 +41,8 @@ import lombok.experimental.NonFinal;
  */
 
 @Value
+@ToString(doNotUseGetters = true)
+@EqualsAndHashCode(doNotUseGetters = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLineHU
 {

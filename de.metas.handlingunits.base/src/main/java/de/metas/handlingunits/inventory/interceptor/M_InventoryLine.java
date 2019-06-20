@@ -9,7 +9,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
@@ -44,9 +44,9 @@ import lombok.NonNull;
 @Component("de.metas.handlingunits.inventory.interceptor.M_InventoryLine")
 public class M_InventoryLine
 {
-	private final InventoryLineRepository inventoryLineRepository;
+	private final InventoryRepository inventoryLineRepository;
 
-	public M_InventoryLine(@NonNull final InventoryLineRepository inventoryLineRepository)
+	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository)
 	{
 		this.inventoryLineRepository = inventoryLineRepository;
 	}

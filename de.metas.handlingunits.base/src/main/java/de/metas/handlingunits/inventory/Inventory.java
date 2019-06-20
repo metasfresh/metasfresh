@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -11,10 +10,13 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
+import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.util.reducers.Reducers;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -42,14 +44,24 @@ import lombok.ToString;
 
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class Inventory implements Iterable<InventoryLine>
+public final class Inventory
 {
+	@Getter
+	private final InventoryId id;
+	@Getter
+	private final DocBaseAndSubType docBaseAndSubType;
+
 	private final InventoryType inventoryType;
 	private final ImmutableList<InventoryLine> lines;
 
 	@Builder
-	private Inventory(@NonNull final List<InventoryLine> lines)
+	private Inventory(
+			@NonNull final InventoryId id,
+			@NonNull final DocBaseAndSubType docBaseAndSubType,
+			@NonNull final List<InventoryLine> lines)
 	{
+		this.id = id;
+		this.docBaseAndSubType = docBaseAndSubType;
 		this.lines = ImmutableList.copyOf(lines);
 		this.inventoryType = extractInventoryType(lines, InventoryType.PHYSICAL);
 	}
@@ -64,15 +76,9 @@ public final class Inventory implements Iterable<InventoryLine>
 				.orElse(defaultInventoryTypeWhenEmpty);
 	}
 
-	public ImmutableList<InventoryLine> toList()
+	public ImmutableList<InventoryLine> getLines()
 	{
 		return lines;
-	}
-
-	@Override
-	public Iterator<InventoryLine> iterator()
-	{
-		return lines.iterator();
 	}
 
 	public ImmutableSet<InventoryLineId> getInventoryLineIds()

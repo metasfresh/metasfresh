@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryId;
 import de.metas.notification.INotificationBL;
@@ -74,7 +74,7 @@ public class SecurPharmService
 	private final SecurPharmProductRepository productsRepo;
 	private final SecurPharmaActionRepository actionsRepo;
 	private final SecurPharmLogRepository logsRepo;
-	private final InventoryLineRepository inventoryRepo;
+	private final InventoryRepository inventoryRepo;
 
 	public SecurPharmService(
 			@NonNull final SecurPharmClientFactory clientFactory,
@@ -82,7 +82,7 @@ public class SecurPharmService
 			@NonNull final SecurPharmProductRepository productsRepo,
 			@NonNull final SecurPharmaActionRepository actionsRepo,
 			@NonNull final SecurPharmLogRepository logsRepo,
-			@NonNull final InventoryLineRepository inventoryRepo)
+			@NonNull final InventoryRepository inventoryRepo)
 	{
 		this.clientFactory = clientFactory;
 		this.configRespository = configRespository;
@@ -117,7 +117,7 @@ public class SecurPharmService
 	private Set<HuId> getHUIdsByInventoryId(final InventoryId inventoryId)
 	{
 		return inventoryRepo
-				.getByInventoryId(inventoryId)
+				.getById(inventoryId)
 				.getHuIds();
 	}
 

@@ -4,7 +4,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Ignore;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
@@ -69,6 +69,6 @@ public class SecurPharmServiceManualTest
 				new SecurPharmProductRepository(),
 				new SecurPharmaActionRepository(),
 				new SecurPharmLogRepository(),
-				new InventoryLineRepository());
+				new InventoryRepository());
 	}
 }

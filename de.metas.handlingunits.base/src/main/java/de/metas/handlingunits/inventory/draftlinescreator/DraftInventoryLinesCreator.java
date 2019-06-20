@@ -12,8 +12,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
@@ -84,10 +85,11 @@ public class DraftInventoryLinesCreator
 			countInventoryLines++;
 		}
 
-		final InventoryLineRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryLineRepository();
+		final InventoryRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryRepo();
+		final InventoryId inventoryId = inventoryLinesCreationCtx.getInventoryId();
 		createdOrUpdatedLines
 				.values()
-				.forEach(inventoryLineRepository::saveInventoryLine);
+				.forEach(line -> inventoryLineRepository.saveInventoryLine(line, inventoryId));
 
 	}
 
@@ -122,7 +124,6 @@ public class DraftInventoryLinesCreator
 			{
 				// create line
 				inventoryLineBuilder = InventoryLine.builder()
-						.inventoryId(inventoryLinesCreationCtx.getInventoryId())
 						.orgId(huForInventoryLine.getOrgId());
 			}
 		}

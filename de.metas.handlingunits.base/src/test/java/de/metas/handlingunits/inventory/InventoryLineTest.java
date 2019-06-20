@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
@@ -123,7 +122,6 @@ class InventoryLineTest
 	{
 		return InventoryLine.builder()
 				.orgId(OrgId.ofRepoId(1))
-				.inventoryId(InventoryId.ofRepoId(10))
 				.id(InventoryLineId.ofRepoId(20))
 				.locatorId(LocatorId.ofRepoId(WarehouseId.ofRepoId(30), 35))
 				.productId(ProductId.ofRepoId(40))
