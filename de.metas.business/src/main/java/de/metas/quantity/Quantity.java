@@ -378,11 +378,11 @@ public final class Quantity implements Comparable<Quantity>
 
 	public Quantity toOne()
 	{
-		if (BigDecimal.ONE.compareTo(qty) == 0)
+		if (ONE.compareTo(qty) == 0)
 		{
 			return this;
 		}
-		return new Quantity(BigDecimal.ONE, uom);
+		return new Quantity(ONE, uom);
 	}
 
 	public Quantity toZeroIfNegative()
