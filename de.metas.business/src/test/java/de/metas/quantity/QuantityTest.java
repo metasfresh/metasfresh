@@ -341,4 +341,20 @@ public class QuantityTest
 
 		assertThat(qty.getAsBigDecimal()).isEqualByComparingTo("0.33333");
 	}
+
+	@Test
+	public void test_ToString_SameUOMs()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+		assertThat(Quantity.of(5, uom).toString()).isEqualTo("5 UOM");
+	}
+
+	@Test
+	public void test_ToString_DifferentUOMs()
+	{
+		final I_C_UOM uom = uomHelper.createUOM("UOM", 2);
+		final I_C_UOM sourceUOM = uomHelper.createUOM("SOURCE_UOM", 2);
+		final Quantity qty = new Quantity(BigDecimal.valueOf(5), uom, BigDecimal.valueOf(4), sourceUOM);
+		assertThat(qty.toString()).isEqualTo("5 UOM (source: 4 SOURCE_UOM)");
+	}
 }

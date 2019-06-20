@@ -178,7 +178,15 @@ public final class Quantity implements Comparable<Quantity>
 	@Override
 	public String toString()
 	{
-		return qty + " " + uom.getUOMSymbol() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
+		if (uom.getC_UOM_ID() == sourceUom.getC_UOM_ID()
+				&& qty.compareTo(sourceQty) == 0)
+		{
+			return qty + " " + uom.getUOMSymbol();
+		}
+		else
+		{
+			return qty + " " + uom.getUOMSymbol() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
+		}
 	}
 
 	@Override
@@ -367,7 +375,7 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		return new Quantity(ZERO, uom, ZERO, sourceUom);
 	}
-	
+
 	public Quantity toOne()
 	{
 		if (BigDecimal.ONE.compareTo(qty) == 0)
