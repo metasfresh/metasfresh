@@ -156,6 +156,10 @@ public class TUKey extends AbstractLUTUKey
 	{
 		return cuUOM;
 	}
+	public int getCuUOMId()
+	{
+		return cuUOM != null ? cuUOM.getC_UOM_ID() : -1;
+	}
 
 	public boolean isQtyCUsPerTUInfinite()
 	{

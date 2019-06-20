@@ -29,6 +29,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -99,8 +100,9 @@ public class HUCapacityBL implements IHUCapacityBL
 		}
 
 		final BigDecimal qty = itemDefProduct.getQty();
+		final I_C_UOM qtyUOM = IHUPIItemProductBL.extractUOMOrNull(itemDefProduct);
 		final BigDecimal qtyConv = Services.get(IUOMConversionBL.class)
-				.convertQty(productToUseId, qty, itemDefProduct.getC_UOM(), uom);
+				.convertQty(productToUseId, qty, qtyUOM, uom);
 
 		final boolean allowNegativeCapacity = false;
 

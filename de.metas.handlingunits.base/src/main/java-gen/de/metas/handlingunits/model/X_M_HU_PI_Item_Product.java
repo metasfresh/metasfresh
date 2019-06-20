@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1709215247L;
+	private static final long serialVersionUID = 1509098141L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -48,7 +48,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
 	}
@@ -82,18 +82,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -184,7 +172,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}
@@ -240,7 +228,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public org.compiere.model.I_M_Product getM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
 	}
@@ -277,9 +265,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -287,8 +273,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

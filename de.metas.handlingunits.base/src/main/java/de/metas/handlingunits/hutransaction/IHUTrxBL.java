@@ -31,6 +31,7 @@ import java.util.function.Function;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
@@ -42,8 +43,13 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  *
@@ -183,4 +189,12 @@ public interface IHUTrxBL extends ISingletonService
 	 * In other words, group the them by their properties (besides qty) and store a new list with summed-up qtys. The new candidates have unique properties.
 	 */
 	List<IHUTransactionCandidate> aggregateTransactions(List<IHUTransactionCandidate> transactions);
+
+	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_Trx_Line trxLine)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(trxLine.getC_UOM_ID());
+		return uomId != null
+				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
+	}
 }

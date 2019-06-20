@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
 
@@ -51,6 +52,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.IProductBL;
+import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -232,7 +234,7 @@ public class HUTracerInstance
 		{
 			return "(null attribute)";
 		}
-		
+
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttr.getM_Attribute_ID());
 		final String attrName = attribute == null ? "(no name?)" : attribute.getName();
@@ -256,7 +258,8 @@ public class HUTracerInstance
 	{
 		final String productStr = storage.getM_Product().getName();
 		final BigDecimal qty = storage.getQty();
-		final String uomStr = storage.getC_UOM().getUOMSymbol();
+		final I_C_UOM uom = IHUStorageBL.extractUOM(storage);
+		final String uomStr = uom.getUOMSymbol();
 		out.append(linePrefix).append("Product: " + productStr + ", Qty: " + qty + " " + uomStr).append("\n");
 	}
 

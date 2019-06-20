@@ -15,7 +15,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 883076840L;
+	private static final long serialVersionUID = 1062082984L;
 
     /** Standard Constructor */
     public X_RV_M_HU_Storage_InvoiceHistory (Properties ctx, int RV_M_HU_Storage_InvoiceHistory_ID, String trxName)
@@ -58,7 +58,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
+	public org.compiere.model.I_M_Locator getM_Locator()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
 	}
@@ -95,7 +95,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public org.compiere.model.I_M_Product getM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
 	}

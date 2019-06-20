@@ -41,8 +41,10 @@ import de.metas.adempiere.form.terminal.IKeyLayout;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyByNameComparator;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractLTCUModel;
 import de.metas.handlingunits.impl.HandlingUnitsDAO;
@@ -55,6 +57,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 {
@@ -503,7 +506,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		//
 		// CU
 		lutuConfiguration.setM_Product_ID(cuProduct.getRepoId());
-		lutuConfiguration.setC_UOM(tuKey.getCuUOM());
+		lutuConfiguration.setC_UOM_ID(tuKey.getCuUOMId());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(qtyCU);
 	}
@@ -512,7 +515,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	{
 		final Properties ctx = getCtx();
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
 
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartner);
@@ -569,15 +572,13 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 	}
 
 	private TUKey createTUKey(
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
 			final I_M_HU_PI tuPI,
 			final ProductId cuProductId,
 			final I_C_UOM cuUOM,
 			final BigDecimal qtyCUPerTU)
 	{
-		Check.assumeNotNull(tuPIItemProduct, "tuPIItemProduct not null");
-
-		I_C_UOM cuUOMToUse = tuPIItemProduct.getC_UOM();
+		I_C_UOM cuUOMToUse = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 		if (cuUOMToUse == null || cuUOMToUse.getC_UOM_ID() <= 0)
 		{
 			cuUOMToUse = cuUOM;
@@ -611,7 +612,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final I_M_HU_PI_Item_Product huPIIP = lutuConfiguration.getM_HU_PI_Item_Product();
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUPerTUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = lutuConfiguration.getQtyCU();
 
@@ -628,7 +629,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final BigDecimal qtyCUsPerTU = Quantity.QTY_INFINITE;
 
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 
 		final TUKey tuKey = createTUKey(virtualItemProduct, virtualPI, cuProductId, cuUOM, qtyCUsPerTU);
 		return tuKey;

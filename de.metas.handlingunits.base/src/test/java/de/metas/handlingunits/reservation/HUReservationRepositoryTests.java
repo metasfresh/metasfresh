@@ -105,7 +105,7 @@ public class HUReservationRepositoryTests
 
 		final I_M_HU_Reservation huReservationRecord = newInstance(I_M_HU_Reservation.class);
 		huReservationRecord.setC_OrderLineSO_ID(orderLineId.getRepoId());
-		huReservationRecord.setC_UOM(uomRecord);
+		huReservationRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		huReservationRecord.setVHU_ID(vhu1.getM_HU_ID());
 		huReservationRecord.setQtyReserved(qtyReserved);
 		saveRecord(huReservationRecord);

@@ -32,8 +32,6 @@ public interface I_M_HU_PI_Item_Product
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Client>(I_M_HU_PI_Item_Product.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_AD_Org>(I_M_HU_PI_Item_Product.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -116,10 +110,6 @@ public interface I_M_HU_PI_Item_Product
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Item_Product, org.compiere.model.I_C_UOM>(I_M_HU_PI_Item_Product.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -331,7 +321,6 @@ public interface I_M_HU_PI_Item_Product
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -341,7 +330,6 @@ public interface I_M_HU_PI_Item_Product
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

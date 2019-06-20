@@ -1,7 +1,5 @@
 package de.metas.handlingunits.storage.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -50,11 +48,13 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 
 /* package */class HUStorage implements IHUStorage
 {
@@ -92,7 +92,7 @@ import de.metas.util.collections.CollectionUtils;
 			storage = dao.newInstance(I_M_HU_Storage.class, hu);
 			storage.setM_HU(hu);
 			storage.setM_Product_ID(productId.getRepoId());
-			storage.setC_UOM(uomIfNew);
+			storage.setC_UOM_ID(uomIfNew.getC_UOM_ID());
 			storage.setQty(BigDecimal.ZERO);
 
 			// don't save it; it will be saved after Qty update
@@ -133,7 +133,8 @@ import de.metas.util.collections.CollectionUtils;
 	{
 		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(productId, uom);
 		final BigDecimal qty = storageLine.getQty();
-		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, storageLine.getC_UOM(), uom);
+		final I_C_UOM qtyUOM = IHUStorageBL.extractUOM(storageLine);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, qtyUOM, uom);
 		return qtyConv;
 	}
 
@@ -147,7 +148,7 @@ import de.metas.util.collections.CollectionUtils;
 
 		final I_M_HU_Storage storageLine = retrieveOrCreateStorageLine(productId, uom);
 
-		final I_C_UOM uomStorage = storageLine.getC_UOM();
+		final I_C_UOM uomStorage = IHUStorageBL.extractUOM(storageLine);
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
 
 		//
@@ -273,7 +274,7 @@ import de.metas.util.collections.CollectionUtils;
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
 
 		final int productRepoId = CollectionUtils.extractSingleElementOrDefault(
-				storages, 
+				storages,
 				I_M_HU_Storage::getM_Product_ID,
 				-1);
 
@@ -355,7 +356,7 @@ import de.metas.util.collections.CollectionUtils;
 	private final IHUProductStorage createProductStorage(final I_M_HU_Storage storage)
 	{
 		final ProductId productId = ProductId.ofRepoId(storage.getM_Product_ID());
-		final I_C_UOM uom = storage.getC_UOM();
+		final I_C_UOM uom = IHUStorageBL.extractUOM(storage);
 		final HUProductStorage productStorage = new HUProductStorage(this, productId, uom);
 		return productStorage;
 	}

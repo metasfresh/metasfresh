@@ -26,6 +26,7 @@ package de.metas.handlingunits.client.terminal.mmovement.model.split.impl;
 import java.math.BigDecimal;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.TUKey;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -56,7 +57,7 @@ public class TUSplitKey extends TUKey
 				huPIItemProduct,
 				tuPI,
 				cuProductId,
-				huPIItemProduct.getC_UOM(),
+				IHUPIItemProductBL.extractUOMOrNull(huPIItemProduct),
 				huPIItemProduct.isInfiniteCapacity(),
 				capacity);
 

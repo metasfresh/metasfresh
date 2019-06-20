@@ -29,9 +29,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -101,7 +99,7 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 		}
 
 		return huStorages;
-	};
+	}
 
 	@Override
 	public I_M_HU_Item_Storage retrieveItemStorage(final I_M_HU_Item huItem, @NonNull final ProductId productId)
@@ -148,17 +146,5 @@ public class HUStorageDAO extends AbstractHUStorageDAO
 	public void save(final I_M_HU_Item item)
 	{
 		InterfaceWrapperHelper.save(item);
-	}
-
-	@Override
-	public I_C_UOM getC_UOM(final I_M_HU_Storage storage)
-	{
-		if (storage.getC_UOM_ID() <= 0)
-		{
-			// shall not happen
-			throw new HUException("Storage " + storage + " has not UOM set");
-		}
-
-		return storage.getC_UOM();
 	}
 }

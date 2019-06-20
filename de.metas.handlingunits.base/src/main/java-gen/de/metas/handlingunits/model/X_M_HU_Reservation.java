@@ -15,7 +15,7 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1848824523L;
+	private static final long serialVersionUID = 1035175713L;
 
     /** Standard Constructor */
     public X_M_HU_Reservation (Properties ctx, int M_HU_Reservation_ID, String trxName)
@@ -47,7 +47,7 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner_Customer()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
 	}
@@ -81,7 +81,7 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	}
 
 	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class);
 	}
@@ -115,18 +115,6 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -199,7 +187,7 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getVHU()
 	{
 		return get_ValueAsPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}

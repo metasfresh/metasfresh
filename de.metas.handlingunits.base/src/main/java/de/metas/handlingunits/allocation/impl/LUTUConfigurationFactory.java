@@ -128,7 +128,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		luProducerDestination.setTUPI(tuPI);
 		// TU Capacity
 		final ProductId cuProductId = ProductId.ofRepoId(lutuConfiguration.getM_Product_ID());
-		final I_C_UOM cuUOM = lutuConfiguration.getC_UOM();
+		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUInfinite = lutuConfiguration.isInfiniteQtyCU();
 		final BigDecimal qtyCUPerTU = qtyCUInfinite ? Quantity.QTY_INFINITE : lutuConfiguration.getQtyCU();
 		luProducerDestination.addCUPerTU(cuProductId, qtyCUPerTU, cuUOM);
@@ -188,7 +188,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
 		lutuConfiguration.setM_Product_ID(cuProductId.getRepoId());
-		lutuConfiguration.setC_UOM(cuUOM);
+		lutuConfiguration.setC_UOM_ID(cuUOM.getC_UOM_ID());
 		if (tuCapacity.isInfiniteCapacity())
 		{
 			lutuConfiguration.setIsInfiniteQtyCU(true);
@@ -483,7 +483,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	@Override
 	public Quantity calculateQtyCUsTotal(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		final I_C_UOM uom = lutuConfiguration.getC_UOM();
+		final I_C_UOM uom = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 
 		//
 		// CU
@@ -543,7 +543,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(lutuConfiguration.getM_Product_ID());
 
 		final Quantity qty = new Quantity(qtyValue, qtyUOM);
-		final I_C_UOM uomTo = lutuConfiguration.getC_UOM();
+		final I_C_UOM uomTo = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		return uomConversionBL.convertQuantityTo(qty, uomConversionCtx, uomTo);
 	}
 

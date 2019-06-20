@@ -31,6 +31,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.DisplayType;
 
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -183,7 +184,7 @@ import lombok.NonNull;
 
 	private final String getQtyCapacityUOMSymbol()
 	{
-		final I_C_UOM uom = getM_HU_PI_Item_Product().getC_UOM();
+		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(getM_HU_PI_Item_Product());
 		if (uom == null)
 		{
 			return null;

@@ -73,7 +73,7 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 		// Get QtyPicked
 		// * positive means qty was allocated(added) to VHU
 		// * negative means qty was un-allocated(removed) from VHU
-		final Quantity qtyPicked = Quantity.of(trxLine.getQty(), trxLine.getC_UOM());
+		final Quantity qtyPicked = Quantity.of(trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 
 		//
 		// Link VHU to shipment schedule

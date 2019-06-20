@@ -1141,7 +1141,7 @@ public class HUTestHelper
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product_ID(productId.getRepoId());
 		itemDefProduct.setQty(capacity);
-		itemDefProduct.setC_UOM(uom);
+		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 		itemDefProduct.setC_BPartner(bpartner);
 		InterfaceWrapperHelper.save(itemDefProduct);
@@ -1159,7 +1159,7 @@ public class HUTestHelper
 
 		itemDefProduct.setIsInfiniteCapacity(true);
 		itemDefProduct.setQty(null);
-		itemDefProduct.setC_UOM(null);
+		itemDefProduct.setC_UOM_ID(-1);
 
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 
@@ -1406,7 +1406,7 @@ public class HUTestHelper
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = -1;
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
-		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
+		final I_C_UOM cuUOM = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(

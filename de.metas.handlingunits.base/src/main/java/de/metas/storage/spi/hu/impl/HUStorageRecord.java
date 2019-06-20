@@ -40,6 +40,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageRecord;
+import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
@@ -48,7 +49,7 @@ import lombok.NonNull;
 
 public final class HUStorageRecord implements IStorageRecord
 {
-	public static final HUStorageRecord cast(final IStorageRecord storageRecord)
+	public static HUStorageRecord cast(final IStorageRecord storageRecord)
 	{
 		return (HUStorageRecord)storageRecord;
 	}
@@ -77,7 +78,7 @@ public final class HUStorageRecord implements IStorageRecord
 
 		//
 		// Get QtyOnHand from HU Storage
-		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), huStorage.getC_UOM());
+		final Quantity qtyOnHandSrc = new Quantity(huStorage.getQty(), IHUStorageBL.extractUOM(huStorage));
 		// ... and convert it to product's storage UOM
 		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);

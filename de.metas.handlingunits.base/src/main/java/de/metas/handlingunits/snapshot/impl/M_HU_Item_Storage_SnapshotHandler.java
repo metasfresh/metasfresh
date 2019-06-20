@@ -47,6 +47,7 @@ import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage_Snapshot;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -143,7 +144,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		//
 		// Extract the data needed to create the HU Transactions
 		final ProductId productId = ProductId.ofRepoId(model.getM_Product_ID());
-		final I_C_UOM uom = model.getC_UOM();
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(model.getC_UOM_ID());
 		final Quantity quantity = new Quantity(qtyDiff, uom);
 		final Date date = getDateTrx();
 		final Object referencedModel = getReferencedModelOrNull();

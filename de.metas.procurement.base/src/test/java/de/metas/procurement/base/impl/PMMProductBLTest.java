@@ -510,7 +510,7 @@ public class PMMProductBLTest
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product(product);
 		itemDefProduct.setQty(qty);
-		itemDefProduct.setC_UOM(uom);
+		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 		itemDefProduct.setC_BPartner(bpartner);
 		InterfaceWrapperHelper.save(itemDefProduct);

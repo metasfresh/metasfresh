@@ -32,8 +32,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Client>(I_RV_M_Material_Tracking_HU_Details.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_AD_Org>(I_RV_M_Material_Tracking_HU_Details.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -87,10 +81,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_UOM>(I_RV_M_Material_Tracking_HU_Details.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -224,7 +214,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
     public static final String COLUMNNAME_Lot = "Lot";
 
 	/**
-	 * Set Handling Units.
+	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -233,7 +223,7 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	public void setM_HU_ID (int M_HU_ID);
 
 	/**
-	 * Get Handling Units.
+	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -426,10 +416,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getPP_Order_Issue_DocType_ID();
 
-	public org.compiere.model.I_C_DocType getPP_Order_Issue_DocType();
-
-	public void setPP_Order_Issue_DocType(org.compiere.model.I_C_DocType PP_Order_Issue_DocType);
-
     /** Column definition for PP_Order_Issue_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType> COLUMN_PP_Order_Issue_DocType_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Issue_DocType_ID", org.compiere.model.I_C_DocType.class);
     /** Column name PP_Order_Issue_DocType_ID */
@@ -502,10 +488,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 * <br>Virtual Column: false
 	 */
 	public int getPP_Order_Receipt_DocType_ID();
-
-	public org.compiere.model.I_C_DocType getPP_Order_Receipt_DocType();
-
-	public void setPP_Order_Receipt_DocType(org.compiere.model.I_C_DocType PP_Order_Receipt_DocType);
 
     /** Column definition for PP_Order_Receipt_DocType_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType> COLUMN_PP_Order_Receipt_DocType_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_C_DocType>(I_RV_M_Material_Tracking_HU_Details.class, "PP_Order_Receipt_DocType_ID", org.compiere.model.I_C_DocType.class);

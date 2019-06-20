@@ -31,7 +31,11 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
@@ -143,5 +147,13 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
 	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(lutuConfiguration.getC_UOM_ID());
+		return uomId != null
+				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
+	}
 
 }

@@ -14,7 +14,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1396551732L;
+	private static final long serialVersionUID = -699908102L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (Properties ctx, int M_HU_PI_Attribute_ID, String trxName)
@@ -70,18 +70,6 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 			 return 0;
 		return ii.intValue();
 	}
-
-//	@Override
-//	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-//	}
-//
-//	@Override
-//	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-//	{
-//		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-//	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -260,18 +248,6 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return false;
 	}
 
-//	@Override
-//	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
-//	}
-//
-//	@Override
-//	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
-//	{
-//		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
-//	}
-
 	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Produkt-Merkmal
@@ -319,17 +295,17 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return ii.intValue();
 	}
 
-//	@Override
-//	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
-//	}
-//
-//	@Override
-//	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
-//	{
-//		set_ValueFromPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class, M_HU_PI_Version);
-//	}
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class);
+	}
+
+	@Override
+	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class, M_HU_PI_Version);
+	}
 
 	/** Set Packvorschrift Version.
 		@param M_HU_PI_Version_ID Packvorschrift Version	  */

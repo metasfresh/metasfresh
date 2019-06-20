@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -51,11 +50,11 @@ public class M_Product
 	{
 		final List<I_M_HU_PI_Item_Product> huPIPs = Services.get(IHUPIItemProductDAO.class).retrieveAllForProduct(product);
 
-		final I_C_UOM uom = product.getC_UOM();
+		final int productStockingUomId = product.getC_UOM_ID();
 
 		for (final I_M_HU_PI_Item_Product huPIP : huPIPs)
 		{
-			huPIP.setC_UOM(uom);
+			huPIP.setC_UOM_ID(productStockingUomId);
 			InterfaceWrapperHelper.save(huPIP);
 		}
 	}

@@ -15,7 +15,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 81324673L;
+	private static final long serialVersionUID = -1472326355L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage_Snapshot (Properties ctx, int M_HU_Item_Storage_Snapshot_ID, String trxName)
@@ -46,18 +46,6 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -84,7 +72,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Item getM_HU_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Item_ID, de.metas.handlingunits.model.I_M_HU_Item.class);
 	}
@@ -118,7 +106,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_Item_Storage getM_HU_Item_Storage() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_Item_Storage getM_HU_Item_Storage()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_Item_Storage_ID, de.metas.handlingunits.model.I_M_HU_Item_Storage.class);
 	}
@@ -174,7 +162,7 @@ public class X_M_HU_Item_Storage_Snapshot extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public org.compiere.model.I_M_Product getM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
 	}

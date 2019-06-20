@@ -32,6 +32,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
@@ -123,7 +124,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 
 		//
 		// Get transaction UOM.
-		final I_C_UOM qtyUOM = trxLine.getC_UOM();
+		final I_C_UOM qtyUOM = IHUTrxBL.extractUOMOrNull(trxLine);
 		if (qtyUOM == null)
 		{
 			return null;

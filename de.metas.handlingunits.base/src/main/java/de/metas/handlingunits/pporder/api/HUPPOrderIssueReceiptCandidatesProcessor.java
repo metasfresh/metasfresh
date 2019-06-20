@@ -123,7 +123,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	//
 	// Parameters
@@ -204,7 +203,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Create material receipt and activate the HU
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(candidate.getC_UOM_ID());
+		final I_C_UOM uom = IHUPPOrderQtyBL.extractUOM(candidate);
 		final ReceiptCostCollectorCandidate costCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.order(candidate.getPP_Order())
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
@@ -245,7 +244,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		//
 		// Calculate the quantity to issue.
-		final I_C_UOM qtyToIssueUOM = uomsRepo.getById(candidate.getC_UOM_ID());
+		final I_C_UOM qtyToIssueUOM = IHUPPOrderQtyBL.extractUOM(candidate);
 		final Quantity qtyToIssue = Quantity.of(candidate.getQty(), qtyToIssueUOM);
 
 		//

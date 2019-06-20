@@ -570,11 +570,11 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.ONE);
 		lutuConfiguration.setM_Product(data.helper.pSalad); // differs from real world
-		lutuConfiguration.setC_UOM(data.helper.uomEach);
+		lutuConfiguration.setC_UOM_ID(data.helper.uomEach.getC_UOM_ID());
 		lutuConfiguration.setIsInfiniteQtyCU(false);
 		lutuConfiguration.setQtyCU(new BigDecimal("252"));
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
-		lutuConfiguration.setM_Locator(l);
+		lutuConfiguration.setM_Locator_ID(l.getM_Locator_ID());
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location(bpLocation);
 		InterfaceWrapperHelper.save(lutuConfiguration);

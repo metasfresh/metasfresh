@@ -19,8 +19,8 @@ import de.metas.handlingunits.stock.HUStockInfoQuery.HUStockInfoSingleQuery.Attr
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -92,6 +92,8 @@ public class HUStockInfoRepository
 	private HUStockInfo ofRecord(@NonNull final I_M_HU_Stock_Detail_V record)
 	{
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
 		final ITranslatableString huStatus = adReferenceDAO.retrieveListNameTranslatableString(X_M_HU.HUSTATUS_AD_Reference_ID, record.getHUStatus());
 
 		return HUStockInfo.builder()
@@ -104,7 +106,7 @@ public class HUStockInfoRepository
 				.huStorageRepoId(record.getM_HU_Storage_ID())
 				.locatorId(LocatorId.ofRecord(record.getM_Locator()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.qty(Quantity.of(record.getQty(), record.getC_UOM()))
+				.qty(Quantity.of(record.getQty(), uomsRepo.getById(record.getC_UOM_ID())))
 				.build();
 
 	}

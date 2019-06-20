@@ -36,6 +36,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -115,7 +116,7 @@ public class HUStorageExpectation<ParentExpectationType> extends AbstractHUExpec
 		}
 		if (_uom != null)
 		{
-			assertModelEquals(messageToUse.expect("UOM"), _uom, storage.getC_UOM());
+			assertModelEquals(messageToUse.expect("UOM"), _uom, IHUStorageBL.extractUOM(storage));
 		}
 
 		//

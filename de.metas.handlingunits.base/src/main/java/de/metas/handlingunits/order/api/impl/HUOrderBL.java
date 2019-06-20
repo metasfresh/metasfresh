@@ -30,6 +30,7 @@ import java.util.function.Consumer;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.slf4j.Logger;
 
@@ -140,7 +141,8 @@ public class HUOrderBL implements IHUOrderBL
 			BigDecimal qtyCap = BigDecimal.ZERO;
 			if (!Services.get(IHUCapacityBL.class).isInfiniteCapacity(pip))
 			{
-				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, productId, pip.getC_UOM()).getCapacityQty();
+				final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(pip);
+				qtyCap = Services.get(IHUCapacityBL.class).getCapacity(pip, productId, uom).getCapacityQty();
 				Check.assume(qtyCap.signum() != 0, "Zero capacity for M_HU_PI_Item_Product {}", pip.getM_HU_PI_Item_Product_ID());
 			}
 			final String description = pip.getDescription();

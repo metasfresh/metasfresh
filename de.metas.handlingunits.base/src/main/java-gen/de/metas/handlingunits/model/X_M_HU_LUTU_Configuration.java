@@ -15,7 +15,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1233112750L;
+	private static final long serialVersionUID = 1229203960L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -52,7 +52,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
     }
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	public org.compiere.model.I_C_BPartner getC_BPartner()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
 	}
@@ -89,7 +89,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
+	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
 	}
@@ -123,18 +123,6 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -288,7 +276,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
 	}
@@ -322,7 +310,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
+	public org.compiere.model.I_M_Locator getM_Locator()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
 	}
@@ -359,7 +347,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}
@@ -393,7 +381,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_LU_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_LU_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_LU_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}
@@ -427,7 +415,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public org.compiere.model.I_M_Product getM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
 	}
@@ -464,7 +452,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}

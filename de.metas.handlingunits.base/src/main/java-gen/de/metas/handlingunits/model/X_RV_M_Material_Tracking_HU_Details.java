@@ -15,7 +15,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2021906309L;
+	private static final long serialVersionUID = -743392659L;
 
     /** Standard Constructor */
     public X_RV_M_Material_Tracking_HU_Details (Properties ctx, int RV_M_Material_Tracking_HU_Details_ID, String trxName)
@@ -40,18 +40,6 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
 
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
@@ -155,7 +143,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -166,8 +154,8 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -177,8 +165,8 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{
@@ -189,7 +177,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOut getM_InOut_Receipt() throws RuntimeException
+	public org.compiere.model.I_M_InOut getM_InOut_Receipt()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_Receipt_ID, org.compiere.model.I_M_InOut.class);
 	}
@@ -223,7 +211,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOut getM_InOut_Shipment() throws RuntimeException
+	public org.compiere.model.I_M_InOut getM_InOut_Shipment()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_Shipment_ID, org.compiere.model.I_M_InOut.class);
 	}
@@ -257,7 +245,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
+	public org.compiere.model.I_M_Locator getM_Locator()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
 	}
@@ -316,7 +304,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	public org.compiere.model.I_M_Product getM_Product()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
 	}
@@ -398,18 +386,6 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Issue_DocStatus);
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getPP_Order_Issue_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Issue_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setPP_Order_Issue_DocType(org.compiere.model.I_C_DocType PP_Order_Issue_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Issue_DocType_ID, org.compiere.model.I_C_DocType.class, PP_Order_Issue_DocType);
-	}
-
 	/** Set MO Issue DocType.
 		@param PP_Order_Issue_DocType_ID MO Issue DocType	  */
 	@Override
@@ -433,7 +409,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order_Issue() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order_Issue()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_Issue_ID, org.eevolution.model.I_PP_Order.class);
 	}
@@ -512,18 +488,6 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 		return (java.lang.String)get_Value(COLUMNNAME_PP_Order_Receipt_DocStatus);
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getPP_Order_Receipt_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Receipt_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setPP_Order_Receipt_DocType(org.compiere.model.I_C_DocType PP_Order_Receipt_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Receipt_DocType_ID, org.compiere.model.I_C_DocType.class, PP_Order_Receipt_DocType);
-	}
-
 	/** Set MO Receipt DocType.
 		@param PP_Order_Receipt_DocType_ID MO Receipt DocType	  */
 	@Override
@@ -547,7 +511,7 @@ public class X_RV_M_Material_Tracking_HU_Details extends org.compiere.model.PO i
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order_Receipt() throws RuntimeException
+	public org.eevolution.model.I_PP_Order getPP_Order_Receipt()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Order_Receipt_ID, org.eevolution.model.I_PP_Order.class);
 	}
