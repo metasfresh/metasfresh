@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_M_Locator;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.Check;
@@ -98,5 +99,11 @@ public class LocatorId implements RepoIdAware
 		Check.assumeGreaterThanZero(repoId, "M_Locator_ID");
 		this.repoId = repoId;
 		this.warehouseId = warehouseId;
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return warehouseId.getRepoId() + "_" + repoId;
 	}
 }
