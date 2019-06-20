@@ -25,12 +25,12 @@ export class SalesInvoice {
 
   apply() {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
-    this.applySalesInvoice(this);
+    SalesInvoice.applySalesInvoice(this);
     cy.log(`SalesInvoice - apply STOP (${this._toString})`);
     return this;
   }
 
-  applySalesInvoice(salesInvoice) {
+  static applySalesInvoice(salesInvoice) {
     describe(`Create new SalesInvoice: ${salesInvoice._toString}`, () => {
       cy.visitWindow('167', 'NEW');
       cy.get('.header-breadcrumb-sitename')
@@ -81,8 +81,6 @@ export class SalesInvoice {
 }
 
 export class SalesInvoiceLine {
-  // constructor() {
-  // }
 
   setProduct(product) {
     this.product = product;
