@@ -29,8 +29,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
@@ -58,7 +56,7 @@ import de.metas.quantity.Quantity;
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program. If not, seef
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -115,22 +113,19 @@ class InventoryLineRepositoryTest
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
 		saveRecord(inventoryRecord);
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 
 		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
 		inventoryLineRecord.setM_Inventory(inventoryRecord);
 		saveRecord(inventoryLineRecord);
+		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 
-		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
+		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 
-		final AttributesKey storageAttributesKey = AttributesKeys
-				.createAttributesKeyFromASIStorageAttributes(asiId)
-				.orElse(AttributesKey.NONE);
-
-		final InventoryLine inventoryLine = InventoryLine
-				.builder()
+		final InventoryLine inventoryLine = InventoryLine.builder()
 				.orgId(orgId)
 				.inventoryId(inventoryId)
-				.id(InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID()))
+				.id(inventoryLineId)
 				.locatorId(LocatorId.ofRecord(locatorRecord))
 				.productId(ProductId.ofRepoId(40))
 				.asiId(asiId)
@@ -151,9 +146,9 @@ class InventoryLineRepositoryTest
 				.build();
 
 		// invoke the method under test
-		inventoryLineRepository.save(inventoryLine);
+		inventoryLineRepository.saveInventoryLine(inventoryLine);
 
-		final ImmutableList<InventoryLine> reloadedResult = inventoryLineRepository.getByInventoryId(inventoryId).toList();
+		final InventoryLines reloadedResult = inventoryLineRepository.getByInventoryId(inventoryId);
 		expect(reloadedResult).toMatchSnapshot();
 	}
 
@@ -188,8 +183,8 @@ class InventoryLineRepositoryTest
 		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
 		inventoryLineRecord.setM_Inventory(inventoryRecord);
 		inventoryLineRecord.setHUAggregationType(HUAggregationType.MULTI_HU.getCode());
-		inventoryLineRecord.setC_UOM(uomRecord);
-		inventoryLineRecord.setM_Locator(locatorRecord);
+		inventoryLineRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
+		inventoryLineRecord.setM_Locator_ID(locatorRecord.getM_Locator_ID());
 		inventoryLineRecord.setM_Product_ID(40);
 		saveRecord(inventoryLineRecord);
 
@@ -197,7 +192,7 @@ class InventoryLineRepositoryTest
 		inventoryLineHURecord.setM_InventoryLine(inventoryLineRecord);
 		inventoryLineHURecord.setQtyBook(TWO);
 		inventoryLineHURecord.setQtyCount(TEN);
-		inventoryLineHURecord.setC_UOM(uomRecord);
+		inventoryLineHURecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(inventoryLineHURecord);
 
 		final InventoryLine result = inventoryLineRepository.getById(InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID()));

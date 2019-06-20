@@ -1,18 +1,20 @@
 package de.metas.handlingunits.inventory;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
-
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -37,65 +39,138 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLineHU
 {
 	/** Null if not yet persisted or if this is an inventory line's single InventoryLineHU. */
 	@Nullable
+	@NonFinal
 	InventoryLineHUId id;
 
 	/** Null if this instance does not yet have a persisted HU */
 	@Nullable
 	HuId huId;
 
-	@NonNull
+	//
+	// Quantities
+	Quantity qtyInternalUse;
+	//
 	Quantity qtyBook;
-
-	@NonNull
 	Quantity qtyCount;
 
-	@Value
-	public static class InventoryLineHUId implements RepoIdAware
+	public static InventoryLineHU zeroPhysicalInventory(@NonNull final I_C_UOM uom)
 	{
-		@JsonCreator
-		public static InventoryLineHUId ofRepoId(int repoId)
-		{
-			return new InventoryLineHUId(repoId);
-		}
+		final Quantity zero = Quantity.zero(uom);
+		return builder()
+				.qtyBook(zero)
+				.qtyCount(zero)
+				.build();
+	}
 
-		public static InventoryLineHUId ofRepoIdOrNull(@Nullable final int repoId)
-		{
-			return repoId > 0 ? ofRepoId(repoId) : null;
-		}
+	@Builder(toBuilder = true)
+	private InventoryLineHU(
+			@Nullable final InventoryLineHUId id,
+			@Nullable final HuId huId,
+			@Nullable final Quantity qtyInternalUse,
+			@Nullable final Quantity qtyBook,
+			@Nullable final Quantity qtyCount)
+	{
+		this.id = id;
+		this.huId = huId;
 
-		int repoId;
-
-		private InventoryLineHUId(int repoId)
+		if (qtyInternalUse != null)
 		{
-			this.repoId = assumeGreaterThanZero(repoId, "inventoryLineHUId");
+			Check.assumeNull(qtyBook, "qtyBook shall be null when qtyInternalUse is set");
+			Check.assumeNull(qtyCount, "qtyCount shall be null when qtyInternalUse is set");
+			this.qtyInternalUse = qtyInternalUse;
+			this.qtyBook = null;
+			this.qtyCount = null;
 		}
-
-		@Override
-		@JsonValue
-		public int getRepoId()
+		else
 		{
-			return repoId;
+			Check.assumeNotNull(qtyBook, "qtyBook shall be set when qtyInternalUse is not set");
+			Check.assumeNotNull(qtyCount, "qtyCount shall be set when qtyInternalUse is not set");
+			this.qtyInternalUse = null;
+			this.qtyBook = qtyBook;
+			this.qtyCount = qtyCount;
 		}
+	}
+
+	final void setId(@NonNull final InventoryLineHUId id)
+	{
+		this.id = id;
+	}
+
+	/**
+	 * @return true if ALL quantities are ZERO<br>
+	 *         IMPORTANT: in case QtyBook=QtyCount but they are not zero this method returns <code>false</code>
+	 */
+	public boolean isZero()
+	{
+		if (getInventoryType().isInternalUse())
+		{
+			return qtyInternalUse.isZero();
+		}
+		else
+		{
+			return qtyBook.isZero() && qtyCount.isZero();
+		}
+	}
+
+	public InventoryType getInventoryType()
+	{
+		return qtyInternalUse != null ? InventoryType.INTERNAL_USE : InventoryType.PHYSICAL;
+	}
+
+	private void assertInternalUseInventory()
+	{
+		if (!getInventoryType().isInternalUse())
+		{
+			throw new AdempiereException("Expected Internal Use Inventory: " + this);
+		}
+	}
+
+	private void assertPhysicalInventory()
+	{
+		if (!getInventoryType().isPhysical())
+		{
+			throw new AdempiereException("Expected Physical Inventory: " + this);
+		}
+	}
+
+	public Quantity getQtyInternalUse()
+	{
+		assertInternalUseInventory();
+		return qtyInternalUse;
+	}
+
+	public Quantity getQtyCount()
+	{
+		assertPhysicalInventory();
+		return qtyCount;
+	}
+
+	public Quantity getQtyBook()
+	{
+		assertPhysicalInventory();
+		return qtyBook;
 	}
 
 	/**
 	 * @param qtyCountToAdd needs to have the same UOM as this instance's current qtyCount.
 	 */
-	public InventoryLineHU addCountQty(@NonNull final Quantity qtyCountToAdd)
+	public InventoryLineHU withAddingQtyCount(@NonNull final Quantity qtyCountToAdd)
 	{
-		return this.toBuilder()
+		assertPhysicalInventory();
+		return toBuilder()
 				.qtyCount(qtyCount.add(qtyCountToAdd))
 				.build();
 	}
 
-	public InventoryLineHU zeroQtyCount()
+	public InventoryLineHU withZeroQtyCount()
 	{
-		return this.toBuilder()
+		assertPhysicalInventory();
+		return toBuilder()
 				.qtyCount(qtyCount.toZero())
 				.build();
 	}

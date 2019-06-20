@@ -1,13 +1,20 @@
 package de.metas.handlingunits.inventory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -50,7 +57,7 @@ import lombok.experimental.NonFinal;
  */
 
 @Value
-@Builder(toBuilder = true)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class InventoryLine
 {
 	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
@@ -82,8 +89,55 @@ public class InventoryLine
 	@Setter
 	HUAggregationType huAggregationType;
 
-	@Singular("inventoryLineHU")
+	private InventoryType inventoryType;
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
+
+	@Builder(toBuilder = true)
+	private InventoryLine(
+			@Nullable final InventoryLineId id,
+			@NonNull final InventoryId inventoryId,
+			@NonNull final OrgId orgId,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId asiId,
+			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final LocatorId locatorId,
+			@Nullable final HUAggregationType huAggregationType,
+			@Singular("inventoryLineHU") @NonNull final ImmutableList<InventoryLineHU> inventoryLineHUs)
+	{
+
+		this.id = id;
+		this.orgId = orgId;
+		this.asiId = asiId;
+		this.inventoryId = inventoryId;
+		this.productId = productId;
+		this.storageAttributesKey = storageAttributesKey;
+		this.locatorId = locatorId;
+		this.huAggregationType = huAggregationType;
+
+		inventoryType = extractInventoryType(inventoryLineHUs, InventoryType.PHYSICAL);
+		this.inventoryLineHUs = inventoryLineHUs;
+	}
+
+	private static InventoryType extractInventoryType(
+			@NonNull final List<InventoryLineHU> inventoryLineHUs,
+			@NonNull final InventoryType defaultInventoryTypeWhenEmpty)
+	{
+		final Set<InventoryType> inventoryTypes = inventoryLineHUs.stream()
+				.map(InventoryLineHU::getInventoryType)
+				.collect(ImmutableSet.toImmutableSet());
+		if (inventoryTypes.isEmpty())
+		{
+			return defaultInventoryTypeWhenEmpty;
+		}
+		else if (inventoryTypes.size() == 1)
+		{
+			return inventoryTypes.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + inventoryLineHUs);
+		}
+	}
 
 	void setId(@NonNull final InventoryLineId id)
 	{
@@ -95,9 +149,21 @@ public class InventoryLine
 		return HUAggregationType.SINGLE_HU.equals(huAggregationType);
 	}
 
-	public InventoryLineHU getSingleHU()
+	public InventoryLineHU getSingleLineHU()
 	{
 		return CollectionUtils.singleElement(getInventoryLineHUs());
+	}
+
+	public HuId getHuId()
+	{
+		if (isSingleHUAggregation())
+		{
+			return getSingleLineHU().getHuId();
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	public Set<HuId> getHUIds()
@@ -109,37 +175,54 @@ public class InventoryLine
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public InventoryLine withQtyCount(@NonNull final Quantity qtyCount)
+	public Optional<Quantity> getQtyInternalUse()
 	{
-		final ImmutableList<InventoryLineHU> inventoryLineHUsToIerate;
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getQtyInternalUse)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<Quantity> getQtyBook()
+	{
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getQtyBook)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<Quantity> getQtyCount()
+	{
+		return getInventoryLineHUs()
+				.stream()
+				.map(InventoryLineHU::getQtyCount)
+				.reduce(Quantity::add);
+	}
+
+	public InventoryLine distributeQtyCountToHUs(@NonNull final Quantity qtyCountToDistribute)
+	{
+		final Quantity currentQtyCount;
+		final ImmutableList<InventoryLineHU> inventoryLineHUsToIterate;
 		if (inventoryLineHUs.isEmpty())
 		{
-			inventoryLineHUsToIerate = ImmutableList.of(InventoryLineHU
-					.builder()
-					.qtyBook(qtyCount.toZero())
-					.qtyCount(qtyCount.toZero())
-					.build());
+			final I_C_UOM uom = qtyCountToDistribute.getUOM();
+			inventoryLineHUsToIterate = ImmutableList.of(InventoryLineHU.zeroPhysicalInventory(uom));
+			currentQtyCount = qtyCountToDistribute.toZero();
 		}
 		else
 		{
-			inventoryLineHUsToIerate = inventoryLineHUs;
+			inventoryLineHUsToIterate = inventoryLineHUs;
+			currentQtyCount = getQtyCount().get();
 		}
 
-		final Quantity currentQtyCount = inventoryLineHUsToIerate
-				.stream()
-				.map(InventoryLineHU::getQtyCount)
-				.reduce(qtyCount.toZero(), Quantity::add);
+		final ArrayList<InventoryLineHU> newInventoryLineHUs = new ArrayList<>();
 
-		Quantity qtyDiffLeftToDistribute = qtyCount.subtract(currentQtyCount);
-
-		final InventoryLineBuilder builder = this.toBuilder().clearInventoryLineHUs();
-
-		for (final InventoryLineHU inventoryLineHU : inventoryLineHUsToIerate)
+		Quantity qtyDiffLeftToDistribute = qtyCountToDistribute.subtract(currentQtyCount);
+		for (final InventoryLineHU inventoryLineHU : inventoryLineHUsToIterate)
 		{
 			if (qtyDiffLeftToDistribute.signum() > 0)
 			{
-				builder.inventoryLineHU(
-						inventoryLineHU.addCountQty(qtyDiffLeftToDistribute));
+				newInventoryLineHUs.add(inventoryLineHU.withAddingQtyCount(qtyDiffLeftToDistribute));
 				qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.toZero();
 			}
 			else if (qtyDiffLeftToDistribute.signum() < 0)
@@ -149,23 +232,25 @@ public class InventoryLine
 
 				if (qtyToSubtractIsGreaterThanLineQty)
 				{
-					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.add(
-							inventoryLineHU.getQtyCount());
+					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.add(inventoryLineHU.getQtyCount());
 
-					builder.inventoryLineHU(inventoryLineHU.zeroQtyCount());
+					newInventoryLineHUs.add(inventoryLineHU.withZeroQtyCount());
 				}
 				else
 				{
-					builder.inventoryLineHU(
-							inventoryLineHU.addCountQty(qtyDiffLeftToDistribute));
+					newInventoryLineHUs.add(inventoryLineHU.withAddingQtyCount(qtyDiffLeftToDistribute));
 					qtyDiffLeftToDistribute = qtyDiffLeftToDistribute.toZero();
 				}
 			}
 			else
 			{
-				builder.inventoryLineHU(inventoryLineHU); // just add it unchanged
+				newInventoryLineHUs.add(inventoryLineHU); // just add it unchanged
 			}
 		}
-		return builder.build();
+
+		return toBuilder()
+				.clearInventoryLineHUs()
+				.inventoryLineHUs(newInventoryLineHUs)
+				.build();
 	}
 }

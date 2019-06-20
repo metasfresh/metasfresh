@@ -59,23 +59,28 @@ public class M_InventoryLine
 		{
 			return; // nothing to do
 		}
+		else
+		{
+			final Quantity qtyCount = extractQtyCount(inventoryLineRecord);
 
-		final InventoryLine inventoryLine = inventoryLineRepository.ofRecord(inventoryLineRecord);
+			final InventoryLine inventoryLine = inventoryLineRepository
+					.toInventoryLine(inventoryLineRecord)
+					.distributeQtyCountToHUs(qtyCount);
 
-		final Quantity qtyCount = extractQtyCount(inventoryLineRecord);
-		inventoryLine.withQtyCount(qtyCount);
-
-		inventoryLineRepository.save(inventoryLine);
+			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine);
+		}
 	}
 
 	private Quantity extractQtyCount(final I_M_InventoryLine inventoryLineRecord)
 	{
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(inventoryLineRecord.getC_UOM_ID());
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
 		return Quantity.of(inventoryLineRecord.getQtyCount(), uom);
 	}
 
 	@Nullable
-	private HUAggregationType extractHUAggregationType(final I_M_InventoryLine inventoryLineRecord)
+	private static HUAggregationType extractHUAggregationType(final I_M_InventoryLine inventoryLineRecord)
 	{
 		return HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 	}

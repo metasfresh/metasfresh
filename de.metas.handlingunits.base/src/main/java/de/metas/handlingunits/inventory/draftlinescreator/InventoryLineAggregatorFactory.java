@@ -82,7 +82,7 @@ public class InventoryLineAggregatorFactory
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final InventoryLine inventoryLine)
 		{
-			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleHU().getHuId());
+			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleLineHU().getHuId());
 		}
 
 		@Override

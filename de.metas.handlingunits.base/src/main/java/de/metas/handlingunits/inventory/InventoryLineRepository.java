@@ -1,14 +1,13 @@
 
 package de.metas.handlingunits.inventory;
 
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.compiere.util.Util.coalesceSuppliers;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,6 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
-import de.metas.handlingunits.inventory.InventoryLineHU.InventoryLineHUId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.inventory.HUAggregationType;
@@ -49,7 +47,6 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
 /*
@@ -86,8 +83,7 @@ public class InventoryLineRepository
 	public InventoryLine getById(@NonNull final InventoryLineId inventoryLineId)
 	{
 		final I_M_InventoryLine inventoryLineRecord = getInventoryLineRecordById(inventoryLineId);
-		final List<I_M_InventoryLine_HU> inventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLineId);
-		return ofRecord(inventoryLineRecord, inventoryLineHURecords);
+		return toInventoryLine(inventoryLineRecord);
 	}
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
@@ -118,11 +114,6 @@ public class InventoryLineRepository
 		return InventoryLineId.ofRepoIdOrNull(record.getM_InventoryLine_ID());
 	}
 
-	private I_M_InventoryLine_HU getOrNewInventoryLineHURecordById(@Nullable final InventoryLineHUId inventoryLineHUId)
-	{
-		return loadOrNew(inventoryLineHUId, I_M_InventoryLine_HU.class);
-	}
-
 	public InventoryLines getByInventoryId(@NonNull final InventoryId inventoryId)
 	{
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
@@ -132,23 +123,23 @@ public class InventoryLineRepository
 
 		final List<InventoryLine> inventoryLines = inventoryLineRecords
 				.stream()
-				.map(inventoryLineRecord -> ofRecord(inventoryLineRecord, inventoryLineHURecords))
+				.map(inventoryLineRecord -> toInventoryLine(inventoryLineRecord, inventoryLineHURecords))
 				.collect(ImmutableList.toImmutableList());
 
 		return InventoryLines.ofList(inventoryLines);
 	}
 
-	public InventoryLine ofRecord(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
 		final InventoryLineId inventoryLineId = extractInventoryLineIdOrNull(inventoryLineRecord);
 		final List<I_M_InventoryLine_HU> inventoryLineHURecords = inventoryLineId != null
 				? retrieveInventoryLineHURecords(inventoryLineId)
 				: ImmutableList.of();
 
-		return ofRecord(inventoryLineRecord, inventoryLineHURecords);
+		return toInventoryLine(inventoryLineRecord, inventoryLineHURecords);
 	}
 
-	private InventoryLine ofRecord(
+	private InventoryLine toInventoryLine(
 			@NonNull final I_M_InventoryLine inventoryLineRecord,
 			@NonNull final ListMultimap<InventoryLineId, I_M_InventoryLine_HU> inventoryLineHURecordsMap)
 	{
@@ -157,26 +148,20 @@ public class InventoryLineRepository
 				? inventoryLineHURecordsMap.get(inventoryLineId)
 				: ImmutableList.of();
 
-		return ofRecord(inventoryLineRecord, inventoryLineHURecords);
+		return toInventoryLine(inventoryLineRecord, inventoryLineHURecords);
 	}
 
-	private InventoryLine ofRecord(
+	private InventoryLine toInventoryLine(
 			@NonNull final I_M_InventoryLine inventoryLineRecord,
 			@NonNull final Collection<I_M_InventoryLine_HU> inventoryLineHURecords)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLineRecord.getM_AttributeSetInstance_ID());
-
-		final AttributesKey storageAttributesKey = AttributesKeys
-				.createAttributesKeyFromASIStorageAttributes(asiId)
-				.orElse(AttributesKey.NONE);
-
-		final InventoryLineId inventoryLineId = extractInventoryLineId(inventoryLineRecord);
+		final AttributesKey storageAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE);
 
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(inventoryLineRecord.getM_Locator_ID());
 
-		final InventoryLineBuilder lineBuilder = InventoryLine
-				.builder()
-				.id(inventoryLineId)
+		final InventoryLineBuilder lineBuilder = InventoryLine.builder()
+				.id(extractInventoryLineIdOrNull(inventoryLineRecord))
 				.orgId(OrgId.ofRepoId(inventoryLineRecord.getAD_Org_ID()))
 				.locatorId(locatorId)
 				.productId(ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID()))
@@ -189,37 +174,25 @@ public class InventoryLineRepository
 
 		if (HUAggregationType.SINGLE_HU.equals(huAggregationType))
 		{
-			final I_C_UOM uomRecord = inventoryLineRecord.getC_UOM();
-			final InventoryLineHU inventoryLineHU = InventoryLineHU
-					.builder()
-					.qtyBook(Quantity.of(inventoryLineRecord.getQtyBook(), uomRecord))
-					.qtyCount(Quantity.of(inventoryLineRecord.getQtyCount(), uomRecord))
-					.huId(HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID()))
-					.build();
-
+			final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineRecord);
 			lineBuilder.inventoryLineHU(inventoryLineHU);
 		}
+		// multiple HUs per line
 		else
 		{
-			// multiple HUs per line
 			if (inventoryLineHURecords.isEmpty())
 			{
-				final I_C_UOM uomRecord = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
-				final InventoryLineHU inventoryLineHU = InventoryLineHU
-						.builder()
-						.qtyBook(Quantity.of(inventoryLineRecord.getQtyBook(), uomRecord))
-						.qtyCount(Quantity.of(inventoryLineRecord.getQtyCount(), uomRecord))
-						.huId(null)
-						.build();
+				final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineRecord);
 				lineBuilder.inventoryLineHU(inventoryLineHU);
 			}
 			else
 			{
+				final UOMConversionContext uomConversionCtx = UOMConversionContext.of(inventoryLineRecord.getM_Product_ID());
+				final UomId targetUomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
+
 				for (final I_M_InventoryLine_HU inventoryLineHURecord : inventoryLineHURecords)
 				{
-					final InventoryLineHU inventoryLineHU = ofInventoryLineHURecord(
-							inventoryLineRecord,
-							inventoryLineHURecord);
+					final InventoryLineHU inventoryLineHU = toInventoryLineHU(inventoryLineHURecord, uomConversionCtx, targetUomId);
 					lineBuilder.inventoryLineHU(inventoryLineHU);
 				}
 			}
@@ -228,30 +201,72 @@ public class InventoryLineRepository
 		return lineBuilder.build();
 	}
 
-	/**
-	 * @param inventoryLineRecord needed because we want all quantities to be in the inventory line's UOM.
-	 */
-	private InventoryLineHU ofInventoryLineHURecord(
-			@NonNull final I_M_InventoryLine inventoryLineRecord,
-			@NonNull final I_M_InventoryLine_HU inventoryLineHURecord)
+	private InventoryLineHU toInventoryLineHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		final UomId lineUomId = UomId.ofRepoId(inventoryLineRecord.getC_UOM_ID());
-		final ProductId lineProductId = ProductId.ofRepoId(inventoryLineRecord.getM_Product_ID());
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(lineProductId);
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
 
-		final I_C_UOM uomRecord = inventoryLineHURecord.getC_UOM();
-		final Quantity qtyBook = Quantity.of(inventoryLineHURecord.getQtyBook(), uomRecord);
-		final Quantity countQty = Quantity.of(inventoryLineHURecord.getQtyCount(), uomRecord);
+		final Quantity qtyInternalUse;
+		final Quantity qtyBook;
+		final Quantity qtyCount;
 
-		final InventoryLineHU inventoryLineHU = InventoryLineHU
-				.builder()
-				.id(InventoryLineHUId.ofRepoId(inventoryLineHURecord.getM_InventoryLine_HU_ID()))
-				.qtyBook(convBL.convertQuantityTo(qtyBook, conversionCtx, lineUomId))
-				.qtyCount(convBL.convertQuantityTo(countQty, conversionCtx, lineUomId))
+		final BigDecimal qtyInternalUseBD = inventoryLineRecord.getQtyInternalUse();
+		if (qtyInternalUseBD != null && qtyInternalUseBD.signum() != 0)
+		{
+			qtyInternalUse = Quantity.of(qtyInternalUseBD, uom);
+			qtyBook = null;
+			qtyCount = null;
+		}
+		else
+		{
+			qtyInternalUse = null;
+			qtyBook = Quantity.of(inventoryLineRecord.getQtyBook(), uom);
+			qtyCount = Quantity.of(inventoryLineRecord.getQtyCount(), uom);
+		}
+
+		return InventoryLineHU.builder()
+				.huId(HuId.ofRepoIdOrNull(inventoryLineRecord.getM_HU_ID()))
+				.qtyInternalUse(qtyInternalUse)
+				.qtyBook(qtyBook)
+				.qtyCount(qtyCount)
+				.build();
+	}
+
+	private InventoryLineHU toInventoryLineHU(
+			@NonNull final I_M_InventoryLine_HU inventoryLineHURecord,
+			@NonNull final UOMConversionContext uomConversionCtx,
+			@NonNull final UomId targetUomId)
+	{
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineHURecord.getC_UOM_ID());
+		final Quantity qtyInternalUseConv;
+		final Quantity qtyBookConv;
+		final Quantity qtyCountConv;
+
+		final BigDecimal qtyInternalUseBD = inventoryLineHURecord.getQtyInternalUse();
+		if (qtyInternalUseBD != null && qtyInternalUseBD.signum() != 0)
+		{
+			final Quantity qtyInternalUse = Quantity.of(qtyInternalUseBD, uom);
+
+			qtyInternalUseConv = convBL.convertQuantityTo(qtyInternalUse, uomConversionCtx, targetUomId);
+			qtyBookConv = null;
+			qtyCountConv = null;
+		}
+		else
+		{
+			final Quantity qtyBook = Quantity.of(inventoryLineHURecord.getQtyBook(), uom);
+			final Quantity qtyCount = Quantity.of(inventoryLineHURecord.getQtyCount(), uom);
+
+			qtyInternalUseConv = null;
+			qtyBookConv = convBL.convertQuantityTo(qtyBook, uomConversionCtx, targetUomId);
+			qtyCountConv = convBL.convertQuantityTo(qtyCount, uomConversionCtx, targetUomId);
+		}
+
+		return InventoryLineHU.builder()
+				.id(extractInventoryLineHUId(inventoryLineHURecord))
+				.qtyInternalUse(qtyInternalUseConv)
+				.qtyBook(qtyBookConv)
+				.qtyCount(qtyCountConv)
 				.huId(HuId.ofRepoIdOrNull(inventoryLineHURecord.getM_HU_ID()))
 				.build();
-
-		return inventoryLineHU;
 	}
 
 	public void save(@NonNull final InventoryLines inventoryLines)
@@ -261,20 +276,20 @@ public class InventoryLineRepository
 		for (final InventoryLine inventoryLine : inventoryLines)
 		{
 			final I_M_InventoryLine existingLineRecord = existingInventoryLineRecords.get(inventoryLine.getId());
-			save(inventoryLine, existingLineRecord);
+			saveInventoryLine(inventoryLine, existingLineRecord);
 		}
 	}
 
-	public void save(@NonNull final InventoryLine inventoryLine)
+	public void saveInventoryLine(@NonNull final InventoryLine inventoryLine)
 	{
 		final I_M_InventoryLine existingLineRecord = inventoryLine.getId() != null
 				? getInventoryLineRecordById(inventoryLine.getId())
 				: null;
 
-		save(inventoryLine, existingLineRecord);
+		saveInventoryLine(inventoryLine, existingLineRecord);
 	}
 
-	private void save(@NonNull final InventoryLine inventoryLine, @Nullable final I_M_InventoryLine existingLineRecord)
+	private void saveInventoryLine(@NonNull final InventoryLine inventoryLine, @Nullable final I_M_InventoryLine existingLineRecord)
 	{
 		final I_M_InventoryLine lineRecord;
 		if (existingLineRecord != null)
@@ -301,114 +316,156 @@ public class InventoryLineRepository
 
 		final HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		lineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
+
+		final HuId huId = inventoryLine.getHuId();
+		lineRecord.setM_HU_ID(HuId.toRepoId(huId));
+		// lineRecord.setM_HU_PI_Item_Product(null); // TODO
+		// lineRecord.setQtyTU(BigDecimal.ZERO); // TODO
+
+		updateInventoryLineRecordQuantities(lineRecord, inventoryLine);
+
+		saveRecord(lineRecord);
+		inventoryLine.setId(extractInventoryLineId(lineRecord));
+
+		saveInventoryLineHURecords(inventoryLine);
+	}
+
+	private void updateInventoryLineRecordQuantities(
+			@NonNull final I_M_InventoryLine lineRecord,
+			@NonNull final InventoryLine from)
+	{
+		final UomId uomId;
+		final BigDecimal qtyInternalUseBD;
+		final BigDecimal qtyBookBD;
+		final BigDecimal qtyCountBD;
+
+		if (from.getInventoryType().isInternalUse())
+		{
+			final Quantity qtyInternalUse = from.getQtyInternalUse()
+					.orElseGet(() -> qtyZero(from.getProductId()));
+
+			uomId = qtyInternalUse.getUomId();
+			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
+			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
+		}
+		else
+		{
+			final Quantity qtyBook = from.getQtyBook()
+					.orElseGet(() -> qtyZero(from.getProductId()));
+			final Quantity qtyCount = from.getQtyCount()
+					.orElseGet(() -> qtyBook.toZero());
+
+			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
+			qtyInternalUseBD = null;
+			qtyBookBD = qtyBook.getAsBigDecimal();
+			qtyCountBD = qtyCount.getAsBigDecimal();
+		}
+
+		lineRecord.setQtyInternalUse(qtyInternalUseBD);
+		lineRecord.setQtyBook(qtyBookBD);
+		lineRecord.setQtyCount(qtyCountBD);
+		lineRecord.setC_UOM_ID(uomId.getRepoId());
+	}
+
+	private Quantity qtyZero(@NonNull final ProductId productId)
+	{
+		final I_C_UOM uom = productsService.getStockingUOM(productId);
+		return Quantity.zero(uom);
+	}
+
+	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
+	{
 		if (inventoryLine.isSingleHUAggregation())
 		{
-			// inventoryLineRecord.setHUAggregationType(AggregationType.SINGLE_HU.getHuAggregationTypeCode());
-
 			if (inventoryLine.getId() != null)
 			{
 				deleteInventoryLineHUs(inventoryLine.getId());
 			}
 
-			final InventoryLineHU hu = CollectionUtils.singleElement(inventoryLine.getInventoryLineHUs());
-			lineRecord.setM_HU_ID(hu.getHuId().getRepoId());
-
-			final Quantity countQty = hu.getQtyCount();
-			lineRecord.setQtyCount(countQty.getAsBigDecimal());
-
-			final Quantity qtyBook = hu.getQtyBook();
-			lineRecord.setQtyBook(qtyBook.getAsBigDecimal());
-
-			final UomId uomId = Quantity.getCommonUomIdOfAll(countQty, qtyBook);
-			lineRecord.setC_UOM_ID(uomId.getRepoId());
+			return;
 		}
 		else
 		{
-			// inventoryLineRecord.setHUAggregationType(AggregationType.MULTIPLE_HUS.getHuAggregationTypeCode());
+			final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getId())
+					.stream()
+					.collect(GuavaCollectors.toHashMapByKey(l -> extractInventoryLineHUId(l)));
 
-			final ImmutableList<InventoryLineHU> inventoryLineHUs = inventoryLine.getInventoryLineHUs();
-			if (inventoryLineHUs.isEmpty())
+			for (final InventoryLineHU lineHU : inventoryLine.getInventoryLineHUs())
 			{
-				lineRecord.setQtyBook(ZERO);
-				lineRecord.setQtyCount(ZERO);
-
-				final int stockingUomId = productsService.getStockingUOMId(inventoryLine.getProductId()).getRepoId();
-				lineRecord.setC_UOM_ID(stockingUomId);
-			}
-			else
-			{
-				final UomId countUomId = CollectionUtils.extractSingleElement(inventoryLineHUs, l -> l.getQtyCount().getUomId());
-				final UomId bookUomId = CollectionUtils.extractSingleElement(inventoryLineHUs, l -> l.getQtyBook().getUomId());
-
-				Quantity countQty = Quantity.zero(uomsRepo.getById(countUomId));
-				Quantity qtyBook = Quantity.zero(uomsRepo.getById(bookUomId));
-
-				for (final InventoryLineHU inventoryLineHU : inventoryLineHUs)
+				I_M_InventoryLine_HU lineHURecord = existingInventoryLineHURecords.remove(lineHU.getId());
+				if (lineHURecord == null)
 				{
-					countQty = countQty.add(inventoryLineHU.getQtyCount());
-					qtyBook = qtyBook.add(inventoryLineHU.getQtyBook());
+					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 				}
-				lineRecord.setQtyBook(qtyBook.getAsBigDecimal());
-				lineRecord.setQtyCount(countQty.getAsBigDecimal());
 
-				final UomId uomId = Quantity.getCommonUomIdOfAll(qtyBook, countQty);
-				lineRecord.setC_UOM_ID(uomId.getRepoId());
+				updateInventoryLineHURecord(
+						lineHURecord,
+						lineHU,
+						inventoryLine.getId(),
+						inventoryLine.getOrgId());
+
+				saveRecord(lineHURecord);
+				lineHU.setId(extractInventoryLineHUId(lineHURecord));
 			}
-		}
 
-		saveRecord(lineRecord);
-		inventoryLine.setId(extractInventoryLineId(lineRecord));
-
-		if (!inventoryLine.isSingleHUAggregation())
-		{
-			lineRecord.setM_HU_ID(0);
-			// inventoryLine.setM_HU_PI_Item_Product(null); // TODO
-			// inventoryLine.setQtyTU(BigDecimal.ZERO); // TODO
-
-			createOrUpdateInventoryLineHURecords(inventoryLine);
+			// the pre-existing records that we did not see until now are not needed anymore; delete them.
+			InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
 		}
 	}
 
-	private ImmutableList<I_M_InventoryLine_HU> createOrUpdateInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
+	private static void updateInventoryLineHURecord(
+			@NonNull I_M_InventoryLine_HU record,
+			@NonNull final InventoryLineHU fromLineHU,
+			@NonNull final InventoryLineId lineId,
+			@NonNull final OrgId orgId)
 	{
-		final HashMap<InventoryLineHUId, I_M_InventoryLine_HU> existingInventoryLineHURecords = retrieveInventoryLineHURecords(inventoryLine.getId())
-				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(l -> InventoryLineHUId.ofRepoId(l.getM_InventoryLine_HU_ID())));
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setM_InventoryLine_ID(lineId.getRepoId());
 
-		final ImmutableList.Builder<I_M_InventoryLine_HU> result = ImmutableList.builder();
+		record.setM_HU_ID(HuId.toRepoId(fromLineHU.getHuId()));
 
-		for (final InventoryLineHU inventoryLineHU : inventoryLine.getInventoryLineHUs())
+		updateInventoryLineHURecordQuantities(record, fromLineHU);
+	}
+
+	private static void updateInventoryLineHURecordQuantities(
+			@NonNull final I_M_InventoryLine_HU lineRecord,
+			@NonNull final InventoryLineHU from)
+	{
+		final UomId uomId;
+		final BigDecimal qtyInternalUseBD;
+		final BigDecimal qtyBookBD;
+		final BigDecimal qtyCountBD;
+
+		if (from.getInventoryType().isInternalUse())
 		{
-			I_M_InventoryLine_HU inventoryLineHURecord = existingInventoryLineHURecords.remove(inventoryLineHU.getId());
-			if (inventoryLineHURecord == null)
-			{
-				inventoryLineHURecord = getOrNewInventoryLineHURecordById(inventoryLineHU.getId());
-			}
+			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
-			inventoryLineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
-			inventoryLineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
+			uomId = qtyInternalUse.getUomId();
+			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
+			qtyBookBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
+			qtyCountBD = BigDecimal.ZERO; // using ZERO instead of null because the column is mandatory in DB
+		}
+		else
+		{
+			final Quantity qtyBook = from.getQtyBook();
+			final Quantity qtyCount = from.getQtyCount();
 
-			inventoryLineHURecord.setM_HU_ID(HuId.toRepoId(inventoryLineHU.getHuId()));
-
-			final Quantity countQty = inventoryLineHU.getQtyCount();
-			inventoryLineHURecord.setQtyCount(countQty.getAsBigDecimal());
-
-			final Quantity qtyBook = inventoryLineHU.getQtyBook();
-			inventoryLineHURecord.setQtyBook(qtyBook.getAsBigDecimal());
-
-			final UomId uomId = Quantity.getCommonUomIdOfAll(countQty, qtyBook);
-			inventoryLineHURecord.setC_UOM_ID(uomId.getRepoId());
-
-			result.add(inventoryLineHURecord);
+			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
+			qtyInternalUseBD = null;
+			qtyBookBD = qtyBook.getAsBigDecimal();
+			qtyCountBD = qtyCount.getAsBigDecimal();
 		}
 
-		// the pre-existing records that we did not see until now are not needed anymore; delete them.
-		InterfaceWrapperHelper.deleteAll(existingInventoryLineHURecords.values());
+		lineRecord.setQtyInternalUse(qtyInternalUseBD);
+		lineRecord.setQtyBook(qtyBookBD);
+		lineRecord.setQtyCount(qtyCountBD);
+		lineRecord.setC_UOM_ID(uomId.getRepoId());
+	}
 
-		final ImmutableList<I_M_InventoryLine_HU> createdOrUpdatedInventoryLineHURecords = result.build();
-		createdOrUpdatedInventoryLineHURecords.forEach(InterfaceWrapperHelper::saveRecord);
-
-		return createdOrUpdatedInventoryLineHURecords;
+	private static InventoryLineHUId extractInventoryLineHUId(@NonNull final I_M_InventoryLine_HU inventoryLineHURecord)
+	{
+		return InventoryLineHUId.ofRepoId(inventoryLineHURecord.getM_InventoryLine_HU_ID());
 	}
 
 	private List<I_M_InventoryLine_HU> retrieveInventoryLineHURecords(@NonNull final InventoryLineId inventoryLineId)

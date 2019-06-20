@@ -87,7 +87,7 @@ public class DraftInventoryLinesCreator
 		final InventoryLineRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryLineRepository();
 		createdOrUpdatedLines
 				.values()
-				.forEach(inventoryLineRepository::save);
+				.forEach(inventoryLineRepository::saveInventoryLine);
 
 	}
 

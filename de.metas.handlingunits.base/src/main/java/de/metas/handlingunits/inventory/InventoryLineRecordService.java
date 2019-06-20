@@ -199,10 +199,10 @@ public class InventoryLineRecordService
 			HULoader.of(source, huDestination)
 					.load(request);
 
-			if (inventoryLine.getSingleHU().getHuId() == null)
+			if (inventoryLine.getSingleLineHU().getHuId() == null)
 			{
 				final InventoryLineHU resultInventoryLineHU = inventoryLine
-						.getSingleHU()
+						.getSingleLineHU()
 						.toBuilder()
 						.huId(extractSingleCreatedHUId(huDestination))
 						.build();
@@ -219,7 +219,7 @@ public class InventoryLineRecordService
 				if (inventoryLineHU.getHuId() == null)
 				{
 					final InventoryLineHU resultInventoryLineHU = inventoryLine
-							.getSingleHU()
+							.getSingleLineHU()
 							.toBuilder()
 							.huId(extractSingleCreatedHUId(huDestination))
 							.build();
@@ -237,7 +237,7 @@ public class InventoryLineRecordService
 		final InventoryLine resultInventoryLine = result.build();
 		if (needToSaveInventoryLine)
 		{
-			inventoryLineRepository.save(resultInventoryLine);
+			inventoryLineRepository.saveInventoryLine(resultInventoryLine);
 		}
 		return resultInventoryLine;
 	}
@@ -287,7 +287,7 @@ public class InventoryLineRecordService
 		{
 			final I_M_InventoryLine inventoryLineRecord = inventoryLineRepository.getInventoryLineRecordFor(inventoryLine);
 
-			final HuId singleHuId = inventoryLine.getSingleHU().getHuId();
+			final HuId singleHuId = inventoryLine.getSingleLineHU().getHuId();
 			if (singleHuId == null)
 			{
 				throw new FillMandatoryException(I_M_InventoryLine.COLUMNNAME_M_HU_ID)
@@ -383,11 +383,8 @@ public class InventoryLineRecordService
 		final InventoryLines inventoryLines = inventoryLineRepository.getByInventoryId(extractInventoryId(inventoryRecord));
 		for (final InventoryLine inventoryLine : inventoryLines)
 		{
-			HUAggregationType huAggregationType = computeHUAggregationType(inventoryLine, docBaseAndSubType).orElse(null);
-			if (huAggregationType != null)
-			{
-				inventoryLine.setHuAggregationType(huAggregationType);
-			}
+			final HUAggregationType huAggregationType = computeHUAggregationType(inventoryLine, docBaseAndSubType);
+			inventoryLine.setHuAggregationType(huAggregationType);
 		}
 
 		inventoryLineRepository.save(inventoryLines);
@@ -398,19 +395,15 @@ public class InventoryLineRecordService
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
 
-	public Optional<HUAggregationType> computeHUAggregationType(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	public HUAggregationType computeHUAggregationType(
+			@NonNull final I_M_InventoryLine inventoryLineRecord,
+			@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final DocBaseAndSubType baseAndSubType = extractDocBaseAndSubType(inventoryLineRecord.getM_Inventory());
-		if (baseAndSubType == null)
-		{
-			return Optional.empty();
-		}
-
-		final InventoryLine inventoryLine = inventoryLineRepository.ofRecord(inventoryLineRecord);
-		return computeHUAggregationType(inventoryLine, baseAndSubType);
+		final InventoryLine inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
+		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
 	}
 
-	private static DocBaseAndSubType extractDocBaseAndSubType(@Nullable final I_M_Inventory inventoryRecord)
+	public static DocBaseAndSubType extractDocBaseAndSubType(@Nullable final I_M_Inventory inventoryRecord)
 	{
 		if (inventoryRecord == null)
 		{
@@ -426,15 +419,10 @@ public class InventoryLineRecordService
 		return Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(docTypeId);
 	}
 
-	private Optional<HUAggregationType> computeHUAggregationType(
+	private static HUAggregationType computeHUAggregationType(
 			@NonNull final InventoryLine inventoryLine,
-			@Nullable final DocBaseAndSubType baseAndSubType)
+			@NonNull final DocBaseAndSubType baseAndSubType)
 	{
-		if (baseAndSubType == null)
-		{
-			return Optional.empty(); // nothing to do
-		}
-
 		final HUAggregationType huAggregationTypeToUse = Optional
 				.ofNullable(AggregationType.getByDocTypeOrNull(baseAndSubType))
 				.map(AggregationType::getHuAggregationType)
@@ -443,15 +431,15 @@ public class InventoryLineRecordService
 		final HUAggregationType huAggregationTypeCurrent = inventoryLine.getHuAggregationType();
 		if (huAggregationTypeCurrent == null)
 		{
-			return Optional.of(huAggregationTypeToUse);
+			return huAggregationTypeToUse;
 		}
 		else if (huAggregationTypeCurrent.equals(huAggregationTypeToUse))
 		{
-			return Optional.of(huAggregationTypeToUse);
+			return huAggregationTypeToUse;
 		}
 		else if (inventoryLine.getId() == null)
 		{
-			return Optional.of(huAggregationTypeToUse);
+			return huAggregationTypeToUse;
 		}
 		else
 		{

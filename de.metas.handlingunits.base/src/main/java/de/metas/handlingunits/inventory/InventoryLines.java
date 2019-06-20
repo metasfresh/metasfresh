@@ -3,6 +3,8 @@ package de.metas.handlingunits.inventory;
 import java.util.Iterator;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,6 +37,7 @@ import lombok.ToString;
  */
 
 @ToString
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class InventoryLines implements Iterable<InventoryLine>
 {
 	public static InventoryLines ofList(@NonNull final List<InventoryLine> list)

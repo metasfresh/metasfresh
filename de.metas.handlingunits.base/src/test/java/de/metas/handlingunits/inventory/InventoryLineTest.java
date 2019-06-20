@@ -1,8 +1,5 @@
 package de.metas.handlingunits.inventory;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,98 +47,81 @@ import de.metas.quantity.Quantity;
 
 class InventoryLineTest
 {
-	private static final BigDecimal TWO = new BigDecimal("2");
-	private static final BigDecimal SEVENTEEN = new BigDecimal("17");
-
-	private static final BigDecimal NINETEEN = new BigDecimal("19");
-
-	private static final BigDecimal TWENTY = new BigDecimal("20");
-
-	private Quantity qtyZero;
-	private Quantity qtyOne;
-	private Quantity qtyTwo;
-	private Quantity qtyTen;
-	private Quantity qtySeventeen;
-	private Quantity qtyNineTeen;
-	private Quantity qtyTwenty;
+	private I_C_UOM uomRecord;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
+		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord.setUOMSymbol("Ea");
+		uomRecord.setName("Each");
 		saveRecord(uomRecord);
+	}
 
-		qtyZero = Quantity.of(ZERO, uomRecord);
-		qtyOne = Quantity.of(ONE, uomRecord);
-		qtyTwo = Quantity.of(TWO, uomRecord);
-		qtyTen = Quantity.of(TEN, uomRecord);
-		qtySeventeen = Quantity.of(SEVENTEEN, uomRecord);
-		qtyNineTeen = Quantity.of(NINETEEN, uomRecord);
-		qtyTwenty = Quantity.of(TWENTY, uomRecord);
+	private Quantity qty(final int qtyInt)
+	{
+		return Quantity.of(BigDecimal.valueOf(qtyInt), uomRecord);
 	}
 
 	@Test
-	void withQtyCount_3_plus_19()
+	void distributeQtyCountToHUs_3_to_19()
 	{
-
 		final InventoryLine inventoryLine = createInventoryLine();
 		assertThat(inventoryLine.getInventoryLineHUs()) // guard
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
-						tuple(HuId.ofRepoId(100), qtyTen, qtyOne),
-						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
+						tuple(HuId.ofRepoId(100), qty(10), qty(1)),
+						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withQtyCount(qtyNineTeen);
+		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
 
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
-						tuple(HuId.ofRepoId(100), qtyTen, qtySeventeen),
-						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
+						tuple(HuId.ofRepoId(100), qty(10), qty(17)),
+						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
 	}
 
 	@Test
-	void withQtyCount_3_minus_2()
+	void distributeQtyCountToHUs_3_to_1()
 	{
-
 		final InventoryLine inventoryLine = createInventoryLine();
 		assertThat(inventoryLine.getInventoryLineHUs()) // guard
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
-						tuple(HuId.ofRepoId(100), qtyTen, qtyOne),
-						tuple(HuId.ofRepoId(200), qtyTwenty, qtyTwo));
+						tuple(HuId.ofRepoId(100), qty(10), qty(1)),
+						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withQtyCount(qtyOne);
+		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(1));
 
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(
-						tuple(HuId.ofRepoId(100), qtyTen, qtyZero),
-						tuple(HuId.ofRepoId(200), qtyTwenty, qtyOne));
+						tuple(HuId.ofRepoId(100), qty(10), qty(0)),
+						tuple(HuId.ofRepoId(200), qty(20), qty(1)));
 	}
 
 	@Test
-	void withQtyCount_empty_plus_19()
+	void distributeQtyCountToHUs_empty_to_19()
 	{
 		final InventoryLine inventoryLine = createInventoryLine().toBuilder().clearInventoryLineHUs().build();
 		assertThat(inventoryLine.getInventoryLineHUs()).isEmpty();
 
 		// invoke the method under test
-		final InventoryLine result = inventoryLine.withQtyCount(qtyNineTeen);
+		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
 
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(tuple(null, qtyZero, qtyNineTeen));
+				.containsOnly(tuple(null, qty(0), qty(19)));
 	}
 
 	private InventoryLine createInventoryLine()
 	{
-		final InventoryLine inventoryLine = InventoryLine
-				.builder()
+		return InventoryLine.builder()
 				.orgId(OrgId.ofRepoId(1))
 				.inventoryId(InventoryId.ofRepoId(10))
 				.id(InventoryLineId.ofRepoId(20))
@@ -149,20 +129,17 @@ class InventoryLineTest
 				.productId(ProductId.ofRepoId(40))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10000, 10001, 10002))
 				.huAggregationType(HUAggregationType.MULTI_HU)
-				.inventoryLineHU(InventoryLineHU
-						.builder()
+				.inventoryLineHU(InventoryLineHU.builder()
 						.huId(HuId.ofRepoId(100))
-						.qtyBook(qtyTen)
-						.qtyCount(qtyOne)
+						.qtyBook(qty(10))
+						.qtyCount(qty(1))
 						.build())
-				.inventoryLineHU(InventoryLineHU
-						.builder()
+				.inventoryLineHU(InventoryLineHU.builder()
 						.huId(HuId.ofRepoId(200))
-						.qtyBook(qtyTwenty)
-						.qtyCount(qtyTwo)
+						.qtyBook(qty(20))
+						.qtyCount(qty(2))
 						.build())
 				.build();
-		return inventoryLine;
 	}
 
 }

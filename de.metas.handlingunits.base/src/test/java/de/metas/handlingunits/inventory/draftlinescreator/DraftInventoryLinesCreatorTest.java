@@ -30,8 +30,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryLines;
 import de.metas.handlingunits.inventory.InventoryTestHelper;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine.HuForInventoryLineBuilder;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory.MultipleHUInventoryLineAggregator;
@@ -129,7 +129,7 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId).toList();
+		final InventoryLines result = inventoryLineRepository.getByInventoryId(inventoryId);
 		expect(result).toMatchSnapshot();
 	}
 
@@ -143,7 +143,7 @@ class DraftInventoryLinesCreatorTest
 		// execute the method under test
 		new DraftInventoryLinesCreator(ctx).execute();
 
-		final ImmutableList<InventoryLine> result = inventoryLineRepository.getByInventoryId(inventoryId).toList();
+		final InventoryLines result = inventoryLineRepository.getByInventoryId(inventoryId);
 		expect(result).toMatchSnapshot();
 	}
 
