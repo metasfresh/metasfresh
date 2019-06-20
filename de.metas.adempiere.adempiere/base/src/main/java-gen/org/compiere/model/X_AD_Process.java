@@ -14,7 +14,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1052646912L;
+	private static final long serialVersionUID = 669458688L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -796,10 +796,10 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_Java = "Java";
 	/** Excel = Excel */
 	public static final String TYPE_Excel = "Excel";
-	/** JasperReportsSQL = JasperReports with SQL */
-	public static final String TYPE_JasperReportsSQL = "JasperReports with SQL";
-	/** JasperReportsJSON = JasperReports with JSON */
-	public static final String TYPE_JasperReportsJSON = "JasperReports with JSON";
+	/** JasperReportsSQL = JasperReportsSQL */
+	public static final String TYPE_JasperReportsSQL = "JasperReportsSQL";
+	/** JasperReportsJSON = JasperReportsJSON */
+	public static final String TYPE_JasperReportsJSON = "JasperReportsJSON";
 	/** Set Art.
 		@param Type Art	  */
 	@Override

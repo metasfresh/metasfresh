@@ -3,6 +3,7 @@ package de.metas.report.jasper.client.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Process;
@@ -38,6 +39,7 @@ import lombok.NonNull;
  */
 
 @Callout(I_AD_Process.class)
+@Interceptor(I_AD_Process.class)
 @Component
 public class AD_Process
 {

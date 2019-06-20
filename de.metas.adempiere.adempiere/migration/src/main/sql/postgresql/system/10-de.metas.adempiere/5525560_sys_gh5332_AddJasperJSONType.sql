@@ -78,3 +78,110 @@ UPDATE AD_Field SET DisplayLogic='@Type@=''JasperReportsJSON''', IsDisplayed='Y'
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,582014,0,245,560013,541397,'F',TO_TIMESTAMP('2019-06-20 15:13:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'JSON Path',70,0,0,TO_TIMESTAMP('2019-06-20 15:13:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+-- 2019-06-20T15:37:14.574
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='JasperReports with JSON',Updated=TO_TIMESTAMP('2019-06-20 15:37:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541970
+;
+
+-- 2019-06-20T15:38:47.723
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541281,'C',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'url for the rest api','D','Y','API_URL',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'http://localhost:8181/api')
+;
+
+
+
+
+
+
+-- 2019-06-20T15:39:40.846
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-20 15:39:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:41:00.323
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=''JasperReportsJSON''',Updated=TO_TIMESTAMP('2019-06-20 15:41:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:41:15.438
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=300,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:41:15.443
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=310,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=543154
+;
+
+-- 2019-06-20T15:41:15.448
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=320,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=574792
+;
+
+-- 2019-06-20T15:41:15.452
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=330,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554874
+;
+
+-- 2019-06-20T15:41:15.456
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=340,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556273
+;
+
+-- 2019-06-20T15:41:15.459
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayed='Y', SeqNo=350,Updated=TO_TIMESTAMP('2019-06-20 15:41:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556918
+;
+
+-- 2019-06-20T15:41:24.678
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsSameLine='Y',Updated=TO_TIMESTAMP('2019-06-20 15:41:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:42:19.732
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-20 15:42:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:42:29.446
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsSQL',Updated=TO_TIMESTAMP('2019-06-20 15:42:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50156
+;
+
+-- 2019-06-20T15:42:35.319
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='Y',Updated=TO_TIMESTAMP('2019-06-20 15:42:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=582014
+;
+
+-- 2019-06-20T15:42:43.938
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsSQL',Updated=TO_TIMESTAMP('2019-06-20 15:42:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556165
+;
+
+-- 2019-06-20T15:43:04.056
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=SQL | @Type@=Excel | @Type@=JasperReportsSQL',Updated=TO_TIMESTAMP('2019-06-20 15:43:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=543154
+;
+
+
+-- 2019-06-20T15:50:59.596
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-20 15:50:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541970
+;
+
+-- 2019-06-20T15:51:09.589
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='JasperReportsSQL',Updated=TO_TIMESTAMP('2019-06-20 15:51:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541738
+;
+
+
+COMMIT;
+
+----------------
+
+-- update Type for existent ones
+
+update ad_process set Type ='JasperReportsSQL' where Type='JasperReports';
+
