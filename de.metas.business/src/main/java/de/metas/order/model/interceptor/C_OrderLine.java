@@ -1,5 +1,7 @@
 package de.metas.order.model.interceptor;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -281,6 +283,10 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered, I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID })
 	public void updatePricesOverrideExistingDiscounts(final I_C_OrderLine orderLine)
 	{
+		if (isCopy(orderLine))
+		{
+			return;
+		}
 		if (orderLine.isProcessed())
 		{
 			return;
