@@ -1,36 +1,18 @@
-const dunningEntryLine = arg => {
-  cy.pressAddNewButton();
-
-  cy.writeIntoStringField('Name', 'Level ' + arg, true);
-  cy.writeIntoStringField('PrintName', 'Text ' + arg, true);
-  cy.writeIntoStringField('DaysBetweenDunning', '01', true);
-  cy.writeIntoStringField('NoteHeader', 'Header ' + arg, true);
-  cy.writeIntoStringField('Note', 'Note ' + arg, true);
-
-  cy.pressDoneButton();
-};
+import { DunningType } from '../../support/utils/dunning_type';
 
 describe('create dunning type', function() {
-  // before(function() {
-  //   cy.visit('/window/159');
-  // });
-
   // if creating more than 1 default dunning type will give an error
+  // const timestamp = new Date().getTime();
+  // const dunningTypeName = `dunning test ${timestamp}`;
 
-  //   it('config dunning', function() {
-  //     cy.clickHeaderNav(Cypress.messages.window.new.caption);
-
-  //     cy.writeIntoStringField('Name', 'test Dunning');
-  //     cy.clickOnCheckBox('IsDefault');
+  // before(function() {
+  //   cy.fixture('settings/dunning_type.json').then(dunningType => {
+  //     Object.assign(new DunningType(), dunningType)
+  //       .setName(dunningTypeName)
+  //       // .setCheckDefault(dunningType.default)
+  //       .apply();
   //   });
-
-  //   it('first dunning entry', function() {
-  //     dunningEntryLine(1);
-  //   });
-
-  //   it('second dunning entry', function() {
-  //     dunningEntryLine(2);
-  //   });
+  // });
 
   it('operations on BP', function() {
     cy.visit('/window/123');
