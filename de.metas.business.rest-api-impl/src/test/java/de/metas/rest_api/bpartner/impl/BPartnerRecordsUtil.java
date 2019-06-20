@@ -51,7 +51,7 @@ public class BPartnerRecordsUtil
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
 
 
-	public static void createBPartnerData(int idOffSet)
+	public static void createBPartnerData(final int idOffSet)
 	{
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
 
