@@ -3,8 +3,6 @@ package de.metas.dao.selection;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
-
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,6 +13,7 @@ import org.slf4j.Logger;
 import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
@@ -54,9 +53,6 @@ public class QuerySelectionHelper
 	 */
 	public UUISelection createUUIDSelection(@NonNull final TypedSqlQuery<?> query)
 	{
-		// insertSelectionMetadata(query, querySelectionUUID);
-
-
 		final String tableName = query.getTableName();
 		final String keyColumnNameFQ = tableName + "." + query.getKeyColumnName();
 
@@ -78,7 +74,7 @@ public class QuerySelectionHelper
 				.append(", ").append(I_T_Query_Selection.COLUMNNAME_Record_ID)
 				.append(")");
 
-		final String querySelectionUUID = UUID.randomUUID().toString();
+		final String querySelectionUUID = UIDStringUtil.createRandomUUID();
 
 		final StringBuilder sqlSelectBuilder = new StringBuilder()
 				.append(" SELECT ")

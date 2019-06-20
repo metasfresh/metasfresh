@@ -58,6 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
+import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 import io.github.jsonSnapshot.SnapshotConfig;
 import io.github.jsonSnapshot.SnapshotMatchingStragety;
@@ -166,8 +167,9 @@ public class AdempiereTestHelper
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 
-		// Reset System Time
-		SystemTime.setTimeSource(null);
+		// Reset System Time and random UUID
+		SystemTime.resetTimeSource();
+		UIDStringUtil.reset();
 
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;

@@ -78,6 +78,7 @@ public class CoalesceUtil
 
 	/**
 	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
+	 * Note that it also works if some of the given supplier themselves are {@code null}.
 	 */
 	@SafeVarargs
 	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
@@ -94,10 +95,13 @@ public class CoalesceUtil
 		}
 		for (final Supplier<T> supplier : values)
 		{
-			final T value = supplier.get();
-			if (isValidPredicate.test(value))
+			if (supplier != null)
 			{
-				return value;
+				final T value = supplier.get();
+				if (isValidPredicate.test(value))
+				{
+					return value;
+				}
 			}
 		}
 		return null;

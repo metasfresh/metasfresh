@@ -3,14 +3,13 @@ package de.metas.util.hash;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
 
 import de.metas.util.Check;
+import de.metas.util.lang.UIDStringUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,7 +39,7 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class HashableString
 {
-	public static final HashableString ofPlainValue(final String value)
+	public static HashableString ofPlainValue(final String value)
 	{
 		if (value == null || value.isEmpty())
 		{
@@ -52,12 +51,12 @@ public final class HashableString
 		return new HashableString(value, hashed, salt);
 	}
 
-	public static final HashableString empty()
+	public static HashableString empty()
 	{
 		return EMPTY;
 	}
 
-	public static final HashableString ofHashedValue(@NonNull final String hashedValue, final String salt)
+	public static HashableString ofHashedValue(@NonNull final String hashedValue, final String salt)
 	{
 		if (!hashedValue.startsWith(PREFIX_SHA512))
 		{
@@ -68,7 +67,7 @@ public final class HashableString
 		return new HashableString(hashedValue, hashed, salt);
 	}
 
-	public static final HashableString fromString(final String value)
+	public static HashableString fromString(final String value)
 	{
 		if (value == null || value.isEmpty())
 		{
@@ -133,7 +132,7 @@ public final class HashableString
 
 	public HashableString hash()
 	{
-		final String salt = UUID.randomUUID().toString();
+		final String salt = UIDStringUtil.createRandomUUID();
 		return hashWithSalt(salt);
 	}
 
@@ -154,7 +153,7 @@ public final class HashableString
 		return hashedObject;
 	}
 
-	private static final String hashValue(final String valuePlain, final String salt)
+	private static String hashValue(final String valuePlain, final String salt)
 	{
 		// IMPORTANT: please keep it in sync with "hash_column_value" database function
 

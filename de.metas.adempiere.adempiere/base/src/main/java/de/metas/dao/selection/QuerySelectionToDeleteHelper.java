@@ -1,8 +1,6 @@
 package de.metas.dao.selection;
 
 import java.util.Set;
-import java.util.UUID;
-
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -20,6 +18,7 @@ import de.metas.dao.selection.model.I_T_Query_Selection_Pagination;
 import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -146,7 +145,7 @@ public class QuerySelectionToDeleteHelper
 		final PlainContextAware inheritedTrx = PlainContextAware.newWithThreadInheritedTrx();
 
 		// Tag scheduled IDs
-		final String executorId = UUID.randomUUID().toString();
+		final String executorId = UIDStringUtil.createRandomUUID();
 		{
 			final ICompositeQueryUpdater<I_T_Query_Selection_ToDelete> updater = queryBL
 					.createCompositeQueryUpdater(I_T_Query_Selection_ToDelete.class)

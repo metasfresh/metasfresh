@@ -1,9 +1,14 @@
 package de.metas.util.lang;
 
+import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -40,6 +45,10 @@ public class UIDStringUtil
 			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	};
 
+	private static final Supplier<String> DEFAULT_RANDOM_UUID_SOURCE = () -> UUID.randomUUID().toString();
+
+	private static Supplier<String> randomUUIDSource;
+
 	public String createNext()
 	{
 		return encodeUsingDigits(nextViewId.getAndIncrement(), VIEW_DIGITS);
@@ -64,5 +73,21 @@ public class UIDStringUtil
 		}
 
 		return buf.reverse().toString();
+	}
+
+	public void setRandomUUIDSource(@NonNull final Supplier<String> newRandomUUIDSource)
+	{
+		randomUUIDSource = newRandomUUIDSource;
+	}
+
+	public void reset()
+	{
+		nextViewId.set(1);
+		randomUUIDSource = null;
+	}
+
+	public String createRandomUUID()
+	{
+		return coalesceSuppliers(randomUUIDSource, DEFAULT_RANDOM_UUID_SOURCE);
 	}
 }

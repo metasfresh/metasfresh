@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
@@ -64,6 +63,7 @@ import de.metas.process.PInstanceId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -1012,6 +1012,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	/** Used for unit testing */
 	private static final Map<String, QueryResultPage<?>> UUID_TO_PAGE = new ConcurrentHashMap<String, QueryResultPage<?>>();
 
+	/** Invoked by the test helper after each individual test. */
 	public static void clear_UUID_TO_PAGE()
 	{
 		UUID_TO_PAGE.clear();
@@ -1022,7 +1023,7 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	{
 		final List<ET> bigList = list(clazz);
 
-		final String firstUUID = UUID.randomUUID().toString();
+		final String firstUUID = UIDStringUtil.createRandomUUID();
 		final Instant resultTimestamp = SystemTime.asInstant();
 
 		PageDescriptor currentPageDescriptor = PageDescriptor.createNew(firstUUID, pageSize, bigList.size(), resultTimestamp);

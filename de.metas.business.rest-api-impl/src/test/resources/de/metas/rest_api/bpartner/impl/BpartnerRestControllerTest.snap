@@ -1,7 +1,7 @@
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner=[
   {
     "bpartner": {
-      "id": 100007,
+      "id": 100006,
       "externalId": {
         "value": "fghij_2"
       },
@@ -23,18 +23,18 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
+        "baseLanguage": true,
         "decimalPoint": false,
-        "leftToRight": true,
-        "baseLanguage": true
+        "leftToRight": true
       },
       "url": "bPartner.url",
-      "groupId": 100001
+      "groupId": 15
     },
     "locations": [
       {
         "id": {
-          "repoId": 100009,
-          "bpartnerId": 100007
+          "repoId": 100008,
+          "bpartnerId": 100006
         },
         "externalId": {
           "value": "l1_externalId"
@@ -50,8 +50,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       },
       {
         "id": {
-          "repoId": 100011,
-          "bpartnerId": 100007
+          "repoId": 100010,
+          "bpartnerId": 100006
         },
         "externalId": {
           "value": "l2_externalId"
@@ -69,8 +69,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
     "contacts": [
       {
         "id": {
-          "repoId": 100012,
-          "bpartnerId": 100007
+          "repoId": 100011,
+          "bpartnerId": 100006
         },
         "externalId": {
           "value": "c1_externalId"
@@ -81,8 +81,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       },
       {
         "id": {
-          "repoId": 100013,
-          "bpartnerId": 100007
+          "repoId": 100012,
+          "bpartnerId": 100006
         },
         "externalId": {
           "value": "c2_externalId"
@@ -106,7 +106,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       },
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "groupId": 100001
+      "groupId": 15
     },
     "locations": [
       {
@@ -144,7 +144,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       },
       {
         "id": {
-          "repoId": 100005,
+          "repoId": 100004,
           "bpartnerId": 20
         },
         "externalId": {
@@ -169,7 +169,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       },
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "groupId": 100001
+      "groupId": 15
     },
     "locations": [
       {
@@ -191,7 +191,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       },
       {
         "id": {
-          "repoId": 100007,
+          "repoId": 100006,
           "bpartnerId": 20
         },
         "externalId": {
@@ -373,6 +373,213 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone"
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSince=[
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 2,
+    "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+    "items": [
+      {
+        "bpartner": {
+          "metasfreshId": 20,
+          "externalId": "fghij",
+          "code": "bpartnerRecord.value",
+          "name": "bpartnerRecord.name",
+          "group": "bpGroupRecord.name"
+        },
+        "locations": [
+          {
+            "metasfreshId": 40,
+            "externalId": "bpartnerLocation.externalId",
+            "address1": "locationRecord.address1",
+            "address2": "locationRecord.address2",
+            "postal": "locationRecord.postal",
+            "poBox": "locationRecord.poBox",
+            "district": "postalRecord.district",
+            "region": "locationRecord.regionName",
+            "city": "locationRecord.city",
+            "countryCode": "countryRecord.countryCode",
+            "gln": "bpartnerLocationRecord.gln"
+          }
+        ],
+        "contacts": [
+          {
+            "metasfreshId": 30,
+            "externalId": "abcde",
+            "metasfreshBPartnerId": 20,
+            "name": "bpartnerRecord.name",
+            "firstName": "bpartnerRecord.firstName",
+            "lastName": "bpartnerRecord.lastName",
+            "email": "bpartnerRecord.email",
+            "phone": "bpartnerRecord.phone"
+          }
+        ]
+      },
+      {
+        "bpartner": {
+          "metasfreshId": 21,
+          "externalId": "fghij_1",
+          "code": "bpartnerRecord.value_1",
+          "name": "bpartnerRecord.name_1",
+          "group": "bpGroupRecord.name"
+        },
+        "locations": [
+          {
+            "metasfreshId": 41,
+            "externalId": "bpartnerLocation.externalId_1",
+            "address1": "locationRecord.address1_1",
+            "address2": "locationRecord.address2_1",
+            "postal": "locationRecord.postal_1",
+            "poBox": "locationRecord.poBox_1",
+            "district": "postalRecord.district_1",
+            "region": "locationRecord.regionName_1",
+            "city": "locationRecord.city_1",
+            "countryCode": "countryRecord.countryCode",
+            "gln": "bpartnerLocationRecord.gln_1"
+          }
+        ],
+        "contacts": [
+          {
+            "metasfreshId": 31,
+            "externalId": "abcde_1",
+            "metasfreshBPartnerId": 21,
+            "name": "bpartnerRecord.name_1",
+            "firstName": "bpartnerRecord.firstName_1",
+            "lastName": "bpartnerRecord.lastName_1",
+            "email": "bpartnerRecord.email_1",
+            "phone": "bpartnerRecord.phone_1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 2,
+    "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+    "items": [
+      {
+        "bpartner": {
+          "metasfreshId": 22,
+          "externalId": "fghij_2",
+          "code": "bpartnerRecord.value_2",
+          "name": "bpartnerRecord.name_2",
+          "group": "bpGroupRecord.name"
+        },
+        "locations": [
+          {
+            "metasfreshId": 42,
+            "externalId": "bpartnerLocation.externalId_2",
+            "address1": "locationRecord.address1_2",
+            "address2": "locationRecord.address2_2",
+            "postal": "locationRecord.postal_2",
+            "poBox": "locationRecord.poBox_2",
+            "district": "postalRecord.district_2",
+            "region": "locationRecord.regionName_2",
+            "city": "locationRecord.city_2",
+            "countryCode": "countryRecord.countryCode",
+            "gln": "bpartnerLocationRecord.gln_2"
+          }
+        ],
+        "contacts": [
+          {
+            "metasfreshId": 32,
+            "externalId": "abcde_2",
+            "metasfreshBPartnerId": 22,
+            "name": "bpartnerRecord.name_2",
+            "firstName": "bpartnerRecord.firstName_2",
+            "lastName": "bpartnerRecord.lastName_2",
+            "email": "bpartnerRecord.email_2",
+            "phone": "bpartnerRecord.phone_2"
+          }
+        ]
+      },
+      {
+        "bpartner": {
+          "metasfreshId": 23,
+          "externalId": "fghij_3",
+          "code": "bpartnerRecord.value_3",
+          "name": "bpartnerRecord.name_3",
+          "group": "bpGroupRecord.name"
+        },
+        "locations": [
+          {
+            "metasfreshId": 43,
+            "externalId": "bpartnerLocation.externalId_3",
+            "address1": "locationRecord.address1_3",
+            "address2": "locationRecord.address2_3",
+            "postal": "locationRecord.postal_3",
+            "poBox": "locationRecord.poBox_3",
+            "district": "postalRecord.district_3",
+            "region": "locationRecord.regionName_3",
+            "city": "locationRecord.city_3",
+            "countryCode": "countryRecord.countryCode",
+            "gln": "bpartnerLocationRecord.gln_3"
+          }
+        ],
+        "contacts": [
+          {
+            "metasfreshId": 33,
+            "externalId": "abcde_3",
+            "metasfreshBPartnerId": 23,
+            "name": "bpartnerRecord.name_3",
+            "firstName": "bpartnerRecord.firstName_3",
+            "lastName": "bpartnerRecord.lastName_3",
+            "email": "bpartnerRecord.email_3",
+            "phone": "bpartnerRecord.phone_3"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "resultTimestamp": 1561014385,
+    "totalSize": 5,
+    "pageSize": 1,
+    "items": [
+      {
+        "bpartner": {
+          "metasfreshId": 24,
+          "externalId": "fghij_4",
+          "code": "bpartnerRecord.value_4",
+          "name": "bpartnerRecord.name_4",
+          "group": "bpGroupRecord.name"
+        },
+        "locations": [
+          {
+            "metasfreshId": 44,
+            "externalId": "bpartnerLocation.externalId_4",
+            "address1": "locationRecord.address1_4",
+            "address2": "locationRecord.address2_4",
+            "postal": "locationRecord.postal_4",
+            "poBox": "locationRecord.poBox_4",
+            "district": "postalRecord.district_4",
+            "region": "locationRecord.regionName_4",
+            "city": "locationRecord.city_4",
+            "countryCode": "countryRecord.countryCode",
+            "gln": "bpartnerLocationRecord.gln_4"
+          }
+        ],
+        "contacts": [
+          {
+            "metasfreshId": 34,
+            "externalId": "abcde_4",
+            "metasfreshBPartnerId": 24,
+            "name": "bpartnerRecord.name_4",
+            "firstName": "bpartnerRecord.firstName_4",
+            "lastName": "bpartnerRecord.lastName_4",
+            "email": "bpartnerRecord.email_4",
+            "phone": "bpartnerRecord.phone_4"
+          }
+        ]
       }
     ]
   }

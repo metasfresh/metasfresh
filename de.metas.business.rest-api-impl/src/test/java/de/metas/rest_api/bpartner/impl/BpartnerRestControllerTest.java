@@ -49,7 +49,9 @@ import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.JsonUpsertResponseItem;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
+import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -303,6 +305,9 @@ class BpartnerRestControllerTest
 	@Test
 	void retrieveBPartnersSince()
 	{
+		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
+
 		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
 		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
 		sysConfigRecord.setValue("2");
@@ -339,5 +344,7 @@ class BpartnerRestControllerTest
 		assertThat(page3Body.getItems()).hasSize(1);
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
+
+		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
 	}
 }

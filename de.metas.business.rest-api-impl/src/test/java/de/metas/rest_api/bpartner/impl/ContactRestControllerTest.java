@@ -36,6 +36,8 @@ import de.metas.rest_api.bpartner.JsonContactUpsertRequest;
 import de.metas.rest_api.bpartner.JsonContactUpsertRequestItem;
 import de.metas.rest_api.bpartner.JsonUpsertResponse;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.util.lang.UIDStringUtil;
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -61,8 +63,6 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 
 class ContactRestControllerTest
 {
-
-
 	private ContactRestController contactRestController;
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -102,6 +102,9 @@ class ContactRestControllerTest
 	@Test
 	void retrieveContactsSince()
 	{
+		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
+
 		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
 		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
 		sysConfigRecord.setValue("2");
@@ -119,6 +122,8 @@ class ContactRestControllerTest
 		final JsonContactList page1Body = page1.getBody();
 		assertThat(page1Body.getContacts()).hasSize(2);
 
+		assertThat(page1Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
+
 		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
 		assertThat(page2Id).isNotEmpty();
 
@@ -127,6 +132,8 @@ class ContactRestControllerTest
 		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonContactList page2Body = page2.getBody();
 		assertThat(page2Body.getContacts()).hasSize(2);
+
+		assertThat(page2Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
 
 		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
 		assertThat(page3Id).isNotEmpty();
@@ -138,6 +145,9 @@ class ContactRestControllerTest
 		assertThat(page3Body.getContacts()).hasSize(1);
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
+		assertThat(page3Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
+
+		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
 	}
 
 	@Test
@@ -179,8 +189,6 @@ class ContactRestControllerTest
 	@Test
 	void createOrUpdateContact()
 	{
-		// Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
-
 		final JsonContact jsonContact = JsonContact.builder()
 				.name("jsonContact.name")
 				.code("jsonContact.code")

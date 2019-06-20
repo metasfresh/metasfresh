@@ -62,8 +62,8 @@ public class BPartnerRecordsUtil
 		bpartnerRecord.setC_BPartner_ID(C_BPARTNER_ID + idOffSet);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setExternalId(C_BPARTNER_EXTERNAL_ID + idOffSetStr);
-		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("bpartnerRecord.value");
+		bpartnerRecord.setName("bpartnerRecord.name" + idOffSetStr);
+		bpartnerRecord.setValue("bpartnerRecord.value" + idOffSetStr);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
 
@@ -77,12 +77,12 @@ public class BPartnerRecordsUtil
 		contactRecord.setAD_User_ID(AD_USER_ID + idOffSet);
 		contactRecord.setC_BPartner(bpartnerRecord);
 		contactRecord.setExternalId(AD_USER_EXTERNAL_ID + idOffSetStr);
-		contactRecord.setValue("bpartnerRecord.value");
-		contactRecord.setName("bpartnerRecord.name");
-		contactRecord.setLastname("bpartnerRecord.lastName");
-		contactRecord.setFirstname("bpartnerRecord.firstName");
-		contactRecord.setEMail("bpartnerRecord.email");
-		contactRecord.setPhone("bpartnerRecord.phone");
+		contactRecord.setValue("bpartnerRecord.value" + idOffSetStr);
+		contactRecord.setName("bpartnerRecord.name" + idOffSetStr);
+		contactRecord.setLastname("bpartnerRecord.lastName" + idOffSetStr);
+		contactRecord.setFirstname("bpartnerRecord.firstName" + idOffSetStr);
+		contactRecord.setEMail("bpartnerRecord.email" + idOffSetStr);
+		contactRecord.setPhone("bpartnerRecord.phone" + idOffSetStr);
 		saveRecord(contactRecord);
 
 		final I_C_Country countryRecord = newInstance(I_C_Country.class);
@@ -91,21 +91,21 @@ public class BPartnerRecordsUtil
 
 		final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
 		postalRecord.setC_Country(countryRecord);
-		postalRecord.setPostal("postalRecord.postal");
-		postalRecord.setDistrict("postalRecord.district");
+		postalRecord.setPostal("postalRecord.postal" + idOffSetStr);
+		postalRecord.setDistrict("postalRecord.district" + idOffSetStr);
 		saveRecord(postalRecord);
 
 		final I_C_Location locationRecord = newInstance(I_C_Location.class);
 		locationRecord.setC_Postal(postalRecord);
 		locationRecord.setC_Country(countryRecord);
-		locationRecord.setAddress1("locationRecord.address1");
-		locationRecord.setAddress2("locationRecord.address2");
-		locationRecord.setPOBox("locationRecord.poBox");
-		locationRecord.setPostal("locationRecord.postal");
-		locationRecord.setCity("locationRecord.city");
-		locationRecord.setRegionName("locationRecord.regionName");
-		locationRecord.setAddress2("locationRecord.address2");
-		locationRecord.setAddress2("locationRecord.address2");
+		locationRecord.setAddress1("locationRecord.address1" + idOffSetStr);
+		locationRecord.setAddress2("locationRecord.address2" + idOffSetStr);
+		locationRecord.setPOBox("locationRecord.poBox" + idOffSetStr);
+		locationRecord.setPostal("locationRecord.postal" + idOffSetStr);
+		locationRecord.setCity("locationRecord.city" + idOffSetStr);
+		locationRecord.setRegionName("locationRecord.regionName" + idOffSetStr);
+		locationRecord.setAddress2("locationRecord.address2" + idOffSetStr);
+		locationRecord.setAddress2("locationRecord.address2" + idOffSetStr);
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
