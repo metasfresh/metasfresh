@@ -26,15 +26,15 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonContactUpsertRequest;
-import de.metas.rest_api.bpartner.request.JsonContactUpsertRequestItem;
-import de.metas.rest_api.bpartner.response.JsonContactList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse.JsonUpsertResponseBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -89,18 +89,18 @@ public class ContactRestController implements ContactRestEndpoint
 	})
 	@GetMapping("{contactIdentifier}")
 	@Override
-	public ResponseEntity<JsonContact> retrieveContact(
+	public ResponseEntity<JsonResponseContact> retrieveContact(
 			@ApiParam(CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final Optional<JsonContact> contact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
+		final Optional<JsonResponseContact> contact = bPartnerEndpointservice.retrieveContact(contactIdentifier);
 		if (contact.isPresent())
 		{
 			return ResponseEntity.ok(contact.get());
 		}
-		return new ResponseEntity<JsonContact>(
-				(JsonContact)null,
+		return new ResponseEntity<JsonResponseContact>(
+				(JsonResponseContact)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -112,7 +112,7 @@ public class ContactRestController implements ContactRestEndpoint
 	})
 	@GetMapping
 	@Override
-	public ResponseEntity<JsonContactList> retrieveContactsSince(
+	public ResponseEntity<JsonResponseContactList> retrieveContactsSince(
 
 			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
 			@RequestParam(name = "since", required = false) //
@@ -122,13 +122,13 @@ public class ContactRestController implements ContactRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonContactList> list = bPartnerEndpointservice.retrieveContactsSince(epochTimestampMillis, next);
+		final Optional<JsonResponseContactList> list = bPartnerEndpointservice.retrieveContactsSince(epochTimestampMillis, next);
 		if (list.isPresent())
 		{
 			return ResponseEntity.ok(list.get());
 		}
-		return new ResponseEntity<JsonContactList>(
-				(JsonContactList)null,
+		return new ResponseEntity<JsonResponseContactList>(
+				(JsonResponseContactList)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -140,14 +140,14 @@ public class ContactRestController implements ContactRestEndpoint
 	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PutMapping
 	@Override
-	public ResponseEntity<JsonUpsertResponse> createOrUpdateContact(
-			@RequestBody @NonNull final JsonContactUpsertRequest contacts)
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
+			@RequestBody @NonNull final JsonRequestContactUpsert contacts)
 	{
-		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
+		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
-		for (final JsonContactUpsertRequestItem requestItem : contacts.getRequestItems())
+		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final BPartnerContact bpartnerContact = persister.persist(
 					requestItem.getEffectiveContact(),
@@ -155,7 +155,7 @@ public class ContactRestController implements ContactRestEndpoint
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
 
-			final JsonUpsertResponseItem responseItem = JsonUpsertResponseItem
+			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem
 					.builder()
 					.externalId(requestItem.getExternalId())
 					.metasfreshId(metasfreshId)

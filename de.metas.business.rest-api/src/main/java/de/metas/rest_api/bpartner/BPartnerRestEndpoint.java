@@ -2,10 +2,15 @@ package de.metas.rest_api.bpartner;
 
 import org.springframework.http.ResponseEntity;
 
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequest;
-import de.metas.rest_api.bpartner.response.JsonBPartnerCompositeList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite;
+import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 
 /*
  * #%L
@@ -31,28 +36,27 @@ import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
 
 public interface BPartnerRestEndpoint
 {
+	ResponseEntity<JsonResponseComposite> retrieveBPartner(String bpartnerIdentifier);
 
-	ResponseEntity<JsonBPartnerComposite> retrieveBPartner(String bpartnerIdentifier);
-
-	ResponseEntity<JsonBPartnerLocation> retrieveBPartnerLocation(
+	ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 			String bpartnerIdentifier,
 			String locationIdentifier);
 
-	ResponseEntity<JsonContact> retrieveBPartnerContact(
+	ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 			String bpartnerIdentifier,
 			String contactIdentifier);
 
-	ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
+	ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 			Long epochTimestampMillis,
 			String next);
 
-	ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(JsonBPartnerUpsertRequest bpartners);
+	ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(JsonRequestBPartnerUpsert bpartners);
 
-	ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
+	ResponseEntity<JsonResponseUpsertItem> createOrUpdateLocation(
 			String bpartnerIdentifier,
-			JsonBPartnerLocation location);
+			JsonRequestLocation location);
 
-	ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
+	ResponseEntity<JsonResponseUpsertItem> createOrUpdateContact(
 			String bpartnerIdentifier,
-			JsonContact contact);
+			JsonRequestContact contact);
 }

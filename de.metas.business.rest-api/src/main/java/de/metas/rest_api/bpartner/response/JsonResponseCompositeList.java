@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 import de.metas.rest_api.JsonPagingDescriptor;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -37,7 +36,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonBPartnerCompositeList
+public class JsonResponseCompositeList
 {
 	@JsonInclude(Include.NON_NULL)
 	@JsonUnwrapped
@@ -46,5 +45,5 @@ public class JsonBPartnerCompositeList
 
 	@JsonInclude(Include.ALWAYS)
 	@Singular
-	List<JsonBPartnerComposite> items;
+	List<JsonResponseComposite> items;
 }

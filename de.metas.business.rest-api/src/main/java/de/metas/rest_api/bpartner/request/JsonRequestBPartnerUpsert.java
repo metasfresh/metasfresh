@@ -1,14 +1,20 @@
 package de.metas.rest_api.bpartner.request;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -34,32 +40,21 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
-public class JsonContactUpsertRequestItem
+@ApiModel
+public class JsonRequestBPartnerUpsert
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the contact to upsert.", //
-			dataType = "java.lang.String")
-	@NonNull
-	JsonExternalId externalId;
+	List<JsonRequestBPartnerUpsertItem> requestItems;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
-	@NonNull
-	JsonContact contact;
+	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
+	SyncAdvise syncAdvise;
 
 	@JsonCreator
-	public JsonContactUpsertRequestItem(
-			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
-			@NonNull @JsonProperty("contact") JsonContact contact)
+	@Builder
+	public JsonRequestBPartnerUpsert(
+			@Singular @JsonProperty("requestItems") final List<JsonRequestBPartnerUpsertItem> requestItems,
+			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
-		this.externalId = externalId;
-		this.contact = contact;
-	}
-
-	public JsonContact getEffectiveContact()
-	{
-		return getContact().withExternalId(getExternalId());
+		this.requestItems = coalesce(requestItems, ImmutableList.of());
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

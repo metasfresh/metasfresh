@@ -1,19 +1,14 @@
-package de.metas.rest_api.bpartner;
-
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+package de.metas.rest_api.bpartner.response;
 
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,7 +37,7 @@ import lombok.Value;
  */
 
 @Value
-public class JsonContact
+public class JsonResponseContact
 {
 	@ApiModelProperty(dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
@@ -72,13 +67,9 @@ public class JsonContact
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
-	@JsonInclude(Include.NON_NULL)
-	SyncAdvise syncAdvise;
-
 	@Builder(toBuilder = true)
 	@JsonCreator
-	private JsonContact(
+	private JsonResponseContact(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
@@ -87,8 +78,7 @@ public class JsonContact
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone,
-			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
+			@JsonProperty("phone") final String phone)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
@@ -99,19 +89,10 @@ public class JsonContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
-
-		this.syncAdvise = syncAdvise;
 	}
 
-	public JsonContact withExternalId(@NonNull final JsonExternalId externalId)
+	public JsonResponseContact withExternalId(@NonNull final JsonExternalId externalId)
 	{
 		return toBuilder().externalId(externalId).build();
 	}
-
-	@JsonIgnore
-	public SyncAdvise getSyncAdvise()
-	{
-		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
-	}
-
 }

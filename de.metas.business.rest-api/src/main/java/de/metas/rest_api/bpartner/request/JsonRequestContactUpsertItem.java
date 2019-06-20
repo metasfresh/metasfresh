@@ -1,11 +1,9 @@
 package de.metas.rest_api.bpartner.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -37,31 +35,30 @@ import lombok.Value;
 @Value
 @Builder
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
-public class JsonBPartnerUpsertRequestItem
+public class JsonRequestContactUpsertItem
 {
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the business partner to upsert.", //
+			value = "External system's ID of the contact to upsert.", //
 			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+			value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
-	JsonBPartnerComposite bpartnerComposite;
+	JsonRequestContact contact;
 
 	@JsonCreator
-	public JsonBPartnerUpsertRequestItem(
+	public JsonRequestContactUpsertItem(
 			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
-			@NonNull @JsonProperty("bpartnerComposite") JsonBPartnerComposite bpartnerComposite)
+			@NonNull @JsonProperty("contact") JsonRequestContact contact)
 	{
 		this.externalId = externalId;
-		this.bpartnerComposite = bpartnerComposite;
+		this.contact = contact;
 	}
 
-	@JsonIgnore
-	public JsonBPartnerComposite getEffectiveBPartnerComposite()
+	public JsonRequestContact getEffectiveContact()
 	{
-		return getBpartnerComposite().withExternalId(getExternalId());
+		return getContact().withExternalId(getExternalId());
 	}
 }

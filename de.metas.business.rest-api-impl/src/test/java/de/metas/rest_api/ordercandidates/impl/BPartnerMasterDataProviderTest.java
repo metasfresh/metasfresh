@@ -31,11 +31,10 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
-import de.metas.rest_api.ordercandidates.impl.BPartnerMasterDataProvider;
 import de.metas.rest_api.utils.PermissionService;
 import mockit.Mocked;
 
@@ -69,11 +68,11 @@ public class BPartnerMasterDataProviderTest
 	@Mocked
 	private PermissionService permissionService;
 
-	private JsonBPartner jsonBPartner;
+	private JsonRequestBPartner jsonBPartner;
 
 	private JsonBPartnerInfo jsonBPartnerInfo;
 
-	private JsonBPartnerLocation jsonBPartnerLocation;
+	private JsonRequestLocation jsonBPartnerLocation;
 
 	private BPartnerMasterDataProvider bpartnerMasterDataProvider;
 
@@ -88,18 +87,18 @@ public class BPartnerMasterDataProviderTest
 
 		bpartnerMasterDataProvider = new BPartnerMasterDataProvider(permissionService);
 
-		jsonBPartner = JsonBPartner.builder()
+		jsonBPartner = JsonRequestBPartner.builder()
 				.code("jsonBPartner.Code")
 				.name("jsonBPartner.Name")
 				.build();
 
-		jsonBPartnerLocation = JsonBPartnerLocation.builder()
+		jsonBPartnerLocation = JsonRequestLocation.builder()
 				.countryCode("DE")
 				.gln("jsonBPartnerLocation.GLN")
 				.externalId(JsonExternalId.of("jsonBPartnerLocation.ExternalId"))
 				.build();
 
-		JsonContact jsonBPartnerContact = JsonContact.builder()
+		JsonRequestContact jsonBPartnerContact = JsonRequestContact.builder()
 				.externalId(JsonExternalId.of("jsonBPartnerContact.ExternalId"))
 				.email("jsonBPartnerContact.Email")
 				.build();
@@ -265,7 +264,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bPartnerRecord);
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
-		final JsonBPartner result = bpartnerMasterDataProvider.getJsonBPartnerById(bPartnerId);
+		final JsonRequestBPartner result = bpartnerMasterDataProvider.getJsonBPartnerById(bPartnerId);
 
 		assertThat(result.getName()).isEqualTo("Name");
 		assertThat(result.getCode()).isEqualTo("Value");
@@ -301,7 +300,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(bPartnerLocationRecord);
 
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID());
-		final JsonBPartnerLocation result = bpartnerMasterDataProvider.getJsonBPartnerLocationById(bPartnerLocationId);
+		final JsonRequestLocation result = bpartnerMasterDataProvider.getJsonBPartnerLocationById(bPartnerLocationId);
 
 		assertThat(result.getAddress1()).isEqualTo("Address1");
 		assertThat(result.getAddress2()).isEqualTo("Address2");
@@ -328,7 +327,7 @@ public class BPartnerMasterDataProviderTest
 		saveRecord(userRecord);
 
 		final BPartnerContactId bPartnerContactId = BPartnerContactId.ofRepoId(bPartnerRecord.getC_BPartner_ID(), userRecord.getAD_User_ID());
-		final JsonContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
+		final JsonRequestContact result = bpartnerMasterDataProvider.getJsonBPartnerContactById(bPartnerContactId);
 
 		assertThat(result.getEmail()).isEqualTo("EMail");
 		assertThat(result.getExternalId().getValue()).isEqualTo("ExternalId");

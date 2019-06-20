@@ -2,9 +2,10 @@ package de.metas.rest_api.bpartner;
 
 import org.springframework.http.ResponseEntity;
 
-import de.metas.rest_api.bpartner.request.JsonContactUpsertRequest;
-import de.metas.rest_api.bpartner.response.JsonContactList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 
 /*
  * #%L
@@ -30,11 +31,11 @@ import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
 
 public interface ContactRestEndpoint
 {
-	ResponseEntity<JsonContact> retrieveContact(String contactIdentifier);
+	ResponseEntity<JsonResponseContact> retrieveContact(String contactIdentifier);
 
-	ResponseEntity<JsonContactList> retrieveContactsSince(
+	ResponseEntity<JsonResponseContactList> retrieveContactsSince(
 			Long epochTimestampMillis,
 			String next);
 
-	ResponseEntity<JsonUpsertResponse> createOrUpdateContact(JsonContactUpsertRequest contacts);
+	ResponseEntity<JsonResponseUpsert> createOrUpdateContact(JsonRequestContactUpsert contacts);
 }

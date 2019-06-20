@@ -30,8 +30,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class JsonUpsertResponse
+public final class JsonResponseUpsert
 {
 	@Singular
-	List<JsonUpsertResponseItem> responseItems;
+	List<JsonResponseUpsertItem> responseItems;
 }

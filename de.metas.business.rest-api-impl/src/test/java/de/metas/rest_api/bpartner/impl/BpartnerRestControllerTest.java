@@ -45,16 +45,19 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequest;
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequestItem;
-import de.metas.rest_api.bpartner.response.JsonBPartnerCompositeList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite;
+import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
@@ -128,10 +131,10 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_ext()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BPARTNER_EXTERNAL_ID);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BPARTNER_EXTERNAL_ID);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerComposite resultBody = result.getBody();
+		final JsonResponseComposite resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -140,10 +143,10 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_id()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerComposite> result = bpartnerRestController.retrieveBPartner(Integer.toString(C_BPARTNER_ID));
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(Integer.toString(C_BPARTNER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerComposite resultBody = result.getBody();
+		final JsonResponseComposite resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -152,10 +155,10 @@ class BpartnerRestControllerTest
 	void retrieveBPartner_gln()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerComposite> result = bpartnerRestController.retrieveBPartner("gln-" + C_BPARTNER_LOCATION_GLN);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("gln-" + C_BPARTNER_LOCATION_GLN);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerComposite resultBody = result.getBody();
+		final JsonResponseComposite resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -164,12 +167,12 @@ class BpartnerRestControllerTest
 	void retrieveBPartnerContact()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonContact> result = bpartnerRestController.retrieveBPartnerContact(
+		final ResponseEntity<JsonResponseContact> result = bpartnerRestController.retrieveBPartnerContact(
 				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				Integer.toString(AD_USER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContact resultBody = result.getBody();
+		final JsonResponseContact resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -178,12 +181,12 @@ class BpartnerRestControllerTest
 	void retrieveBPartnerLocation()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerLocation> result = bpartnerRestController.retrieveBPartnerLocation(
+		final ResponseEntity<JsonResponseLocation> result = bpartnerRestController.retrieveBPartnerLocation(
 				"ext-" + C_BPARTNER_EXTERNAL_ID,
 				"gln-" + C_BPARTNER_LOCATION_GLN);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerLocation resultBody = result.getBody();
+		final JsonResponseLocation resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -195,22 +198,22 @@ class BpartnerRestControllerTest
 		createCountryRecord("DE");
 
 		final String externalId = C_BPARTNER_EXTERNAL_ID + "_2";
-		final JsonBPartnerComposite bpartnerComposite = MockedDataUtil
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil
 				.createMockBPartner("ext-" + externalId);
 
-		final JsonBPartner bpartner = bpartnerComposite.getBpartner()
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner()
 				.toBuilder()
 				.group(BP_GROUP_RECORD_NAME)
 				.build();
 
-		final JsonBPartnerUpsertRequestItem requestItem = JsonBPartnerUpsertRequestItem.builder()
+		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.externalId(JsonExternalId.of(externalId))
 				.bpartnerComposite(bpartnerComposite.toBuilder()
 						.bpartner(bpartner)
 						.build())
 				.build();
 
-		final JsonBPartnerUpsertRequest bpartnerUpsertRequest = JsonBPartnerUpsertRequest.builder()
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
 						.ifExists(IfExists.UPDATE_MERGE)
 						.ifNotExists(IfNotExists.CREATE)
@@ -219,7 +222,7 @@ class BpartnerRestControllerTest
 				.build();
 		//JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
-		final ResponseEntity<JsonUpsertResponse> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
 		final MetasfreshId metasfreshId = assertUpsertResultOK(result, externalId);
 		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
@@ -228,14 +231,14 @@ class BpartnerRestControllerTest
 		expect(persistedResult).toMatchSnapshot();
 	}
 
-	private MetasfreshId assertUpsertResultOK(final ResponseEntity<JsonUpsertResponse> result, final String externalId)
+	private MetasfreshId assertUpsertResultOK(final ResponseEntity<JsonResponseUpsert> result, final String externalId)
 	{
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonUpsertResponse resultBody = result.getBody();
+		final JsonResponseUpsert resultBody = result.getBody();
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 
-		final JsonUpsertResponseItem responseItem = resultBody.getResponseItems().get(0);
+		final JsonResponseUpsertItem responseItem = resultBody.getResponseItems().get(0);
 		assertThat(responseItem.getExternalId()).isEqualTo(JsonExternalId.of(externalId));
 
 		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
@@ -252,15 +255,15 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateContact()
 	{
-		final JsonContact jsonContact = MockedDataUtil.createMockContact("newContact-");
+		final JsonRequestContact jsonContact = MockedDataUtil.createMockContact("newContact-");
 		assertThat(jsonContact.getExternalId()).isNotNull(); // guard
 
 		// invoke the method under test
-		final ResponseEntity<JsonUpsertResponseItem> result = bpartnerRestController.createOrUpdateContact("gln-" + C_BPARTNER_LOCATION_GLN, jsonContact);
+		final ResponseEntity<JsonResponseUpsertItem> result = bpartnerRestController.createOrUpdateContact("gln-" + C_BPARTNER_LOCATION_GLN, jsonContact);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonUpsertResponseItem responseItem = result.getBody();
+		final JsonResponseUpsertItem responseItem = result.getBody();
 
 		assertThat(responseItem.getExternalId()).isEqualTo(jsonContact.getExternalId());
 
@@ -281,15 +284,15 @@ class BpartnerRestControllerTest
 	void createOrUpdateLocation()
 	{
 		createCountryRecord("DE");
-		final JsonBPartnerLocation jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
+		final JsonRequestLocation jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
 		assertThat(jsonLocation.getExternalId()).isNotNull(); // guard
 
 		// invoke the method under test
-		final ResponseEntity<JsonUpsertResponseItem> result = bpartnerRestController.createOrUpdateLocation("ext-" + C_BPARTNER_EXTERNAL_ID, jsonLocation);
+		final ResponseEntity<JsonResponseUpsertItem> result = bpartnerRestController.createOrUpdateLocation("ext-" + C_BPARTNER_EXTERNAL_ID, jsonLocation);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
-		final JsonUpsertResponseItem responseItem = result.getBody();
+		final JsonResponseUpsertItem responseItem = result.getBody();
 
 		assertThat(responseItem.getExternalId()).isEqualTo(jsonLocation.getExternalId());
 
@@ -326,28 +329,28 @@ class BpartnerRestControllerTest
 		createBPartnerData(4);
 
 		// invoke the method under test
-		final ResponseEntity<JsonBPartnerCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
+		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);
 
 		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerCompositeList page1Body = page1.getBody();
+		final JsonResponseCompositeList page1Body = page1.getBody();
 		assertThat(page1Body.getItems()).hasSize(2);
 
 		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
 		assertThat(page2Id).isNotEmpty();
 
-		final ResponseEntity<JsonBPartnerCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
+		final ResponseEntity<JsonResponseCompositeList> page2 = bpartnerRestController.retrieveBPartnersSince(null, page2Id);
 
 		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerCompositeList page2Body = page2.getBody();
+		final JsonResponseCompositeList page2Body = page2.getBody();
 		assertThat(page2Body.getItems()).hasSize(2);
 
 		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
 		assertThat(page3Id).isNotEmpty();
 
-		final ResponseEntity<JsonBPartnerCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
+		final ResponseEntity<JsonResponseCompositeList> page3 = bpartnerRestController.retrieveBPartnersSince(null, page3Id);
 
 		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonBPartnerCompositeList page3Body = page3.getBody();
+		final JsonResponseCompositeList page3Body = page3.getBody();
 		assertThat(page3Body.getItems()).hasSize(1);
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();

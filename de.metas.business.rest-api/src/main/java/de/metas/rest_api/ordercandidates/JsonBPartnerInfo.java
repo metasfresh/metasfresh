@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -47,12 +47,12 @@ import lombok.Value;
 @Value
 public final class JsonBPartnerInfo
 {
-	JsonBPartner bpartner;
+	JsonRequestBPartner bpartner;
 
-	JsonBPartnerLocation location;
+	JsonRequestLocation location;
 
 	@JsonInclude(Include.NON_NULL)
-	JsonContact contact;
+	JsonRequestContact contact;
 
 	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
@@ -60,9 +60,9 @@ public final class JsonBPartnerInfo
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonBPartnerInfo(
-			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
-			@JsonProperty("location") final JsonBPartnerLocation location,
-			@JsonProperty("contact") final JsonContact contact,
+			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
+			@JsonProperty("location") final JsonRequestLocation location,
+			@JsonProperty("contact") final JsonRequestContact contact,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.bpartner = bpartner;

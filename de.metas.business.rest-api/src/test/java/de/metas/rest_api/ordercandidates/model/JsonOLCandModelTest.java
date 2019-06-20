@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Test;
 
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
@@ -54,53 +54,53 @@ public class JsonOLCandModelTest
 	@Test
 	public void test_JsonBPartner() throws Exception
 	{
-		final JsonBPartner pPartner = JsonBPartner.builder()
+		final JsonRequestBPartner pPartner = JsonRequestBPartner.builder()
 				.code("bp1")
 				.name("bp1 name")
 				.build();
-		testSerializeDeserialize(pPartner, JSONObjectMapper.forClass(JsonBPartner.class));
+		testSerializeDeserialize(pPartner, JSONObjectMapper.forClass(JsonRequestBPartner.class));
 	}
 
 	@Test
 	public void test_JsonBPartnerLocation() throws Exception
 	{
-		final JsonBPartnerLocation bPartnerLocation = JsonBPartnerLocation.builder()
+		final JsonRequestLocation bPartnerLocation = JsonRequestLocation.builder()
 				.address1("address1")
 				.address2("address2")
 				.postal("12345")
 				.city("city")
 				.countryCode("DE")
 				.build();
-		testSerializeDeserialize(bPartnerLocation, JSONObjectMapper.forClass(JsonBPartnerLocation.class));
+		testSerializeDeserialize(bPartnerLocation, JSONObjectMapper.forClass(JsonRequestLocation.class));
 	}
 
 	@Test
 	public void test_JsonBPartnerContact() throws Exception
 	{
-		final JsonContact contact = JsonContact.builder()
+		final JsonRequestContact contact = JsonRequestContact.builder()
 				.name("john doe")
 				.email("john@doe.com")
 				.phone("+123456789")
 				.build();
-		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonContact.class));
+		testSerializeDeserialize(contact, JSONObjectMapper.forClass(JsonRequestContact.class));
 	}
 
 	@Test
 	public void test_JsonBPartnerInfo() throws Exception
 	{
 		final JsonBPartnerInfo bPartnerInfo = JsonBPartnerInfo.builder()
-				.bpartner(JsonBPartner.builder()
+				.bpartner(JsonRequestBPartner.builder()
 						.code("bp1")
 						.name("bp1 name")
 						.build())
-				.location(JsonBPartnerLocation.builder()
+				.location(JsonRequestLocation.builder()
 						.address1("address1")
 						.address2("address2")
 						.postal("12345")
 						.city("city")
 						.countryCode("DE")
 						.build())
-				.contact(JsonContact.builder()
+				.contact(JsonRequestContact.builder()
 						.name("john doe")
 						.email("john@doe.com")
 						.phone("+123456789")
@@ -149,18 +149,18 @@ public class JsonOLCandModelTest
 	{
 		return JsonOLCandCreateRequest.builder()
 				.bpartner(JsonBPartnerInfo.builder()
-						.bpartner(JsonBPartner.builder()
+						.bpartner(JsonRequestBPartner.builder()
 								.code("bp1")
 								.name("bp1 name")
 								.build())
-						.location(JsonBPartnerLocation.builder()
+						.location(JsonRequestLocation.builder()
 								.address1("address1")
 								.address2("address2")
 								.postal("12345")
 								.city("city")
 								.countryCode("DE")
 								.build())
-						.contact(JsonContact.builder()
+						.contact(JsonRequestContact.builder()
 								.name("john doe")
 								.email("john@doe.com")
 								.phone("+123456789")

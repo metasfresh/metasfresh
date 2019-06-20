@@ -28,17 +28,19 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.BPartnerRestEndpoint;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequest;
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequestItem;
-import de.metas.rest_api.bpartner.response.JsonBPartnerCompositeList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse.JsonUpsertResponseBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite;
+import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.util.rest.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -95,19 +97,19 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}")
 	@Override
-	public ResponseEntity<JsonBPartnerComposite> retrieveBPartner(
+	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier)
 	{
-		final Optional<JsonBPartnerComposite> result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
+		final Optional<JsonResponseComposite> result = bPartnerEndpointservice.retrieveBPartner(bpartnerIdentifier);
 		if (result.isPresent())
 		{
 			return ResponseEntity.ok(result.get());
 		}
-		return new ResponseEntity<JsonBPartnerComposite>(
-				(JsonBPartnerComposite)null,
+		return new ResponseEntity<JsonResponseComposite>(
+				(JsonResponseComposite)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -120,7 +122,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}/location/{locationIdentifier}")
 	@Override
-	public ResponseEntity<JsonBPartnerLocation> retrieveBPartnerLocation(
+	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
@@ -130,13 +132,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifier)
 	{
-		final Optional<JsonBPartnerLocation> location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
+		final Optional<JsonResponseLocation> location = bPartnerEndpointservice.retrieveBPartnerLocation(bpartnerIdentifier, locationIdentifier);
 		if (location.isPresent())
 		{
 			return ResponseEntity.ok(location.get());
 		}
-		return new ResponseEntity<JsonBPartnerLocation>(
-				(JsonBPartnerLocation)null,
+		return new ResponseEntity<JsonResponseLocation>(
+				(JsonResponseLocation)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -148,7 +150,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@GetMapping("{bpartnerIdentifier}/contact/{contactIdentifier}")
 	@Override
-	public ResponseEntity<JsonContact> retrieveBPartnerContact(
+	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
@@ -158,13 +160,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
-		final Optional<JsonContact> contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
+		final Optional<JsonResponseContact> contact = bPartnerEndpointservice.retrieveBPartnerContact(bpartnerIdentifier, contactIdentifier);
 		if (contact.isPresent())
 		{
 			return ResponseEntity.ok(contact.get());
 		}
-		return new ResponseEntity<JsonContact>(
-				(JsonContact)null,
+		return new ResponseEntity<JsonResponseContact>(
+				(JsonResponseContact)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -176,7 +178,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@GetMapping
 	@Override
-	public ResponseEntity<JsonBPartnerCompositeList> retrieveBPartnersSince(
+	public ResponseEntity<JsonResponseCompositeList> retrieveBPartnersSince(
 
 			@ApiParam(SINCE_DOC) //
 			@RequestParam(name = "since", required = false) //
@@ -186,13 +188,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@RequestParam(name = "next", required = false) //
 			@Nullable final String next)
 	{
-		final Optional<JsonBPartnerCompositeList> result = bPartnerEndpointservice.retrieveBPartnersSince(epochTimestampMillis, next);
+		final Optional<JsonResponseCompositeList> result = bPartnerEndpointservice.retrieveBPartnersSince(epochTimestampMillis, next);
 		if (result.isPresent())
 		{
 			return ResponseEntity.ok(result.get());
 		}
-		return new ResponseEntity<JsonBPartnerCompositeList>(
-				(JsonBPartnerCompositeList)null,
+		return new ResponseEntity<JsonResponseCompositeList>(
+				(JsonResponseCompositeList)null,
 				HttpStatus.NOT_FOUND);
 	}
 
@@ -204,16 +206,16 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	})
 	@PutMapping
 	@Override
-	public ResponseEntity<JsonUpsertResponse> createOrUpdateBPartner(
-			@RequestBody @NonNull final JsonBPartnerUpsertRequest bpartnerUpsertRequest)
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(
+			@RequestBody @NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		final SyncAdvise defaultSyncAdvise = bpartnerUpsertRequest.getSyncAdvise();
 
-		final JsonUpsertResponseBuilder response = JsonUpsertResponse.builder();
+		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 
-		for (final JsonBPartnerUpsertRequestItem requestItem : bpartnerUpsertRequest.getRequestItems())
+		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
 			final BPartnerComposite syncToMetasfresh = persister.persist(
 					requestItem.getEffectiveBPartnerComposite(),
@@ -221,7 +223,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(syncToMetasfresh.getBpartner().getId());
 
-			final JsonUpsertResponseItem responseItem = JsonUpsertResponseItem.builder()
+			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem.builder()
 					.externalId(requestItem.getExternalId())
 					.metasfreshId(metasfreshId)
 					.build();
@@ -239,13 +241,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiOperation("Create of update a location for a particular bpartner. If the location exists, then the properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
 	@Override
-	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateLocation(
+	public ResponseEntity<JsonResponseUpsertItem> createOrUpdateLocation(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonBPartnerLocation jsonLocation)
+			@RequestBody @NonNull final JsonRequestLocation jsonLocation)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 		final Optional<MetasfreshId> jsonLocationId = persister.persist(
@@ -255,16 +257,16 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		if (!jsonLocationId.isPresent())
 		{
-			return new ResponseEntity<JsonUpsertResponseItem>(
-					(JsonUpsertResponseItem)null,
+			return new ResponseEntity<JsonResponseUpsertItem>(
+					(JsonResponseUpsertItem)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		final JsonUpsertResponseItem result = JsonUpsertResponseItem.builder()
+		final JsonResponseUpsertItem result = JsonResponseUpsertItem.builder()
 				.externalId(jsonLocation.getExternalId())
 				.metasfreshId(jsonLocationId.get())
 				.build();
-		return new ResponseEntity<JsonUpsertResponseItem>(
+		return new ResponseEntity<JsonResponseUpsertItem>(
 				result,
 				HttpStatus.CREATED);
 	}
@@ -278,13 +280,13 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	@Override
-	public ResponseEntity<JsonUpsertResponseItem> createOrUpdateContact(
+	public ResponseEntity<JsonResponseUpsertItem> createOrUpdateContact(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonContact jsonContact)
+			@RequestBody @NonNull final JsonRequestContact jsonContact)
 	{
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
@@ -295,16 +297,16 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 
 		if (!jsonContactId.isPresent())
 		{
-			return new ResponseEntity<JsonUpsertResponseItem>(
-					(JsonUpsertResponseItem)null,
+			return new ResponseEntity<JsonResponseUpsertItem>(
+					(JsonResponseUpsertItem)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		final JsonUpsertResponseItem result = JsonUpsertResponseItem.builder()
+		final JsonResponseUpsertItem result = JsonResponseUpsertItem.builder()
 				.externalId(jsonContact.getExternalId())
 				.metasfreshId(jsonContactId.get())
 				.build();
-		return new ResponseEntity<JsonUpsertResponseItem>(
+		return new ResponseEntity<JsonResponseUpsertItem>(
 				result,
 				HttpStatus.CREATED);
 	}

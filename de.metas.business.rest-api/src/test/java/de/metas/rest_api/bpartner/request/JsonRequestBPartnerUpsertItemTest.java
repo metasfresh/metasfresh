@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.request;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -10,7 +10,9 @@ import org.junit.Test;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequestItem;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.util.JSONObjectMapper;
 
 /*
@@ -35,7 +37,7 @@ import de.metas.util.JSONObjectMapper;
  * #L%
  */
 
-public class JsonBPartnerUpsertRequestItemTest
+public class JsonRequestBPartnerUpsertItemTest
 {
 
 	@BeforeClass
@@ -47,22 +49,22 @@ public class JsonBPartnerUpsertRequestItemTest
 	@Test
 	public void serializeDeserialize()
 	{
-		final JsonBPartnerUpsertRequestItem item = JsonBPartnerUpsertRequestItem.builder()
+		final JsonRequestBPartnerUpsertItem item = JsonRequestBPartnerUpsertItem.builder()
 				.externalId(JsonExternalId.of("12345"))
-				.bpartnerComposite(JsonBPartnerComposite.builder()
-						.bpartner(JsonBPartner.builder()
+				.bpartnerComposite(JsonRequestComposite.builder()
+						.bpartner(JsonRequestBPartner.builder()
 								.code("code")
 								.metasfreshId(MetasfreshId.of(123))
 								.build())
 						.build())
 				.build();
 
-		final JSONObjectMapper<JsonBPartnerUpsertRequestItem> mapper = JSONObjectMapper.forClass(JsonBPartnerUpsertRequestItem.class);
+		final JSONObjectMapper<JsonRequestBPartnerUpsertItem> mapper = JSONObjectMapper.forClass(JsonRequestBPartnerUpsertItem.class);
 
 		final String string = mapper.writeValueAsString(item);
 		assertThat(string).isNotEmpty();
 
-		final JsonBPartnerUpsertRequestItem result = mapper.readValue(string);
+		final JsonRequestBPartnerUpsertItem result = mapper.readValue(string);
 
 		assertThat(result).isEqualTo(item);
 		expect(result).toMatchSnapshot();

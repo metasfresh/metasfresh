@@ -4,12 +4,12 @@ import java.util.UUID;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite.JsonRequestCompositeBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -47,11 +47,11 @@ public class MockedDataUtil
 		return MetasfreshId.of(metasfreshIdCounter++);
 	}
 
-	public JsonBPartnerComposite createMockBPartner(@NonNull final String bpartnerIdentifier)
+	public JsonRequestComposite createMockBPartner(@NonNull final String bpartnerIdentifier)
 	{
-		final JsonBPartnerCompositeBuilder result = JsonBPartnerComposite.builder();
+		final JsonRequestCompositeBuilder result = JsonRequestComposite.builder();
 
-		final JsonBPartnerBuilder bPartner = JsonBPartner
+		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
 				.builder()
 				.companyName("bPartner.companyName")
 				.name("bPartner.name")
@@ -83,26 +83,26 @@ public class MockedDataUtil
 
 		result.bpartner(bPartner.build());
 
-		final JsonBPartnerLocation location1 = createMockLocation("l1", "CH");
+		final JsonRequestLocation location1 = createMockLocation("l1", "CH");
 		result.location(location1);
 
-		final JsonBPartnerLocation location2 = createMockLocation("l2", "DE");
+		final JsonRequestLocation location2 = createMockLocation("l2", "DE");
 		result.location(location2);
 
-		final JsonContact contact1 = createMockContact("c1");
+		final JsonRequestContact contact1 = createMockContact("c1");
 		result.contact(contact1);
 
-		final JsonContact contact2 = createMockContact("c2");
+		final JsonRequestContact contact2 = createMockContact("c2");
 		result.contact(contact2);
 
 		return result.build();
 	}
 
-	public JsonBPartnerLocation createMockLocation(
+	public JsonRequestLocation createMockLocation(
 			@NonNull final String prefix,
 			@NonNull final String countryCode)
 	{
-		return JsonBPartnerLocation.builder()
+		return JsonRequestLocation.builder()
 				.metasfreshId(nextMetasFreshId())
 				.address1(prefix + "_address1")
 				.address2(prefix + "_address2")
@@ -117,9 +117,9 @@ public class MockedDataUtil
 				.build();
 	}
 
-	public JsonContact createMockContact(@NonNull final String prefix)
+	public JsonRequestContact createMockContact(@NonNull final String prefix)
 	{
-		final JsonContact contact = JsonContact.builder()
+		final JsonRequestContact contact = JsonRequestContact.builder()
 				.metasfreshId(nextMetasFreshId())
 				.email(prefix + "_email@email.net")
 				.externalId(JsonExternalId.of(prefix + "_externalId"))

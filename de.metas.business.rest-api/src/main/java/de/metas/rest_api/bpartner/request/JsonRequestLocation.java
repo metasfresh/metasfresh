@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
@@ -41,7 +41,7 @@ import lombok.Value;
  */
 
 @Value
-public class JsonBPartnerLocation
+public class JsonRequestLocation
 {
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(dataType = "java.lang.Integer")
@@ -83,10 +83,9 @@ public class JsonBPartnerLocation
 
 	@Builder(toBuilder = true)
 	@JsonCreator
-	private JsonBPartnerLocation(
+	private JsonRequestLocation(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			//@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
 			@JsonProperty("postal") final String postal,
@@ -101,7 +100,6 @@ public class JsonBPartnerLocation
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
-		//this.metasfreshBPartnerId = metasfreshBPartnerId;
 
 		this.address1 = address1;
 		this.address2 = address2;

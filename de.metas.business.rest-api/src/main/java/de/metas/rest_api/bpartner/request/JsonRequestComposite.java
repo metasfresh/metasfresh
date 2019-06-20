@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
@@ -50,21 +50,21 @@ import lombok.Value;
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n" //
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
-public final class JsonBPartnerComposite
+public final class JsonRequestComposite
 {
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty(required = false)
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
-	JsonBPartner bpartner;
+	JsonRequestBPartner bpartner;
 
 	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonBPartnerLocation> locations;
+	List<JsonRequestLocation> locations;
 
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonContact> contacts;
+	List<JsonRequestContact> contacts;
 
 	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
 			+ BPARTER_SYNC_ADVISE_DOC)
@@ -73,11 +73,11 @@ public final class JsonBPartnerComposite
 
 	@Builder(toBuilder = true)
 	@JsonCreator
-	private JsonBPartnerComposite(
+	private JsonRequestComposite(
 			@JsonProperty("orgCode") @Nullable final String orgCode,
-			@JsonProperty("bpartner") @NonNull final JsonBPartner bpartner,
-			@JsonProperty("locations") @Singular final List<JsonBPartnerLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonContact> contacts,
+			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
+			@JsonProperty("locations") @Singular final List<JsonRequestLocation> locations,
+			@JsonProperty("contacts") @Singular final List<JsonRequestContact> contacts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
@@ -98,12 +98,12 @@ public final class JsonBPartnerComposite
 	{
 		return this.locations
 				.stream()
-				.map(JsonBPartnerLocation::getGln)
+				.map(JsonRequestLocation::getGln)
 				.filter(gln -> !isEmpty(gln, true))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public JsonBPartnerComposite withExternalId(@NonNull final JsonExternalId externalId)
+	public JsonRequestComposite withExternalId(@NonNull final JsonExternalId externalId)
 	{
 		if (Objects.equals(externalId, bpartner.getExternalId()))
 		{

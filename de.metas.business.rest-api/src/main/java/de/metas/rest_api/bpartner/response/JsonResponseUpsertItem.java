@@ -1,21 +1,13 @@
-package de.metas.rest_api.bpartner.request;
-
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
+package de.metas.rest_api.bpartner.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.SyncAdvise;
-import io.swagger.annotations.ApiModel;
+import de.metas.rest_api.JsonExternalId;
+import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -41,21 +33,25 @@ import lombok.Value;
  */
 
 @Value
-@ApiModel
-public class JsonContactUpsertRequest
+@Builder
+public class JsonResponseUpsertItem
 {
-	List<JsonContactUpsertRequestItem> requestItems;
+	@ApiModelProperty(//
+			value = "The external id from the respective update request",//
+			dataType = "java.lang.String")
+	@NonNull
+	JsonExternalId externalId;
 
-	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
-	SyncAdvise syncAdvise;
+	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
+			dataType = "java.lang.Long")
+	MetasfreshId metasfreshId;
 
 	@JsonCreator
-	@Builder
-	public JsonContactUpsertRequest(
-			@Singular @JsonProperty("requestItems") final List<JsonContactUpsertRequestItem> requestItems,
-			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+	private JsonResponseUpsertItem(
+			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
+			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
 	{
-		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.externalId = externalId;
+		this.metasfreshId = metasfreshId;
 	}
 }

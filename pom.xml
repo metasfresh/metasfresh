@@ -50,7 +50,7 @@
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
-		<jackson.version>2.9.8</jackson.version>
+		<jackson.version>2.9.9</jackson.version>
 
 		<!-- woodstox is in the dependency tree of both cxf-core and jackson-dataformat-xml -->
 		<woodstox.version>5.0.3</woodstox.version>

@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.request;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -12,7 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.rest_api.bpartner.request.JsonBPartnerUpsertRequest;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.util.JSONObjectMapper;
 
 /*
@@ -37,7 +37,7 @@ import de.metas.util.JSONObjectMapper;
  * #L%
  */
 
-public class JsonBPartnerUpsertRequestTest
+public class JsonRequestBPartnerUpsertTest
 {
 	@BeforeClass
 	public static void beforeAll()
@@ -48,37 +48,37 @@ public class JsonBPartnerUpsertRequestTest
 	@Test
 	public void deserialize_1() throws IOException
 	{
-		final JsonBPartnerUpsertRequest result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_1.json");
+		final JsonRequestBPartnerUpsert result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_1.json");
 		expect(result).toMatchSnapshot();
 	}
 
 	@Test
 	public void deserialize_2() throws IOException
 	{
-		final JsonBPartnerUpsertRequest result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_2.json");
+		final JsonRequestBPartnerUpsert result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_2.json");
 		expect(result).toMatchSnapshot();
 	}
 
-	private JsonBPartnerUpsertRequest deserialize(final String jsonResourceName) throws IOException
+	private JsonRequestBPartnerUpsert deserialize(final String jsonResourceName) throws IOException
 	{
-		final JsonBPartnerUpsertRequest request = readInstanceFromFile(jsonResourceName);
+		final JsonRequestBPartnerUpsert request = readInstanceFromFile(jsonResourceName);
 
-		final JSONObjectMapper<JsonBPartnerUpsertRequest> mapper = JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class);
+		final JSONObjectMapper<JsonRequestBPartnerUpsert> mapper = JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class);
 		final String string = mapper.writeValueAsString(request);
-		final JsonBPartnerUpsertRequest result = mapper.readValue(string);
+		final JsonRequestBPartnerUpsert result = mapper.readValue(string);
 
 		assertThat(result).isEqualTo(request);
 		return result;
 	}
 
-	private JsonBPartnerUpsertRequest readInstanceFromFile(final String jsonResourceName) throws IOException
+	private JsonRequestBPartnerUpsert readInstanceFromFile(final String jsonResourceName) throws IOException
 	{
 
-		final InputStream stream = JsonBPartnerUpsertRequestTest.class.getResourceAsStream(jsonResourceName);
+		final InputStream stream = JsonRequestBPartnerUpsertTest.class.getResourceAsStream(jsonResourceName);
 		final String string = IOUtils.toString(stream, "UTF-8");
 		assertThat(string).isNotNull(); // guard
-		final JSONObjectMapper<JsonBPartnerUpsertRequest> mapper = JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class);
-		final JsonBPartnerUpsertRequest request = mapper.readValue(string);
+		final JSONObjectMapper<JsonRequestBPartnerUpsert> mapper = JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class);
+		final JsonRequestBPartnerUpsert request = mapper.readValue(string);
 
 		return request;
 	}

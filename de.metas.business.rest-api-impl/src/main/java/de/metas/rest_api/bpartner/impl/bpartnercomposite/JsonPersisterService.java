@@ -37,10 +37,10 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestComposite;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.MissingPropertyException;
 import de.metas.rest_api.utils.MissingResourceException;
@@ -101,7 +101,7 @@ public class JsonPersisterService
 			}
 		}
 
-		private BPartnerContact extract(@NonNull final JsonContact jsonContact)
+		private BPartnerContact extract(@NonNull final JsonRequestContact jsonContact)
 		{
 			final BPartnerContactId bpartnerContactId;
 			if (jsonContact.getMetasfreshId() != null && bpartnerId != null)
@@ -157,7 +157,7 @@ public class JsonPersisterService
 			}
 		}
 
-		private BPartnerLocation extract(@NonNull final JsonBPartnerLocation jsonBPartnerLocation)
+		private BPartnerLocation extract(@NonNull final JsonRequestLocation jsonBPartnerLocation)
 		{
 			final BPartnerLocationId bpartnerLocationId;
 			if (jsonBPartnerLocation.getMetasfreshId() != null && bpartnerId != null)
@@ -212,7 +212,7 @@ public class JsonPersisterService
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
 
-	private BPartnerContactQuery createContactQuery(@NonNull final JsonContact contact)
+	private BPartnerContactQuery createContactQuery(@NonNull final JsonRequestContact contact)
 	{
 		final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
 
@@ -227,7 +227,7 @@ public class JsonPersisterService
 		return contactQuery.build();
 	}
 
-	private ImmutableList<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final JsonBPartnerComposite jsonBPartnerComposite)
+	private ImmutableList<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final JsonRequestComposite jsonBPartnerComposite)
 	{
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 
@@ -259,7 +259,7 @@ public class JsonPersisterService
 	}
 
 	public BPartnerComposite persist(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys = extractBPartnerLookupKeys(jsonBPartnerComposite);
@@ -290,7 +290,7 @@ public class JsonPersisterService
 	}
 
 	public BPartnerContact persist(
-			@NonNull final JsonContact jsonContact,
+			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		final BPartnerContactQuery contactQuery = createContactQuery(jsonContact);
@@ -336,7 +336,7 @@ public class JsonPersisterService
 	/** Adds or update a given location. Leaves all unrelated location of the same bpartner untouched */
 	public Optional<MetasfreshId> persist(
 			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
+			@NonNull final JsonRequestLocation jsonBPartnerLocation,
 			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
@@ -367,7 +367,7 @@ public class JsonPersisterService
 
 	public Optional<MetasfreshId> persist(
 			@NonNull final String bpartnerIdentifierStr,
-			@NonNull final JsonContact jsonContact,
+			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise defaultSyncAdvise)
 	{
 		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.retrieveBPartnerComposite(bpartnerIdentifierStr);
@@ -397,7 +397,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonContact(
-			@NonNull final JsonContact jsonContact,
+			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermContactIndex shortTermIndex)
 	{
@@ -422,7 +422,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonLocation(
-			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
+			@NonNull final JsonRequestLocation jsonBPartnerLocation,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
@@ -448,7 +448,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToBPartnerComposite(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -464,7 +464,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToOrg(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -492,11 +492,11 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToBPartner(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final JsonBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
+		final JsonRequestBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
 
 		// note that if the BPartner wouldn't exists, we weren't here
 		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
@@ -628,7 +628,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToContact(
-			@NonNull final JsonContact jsonBPartnerContact,
+			@NonNull final JsonRequestContact jsonBPartnerContact,
 			@NonNull final BPartnerContact contact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -701,7 +701,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToContacts(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -709,7 +709,7 @@ public class JsonPersisterService
 
 		final SyncAdvise compositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
-		for (final JsonContact jsonBPartnerContact : jsonBPartnerComposite.getContacts())
+		for (final JsonRequestContact jsonBPartnerContact : jsonBPartnerComposite.getContacts())
 		{
 			syncJsonContact(jsonBPartnerContact, compositeSyncAdvise, shortTermIndex);
 		}
@@ -722,7 +722,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToLocation(
-			@NonNull final JsonBPartnerLocation jsonBPartnerLocation,
+			@NonNull final JsonRequestLocation jsonBPartnerLocation,
 			@NonNull final BPartnerLocation location,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -833,7 +833,7 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToLocations(
-			@NonNull final JsonBPartnerComposite jsonBPartnerComposite,
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -841,7 +841,7 @@ public class JsonPersisterService
 
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
-		for (final JsonBPartnerLocation jsonBPartnerLocation : jsonBPartnerComposite.getLocations())
+		for (final JsonRequestLocation jsonBPartnerLocation : jsonBPartnerComposite.getLocations())
 		{
 			syncJsonLocation(jsonBPartnerLocation, syncAdvise, shortTermIndex);
 		}

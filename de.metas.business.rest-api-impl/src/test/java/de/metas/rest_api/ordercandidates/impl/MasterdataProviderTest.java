@@ -29,8 +29,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.utils.PermissionService;
@@ -66,13 +66,13 @@ public class MasterdataProviderTest
 	@Mock
 	private PermissionService permissionService;
 
-	private JsonBPartner jsonBPartner;
+	private JsonRequestBPartner jsonBPartner;
 
 	private JsonBPartnerInfo jsonBPartnerInfo;
 
 	private JsonOrganization jsonOrganization;
 
-	private JsonBPartnerLocation jsonBPartnerLocation;
+	private JsonRequestLocation jsonBPartnerLocation;
 
 	private I_C_Country countryRecord;
 
@@ -106,12 +106,12 @@ public class MasterdataProviderTest
 				.permissionService(permissionService)
 				.build();
 
-		jsonBPartner = JsonBPartner.builder()
+		jsonBPartner = JsonRequestBPartner.builder()
 				.name("jsonBPartner.name")
 				.code("jsonBPartner.code")
 				.build();
 
-		jsonBPartnerLocation = JsonBPartnerLocation.builder()
+		jsonBPartnerLocation = JsonRequestLocation.builder()
 				.countryCode("DE")
 				.externalId(JsonExternalId.of("jsonBPartnerLocation.externalId"))
 				.build();

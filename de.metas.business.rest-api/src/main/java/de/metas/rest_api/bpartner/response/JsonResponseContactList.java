@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.JsonPagingDescriptor;
-import de.metas.rest_api.bpartner.JsonContact;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -37,17 +36,17 @@ import lombok.Value;
  */
 
 @Value
-public class JsonContactList
+public class JsonResponseContactList
 {
 	@JsonUnwrapped
 	JsonPagingDescriptor pagingDescriptor;
 
-	List<JsonContact> contacts;
+	List<JsonResponseContact> contacts;
 
 	@Builder
-	private JsonContactList(
+	private JsonResponseContactList(
 			@NonNull final JsonPagingDescriptor pagingDescriptor,
-			@Singular final List<JsonContact> contacts)
+			@Singular final List<JsonResponseContact> contacts)
 	{
 		this.pagingDescriptor = pagingDescriptor;
 		this.contacts = coalesce(contacts, ImmutableList.of());

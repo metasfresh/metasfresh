@@ -36,11 +36,11 @@ import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.i18n.Language;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite.JsonBPartnerCompositeBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.user.UserId;
@@ -93,12 +93,12 @@ public class JsonRetrieverService
 		this.cache = new BPartnerCompositeCache(identifier);
 	}
 
-	public Optional<JsonBPartnerComposite> retrieveJsonBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
+	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
 	{
 		return retrieveBPartnerComposite(bpartnerIdentifierStr).map(this::toJson);
 	}
 
-	public Optional<QueryResultPage<JsonBPartnerComposite>> retrieveJsonBPartnerComposites(
+	public Optional<QueryResultPage<JsonResponseComposite>> retrieveJsonBPartnerComposites(
 			@Nullable final NextPageQuery nextPageQuery,
 			@Nullable final SinceQuery sinceRequest)
 	{
@@ -118,7 +118,7 @@ public class JsonRetrieverService
 				return Optional.empty();
 			}
 		}
-		final ImmutableList<JsonBPartnerComposite> jsonBPartnerComposites = page
+		final ImmutableList<JsonResponseComposite> jsonBPartnerComposites = page
 				.getItems()
 				.stream()
 				.map(this::toJson)
@@ -127,9 +127,9 @@ public class JsonRetrieverService
 		return Optional.of(page.withItems(jsonBPartnerComposites));
 	}
 
-	private JsonBPartnerComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
+	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final JsonBPartnerCompositeBuilder result = JsonBPartnerComposite.builder()
+		final JsonResponseCompositeBuilder result = JsonResponseComposite.builder()
 				.bpartner(toJson(bpartnerComposite.getBpartner()));
 
 		for (final BPartnerContact contact : bpartnerComposite.getContacts())
@@ -143,11 +143,11 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	private JsonBPartner toJson(@NonNull final BPartner bpartner)
+	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpartner.getGroupId());
 
-		return JsonBPartner.builder()
+		return JsonResponseBPartner.builder()
 				.code(bpartner.getValue())
 				.companyName(bpartner.getCompanyName())
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
@@ -161,12 +161,12 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	private JsonContact toJson(@NonNull final BPartnerContact contact)
+	private JsonResponseContact toJson(@NonNull final BPartnerContact contact)
 	{
 		final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
 		final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
 
-		return JsonContact.builder()
+		return JsonResponseContact.builder()
 				.email(contact.getEmail())
 				.externalId(JsonConverters.toJsonOrNull(contact.getExternalId()))
 				.firstName(contact.getFirstName())
@@ -178,9 +178,9 @@ public class JsonRetrieverService
 				.build();
 	}
 
-	private JsonBPartnerLocation toJson(@NonNull final BPartnerLocation location)
+	private JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
 	{
-		return JsonBPartnerLocation.builder()
+		return JsonResponseLocation.builder()
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
 				.city(location.getCity())
@@ -291,7 +291,7 @@ public class JsonRetrieverService
 		return query.build();
 	}
 
-	public Optional<JsonContact> retrieveContact(@NonNull final String contactIdentifierStr)
+	public Optional<JsonResponseContact> retrieveContact(@NonNull final String contactIdentifierStr)
 	{
 		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
 

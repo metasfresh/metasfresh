@@ -32,13 +32,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartner.JsonBPartnerBuilder;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
+import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation.JsonRequestLocationBuilder;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
+import de.metas.rest_api.ordercandidates.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
 import de.metas.rest_api.ordercandidates.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
@@ -47,7 +48,6 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.JsonBPartnerInfo.JsonBPartnerInfoBuilder;
 import de.metas.rest_api.product.JsonProductInfo;
 import de.metas.rest_api.product.JsonProductInfo.Type;
 import de.metas.util.Check;
@@ -466,7 +466,7 @@ public class XmlToOLCandsService
 		final JsonExternalId insuranceExternalId = createBPartnerExternalId(insurance);
 		final JsonExternalId recipientExternalId = createBPartnerExternalId(context.getInvoiceRecipientEAN());
 
-		final JsonBPartnerBuilder bPartner = JsonBPartner
+		final JsonRequestBPartnerBuilder bPartner = JsonRequestBPartner
 				.builder()
 				.externalId(recipientExternalId);
 
@@ -474,7 +474,7 @@ public class XmlToOLCandsService
 
 		if (recipientExternalId.equals(insuranceExternalId))
 		{
-			final JsonBPartnerLocation location = createJsonBPartnerLocation(
+			final JsonRequestLocation location = createJsonBPartnerLocation(
 					insuranceExternalId,
 					insurance.getEanParty(),
 					company.getPostal());
@@ -488,7 +488,7 @@ public class XmlToOLCandsService
 		}
 
 		// build a "sparse" bPartner that is only suitable for lookup, because we don't have the masterdata needed to insert or update
-		final JsonBPartnerLocation location = JsonBPartnerLocation.builder()
+		final JsonRequestLocation location = JsonRequestLocation.builder()
 				.gln(context.getInvoiceRecipientEAN())
 				.externalId(createLocationExternalId(recipientExternalId))
 				.build();
@@ -510,12 +510,12 @@ public class XmlToOLCandsService
 		final CompanyType company = biller.getCompany();
 		final JsonExternalId billerBPartnerExternalId = createBPartnerExternalId(biller);
 
-		final JsonBPartnerBuilder bPartnerBuilder = JsonBPartner
+		final JsonRequestBPartnerBuilder bPartnerBuilder = JsonRequestBPartner
 				.builder()
 				.name(name.getSingleStringName())
 				.externalId(billerBPartnerExternalId);
 
-		final JsonBPartnerLocation location;
+		final JsonRequestLocation location;
 		final String email;
 		if (company != null)
 		{
@@ -538,7 +538,7 @@ public class XmlToOLCandsService
 					biller.getPerson().getPostal());
 		}
 
-		final JsonContact contact = JsonContact
+		final JsonRequestContact contact = JsonRequestContact
 				.builder()
 				.externalId(JsonExternalId.of(billerBPartnerExternalId + "_singlePerson"))
 				.firstName(name.getFirstName())
@@ -613,7 +613,7 @@ public class XmlToOLCandsService
 		return JsonExternalId.of("EAN-" + biller.getEanParty());
 	}
 
-	private JsonBPartnerLocation createJsonBPartnerLocation(
+	private JsonRequestLocation createJsonBPartnerLocation(
 			@NonNull final JsonExternalId bPartnerExternalId,
 			@NonNull final String gln,
 			@NonNull final PostalAddressType postal)
@@ -626,7 +626,7 @@ public class XmlToOLCandsService
 		final String statecode = zip != null ? StringUtils.trim(zip.getStatecode()) : null;
 		final String countrycode = zip != null ? StringUtils.trim(zip.getCountrycode()) : null;
 
-		final JsonBPartnerLocationBuilder builder = JsonBPartnerLocation.builder();
+		final JsonRequestLocationBuilder builder = JsonRequestLocation.builder();
 
 		if (!Check.isEmpty(street, true))
 		{
@@ -643,7 +643,7 @@ public class XmlToOLCandsService
 			builder.gln(gln);
 		}
 
-		final JsonBPartnerLocation location = builder
+		final JsonRequestLocation location = builder
 				.externalId(createLocationExternalId(bPartnerExternalId)) // TODO
 				.city(city)
 				.postal(zip.getValue())

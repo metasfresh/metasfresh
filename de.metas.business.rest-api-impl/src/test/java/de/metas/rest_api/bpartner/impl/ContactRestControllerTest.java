@@ -30,12 +30,13 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
-import de.metas.rest_api.bpartner.JsonContact;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonContactUpsertRequest;
-import de.metas.rest_api.bpartner.request.JsonContactUpsertRequestItem;
-import de.metas.rest_api.bpartner.response.JsonContactList;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponse;
+import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 
@@ -116,10 +117,10 @@ class ContactRestControllerTest
 		createBPartnerData(4);
 
 		// invoke the method under test
-		final ResponseEntity<JsonContactList> page1 = contactRestController.retrieveContactsSince(0L, null);
+		final ResponseEntity<JsonResponseContactList> page1 = contactRestController.retrieveContactsSince(0L, null);
 
 		assertThat(page1.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContactList page1Body = page1.getBody();
+		final JsonResponseContactList page1Body = page1.getBody();
 		assertThat(page1Body.getContacts()).hasSize(2);
 
 		assertThat(page1Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
@@ -127,10 +128,10 @@ class ContactRestControllerTest
 		final String page2Id = page1Body.getPagingDescriptor().getNextPage();
 		assertThat(page2Id).isNotEmpty();
 
-		final ResponseEntity<JsonContactList> page2 = contactRestController.retrieveContactsSince(null, page2Id);
+		final ResponseEntity<JsonResponseContactList> page2 = contactRestController.retrieveContactsSince(null, page2Id);
 
 		assertThat(page2.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContactList page2Body = page2.getBody();
+		final JsonResponseContactList page2Body = page2.getBody();
 		assertThat(page2Body.getContacts()).hasSize(2);
 
 		assertThat(page2Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
@@ -138,10 +139,10 @@ class ContactRestControllerTest
 		final String page3Id = page2Body.getPagingDescriptor().getNextPage();
 		assertThat(page3Id).isNotEmpty();
 
-		final ResponseEntity<JsonContactList> page3 = contactRestController.retrieveContactsSince(null, page3Id);
+		final ResponseEntity<JsonResponseContactList> page3 = contactRestController.retrieveContactsSince(null, page3Id);
 
 		assertThat(page3.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContactList page3Body = page3.getBody();
+		final JsonResponseContactList page3Body = page3.getBody();
 		assertThat(page3Body.getContacts()).hasSize(1);
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
@@ -154,10 +155,10 @@ class ContactRestControllerTest
 	void retrieveContact_ext()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonContact> result = contactRestController.retrieveContact("ext-" + AD_USER_EXTERNAL_ID);
+		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("ext-" + AD_USER_EXTERNAL_ID);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContact resultBody = result.getBody();
+		final JsonResponseContact resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -166,10 +167,10 @@ class ContactRestControllerTest
 	void retrieveContact_id()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonContact> result = contactRestController.retrieveContact(Integer.toString(AD_USER_ID));
+		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact(Integer.toString(AD_USER_ID));
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContact resultBody = result.getBody();
+		final JsonResponseContact resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -178,10 +179,10 @@ class ContactRestControllerTest
 	void retrieveContact_val()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonContact> result = contactRestController.retrieveContact("val-" + "bpartnerRecord.value");
+		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("val-" + "bpartnerRecord.value");
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonContact resultBody = result.getBody();
+		final JsonResponseContact resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 	}
@@ -189,7 +190,7 @@ class ContactRestControllerTest
 	@Test
 	void createOrUpdateContact()
 	{
-		final JsonContact jsonContact = JsonContact.builder()
+		final JsonRequestContact jsonContact = JsonRequestContact.builder()
 				.name("jsonContact.name")
 				.code("jsonContact.code")
 				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
@@ -197,18 +198,18 @@ class ContactRestControllerTest
 
 		final JsonExternalId upsertExternalId = JsonExternalId.of("externalId-1");
 
-		final JsonContactUpsertRequest upsertRequest = JsonContactUpsertRequest.builder()
+		final JsonRequestContactUpsert upsertRequest = JsonRequestContactUpsert.builder()
 				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())
-				.requestItem(JsonContactUpsertRequestItem
+				.requestItem(JsonRequestContactUpsertItem
 						.builder()
 						.externalId(upsertExternalId)
 						.contact(jsonContact)
 						.build())
 				.build();
-		final ResponseEntity<JsonUpsertResponse> result = contactRestController.createOrUpdateContact(upsertRequest);
+		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
-		final JsonUpsertResponse resultBody = result.getBody();
+		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
 		assertThat(resultBody.getResponseItems().get(0).getExternalId()).isEqualTo(upsertExternalId);

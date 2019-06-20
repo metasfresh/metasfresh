@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.response;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.response.JsonUpsertResponseItem;
+import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.util.JSONObjectMapper;
 
 /*
@@ -35,7 +35,7 @@ import de.metas.util.JSONObjectMapper;
  * #L%
  */
 
-public class JsonBPartnerUpsertResponseItemTest
+public class JsonResponseBPartnerUpsertItemTest
 {
 	@BeforeClass
 	public static void beforeAll()
@@ -46,15 +46,15 @@ public class JsonBPartnerUpsertResponseItemTest
 	@Test
 	public void serializeTest()
 	{
-		final JsonUpsertResponseItem item = JsonUpsertResponseItem.builder()
+		final JsonResponseUpsertItem item = JsonResponseUpsertItem.builder()
 				.externalId(JsonExternalId.of("12345"))
 				.metasfreshId(MetasfreshId.of(23))
 				.build();
-		final JSONObjectMapper<JsonUpsertResponseItem> m = JSONObjectMapper.forClass(JsonUpsertResponseItem.class);
+		final JSONObjectMapper<JsonResponseUpsertItem> m = JSONObjectMapper.forClass(JsonResponseUpsertItem.class);
 
 		final String str = m.writeValueAsString(item);
 
-		final JsonUpsertResponseItem result = m.readValue(str);
+		final JsonResponseUpsertItem result = m.readValue(str);
 		assertThat(result).isEqualTo(item);
 
 		expect(result).toMatchSnapshot();

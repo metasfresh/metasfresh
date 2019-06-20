@@ -24,11 +24,11 @@ import de.metas.cache.CachingKeysMapper;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.JsonBPartner;
-import de.metas.rest_api.bpartner.JsonBPartnerComposite;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation;
-import de.metas.rest_api.bpartner.JsonBPartnerLocation.JsonBPartnerLocationBuilder;
-import de.metas.rest_api.bpartner.JsonContact;
+import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
+import de.metas.rest_api.bpartner.response.JsonResponseComposite;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation.JsonResponseLocationBuilder;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -88,8 +88,8 @@ public class JsonBPartnerCompositeRepository
 		}
 	};
 
-	private final CCache<BPartnerId, JsonBPartnerComposite> cache = CCache
-			.<BPartnerId, JsonBPartnerComposite> builder()
+	private final CCache<BPartnerId, JsonResponseComposite> cache = CCache
+			.<BPartnerId, JsonResponseComposite> builder()
 			.cacheName("JsonBPartnerComposite")
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
@@ -99,18 +99,18 @@ public class JsonBPartnerCompositeRepository
 			.invalidationKeysMapper(invalidationKeysMapper)
 			.build();
 
-	public JsonBPartnerComposite getById(@NonNull final BPartnerId bPartnerId)
+	public JsonResponseComposite getById(@NonNull final BPartnerId bPartnerId)
 	{
 		return CollectionUtils.singleElement(getByIds(ImmutableList.of(bPartnerId)));
 	}
 
-	public ImmutableList<JsonBPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
+	public ImmutableList<JsonResponseComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
 	{
-		final Collection<JsonBPartnerComposite> result = cache.getAllOrLoad(bPartnerIds, this::getByIds0);
+		final Collection<JsonResponseComposite> result = cache.getAllOrLoad(bPartnerIds, this::getByIds0);
 		return ImmutableList.copyOf(result);
 	}
 
-	private ImmutableMap<BPartnerId, JsonBPartnerComposite> getByIds0(final Collection<BPartnerId> bPartnerIds)
+	private ImmutableMap<BPartnerId, JsonResponseComposite> getByIds0(final Collection<BPartnerId> bPartnerIds)
 	{
 		final List<I_C_BPartner> bPartnerRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
@@ -135,13 +135,13 @@ public class JsonBPartnerCompositeRepository
 				.list();
 		final ImmutableListMultimap<Integer, I_AD_User> id2Contacts = Multimaps.index(contactRecords, I_AD_User::getC_BPartner_ID);
 
-		final Builder<BPartnerId, JsonBPartnerComposite> result = ImmutableMap.<BPartnerId, JsonBPartnerComposite> builder();
+		final Builder<BPartnerId, JsonResponseComposite> result = ImmutableMap.<BPartnerId, JsonResponseComposite> builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
 			final int id = bPartnerRecord.getC_BPartner_ID();
 
-			final JsonBPartnerComposite jsonBPartnerComposite = JsonBPartnerComposite.builder()
+			final JsonResponseComposite jsonBPartnerComposite = JsonResponseComposite.builder()
 					.bpartner(ofRecord(bPartnerRecord))
 					.contacts(ofContactRecords(id2Contacts.get(id)))
 					.locations(ofLocationRecords(id2Locations.get(id)))
@@ -152,9 +152,9 @@ public class JsonBPartnerCompositeRepository
 		return result.build();
 	}
 
-	private JsonBPartner ofRecord(@NonNull final I_C_BPartner bpartnerRecord)
+	private JsonResponseBPartner ofRecord(@NonNull final I_C_BPartner bpartnerRecord)
 	{
-		return JsonBPartner.builder()
+		return JsonResponseBPartner.builder()
 				.code(bpartnerRecord.getValue())
 				.companyName(bpartnerRecord.getCompanyName())
 				.externalId(JsonExternalId.ofOrNull(bpartnerRecord.getExternalId()))
@@ -168,18 +168,18 @@ public class JsonBPartnerCompositeRepository
 				.build();
 	}
 
-	private ImmutableList<JsonBPartnerLocation> ofLocationRecords(@NonNull final ImmutableList<I_C_BPartner_Location> immutableList)
+	private ImmutableList<JsonResponseLocation> ofLocationRecords(@NonNull final ImmutableList<I_C_BPartner_Location> immutableList)
 	{
 		return immutableList.stream()
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private JsonBPartnerLocation ofRecord(@NonNull final I_C_BPartner_Location bPartnerLocationRecord)
+	private JsonResponseLocation ofRecord(@NonNull final I_C_BPartner_Location bPartnerLocationRecord)
 	{
 		final I_C_Location locationRecord = bPartnerLocationRecord.getC_Location();
 
-		final JsonBPartnerLocationBuilder location = JsonBPartnerLocation.builder()
+		final JsonResponseLocationBuilder location = JsonResponseLocation.builder()
 				.address1(locationRecord.getAddress1())
 				.address2(locationRecord.getAddress2())
 				.city(locationRecord.getCity())
@@ -199,16 +199,16 @@ public class JsonBPartnerCompositeRepository
 		return location.build();
 	}
 
-	private ImmutableList<JsonContact> ofContactRecords(@NonNull final ImmutableList<I_AD_User> immutableList)
+	private ImmutableList<JsonResponseContact> ofContactRecords(@NonNull final ImmutableList<I_AD_User> immutableList)
 	{
 		return immutableList.stream()
 				.map(this::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private JsonContact ofRecord(I_AD_User contactRecord)
+	private JsonResponseContact ofRecord(I_AD_User contactRecord)
 	{
-		return JsonContact.builder()
+		return JsonResponseContact.builder()
 				.email(contactRecord.getEMail())
 				.externalId(JsonExternalId.ofOrNull(contactRecord.getExternalId()))
 				.firstName(contactRecord.getFirstname())

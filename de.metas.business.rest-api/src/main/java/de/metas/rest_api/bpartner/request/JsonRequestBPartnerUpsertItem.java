@@ -1,10 +1,11 @@
-package de.metas.rest_api.bpartner.response;
+package de.metas.rest_api.bpartner.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,24 +35,32 @@ import lombok.Value;
 
 @Value
 @Builder
-public class JsonUpsertResponseItem
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+public class JsonRequestBPartnerUpsertItem
 {
-	@ApiModelProperty(//
-			value = "The external id from the respective update request",//
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "External system's ID of the business partner to upsert.", //
 			dataType = "java.lang.String")
 	@NonNull
 	JsonExternalId externalId;
 
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
-			dataType = "java.lang.Long")
-	MetasfreshId metasfreshId;
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+	@NonNull
+	JsonRequestComposite bpartnerComposite;
 
 	@JsonCreator
-	private JsonUpsertResponseItem(
-			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
-			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
+	public JsonRequestBPartnerUpsertItem(
+			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
+			@NonNull @JsonProperty("bpartnerComposite") JsonRequestComposite bpartnerComposite)
 	{
 		this.externalId = externalId;
-		this.metasfreshId = metasfreshId;
+		this.bpartnerComposite = bpartnerComposite;
+	}
+
+	@JsonIgnore
+	public JsonRequestComposite getEffectiveBPartnerComposite()
+	{
+		return getBpartnerComposite().withExternalId(getExternalId());
 	}
 }

@@ -1,4 +1,4 @@
-package de.metas.rest_api.bpartner;
+package de.metas.rest_api.bpartner.request;
 
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
 import javax.annotation.Nullable;
@@ -40,7 +40,7 @@ import lombok.Value;
 
 @Value
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
-public class JsonBPartner
+public class JsonRequestBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -114,7 +114,7 @@ public class JsonBPartner
 
 	@JsonCreator
 	@Builder(toBuilder = true)
-	private JsonBPartner(
+	private JsonRequestBPartner(
 			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 
