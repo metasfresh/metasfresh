@@ -177,6 +177,55 @@ UPDATE AD_Ref_List SET Value='JasperReportsSQL',Updated=TO_TIMESTAMP('2019-06-20
 ;
 
 
+-- 2019-06-20T15:57:57.370
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsSQL | @Type@=JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-20 15:57:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=50156
+;
+
+-- 2019-06-20T15:58:09.227
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=JasperReportsSQL | @Type@=JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-20 15:58:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556165
+;
+
+
+-- 2019-06-20T16:00:45.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='JasperReports with JSON',Updated=TO_TIMESTAMP('2019-06-20 16:00:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=541970
+;
+
+-- 2019-06-20T16:00:48.639
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='JasperReports with JSON',Updated=TO_TIMESTAMP('2019-06-20 16:00:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=541970
+;
+
+-- 2019-06-20T16:00:51.820
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='JasperReports with JSON',Updated=TO_TIMESTAMP('2019-06-20 16:00:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=541970
+;
+
+-- 2019-06-20T16:01:04.793
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='JasperReports with SQL',Updated=TO_TIMESTAMP('2019-06-20 16:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=541738
+;
+
+-- 2019-06-20T16:01:07.056
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='JasperReports with SQL',Updated=TO_TIMESTAMP('2019-06-20 16:01:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=541738
+;
+
+-- 2019-06-20T16:01:10.247
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='JasperReports with SQL',Updated=TO_TIMESTAMP('2019-06-20 16:01:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=541738
+;
+
+-- 2019-06-20T16:01:13.671
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='JasperReports with SQL',Updated=TO_TIMESTAMP('2019-06-20 16:01:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=541738
+;
+
+
+
+
 COMMIT;
 
 ----------------
