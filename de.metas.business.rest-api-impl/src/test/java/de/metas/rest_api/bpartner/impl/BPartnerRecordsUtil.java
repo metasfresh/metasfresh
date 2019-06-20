@@ -11,8 +11,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
@@ -35,7 +33,6 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public class BPartnerRecordsUtil
 {
 	public static final String C_COUNTRY_RECORD_COUNTRY_CODE = "countryRecord.countryCode";
@@ -54,7 +51,7 @@ public class BPartnerRecordsUtil
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
 
 
-	public void createBPartnerData(int idOffSet)
+	public static void createBPartnerData(int idOffSet)
 	{
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
 
