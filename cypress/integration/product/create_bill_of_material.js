@@ -26,9 +26,9 @@ describe('Create Product', function() {
         .setName(productName)
         .setValue(productValue)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .setStocked(false)
-        .setPurchased(false)
-        .setSold(false)
+        .setStocked(true)
+        .setPurchased(true)
+        .setSold(true)
         .apply();
     });
   });
@@ -39,9 +39,9 @@ describe('Create Product', function() {
         .setName(productComponentName)
         .setValue(productComponentValue)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .setStocked(false)
-        .setPurchased(false)
-        .setSold(false)
+        .setStocked(true)
+        .setPurchased(true)
+        .setSold(true)
         .apply();
     });
   });
