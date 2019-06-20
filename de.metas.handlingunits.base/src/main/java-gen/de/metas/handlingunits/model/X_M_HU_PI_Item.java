@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -897173996L;
+	private static final long serialVersionUID = -573678180L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item (Properties ctx, int M_HU_PI_Item_ID, String trxName)
@@ -43,18 +43,6 @@ public class X_M_HU_PI_Item extends org.compiere.model.PO implements I_M_HU_PI_I
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
 
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 

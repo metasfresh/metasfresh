@@ -132,8 +132,7 @@ import lombok.NonNull;
 			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration,
 			@NonNull final I_PP_Order ppOrder)
 	{
-		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(ppOrder.getC_BPartner_ID());
 
 		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
 		lutuConfiguration.setM_Locator(ppOrderReceiptLocator);

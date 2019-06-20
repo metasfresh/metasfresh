@@ -135,7 +135,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 		//
 		// Misc configuration
-		luProducerDestination.setC_BPartner(lutuConfiguration.getC_BPartner());
+		luProducerDestination.setC_BPartner(ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration));
 		luProducerDestination.setC_BPartner_Location_ID(lutuConfiguration.getC_BPartner_Location_ID());
 		luProducerDestination.setHUStatus(lutuConfiguration.getHUStatus());
 
@@ -177,7 +177,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU/TU configuration (draft)
 		final I_M_HU_LUTU_Configuration lutuConfiguration = InterfaceWrapperHelper.newInstance(I_M_HU_LUTU_Configuration.class, contextProvider);
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setIsActive(true);
 
 		//

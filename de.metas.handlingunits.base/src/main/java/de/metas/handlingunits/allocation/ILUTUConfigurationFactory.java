@@ -27,6 +27,8 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
@@ -153,6 +155,14 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 		final UomId uomId = UomId.ofRepoIdOrNull(lutuConfiguration.getC_UOM_ID());
 		return uomId != null
 				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
+	}
+
+	static I_C_BPartner extractBPartnerOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
 				: null;
 	}
 

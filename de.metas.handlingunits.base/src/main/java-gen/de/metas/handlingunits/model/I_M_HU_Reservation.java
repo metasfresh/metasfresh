@@ -80,10 +80,6 @@ public interface I_M_HU_Reservation
 	 */
 	public int getC_BPartner_Customer_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer();
-
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer);
-
     /** Column definition for C_BPartner_Customer_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_Customer_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_BPartner>(I_M_HU_Reservation.class, "C_BPartner_Customer_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_Customer_ID */

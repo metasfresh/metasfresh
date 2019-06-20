@@ -812,7 +812,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
-		final I_C_BPartner bpartner = hu.getC_BPartner();
+		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartner(hu);
 		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
 		return pm;
 	}

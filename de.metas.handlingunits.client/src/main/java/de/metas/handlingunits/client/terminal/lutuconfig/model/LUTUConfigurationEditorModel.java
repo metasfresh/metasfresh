@@ -516,7 +516,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		final Properties ctx = getCtx();
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
-		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
+		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
 
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProducts = itemProductDAO.retrieveTUs(ctx, cuProductId, bpartner);
 
@@ -641,7 +641,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 
 		final String huUnitType = X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit;
 
-		final I_C_BPartner bpartner = lutuConfiguration.getC_BPartner();
+		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfiguration);
 		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, huUnitType, bpartner);
 
 		final Map<String, ILUTUCUKey> luKeys = new LinkedHashMap<>(luPIItems.size());

@@ -1073,13 +1073,13 @@ public class HUTestHelper
 	 * @param huDefinition
 	 * @param includedHuDefinition
 	 * @param qty
-	 * @param bPartner
+	 * @param bpartner
 	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
-			final I_C_BPartner bPartner)
+			final I_C_BPartner bpartner)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1087,7 +1087,7 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner(bPartner);
+		itemDefinition.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
@@ -1143,7 +1143,7 @@ public class HUTestHelper
 		itemDefProduct.setQty(capacity);
 		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner(bpartner);
+		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		InterfaceWrapperHelper.save(itemDefProduct);
 
 		return itemDefProduct;
@@ -1415,7 +1415,7 @@ public class HUTestHelper
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 

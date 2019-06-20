@@ -512,7 +512,7 @@ public class PMMProductBLTest
 		itemDefProduct.setQty(qty);
 		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner(bpartner);
+		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		InterfaceWrapperHelper.save(itemDefProduct);
 		return itemDefProduct;
 	}

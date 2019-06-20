@@ -105,13 +105,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IHUBuilder setC_BPartner(final I_C_BPartner bpartner)
+	public IHUBuilder setC_BPartner(final I_C_BPartner bpartner)
 	{
 		_bpartner = bpartner;
 		return this;
 	}
 
-	protected final I_C_BPartner getC_BPartner()
+	protected I_C_BPartner getC_BPartner()
 	{
 		return _bpartner;
 	}
@@ -129,18 +129,18 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IHUBuilder setM_HU_Item_Parent(final I_M_HU_Item parentItem)
+	public IHUBuilder setM_HU_Item_Parent(final I_M_HU_Item parentItem)
 	{
 		_parentItem = parentItem;
 		return this;
 	}
 
-	protected final I_M_HU_Item getM_HU_Item_Parent()
+	protected I_M_HU_Item getM_HU_Item_Parent()
 	{
 		return _parentItem;
 	}
 
-	protected final I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
+	protected I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
 		return _piip;
 	}
@@ -153,13 +153,13 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public final IHUBuilder setLocatorId(final LocatorId locatorId)
+	public IHUBuilder setLocatorId(final LocatorId locatorId)
 	{
 		_locatorId = locatorId;
 		return this;
 	}
 
-	protected final LocatorId getLocatorId()
+	protected LocatorId getLocatorId()
 	{
 		return _locatorId;
 	}
@@ -172,13 +172,13 @@ import lombok.NonNull;
 		return this;
 	}
 
-	protected final String getHUStatus()
+	protected String getHUStatus()
 	{
 		return _huStatus;
 	}
 
 	@Override
-	public final IHUBuilder setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public IHUBuilder setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		if (lutuConfiguration == null)
 		{
@@ -200,7 +200,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	protected final I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
+	protected I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		return _lutuConfiguration;
 	}
@@ -218,7 +218,7 @@ import lombok.NonNull;
 		return _huPlanningReceiptOwnerPM;
 	}
 
-	private final Map<AttributeId, Object> getInitialAttributeValueDefaults()
+	private Map<AttributeId, Object> getInitialAttributeValueDefaults()
 	{
 		return getHUContext().getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 	}
@@ -327,7 +327,7 @@ import lombok.NonNull;
 	 * @return
 	 * @see #createHUInstance(I_M_HU_PI_Version, I_M_HU_Item)
 	 */
-	private final I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion)
+	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion)
 	{
 		final I_M_HU_Item parentItem = getM_HU_Item_Parent();
 		return createHUInstance(huPIVersion, parentItem);
@@ -342,7 +342,7 @@ import lombok.NonNull;
 	 * @param parentItem parent HU Item to link on
 	 * @return created {@link I_M_HU}.
 	 */
-	private final I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
+	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
 	{
 		final IHUContext huContext = getHUContext();
 
@@ -388,7 +388,7 @@ import lombok.NonNull;
 		else
 		{
 			final I_C_BPartner bpartner = getC_BPartner();
-			hu.setC_BPartner(bpartner);
+			hu.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 
 			final int bpartnerLocationId = getC_BPartner_Location_ID();
 			if (bpartner != null && bpartnerLocationId > 0)

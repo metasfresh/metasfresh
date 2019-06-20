@@ -15,7 +15,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1751932620L;
+	private static final long serialVersionUID = -1345246676L;
 
     /** Standard Constructor */
     public X_M_HU_Stock_Detail_V (Properties ctx, int M_HU_Stock_Detail_V_ID, String trxName)
@@ -58,18 +58,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	public java.lang.String getAttributeValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_AttributeValue);
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
 	}
 
 	/** Set Geschäftspartner.

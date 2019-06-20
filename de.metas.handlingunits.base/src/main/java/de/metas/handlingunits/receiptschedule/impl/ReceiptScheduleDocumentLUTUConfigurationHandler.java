@@ -108,9 +108,9 @@ import de.metas.util.Services;
 
 		//
 		// Set BPartner / Location to be used
-		final I_C_BPartner bpartner = receiptScheduleBL.getC_BPartner_Effective(documentLine);
+		final int bpartnerId = receiptScheduleBL.getC_BPartner_Effective_ID(documentLine);
 		final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(documentLine);
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartnerId);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 
 		//

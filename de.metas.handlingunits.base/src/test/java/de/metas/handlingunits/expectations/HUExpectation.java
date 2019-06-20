@@ -123,7 +123,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_bpartner != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner", _bpartner, hu.getC_BPartner());
+			Assert.assertEquals(prefix + " C_BPartner", _bpartner, IHandlingUnitsBL.extractBPartner(hu));
 		}
 		if (_bpartnerLocation != null)
 		{
@@ -228,7 +228,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		POJOWrapper.setInstanceName(hu, _instanceName);
 		hu.setM_HU_PI_Version(getM_HU_PI_Version());
 		hu.setM_HU_Item_Parent(parentHUItem);
-		hu.setC_BPartner(_bpartner);
+		hu.setC_BPartner_ID(_bpartner != null ? _bpartner.getC_BPartner_ID() : -1);
 		hu.setC_BPartner_Location(_bpartnerLocation);
 		hu.setHUStatus(huStatus);
 		hu.setM_Locator(locator);

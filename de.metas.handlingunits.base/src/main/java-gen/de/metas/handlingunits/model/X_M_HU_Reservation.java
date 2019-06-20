@@ -15,7 +15,7 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1035175713L;
+	private static final long serialVersionUID = 1667084167L;
 
     /** Standard Constructor */
     public X_M_HU_Reservation (Properties ctx, int M_HU_Reservation_ID, String trxName)
@@ -45,18 +45,6 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner_Customer()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner_Customer(org.compiere.model.I_C_BPartner C_BPartner_Customer)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Customer_ID, org.compiere.model.I_C_BPartner.class, C_BPartner_Customer);
-	}
 
 	/** Set Kunde.
 		@param C_BPartner_Customer_ID Kunde	  */

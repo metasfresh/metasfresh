@@ -850,7 +850,7 @@ public class HUTransformService
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
-					.setC_BPartner(sourceTuHU.getC_BPartner())
+					.setC_BPartner(IHandlingUnitsBL.extractBPartner(sourceTuHU))
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
 					.setLocatorId(LocatorId.ofRecord(sourceTuHU.getM_Locator()))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
@@ -966,7 +966,8 @@ public class HUTransformService
 			}
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
+					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartner(sourceTuHU))
+					.stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
 			if (materialItem == null)

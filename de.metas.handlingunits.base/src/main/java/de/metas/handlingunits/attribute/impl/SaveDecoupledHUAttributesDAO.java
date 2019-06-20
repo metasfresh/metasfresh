@@ -315,9 +315,8 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		//
 		// Save all attributes
-		for (final Iterator<HUAttributesMap> it = _hu2huAttributes.values().iterator(); it.hasNext();)
+		for (HUAttributesMap huAttributes : _hu2huAttributes.values())
 		{
-			final HUAttributesMap huAttributes = it.next();
 			if (huAttributes == null || huAttributes.isEmpty())
 			{
 				continue;
@@ -462,11 +461,6 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 	private static class HUAttributesMap implements Iterable<I_M_HU_Attribute>
 	{
-		public static HUAttributesMap newEmptyInstance()
-		{
-			return new HUAttributesMap(new HashMap<>());
-		}
-
 		public static HUAttributesMap of(final HUAndPIAttributes huAndPIAttributes)
 		{
 			final ImmutableList<I_M_HU_Attribute> huAttributesList = huAndPIAttributes.getHuAttributes();

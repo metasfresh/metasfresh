@@ -5,6 +5,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Check;
@@ -48,7 +49,7 @@ import de.metas.util.Check;
 
 	public I_C_BPartner getC_BPartner()
 	{
-		return hu.getC_BPartner();
+		return IHandlingUnitsBL.extractBPartner(hu);
 	}
 
 	public I_C_BPartner_Location getC_BPartner_Location()

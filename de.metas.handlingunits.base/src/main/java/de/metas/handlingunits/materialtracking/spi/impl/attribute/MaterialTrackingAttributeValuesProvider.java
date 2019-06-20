@@ -5,14 +5,11 @@ import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M
 import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_Product_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -44,6 +41,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -297,7 +296,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private KeyNamePair createNamePair(@NonNull final I_M_Material_Tracking materialTrackingRecord)
 	{
-		final KeyNamePair valueNamePair = new KeyNamePair(
+		final KeyNamePair valueNamePair = KeyNamePair.of(
 				materialTrackingRecord.getM_Material_Tracking_ID(),
 				materialTrackingRecord.getLot());
 		return valueNamePair;
