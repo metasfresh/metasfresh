@@ -392,6 +392,7 @@ public class InterfaceWrapperHelper
 		return id == null ? newInstance(modelClass) : load(id.getRepoId(), modelClass);
 	}
 
+	@Deprecated
 	public static <T> T loadOrNew(@Nullable final RepoIdAware id, final Class<T> modelClass, final Object contextProvider)
 	{
 		return id == null ? newInstance(modelClass, contextProvider) : load(id.getRepoId(), modelClass);
