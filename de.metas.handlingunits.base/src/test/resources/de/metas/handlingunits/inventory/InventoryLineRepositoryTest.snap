@@ -2,6 +2,7 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
   [
     {
       "id": 100013,
+      "orgId": 1,
       "asiId": 100008,
       "inventoryId": 100012,
       "productId": 40,
@@ -10,7 +11,7 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
         "repoId": 100003,
         "warehouseId": 100002
       },
-      "singleHUAggregation": false,
+      "huAggregationType": "MULTI_HU",
       "inventoryLineHUs": [
         {
           "id": 100014,
@@ -44,7 +45,8 @@ de.metas.handlingunits.inventory.InventoryLineRepositoryTest.save=[
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": false
     }
   ]
 ]

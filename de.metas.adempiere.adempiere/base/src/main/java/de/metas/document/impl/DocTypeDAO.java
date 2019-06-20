@@ -48,6 +48,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -209,7 +210,7 @@ public class DocTypeDAO implements IDocTypeDAO
 			filters.addEqualsFilter(I_C_DocType.COLUMN_IsSOTrx, query.getIsSOTrx());
 		}
 
-		if(!Check.isEmpty(query.getName(), true))
+		if (!Check.isEmpty(query.getName(), true))
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
 		}
@@ -335,5 +336,12 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		InterfaceWrapperHelper.save(dt);
 		return dt;
+	}
+
+	@Override
+	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docTypeRecord = getById(docTypeId);
+		return DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 	}
 }
