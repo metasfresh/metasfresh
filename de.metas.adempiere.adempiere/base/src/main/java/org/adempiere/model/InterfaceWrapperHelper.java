@@ -595,6 +595,16 @@ public class InterfaceWrapperHelper
 		}
 	}
 
+	public static void saveAll(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return;
+		}
+
+		models.forEach(InterfaceWrapperHelper::saveRecord);
+	}
+
 	/**
 	 * Does the same as {@link #save(Object)},
 	 * but this method can be static-imported into repository implementations which usually have their own method named "save()".
