@@ -3,10 +3,12 @@ package de.metas.handlingunits.inventory;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.inventory.InventoryLineId;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -63,6 +65,14 @@ public final class InventoryLines implements Iterable<InventoryLine>
 	public Iterator<InventoryLine> iterator()
 	{
 		return lines.iterator();
+	}
+
+	public ImmutableSet<InventoryLineId> getInventoryLineIds()
+	{
+		return lines.stream()
+				.map(InventoryLine::getId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ImmutableSet<HuId> getHuIds()

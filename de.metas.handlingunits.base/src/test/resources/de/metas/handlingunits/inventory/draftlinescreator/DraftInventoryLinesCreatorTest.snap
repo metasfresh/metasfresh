@@ -2,6 +2,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   [
     {
       "id": 100012,
+      "orgId": 5,
       "asiId": 100009,
       "inventoryId": 100002,
       "productId": 40,
@@ -10,7 +11,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "repoId": 100004,
         "warehouseId": 100003
       },
-      "singleHUAggregation": false,
+      "huAggregationType": "MULTI_HU",
       "inventoryLineHUs": [
         {
           "id": 100013,
@@ -44,10 +45,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": false
     },
     {
       "id": 100019,
+      "orgId": 5,
       "asiId": 100015,
       "inventoryId": 100002,
       "productId": 40,
@@ -56,7 +59,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "repoId": 100004,
         "warehouseId": 100003
       },
-      "singleHUAggregation": false,
+      "huAggregationType": "MULTI_HU",
       "inventoryLineHUs": [
         {
           "id": 100020,
@@ -74,7 +77,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": false
     }
   ]
 ]
@@ -84,6 +88,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   [
     {
       "id": 100013,
+      "orgId": 5,
       "asiId": 100009,
       "inventoryId": 100002,
       "productId": 40,
@@ -92,7 +97,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "repoId": 100004,
         "warehouseId": 100003
       },
-      "singleHUAggregation": true,
+      "huAggregationType": "SINGLE_HU",
       "inventoryLineHUs": [
         {
           "huId": 300,
@@ -109,10 +114,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": true
     },
     {
       "id": 100017,
+      "orgId": 5,
       "asiId": 100014,
       "inventoryId": 100002,
       "productId": 40,
@@ -121,7 +128,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "repoId": 100004,
         "warehouseId": 100003
       },
-      "singleHUAggregation": true,
+      "huAggregationType": "SINGLE_HU",
       "inventoryLineHUs": [
         {
           "huId": 100,
@@ -138,10 +145,12 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": true
     },
     {
       "id": 100021,
+      "orgId": 5,
       "asiId": 100018,
       "inventoryId": 100002,
       "productId": 40,
@@ -150,7 +159,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "repoId": 100004,
         "warehouseId": 100003
       },
-      "singleHUAggregation": true,
+      "huAggregationType": "SINGLE_HU",
       "inventoryLineHUs": [
         {
           "huId": 200,
@@ -167,7 +176,8 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
             "zero": false
           }
         }
-      ]
+      ],
+      "singleHUAggregation": true
     }
   ]
 ]

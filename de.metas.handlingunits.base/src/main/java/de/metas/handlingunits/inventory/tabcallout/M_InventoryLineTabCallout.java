@@ -6,6 +6,7 @@ import org.compiere.Adempiere;
 
 import de.metas.handlingunits.inventory.InventoryLineRecordService;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.inventory.HUAggregationType;
 import lombok.NonNull;
 
 /*
@@ -30,15 +31,18 @@ import lombok.NonNull;
  * #L%
  */
 
-
 public class M_InventoryLineTabCallout extends TabCalloutAdapter
 {
 	@Override
 	public void onNew(@NonNull final ICalloutRecord calloutRecord)
 	{
-		final I_M_InventoryLine inventoryLineRecord = calloutRecord.getModel(I_M_InventoryLine.class);
-
 		final InventoryLineRecordService inventoryLineRecordService = Adempiere.getBean(InventoryLineRecordService.class);
-		inventoryLineRecordService.updateHUAggregationTypeIfAllowed(inventoryLineRecord);
+
+		final I_M_InventoryLine inventoryLineRecord = calloutRecord.getModel(I_M_InventoryLine.class);
+		final HUAggregationType huAggregationType = inventoryLineRecordService.computeHUAggregationType(inventoryLineRecord).orElse(null);
+		if (huAggregationType != null)
+		{
+			inventoryLineRecord.setHUAggregationType(huAggregationType.getCode());
+		}
 	}
 }

@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.math.BigDecimal;
 
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.metas.handlingunits.HuId;
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -140,12 +142,13 @@ class InventoryLineTest
 	{
 		final InventoryLine inventoryLine = InventoryLine
 				.builder()
+				.orgId(OrgId.ofRepoId(1))
 				.inventoryId(InventoryId.ofRepoId(10))
 				.id(InventoryLineId.ofRepoId(20))
 				.locatorId(LocatorId.ofRepoId(WarehouseId.ofRepoId(30), 35))
 				.productId(ProductId.ofRepoId(40))
 				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10000, 10001, 10002))
-				.singleHUAggregation(false)
+				.huAggregationType(HUAggregationType.MULTI_HU)
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))

@@ -5,6 +5,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 
 import com.google.common.base.Predicates;
@@ -12,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -20,8 +22,10 @@ import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Singular;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -51,7 +55,11 @@ public class InventoryLine
 {
 	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will load and sync the respective {@code M_InventoryLine} record */
 	@Nullable
+	@NonFinal
 	InventoryLineId id;
+
+	@NonNull
+	OrgId orgId;
 
 	/** If not null then {@link InventoryLineRepository#save(InventoryLine)} will assume that there is an existing persisted ASI which is in sync with {@link #storageAttributesKey}. */
 	@Nullable
@@ -69,10 +77,23 @@ public class InventoryLine
 	@NonNull
 	LocatorId locatorId;
 
-	boolean singleHUAggregation;
+	@Nullable
+	@NonFinal
+	@Setter
+	HUAggregationType huAggregationType;
 
 	@Singular("inventoryLineHU")
 	ImmutableList<InventoryLineHU> inventoryLineHUs;
+
+	void setId(@NonNull final InventoryLineId id)
+	{
+		this.id = id;
+	}
+
+	public boolean isSingleHUAggregation()
+	{
+		return HUAggregationType.SINGLE_HU.equals(huAggregationType);
+	}
 
 	public InventoryLineHU getSingleHU()
 	{

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
 import org.adempiere.warehouse.LocatorId;
@@ -33,7 +34,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.inventory.InventoryConstants;
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
@@ -109,7 +110,10 @@ class InventoryLineRepositoryTest
 	@Test
 	void save()
 	{
+		final OrgId orgId = OrgId.ofRepoId(1);
+
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
+		inventoryRecord.setAD_Org_ID(orgId.getRepoId());
 		saveRecord(inventoryRecord);
 
 		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
@@ -124,13 +128,14 @@ class InventoryLineRepositoryTest
 
 		final InventoryLine inventoryLine = InventoryLine
 				.builder()
+				.orgId(orgId)
 				.inventoryId(inventoryId)
 				.id(InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID()))
 				.locatorId(LocatorId.ofRecord(locatorRecord))
 				.productId(ProductId.ofRepoId(40))
 				.asiId(asiId)
 				.storageAttributesKey(storageAttributesKey)
-				.singleHUAggregation(false)
+				.huAggregationType(HUAggregationType.MULTI_HU)
 				.inventoryLineHU(InventoryLineHU
 						.builder()
 						.huId(HuId.ofRepoId(100))
@@ -160,7 +165,7 @@ class InventoryLineRepositoryTest
 
 		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
 		inventoryLineRecord.setM_Inventory(inventoryRecord);
-		inventoryLineRecord.setHUAggregationType(InventoryConstants.HUAggregationType_MULTI_HU);
+		inventoryLineRecord.setHUAggregationType(HUAggregationType.MULTI_HU.getCode());
 		inventoryLineRecord.setC_UOM(uomRecord);
 		inventoryLineRecord.setM_Locator(locatorRecord);
 		inventoryLineRecord.setM_Product_ID(40);
@@ -182,7 +187,7 @@ class InventoryLineRepositoryTest
 
 		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
 		inventoryLineRecord.setM_Inventory(inventoryRecord);
-		inventoryLineRecord.setHUAggregationType(InventoryConstants.HUAggregationType_MULTI_HU);
+		inventoryLineRecord.setHUAggregationType(HUAggregationType.MULTI_HU.getCode());
 		inventoryLineRecord.setC_UOM(uomRecord);
 		inventoryLineRecord.setM_Locator(locatorRecord);
 		inventoryLineRecord.setM_Product_ID(40);
