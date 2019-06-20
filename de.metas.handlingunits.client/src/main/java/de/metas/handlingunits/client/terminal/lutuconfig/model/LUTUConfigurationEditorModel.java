@@ -498,7 +498,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		// TU
 		Check.errorIf(tuKey.isNoPI(), "TUKey not allowed to be a No PI: {}", tuKey);
 
-		lutuConfiguration.setM_HU_PI_Item_Product(tuKey.getM_HU_PI_Item_Product());
+		lutuConfiguration.setM_HU_PI_Item_Product_ID(tuKey.getM_HU_PI_Item_Product_ID());
 		lutuConfiguration.setM_TU_HU_PI(tuKey.getM_HU_PI());
 		lutuConfiguration.setIsInfiniteQtyTU(false);
 		lutuConfiguration.setQtyTU(BigDecimal.valueOf(qtyTU));
@@ -538,7 +538,8 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		//
 		// Add the virtual PI to TU Keys
 		// gh #1194: ... don't add them if lutuConfiguration is already about a virtual PI to start with
-		if (lutuConfiguration.getM_HU_PI_Item_Product().getM_HU_PI_Item_ID() != HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID)
+		final I_M_HU_PI_Item_Product piItemProduct = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration);
+		if (piItemProduct.getM_HU_PI_Item_ID() != HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID)
 		{
 			final ILUTUCUKey tuKey = createVirtualPITUKey(lutuConfiguration);
 			final String tuKeyId = tuKey.getId();
@@ -610,7 +611,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			return null; // TODO VHU!
 		}
 
-		final I_M_HU_PI_Item_Product huPIIP = lutuConfiguration.getM_HU_PI_Item_Product();
+		final I_M_HU_PI_Item_Product huPIIP = ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration);
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(lutuConfiguration.getM_Product_ID());
 		final I_C_UOM cuUOM = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final boolean qtyCUPerTUInfinite = lutuConfiguration.isInfiniteQtyCU();

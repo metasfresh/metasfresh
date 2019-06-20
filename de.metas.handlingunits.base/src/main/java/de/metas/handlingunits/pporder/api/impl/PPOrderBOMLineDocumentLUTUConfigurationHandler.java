@@ -88,10 +88,13 @@ import lombok.NonNull;
 
 		//
 		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
-		if (ppOrderBOMLine.getM_HU_LUTU_Configuration_ID() > 0 && ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
 		{
-			final I_M_HU_PI_Item_Product pip = ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
-			return pip;
+			final I_M_HU_LUTU_Configuration lutuConfiguration = ppOrderBOMLine.getM_HU_LUTU_Configuration();
+			final I_M_HU_PI_Item_Product pip = lutuConfiguration != null ? ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration) : null;
+			if (pip != null)
+			{
+				return pip;
+			}
 		}
 
 		//

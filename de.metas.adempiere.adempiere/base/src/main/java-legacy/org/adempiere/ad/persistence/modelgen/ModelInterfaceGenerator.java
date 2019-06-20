@@ -130,6 +130,7 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_M_Attribute")
 			//
 			.add("de.metas.handlingunits.model.I_M_HU_PI_Attribute")
+			.add("de.metas.handlingunits.model.I_M_HU_PI_Item_Product")
 			.build();
 
 	public ModelInterfaceGenerator(final TableInfo tableInfo, String directory, String packageName)

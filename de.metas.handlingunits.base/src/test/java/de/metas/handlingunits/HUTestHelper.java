@@ -121,7 +121,6 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
-import de.metas.handlingunits.impl.HUPIItemProductDAO;
 import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
@@ -669,7 +668,7 @@ public class HUTestHelper
 		createVersion(huDefNone, true, huUnitType, HuPackingInstructionsVersionId.TEMPLATE);
 
 		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
-		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID.getRepoId());
+		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductId.TEMPLATE_HU);
 
 		return huDefNone;
 	}
@@ -686,7 +685,7 @@ public class HUTestHelper
 				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HuPackingInstructionsVersionId.VIRTUAL);
 
 		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
-		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId());
+		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductId.VIRTUAL_HU);
 
 		return huDefVirtual;
 	}
@@ -1150,7 +1149,7 @@ public class HUTestHelper
 		return itemDefProduct;
 	}
 
-	public I_M_HU_PI_Item_Product assignProductAny(final I_M_HU_PI_Item itemPI, final int huPIItemProductId)
+	public I_M_HU_PI_Item_Product assignProductAny(final I_M_HU_PI_Item itemPI, final HUPIItemProductId huPIItemProductId)
 	{
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
@@ -1164,9 +1163,9 @@ public class HUTestHelper
 
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 
-		if (huPIItemProductId > 0)
+		if (huPIItemProductId != null)
 		{
-			itemDefProduct.setM_HU_PI_Item_Product_ID(huPIItemProductId);
+			itemDefProduct.setM_HU_PI_Item_Product_ID(huPIItemProductId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(itemDefProduct);

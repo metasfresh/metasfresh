@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
@@ -486,6 +487,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
 		return warehouseId != null
 				? InterfaceWrapperHelper.create(Services.get(IWarehouseDAO.class).getById(warehouseId), I_M_Warehouse.class)
+				: null;
+	}
+
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	{
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
+		return piItemProductId != null
+				? Services.get(IHUPIItemProductDAO.class).getById(piItemProductId)
 				: null;
 	}
 }

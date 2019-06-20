@@ -37,8 +37,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUCapacityBL;
-import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -185,7 +185,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
 		final CapacityInterface tuCapacity = huCapacityBL.getCapacity(tuPIItemProduct, cuProductId, cuUOM);
 		//
-		lutuConfiguration.setM_HU_PI_Item_Product(tuPIItemProduct);
+		lutuConfiguration.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 		lutuConfiguration.setM_TU_HU_PI(tuPI);
 		lutuConfiguration.setM_Product_ID(cuProductId.getRepoId());
 		lutuConfiguration.setC_UOM_ID(cuUOM.getC_UOM_ID());
@@ -203,7 +203,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		//
 		// LU Configuration
 		final I_M_HU_PI_Item luPIItem;
-		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId() == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
+		if (noLUForVirtualTU && HUPIItemProductId.isVirtualHU(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
 		{
 			luPIItem = null; // we don't care if there is a matching PIItem, because with noLUForVirtualTU we don't want to put the virtual HU onto an LU
 		}

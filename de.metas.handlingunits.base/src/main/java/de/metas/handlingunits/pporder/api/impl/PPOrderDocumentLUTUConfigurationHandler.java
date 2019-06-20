@@ -78,7 +78,7 @@ import lombok.NonNull;
 				bpartner,
 				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
-		final BigDecimal cuPerTu = lutuConfiguration.getM_HU_PI_Item_Product().getQty();
+		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
 		if (cuPerTu.signum() > 0)
 		{
 			final BigDecimal undeliveredQtyCU = ppOrder.getQtyOrdered().subtract(ppOrder.getQtyDelivered());
@@ -100,10 +100,13 @@ import lombok.NonNull;
 
 		//
 		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
-		if (ppOrder.getM_HU_LUTU_Configuration_ID() > 0 && ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
 		{
-			final I_M_HU_PI_Item_Product pip = ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
-			return pip;
+			final I_M_HU_LUTU_Configuration lutuConfiguration = ppOrder.getM_HU_LUTU_Configuration();
+			final I_M_HU_PI_Item_Product pip = lutuConfiguration != null ? ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfiguration) : null;
+			if (pip != null)
+			{
+				return pip;
+			}
 		}
 
 		//

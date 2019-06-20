@@ -287,7 +287,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
 			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 			HUPackingMaterialDocumentLineCandidate innerCandidate = null;
-			I_M_HU_PI_Item_Product materialItemProduct = hu.getM_HU_PI_Item_Product();
+			I_M_HU_PI_Item_Product materialItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 
 			// Check if the material item product does have a different packing material, and make a candidate for it too in case it does
 			if (materialItemProduct != null && isCollectAggregatedHUs)

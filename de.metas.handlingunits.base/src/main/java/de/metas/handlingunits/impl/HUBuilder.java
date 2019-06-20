@@ -41,9 +41,11 @@ import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
 import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationStrategy;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -417,7 +419,7 @@ import lombok.NonNull;
 		//
 		// 07970: Set M_HU.M_HU_PI_Item_Product_ID
 		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductOrNull(lutuConfig, parentHU, hu);
-		hu.setM_HU_PI_Item_Product(piip);
+		hu.setM_HU_PI_Item_Product_ID(piip != null ? piip.getM_HU_PI_Item_Product_ID() : -1);
 
 		//
 		// fresh 08162: Set M_HU.HUPlanningReceiptOwnerPM
@@ -453,7 +455,7 @@ import lombok.NonNull;
 
 		if (lutuConfig != null)
 		{
-			piip = lutuConfig.getM_HU_PI_Item_Product();
+			piip = ILUTUConfigurationFactory.extractHUPIItemProductOrNull(lutuConfig);
 		}
 
 		if (piip != null)
@@ -463,7 +465,7 @@ import lombok.NonNull;
 
 		if (parentHU != null)
 		{
-			piip = parentHU.getM_HU_PI_Item_Product();
+			piip = IHandlingUnitsBL.extractPIItemProductOrNull(parentHU);
 		}
 		return piip;
 	}

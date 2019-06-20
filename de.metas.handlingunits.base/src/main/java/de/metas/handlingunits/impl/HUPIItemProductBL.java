@@ -118,7 +118,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@Override
 	public boolean isVirtualHUPIItemProduct(final I_M_HU_PI_Item_Product piip)
 	{
-		return piip.getM_HU_PI_Item_Product_ID() == HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId();
+		return HUPIItemProductId.isVirtualHU(piip.getM_HU_PI_Item_Product_ID());
 	}
 
 	@Override

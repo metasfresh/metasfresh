@@ -14,7 +14,7 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 382313085L;
+	private static final long serialVersionUID = 935996337L;
 
     /** Standard Constructor */
     public X_M_HU_Snapshot (Properties ctx, int M_HU_Snapshot_ID, String trxName)
@@ -281,18 +281,6 @@ public class X_M_HU_Snapshot extends org.compiere.model.PO implements I_M_HU_Sna
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class);
-	}
-
-	@Override
-	public void setM_HU_PI_Item_Product(de.metas.handlingunits.model.I_M_HU_PI_Item_Product M_HU_PI_Item_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_PI_Item_Product_ID, de.metas.handlingunits.model.I_M_HU_PI_Item_Product.class, M_HU_PI_Item_Product);
 	}
 
 	/** Set Packvorschrift.

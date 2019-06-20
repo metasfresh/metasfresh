@@ -106,7 +106,7 @@ public class PickingSlotKey extends TerminalKey
 			I_M_HU hu = this.pickingSlot.getM_HU();
 			if (hu != null)
 			{
-				this.piItemProduct = hu.getM_HU_PI_Item_Product();
+				this.piItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 			}
 		}
 

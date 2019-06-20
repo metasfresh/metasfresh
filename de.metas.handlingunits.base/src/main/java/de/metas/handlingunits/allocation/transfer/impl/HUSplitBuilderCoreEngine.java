@@ -291,8 +291,8 @@ public class HUSplitBuilderCoreEngine
 				continue;
 			}
 
-			hu.setM_HU_PI_Item_Product(piip);
-			InterfaceWrapperHelper.save(hu);
+			hu.setM_HU_PI_Item_Product_ID(piip.getM_HU_PI_Item_Product_ID());
+			handlingUnitsDAO.saveHU(hu);
 		}
 	}
 

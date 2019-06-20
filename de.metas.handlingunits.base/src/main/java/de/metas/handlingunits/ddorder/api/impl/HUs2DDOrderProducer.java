@@ -553,7 +553,7 @@ public class HUs2DDOrderProducer
 
 			//
 			// PI Item Product
-			piItemProduct = hu.getM_HU_PI_Item_Product();
+			piItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 			aggregationKeyBuilder.appendId(piItemProduct == null ? -1 : piItemProduct.getM_HU_PI_Item_Product_ID());
 
 			//
