@@ -129,7 +129,7 @@ public class PackingInfoProcessParams
 		final I_M_HU_LUTU_Configuration defaultLUTUConfig = getDefaultLUTUConfig();
 
 		final ProductId productId = ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID());
-		final I_C_BPartner bPartner = defaultLUTUConfig.getC_BPartner();
+		final I_C_BPartner bPartner = ILUTUConfigurationFactory.extractBPartnerOrNull(defaultLUTUConfig);
 
 		final boolean includeVirtualItem = !enforcePhysicalTU;
 		final LookupValuesList huPIItemProducts = WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), productId, bPartner, includeVirtualItem);
@@ -144,7 +144,7 @@ public class PackingInfoProcessParams
 			return LookupValuesList.EMPTY;
 		}
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, getDefaultLUTUConfig().getC_BPartner());
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, ILUTUConfigurationFactory.extractBPartnerOrNull(getDefaultLUTUConfig()));
 
 		return luPIItems.stream()
 				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
@@ -217,22 +217,25 @@ public class PackingInfoProcessParams
 
 	private void insertPhysicalFallbackTU(@NonNull final I_M_HU_LUTU_Configuration defaultLUTUConfig)
 	{
+		final I_C_BPartner bpartner = ILUTUConfigurationFactory.extractBPartnerOrNull(defaultLUTUConfig);
+		final ProductId productId = ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID());
+		
 		final List<I_M_HU_PI_Item_Product> availableHUPIItemProductRecords = WEBUI_ProcessHelper.retrieveHUPIItemProductRecords(
 				Env.getCtx(),
-				ProductId.ofRepoId(defaultLUTUConfig.getM_Product_ID()),
-				defaultLUTUConfig.getC_BPartner(),
+				productId,
+				bpartner,
 				false); // includeVirtualItem == false
 
 		Check.errorIf(availableHUPIItemProductRecords.isEmpty(),
 				"There is no non-virtual M_HU_PI_Item_Product value for the given product and bPartner; product={}; bPartner={}",
-				defaultLUTUConfig.getM_Product(), defaultLUTUConfig.getC_BPartner());
+				productId, bpartner);
 
 		final I_M_HU_PI_Item_Product pip = availableHUPIItemProductRecords.get(0);
 		defaultLUTUConfig.setM_HU_PI_Item_Product(pip);
 		defaultLUTUConfig.setM_TU_HU_PI_ID(pip.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI_ID());
 		defaultLUTUConfig.setQtyCU(pip.getQty());
 
-		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, defaultLUTUConfig.getC_BPartner());
+		final List<I_M_HU_PI_Item> luPIItems = getAvailableLuPIItems(pip, bpartner);
 		if (luPIItems.isEmpty())
 		{
 			defaultLUTUConfig.setM_LU_HU_PI_Item(null);

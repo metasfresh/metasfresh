@@ -263,7 +263,7 @@ public class WebuiHUTransformParametersFiller
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
 		final ProductId productId = cuRow.getProductId();
-		final I_C_BPartner bPartner = cuRow.getM_HU().getC_BPartner();
+		final I_C_BPartner bPartner = IHandlingUnitsBL.extractBPartner(cuRow.getM_HU());
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
 				Env.getCtx(),
@@ -431,7 +431,10 @@ public class WebuiHUTransformParametersFiller
 		final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
 		Check.errorIf(effectivePIVersion == null, "tuHU is inconsistent; hu={}", tuHU);
 
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(effectivePIVersion.getM_HU_PI(), null, tuHU.getC_BPartner());
+		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+				effectivePIVersion.getM_HU_PI(), 
+				null, 
+				IHandlingUnitsBL.extractBPartner(tuHU));
 
 		return luPIItems;
 	}
