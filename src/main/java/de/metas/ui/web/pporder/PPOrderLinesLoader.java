@@ -1,7 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +25,7 @@ import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.PPOrderPlanningStatus;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -370,7 +369,7 @@ class PPOrderLinesLoader
 			// => get the Qty/UOM from PP_Order_Qty because on HU level, for sure it will be ZERO.
 			if (parentHUEditorRow == null)
 			{
-				quantity = Quantity.of(ppOrderQty.getQty(), ppOrderQty.getC_UOM());
+				quantity = Quantity.of(ppOrderQty.getQty(), IHUPPOrderQtyBL.extractUOM(ppOrderQty));
 			}
 			// Included HU which was already destroyed
 			// => we don't know the Qty
@@ -383,7 +382,7 @@ class PPOrderLinesLoader
 		{
 			if (huEditorRow.getQtyCU() == null && huEditorRow.getC_UOM() == null)
 			{
-				final I_C_UOM uom = loadOutOfTrx(ppOrderQty.getC_UOM_ID(), I_C_UOM.class);
+				final I_C_UOM uom = IHUPPOrderQtyBL.extractUOM(ppOrderQty);
 				quantity = Quantity.zero(uom);
 			}
 			else

@@ -6,6 +6,7 @@ import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Check;
@@ -87,6 +88,6 @@ class LUTUConfigAsPackingInfo implements IHUPackingInfo
 	@Override
 	public I_C_UOM getQtyCUsPerTU_UOM()
 	{
-		return lutuConfig.getC_UOM();
+		return ILUTUConfigurationFactory.extractUOMOrNull(lutuConfig);
 	}
 }
