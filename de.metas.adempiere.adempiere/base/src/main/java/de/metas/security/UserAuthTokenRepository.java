@@ -95,4 +95,27 @@ public class UserAuthTokenRepository
 	{
 		return UUID.randomUUID().toString().replace("-", "");
 	}
+
+	public UserAuthToken retrieveByUserId(final UserId userId, final RoleId roleId)
+	{
+		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
+				.setLimit(2)
+				.create()
+				.list(I_AD_User_AuthToken.class);
+		if (userAuthTokens.isEmpty())
+		{
+			throw new AdempiereException("Invalid token (1)");
+		}
+		else if (userAuthTokens.size() > 1)
+		{
+			throw new AdempiereException("Invalid token (2)");
+		}
+
+		return toUserAuthToken(userAuthTokens.get(0));
+	}
+
 }

@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.HashMap;
@@ -46,6 +47,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -61,7 +63,11 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.security.UserAuthToken;
+import de.metas.security.UserAuthTokenRepository;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -101,6 +107,9 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
+	@Autowired
+	private UserAuthTokenRepository userAuthTokenRepo;
+
 	private final transient Logger log = LogManager.getLogger(getClass());
 
 	@Override
@@ -144,7 +153,11 @@ public class JasperEngine extends AbstractReportEngine
 		if (X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType())
 				&& !Check.isEmpty(reportContext.getJSONPath(), true))
 		{
-			final InputStream is = getURLInputStream(getJasperJSONURL(reportContext));
+			final UserId userId = Env.getLoggedUserId();
+			final RoleId roleId = Env.getLoggedRoleId(Env.getCtx());
+			final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
+
+			final InputStream is = getURLInputStream(getJasperJSONURL(reportContext), token.getAuthToken());
 			final JsonDataSource dataSource = new JsonDataSource(is);
 
 			//
@@ -600,20 +613,20 @@ public class JasperEngine extends AbstractReportEngine
 		return url;
 	}
 
-	private static InputStream getURLInputStream(String reportURL)
+	private static InputStream getURLInputStream(@NonNull final String reportURL, @NonNull final String token)
 	{
-
-		InputStream is = null;
 		try
 		{
 			final URL url = new URL(reportURL);
-			is = url.openStream();
+			final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			conn.setRequestProperty ("Authorization", token);
+			conn.setRequestMethod("GET");
+			return conn.getInputStream();
 		}
 		catch (final IOException e)
 		{
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
 			throw new AdempiereException(errorMsg);
 		}
-		return is;
 	}
 }
