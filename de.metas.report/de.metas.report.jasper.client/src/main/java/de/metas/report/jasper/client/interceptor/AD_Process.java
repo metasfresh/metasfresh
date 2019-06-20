@@ -4,6 +4,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Process;
@@ -47,12 +48,24 @@ public class AD_Process
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
 	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_Type)
-	public void setClassnameIfTypeSQL(final I_AD_Process process)
+	public void setClassnameIfTypeJasperReportsSQ(final I_AD_Process process)
 	{
 		final String processType = process.getType();
-		if (X_AD_Process.TYPE_JasperReports.equals(processType))
+		if (X_AD_Process.TYPE_JasperReportsSQL.equals(processType)
+				|| X_AD_Process.TYPE_JasperReportsJSON.equals(processType))
 		{
 			process.setClassname(JasperReportStarter.class.getName());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
+	public void checkJSOMPathIfTypeJasperReportJSON(final I_AD_Process process)
+	{
+		final String processType = process.getType();
+		final String JSONPath = process.getJSONPath();
+		if (X_AD_Process.TYPE_JasperReportsJSON.equals(processType) && Check.isEmpty(JSONPath, true))
+		{
+			throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
 		}
 	}
 
