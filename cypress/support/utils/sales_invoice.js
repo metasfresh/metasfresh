@@ -23,6 +23,11 @@ export class SalesInvoice {
     return this;
   }
 
+  setPriceList(priceList) {
+    this.priceList = priceList;
+    return this;
+  }
+
   apply() {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     SalesInvoice.applySalesInvoice(this);
@@ -40,6 +45,8 @@ export class SalesInvoice {
       cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner);
       cy.getFieldValue('M_PriceList_ID').should('not.be.empty');
       cy.getFieldValue('C_Currency_ID').should('not.be.empty');
+
+      cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
 
       cy.getFieldValue('DocumentNo').should('be.empty');
       cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
