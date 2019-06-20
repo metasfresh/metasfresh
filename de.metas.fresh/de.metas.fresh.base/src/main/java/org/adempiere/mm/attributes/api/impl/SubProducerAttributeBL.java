@@ -85,7 +85,7 @@ public class SubProducerAttributeBL implements ISubProducerAttributeBL
 
 			final I_M_HU hu = Services.get(IHUAttributesBL.class).getM_HU(attributeSet);
 
-			partner = InterfaceWrapperHelper.create(IHandlingUnitsBL.extractBPartner(hu), de.metas.fresh.model.I_C_BPartner.class);
+			partner = InterfaceWrapperHelper.create(IHandlingUnitsBL.extractBPartnerOrNull(hu), de.metas.fresh.model.I_C_BPartner.class);
 
 			//
 			// If there is no BPartner we have to set the ADR attribute to null

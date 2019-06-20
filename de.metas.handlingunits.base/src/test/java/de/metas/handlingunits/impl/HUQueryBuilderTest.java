@@ -103,7 +103,7 @@ public class HUQueryBuilderTest
 	{
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		save(hu);
 		POJOWrapper.setInstanceName(hu, instanceName);
 

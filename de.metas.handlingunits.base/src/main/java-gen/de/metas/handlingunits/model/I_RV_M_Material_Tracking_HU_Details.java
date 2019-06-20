@@ -314,10 +314,6 @@ public interface I_RV_M_Material_Tracking_HU_Details
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_RV_M_Material_Tracking_HU_Details, org.compiere.model.I_M_Locator>(I_RV_M_Material_Tracking_HU_Details.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */

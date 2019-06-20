@@ -24,9 +24,9 @@ package de.metas.handlingunits.receiptschedule.impl;
 
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.exceptions.HUNotAssignableException;
@@ -101,9 +101,9 @@ public final class ReceiptScheduleHUAssignmentListener extends HUAssignmentListe
 
 		//
 		// Update HU's locator (if needed)
-		final I_M_Warehouse warehouse = Services.get(IReceiptScheduleBL.class).getM_Warehouse_Effective(receiptSchedule);
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
-		hu.setM_Locator(locator);
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(Services.get(IReceiptScheduleBL.class).getM_Warehouse_Effective_ID(receiptSchedule));
+		final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+		hu.setM_Locator_ID(locatorId.getRepoId());
 		InterfaceWrapperHelper.save(hu, trxName);
 	}
 }

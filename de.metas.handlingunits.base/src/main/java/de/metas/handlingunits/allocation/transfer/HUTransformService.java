@@ -20,7 +20,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -850,9 +849,9 @@ public class HUTransformService
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
-					.setC_BPartner(IHandlingUnitsBL.extractBPartner(sourceTuHU))
+					.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
-					.setLocatorId(LocatorId.ofRecord(sourceTuHU.getM_Locator()))
+					.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceTuHU))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());
@@ -966,7 +965,7 @@ public class HUTransformService
 			}
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartner(sourceTuHU))
+					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
 					.stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);

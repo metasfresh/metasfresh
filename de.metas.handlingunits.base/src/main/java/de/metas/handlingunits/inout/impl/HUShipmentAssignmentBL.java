@@ -1,7 +1,5 @@
 package de.metas.handlingunits.inout.impl;
 
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -57,6 +55,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 {
@@ -231,11 +230,10 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 
 			//
 			// Restore after-picking locator
-			final I_M_Locator shippingLocator = hu.getM_Locator();
-			final I_M_Locator pickingLocator = Services.get(IHUWarehouseDAO.class).suggestAfterPickingLocator(shippingLocator);
+			final I_M_Locator pickingLocator = Services.get(IHUWarehouseDAO.class).suggestAfterPickingLocator(hu.getM_Locator_ID());
 			if (pickingLocator != null)
 			{
-				hu.setM_Locator(pickingLocator);
+				hu.setM_Locator_ID(pickingLocator.getM_Locator_ID());
 			}
 		}
 

@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
 import org.eevolution.api.IPPOrderBL;
 
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -134,8 +133,8 @@ import lombok.NonNull;
 	{
 		lutuConfiguration.setC_BPartner_ID(ppOrder.getC_BPartner_ID());
 
-		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
-		lutuConfiguration.setM_Locator(ppOrderReceiptLocator);
+		final int ppOrderReceiptLocatorId = ppOrder.getM_Locator_ID();
+		lutuConfiguration.setM_Locator_ID(ppOrderReceiptLocatorId);
 
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Active);
 	}

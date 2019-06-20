@@ -133,7 +133,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 				documentLine = tuKey.findDocumentLineOrNull();
 			}
 
-			final I_C_BPartner tuBPartner = IHandlingUnitsBL.extractBPartner(tuHU);
+			final I_C_BPartner tuBPartner = IHandlingUnitsBL.extractBPartnerOrNull(tuHU);
 			if (bpartner == null)
 			{
 				bpartner = tuBPartner;
@@ -153,7 +153,7 @@ public class HUAssignTULUModel extends AbstractLTCUModel
 				throw new AdempiereException(ERR_TU_LOCATION_MATCH, new Object[] { tuHU.getValue(), bpLocationId, tuBPLocationId });
 			}
 
-			final I_M_Locator tuLocator = tuHU.getM_Locator();
+			final I_M_Locator tuLocator = IHandlingUnitsBL.extractLocator(tuHU);
 			if (locator == null)
 			{
 				locator = tuLocator;

@@ -114,7 +114,7 @@ public final class HUStorageRecord implements IStorageRecord
 		summary.append("\n@M_TU_HU_ID@: ").append(handlingUnitsBL.getDisplayName(tuHU));
 		summary.append("\n@VHU_ID@: ").append(handlingUnitsBL.getDisplayName(vhu));
 
-		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartner(vhu);
+		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(vhu);
 		if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
 		{
 			summary.append("\n@C_BPartner_ID@: ").append(bpartner.getValue()).append("_").append(bpartner.getName());

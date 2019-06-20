@@ -89,20 +89,26 @@ public class HUInternalUseInventoryProducer
 
 	public List<I_M_Inventory> createInventories()
 	{
-		final Map<Integer, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
+		final Map<WarehouseId, List<I_M_HU>> topLevelHUsByWarehouseId = getTopLevelHUs()
 				.stream()
-				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID())); // we asserted earlier that each HU has a locator
+				.collect(Collectors.groupingBy(this::extractWarehouseId)); // we asserted earlier that each HU has a locator
 
 		final List<I_M_Inventory> result = new ArrayList<>();
-		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
+		for (final Map.Entry<WarehouseId, List<I_M_HU>> warehouseIdAndHUs : topLevelHUsByWarehouseId.entrySet())
 		{
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouseIdAndHUs.getKey());
+			final WarehouseId warehouseId = warehouseIdAndHUs.getKey();
 			final List<I_M_HU> hus = warehouseIdAndHUs.getValue();
 			final List<I_M_Inventory> inventories = createInventories(warehouseId, hus, activityId, description, isCompleteInventory, isCreateMovement);
 			result.addAll(inventories);
 		}
 
 		return result;
+	}
+	
+	private WarehouseId extractWarehouseId(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorRepoId);
 	}
 
 	private final List<I_M_Inventory> createInventories(

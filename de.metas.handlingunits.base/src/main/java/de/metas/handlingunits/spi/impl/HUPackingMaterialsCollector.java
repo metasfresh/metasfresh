@@ -528,7 +528,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			material_Tracking = InterfaceWrapperHelper.create(huContext.getCtx(), materialTrackingId, I_M_Material_Tracking.class, huContext.getTrxName());
 		}
 
-		final I_M_Locator locator = hu == null ? null : hu.getM_Locator();
+		final I_M_Locator locator = hu == null ? null : IHandlingUnitsBL.extractLocatorOrNull(hu);
 
 		// hu without locator is OK sometimes (e.g. in InOutProducerFromReceiptScheduleHUTest), so we can't assert this here.
 		// Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);

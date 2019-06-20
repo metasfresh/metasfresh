@@ -15,7 +15,7 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1062941672L;
+	private static final long serialVersionUID = -637130292L;
 
     /** Standard Constructor */
     public X_M_HU_Stock_Detail_V (Properties ctx, int M_HU_Stock_Detail_V_ID, String trxName)
@@ -269,18 +269,6 @@ public class X_M_HU_Stock_Detail_V extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
 	}
 
 	/** Set Lagerort.

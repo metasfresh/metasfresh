@@ -146,7 +146,7 @@ public class PP_Cost_Collector
 						{
 							throw new HUException("@NotMatched@ @M_Locator_ID@"
 									+ "\n @Expected@: " + receiptLocatorId
-									+ "\n @Actual@: " + hu.getM_Locator()
+									+ "\n @Actual@: " + IHandlingUnitsBL.extractLocatorOrNull(hu)
 									+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 						}
 

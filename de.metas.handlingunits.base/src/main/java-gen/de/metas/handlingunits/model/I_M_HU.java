@@ -107,10 +107,6 @@ public interface I_M_HU
 	 */
 	public int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
     /** Column definition for C_BPartner_Location_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_C_BPartner_Location>(I_M_HU.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
     /** Column name C_BPartner_Location_ID */
@@ -473,10 +469,6 @@ public interface I_M_HU
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Locator_ID();
-
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_HU, org.compiere.model.I_M_Locator>(I_M_HU.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);

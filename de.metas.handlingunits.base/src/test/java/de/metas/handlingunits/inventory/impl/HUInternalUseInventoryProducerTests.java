@@ -447,7 +447,7 @@ public class HUInternalUseInventoryProducerTests
 		final IMutableHUContext huContext = data.helper.createMutableHUContextOutOfTransaction();
 		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
 		assertThat(createdLU.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Active);
-		createdLU.setM_Locator(locator);
+		createdLU.setM_Locator_ID(locator.getM_Locator_ID());
 
 		M_HU.INSTANCE.updateChildren(createdLU);
 		save(createdLU);
@@ -488,7 +488,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
 
-		cuToSplit.setM_Locator(locator);
+		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());
 		huStatusBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
 
@@ -508,7 +508,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_HU createdTU = createdTUs.get(0);
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
-		createdTU.setM_Locator(locator);
+		createdTU.setM_Locator_ID(locator.getM_Locator_ID());
 
 		M_HU.INSTANCE.updateChildren(createdTU);
 		save(createdTU);
@@ -517,7 +517,7 @@ public class HUInternalUseInventoryProducerTests
 		assertThat(createdCUs.size(), is(1));
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
-		cuToSplit.setM_Locator(locator);
+		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());
 
 		return cuToSplit;
 	}

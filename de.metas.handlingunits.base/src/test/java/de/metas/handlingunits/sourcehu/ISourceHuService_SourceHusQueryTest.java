@@ -110,7 +110,7 @@ public class ISourceHuService_SourceHusQueryTest
 
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		hu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator.getM_Locator_ID());
 		save(hu);
 		return hu;
 	}

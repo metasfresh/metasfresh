@@ -6,7 +6,11 @@ import java.util.Properties;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -23,6 +27,8 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -397,11 +403,79 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	I_M_HU_PackingMaterial getHUPackingMaterial(I_M_HU_Item huItem);
 
-	static I_C_BPartner extractBPartner(final I_M_HU hu)
+	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+	}
+
+	static LocatorId extractLocatorId(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return Services.get(IWarehouseDAO.class).getLocatorIdByRepoIdOrNull(locatorRepoId);
+	}
+
+	static I_M_Locator extractLocator(final I_M_HU hu)
+	{
+		I_M_Locator locator = extractLocatorOrNull(hu);
+		if (locator == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return locator;
+	}
+
+	static I_M_Locator extractLocatorOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		return locatorRepoId > 0
+				? InterfaceWrapperHelper.create(Services.get(IWarehouseDAO.class).getLocatorByRepoId(locatorRepoId), I_M_Locator.class)
+				: null;
+	}
+
+	static WarehouseId extractWarehouseId(final I_M_HU hu)
+	{
+		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
+		if (warehouseId == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+
+		return warehouseId;
+	}
+
+	static I_M_Warehouse extractWarehouse(final I_M_HU hu)
+	{
+		final I_M_Warehouse warehouse = extractWarehouseOrNull(hu);
+		if (warehouse == null)
+		{
+			throw new HUException("Warehouse Locator shall be set for: " + hu);
+		}
+		return warehouse;
+	}
+
+	static WarehouseId extractWarehouseIdOrNull(final I_M_HU hu)
+	{
+		final int locatorRepoId = hu.getM_Locator_ID();
+		if (locatorRepoId <= 0)
+		{
+			return null;
+		}
+
+		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorRepoId);
+	}
+
+	static I_M_Warehouse extractWarehouseOrNull(final I_M_HU hu)
+	{
+		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
+		return warehouseId != null
+				? InterfaceWrapperHelper.create(Services.get(IWarehouseDAO.class).getById(warehouseId), I_M_Warehouse.class)
 				: null;
 	}
 }

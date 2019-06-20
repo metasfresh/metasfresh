@@ -354,9 +354,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 			final I_M_HU newHU = newHUs.get(0);
 
-			newHU.setM_Locator(ppOrder.getM_Locator());
+			newHU.setM_Locator_ID(ppOrder.getM_Locator_ID());
 			Services.get(IHandlingUnitsDAO.class).saveHU(newHU);
-			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
+			Assert.assertTrue("HU's locator shall be set", newHU.getM_Locator_ID() > 0);
 
 			return newHU;
 		});

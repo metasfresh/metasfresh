@@ -116,7 +116,7 @@ import de.metas.util.Services;
 		//
 		// Set Locator
 		final I_M_Locator locator = receiptScheduleBL.getM_Locator_Effective(documentLine);
-		lutuConfiguration.setM_Locator(locator);
+		lutuConfiguration.setM_Locator_ID(locator.getM_Locator_ID());
 
 		//
 		// Set HUStatus=Planning because receipt schedules are always about planning

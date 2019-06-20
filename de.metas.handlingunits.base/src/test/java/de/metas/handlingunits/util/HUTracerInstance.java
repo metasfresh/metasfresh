@@ -442,7 +442,8 @@ public class HUTracerInstance
 
 		if (hui.getM_Locator_ID() > 0)
 		{
-			name.append("-WH=").append(hui.getM_Locator().getM_Warehouse().getName()).append(";");
+			
+			name.append("-WH=").append(IHandlingUnitsBL.extractWarehouse(hui).getName()).append(";");
 		}
 
 		name.append(" M_HU_ID=").append(hui.getM_HU_ID());

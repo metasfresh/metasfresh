@@ -106,7 +106,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_locatorSet)
 		{
-			assertModelEquals(prefix + "M_Locator", _locator, hu.getM_Locator());
+			assertModelEquals(prefix + "M_Locator", _locator, IHandlingUnitsBL.extractLocatorOrNull(hu));
 		}
 
 		if (_huPI != null)
@@ -123,7 +123,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 
 		if (_bpartner != null)
 		{
-			Assert.assertEquals(prefix + " C_BPartner", _bpartner, IHandlingUnitsBL.extractBPartner(hu));
+			Assert.assertEquals(prefix + " C_BPartner", _bpartner, IHandlingUnitsBL.extractBPartnerOrNull(hu));
 		}
 		if (_bpartnerLocation != null)
 		{
@@ -215,7 +215,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		}
 		else if (parentHUItem != null)
 		{
-			locator = parentHUItem.getM_HU().getM_Locator();
+			locator = IHandlingUnitsBL.extractLocatorOrNull(parentHUItem.getM_HU());
 		}
 		else
 		{
@@ -231,7 +231,7 @@ public class HUExpectation<ParentExpectationType> extends AbstractHUExpectation<
 		hu.setC_BPartner_ID(_bpartner != null ? _bpartner.getC_BPartner_ID() : -1);
 		hu.setC_BPartner_Location(_bpartnerLocation);
 		hu.setHUStatus(huStatus);
-		hu.setM_Locator(locator);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		InterfaceWrapperHelper.save(hu);
 
 		//

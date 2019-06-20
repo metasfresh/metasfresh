@@ -44,6 +44,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -333,11 +334,9 @@ public class HUs2DDOrderProducer
 		//
 		// Validate the HU before creating the DD_Order
 		{
-			final I_M_Locator huLocator = hu.getM_Locator();
-			Check.assumeNotNull(huLocator, "HU has a locator set");
-
+			final WarehouseId huWarehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
 			final I_M_Warehouse warehouseTo = getM_Warehouse_To();
-			Check.assume(huLocator.getM_Warehouse_ID() != warehouseTo.getM_Warehouse_ID(), "HU's is not stored in destination warehouse");
+			Check.assume(huWarehouseId.getRepoId() != warehouseTo.getM_Warehouse_ID(), "HU's is not stored in destination warehouse");
 		}
 
 		createDDOrderLineCandidates(huContext, huToDistribute);
@@ -542,7 +541,7 @@ public class HUs2DDOrderProducer
 			//
 			// Locator from
 			final I_M_HU hu = huProductStorage.getM_HU();
-			locatorFrom = hu.getM_Locator();
+			locatorFrom = IHandlingUnitsBL.extractLocator(hu);
 			aggregationKeyBuilder.appendId(locatorFrom.getM_Locator_ID());
 
 			//
@@ -581,7 +580,7 @@ public class HUs2DDOrderProducer
 			addHUProductStorage(huProductStorage);
 		}
 
-		public final ArrayKey getAggregationKey()
+		public ArrayKey getAggregationKey()
 		{
 			Check.assumeNotNull(aggregationKey, "aggregationKey not null");
 			return aggregationKey;
@@ -612,17 +611,17 @@ public class HUs2DDOrderProducer
 			qtyInStockingUOM = qtyInStockingUOM.add(huQtyInStockingUOM);
 		}
 
-		public final I_M_Locator getM_Locator_From()
+		public I_M_Locator getM_Locator_From()
 		{
 			return locatorFrom;
 		}
 
-		public final I_M_Product getM_Product()
+		public I_M_Product getM_Product()
 		{
 			return product;
 		}
 
-		public final I_C_UOM getC_UOM()
+		public I_C_UOM getC_UOM()
 		{
 			return uom;
 		}

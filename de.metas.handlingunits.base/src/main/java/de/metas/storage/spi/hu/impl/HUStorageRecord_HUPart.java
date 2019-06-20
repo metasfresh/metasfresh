@@ -44,12 +44,12 @@ import de.metas.util.Check;
 
 	public I_M_Locator getM_Locator()
 	{
-		return hu.getM_Locator();
+		return IHandlingUnitsBL.extractLocatorOrNull(hu);
 	}
 
 	public I_C_BPartner getC_BPartner()
 	{
-		return IHandlingUnitsBL.extractBPartner(hu);
+		return IHandlingUnitsBL.extractBPartnerOrNull(hu);
 	}
 
 	public I_C_BPartner_Location getC_BPartner_Location()

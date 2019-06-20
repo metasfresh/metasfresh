@@ -15,7 +15,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 153781500L;
+	private static final long serialVersionUID = 1850435464L;
 
     /** Standard Constructor */
     public X_RV_M_HU_Storage_InvoiceHistory (Properties ctx, int RV_M_HU_Storage_InvoiceHistory_ID, String trxName)
@@ -55,18 +55,6 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	public java.lang.String getHUStorageASIKey () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_HUStorageASIKey);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
 	}
 
 	/** Set Lagerort.

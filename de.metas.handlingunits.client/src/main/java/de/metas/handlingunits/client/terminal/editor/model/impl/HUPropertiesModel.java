@@ -95,7 +95,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 			@Override
 			public void loadFromModel()
 			{
-				final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartner(hu);
+				final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(hu);
 				if (bpartner == null || bpartner.getC_BPartner_ID() <= 0)
 				{
 					value = KeyNamePair.EMPTY;
