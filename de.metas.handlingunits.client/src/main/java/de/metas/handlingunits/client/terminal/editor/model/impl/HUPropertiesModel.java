@@ -172,7 +172,7 @@ public class HUPropertiesModel extends AbstractPropertiesPanelModel
 			@Override
 			public void loadFromModel()
 			{
-				final I_C_BPartner_Location bpLocation = hu.getC_BPartner_Location();
+				final I_C_BPartner_Location bpLocation = IHandlingUnitsBL.extractBPartnerLocationOrNull(hu);
 				value = toKeyNamePair(bpLocation);
 			}
 

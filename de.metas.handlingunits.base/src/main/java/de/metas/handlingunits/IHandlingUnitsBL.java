@@ -12,6 +12,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
@@ -19,6 +20,7 @@ import org.compiere.model.I_M_Transaction;
 import com.google.common.base.Predicates;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -408,6 +410,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 		return bpartnerId != null
 				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+	}
+
+	static I_C_BPartner_Location extractBPartnerLocationOrNull(final I_M_HU hu)
+	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
+		return bpartnerLocationId != null
+				? Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId)
 				: null;
 	}
 

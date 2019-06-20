@@ -576,7 +576,7 @@ public class LUTUProducerDestinationLoadTests
 		lutuConfiguration.setHUStatus(X_M_HU_LUTU_Configuration.HUSTATUS_Planning);
 		lutuConfiguration.setM_Locator_ID(l.getM_Locator_ID());
 		lutuConfiguration.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		lutuConfiguration.setC_BPartner_Location(bpLocation);
+		lutuConfiguration.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 		InterfaceWrapperHelper.save(lutuConfiguration);
 
 		final ILUTUProducerAllocationDestination lutuProducer = Services.get(ILUTUConfigurationFactory.class).createLUTUProducerAllocationDestination(lutuConfiguration);

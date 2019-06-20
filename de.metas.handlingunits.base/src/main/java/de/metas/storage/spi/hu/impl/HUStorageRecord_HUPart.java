@@ -54,11 +54,7 @@ import de.metas.util.Check;
 
 	public I_C_BPartner_Location getC_BPartner_Location()
 	{
-		if (hu.getC_BPartner_ID() <= 0)
-		{
-			return null;
-		}
-		return hu.getC_BPartner_Location();
+		return IHandlingUnitsBL.extractBPartnerLocationOrNull(hu);
 	}
 
 	public I_M_HU getM_HU()

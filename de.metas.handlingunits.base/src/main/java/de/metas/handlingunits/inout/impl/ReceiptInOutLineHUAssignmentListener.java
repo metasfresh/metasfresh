@@ -175,7 +175,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		//
 		// Reset HU's BPartner & BP Location
 		hu.setC_BPartner_ID(-1);
-		hu.setC_BPartner_Location(null);
+		hu.setC_BPartner_Location_ID(-1);
 
 		//
 		// If there was no partner, we have nothing to set
