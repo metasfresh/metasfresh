@@ -72,19 +72,13 @@ import lombok.NonNull;
  */
 
 @Repository
-public class InventoryLineRepository
+public class InventoryRepository
 {
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public InventoryLine getById(@NonNull final InventoryLineId inventoryLineId)
-	{
-		final I_M_InventoryLine inventoryLineRecord = getInventoryLineRecordById(inventoryLineId);
-		return toInventoryLine(inventoryLineRecord);
-	}
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
 	{
@@ -114,7 +108,7 @@ public class InventoryLineRepository
 		return InventoryLineId.ofRepoIdOrNull(record.getM_InventoryLine_ID());
 	}
 
-	public InventoryLines getByInventoryId(@NonNull final InventoryId inventoryId)
+	public Inventory getById(@NonNull final InventoryId inventoryId)
 	{
 		final Collection<I_M_InventoryLine> inventoryLineRecords = retrieveLineRecords(inventoryId);
 		final ImmutableSet<InventoryLineId> inventoryLineIds = inventoryLineRecords.stream().map(r -> extractInventoryLineId(r)).collect(ImmutableSet.toImmutableSet());
@@ -126,7 +120,9 @@ public class InventoryLineRepository
 				.map(inventoryLineRecord -> toInventoryLine(inventoryLineRecord, inventoryLineHURecords))
 				.collect(ImmutableList.toImmutableList());
 
-		return InventoryLines.ofList(inventoryLines);
+		return Inventory.builder()
+				.lines(inventoryLines)
+				.build();
 	}
 
 	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
@@ -269,7 +265,7 @@ public class InventoryLineRepository
 				.build();
 	}
 
-	public void save(@NonNull final InventoryLines inventoryLines)
+	public void save(@NonNull final Inventory inventoryLines)
 	{
 		final HashMap<InventoryLineId, I_M_InventoryLine> existingInventoryLineRecords = getInventoryLineRecordsByIds(inventoryLines.getInventoryLineIds());
 

@@ -3,6 +3,8 @@ package de.metas.handlingunits.inventory;
 import java.util.Iterator;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.Predicates;
@@ -11,6 +13,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.inventory.InventoryLineId;
+import de.metas.util.reducers.Reducers;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -38,25 +42,26 @@ import lombok.ToString;
 
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class InventoryLines implements Iterable<InventoryLine>
+public final class Inventory implements Iterable<InventoryLine>
 {
-	public static InventoryLines ofList(@NonNull final List<InventoryLine> list)
-	{
-		return list.isEmpty() ? EMPTY : new InventoryLines(list);
-	}
-
-	private static final InventoryLines EMPTY = new InventoryLines();
-
+	private final InventoryType inventoryType;
 	private final ImmutableList<InventoryLine> lines;
 
-	private InventoryLines(@NonNull final List<InventoryLine> lines)
+	@Builder
+	private Inventory(@NonNull final List<InventoryLine> lines)
 	{
 		this.lines = ImmutableList.copyOf(lines);
+		this.inventoryType = extractInventoryType(lines, InventoryType.PHYSICAL);
 	}
 
-	private InventoryLines()
+	private static InventoryType extractInventoryType(
+			@NonNull final List<InventoryLine> lines,
+			@NonNull final InventoryType defaultInventoryTypeWhenEmpty)
 	{
-		this.lines = ImmutableList.of();
+		return lines.stream()
+				.map(InventoryLine::getInventoryType)
+				.reduce(Reducers.distinct(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lines)))
+				.orElse(defaultInventoryTypeWhenEmpty);
 	}
 
 	public ImmutableList<InventoryLine> toList()
@@ -76,6 +81,14 @@ public final class InventoryLines implements Iterable<InventoryLine>
 				.map(InventoryLine::getId)
 				.filter(Predicates.notNull())
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public InventoryLine getInventoryLineById(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return lines.stream()
+				.filter(line -> inventoryLineId.equals(line.getId()))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + inventoryLineId + " in " + this));
 	}
 
 	public ImmutableSet<HuId> getHuIds()
