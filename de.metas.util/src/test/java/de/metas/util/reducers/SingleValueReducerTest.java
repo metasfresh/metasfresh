@@ -36,30 +36,30 @@ import lombok.Getter;
  * #L%
  */
 
-public class DistinctReducerTest
+public class SingleValueReducerTest
 {
 	@Test
-	public void distict_on_empty()
+	public void singleValue_on_empty()
 	{
 		final Stream<Object> stream = Stream.empty();
-		assertThat(stream.reduce(Reducers.distinct())).isEmpty();
+		assertThat(stream.reduce(Reducers.singleValue())).isEmpty();
 	}
 
 	@Test
-	public void distict_expect_OK()
+	public void singleValue_expect_OK()
 	{
 		final Stream<String> stream = Stream.of("1", "1", "1");
-		assertThat(stream.reduce(Reducers.distinct()).orElse(null)).isEqualTo("1");
+		assertThat(stream.reduce(Reducers.singleValue()).orElse(null)).isEqualTo("1");
 	}
 
 	@Test
-	public void distict_expect_NOK()
+	public void singleValue_expect_NOK()
 	{
 		final Stream<String> stream = Stream.of("1", "1", "2", "3");
 		final Function<List<String>, MyDistinctException> exceptionFactory = MyDistinctException::new;
 
 		expectExceptionWithValues("1", "2")
-				.test(() -> stream.reduce(Reducers.distinct(exceptionFactory)));
+				.test(() -> stream.reduce(Reducers.singleValue(exceptionFactory)));
 	}
 
 	@SafeVarargs

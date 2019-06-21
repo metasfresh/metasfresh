@@ -33,18 +33,18 @@ import lombok.ToString;
  */
 
 @ToString
-final class DistinctReducer<T> implements BinaryOperator<T>
+final class SingleValueReducer<T> implements BinaryOperator<T>
 {
-	static final transient DistinctReducer<Object> DEFAULT = new DistinctReducer<>();
+	static final transient SingleValueReducer<Object> DEFAULT = new SingleValueReducer<>();
 
 	private final Function<List<T>, ? extends RuntimeException> exceptionFactory;
 
-	private DistinctReducer()
+	private SingleValueReducer()
 	{
 		this.exceptionFactory = values -> Check.mkEx("Distinct values are not allowed: " + values);
 	}
 
-	DistinctReducer(@NonNull final Function<List<T>, ? extends RuntimeException> exceptionFactory)
+	SingleValueReducer(@NonNull final Function<List<T>, ? extends RuntimeException> exceptionFactory)
 	{
 		this.exceptionFactory = exceptionFactory;
 	}

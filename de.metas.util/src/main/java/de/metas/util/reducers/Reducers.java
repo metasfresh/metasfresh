@@ -31,16 +31,16 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Reducers
 {
-	public static <T> DistinctReducer<T> distinct()
+	public static <T> SingleValueReducer<T> singleValue()
 	{
 		@SuppressWarnings("unchecked")
-		final DistinctReducer<T> instanceCasted = (DistinctReducer<T>)DistinctReducer.DEFAULT;
+		final SingleValueReducer<T> instanceCasted = (SingleValueReducer<T>)SingleValueReducer.DEFAULT;
 		return instanceCasted;
 	}
 
-	public static <T> DistinctReducer<T> distinct(@NonNull final Function<List<T>, ? extends RuntimeException> exceptionFactory)
+	public static <T> SingleValueReducer<T> singleValue(@NonNull final Function<List<T>, ? extends RuntimeException> exceptionFactory)
 	{
-		return new DistinctReducer<>(exceptionFactory);
+		return new SingleValueReducer<>(exceptionFactory);
 	}
 
 }

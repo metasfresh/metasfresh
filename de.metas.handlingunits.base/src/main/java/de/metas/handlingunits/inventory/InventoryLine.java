@@ -121,7 +121,7 @@ public class InventoryLine
 	{
 		return lineHUs.stream()
 				.map(InventoryLineHU::getInventoryType)
-				.reduce(Reducers.distinct(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)))
+				.reduce(Reducers.singleValue(values -> new AdempiereException("Mixing Physical inventories with Internal Use inventories is not allowed: " + lineHUs)))
 				.orElse(defaultInventoryTypeWhenEmpty);
 	}
 
