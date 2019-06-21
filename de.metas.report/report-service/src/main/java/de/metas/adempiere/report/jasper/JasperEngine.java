@@ -77,6 +77,7 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JsonDataSource;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.query.JsonQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -163,8 +164,17 @@ public class JasperEngine extends AbstractReportEngine
 					.token(token.getAuthToken())
 					.JSONPath(reportContext.getJSONPath())
 					.build();
-			final JsonDataSource dataSource = jsonDSService.getJsonDataSource(request);
 
+			final JRResultSetDataSource rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
+			if (rsDataSuorce != null)
+			{
+				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
+			}
+
+			final InputStream is = jsonDSService.getInputStream(request);
+			final JsonDataSource dataSource = new JsonDataSource(is);
+
+			jrParameters.put(JsonQueryExecuterFactory.JSON_INPUT_STREAM, is);
 			//
 			// Fill the report
 			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, dataSource, jasperLoader);
@@ -209,7 +219,6 @@ public class JasperEngine extends AbstractReportEngine
 			}
 		}
 	}
-
 
 	private boolean isJasperJSONReport(final ReportContext reportContext)
 	{
@@ -298,21 +307,6 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			final String barcodeURL = Services.get(ISysConfigBL.class).getValue(JasperConstants.SYSCONFIG_BarcodeServlet, JasperConstants.SYSCONFIG_BarcodeServlet_DEFAULT);
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
-		}
-
-		if (isJasperJSONReport(reportContext))
-		{
-			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
-					.type(reportContext.getType())
-					.sql(reportContext.getSQLStatement())
-					.JSONPath(reportContext.getJSONPath())
-					.build();
-
-			final JRResultSetDataSource  rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
-			if (rsDataSuorce != null)
-			{
-				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
-			}
 		}
 
 		return jrParameters;

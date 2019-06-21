@@ -23,7 +23,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.data.JsonDataSource;
 
 /*
  * #%L
@@ -63,10 +62,10 @@ public class JsonDataSourceService
 		this.repository = repository;
 	}
 
-	public JsonDataSource getJsonDataSource(@NonNull final JsonDataSourceRequest request) throws JRException
+	public InputStream getInputStream(@NonNull final JsonDataSourceRequest request) throws JRException
 	{
 		final InputStream is = getURLInputStream(getJasperJSONURL(request), request.getToken());
-		return new JsonDataSource(is);
+		return is;
 	}
 
 	private static InputStream getURLInputStream(@NonNull final String reportURL, @NonNull final String token)
