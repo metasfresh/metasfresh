@@ -31,6 +31,9 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +42,9 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
@@ -75,6 +80,7 @@ import lombok.NonNull;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
+import net.sf.jasperreports.engine.JRResultSetDataSource;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
@@ -94,6 +100,7 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
+	private static final String PARAM_RESULT_SET = "RESULT_SET";
 	private static final String SYSCONFIG_RESTAPI_URL = "API_URL";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
@@ -287,6 +294,14 @@ public class JasperEngine extends AbstractReportEngine
 			final String barcodeURL = Services.get(ISysConfigBL.class).getValue(JasperConstants.SYSCONFIG_BarcodeServlet, JasperConstants.SYSCONFIG_BarcodeServlet_DEFAULT);
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
 		}
+
+
+		final JRResultSetDataSource  rsDataSuorce = retrieveResultSetDataSourceIfNeeded(reportContext);
+		if (rsDataSuorce != null)
+		{
+			jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
+		}
+
 
 		return jrParameters;
 	}
@@ -628,5 +643,45 @@ public class JasperEngine extends AbstractReportEngine
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
 			throw new AdempiereException(errorMsg);
 		}
+	}
+
+	private JRResultSetDataSource  retrieveResultSetDataSourceIfNeeded(final ReportContext reportContext)
+	{
+		//
+		// Get SQL Statement
+		final String sql = reportContext.getSQLStatement();
+		if (!X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType()) || Check.isEmpty(sql, true))
+		{
+			return null;
+		}
+
+		// TODO
+		// Parse the SQL Statement
+		//		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql, IStringExpression.class);
+		//		final Evaluatee evalCtx = createEvaluationContext(reportContext);
+
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			rs = pstmt.executeQuery();
+
+			//
+			// Create & return the data source
+			return new JRResultSetDataSource(rs);
+		}
+		catch (final SQLException e)
+		{
+			throw new DBException(e, sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
+		}
+
 	}
 }
