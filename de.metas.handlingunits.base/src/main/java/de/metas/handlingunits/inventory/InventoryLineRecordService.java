@@ -258,15 +258,13 @@ public class InventoryLineRecordService
 		final IAllocationDestination huDestination;
 		if (inventoryLineHU.getHuId() == null)
 		{
-			huDestination = HUProducerDestination
-					.ofVirtualPI()
+			huDestination = HUProducerDestination.ofVirtualPI()
 					.setHUStatus(X_M_HU.HUSTATUS_Active)
 					.setLocatorId(inventoryLine.getLocatorId());
 		}
 		else
 		{
-			huDestination = HUListAllocationSourceDestination
-					.ofHUId(inventoryLineHU.getHuId());
+			huDestination = HUListAllocationSourceDestination.ofHUId(inventoryLineHU.getHuId());
 		}
 
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()

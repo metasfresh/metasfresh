@@ -45,7 +45,6 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -84,7 +83,6 @@ public class InventoryRepository
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL convBL = Services.get(IUOMConversionBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private I_M_InventoryLine getInventoryLineRecordById(@Nullable final InventoryLineId inventoryLineId)
@@ -379,7 +377,9 @@ public class InventoryRepository
 		final HUAggregationType huAggregationType = inventoryLine.getHuAggregationType();
 		lineRecord.setHUAggregationType(HUAggregationType.toCodeOrNull(huAggregationType));
 
-		final HuId huId = inventoryLine.getHuId();
+		final HuId huId = inventoryLine.isSingleHUAggregation()
+				? inventoryLine.getSingleLineHU().getHuId()
+				: null;
 		lineRecord.setM_HU_ID(HuId.toRepoId(huId));
 		// lineRecord.setM_HU_PI_Item_Product(null); // TODO
 		// lineRecord.setQtyTU(BigDecimal.ZERO); // TODO
@@ -403,8 +403,7 @@ public class InventoryRepository
 
 		if (from.getInventoryType().isInternalUse())
 		{
-			final Quantity qtyInternalUse = from.getQtyInternalUse()
-					.orElseGet(() -> qtyZero(from.getProductId()));
+			final Quantity qtyInternalUse = from.getQtyInternalUse();
 
 			uomId = qtyInternalUse.getUomId();
 			qtyInternalUseBD = qtyInternalUse.getAsBigDecimal();
@@ -413,10 +412,8 @@ public class InventoryRepository
 		}
 		else
 		{
-			final Quantity qtyBook = from.getQtyBook()
-					.orElseGet(() -> qtyZero(from.getProductId()));
-			final Quantity qtyCount = from.getQtyCount()
-					.orElseGet(() -> qtyBook.toZero());
+			final Quantity qtyBook = from.getQtyBook();
+			final Quantity qtyCount = from.getQtyCount();
 
 			uomId = Quantity.getCommonUomIdOfAll(qtyCount, qtyBook);
 			qtyInternalUseBD = null;
@@ -428,12 +425,6 @@ public class InventoryRepository
 		lineRecord.setQtyBook(qtyBookBD);
 		lineRecord.setQtyCount(qtyCountBD);
 		lineRecord.setC_UOM_ID(uomId.getRepoId());
-	}
-
-	private Quantity qtyZero(@NonNull final ProductId productId)
-	{
-		final I_C_UOM uom = productsService.getStockingUOM(productId);
-		return Quantity.zero(uom);
 	}
 
 	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
@@ -461,11 +452,9 @@ public class InventoryRepository
 					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 				}
 
-				updateInventoryLineHURecord(
-						lineHURecord,
-						lineHU,
-						inventoryLine.getId(),
-						inventoryLine.getOrgId());
+				lineHURecord.setAD_Org_ID(inventoryLine.getId().getRepoId());
+				lineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
+				updateInventoryLineHURecord(lineHURecord, lineHU);
 
 				saveRecord(lineHURecord);
 				lineHU.setId(extractInventoryLineHUId(lineHURecord));
@@ -478,12 +467,10 @@ public class InventoryRepository
 
 	private static void updateInventoryLineHURecord(
 			@NonNull I_M_InventoryLine_HU record,
-			@NonNull final InventoryLineHU fromLineHU,
-			@NonNull final InventoryLineId lineId,
-			@NonNull final OrgId orgId)
+			@NonNull final InventoryLineHU fromLineHU)
 	{
-		record.setAD_Org_ID(orgId.getRepoId());
-		record.setM_InventoryLine_ID(lineId.getRepoId());
+		// record.setAD_Org_ID(orgId.getRepoId());
+		// record.setM_InventoryLine_ID(lineId.getRepoId());
 
 		record.setM_HU_ID(HuId.toRepoId(fromLineHU.getHuId()));
 

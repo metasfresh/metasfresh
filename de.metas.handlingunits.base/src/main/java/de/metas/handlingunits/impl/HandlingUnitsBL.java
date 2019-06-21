@@ -22,6 +22,7 @@ import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -69,6 +70,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getById(huId);
+	}
+
+	@Override
+	public List<I_M_HU> getByIds(@NonNull final Set<HuId> huIds)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsRepo.getByIds(huIds);
 	}
 
 	@Override
@@ -775,6 +783,38 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 		return included_HU_PI;
+	}
+
+	@Override
+	public Set<HuId> getVHUIds(@NonNull final HuId huId)
+	{
+		final List<I_M_HU> vhus = getVHUs(huId);
+		return extractHuIds(vhus);
+	}
+
+	private static ImmutableSet<HuId> extractHuIds(final Collection<I_M_HU> hus)
+	{
+		return hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public Set<HuId> getVHUIds(@NonNull final Set<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<I_M_HU> allVHUs = new ArrayList<>();
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			List<I_M_HU> vhus = getVHUs(hu);
+			allVHUs.addAll(vhus);
+		}
+
+		return extractHuIds(allVHUs);
 	}
 
 	@Override

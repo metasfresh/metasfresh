@@ -64,6 +64,11 @@ public class ProductDetails
 		return getActiveStatus() == JsonProductPackageState.ACTIVE;
 	}
 
+	public boolean isFraud()
+	{
+		return getActiveStatus() == JsonProductPackageState.FRAUD;
+	}
+
 	public void productDecommissioned(@NonNull final String decommissionedServerTransactionId)
 	{
 		if (decommissioned)

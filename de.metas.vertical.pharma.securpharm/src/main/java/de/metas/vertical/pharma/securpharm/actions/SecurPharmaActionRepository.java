@@ -3,9 +3,17 @@ package de.metas.vertical.pharma.securpharm.actions;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Set;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.inventory.InventoryId;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import lombok.NonNull;
 
 /*
@@ -33,6 +41,19 @@ import lombok.NonNull;
 @Repository
 public class SecurPharmaActionRepository
 {
+	public Set<SecurPharmProductId> getProductIdsByInventoryId(@NonNull final InventoryId inventoryId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Securpharm_Action_Result.class)
+				.addEqualsFilter(I_M_Securpharm_Action_Result.COLUMN_M_Inventory_ID, inventoryId)
+				.addNotNull(I_M_Securpharm_Action_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID)
+				.create()
+				.listDistinct(I_M_Securpharm_Action_Result.COLUMNNAME_M_Securpharm_Productdata_Result_ID, Integer.class)
+				.stream()
+				.map(SecurPharmProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public SecurPharmActionResultId save(@NonNull final DecommissionResponse response)
 	{
 		final I_M_Securpharm_Action_Result record = newInstance(I_M_Securpharm_Action_Result.class);

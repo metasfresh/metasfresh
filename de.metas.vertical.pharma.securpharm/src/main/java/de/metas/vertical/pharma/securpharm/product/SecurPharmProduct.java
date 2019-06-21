@@ -65,6 +65,11 @@ public class SecurPharmProduct
 		return getProductDetails().isActive();
 	}
 
+	public boolean isFraud()
+	{
+		return getProductDetails().isFraud();
+	}
+
 	public boolean isDecommissioned()
 	{
 		return getProductDetails().isDecommissioned();

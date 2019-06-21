@@ -162,7 +162,7 @@ class InventoryRepositoryTest
 		final Inventory reloadedResult = inventoryLineRepository.getById(inventoryId);
 		expect(reloadedResult).toMatchSnapshot();
 
-		assertThat(reloadedResult.getInventoryLineById(inventoryLineId)).isEqualTo(inventoryLine);
+		assertThat(reloadedResult.getLineById(inventoryLineId)).isEqualTo(inventoryLine);
 	}
 
 	@Test
@@ -183,7 +183,7 @@ class InventoryRepositoryTest
 
 		final InventoryLine result = inventoryLineRepository
 				.getById(inventoryId)
-				.getInventoryLineById(inventoryLineId);
+				.getLineById(inventoryLineId);
 
 		final Quantity zero = Quantity.zero(uomRecord);
 		assertThat(result.getInventoryLineHUs())
@@ -216,7 +216,7 @@ class InventoryRepositoryTest
 
 		final InventoryLine result = inventoryLineRepository
 				.getById(inventoryId)
-				.getInventoryLineById(inventoryLineId);
+				.getLineById(inventoryLineId);
 		assertThat(result.getInventoryLineHUs())
 				.extracting("huId", "qtyBook", "qtyCount")
 				.containsOnly(tuple(null, Quantity.of(TWO, uomRecord), Quantity.of(TEN, uomRecord)));

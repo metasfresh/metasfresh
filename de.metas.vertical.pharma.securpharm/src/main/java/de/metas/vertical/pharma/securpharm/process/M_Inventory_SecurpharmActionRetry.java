@@ -63,19 +63,19 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 		}
 		if (!securPharmService.hasConfig())
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no SecurPharm config");
 		}
 
 		final InventoryId inventoryId = InventoryId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
 		if (inventoryId == null)
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no single inventory selected");
 		}
 
 		ProductsToProcess productsToProcess = getProductsToProcess(inventoryId).orElse(null);
-		if (productsToProcess.isEmpty())
+		if (productsToProcess == null || productsToProcess.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectWithInternalReason("no SecurPharm products to found to process");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -183,7 +183,7 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 
 	}
 
-	private static enum Action
+	private enum Action
 	{
 		DECOMMISSION, UNDO_DECOMMISSION
 	}

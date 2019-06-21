@@ -37,6 +37,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryId;
@@ -183,7 +185,26 @@ public class SecurPharmService
 
 	public void decommissionProductsByInventoryId(final InventoryId inventoryId)
 	{
-		final Collection<SecurPharmProduct> products = getProductsByInventoryId(inventoryId);
+		final Inventory inventory = inventoryRepo.getById(inventoryId);
+
+		//
+		// Applies only to internal use inventory
+		if (!inventory.isInternalUseInventory())
+		{
+			return;
+		}
+
+		final List<InventoryLineHU> lineHUs = inventory.getLineHUs()
+				.stream()
+				.filter(lineHU -> isEligibleForDecommission(lineHU))
+				.collect(ImmutableList.toImmutableList());
+		final Set<HuId> vhuIds = getVHUIds(lineHUs);
+		if (vhuIds.isEmpty())
+		{
+			return;
+		}
+
+		final Collection<SecurPharmProduct> products = productsRepo.getProductsByHuIds(vhuIds);
 		if (products.isEmpty())
 		{
 			return;
@@ -193,6 +214,20 @@ public class SecurPharmService
 		{
 			decommissionProductIfEligible(product, inventoryId);
 		}
+	}
+
+	private boolean isEligibleForDecommission(final InventoryLineHU lineHU)
+	{
+		// TODO: shall we check if the MovementQty is "-1";
+		return true;
+	}
+
+	private Set<HuId> getVHUIds(final List<InventoryLineHU> lineHUs)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final Set<HuId> huIds = InventoryLineHU.extractHuIds(lineHUs);
+		return handlingUnitsBL.getVHUIds(huIds);
 	}
 
 	public void decommissionProductIfEligible(final SecurPharmProduct product, final InventoryId inventoryId)
@@ -233,22 +268,16 @@ public class SecurPharmService
 
 	public boolean isEligibleForDecommission(@NonNull final SecurPharmProduct product)
 	{
-		if (product.isError())
-		{
-			return false;
-		}
-
-		if (!product.isActive())
-		{
-			return false;
-		}
-
-		return !product.isDecommissioned();
+		return product.isFraud() // fraud product
+				&& !product.isDecommissioned() // was not already decommissioned
+				&& !product.isError() // no errors
+		;
 	}
 
 	public void undoDecommissionProductsByInventoryId(final InventoryId inventoryId)
 	{
-		final Collection<SecurPharmProduct> products = getProductsByInventoryId(inventoryId);
+		final Set<SecurPharmProductId> productIds = actionsRepo.getProductIdsByInventoryId(inventoryId);
+		final Collection<SecurPharmProduct> products = productsRepo.getProductsByIds(productIds);
 		if (products.isEmpty())
 		{
 			return;
@@ -300,17 +329,9 @@ public class SecurPharmService
 
 	public boolean isEligibleForUndoDecommission(@NonNull final SecurPharmProduct product)
 	{
-		if (product.isError())
-		{
-			return false;
-		}
-
-		if (!product.isActive())
-		{
-			return false;
-		}
-
-		return product.isDecommissioned();
+		return product.isDecommissioned() // was already decommissioned
+				&& !product.isError() // no errors
+		;
 	}
 
 	public SecurPharmHUAttributesScanner newHUScanner()

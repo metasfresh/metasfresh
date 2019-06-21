@@ -1,5 +1,8 @@
 package de.metas.handlingunits.inventory;
 
+import java.util.Collection;
+import java.util.stream.Stream;
+
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -7,6 +10,8 @@ import org.compiere.model.I_C_UOM;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
@@ -57,6 +62,8 @@ public class InventoryLineHU
 
 	//
 	// Quantities
+	private InventoryType inventoryType;
+	//
 	Quantity qtyInternalUse;
 	//
 	Quantity qtyBook;
@@ -66,6 +73,8 @@ public class InventoryLineHU
 	{
 		final Quantity zero = Quantity.zero(uom);
 		return builder()
+				.huId(null)
+				.qtyInternalUse(null)
 				.qtyBook(zero)
 				.qtyCount(zero)
 				.build();
@@ -86,6 +95,8 @@ public class InventoryLineHU
 		{
 			Check.assumeNull(qtyBook, "qtyBook shall be null when qtyInternalUse is set");
 			Check.assumeNull(qtyCount, "qtyCount shall be null when qtyInternalUse is set");
+
+			this.inventoryType = InventoryType.INTERNAL_USE;
 			this.qtyInternalUse = qtyInternalUse;
 			this.qtyBook = null;
 			this.qtyCount = null;
@@ -94,6 +105,9 @@ public class InventoryLineHU
 		{
 			Check.assumeNotNull(qtyBook, "qtyBook shall be set when qtyInternalUse is not set");
 			Check.assumeNotNull(qtyCount, "qtyCount shall be set when qtyInternalUse is not set");
+			Quantity.getCommonUomIdOfAll(qtyBook, qtyCount); // make sure QtyBook and QtyCount share the same UOM
+
+			this.inventoryType = InventoryType.PHYSICAL;
 			this.qtyInternalUse = null;
 			this.qtyBook = qtyBook;
 			this.qtyCount = qtyCount;
@@ -103,27 +117,6 @@ public class InventoryLineHU
 	final void setId(@NonNull final InventoryLineHUId id)
 	{
 		this.id = id;
-	}
-
-	/**
-	 * @return true if ALL quantities are ZERO<br>
-	 *         IMPORTANT: in case QtyBook=QtyCount but they are not zero this method returns <code>false</code>
-	 */
-	public boolean isZero()
-	{
-		if (getInventoryType().isInternalUse())
-		{
-			return qtyInternalUse.isZero();
-		}
-		else
-		{
-			return qtyBook.isZero() && qtyCount.isZero();
-		}
-	}
-
-	public InventoryType getInventoryType()
-	{
-		return qtyInternalUse != null ? InventoryType.INTERNAL_USE : InventoryType.PHYSICAL;
 	}
 
 	private void assertInternalUseInventory()
@@ -165,17 +158,30 @@ public class InventoryLineHU
 	 */
 	public InventoryLineHU withAddingQtyCount(@NonNull final Quantity qtyCountToAdd)
 	{
-		assertPhysicalInventory();
-		return toBuilder()
-				.qtyCount(qtyCount.add(qtyCountToAdd))
-				.build();
+		return withQtyCount(qtyCount.add(qtyCountToAdd));
 	}
 
 	public InventoryLineHU withZeroQtyCount()
 	{
+		return withQtyCount(qtyCount.toZero());
+	}
+
+	public InventoryLineHU withQtyCount(@NonNull final Quantity newQtyCount)
+	{
 		assertPhysicalInventory();
-		return toBuilder()
-				.qtyCount(qtyCount.toZero())
-				.build();
+		return toBuilder().qtyCount(newQtyCount).build();
+	}
+
+	public static ImmutableSet<HuId> extractHuIds(@NonNull final Collection<InventoryLineHU> lineHUs)
+	{
+		return extractHuIds(lineHUs.stream());
+	}
+
+	static ImmutableSet<HuId> extractHuIds(@NonNull final Stream<InventoryLineHU> lineHUs)
+	{
+		return lineHUs
+				.map(InventoryLineHU::getHuId)
+				.filter(Predicates.notNull())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

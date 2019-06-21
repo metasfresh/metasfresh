@@ -3,6 +3,7 @@ package de.metas.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -45,7 +46,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 {
 	I_M_HU getById(HuId huId);
 
+	List<I_M_HU> getByIds(Set<HuId> huIds);
+
 	List<I_M_HU> getVHUs(HuId huId);
+
+	Set<HuId> getVHUIds(HuId huId);
+
+	Set<HuId> getVHUIds(Set<HuId> huIds);
 
 	List<I_M_HU> getVHUs(I_M_HU hu);
 

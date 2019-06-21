@@ -20,6 +20,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           {
             "id": 100014,
             "huId": 100,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 10,
               "sourceQty": 10,
@@ -36,6 +37,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           {
             "id": 100015,
             "huId": 200,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 1,
               "sourceQty": 1,
@@ -64,6 +66,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
           {
             "id": 100021,
             "huId": 300,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 2,
               "sourceQty": 2,
@@ -105,6 +108,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryLineHUs": [
           {
             "huId": 300,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 2,
               "sourceQty": 2,
@@ -132,6 +136,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryLineHUs": [
           {
             "huId": 100,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 10,
               "sourceQty": 10,
@@ -159,6 +164,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
         "inventoryLineHUs": [
           {
             "huId": 200,
+            "inventoryType": "PHYSICAL",
             "qtyBook": {
               "qty": 1,
               "sourceQty": 1,

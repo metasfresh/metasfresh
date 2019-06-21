@@ -1,12 +1,12 @@
 package de.metas.handlingunits.inventory;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -76,20 +76,17 @@ public final class Inventory
 				.orElse(defaultInventoryTypeWhenEmpty);
 	}
 
+	public boolean isInternalUseInventory()
+	{
+		return inventoryType.isInternalUse();
+	}
+
 	public ImmutableList<InventoryLine> getLines()
 	{
 		return lines;
 	}
 
-	public ImmutableSet<InventoryLineId> getInventoryLineIds()
-	{
-		return lines.stream()
-				.map(InventoryLine::getId)
-				.filter(Predicates.notNull())
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	public InventoryLine getInventoryLineById(@NonNull final InventoryLineId inventoryLineId)
+	public InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)
 	{
 		return lines.stream()
 				.filter(line -> inventoryLineId.equals(line.getId()))
@@ -97,11 +94,18 @@ public final class Inventory
 				.orElseThrow(() -> new AdempiereException("No line found for " + inventoryLineId + " in " + this));
 	}
 
+	public ImmutableList<InventoryLineHU> getLineHUs()
+	{
+		return streamLineHUs().collect(ImmutableList.toImmutableList());
+	}
+
+	private Stream<InventoryLineHU> streamLineHUs()
+	{
+		return lines.stream().flatMap(line -> line.getInventoryLineHUs().stream());
+	}
+
 	public ImmutableSet<HuId> getHuIds()
 	{
-		return lines
-				.stream()
-				.flatMap(inventoryLine -> inventoryLine.getHUIds().stream())
-				.collect(ImmutableSet.toImmutableSet());
+		return InventoryLineHU.extractHuIds(streamLineHUs());
 	}
 }
