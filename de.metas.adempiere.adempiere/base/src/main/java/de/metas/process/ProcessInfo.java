@@ -222,10 +222,8 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
-	@Getter
-	private final String type;
-	@Getter
-	private final String JSONPath;
+	@NonNull private final Optional<String> type;
+	private final Optional<String> JSONPath;
 
 	/** Process result */
 	@Getter
@@ -727,11 +725,6 @@ public final class ProcessInfo implements Serializable
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
-
-		@Getter
-		private String type = null;
-		@Getter
-		private String JSONPath  = null;
 
 		private List<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
@@ -1370,16 +1363,32 @@ public final class ProcessInfo implements Serializable
 			return jrDesiredOutputType;
 		}
 
-		public ProcessInfoBuilder setType(@NonNull final String type)
+		public Optional<String> getType()
 		{
-			this.type = type;
-			return this;
+			final I_AD_Process process = getAD_ProcessOrNull();
+			final String type = process == null ? null : process.getType();
+			if (Check.isEmpty(type, true))
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(type.trim());
+			}
 		}
 
-		public ProcessInfoBuilder setJSONPath(@Nullable final String JSONPath)
+		public Optional<String> getJSONPath()
 		{
-			this.JSONPath = JSONPath;
-			return this;
+			final I_AD_Process process = getAD_ProcessOrNull();
+			final String JSONPath = process == null ? null : process.getJSONPath();
+			if (Check.isEmpty(JSONPath, true))
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(JSONPath.trim());
+			}
 		}
 
 
