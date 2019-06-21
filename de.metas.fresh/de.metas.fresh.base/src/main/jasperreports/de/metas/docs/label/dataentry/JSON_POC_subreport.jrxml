@@ -51,6 +51,13 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
+			<textField>
+				<reportElement x="-20" y="0" width="20" height="16" uuid="9e31acd4-cd01-405f-814c-5024ab4fb2a3"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["SUB"]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 </jasperReport>
