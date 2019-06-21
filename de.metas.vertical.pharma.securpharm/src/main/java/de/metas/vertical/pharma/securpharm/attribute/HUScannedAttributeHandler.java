@@ -39,6 +39,7 @@ public class HUScannedAttributeHandler implements IAttributeValueCallout, IAttri
 	@Override
 	public void onValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeSet attributeSet, final I_M_Attribute attribute, final Object valueOld, final Object valueNew)
 	{
+		// nothing
 	}
 
 	@Override
