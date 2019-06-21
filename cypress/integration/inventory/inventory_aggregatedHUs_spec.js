@@ -1,10 +1,45 @@
 import { inventory } from '../../page_objects/inventory';
 import { doctypes } from '../../page_objects/doctypes';
-import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
+// import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 
 import { Product } from '../../support/utils/product';
 
 describe('Aggregated inventory test', function() {
+  const timestamp = new Date().getTime();
+  const productName = `AggregatedHUsInventory ${timestamp}`;
+  const productValue = `${timestamp}`;
+
+  function setAggregatedHUsDocTypeAsDefault() {
+    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is *not* default`);
+    doctypes.visit(inventory.docTypeInventoryWithSingleHU);
+    cy.isChecked('IsDefault').then(isDefaultValue => {
+      cy.log(`isDefaultValue=${isDefaultValue}`);
+      if (isDefaultValue) {
+        cy.clickOnCheckBox('IsDefault');
+      }
+    });
+    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is default`);
+    doctypes.visit(inventory.docTypeInventoryWithMultipleHUs);
+    cy.isChecked('IsDefault').then(isDefaultValue => {
+      cy.log(`isDefaultValue=${isDefaultValue}`);
+      if (!isDefaultValue) {
+        cy.clickOnCheckBox('IsDefault');
+      }
+    });
+  }
+
+  before(function() {
+    setAggregatedHUsDocTypeAsDefault();
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(productName), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        //.setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .apply();
+    });
+  });
+
   it('Makes sure that the inventory doc type for aggregated HUs exists and is default', function() {
     doctypes.visit();
 
@@ -16,29 +51,14 @@ describe('Aggregated inventory test', function() {
     //applyFilters();
   });
 
-  const timestamp = new Date().getTime();
-  const productName = `AggregatedHUsInventory ${timestamp}`;
-  const productValue = `${timestamp}`;
-  before(function() {
-    setAggregatedHUsDocTypeAsDefault();
-
-    cy.fixture('product/simple_product.json').then(productJson => {
-      Object.assign(new Product(), productJson)
-        .setName(productName)
-        .setValue(productValue)
-        //.setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .apply();
-    });
-  });
-
   it('Create a new aggreagted-HUs inventory doc', function() {
     cy.visitWindow(inventory.windowId, 'NEW', 'newInventoryRecord');
 
     cy.getFieldValue('C_DocType_ID').then(docTypeName => {
-      expect(docTypeName).to.eq('Inventur mit aggregierten Materialangaben');
+      expect(docTypeName).to.eq('Inventur');
     });
 
-    cy.selectInListField('M_Warehouse_ID', 'StdWarehouse');
+    cy.selectInListField('M_Warehouse_ID', 'Main Warehouse_MW');
 
     cy.selectTab('M_InventoryLine');
     cy.pressAddNewButton();
@@ -67,22 +87,3 @@ describe('Aggregated inventory test', function() {
     });
   });
 });
-
-function setAggregatedHUsDocTypeAsDefault() {
-  cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is *not* default`);
-  doctypes.visit(inventory.docTypeInventoryWithSingleHU);
-  cy.isChecked('IsDefault').then(isDefaultValue => {
-    cy.log(`isDefaultValue=${isDefaultValue}`);
-    if (isDefaultValue) {
-      cy.clickOnCheckBox('IsDefault');
-    }
-  });
-  cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is default`);
-  doctypes.visit(inventory.docTypeInventoryWithMultipleHUs);
-  cy.isChecked('IsDefault').then(isDefaultValue => {
-    cy.log(`isDefaultValue=${isDefaultValue}`);
-    if (!isDefaultValue) {
-      cy.clickOnCheckBox('IsDefault');
-    }
-  });
-}

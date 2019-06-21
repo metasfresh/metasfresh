@@ -14,9 +14,9 @@
     "prices": [
       {
         "priceStd": 2.00,
-        "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
-        "de_DE__m_pricelist_version": "Testpreise Kunden (Deutschland)_Deutschland_EUR_2015-01-01",
-        "c_taxcategory": "Normaler Steuersatz 19% (Deutschland)"
+        "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2019-01-01",
+        "de_DE__m_pricelist_version": "Testpreise Kunden (Deutschland)_Deutschland_EUR_2019-01-01",
+        "c_taxcategory": "Regular Tax Rate 19% (Germany)"
       }
     ]
 }
