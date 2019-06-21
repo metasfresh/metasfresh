@@ -1,28 +1,5 @@
 package de.metas.handlingunits.hutransaction;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
@@ -43,7 +20,6 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -55,9 +31,8 @@ import lombok.NonNull;
 
 /**
  *
- * Service to create and "destroy" handling units (instances). HUs can be created be transferring material from a {@link org.compiere.model.I_M_Transaction} (such as a material receipt, method
- * {@link #transferIncomingToHUs(I_M_Transaction, I_M_HU_PI)}) or by transferring material out of an existing HU (method {@link #transferMaterialToNewHUs(I_M_HU, BigDecimal, I_M_Product, I_M_HU_PI)}
- * ).<br>
+ * Service to create and "destroy" handling units (instances).
+ * HUs can be created be transferring material from a {@link org.compiere.model.I_M_Transaction}.<br>
  * <br>
  * HUs can be "destroyed" by transferring material to an <code>I_M_Transaction</code> (such as a shipment, method {@link #transferHUsToOutgoing(I_M_Transaction, List)} or by transferring material to
  * existing HUs. Note that the meaning of "destroyed is currently still a bit fuzzy. It might be a flag to in {@link I_M_HU} to that may be set to "true" when the HU doesn't contain an material

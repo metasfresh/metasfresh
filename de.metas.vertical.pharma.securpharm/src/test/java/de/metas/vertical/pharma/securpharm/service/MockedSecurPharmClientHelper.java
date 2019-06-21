@@ -9,7 +9,6 @@ import org.junit.Ignore;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
 
-import de.metas.handlingunits.HuId;
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
 import de.metas.vertical.pharma.securpharm.client.DecommissionClientResponse;
@@ -112,8 +111,7 @@ public class MockedSecurPharmClientHelper
 
 	public void mockDecodeAndVerifyOK(
 			final DataMatrixCode dataMatrix,
-			final ProductDetails productDetails,
-			final HuId huId)
+			final ProductDetails productDetails)
 	{
 		mockDecodeOK(dataMatrix, productDetails);
 		mockVerifyOK(productDetails);

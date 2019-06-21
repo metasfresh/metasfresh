@@ -133,7 +133,7 @@ public class SecurPharmClient
 	public VerifyProductClientResponse verifyProduct(@NonNull final ProductDetails requestProductDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareProductURL(requestProductDetails, clientTransactionId);
+		final UriComponentsBuilder url = prepareProductURL(requestProductDetails);
 
 		final APIReponseWithLog responseAndLogData = getFromUrl(url, clientTransactionId);
 
@@ -274,7 +274,7 @@ public class SecurPharmClient
 	public DecommissionClientResponse decommission(@NonNull final ProductDetails productDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION, clientTransactionId);
+		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION);
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
 
 		return DecommissionClientResponse.builder()
@@ -288,7 +288,7 @@ public class SecurPharmClient
 			@NonNull final String serverTransactionId)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.UNDO_DECOMMISSION, clientTransactionId)
+		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.UNDO_DECOMMISSION)
 				.queryParam(QUERY_PARAM_TRX, serverTransactionId);
 
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
@@ -364,16 +364,13 @@ public class SecurPharmClient
 
 	private UriComponentsBuilder prepareActionURL(
 			@NonNull final ProductDetails productDetails,
-			@NonNull final SecurPharmAction action,
-			@NonNull final String clientTransactionId)
+			@NonNull final SecurPharmAction action)
 	{
-		return prepareProductURL(productDetails, clientTransactionId)
+		return prepareProductURL(productDetails)
 				.queryParam(QUERY_PARAM_ACT, action.getCode());
 	}
 
-	private UriComponentsBuilder prepareProductURL(
-			@NonNull final ProductDetails productDetails,
-			@NonNull final String clientTransactionId)
+	private UriComponentsBuilder prepareProductURL(@NonNull final ProductDetails productDetails)
 	{
 		return UriComponentsBuilder.fromPath(API_RELATIVE_PATH_PRODUCTS)
 				.path(productDetails.getProductCode())

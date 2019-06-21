@@ -47,12 +47,10 @@ public class SecurPharmServiceManualTest
 		new SecurPharmServiceManualTest().run();
 	}
 
-	private SecurPharmService service;
-
 	private void run()
 	{
 		AdempiereTestHelper.get().init();
-		service = createSecurPharmService();
+		final SecurPharmService service = createSecurPharmService();
 
 		final DataMatrixCode datamatrix = DataMatrixCode.ofBase64Encoded("Wyk+HjA2HTlOMTExMjM0NTY4NDA4HTFUNDdVNTIxNx1EMjIwODAwHVMxODAxOTczMTUzNzYxMh4E");
 		System.out.println("Sending code: " + datamatrix);

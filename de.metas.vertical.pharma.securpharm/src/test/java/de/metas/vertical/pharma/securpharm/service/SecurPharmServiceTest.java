@@ -108,9 +108,9 @@ public class SecurPharmServiceTest
 		final ProductDetails productDetails = newDummyProductDetails()
 				.activeStatus(JsonProductPackageState.FRAUD)
 				.build();
-		final HuId huId = HuId.ofRepoId(1);
-		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails, huId);
+		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails);
 
+		final HuId huId = HuId.ofRepoId(1);
 		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
 		assertProductSaved(product);
 		assertThat(product.isDecommissioned()).isFalse();
@@ -161,9 +161,9 @@ public class SecurPharmServiceTest
 	{
 		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
 		final ProductDetails productDetails = newDummyProductDetails().build();
-		final HuId huId = HuId.ofRepoId(1);
-		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails, huId);
+		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails);
 
+		final HuId huId = HuId.ofRepoId(1);
 		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
 		assertProductSaved(product);
 

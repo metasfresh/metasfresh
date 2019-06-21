@@ -119,7 +119,7 @@ public class InventoryRepository
 		return toInventory(inventoryRecord);
 	}
 
-	public Inventory toInventory(@NonNull final org.compiere.model.I_M_Inventory inventoryRecord)
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord)
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubTypeOrNull(inventoryRecord); // shall not be null at this point
