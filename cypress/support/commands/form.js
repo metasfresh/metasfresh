@@ -10,9 +10,6 @@ function removeSubstringsWithCurlyBrackets(stringValue) {
   return stringValue.replace(regex, '');
 }
 
-/*
- * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
- */
 Cypress.Commands.add('clearField', (fieldName, modal) => {
   describe('Clear field', function() {
     cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
