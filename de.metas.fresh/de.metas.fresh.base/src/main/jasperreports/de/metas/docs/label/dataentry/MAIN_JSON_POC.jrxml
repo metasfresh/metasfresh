@@ -26,6 +26,15 @@
 		<property name="net.sf.jasperreports.json.field.expression" value="lines"/>
 		<fieldDescription><![CDATA[lines]]></fieldDescription>
 	</field>
+	<title>
+		<band height="52">
+			<textField>
+				<reportElement x="210" y="0" width="100" height="30" uuid="4f2e948e-f438-4ffe-984b-eae03df0ef90"/>
+				<textElement textAlignment="Center"/>
+				<textFieldExpression><![CDATA["TITLE"]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
 	<detail>
 		<band height="37" splitType="Stretch">
 			<subreport isUsingCache="true">
