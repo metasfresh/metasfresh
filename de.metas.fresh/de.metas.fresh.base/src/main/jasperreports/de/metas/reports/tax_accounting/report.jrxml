@@ -244,7 +244,7 @@
 				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="0" y="0" width="155" height="20" uuid="416555b5-426f-4e0e-8ced-78e6d5b1304f"/>
+				<reportElement x="0" y="0" width="621" height="20" uuid="416555b5-426f-4e0e-8ced-78e6d5b1304f"/>
 				<textElement>
 					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
