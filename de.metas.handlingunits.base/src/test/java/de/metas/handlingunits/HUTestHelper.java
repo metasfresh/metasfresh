@@ -121,7 +121,6 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -667,7 +666,7 @@ public class HUTestHelper
 		final String huUnitType = null; // any
 		createVersion(huDefNone, true, huUnitType, HuPackingInstructionsVersionId.TEMPLATE);
 
-		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
+		huDefItemNone = createHU_PI_Item_Material(huDefNone, HuPackingInstructionsItemId.TEMPLATE_MATERIAL_ITEM);
 		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductId.TEMPLATE_HU);
 
 		return huDefNone;
@@ -684,7 +683,7 @@ public class HUTestHelper
 				true, // isCurrent
 				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HuPackingInstructionsVersionId.VIRTUAL);
 
-		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
+		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HuPackingInstructionsItemId.VIRTUAL);
 		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductId.VIRTUAL_HU);
 
 		return huDefVirtual;
@@ -1030,20 +1029,20 @@ public class HUTestHelper
 
 	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi)
 	{
-		final int piItemId = -1;
+		final HuPackingInstructionsItemId piItemId = null;
 		return createHU_PI_Item_Material(pi, piItemId);
 	}
 
-	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi, final int piItemId)
+	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi, final HuPackingInstructionsItemId piItemId)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
 		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
 		piItem.setM_HU_PI_Version(version);
-		if (piItemId > 0)
+		if (piItemId != null)
 		{
-			piItem.setM_HU_PI_Item_ID(piItemId);
+			piItem.setM_HU_PI_Item_ID(piItemId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(piItem);
@@ -1785,7 +1784,7 @@ public class HUTestHelper
 
 	public boolean isVirtualPIItem(final I_M_HU_PI_Item piItem)
 	{
-		return piItem.getM_HU_PI_Item_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_Item_ID();
+		return HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID());
 	}
 
 	public boolean isVirtualPIItemProduct(final I_M_HU_PI_Item_Product piItemProduct)

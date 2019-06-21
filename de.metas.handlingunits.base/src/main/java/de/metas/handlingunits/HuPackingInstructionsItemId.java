@@ -13,7 +13,7 @@ import lombok.Value;
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,15 +31,22 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * aka M_HU_PI_Item_ID
+ */
 @Value
-public class HuPackingInstructionsVersionId implements RepoIdAware
+public class HuPackingInstructionsItemId implements RepoIdAware
 {
 	@JsonCreator
-	public static HuPackingInstructionsVersionId ofRepoId(final int repoId)
+	public static HuPackingInstructionsItemId ofRepoId(final int repoId)
 	{
-		if (repoId == TEMPLATE.repoId)
+		if (repoId == TEMPLATE_MATERIAL_ITEM.repoId)
 		{
-			return TEMPLATE;
+			return TEMPLATE_MATERIAL_ITEM;
+		}
+		if (repoId == TEMPLATE_PACKING_ITEM.repoId)
+		{
+			return TEMPLATE_PACKING_ITEM;
 		}
 		else if (repoId == VIRTUAL.repoId)
 		{
@@ -47,28 +54,29 @@ public class HuPackingInstructionsVersionId implements RepoIdAware
 		}
 		else
 		{
-			return new HuPackingInstructionsVersionId(repoId);
+			return new HuPackingInstructionsItemId(repoId);
 		}
 	}
 
-	public static HuPackingInstructionsVersionId ofRepoIdOrNull(final int repoId)
+	public static HuPackingInstructionsItemId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final HuPackingInstructionsVersionId HuPackingInstructionsVersionId)
+	public static int toRepoId(final HuPackingInstructionsItemId id)
 	{
-		return HuPackingInstructionsVersionId != null ? HuPackingInstructionsVersionId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static final HuPackingInstructionsVersionId TEMPLATE = new HuPackingInstructionsVersionId(100);
-	public static final HuPackingInstructionsVersionId VIRTUAL = new HuPackingInstructionsVersionId(101);
+	public static final HuPackingInstructionsItemId TEMPLATE_MATERIAL_ITEM = new HuPackingInstructionsItemId(540004);
+	private static final HuPackingInstructionsItemId TEMPLATE_PACKING_ITEM = new HuPackingInstructionsItemId(100);
+	public static final HuPackingInstructionsItemId VIRTUAL = new HuPackingInstructionsItemId(101);
 
 	int repoId;
 
-	private HuPackingInstructionsVersionId(final int repoId)
+	private HuPackingInstructionsItemId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_Version_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_Item_ID");
 	}
 
 	@Override
@@ -78,7 +86,7 @@ public class HuPackingInstructionsVersionId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final HuPackingInstructionsVersionId o1, final HuPackingInstructionsVersionId o2)
+	public static boolean equals(final HuPackingInstructionsItemId o1, final HuPackingInstructionsItemId o2)
 	{
 		return Objects.equals(o1, o2);
 	}
@@ -90,7 +98,8 @@ public class HuPackingInstructionsVersionId implements RepoIdAware
 
 	public static boolean isTemplateRepoId(final int repoId)
 	{
-		return repoId == TEMPLATE.repoId;
+		return repoId == TEMPLATE_MATERIAL_ITEM.repoId
+				|| repoId == TEMPLATE_PACKING_ITEM.repoId;
 	}
 
 	public boolean isVirtual()

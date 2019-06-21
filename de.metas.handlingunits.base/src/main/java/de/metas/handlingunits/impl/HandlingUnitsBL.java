@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -311,13 +312,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return true;
 		}
 
-		final int piItemId = piItem.getM_HU_PI_Item_ID();
-		if (piItemId == Services.get(IHandlingUnitsDAO.class).getPackingItemTemplate_HU_PI_Item_ID())
-		{
-			return true;
-		}
-
-		return false;
+		return HuPackingInstructionsItemId.isTemplateRepoId(piItem.getM_HU_PI_Item_ID());
 	}
 
 	@Override
@@ -434,14 +429,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return false;
 		}
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		if (huItem.getM_HU_PI_Item_ID() == handlingUnitsDAO.getVirtual_HU_PI_Item_ID())
-		{
-			return true;
-		}
-
-		return false;
+		
+		return HuPackingInstructionsItemId.isVirtualRepoId(huItem.getM_HU_PI_Item_ID());
 	}
 
 	@Override
