@@ -1,14 +1,13 @@
 package de.metas.util.reducers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -59,12 +58,12 @@ public class DistinctReducerTest
 		final Stream<String> stream = Stream.of("1", "1", "2", "3");
 		final Function<List<String>, MyDistinctException> exceptionFactory = MyDistinctException::new;
 
-		assertThatThrownBy(() -> stream.reduce(Reducers.distinct(exceptionFactory)))
-				.matches(expectExceptionWithValues("1", "3"));
+		expectExceptionWithValues("1", "2")
+				.test(() -> stream.reduce(Reducers.distinct(exceptionFactory)));
 	}
 
 	@SafeVarargs
-	private static <T> Predicate<Throwable> expectExceptionWithValues(final T... expectedValues)
+	private static <T> MyDistinctExceptionExpectation expectExceptionWithValues(final T... expectedValues)
 	{
 		return new MyDistinctExceptionExpectation(Arrays.asList(expectedValues));
 	}
@@ -81,7 +80,7 @@ public class DistinctReducerTest
 		}
 	}
 
-	private static class MyDistinctExceptionExpectation implements Predicate<Throwable>
+	private static class MyDistinctExceptionExpectation
 	{
 		@Getter
 		private final ImmutableList<Object> expectedValues;
@@ -91,17 +90,16 @@ public class DistinctReducerTest
 			this.expectedValues = ImmutableList.copyOf(expectedValues);
 		}
 
-		@Override
-		public boolean test(final Throwable throwable)
+		public void test(final Runnable runnable)
 		{
-			if (throwable instanceof MyDistinctException)
+			try
 			{
-				final ImmutableList<Object> actualValues = ((MyDistinctException)throwable).getValues();
-				return expectedValues.equals(actualValues);
+				runnable.run();
+				Assert.fail("No exceptio was thrown");
 			}
-			else
+			catch (final MyDistinctException ex)
 			{
-				return false;
+				assertThat(ex.getValues()).isEqualTo(expectedValues);
 			}
 		}
 
