@@ -27,12 +27,11 @@
 		<fieldDescription><![CDATA[lines]]></fieldDescription>
 	</field>
 	<detail>
-		<band height="45" splitType="Stretch">
+		<band height="37" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" stretchType="ContainerHeight" x="0" y="8" width="540" height="32" isPrintWhenDetailOverflows="true" uuid="633aeeca-e559-4f1b-86ba-a975cd9f0e9f"/>
+				<reportElement key="subreport-3" stretchType="ContainerHeight" x="0" y="2" width="540" height="32" isPrintWhenDetailOverflows="true" uuid="633aeeca-e559-4f1b-86ba-a975cd9f0e9f"/>
 				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("lines")]]></dataSourceExpression>
-				<subreportExpression><![CDATA["de/metas/docs/label/dataentry/JSON_POC.jasper"
-]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/label/dataentry/JSON_POC.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

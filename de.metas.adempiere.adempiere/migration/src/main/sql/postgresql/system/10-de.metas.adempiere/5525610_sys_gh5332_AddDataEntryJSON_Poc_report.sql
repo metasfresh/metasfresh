@@ -99,3 +99,8 @@ UPDATE AD_Menu SET WEBUI_NameBrowse='ProductsDataEntry(Jasper)',Updated=TO_TIMES
 -----------------------
 
 
+
+-- 2019-06-21T17:28:44.053
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/label/dataentry/MAIN_JSON_POC.jasper',Updated=TO_TIMESTAMP('2019-06-21 17:28:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541154
+;
