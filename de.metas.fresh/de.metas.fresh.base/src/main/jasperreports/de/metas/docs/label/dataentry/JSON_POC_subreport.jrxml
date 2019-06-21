@@ -46,7 +46,9 @@
 				<box topPadding="1" leftPadding="1" bottomPadding="1" rightPadding="1">
 					<pen lineWidth="0.5"/>
 				</box>
-				<textElement markup="styled"/>
+				<textElement markup="styled">
+					<font fontName="Arial"/>
+				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
 			</textField>
 		</band>
