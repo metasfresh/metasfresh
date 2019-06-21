@@ -37,23 +37,23 @@ import lombok.Value;
 public class SecurPharmConfig
 {
 	@NonNull
-	private String authBaseUrl;
+	String authBaseUrl;
 
 	@NonNull
-	private String pharmaAPIBaseUrl;
+	String pharmaAPIBaseUrl;
 
 	@NonNull
-	private String keystorePassword;
+	String keystorePassword;
 
 	@NonNull
-	private String certificatePath;
+	String certificatePath;
 
 	@NonNull
-	private String applicationUUID;
+	String applicationUUID;
 
 	@NonNull
-	private UserId supportUserId;
+	UserId supportUserId;
 
 	@Nullable
-	private SecurPharmConfigId id;
+	SecurPharmConfigId id;
 }
