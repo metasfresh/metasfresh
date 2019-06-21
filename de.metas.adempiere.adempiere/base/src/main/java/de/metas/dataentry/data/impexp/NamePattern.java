@@ -2,6 +2,9 @@ package de.metas.dataentry.data.impexp;
 
 import javax.annotation.Nullable;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+
 import de.metas.dataentry.layout.DataEntryField;
 import de.metas.dataentry.layout.DataEntryLine;
 import de.metas.dataentry.layout.DataEntrySection;
@@ -10,7 +13,6 @@ import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.i18n.ITranslatableString;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -34,20 +36,24 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
 class NamePattern
 {
 	public static NamePattern ofStringOrAny(@Nullable final String pattern)
 	{
-		final String patternNorm = pattern != null ? pattern.trim() : null;
-		if (patternNorm == null || patternNorm.isEmpty())
+		final String patternNorm = normalizeString(pattern);
+		if (patternNorm == null)
 		{
 			return ANY;
 		}
 		else
 		{
-			return new NamePattern(pattern);
+			return new NamePattern(patternNorm);
 		}
+	}
+
+	public static NamePattern any()
+	{
+		return ANY;
 	}
 
 	private static final NamePattern ANY = new NamePattern();
@@ -56,16 +62,45 @@ class NamePattern
 	private final boolean any;
 	private final String pattern;
 
-	private NamePattern(@NonNull final String pattern)
+	private NamePattern(@NonNull final String patternNormalized)
 	{
 		this.any = false;
-		this.pattern = pattern;
+		this.pattern = patternNormalized;
+	}
+
+	private static final String normalizeString(final String str)
+	{
+		if (str == null)
+		{
+			return null;
+		}
+
+		final String strNorm = str.trim();
+		if (strNorm.isEmpty())
+		{
+			return null;
+		}
+
+		return strNorm;
 	}
 
 	private NamePattern()
 	{
 		this.any = true;
 		this.pattern = null;
+	}
+
+	@Override
+	public String toString()
+	{
+		if (any)
+		{
+			return MoreObjects.toStringHelper(this).addValue("ANY").toString();
+		}
+		else
+		{
+			return MoreObjects.toStringHelper(this).add("pattern", pattern).toString();
+		}
 	}
 
 	public boolean isMatching(@NonNull final DataEntryTab tab)
@@ -120,15 +155,20 @@ class NamePattern
 		return false;
 	}
 
-	private boolean isMatching(final String name)
+	@VisibleForTesting
+	boolean isMatching(final String name)
 	{
 		if (isAny())
 		{
 			return true;
 		}
-		else
+
+		final String nameNorm = normalizeString(name);
+		if (nameNorm == null)
 		{
-			return pattern.equalsIgnoreCase(name);
+			return false;
 		}
+
+		return pattern.equalsIgnoreCase(nameNorm);
 	}
 }
