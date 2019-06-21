@@ -25,10 +25,7 @@ package de.metas.vertical.pharma.securpharm.product;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.handlingunits.HuId;
-import de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Setter;
@@ -54,11 +51,6 @@ public class SecurPharmProduct
 	@NonFinal
 	@Setter
 	SecurPharmProductId id;
-
-	public TableRecordReference getRecordRef()
-	{
-		return TableRecordReference.of(I_M_Securpharm_Productdata_Result.Table_Name, getId());
-	}
 
 	public boolean isActive()
 	{

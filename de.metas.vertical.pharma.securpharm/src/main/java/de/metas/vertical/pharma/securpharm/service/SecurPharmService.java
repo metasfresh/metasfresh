@@ -32,8 +32,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -46,11 +44,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.i18n.IMsgBL;
 import de.metas.inventory.InventoryId;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionProcessor;
@@ -67,6 +61,7 @@ import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.notifications.SecurPharmUserNotifications;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.ProductDetails;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
@@ -77,13 +72,13 @@ import lombok.NonNull;
 @Service
 public class SecurPharmService
 {
-	private static final String MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE = "SecurpharmActionResultErrorNotificationMessage";
-
 	private final SecurPharmClientFactory clientFactory;
 	private final SecurPharmConfigRespository configRespository;
 	private final SecurPharmProductRepository productsRepo;
 	private final SecurPharmaActionRepository actionsRepo;
 	private final SecurPharmLogRepository logsRepo;
+	private SecurPharmUserNotifications userNotifications;
+
 	private final InventoryRepository inventoryRepo;
 
 	private final IEventBus actionsEventBus;
@@ -95,6 +90,7 @@ public class SecurPharmService
 			@NonNull final SecurPharmProductRepository productsRepo,
 			@NonNull final SecurPharmaActionRepository actionsRepo,
 			@NonNull final SecurPharmLogRepository logsRepo,
+			@NonNull final SecurPharmUserNotifications userNotifications,
 			@NonNull final InventoryRepository inventoryRepo)
 	{
 		this.clientFactory = clientFactory;
@@ -103,6 +99,7 @@ public class SecurPharmService
 		this.productsRepo = productsRepo;
 		this.actionsRepo = actionsRepo;
 		this.logsRepo = logsRepo;
+		this.userNotifications = userNotifications;
 		this.inventoryRepo = inventoryRepo;
 
 		actionsEventBus = eventBusFactory.getEventBus(SecurPharmActionProcessor.EVENTS_TOPIC);
@@ -186,29 +183,10 @@ public class SecurPharmService
 
 		if (product.isError())
 		{
-			sendNotification(
-					client.getSupportUserId(),
-					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
-					product.getRecordRef());
+			userNotifications.notifyProductDecodeAndVerifyError(client.getSupportUserId(), product);
 		}
 
 		return product;
-	}
-
-	private void sendNotification(
-			@NonNull final UserId recipientUserId,
-			@NonNull final String notificationADMessage,
-			@NonNull final TableRecordReference recordRef)
-	{
-		final String message = Services.get(IMsgBL.class).getMsg(Env.getCtx(), notificationADMessage);
-
-		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
-				.recipientUserId(recipientUserId)
-				.contentPlain(message)
-				.targetAction(UserNotificationRequest.TargetRecordAction.of(recordRef))
-				.build();
-
-		Services.get(INotificationBL.class).sendAfterCommit(userNotificationRequest);
 	}
 
 	public void scheduleAction(@NonNull SecurPharmaActionRequest request)
@@ -276,10 +254,7 @@ public class SecurPharmService
 		}
 		else
 		{
-			sendNotification(
-					client.getSupportUserId(),
-					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
-					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
+			userNotifications.notifyDecommissionFailed(client.getSupportUserId(), response);
 		}
 
 		return Optional.of(response);
@@ -340,10 +315,7 @@ public class SecurPharmService
 		}
 		else
 		{
-			sendNotification(
-					client.getSupportUserId(),
-					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
-					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
+			userNotifications.notifyUndoDecommissionFailed(client.getSupportUserId(), response);
 		}
 
 		return Optional.of(response);

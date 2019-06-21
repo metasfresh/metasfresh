@@ -338,6 +338,15 @@ public class SecurPharmClient
 			log.responseCode(ex.getStatusCode());
 			log.responseData(ex.getResponseBodyAsString());
 		}
+		catch (final Throwable ex)
+		{
+			logger.debug("Got internal error", ex);
+
+			log.error(true);
+			log.responseTime(Instant.now());
+			// log.responseCode(ex.getStatusCode());
+			log.responseData(ex.getLocalizedMessage());
+		}
 
 		return log.build();
 	}

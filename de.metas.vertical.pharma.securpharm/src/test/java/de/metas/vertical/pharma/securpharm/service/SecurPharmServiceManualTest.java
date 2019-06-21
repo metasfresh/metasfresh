@@ -6,9 +6,13 @@ import org.junit.Ignore;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.user.UserId;
+import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
+import de.metas.vertical.pharma.securpharm.notifications.SecurPharmUserNotifications;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
@@ -67,6 +71,30 @@ public class SecurPharmServiceManualTest
 				new SecurPharmProductRepository(),
 				new SecurPharmaActionRepository(),
 				new SecurPharmLogRepository(),
+				new LoggingSecurPharmUserNotifications(),
 				new InventoryRepository());
+	}
+
+	private static class LoggingSecurPharmUserNotifications implements SecurPharmUserNotifications
+	{
+
+		@Override
+		public void notifyProductDecodeAndVerifyError(final UserId responsibleId, final SecurPharmProduct product)
+		{
+			System.out.println("ERROR on decode&verify: " + product);
+		}
+
+		@Override
+		public void notifyDecommissionFailed(final UserId responsibleId, final DecommissionResponse response)
+		{
+			System.out.println("ERROR on decommission: " + response);
+		}
+
+		@Override
+		public void notifyUndoDecommissionFailed(final UserId responsibleId, final UndoDecommissionResponse response)
+		{
+			System.out.println("ERROR on undo-decommission: " + response);
+		}
+
 	}
 }

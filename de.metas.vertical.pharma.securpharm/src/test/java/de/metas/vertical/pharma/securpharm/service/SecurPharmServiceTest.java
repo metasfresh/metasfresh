@@ -25,36 +25,22 @@ package de.metas.vertical.pharma.securpharm.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.springframework.http.HttpMethod;
 
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.InventoryId;
-import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
-import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
-import de.metas.vertical.pharma.securpharm.client.DecommissionClientResponse;
-import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
-import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.client.UndoDecommissionClientResponse;
-import de.metas.vertical.pharma.securpharm.client.VerifyProductClientResponse;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonExpirationDate;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonProductPackageState;
-import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
-import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog.SecurPharmLogBuilder;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.ProductCodeType;
@@ -63,7 +49,6 @@ import de.metas.vertical.pharma.securpharm.product.ProductDetails.ProductDetails
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductRepository;
-import lombok.NonNull;
 
 public class SecurPharmServiceTest
 {
@@ -72,7 +57,8 @@ public class SecurPharmServiceTest
 
 	//
 	// Other services
-	private SecurPharmClient client;
+	private MockedSecurPharmClientHelper clientHelper;
+	private MockedSecurPharmUserNotifications userNotifications;
 	private SecurPharmProductRepository productsRepo;
 
 	@Before
@@ -80,19 +66,11 @@ public class SecurPharmServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		//
-		// Setup config & client
-		final SecurPharmConfigRespository configRespository = Mockito.mock(SecurPharmConfigRespository.class);
-		final SecurPharmClientFactory clientFactory = Mockito.mock(SecurPharmClientFactory.class);
-		client = Mockito.mock(SecurPharmClient.class);
-		//
-		final SecurPharmConfig config = createDummyConfig();
-		Mockito.when(configRespository.getDefaultConfig()).thenReturn(Optional.of(config));
-		Mockito.when(clientFactory.createClient(config)).thenReturn(client);
-		Mockito.when(client.getConfig()).thenReturn(config);
+		clientHelper = new MockedSecurPharmClientHelper();
 
 		//
 		// Other services
+		userNotifications = new MockedSecurPharmUserNotifications();
 		productsRepo = new SecurPharmProductRepository();
 		// final SecurPharmaActionRepository actionsRepo = Mockito.mock(SecurPharmaActionRepository.class);
 		final SecurPharmaActionRepository actionsRepo = new SecurPharmaActionRepository();
@@ -103,25 +81,14 @@ public class SecurPharmServiceTest
 		// The service we are testing
 		securPharmService = new SecurPharmService(
 				PlainEventBusFactory.newInstance(),
-				clientFactory,
-				configRespository,
+				clientHelper.getClientFactory(),
+				clientHelper.getConfigRespository(),
 				productsRepo,
 				actionsRepo,
 				logsRepo,
+				userNotifications,
 				inventoryRepo);
 
-	}
-
-	private static SecurPharmConfig createDummyConfig()
-	{
-		return SecurPharmConfig.builder()
-				.applicationUUID("uuid")
-				.authBaseUrl("url")
-				.pharmaAPIBaseUrl("url")
-				.certificatePath("path")
-				.supportUserId(UserId.METASFRESH)
-				.keystorePassword("passw")
-				.build();
 	}
 
 	private ProductDetailsBuilder newDummyProductDetails()
@@ -135,51 +102,6 @@ public class SecurPharmServiceTest
 				.serialNumber("serial nr");
 	}
 
-	private void mockClientDecodeAndVerifyProductDataOK(
-			final DataMatrixCode dataMatrix,
-			final ProductDetails productDetails,
-			final HuId huId)
-	{
-		Mockito.when(client.decodeDataMatrix(dataMatrix))
-				.thenReturn(DecodeDataMatrixClientResponse.builder()
-						.productDetails(productDetails)
-						.log(generateDummyLog())
-						.build());
-
-		Mockito.when(client.verifyProduct(productDetails))
-				.thenReturn(VerifyProductClientResponse.builder()
-						.resultCode("200")
-						.productDetails(productDetails)
-						.log(generateDummyLog())
-						.build());
-	}
-
-	private void mockClientDecommissionOK(
-			@NonNull final ProductDetails productDetails,
-			@NonNull final String serverTransactionId)
-	{
-		Mockito.when(client.decommission(productDetails))
-				.thenReturn(DecommissionClientResponse.builder()
-						.productDetails(productDetails)
-						.log(prepareDummyLog()
-								.serverTransactionId(serverTransactionId)
-								.build())
-						.build());
-	}
-
-	private void mockClientUndoDecommissionOK(@NonNull final ProductDetails productDetails)
-	{
-		final String serverTransactionId = productDetails.getDecommissionedServerTransactionId();
-
-		Mockito.when(client.undoDecommission(productDetails, serverTransactionId))
-				.thenReturn(UndoDecommissionClientResponse.builder()
-						.productDetails(productDetails)
-						.log(prepareDummyLog()
-								.serverTransactionId(serverTransactionId)
-								.build())
-						.build());
-	}
-
 	private SecurPharmProduct prepareProductForDecommissioning()
 	{
 		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
@@ -187,10 +109,11 @@ public class SecurPharmServiceTest
 				.activeStatus(JsonProductPackageState.FRAUD)
 				.build();
 		final HuId huId = HuId.ofRepoId(1);
-		mockClientDecodeAndVerifyProductDataOK(dataMatrix, productDetails, huId);
+		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails, huId);
 
 		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
 		assertProductSaved(product);
+		assertThat(product.isDecommissioned()).isFalse();
 
 		//
 		// Make sure the product is eligible for decommissioning
@@ -201,22 +124,28 @@ public class SecurPharmServiceTest
 		return product;
 	}
 
-	private SecurPharmLog generateDummyLog()
+	private DecommissionResponse prepareProductAndDecommissionIt()
 	{
-		return prepareDummyLog().build();
-	}
+		final InventoryId inventoryId = InventoryId.ofRepoId(1);
 
-	private SecurPharmLogBuilder prepareDummyLog()
-	{
-		return SecurPharmLog.builder()
-				.responseTime(Instant.now())
-				.requestTime(Instant.now())
-				.requestMethod(HttpMethod.GET)
-				.requestUrl("requestUrl")
-				.responseData("responseData")
-				.clientTransactionId("dummyClientTransactionId")
-				.serverTransactionId("dummyServerTransactionId")
-				.error(false);
+		//
+		// Get, Verify & Decommission a product
+		final SecurPharmProduct product = prepareProductForDecommissioning();
+
+		//
+		// Decommission it
+		final String decommissionServerTransactionId = "decomission-ServerTransactionId";
+		clientHelper.mockDecommissionOK(product.getProductDetails(), decommissionServerTransactionId);
+		final DecommissionResponse decommissionResult = securPharmService.decommissionProductIfEligible(product, inventoryId).get();
+		assertProductSaved(product);
+
+		//
+		// Make sure the product is eligible for decommissioning
+		assertThat(securPharmService.isEligibleForUndoDecommission(product))
+				.as("" + product + " shall be eligible for undo-decommissioning")
+				.isTrue();
+
+		return decommissionResult;
 	}
 
 	private void assertProductSaved(final SecurPharmProduct product)
@@ -233,30 +162,78 @@ public class SecurPharmServiceTest
 		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
 		final ProductDetails productDetails = newDummyProductDetails().build();
 		final HuId huId = HuId.ofRepoId(1);
-		mockClientDecodeAndVerifyProductDataOK(dataMatrix, productDetails, huId);
+		clientHelper.mockDecodeAndVerifyOK(dataMatrix, productDetails, huId);
 
 		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
 		assertProductSaved(product);
 
 		assertThat(product)
 				.isEqualTo(SecurPharmProduct.builder()
+						.error(false)
 						.id(product.getId())
 						.productDetails(productDetails)
 						.huId(huId)
 						.build());
+
+		userNotifications.assertNoErrors();
+	}
+
+	@Test
+	public void getAndSaveProductData_FAIL_on_Decode()
+	{
+		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
+		// final ProductDetails productDetails = newDummyProductDetails().build();
+		final HuId huId = HuId.ofRepoId(1);
+		clientHelper.mockDecodeERROR(dataMatrix);
+		// clientHelper.mockVerifyOK(productDetails);
+
+		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
+		assertProductSaved(product);
+
+		assertThat(product)
+				.isEqualTo(SecurPharmProduct.builder()
+						.error(true)
+						.id(product.getId())
+						.productDetails(null)
+						.huId(huId)
+						.build());
+
+		userNotifications.assertProductDecodeAndVerifyError(product.getId());
+	}
+
+	@Test
+	public void getAndSaveProductData_FAIL_on_Verify()
+	{
+		final DataMatrixCode dataMatrix = DataMatrixCode.ofString("dummy datamatrix");
+		final ProductDetails productDetails = newDummyProductDetails().build();
+		final HuId huId = HuId.ofRepoId(1);
+		clientHelper.mockDecodeOK(dataMatrix, productDetails);
+		clientHelper.mockVerifyERROR(productDetails);
+
+		final SecurPharmProduct product = securPharmService.getAndSaveProduct(dataMatrix, huId);
+		assertProductSaved(product);
+
+		assertThat(product)
+				.isEqualTo(SecurPharmProduct.builder()
+						.error(true)
+						.id(product.getId())
+						.productDetails(null)
+						.huId(huId)
+						.build());
+
+		userNotifications.assertProductDecodeAndVerifyError(product.getId());
 	}
 
 	@Test
 	public void decommission_OK_Case()
 	{
 		final SecurPharmProduct product = prepareProductForDecommissioning();
-		assertThat(product.isDecommissioned()).isFalse();
 
 		//
 		// Decommission the product
 		final InventoryId inventoryId = InventoryId.ofRepoId(1);
 		final String serverTransactionId = "decomission-ServerTransactionId";
-		mockClientDecommissionOK(product.getProductDetails(), serverTransactionId);
+		clientHelper.mockDecommissionOK(product.getProductDetails(), serverTransactionId);
 		final DecommissionResponse decommissionResponse = securPharmService.decommissionProductIfEligible(product, inventoryId).get();
 
 		//
@@ -276,31 +253,54 @@ public class SecurPharmServiceTest
 		assertThat(product.isDecommissioned()).isTrue();
 		assertThat(product.getDecommissionServerTransactionId()).isEqualTo(serverTransactionId);
 		assertProductSaved(product);
+
+		userNotifications.assertNoErrors();
+	}
+
+	@Test
+	public void decommission_Error_Case()
+	{
+		final SecurPharmProduct product = prepareProductForDecommissioning();
+
+		//
+		// Decommission the product
+		final InventoryId inventoryId = InventoryId.ofRepoId(1);
+		final String serverTransactionId = "decomission-ServerTransactionId";
+		clientHelper.mockDecommissionERROR(serverTransactionId);
+		final DecommissionResponse decommissionResponse = securPharmService.decommissionProductIfEligible(product, inventoryId).get();
+
+		//
+		// Check Decommission result
+		assertThat(decommissionResponse.getId()).isNotNull();
+		assertThat(decommissionResponse)
+				.isEqualTo(DecommissionResponse.builder()
+						.error(true)
+						.productId(product.getId())
+						.serverTransactionId(serverTransactionId)
+						.inventoryId(inventoryId)
+						.id(decommissionResponse.getId())
+						.build());
+
+		//
+		// Check the product
+		assertThat(product.isDecommissioned()).isFalse();
+		assertThat(product.getDecommissionServerTransactionId()).isNull();
+		assertProductSaved(product);
+
+		userNotifications.assertDecommissionError(product.getId());
 	}
 
 	@Test
 	public void undoDecommission_OK_Case()
 	{
-		final InventoryId inventoryId = InventoryId.ofRepoId(1);
-
-		//
-		// Get, Verify & Decommission a product
-		final SecurPharmProductId productId;
-		{
-			final SecurPharmProduct product = prepareProductForDecommissioning();
-			productId = product.getId();
-
-			final String decommissionServerTransactionId = "decomission-ServerTransactionId";
-			mockClientDecommissionOK(product.getProductDetails(), decommissionServerTransactionId);
-			securPharmService.decommissionProductIfEligible(product, inventoryId).get();
-			assertProductSaved(product);
-		}
+		final DecommissionResponse decommissionResult = prepareProductAndDecommissionIt();
+		final SecurPharmProductId productId = decommissionResult.getProductId();
+		final InventoryId inventoryId = decommissionResult.getInventoryId();
 
 		//
 		// Undo-decommission
 		final SecurPharmProduct product = productsRepo.getProductById(productId);
-
-		mockClientUndoDecommissionOK(product.getProductDetails());
+		clientHelper.mockUndoDecommissionOK(product.getProductDetails());
 		final UndoDecommissionResponse undoDecommissionResponse = securPharmService.undoDecommissionProductIfEligible(product, inventoryId).get();
 
 		//
@@ -319,5 +319,41 @@ public class SecurPharmServiceTest
 		// Check the product
 		assertThat(product.isDecommissioned()).isFalse();
 		assertProductSaved(product);
+
+		userNotifications.assertNoErrors();
 	}
+
+	@Test
+	public void undoDecommission_Error_Case()
+	{
+		final DecommissionResponse decommissionResult = prepareProductAndDecommissionIt();
+		final SecurPharmProductId productId = decommissionResult.getProductId();
+		final InventoryId inventoryId = decommissionResult.getInventoryId();
+
+		//
+		// Undo-decommission
+		final SecurPharmProduct product = productsRepo.getProductById(productId);
+		clientHelper.mockUndoDecommissionError(product.getProductDetails());
+		final UndoDecommissionResponse undoDecommissionResponse = securPharmService.undoDecommissionProductIfEligible(product, inventoryId).get();
+
+		//
+		// Check UndoDecommission result
+		assertThat(undoDecommissionResponse.getId()).isNotNull();
+		assertThat(undoDecommissionResponse)
+				.isEqualTo(UndoDecommissionResponse.builder()
+						.error(true)
+						.productId(productId)
+						.serverTransactionId(product.getDecommissionServerTransactionId())
+						.inventoryId(inventoryId)
+						.id(undoDecommissionResponse.getId())
+						.build());
+
+		//
+		// Check the product
+		assertThat(product.isDecommissioned()).isTrue();
+		assertProductSaved(product);
+
+		userNotifications.assertUndoDecommissionError(productId);
+	}
+
 }
