@@ -1,5 +1,7 @@
 package de.metas.inventory;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -41,6 +43,11 @@ public class InventoryId implements RepoIdAware
 	public static InventoryId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	public static int toRepoId(@Nullable final InventoryId id)
+	{
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	int repoId;
