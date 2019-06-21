@@ -8,7 +8,13 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IMsgBL;
@@ -95,8 +101,17 @@ public class JsonDataSourceService
 		}
 
 		// parse variables TODO
+		final IStringExpression pathExpression = Services.get(IExpressionFactory.class).compile(path, IStringExpression.class);
+		final Evaluatee evalCtx = Evaluatees.ofCtx(Env.getCtx());
+		final String evaluatedPath = pathExpression.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);
 
-		url = url + path;
+		if (pathExpression.isNoResult(evaluatedPath))
+		{
+			// expression could not be evaluated
+			return null;
+		}
+
+		url = url + evaluatedPath;
 
 		return url;
 	}
