@@ -340,6 +340,16 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
+	public Optional<String> getType()
+	{
+		return type;
+	}
+
+	public Optional<String> getJSONPath()
+	{
+		return JSONPath;
+	}
+
 	public int getAD_Workflow_ID()
 	{
 		return adWorkflowId;
