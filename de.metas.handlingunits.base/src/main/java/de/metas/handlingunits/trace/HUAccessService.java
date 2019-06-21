@@ -1,6 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,10 +10,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
-import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -72,26 +70,14 @@ public class HUAccessService
 		return huAssignments;
 	}
 
+	public List<I_M_HU> retrieveVhus(@NonNull final HuId huId)
+	{
+		return Services.get(IHandlingUnitsBL.class).getVHUs(huId);
+	}
+
 	public List<I_M_HU> retrieveVhus(@NonNull final I_M_HU hu)
 	{
-		final List<I_M_HU> vhus = new ArrayList<>();
-
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		new HUIterator().setEnableStorageIteration(false)
-				.setListener(new HUIteratorListenerAdapter()
-				{
-					@Override
-					public Result afterHU(final I_M_HU currentHu)
-					{
-						if (handlingUnitsBL.isVirtual(currentHu))
-						{
-							vhus.add(currentHu);
-						}
-						return Result.CONTINUE;
-					}
-				}).iterate(hu);
-
-		return vhus;
+		return Services.get(IHandlingUnitsBL.class).getVHUs(hu);
 	}
 
 	/**

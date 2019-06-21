@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUBuilder;
@@ -62,6 +63,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
+
+	@Override
+	public I_M_HU getById(@NonNull final HuId huId)
+	{
+		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsRepo.getById(huId);
+	}
 
 	@Override
 	public IHUStorageFactory getStorageFactory()
@@ -767,5 +775,39 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final I_M_HU_PI included_HU_PI = parentPIItem.getIncluded_HU_PI();
 		return included_HU_PI;
+	}
+
+	@Override
+	public List<I_M_HU> getVHUs(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return getVHUs(hu);
+	}
+
+	@Override
+	public List<I_M_HU> getVHUs(@NonNull final I_M_HU hu)
+	{
+		if (isVirtual(hu))
+		{
+			return ImmutableList.of(hu);
+		}
+
+		final List<I_M_HU> vhus = new ArrayList<>();
+		new HUIterator()
+				.setEnableStorageIteration(false)
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result afterHU(final I_M_HU currentHu)
+					{
+						if (isVirtual(currentHu))
+						{
+							vhus.add(currentHu);
+						}
+						return Result.CONTINUE;
+					}
+				}).iterate(hu);
+
+		return vhus;
 	}
 }

@@ -43,6 +43,12 @@ import lombok.NonNull;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
+	I_M_HU getById(HuId huId);
+
+	List<I_M_HU> getVHUs(HuId huId);
+
+	List<I_M_HU> getVHUs(I_M_HU hu);
+
 	/**
 	 * @return default storage factory
 	 */
