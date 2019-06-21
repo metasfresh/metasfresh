@@ -39,13 +39,13 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -103,12 +103,9 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
-	@Autowired
-	private UserAuthTokenRepository userAuthTokenRepo;
-	@Autowired
-	private JsonDataSourceService jsonDSService;
-	@Autowired
-	private JsonDataSourceRepository jsonRepo;
+	private final UserAuthTokenRepository userAuthTokenRepo = Adempiere.getBean(UserAuthTokenRepository.class);
+	private final JsonDataSourceService jsonDSService = Adempiere.getBean(JsonDataSourceService.class);
+	private final JsonDataSourceRepository jsonRepo = Adempiere.getBean(JsonDataSourceRepository.class);
 
 	private final transient Logger log = LogManager.getLogger(getClass());
 
