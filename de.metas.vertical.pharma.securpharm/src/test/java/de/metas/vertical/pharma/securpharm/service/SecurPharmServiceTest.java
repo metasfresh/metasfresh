@@ -32,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.InventoryId;
@@ -79,15 +78,16 @@ public class SecurPharmServiceTest
 
 		//
 		// The service we are testing
-		securPharmService = new SecurPharmService(
-				PlainEventBusFactory.newInstance(),
-				clientHelper.getClientFactory(),
-				clientHelper.getConfigRespository(),
-				productsRepo,
-				actionsRepo,
-				logsRepo,
-				userNotifications,
-				inventoryRepo);
+		securPharmService = SecurPharmService.builder()
+				.clientFactory(clientHelper.getClientFactory())
+				.configRespository(clientHelper.getConfigRespository())
+				.productsRepo(productsRepo)
+				.actionsRepo(actionsRepo)
+				.logsRepo(logsRepo)
+				.actionRequestDispatcher(new DirectSecurPharmActionsDispatcher())
+				.userNotifications(userNotifications)
+				.inventoryRepo(inventoryRepo)
+				.build();
 
 	}
 

@@ -3,7 +3,6 @@ package de.metas.vertical.pharma.securpharm.service;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Ignore;
 
-import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.user.UserId;
@@ -62,15 +61,16 @@ public class SecurPharmServiceManualTest
 
 	private static SecurPharmService createSecurPharmService()
 	{
-		return new SecurPharmService(
-				PlainEventBusFactory.newInstance(),
-				new SecurPharmClientFactory(),
-				PlainSecurPharmConfigRespository.ofDefaultSandboxProperties(),
-				new SecurPharmProductRepository(),
-				new SecurPharmaActionRepository(),
-				new SecurPharmLogRepository(),
-				new LoggingSecurPharmUserNotifications(),
-				new InventoryRepository());
+		return SecurPharmService.builder()
+				.clientFactory(new SecurPharmClientFactory())
+				.configRespository(PlainSecurPharmConfigRespository.ofDefaultSandboxProperties())
+				.productsRepo(new SecurPharmProductRepository())
+				.actionsRepo(new SecurPharmaActionRepository())
+				.logsRepo(new SecurPharmLogRepository())
+				.actionRequestDispatcher(new DirectSecurPharmActionsDispatcher())
+				.userNotifications(new LoggingSecurPharmUserNotifications())
+				.inventoryRepo(new InventoryRepository())
+				.build();
 	}
 
 	private static class LoggingSecurPharmUserNotifications implements SecurPharmUserNotifications

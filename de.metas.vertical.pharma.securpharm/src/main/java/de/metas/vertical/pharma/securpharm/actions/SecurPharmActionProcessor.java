@@ -1,22 +1,18 @@
 package de.metas.vertical.pharma.securpharm.actions;
 
-import java.util.Optional;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 import javax.annotation.PostConstruct;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
-import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
+import de.metas.Profiles;
+import de.metas.inventory.InventoryId;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -42,90 +38,74 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Gets {@link SecurPharmaActionRequest}s from {@link SecurPharmService#subscribeOnActions(SecurPharmActionsHandler)} and process them.
+ */
 @Component
-public class SecurPharmActionProcessor
+@Profile(Profiles.PROFILE_App)
+public class SecurPharmActionProcessor implements SecurPharmActionsHandler
 {
-	public static final Topic EVENTS_TOPIC = Topic.remote("de.metas.vertical.pharma.securpharm.actions");
-
-	public static final String BEANNAME_EXECUTOR = "de.metas.vertical.pharma.securpharm.actions.SecurPharmActionProcessor.executor";
-
 	private static final Logger logger = LogManager.getLogger(SecurPharmActionProcessor.class);
-	private final IEventBusFactory eventBusFactory;
 	private final SecurPharmService securPharmService;
 
-	private final Executor executor;
-
-	public SecurPharmActionProcessor(
-			@NonNull final IEventBusFactory eventBusFactory,
-			@NonNull final SecurPharmService securPharmService,
-			@Qualifier(BEANNAME_EXECUTOR) final Optional<Executor> executor)
+	public SecurPharmActionProcessor(@NonNull final SecurPharmService securPharmService)
 	{
-		this.eventBusFactory = eventBusFactory;
 		this.securPharmService = securPharmService;
-
-		this.executor = executor.orElseGet(() -> createAsyncExecutor());
-
-		logger.info("Started ({})", executor);
-	}
-
-	private static Executor createAsyncExecutor()
-	{
-		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(SecurPharmActionProcessor.class.getSimpleName());
-		asyncThreadFactory.setDaemon(true);
-
-		return Executors.newSingleThreadExecutor(asyncThreadFactory);
+		logger.info("Started");
 	}
 
 	@PostConstruct
 	public void postConstruct()
 	{
-		eventBusFactory
-				.getEventBus(EVENTS_TOPIC)
-				.subscribeOn(SecurPharmaActionRequest.class, this::handleEventAsync);
-		logger.info("Subscribed to {} event bus topic", EVENTS_TOPIC);
+		securPharmService.subscribeOnActions(this);
 	}
 
-	private void handleEventAsync(@NonNull final SecurPharmaActionRequest event)
-	{
-		try
-		{
-			executor.execute(() -> handleEventInTrx(event));
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed enqueueing {}", event, AdempiereException.extractCause(ex));
-		}
-	}
-
-	private void handleEventInTrx(@NonNull final SecurPharmaActionRequest event)
+	@Override
+	public void handleActionRequest(final SecurPharmaActionRequest request)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		try
 		{
-			trxManager.runInThreadInheritedTrx(() -> handleEvent0(event));
+			trxManager.runInThreadInheritedTrx(() -> handleActionRequest0(request));
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed processing {}", event, AdempiereException.extractCause(ex));
+			logger.warn("Failed processing {}", request, AdempiereException.extractCause(ex));
 		}
 	}
 
-	private void handleEvent0(@NonNull final SecurPharmaActionRequest event)
+	private void handleActionRequest0(@NonNull final SecurPharmaActionRequest request)
 	{
-		final SecurPharmAction action = event.getAction();
+		final SecurPharmAction action = request.getAction();
+		final InventoryId inventoryId = request.getInventoryId();
+		final SecurPharmProductId productId = request.getProductId();
+
 		if (SecurPharmAction.DECOMMISSION.equals(action))
 		{
-			securPharmService.decommissionProductsByInventoryId(event.getInventoryId());
+			if (productId == null)
+			{
+				securPharmService.decommissionProductsByInventoryId(inventoryId);
+			}
+			else
+			{
+				securPharmService.decommissionProductIfEligible(productId, inventoryId);
+			}
 		}
 		else if (SecurPharmAction.UNDO_DECOMMISSION.equals(action))
 		{
-			securPharmService.undoDecommissionProductsByInventoryId(event.getInventoryId());
+			if (productId == null)
+			{
+				securPharmService.undoDecommissionProductsByInventoryId(inventoryId);
+			}
+			else
+			{
+				securPharmService.undoDecommissionProductIfEligible(productId, inventoryId);
+			}
 		}
 		else
 		{
 			throw new AdempiereException("Unknown action: " + action)
-					.setParameter("event", event);
+					.setParameter("event", request);
 		}
 	}
-
 }
