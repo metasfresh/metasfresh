@@ -107,8 +107,13 @@ class InventoryLineTest
 	@Test
 	void distributeQtyCountToHUs_empty_to_19()
 	{
-		final InventoryLine inventoryLine = createInventoryLine().toBuilder().clearInventoryLineHUs().build();
-		assertThat(inventoryLine.getInventoryLineHUs()).isEmpty();
+		final InventoryLine inventoryLine = createInventoryLine()
+				.toBuilder()
+				.clearInventoryLineHUs()
+				.inventoryLineHU(InventoryLineHU.zeroPhysicalInventory(uomRecord))
+				.build();
+		assertThat(inventoryLine.getInventoryLineHUs())
+				.containsExactly(InventoryLineHU.zeroPhysicalInventory(uomRecord));
 
 		// invoke the method under test
 		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
