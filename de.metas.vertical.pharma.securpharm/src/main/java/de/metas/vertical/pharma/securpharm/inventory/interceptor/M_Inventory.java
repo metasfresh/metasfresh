@@ -30,6 +30,8 @@ import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.InventoryId;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmAction;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRequest;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
@@ -49,9 +51,11 @@ public class M_Inventory
 	{
 		if (securPharmService.hasConfig())
 		{
-			// TODO: check if it's internal use inventory!
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-			securPharmService.decommissionProductsByInventoryId(inventoryId);
+			securPharmService.scheduleAction(SecurPharmaActionRequest.builder()
+					.action(SecurPharmAction.DECOMMISSION)
+					.inventoryId(inventoryId)
+					.build());
 		}
 	}
 
@@ -61,7 +65,10 @@ public class M_Inventory
 		if (securPharmService.hasConfig())
 		{
 			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
-			securPharmService.undoDecommissionProductsByInventoryId(inventoryId);
+			securPharmService.scheduleAction(SecurPharmaActionRequest.builder()
+					.action(SecurPharmAction.UNDO_DECOMMISSION)
+					.inventoryId(inventoryId)
+					.build());
 		}
 	}
 

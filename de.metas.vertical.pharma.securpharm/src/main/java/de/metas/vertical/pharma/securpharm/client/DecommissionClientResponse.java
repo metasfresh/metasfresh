@@ -32,7 +32,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DecommisionClientResponse
+public class DecommissionClientResponse
 {
 	@Nullable
 	ProductDetails productDetails;

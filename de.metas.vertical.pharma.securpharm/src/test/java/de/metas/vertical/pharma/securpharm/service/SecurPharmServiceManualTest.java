@@ -3,11 +3,11 @@ package de.metas.vertical.pharma.securpharm.service;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Ignore;
 
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
-import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
@@ -60,12 +60,10 @@ public class SecurPharmServiceManualTest
 
 	private static SecurPharmService createSecurPharmService()
 	{
-		final SecurPharmConfigRespository configRespository = PlainSecurPharmConfigRespository.ofDefaultSandboxProperties();
-		final SecurPharmClientFactory clientFactory = new SecurPharmClientFactory(configRespository);
-
 		return new SecurPharmService(
-				clientFactory,
-				configRespository,
+				PlainEventBusFactory.newInstance(),
+				new SecurPharmClientFactory(),
+				PlainSecurPharmConfigRespository.ofDefaultSandboxProperties(),
 				new SecurPharmProductRepository(),
 				new SecurPharmaActionRepository(),
 				new SecurPharmLogRepository(),

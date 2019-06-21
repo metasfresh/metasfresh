@@ -271,13 +271,13 @@ public class SecurPharmClient
 		}
 	}
 
-	public DecommisionClientResponse decommission(@NonNull final ProductDetails productDetails)
+	public DecommissionClientResponse decommission(@NonNull final ProductDetails productDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
 		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION, clientTransactionId);
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
 
-		return DecommisionClientResponse.builder()
+		return DecommissionClientResponse.builder()
 				.productDetails(productDetails)
 				.log(log)
 				.build();

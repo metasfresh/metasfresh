@@ -8,7 +8,9 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 
 /*
  * #%L
@@ -34,8 +36,8 @@ import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
 
 public class M_Securpharm_Config_Test extends JavaProcess implements IProcessPrecondition
 {
-	// private final SecurPharmConfigRespository configRepo = Adempiere.getBean(SecurPharmConfigRespository.class);
-	SecurPharmClientFactory clientFactory = Adempiere.getBean(SecurPharmClientFactory.class);
+	private final SecurPharmConfigRespository configRepo = Adempiere.getBean(SecurPharmConfigRespository.class);
+	private final SecurPharmClientFactory clientFactory = Adempiere.getBean(SecurPharmClientFactory.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -55,7 +57,9 @@ public class M_Securpharm_Config_Test extends JavaProcess implements IProcessPre
 	protected String doIt()
 	{
 		final SecurPharmConfigId configId = SecurPharmConfigId.ofRepoId(getRecord_ID());
-		final SecurPharmClient client = clientFactory.createClient(configId);
+		final SecurPharmConfig config = configRepo.getById(configId);
+
+		final SecurPharmClient client = clientFactory.createClient(config);
 		client.authenticate();
 
 		return "@AuthenticationOK@";

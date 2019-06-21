@@ -4,8 +4,10 @@ import javax.annotation.Nullable;
 
 import de.metas.inventory.InventoryId;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
@@ -35,20 +37,21 @@ import lombok.experimental.NonFinal;
 @Builder
 public class UndoDecommissionResponse
 {
-	//
-	// Actual response
 	boolean error;
 
 	@NonNull
+	SecurPharmProductId productId;
+
+	@Nullable
 	String serverTransactionId;
 
-	//
-	// From Request
 	@Nullable
 	@NonFinal
 	InventoryId inventoryId;
 
+	//
 	@Nullable
 	@NonFinal
-	SecurPharmProductId productDataResultId;
+	@Setter(AccessLevel.PACKAGE)
+	SecurPharmActionResultId id;
 }

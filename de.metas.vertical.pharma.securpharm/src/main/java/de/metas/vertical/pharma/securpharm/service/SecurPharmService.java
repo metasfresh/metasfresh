@@ -26,14 +26,20 @@ package de.metas.vertical.pharma.securpharm.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -47,15 +53,17 @@ import de.metas.notification.UserNotificationRequest;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
-import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionResultId;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmActionProcessor;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
+import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRequest;
 import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
 import de.metas.vertical.pharma.securpharm.client.DecodeDataMatrixClientResponse;
-import de.metas.vertical.pharma.securpharm.client.DecommisionClientResponse;
+import de.metas.vertical.pharma.securpharm.client.DecommissionClientResponse;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClient;
 import de.metas.vertical.pharma.securpharm.client.SecurPharmClientFactory;
 import de.metas.vertical.pharma.securpharm.client.UndoDecommissionClientResponse;
 import de.metas.vertical.pharma.securpharm.client.VerifyProductClientResponse;
+import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLogRepository;
@@ -78,7 +86,10 @@ public class SecurPharmService
 	private final SecurPharmLogRepository logsRepo;
 	private final InventoryRepository inventoryRepo;
 
+	private final IEventBus actionsEventBus;
+
 	public SecurPharmService(
+			@NonNull final IEventBusFactory eventBusFactory,
 			@NonNull final SecurPharmClientFactory clientFactory,
 			@NonNull final SecurPharmConfigRespository configRespository,
 			@NonNull final SecurPharmProductRepository productsRepo,
@@ -93,6 +104,8 @@ public class SecurPharmService
 		this.actionsRepo = actionsRepo;
 		this.logsRepo = logsRepo;
 		this.inventoryRepo = inventoryRepo;
+
+		actionsEventBus = eventBusFactory.getEventBus(SecurPharmActionProcessor.EVENTS_TOPIC);
 	}
 
 	public boolean hasConfig()
@@ -100,34 +113,49 @@ public class SecurPharmService
 		return configRespository.getDefaultConfig().isPresent();
 	}
 
+	private SecurPharmClient createClient()
+	{
+		final SecurPharmConfig config = configRespository
+				.getDefaultConfig()
+				.orElseThrow(() -> new AdempiereException("No default SecurPharm config found"));
+
+		return clientFactory.createClient(config);
+	}
+
 	public SecurPharmProduct getProductById(@NonNull final SecurPharmProductId id)
 	{
 		return productsRepo.getProductById(id);
 	}
 
-	public Collection<SecurPharmProduct> getProductsByInventoryId(@NonNull final InventoryId inventoryId)
+	public Collection<SecurPharmProduct> findProductsForInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final Set<HuId> huIds = getHUIdsByInventoryId(inventoryId);
-		if (huIds.isEmpty())
+		final Inventory inventory = inventoryRepo.getById(inventoryId);
+
+		//
+		// Applies only to internal use inventory
+		if (!inventory.isInternalUseInventory())
 		{
 			return ImmutableList.of();
 		}
 
-		return productsRepo.getProductsByHuIds(huIds);
-	}
+		final List<InventoryLineHU> lineHUs = inventory.getLineHUs()
+				.stream()
+				.filter(lineHU -> isEligibleForDecommission(lineHU))
+				.collect(ImmutableList.toImmutableList());
+		final Set<HuId> vhuIds = getVHUIds(lineHUs);
+		if (vhuIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
-	private Set<HuId> getHUIdsByInventoryId(final InventoryId inventoryId)
-	{
-		return inventoryRepo
-				.getById(inventoryId)
-				.getHuIds();
+		return productsRepo.getProductsByHuIds(vhuIds);
 	}
 
 	public SecurPharmProduct getAndSaveProduct(
 			@NonNull final DataMatrixCode datamatrix,
 			@NonNull final HuId huId)
 	{
-		final SecurPharmClient client = clientFactory.createClient();
+		final SecurPharmClient client = createClient();
 
 		final List<SecurPharmLog> logs = new ArrayList<>();
 
@@ -183,28 +211,14 @@ public class SecurPharmService
 		Services.get(INotificationBL.class).sendAfterCommit(userNotificationRequest);
 	}
 
+	public void scheduleAction(@NonNull SecurPharmaActionRequest request)
+	{
+		actionsEventBus.postObject(request);
+	}
+
 	public void decommissionProductsByInventoryId(final InventoryId inventoryId)
 	{
-		final Inventory inventory = inventoryRepo.getById(inventoryId);
-
-		//
-		// Applies only to internal use inventory
-		if (!inventory.isInternalUseInventory())
-		{
-			return;
-		}
-
-		final List<InventoryLineHU> lineHUs = inventory.getLineHUs()
-				.stream()
-				.filter(lineHU -> isEligibleForDecommission(lineHU))
-				.collect(ImmutableList.toImmutableList());
-		final Set<HuId> vhuIds = getVHUIds(lineHUs);
-		if (vhuIds.isEmpty())
-		{
-			return;
-		}
-
-		final Collection<SecurPharmProduct> products = productsRepo.getProductsByHuIds(vhuIds);
+		final Collection<SecurPharmProduct> products = findProductsForInventoryId(inventoryId);
 		if (products.isEmpty())
 		{
 			return;
@@ -230,27 +244,30 @@ public class SecurPharmService
 		return handlingUnitsBL.getVHUIds(huIds);
 	}
 
-	public void decommissionProductIfEligible(final SecurPharmProduct product, final InventoryId inventoryId)
+	public Optional<DecommissionResponse> decommissionProductIfEligible(
+			@NonNull final SecurPharmProduct product,
+			@Nullable final InventoryId inventoryId)
 	{
 		if (!isEligibleForDecommission(product))
 		{
-			return;
+			return Optional.empty();
 		}
 
-		final SecurPharmClient client = clientFactory.createClient();
-		final DecommisionClientResponse clientResponse = client.decommission(product.getProductDetails());
+		final SecurPharmClient client = createClient();
+		final DecommissionClientResponse clientResponse = client.decommission(product.getProductDetails());
 
 		final DecommissionResponse response = DecommissionResponse.builder()
 				.error(clientResponse.isError())
 				.inventoryId(inventoryId)
-				.productDataResultId(product.getId())
+				.productId(product.getId())
 				.serverTransactionId(clientResponse.getServerTransactionId())
 				.build();
-		final SecurPharmActionResultId actionId = actionsRepo.save(response);
+		actionsRepo.save(response);
+
 		logsRepo.saveActionLog(
 				clientResponse.getLog(),
-				response.getProductDataResultId(),
-				actionId);
+				response.getProductId(),
+				response.getId());
 
 		if (!response.isError())
 		{
@@ -264,6 +281,8 @@ public class SecurPharmService
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
 					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
 		}
+
+		return Optional.of(response);
 	}
 
 	public boolean isEligibleForDecommission(@NonNull final SecurPharmProduct product)
@@ -289,14 +308,14 @@ public class SecurPharmService
 		}
 	}
 
-	public void undoDecommissionProductIfEligible(final SecurPharmProduct product, final InventoryId inventoryId)
+	public Optional<UndoDecommissionResponse> undoDecommissionProductIfEligible(final SecurPharmProduct product, final InventoryId inventoryId)
 	{
 		if (!isEligibleForUndoDecommission(product))
 		{
-			return;
+			return Optional.empty();
 		}
 
-		final SecurPharmClient client = clientFactory.createClient();
+		final SecurPharmClient client = createClient();
 		final UndoDecommissionClientResponse clientResponse = client.undoDecommission(
 				product.getProductDetails(),
 				product.getDecommissionServerTransactionId());
@@ -304,14 +323,15 @@ public class SecurPharmService
 		final UndoDecommissionResponse response = UndoDecommissionResponse.builder()
 				.error(clientResponse.isError())
 				.inventoryId(inventoryId)
-				.productDataResultId(product.getId())
+				.productId(product.getId())
 				.serverTransactionId(clientResponse.getServerTransactionId())
 				.build();
-		final SecurPharmActionResultId actionId = actionsRepo.save(response);
+		actionsRepo.save(response);
+
 		logsRepo.saveActionLog(
 				clientResponse.getLog(),
-				response.getProductDataResultId(),
-				actionId);
+				response.getProductId(),
+				response.getId());
 
 		if (!response.isError())
 		{
@@ -325,6 +345,8 @@ public class SecurPharmService
 					MSG_SECURPHARM_ACTION_RESULT_ERROR_NOTIFICATION_MESSAGE,
 					TableRecordReference.of(org.compiere.model.I_M_Inventory.Table_Name, response.getInventoryId()));
 		}
+
+		return Optional.of(response);
 	}
 
 	public boolean isEligibleForUndoDecommission(@NonNull final SecurPharmProduct product)
