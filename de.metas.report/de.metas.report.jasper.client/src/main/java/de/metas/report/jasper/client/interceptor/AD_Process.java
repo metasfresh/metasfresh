@@ -61,7 +61,7 @@ public class AD_Process
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
-	public void checkJSOMPathIfTypeJasperReportJSON(final I_AD_Process process)
+	public void checkJSONPathIfTypeJasperReportJSON(final I_AD_Process process)
 	{
 		final String processType = process.getType();
 		final String JSONPath = process.getJSONPath();
