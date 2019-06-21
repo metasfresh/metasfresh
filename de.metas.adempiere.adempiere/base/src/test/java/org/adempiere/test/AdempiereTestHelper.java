@@ -61,7 +61,7 @@ import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatchingStragety;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
 import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 
 /**
@@ -86,7 +86,7 @@ public class AdempiereTestHelper
 		}
 
 		@Override
-		public SnapshotMatchingStragety getSnapshotMatchRule()
+		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
 		{
 			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
 		}
