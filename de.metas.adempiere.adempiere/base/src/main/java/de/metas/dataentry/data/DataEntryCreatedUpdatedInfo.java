@@ -32,22 +32,22 @@ import lombok.Value;
  */
 
 @Value
-public class CreatedUpdatedInfo
+public class DataEntryCreatedUpdatedInfo
 {
-	public static CreatedUpdatedInfo createNew(
+	public static DataEntryCreatedUpdatedInfo createNew(
 			@NonNull final UserId createdBy,
 			@NonNull final ZonedDateTime created)
 	{
-		return new CreatedUpdatedInfo(createdBy, created, createdBy, created);
+		return new DataEntryCreatedUpdatedInfo(createdBy, created, createdBy, created);
 	}
 
-	public static CreatedUpdatedInfo of(
+	public static DataEntryCreatedUpdatedInfo of(
 			@NonNull final ZonedDateTime created,
 			@NonNull final UserId createdBy,
 			@NonNull final ZonedDateTime updated,
 			@NonNull final UserId updatedBy)
 	{
-		return new CreatedUpdatedInfo(createdBy, created, updatedBy, updated);
+		return new DataEntryCreatedUpdatedInfo(createdBy, created, updatedBy, updated);
 	}
 
 	UserId createdBy;
@@ -59,7 +59,7 @@ public class CreatedUpdatedInfo
 	ZonedDateTime updated;
 
 	@JsonCreator
-	private CreatedUpdatedInfo(
+	private DataEntryCreatedUpdatedInfo(
 			@NonNull @JsonProperty("createdBy") final UserId createdBy,
 			@NonNull @JsonProperty("created") final ZonedDateTime created,
 			@NonNull @JsonProperty("updatedBy") final UserId updatedBy,
@@ -71,11 +71,11 @@ public class CreatedUpdatedInfo
 		this.updated = updated;
 	}
 
-	public CreatedUpdatedInfo updated(
+	public DataEntryCreatedUpdatedInfo updated(
 			@NonNull final UserId updatedBy,
 			@NonNull final ZonedDateTime updated)
 	{
-		return new CreatedUpdatedInfo(createdBy, created, updatedBy, updated);
+		return new DataEntryCreatedUpdatedInfo(createdBy, created, updatedBy, updated);
 	}
 
 }

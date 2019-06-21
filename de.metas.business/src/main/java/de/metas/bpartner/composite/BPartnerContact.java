@@ -2,10 +2,10 @@ package de.metas.bpartner.composite;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.RecordChangeLog;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
@@ -52,16 +52,18 @@ public class BPartnerContact
 	@JsonInclude(Include.NON_NULL)
 	private String phone;
 
+	private final RecordChangeLog changeLog;
 
 	@Builder(toBuilder = true)
 	private BPartnerContact(
-			@JsonProperty("id") @Nullable final BPartnerContactId id,
-			@JsonProperty("externalId") @Nullable final ExternalId externalId,
-			@JsonProperty("name") final String name,
-			@JsonProperty("firstName") final String firstName,
-			@JsonProperty("lastName") final String lastName,
-			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone)
+			@Nullable final BPartnerContactId id,
+			@Nullable final ExternalId externalId,
+			final String name,
+			final String firstName,
+			final String lastName,
+			final String email,
+			final String phone,
+			@Nullable final RecordChangeLog changeLog)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -70,6 +72,8 @@ public class BPartnerContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+
+		this.changeLog = changeLog;
 	}
 
 	public BPartnerContact deepCopy()

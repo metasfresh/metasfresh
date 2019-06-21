@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
@@ -30,7 +31,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -52,12 +52,12 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
@@ -110,8 +110,8 @@ class BpartnerRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository();
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
 
 		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -124,8 +124,6 @@ class BpartnerRestControllerTest
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Org_ID, AD_ORG_ID);
 	}
-
-
 
 	@Test
 	void retrieveBPartner_ext()
@@ -220,7 +218,10 @@ class BpartnerRestControllerTest
 						.build())
 				.requestItem(requestItem)
 				.build();
-		//JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
+
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+
+		// JSONObjectMapper.forClass(JsonBPartnerUpsertRequest.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
@@ -258,6 +259,8 @@ class BpartnerRestControllerTest
 		final JsonRequestContact jsonContact = MockedDataUtil.createMockContact("newContact-");
 		assertThat(jsonContact.getExternalId()).isNotNull(); // guard
 
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsertItem> result = bpartnerRestController.createOrUpdateContact("gln-" + C_BPARTNER_LOCATION_GLN, jsonContact);
 
@@ -287,6 +290,8 @@ class BpartnerRestControllerTest
 		final JsonRequestLocation jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
 		assertThat(jsonLocation.getExternalId()).isNotNull(); // guard
 
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsertItem> result = bpartnerRestController.createOrUpdateLocation("ext-" + C_BPARTNER_EXTERNAL_ID, jsonLocation);
 
@@ -315,8 +320,6 @@ class BpartnerRestControllerTest
 	@Test
 	void retrieveBPartnersSince()
 	{
-		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
-		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
 		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
@@ -327,6 +330,9 @@ class BpartnerRestControllerTest
 		createBPartnerData(2);
 		createBPartnerData(3);
 		createBPartnerData(4);
+
+		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseCompositeList> page1 = bpartnerRestController.retrieveBPartnersSince(0L, null);

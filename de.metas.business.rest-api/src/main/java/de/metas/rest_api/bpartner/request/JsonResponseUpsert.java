@@ -1,19 +1,14 @@
-package org.adempiere.ad.table;
+package de.metas.rest_api.bpartner.request;
 
-import java.time.Instant;
-import java.util.Objects;
+import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.ordercandidate.rest-api
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -35,32 +30,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class RecordChangeLog
+public final class JsonResponseUpsert
 {
-
-	@NonNull
-	String tableName;
-	@NonNull
-	ComposedRecordId recordId;
-
-	@NonNull
-	UserId createdByUserId;
-	@NonNull
-	Instant createdTimestamp;
-
-	@NonNull
-	UserId lastChangedByUserId;
-	@NonNull
-	Instant lastChangedTimestamp;
-
-	@NonNull
 	@Singular
-	ImmutableList<RecordChangeLogEntry> entries;
-
-	public boolean hasChanges()
-	{
-		return !Objects.equals(createdByUserId, lastChangedByUserId)
-				|| !Objects.equals(createdTimestamp, lastChangedTimestamp)
-				|| !entries.isEmpty();
-	}
+	List<JsonResponseUpsertItem> responseItems;
 }

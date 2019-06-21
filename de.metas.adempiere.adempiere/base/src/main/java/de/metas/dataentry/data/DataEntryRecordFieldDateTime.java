@@ -41,7 +41,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	public static DataEntryRecordFieldDateTime of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		return new DataEntryRecordFieldDateTime(
@@ -52,7 +52,7 @@ public class DataEntryRecordFieldDateTime extends DataEntryRecordField<ZonedDate
 
 	private DataEntryRecordFieldDateTime(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final ZonedDateTime value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);

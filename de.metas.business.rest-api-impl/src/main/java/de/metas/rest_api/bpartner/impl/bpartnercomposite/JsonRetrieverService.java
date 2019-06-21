@@ -8,6 +8,9 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
@@ -39,6 +42,10 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
+import de.metas.rest_api.changelog.JsonChangeInfo;
+import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
+import de.metas.rest_api.changelog.JsonChangeLogItem;
+import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
@@ -75,9 +82,51 @@ import lombok.ToString;
 @ToString
 public class JsonRetrieverService
 {
+	private static final ImmutableMap<String, String> BPARTNER_FIELD_MAP = ImmutableMap
+			.<String, String> builder()
+			.put("value", JsonResponseBPartner.CODE)
+			.put("companyName", JsonResponseBPartner.COMPANY_NAME)
+			.put("externalId", JsonResponseBPartner.EXTERNAL_ID)
+			.put("groupId", JsonResponseBPartner.GROUP)
+			.put("language", JsonResponseBPartner.LANGUAGE)
+			.put("id", JsonResponseBPartner.METASFRESH_ID)
+			.put("name", JsonResponseBPartner.NAME)
+			.put("parentId", JsonResponseBPartner.PARENT_ID)
+			.put("phone", JsonResponseBPartner.PHONE)
+			.put("url", JsonResponseBPartner.URL)
+			.build();
+
+	private static final ImmutableMap<String, String> CONTACT_FIELD_MAP = ImmutableMap
+			.<String, String> builder()
+			.put("email", JsonResponseContact.EMAIL)
+			.put("externalId", JsonResponseContact.EXTERNAL_ID)
+			.put("firstName", JsonResponseContact.FIRST_NAME)
+			.put("lastName", JsonResponseContact.LAST_NAME)
+			.put("metasfreshBPartnerId", JsonResponseContact.METASFRESH_B_PARTNER_ID)
+			.put("id", JsonResponseContact.METASFRESH_ID)
+			.put("name", JsonResponseContact.NAME)
+			.put("phone", JsonResponseContact.PHONE)
+			.build();
+
+	private static final ImmutableMap<String, String> LOCATION_FIELD_MAP = ImmutableMap
+			.<String, String> builder()
+			.put("externalId", JsonResponseLocation.EXTERNAL_ID)
+			.put("gln", JsonResponseLocation.GLN)
+			.put("id", JsonResponseLocation.METASFRESH_ID)
+			.put("address1", JsonResponseLocation.ADDRESS1)
+			.put("address2", JsonResponseLocation.ADDRESS2)
+			.put("city", JsonResponseLocation.CITY)
+			.put("poBox", JsonResponseLocation.PO_BOX)
+			.put("postal", JsonResponseLocation.POSTAL)
+			.put("region", JsonResponseLocation.REGION)
+			.put("district", JsonResponseLocation.DISTRICT)
+			.put("countryCode", JsonResponseLocation.COUNTRY_CODE)
+			.build();
+
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient BPartnerCompositeCache cache;
+	private final transient RecordChangeLogRepository recordChangeLogRepository;
 
 	@Getter
 	private final String identifier;
@@ -85,11 +134,14 @@ public class JsonRetrieverService
 	public JsonRetrieverService(
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final RecordChangeLogRepository recordChangeLogRepository,
 			@NonNull final String identifier)
 	{
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
+		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
+
 		this.cache = new BPartnerCompositeCache(identifier);
 	}
 
@@ -129,13 +181,18 @@ public class JsonRetrieverService
 
 	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final JsonResponseCompositeBuilder result = JsonResponseComposite.builder()
-				.bpartner(toJson(bpartnerComposite.getBpartner()));
+		final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
 
+		// bpartner
+		result.bpartner(toJson(bpartnerComposite.getBpartner()));
+
+		// contacts
 		for (final BPartnerContact contact : bpartnerComposite.getContacts())
 		{
 			result.contact(toJson(contact));
 		}
+
+		// locations
 		for (final BPartnerLocation location : bpartnerComposite.getLocations())
 		{
 			result.location(toJson(location));
@@ -146,6 +203,8 @@ public class JsonRetrieverService
 	private JsonResponseBPartner toJson(@NonNull final BPartner bpartner)
 	{
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpartner.getGroupId());
+
+		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
 
 		return JsonResponseBPartner.builder()
 				.code(bpartner.getValue())
@@ -158,13 +217,51 @@ public class JsonRetrieverService
 				.parentId(MetasfreshId.ofOrNull(bpartner.getParentId()))
 				.phone(bpartner.getPhone())
 				.url(bpartner.getUrl())
+				.changeInfo(jsonChangeInfo)
 				.build();
+	}
+
+	private JsonChangeInfo createJsonChangeInfo(
+			@Nullable final RecordChangeLog recordChangeLog,
+			@NonNull final ImmutableMap<String, String> columnMap)
+	{
+		if (recordChangeLog == null)
+		{
+			return null;
+		}
+
+		final JsonChangeInfoBuilder jsonChangeInfo = JsonChangeInfo.builder()
+				.createdBy(MetasfreshId.of(recordChangeLog.getCreatedByUserId()))
+				.createdMillis(recordChangeLog.getCreatedTimestamp().toEpochMilli())
+				.lastUpdatedBy(MetasfreshId.of(recordChangeLog.getLastChangedByUserId()))
+				.lastUpdatedMillis(recordChangeLog.getLastChangedTimestamp().toEpochMilli());
+
+		for (final RecordChangeLogEntry entry : recordChangeLog.getEntries())
+		{
+			final String columnName = entry.getColumnName();
+			if (!columnMap.containsKey(columnName))
+			{
+				continue; // we don't care for the respective change
+			}
+
+			final JsonChangeLogItemBuilder jsonChangeLogItem = JsonChangeLogItem.builder()
+					.fieldName(columnMap.get(columnName))
+					.updatedBy(MetasfreshId.of(entry.getChangedByUserId()))
+					.updatedMillis(entry.getChangedTimestamp().toEpochMilli())
+					.newValue(String.valueOf(entry.getValueNew()))
+					.oldValue(String.valueOf(entry.getValueOld()));
+
+			jsonChangeInfo.changeLog(jsonChangeLogItem.build());
+		}
+		return jsonChangeInfo.build();
 	}
 
 	private JsonResponseContact toJson(@NonNull final BPartnerContact contact)
 	{
 		final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
 		final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+
+		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
 		return JsonResponseContact.builder()
 				.email(contact.getEmail())
@@ -175,11 +272,14 @@ public class JsonRetrieverService
 				.metasfreshId(metasfreshId)
 				.name(contact.getName())
 				.phone(contact.getPhone())
+				.changeInfo(jsonChangeInfo)
 				.build();
 	}
 
 	private JsonResponseLocation toJson(@NonNull final BPartnerLocation location)
 	{
+		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
+
 		return JsonResponseLocation.builder()
 				.address1(location.getAddress1())
 				.address2(location.getAddress2())
@@ -188,11 +288,11 @@ public class JsonRetrieverService
 				.district(location.getDistrict())
 				.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
 				.gln(location.getGln())
-				// .metasfreshBPartnerId(MetasfreshId.of(location.getBpartnerId()))
 				.metasfreshId(MetasfreshId.of(location.getId()))
 				.poBox(location.getPoBox())
 				.postal(location.getPostal())
 				.region(location.getRegion())
+				.changeInfo(jsonChangeInfo)
 				.build();
 	}
 

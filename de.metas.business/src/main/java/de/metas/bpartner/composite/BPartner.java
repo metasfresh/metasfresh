@@ -4,6 +4,7 @@ import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.table.RecordChangeLog;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupId;
@@ -63,6 +64,8 @@ public class BPartner
 
 	private BPGroupId groupId;
 
+	private final RecordChangeLog changeLog;
+
 	@Builder(toBuilder = true)
 	private BPartner(
 			@Nullable final BPartnerId id,
@@ -74,7 +77,8 @@ public class BPartner
 			@Nullable final String phone,
 			@Nullable final Language language,
 			@Nullable final String url,
-			@Nullable final BPGroupId groupId)
+			@Nullable final BPGroupId groupId,
+			@Nullable final RecordChangeLog changeLog)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -86,6 +90,8 @@ public class BPartner
 		this.language = language;
 		this.url = url;
 		this.groupId = groupId;
+
+		this.changeLog = changeLog;
 	}
 
 	/** empty list means valid */

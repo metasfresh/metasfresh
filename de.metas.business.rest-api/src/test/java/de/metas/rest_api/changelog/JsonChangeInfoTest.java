@@ -1,16 +1,14 @@
-package de.metas.rest_api.bpartner.response;
+package de.metas.rest_api.changelog;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.util.JSONObjectMapper;
 
 /*
@@ -35,28 +33,44 @@ import de.metas.util.JSONObjectMapper;
  * #L%
  */
 
-public class JsonResponseBPartnerUpsertItemTest
+class JsonChangeInfoTest
 {
-	@BeforeClass
-	public static void beforeAll()
+
+	@BeforeAll
+	static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
 	}
 
-	/** no need to deserialize this again */
 	@Test
-	public void serializeTest()
+	void test()
 	{
-		final JsonResponseUpsertItem item = JsonResponseUpsertItem.builder()
-				.externalId(JsonExternalId.of("12345"))
-				.metasfreshId(MetasfreshId.of(23))
+		final JsonChangeInfo jsonChangeInfo = JsonChangeInfo.builder()
+				.createdBy(MetasfreshId.of(10))
+				.createdMillis(10L)
+				.lastUpdatedBy(MetasfreshId.of(20))
+				.lastUpdatedMillis(20L)
+				.changeLog(JsonChangeLogItem.builder()
+						.fieldName("fieldName_30")
+						.updatedBy(MetasfreshId.of(30))
+						.updatedMillis(30L)
+						.oldValue("oldValue_30")
+						.newValue("newValue_30")
+						.build())
+				.changeLog(JsonChangeLogItem.builder()
+						.fieldName("fieldName_40")
+						.updatedBy(MetasfreshId.of(40))
+						.updatedMillis(40L)
+						.oldValue("oldValue_40")
+						.newValue("newValue_40")
+						.build())
 				.build();
-		final JSONObjectMapper<JsonResponseUpsertItem> m = JSONObjectMapper.forClass(JsonResponseUpsertItem.class);
 
-		final String str = m.writeValueAsString(item);
+		final JSONObjectMapper<JsonChangeInfo> mapper = JSONObjectMapper.forClass(JsonChangeInfo.class);
+		final String valueAsString = mapper.writeValueAsString(jsonChangeInfo);
 
-		final JsonResponseUpsertItem result = m.readValue(str);
-		assertThat(result).isEqualTo(item);
+		final JsonChangeInfo result = mapper.readValue(valueAsString);
+		assertThat(result).isEqualTo(jsonChangeInfo);
 
 		expect(result).toMatchSnapshot();
 	}

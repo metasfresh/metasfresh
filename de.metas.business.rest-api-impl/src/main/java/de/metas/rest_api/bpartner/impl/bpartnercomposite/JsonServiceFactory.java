@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPGroupRepository;
@@ -34,11 +35,14 @@ public class JsonServiceFactory
 {
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
+	private final RecordChangeLogRepository recordChangeLogRepository;
 
 	public JsonServiceFactory(
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final BPGroupRepository bpGroupRepository)
+			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final RecordChangeLogRepository recordChangeLogRepository)
 	{
+		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 	}
@@ -46,7 +50,7 @@ public class JsonServiceFactory
 	public JsonPersisterService createPersister()
 	{
 		final String identifier = "persister_" + UIDStringUtil.createNext();
-		final JsonRetrieverService jsonRetrieverService = new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, identifier);
+		final JsonRetrieverService jsonRetrieverService = createRetrieverService(identifier);
 
 		return new JsonPersisterService(bpartnerCompositeRepository, bpGroupRepository, jsonRetrieverService, identifier);
 	}
@@ -54,6 +58,11 @@ public class JsonServiceFactory
 	public JsonRetrieverService createRetriever()
 	{
 		final String identifier = "retriever_" + UIDStringUtil.createNext();
-		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, identifier);
+		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, recordChangeLogRepository, identifier);
+	}
+
+	private JsonRetrieverService createRetrieverService(@NonNull final String identifier)
+	{
+		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, recordChangeLogRepository, identifier);
 	}
 }

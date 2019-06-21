@@ -4,7 +4,8 @@ import static de.metas.util.Check.isEmpty;
 
 import javax.annotation.Nullable;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.adempiere.ad.table.RecordChangeLog;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -61,19 +62,22 @@ public class BPartnerLocation
 
 	private String gln;
 
+	private final RecordChangeLog changeLog;
+
 	@Builder(toBuilder = true)
 	private BPartnerLocation(
-			@JsonProperty("id") @Nullable final BPartnerLocationId id,
-			@JsonProperty("externalId") @Nullable final ExternalId externalId,
-			@JsonProperty("address1") @Nullable final String address1,
-			@JsonProperty("address2") @Nullable final String address2,
-			@JsonProperty("postal") final String postal,
-			@JsonProperty("poBox") final String poBox,
-			@JsonProperty("district") final String district,
-			@JsonProperty("region") final String region,
-			@JsonProperty("city") final String city,
-			@JsonProperty("countryCode") @Nullable final String countryCode,
-			@JsonProperty("gln") @Nullable final String gln)
+			@Nullable final BPartnerLocationId id,
+			@Nullable final ExternalId externalId,
+			@Nullable final String address1,
+			@Nullable final String address2,
+			final String postal,
+			final String poBox,
+			final String district,
+			final String region,
+			final String city,
+			@Nullable final String countryCode,
+			@Nullable final String gln,
+			@Nullable final RecordChangeLog changeLog)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -87,6 +91,7 @@ public class BPartnerLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+		this.changeLog = changeLog;
 	}
 
 	public BPartnerLocation deepCopy()

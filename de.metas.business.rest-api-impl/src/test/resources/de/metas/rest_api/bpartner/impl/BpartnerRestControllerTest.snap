@@ -23,12 +23,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "baseLanguage": true,
+        "leftToRight": true,
         "decimalPoint": false,
-        "leftToRight": true
+        "baseLanguage": true
       },
       "url": "bPartner.url",
-      "groupId": 15
+      "groupId": 15,
+      "changeLog": {
+        "tableName": "C_BPartner",
+        "recordId": {
+          "keyColumnNames": [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName": {
+            "C_BPartner_ID": 100006
+          },
+          "singleKey": true
+        },
+        "createdByUserId": 0,
+        "createdTimestamp": {
+          "seconds": 1561134,
+          "nanos": 560000000
+        },
+        "lastChangedByUserId": 0,
+        "lastChangedTimestamp": {
+          "seconds": 1561134,
+          "nanos": 560000000
+        },
+        "entries": [ ]
+      }
     },
     "locations": [
       {
@@ -41,12 +64,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "address1": "l1_address1",
         "address2": "l1_address2",
-        "postal": "l1_postal",
         "poBox": "l1_poBox",
-        "region": "l1_region",
+        "postal": "l1_postal",
         "city": "l1_city",
+        "region": "l1_region",
         "countryCode": "CH",
-        "gln": "l1_gln"
+        "gln": "l1_gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100008
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       },
       {
         "id": {
@@ -58,12 +104,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "address1": "l2_address1",
         "address2": "l2_address2",
-        "postal": "l2_postal",
         "poBox": "l2_poBox",
-        "region": "l2_region",
+        "postal": "l2_postal",
         "city": "l2_city",
+        "region": "l2_region",
         "countryCode": "DE",
-        "gln": "l2_gln"
+        "gln": "l2_gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100010
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "contacts": [
@@ -77,7 +146,30 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "name": "c1_name",
         "email": "c1_email@email.net",
-        "phone": "c1_phone"
+        "phone": "c1_phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 100011
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       },
       {
         "id": {
@@ -89,7 +181,30 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         },
         "name": "c2_name",
         "email": "c2_email@email.net",
-        "phone": "c2_phone"
+        "phone": "c2_phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 100012
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "orgId": 10
@@ -106,7 +221,30 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       },
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "groupId": 15
+      "groupId": 15,
+      "changeLog": {
+        "tableName": "C_BPartner",
+        "recordId": {
+          "keyColumnNames": [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName": {
+            "C_BPartner_ID": 20
+          },
+          "singleKey": true
+        },
+        "createdByUserId": 30,
+        "createdTimestamp": {
+          "seconds": 1561133,
+          "nanos": 544000000
+        },
+        "lastChangedByUserId": 30,
+        "lastChangedTimestamp": {
+          "seconds": 1561134,
+          "nanos": 560000000
+        },
+        "entries": [ ]
+      }
     },
     "locations": [
       {
@@ -119,12 +257,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
-        "postal": "locationRecord.postal",
         "poBox": "locationRecord.poBox",
-        "region": "locationRecord.regionName",
+        "postal": "locationRecord.postal",
         "city": "locationRecord.city",
+        "region": "locationRecord.regionName",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln"
+        "gln": "bpartnerLocationRecord.gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 40
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "contacts": [
@@ -137,10 +298,33 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "value": "abcde"
         },
         "name": "bpartnerRecord.name",
-        "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
+        "firstName": "bpartnerRecord.firstName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 30
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
       },
       {
         "id": {
@@ -152,7 +336,30 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         },
         "name": "newContact-_name",
         "email": "newContact-_email@email.net",
-        "phone": "newContact-_phone"
+        "phone": "newContact-_phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 100004
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "orgId": 10
@@ -169,7 +376,30 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       },
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "groupId": 15
+      "groupId": 15,
+      "changeLog": {
+        "tableName": "C_BPartner",
+        "recordId": {
+          "keyColumnNames": [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName": {
+            "C_BPartner_ID": 20
+          },
+          "singleKey": true
+        },
+        "createdByUserId": 30,
+        "createdTimestamp": {
+          "seconds": 1561133,
+          "nanos": 544000000
+        },
+        "lastChangedByUserId": 30,
+        "lastChangedTimestamp": {
+          "seconds": 1561134,
+          "nanos": 560000000
+        },
+        "entries": [ ]
+      }
     },
     "locations": [
       {
@@ -182,12 +412,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         },
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
-        "postal": "locationRecord.postal",
         "poBox": "locationRecord.poBox",
-        "region": "locationRecord.regionName",
+        "postal": "locationRecord.postal",
         "city": "locationRecord.city",
+        "region": "locationRecord.regionName",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln"
+        "gln": "bpartnerLocationRecord.gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 40
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
       },
       {
         "id": {
@@ -199,12 +452,35 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         },
         "address1": "newLocation-_address1",
         "address2": "newLocation-_address2",
-        "postal": "newLocation-_postal",
         "poBox": "newLocation-_poBox",
-        "region": "newLocation-_region",
+        "postal": "newLocation-_postal",
         "city": "newLocation-_city",
+        "region": "newLocation-_region",
         "countryCode": "DE",
-        "gln": "newLocation-_gln"
+        "gln": "newLocation-_gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100006
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "contacts": [
@@ -217,10 +493,33 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           "value": "abcde"
         },
         "name": "bpartnerRecord.name",
-        "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
+        "firstName": "bpartnerRecord.firstName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 30
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
       }
     ],
     "orgId": 10
@@ -237,7 +536,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerConta
     "firstName": "bpartnerRecord.firstName",
     "lastName": "bpartnerRecord.lastName",
     "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone"
+    "phone": "bpartnerRecord.phone",
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    }
   }
 ]
 
@@ -254,7 +559,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerLocat
     "region": "locationRecord.regionName",
     "city": "locationRecord.city",
     "countryCode": "countryRecord.countryCode",
-    "gln": "bpartnerLocationRecord.gln"
+    "gln": "bpartnerLocationRecord.gln",
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    }
   }
 ]
 
@@ -266,7 +577,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "group": "bpGroupRecord.name"
+      "group": "bpGroupRecord.name",
+      "changeInfo": {
+        "createdMillis": 1561133544,
+        "createdBy": 30,
+        "lastUpdatedMillis": 1561133544,
+        "lastUpdatedBy": 30
+      }
     },
     "locations": [
       {
@@ -280,7 +597,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln"
+        "gln": "bpartnerLocationRecord.gln",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ],
     "contacts": [
@@ -292,7 +615,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ]
   }
@@ -306,7 +635,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "group": "bpGroupRecord.name"
+      "group": "bpGroupRecord.name",
+      "changeInfo": {
+        "createdMillis": 1561133544,
+        "createdBy": 30,
+        "lastUpdatedMillis": 1561133544,
+        "lastUpdatedBy": 30
+      }
     },
     "locations": [
       {
@@ -320,7 +655,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln"
+        "gln": "bpartnerLocationRecord.gln",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ],
     "contacts": [
@@ -332,7 +673,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ]
   }
@@ -346,7 +693,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
-      "group": "bpGroupRecord.name"
+      "group": "bpGroupRecord.name",
+      "changeInfo": {
+        "createdMillis": 1561133544,
+        "createdBy": 30,
+        "lastUpdatedMillis": 1561133544,
+        "lastUpdatedBy": 30
+      }
     },
     "locations": [
       {
@@ -360,7 +713,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln"
+        "gln": "bpartnerLocationRecord.gln",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ],
     "contacts": [
@@ -372,7 +731,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       }
     ]
   }
@@ -392,7 +757,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "externalId": "fghij",
           "code": "bpartnerRecord.value",
           "name": "bpartnerRecord.name",
-          "group": "bpGroupRecord.name"
+          "group": "bpGroupRecord.name",
+          "changeInfo": {
+            "createdMillis": 1561133544,
+            "createdBy": 30,
+            "lastUpdatedMillis": 1561133544,
+            "lastUpdatedBy": 30
+          }
         },
         "locations": [
           {
@@ -406,7 +777,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "region": "locationRecord.regionName",
             "city": "locationRecord.city",
             "countryCode": "countryRecord.countryCode",
-            "gln": "bpartnerLocationRecord.gln"
+            "gln": "bpartnerLocationRecord.gln",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 30,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 30
+            }
           }
         ],
         "contacts": [
@@ -418,7 +795,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "firstName": "bpartnerRecord.firstName",
             "lastName": "bpartnerRecord.lastName",
             "email": "bpartnerRecord.email",
-            "phone": "bpartnerRecord.phone"
+            "phone": "bpartnerRecord.phone",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 30,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 30
+            }
           }
         ]
       },
@@ -428,7 +811,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "externalId": "fghij_1",
           "code": "bpartnerRecord.value_1",
           "name": "bpartnerRecord.name_1",
-          "group": "bpGroupRecord.name"
+          "group": "bpGroupRecord.name",
+          "changeInfo": {
+            "createdMillis": 1561133544,
+            "createdBy": 31,
+            "lastUpdatedMillis": 1561133544,
+            "lastUpdatedBy": 31
+          }
         },
         "locations": [
           {
@@ -442,7 +831,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "region": "locationRecord.regionName_1",
             "city": "locationRecord.city_1",
             "countryCode": "countryRecord.countryCode",
-            "gln": "bpartnerLocationRecord.gln_1"
+            "gln": "bpartnerLocationRecord.gln_1",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 31,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 31
+            }
           }
         ],
         "contacts": [
@@ -454,7 +849,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "firstName": "bpartnerRecord.firstName_1",
             "lastName": "bpartnerRecord.lastName_1",
             "email": "bpartnerRecord.email_1",
-            "phone": "bpartnerRecord.phone_1"
+            "phone": "bpartnerRecord.phone_1",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 31,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 31
+            }
           }
         ]
       }
@@ -472,7 +873,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "externalId": "fghij_2",
           "code": "bpartnerRecord.value_2",
           "name": "bpartnerRecord.name_2",
-          "group": "bpGroupRecord.name"
+          "group": "bpGroupRecord.name",
+          "changeInfo": {
+            "createdMillis": 1561133544,
+            "createdBy": 32,
+            "lastUpdatedMillis": 1561133544,
+            "lastUpdatedBy": 32
+          }
         },
         "locations": [
           {
@@ -486,7 +893,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "region": "locationRecord.regionName_2",
             "city": "locationRecord.city_2",
             "countryCode": "countryRecord.countryCode",
-            "gln": "bpartnerLocationRecord.gln_2"
+            "gln": "bpartnerLocationRecord.gln_2",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 32,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 32
+            }
           }
         ],
         "contacts": [
@@ -498,7 +911,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "firstName": "bpartnerRecord.firstName_2",
             "lastName": "bpartnerRecord.lastName_2",
             "email": "bpartnerRecord.email_2",
-            "phone": "bpartnerRecord.phone_2"
+            "phone": "bpartnerRecord.phone_2",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 32,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 32
+            }
           }
         ]
       },
@@ -508,7 +927,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "externalId": "fghij_3",
           "code": "bpartnerRecord.value_3",
           "name": "bpartnerRecord.name_3",
-          "group": "bpGroupRecord.name"
+          "group": "bpGroupRecord.name",
+          "changeInfo": {
+            "createdMillis": 1561133544,
+            "createdBy": 33,
+            "lastUpdatedMillis": 1561133544,
+            "lastUpdatedBy": 33
+          }
         },
         "locations": [
           {
@@ -522,7 +947,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "region": "locationRecord.regionName_3",
             "city": "locationRecord.city_3",
             "countryCode": "countryRecord.countryCode",
-            "gln": "bpartnerLocationRecord.gln_3"
+            "gln": "bpartnerLocationRecord.gln_3",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 33,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 33
+            }
           }
         ],
         "contacts": [
@@ -534,7 +965,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "firstName": "bpartnerRecord.firstName_3",
             "lastName": "bpartnerRecord.lastName_3",
             "email": "bpartnerRecord.email_3",
-            "phone": "bpartnerRecord.phone_3"
+            "phone": "bpartnerRecord.phone_3",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 33,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 33
+            }
           }
         ]
       }
@@ -551,7 +988,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "externalId": "fghij_4",
           "code": "bpartnerRecord.value_4",
           "name": "bpartnerRecord.name_4",
-          "group": "bpGroupRecord.name"
+          "group": "bpGroupRecord.name",
+          "changeInfo": {
+            "createdMillis": 1561133544,
+            "createdBy": 34,
+            "lastUpdatedMillis": 1561133544,
+            "lastUpdatedBy": 34
+          }
         },
         "locations": [
           {
@@ -565,7 +1008,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "region": "locationRecord.regionName_4",
             "city": "locationRecord.city_4",
             "countryCode": "countryRecord.countryCode",
-            "gln": "bpartnerLocationRecord.gln_4"
+            "gln": "bpartnerLocationRecord.gln_4",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 34,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 34
+            }
           }
         ],
         "contacts": [
@@ -577,7 +1026,13 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "firstName": "bpartnerRecord.firstName_4",
             "lastName": "bpartnerRecord.lastName_4",
             "email": "bpartnerRecord.email_4",
-            "phone": "bpartnerRecord.phone_4"
+            "phone": "bpartnerRecord.phone_4",
+            "changeInfo": {
+              "createdMillis": 1561133544,
+              "createdBy": 34,
+              "lastUpdatedMillis": 1561133544,
+              "lastUpdatedBy": 34
+            }
           }
         ]
       }

@@ -382,7 +382,6 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		final String trxName = wrapper.getTrxName();
 		runInTrx(trxName, new TrxRunnable2()
 		{
-
 			@Override
 			public void run(String localTrxName) throws Exception
 			{

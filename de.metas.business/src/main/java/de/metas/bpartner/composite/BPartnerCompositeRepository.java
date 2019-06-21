@@ -24,6 +24,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.table.LogEntriesRepository;
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -31,6 +34,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
@@ -40,6 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 
 import de.metas.bpartner.BPGroupId;
@@ -90,8 +95,6 @@ import lombok.Value;
 @Repository
 public class BPartnerCompositeRepository
 {
-	// private static final int BPARTNER_PAGE_SIZE = 50;
-
 	private final CachingKeysMapper<BPartnerId> invalidationKeysMapper = new CachingKeysMapper<BPartnerId>()
 	{
 		@Override
@@ -126,9 +129,9 @@ public class BPartnerCompositeRepository
 		}
 	};
 
-	private final CCache<BPartnerId, BPartnerComposite> cache = CCache
+	private final CCache<BPartnerId, BPartnerComposite> bpartnerCompositeCache = CCache
 			.<BPartnerId, BPartnerComposite> builder()
-			.cacheName("BPartnerComposite")
+			.cacheName("BPartnerCompositeCache")
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
 			.additionalTableNameToResetFor(I_AD_User.Table_Name)
@@ -136,6 +139,13 @@ public class BPartnerCompositeRepository
 			.initialCapacity(500)
 			.invalidationKeysMapper(invalidationKeysMapper)
 			.build();
+
+	private final LogEntriesRepository recordChangeLogRepository;
+
+	public BPartnerCompositeRepository(@NonNull final LogEntriesRepository recordChangeLogRepository)
+	{
+		this.recordChangeLogRepository = recordChangeLogRepository;
+	}
 
 	public BPartnerComposite getById(@NonNull final BPartnerId bPartnerId)
 	{
@@ -463,7 +473,7 @@ public class BPartnerCompositeRepository
 
 	public ImmutableList<BPartnerComposite> getByIds(@NonNull final Collection<BPartnerId> bPartnerIds)
 	{
-		final Collection<BPartnerComposite> result = cache.getAllOrLoad(bPartnerIds, this::getByIds0);
+		final Collection<BPartnerComposite> result = bpartnerCompositeCache.getAllOrLoad(bPartnerIds, this::getByIds0);
 
 		return result
 				.stream()
@@ -493,54 +503,121 @@ public class BPartnerCompositeRepository
 				.map(BPartnerId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableListMultimap<Integer, I_C_BPartner_Location> id2Locations = retrieveLocationRecords(bPartnerIds);
-
-		final ImmutableListMultimap<Integer, I_AD_User> id2Contacts = retrieveContactRecords(bPartnerIds);
+		final CompositeRelatedRecords relatedRecords = retrieveLocationRecords(bPartnerIds);
 
 		final Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite> builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
-			final int id = bPartnerRecord.getC_BPartner_ID();
+			final BPartnerId id = BPartnerId.ofRepoId(bPartnerRecord.getC_BPartner_ID());
+
+			final BPartner bpartner = ofRecord(bPartnerRecord, relatedRecords.getRecordRef2LogEntries());
 
 			final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 					.orgId(OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID()))
-					.bpartner(ofRecord(bPartnerRecord))
-					.contacts(ofContactRecords(id2Contacts.get(id)))
-					.locations(ofLocationRecords(id2Locations.get(id)))
+					.bpartner(bpartner)
+					.contacts(ofContactRecords(id, relatedRecords))
+					.locations(ofLocationRecords(id, relatedRecords))
 					.build();
 
-			result.put(BPartnerId.ofRepoId(id), bpartnerComposite);
+			result.put(id, bpartnerComposite);
 		}
 		return result.build();
 	}
 
-	private ImmutableListMultimap<Integer, I_C_BPartner_Location> retrieveLocationRecords(@NonNull final Collection<BPartnerId> bPartnerIds)
+	private CompositeRelatedRecords retrieveLocationRecords(@NonNull final Collection<BPartnerId> bPartnerIds)
 	{
-		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_BPartner_Location.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
-				.create()
-				.list();
-		final ImmutableListMultimap<Integer, I_C_BPartner_Location> id2Locations = Multimaps.index(bPartnerLocationRecords, I_C_BPartner_Location::getC_BPartner_ID);
-		return id2Locations;
-	}
+		final List<TableRecordReference> allTableRecordRefs = new ArrayList<>();
+		bPartnerIds.forEach(bPartnerId -> allTableRecordRefs.add(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId.getRepoId())));
 
-	private ImmutableListMultimap<Integer, I_AD_User> retrieveContactRecords(final Collection<BPartnerId> bPartnerIds)
-	{
 		final List<I_AD_User> contactRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
 				.list();
-		final ImmutableListMultimap<Integer, I_AD_User> id2Contacts = Multimaps.index(contactRecords, I_AD_User::getC_BPartner_ID);
-		return id2Contacts;
+		final ImmutableListMultimap<Integer, I_AD_User> bpartnerId2Users = Multimaps.index(contactRecords, I_AD_User::getC_BPartner_ID);
+		contactRecords.forEach(contactRecord -> allTableRecordRefs.add(TableRecordReference.of(contactRecord)));
+
+		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
+				.create()
+				.list();
+		final ImmutableListMultimap<Integer, I_C_BPartner_Location> bpartnerId2BPartnerLocations = Multimaps.index(bPartnerLocationRecords, I_C_BPartner_Location::getC_BPartner_ID);
+		bPartnerLocationRecords.forEach(bPartnerLocationRecord -> allTableRecordRefs.add(TableRecordReference.of(bPartnerLocationRecord)));
+
+		final ImmutableList<Integer> locationIds = CollectionUtils.extractDistinctElements(bPartnerLocationRecords, I_C_BPartner_Location::getC_Location_ID);
+		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Location.COLUMNNAME_C_Location_ID, locationIds)
+				.create()
+				.list();
+		final ImmutableMap<Integer, I_C_Location> locationId2Location = Maps.uniqueIndex(locationRecords, I_C_Location::getC_Location_ID);
+		locationRecords.forEach(locationRecord -> allTableRecordRefs.add(TableRecordReference.of(locationRecord)));
+
+		final ImmutableList<Integer> postalIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Postal_ID);
+		final List<I_C_Postal> postalRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Postal.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Postal.COLUMNNAME_C_Postal_ID, postalIds)
+				.create()
+				.list();
+		final ImmutableMap<Integer, I_C_Postal> postalId2Postal = Maps.uniqueIndex(postalRecords, I_C_Postal::getC_Postal_ID);
+		postalRecords.forEach(postalRecord -> allTableRecordRefs.add(TableRecordReference.of(postalRecord)));
+
+		final ImmutableList<Integer> countryIds = CollectionUtils.extractDistinctElements(locationRecords, I_C_Location::getC_Country_ID);
+		final List<I_C_Country> countryRecords = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Country.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Country.COLUMNNAME_C_Country_ID, countryIds)
+				.create()
+				.list();
+		final ImmutableMap<Integer, I_C_Country> countryId2Country = Maps.uniqueIndex(countryRecords, I_C_Country::getC_Country_ID);
+		countryRecords.forEach(countryRecord -> allTableRecordRefs.add(TableRecordReference.of(countryRecord)));
+
+		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
+		recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(allTableRecordRefs);
+
+		return new CompositeRelatedRecords(
+				bpartnerId2Users,
+				bpartnerId2BPartnerLocations,
+				locationId2Location,
+				postalId2Postal,
+				countryId2Country,
+				recordRef2LogEntries);
 	}
 
-	private BPartner ofRecord(@NonNull final I_C_BPartner bpartnerRecord)
+	@Value
+	public static final class CompositeRelatedRecords
 	{
+		@NonNull
+		ImmutableListMultimap<Integer, I_AD_User> bpartnerId2Users;
+
+		@NonNull
+		ImmutableListMultimap<Integer, I_C_BPartner_Location> bpartnerId2BPartnerLocations;
+
+		@NonNull
+		ImmutableMap<Integer, I_C_Location> locationId2Location;
+
+		@NonNull
+		ImmutableMap<Integer, I_C_Postal> postalId2Postal;
+
+		@NonNull
+		ImmutableMap<Integer, I_C_Country> countryId2Country;
+
+		@NonNull
+		ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries;
+	}
+
+	private BPartner ofRecord(
+			@NonNull final I_C_BPartner bpartnerRecord,
+			@NonNull ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> immutableListMultimap)
+	{
+		final RecordChangeLog recordChangeLog = ChangeLogUtil.createBPartnerChangeLog(bpartnerRecord, immutableListMultimap);
+
 		return BPartner.builder()
 				.value(bpartnerRecord.getValue())
 				.companyName(bpartnerRecord.getCompanyName())
@@ -552,49 +629,83 @@ public class BPartnerCompositeRepository
 				.parentId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getBPartner_Parent_ID()))
 				.phone(bpartnerRecord.getPhone2())
 				.url(bpartnerRecord.getURL())
+				.changeLog(recordChangeLog)
 				.build();
 	}
 
-	private ImmutableList<BPartnerLocation> ofLocationRecords(@NonNull final ImmutableList<I_C_BPartner_Location> immutableList)
+	private ImmutableList<BPartnerLocation> ofLocationRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		return immutableList.stream()
-				.map(this::ofRecord)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_C_BPartner_Location> bpartnerLocationRecords = relatedRecords
+				.getBpartnerId2BPartnerLocations()
+				.get(bpartnerId.getRepoId());
+
+		final ImmutableList.Builder<BPartnerLocation> result = ImmutableList.builder();
+		for (final I_C_BPartner_Location bPartnerLocationRecord : bpartnerLocationRecords)
+		{
+			final BPartnerLocation location = ofRecord(bPartnerLocationRecord, relatedRecords);
+			result.add(location);
+		}
+
+		return result.build();
 	}
 
-	private BPartnerLocation ofRecord(@NonNull final I_C_BPartner_Location bPartnerLocationRecord)
+	private BPartnerLocation ofRecord(
+			@NonNull final I_C_BPartner_Location bPartnerLocationRecord,
+			@NonNull final CompositeRelatedRecords locationRelatedRecords)
 	{
-		final I_C_Location locationRecord = bPartnerLocationRecord.getC_Location();
+		final I_C_Location locationRecord = locationRelatedRecords.getLocationId2Location().get(bPartnerLocationRecord.getC_Location_ID());
+		final I_C_Country countryRecord = locationRelatedRecords.getCountryId2Country().get(locationRecord.getC_Country_ID());
+		final I_C_Postal postalRecord = locationRelatedRecords.getPostalId2Postal().get(locationRecord.getC_Postal_ID());
+
+		final RecordChangeLog changeLog = ChangeLogUtil.createBPartnerLocationChangeLog(bPartnerLocationRecord, locationRelatedRecords);
 
 		final BPartnerLocationBuilder location = BPartnerLocation.builder()
 				.address1(locationRecord.getAddress1())
 				.address2(locationRecord.getAddress2())
 				.city(locationRecord.getCity())
-				.countryCode(locationRecord.getC_Country().getCountryCode())
+				.countryCode(countryRecord.getCountryCode())
 				.externalId(ExternalId.ofOrNull(bPartnerLocationRecord.getExternalId()))
 				.gln(bPartnerLocationRecord.getGLN())
 				.id(BPartnerLocationId.ofRepoId(bPartnerLocationRecord.getC_BPartner_ID(), bPartnerLocationRecord.getC_BPartner_Location_ID()))
 				.poBox(locationRecord.getPOBox())
 				.postal(locationRecord.getPostal())
-				.region(locationRecord.getRegionName());
+				.region(locationRecord.getRegionName())
+				.changeLog(changeLog);
 
 		if (locationRecord.getC_Postal_ID() > 0)
 		{
-			location.district(locationRecord.getC_Postal().getDistrict());
+			location.district(postalRecord.getDistrict());
 		}
 
 		return location.build();
 	}
 
-	private ImmutableList<BPartnerContact> ofContactRecords(@NonNull final ImmutableList<I_AD_User> immutableList)
+	private ImmutableList<BPartnerContact> ofContactRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
-		return immutableList.stream()
-				.map(this::ofRecord)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_AD_User> userRecords = relatedRecords
+				.getBpartnerId2Users()
+				.get(bpartnerId.getRepoId());
+
+		final ImmutableList.Builder<BPartnerContact> result = ImmutableList.builder();
+		for (final I_AD_User userRecord : userRecords)
+		{
+			final BPartnerContact contact = ofRecord(userRecord, relatedRecords);
+			result.add(contact);
+		}
+
+		return result.build();
 	}
 
-	private BPartnerContact ofRecord(@NonNull final I_AD_User contactRecord)
+	private BPartnerContact ofRecord(
+			@NonNull final I_AD_User contactRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
 	{
+		final RecordChangeLog changeLog = ChangeLogUtil.createcontactChangeLog(contactRecord, relatedRecords);
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
 				.id(BPartnerContactId.ofRepoId(bpartnerId, contactRecord.getAD_User_ID()))
@@ -604,6 +715,7 @@ public class BPartnerCompositeRepository
 				.lastName(contactRecord.getLastname())
 				.name(contactRecord.getName())
 				.phone(contactRecord.getPhone())
+				.changeLog(changeLog)
 				.build();
 	}
 

@@ -66,7 +66,7 @@ class CreatedUpdatedInfoTest
 	@Test
 	void createNew_updated()
 	{
-		final CreatedUpdatedInfo createdUpdatedInfo = CreatedUpdatedInfo
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo = DataEntryCreatedUpdatedInfo
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
@@ -76,14 +76,14 @@ class CreatedUpdatedInfoTest
 	@Test
 	void serialize_deserialize() throws IOException
 	{
-		final CreatedUpdatedInfo createdUpdatedInfo = CreatedUpdatedInfo
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo = DataEntryCreatedUpdatedInfo
 				.createNew(UserId.ofRepoId(10), CREATED)
 				.updated(UserId.ofRepoId(20), UPDATED);
 
-		final JSONObjectMapper<CreatedUpdatedInfo> objectMapper = JSONObjectMapper.forClass(CreatedUpdatedInfo.class);
+		final JSONObjectMapper<DataEntryCreatedUpdatedInfo> objectMapper = JSONObjectMapper.forClass(DataEntryCreatedUpdatedInfo.class);
 
 		final String jsonString = objectMapper.writeValueAsString(createdUpdatedInfo);
-		final CreatedUpdatedInfo deserializedObject = objectMapper.readValue(jsonString);
+		final DataEntryCreatedUpdatedInfo deserializedObject = objectMapper.readValue(jsonString);
 
 		assertThat(deserializedObject).isEqualTo(createdUpdatedInfo);
 	}

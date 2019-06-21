@@ -5,12 +5,12 @@ import org.springframework.http.ResponseEntity;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
 
 /*
  * #%L

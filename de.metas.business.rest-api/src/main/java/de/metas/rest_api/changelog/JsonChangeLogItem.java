@@ -1,9 +1,8 @@
-package de.metas.rest_api.bpartner.response;
+package de.metas.rest_api.changelog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -33,25 +32,33 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class JsonResponseUpsertItem
+public class JsonChangeLogItem
 {
-	@ApiModelProperty(//
-			value = "The external id from the respective update request",//
-			dataType = "java.lang.String")
-	@NonNull
-	JsonExternalId externalId;
+	String fieldName;
 
-	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
-			dataType = "java.lang.Long")
-	MetasfreshId metasfreshId;
+	Long updatedMillis;
 
+	@ApiModelProperty(dataType = "java.lang.Integer")
+	MetasfreshId updatedBy;
+
+	String oldValue;
+
+	String newValue;
+
+	@Builder
 	@JsonCreator
-	private JsonResponseUpsertItem(
-			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
-			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
+	private JsonChangeLogItem(
+			@JsonProperty("fieldName") @NonNull String fieldName,
+			@JsonProperty("updatedMillis") @NonNull Long updatedMillis,
+			@JsonProperty("updatedBy") @NonNull MetasfreshId updatedBy,
+			@JsonProperty("oldValue") @NonNull String oldValue,
+			@JsonProperty("newValue") @NonNull String newValue)
 	{
-		this.externalId = externalId;
-		this.metasfreshId = metasfreshId;
+		this.fieldName = fieldName;
+		this.updatedMillis = updatedMillis;
+		this.updatedBy = updatedBy;
+		this.oldValue = oldValue;
+		this.newValue = newValue;
 	}
+
 }

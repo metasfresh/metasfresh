@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.changelog.JsonChangeInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -38,6 +39,18 @@ import lombok.Value;
 @Value
 public class JsonResponseLocation
 {
+	public static final String METASFRESH_ID = "metasfreshId";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String ADDRESS1 = "address1";
+	public static final String ADDRESS2 = "address2";
+	public static final String POSTAL = "postal";
+	public static final String PO_BOX = "poBox";
+	public static final String DISTRICT = "district";
+	public static final String REGION = "region";
+	public static final String CITY = "city";
+	public static final String COUNTRY_CODE = "countryCode";
+	public static final String GLN = "gln";
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshId;
@@ -72,20 +85,24 @@ public class JsonResponseLocation
 			value = "This translates to `C_BPartner_Location.GLN`.")
 	private String gln;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonChangeInfo changeInfo;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseLocation(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("address1") @Nullable final String address1,
-			@JsonProperty("address2") @Nullable final String address2,
-			@JsonProperty("postal") final String postal,
-			@JsonProperty("poBox") final String poBox,
-			@JsonProperty("district") final String district,
-			@JsonProperty("region") final String region,
-			@JsonProperty("city") final String city,
-			@JsonProperty("countryCode") @Nullable final String countryCode,
-			@JsonProperty("gln") @Nullable final String gln)
+			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
+			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
+			@JsonProperty(ADDRESS1) @Nullable final String address1,
+			@JsonProperty(ADDRESS2) @Nullable final String address2,
+			@JsonProperty(POSTAL) final String postal,
+			@JsonProperty(PO_BOX) final String poBox,
+			@JsonProperty(DISTRICT) final String district,
+			@JsonProperty(REGION) final String region,
+			@JsonProperty(CITY) final String city,
+			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
+			@JsonProperty(GLN) @Nullable final String gln,
+			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
@@ -98,5 +115,7 @@ public class JsonResponseLocation
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+
+		this.changeInfo = changeInfo;
 	}
 }

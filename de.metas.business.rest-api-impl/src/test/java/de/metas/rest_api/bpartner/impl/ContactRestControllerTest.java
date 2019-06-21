@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
+import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
@@ -34,9 +35,9 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 
@@ -85,8 +86,8 @@ class ContactRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository();
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
 
 		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -103,9 +104,6 @@ class ContactRestControllerTest
 	@Test
 	void retrieveContactsSince()
 	{
-		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
-		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
-
 		final I_AD_SysConfig sysConfigRecord = newInstance(I_AD_SysConfig.class);
 		sysConfigRecord.setName(BPartnerEndpointService.SYSCFG_BPARTNER_PAGE_SIZE);
 		sysConfigRecord.setValue("2");
@@ -115,6 +113,9 @@ class ContactRestControllerTest
 		createBPartnerData(2);
 		createBPartnerData(3);
 		createBPartnerData(4);
+
+		SystemTime.setTimeSource(() -> 1561014385); // Thu, 20 Jun 2019 07:06:25 GMT
+		UIDStringUtil.setRandomUUIDSource(() -> "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1");
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContactList> page1 = contactRestController.retrieveContactsSince(0L, null);
@@ -206,6 +207,9 @@ class ContactRestControllerTest
 						.contact(jsonContact)
 						.build())
 				.build();
+
+		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+
 		final ResponseEntity<JsonResponseUpsert> result = contactRestController.createOrUpdateContact(upsertRequest);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);

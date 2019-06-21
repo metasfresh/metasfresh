@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.changelog.JsonChangeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -40,6 +41,17 @@ import lombok.Value;
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
 public class JsonResponseBPartner
 {
+	public static final String GROUP = "group";
+	public static final String URL = "url";
+	public static final String LANGUAGE = "language";
+	public static final String PHONE = "phone";
+	public static final String PARENT_ID = "parentId";
+	public static final String COMPANY_NAME = "companyName";
+	public static final String NAME = "name";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String METASFRESH_ID = "metasfreshId";
+	public static final String CODE = "code";
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			dataType = "java.lang.Integer", //
@@ -105,20 +117,24 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonChangeInfo changeInfo;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonResponseBPartner(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
+			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
+			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 
-			@JsonProperty("code") @Nullable final String code,
-			@JsonProperty("name") @Nullable final String name,
-			@JsonProperty("companyName") @Nullable final String companyName,
-			@JsonProperty("parentId") @Nullable final MetasfreshId parentId,
-			@JsonProperty("phone") @Nullable final String phone,
-			@JsonProperty("language") @Nullable final String language,
-			@JsonProperty("url") @Nullable final String url,
-			@JsonProperty("group") @Nullable final String group)
+			@JsonProperty(CODE) @Nullable final String code,
+			@JsonProperty(NAME) @Nullable final String name,
+			@JsonProperty(COMPANY_NAME) @Nullable final String companyName,
+			@JsonProperty(PARENT_ID) @Nullable final MetasfreshId parentId,
+			@JsonProperty(PHONE) @Nullable final String phone,
+			@JsonProperty(LANGUAGE) @Nullable final String language,
+			@JsonProperty(URL) @Nullable final String url,
+			@JsonProperty(GROUP) @Nullable final String group,
+			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
@@ -132,5 +148,7 @@ public class JsonResponseBPartner
 		this.phone = phone;
 		this.language = language;
 		this.url = url;
-		this.group = group;	}
+		this.group = group;
+		this.changeInfo = changeInfo;
+	}
 }

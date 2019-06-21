@@ -2,7 +2,7 @@ package de.metas.rest_api.bpartner.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -10,6 +10,8 @@ import org.compiere.model.I_C_BPartner_Recent_V;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+
+import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -24,11 +26,11 @@ import org.compiere.model.I_C_Postal;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,9 +52,10 @@ public class BPartnerRecordsUtil
 	public static final int AD_USER_ID = 30;
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
 
-
 	public static void createBPartnerData(final int idOffSet)
 	{
+		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT
+
 		final String idOffSetStr = idOffSet == 0 ? "" : "_" + Integer.toString(idOffSet);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
@@ -62,6 +65,9 @@ public class BPartnerRecordsUtil
 		bpartnerRecord.setName("bpartnerRecord.name" + idOffSetStr);
 		bpartnerRecord.setValue("bpartnerRecord.value" + idOffSetStr);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
+		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(bpartnerRecord);
 
 		final I_C_BPartner_Recent_V sinceRecord = newInstance(I_C_BPartner_Recent_V.class);
@@ -80,16 +86,21 @@ public class BPartnerRecordsUtil
 		contactRecord.setFirstname("bpartnerRecord.firstName" + idOffSetStr);
 		contactRecord.setEMail("bpartnerRecord.email" + idOffSetStr);
 		contactRecord.setPhone("bpartnerRecord.phone" + idOffSetStr);
+		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
+		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+		InterfaceWrapperHelper.setValue(contactRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(contactRecord);
 
 		final I_C_Country countryRecord = newInstance(I_C_Country.class);
 		countryRecord.setCountryCode(C_COUNTRY_RECORD_COUNTRY_CODE);
+		InterfaceWrapperHelper.setValue(countryRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		saveRecord(countryRecord);
 
 		final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
 		postalRecord.setC_Country(countryRecord);
 		postalRecord.setPostal("postalRecord.postal" + idOffSetStr);
 		postalRecord.setDistrict("postalRecord.district" + idOffSetStr);
+		InterfaceWrapperHelper.setValue(postalRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		saveRecord(postalRecord);
 
 		final I_C_Location locationRecord = newInstance(I_C_Location.class);
@@ -103,6 +114,7 @@ public class BPartnerRecordsUtil
 		locationRecord.setRegionName("locationRecord.regionName" + idOffSetStr);
 		locationRecord.setAddress2("locationRecord.address2" + idOffSetStr);
 		locationRecord.setAddress2("locationRecord.address2" + idOffSetStr);
+		InterfaceWrapperHelper.setValue(locationRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		saveRecord(locationRecord);
 
 		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
@@ -110,9 +122,13 @@ public class BPartnerRecordsUtil
 		bpartnerLocationRecord.setC_BPartner_Location_ID(C_BBPARTNER_LOCATION_ID + idOffSet);
 		bpartnerLocationRecord.setC_BPartner(bpartnerRecord);
 		bpartnerLocationRecord.setC_Location(locationRecord);
-
 		bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN + idOffSetStr);
 		bpartnerLocationRecord.setExternalId(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr);
+		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
+		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+		InterfaceWrapperHelper.setValue(bpartnerLocationRecord, InterfaceWrapperHelper.COLUMNNAME_UpdatedBy, AD_USER_ID + idOffSet);
 		saveRecord(bpartnerLocationRecord);
+
+		SystemTime.resetTimeSource();
 	}
 }

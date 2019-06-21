@@ -68,7 +68,7 @@ public class MetasfreshId
 	@JsonCreator
 	private MetasfreshId(int value)
 	{
-		this.value = Check.assumeGreaterThanZero(value, "value");
+		this.value = Check.assumeGreaterOrEqualToZero(value, "value"); // zero occurs when e.g. an AD_was created by the system-user
 	}
 
 	@JsonValue

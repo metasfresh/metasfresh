@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
+import de.metas.rest_api.changelog.JsonChangeInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,6 +40,16 @@ import lombok.Value;
 @Value
 public class JsonResponseContact
 {
+	public static final String PHONE = "phone";
+	public static final String EMAIL = "email";
+	public static final String LAST_NAME = "lastName";
+	public static final String FIRST_NAME = "firstName";
+	public static final String NAME = "name";
+	public static final String CODE = "code";
+	public static final String METASFRESH_B_PARTNER_ID = "metasfreshBPartnerId";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String METASFRESH_ID = "metasfreshId";
+
 	@ApiModelProperty(dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
@@ -67,18 +78,22 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonChangeInfo changeInfo;
+
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseContact(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
-			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
-			@JsonProperty("code") @Nullable final String code,
-			@JsonProperty("name") final String name,
-			@JsonProperty("firstName") final String firstName,
-			@JsonProperty("lastName") final String lastName,
-			@JsonProperty("email") final String email,
-			@JsonProperty("phone") final String phone)
+			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
+			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
+			@JsonProperty(METASFRESH_B_PARTNER_ID) @Nullable final MetasfreshId metasfreshBPartnerId,
+			@JsonProperty(CODE) @Nullable final String code,
+			@JsonProperty(NAME) final String name,
+			@JsonProperty(FIRST_NAME) final String firstName,
+			@JsonProperty(LAST_NAME) final String lastName,
+			@JsonProperty(EMAIL) final String email,
+			@JsonProperty(PHONE) final String phone,
+			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
@@ -89,6 +104,7 @@ public class JsonResponseContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+		this.changeInfo = changeInfo;
 	}
 
 	public JsonResponseContact withExternalId(@NonNull final JsonExternalId externalId)

@@ -7,7 +7,30 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
     "externalId": {
       "value": "externalId-1"
     },
-    "name": "jsonContact.name"
+    "name": "jsonContact.name",
+    "changeLog": {
+      "tableName": "AD_User",
+      "recordId": {
+        "keyColumnNames": [
+          "AD_User_ID"
+        ],
+        "keysByColumnName": {
+          "AD_User_ID": 100004
+        },
+        "singleKey": true
+      },
+      "createdByUserId": 0,
+      "createdTimestamp": {
+        "seconds": 1561134,
+        "nanos": 560000000
+      },
+      "lastChangedByUserId": 0,
+      "lastChangedTimestamp": {
+        "seconds": 1561134,
+        "nanos": 560000000
+      },
+      "entries": [ ]
+    }
   }
 ]
 
@@ -21,7 +44,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
     "firstName": "bpartnerRecord.firstName",
     "lastName": "bpartnerRecord.lastName",
     "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone"
+    "phone": "bpartnerRecord.phone",
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    }
   }
 ]
 
@@ -35,7 +64,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
     "firstName": "bpartnerRecord.firstName",
     "lastName": "bpartnerRecord.lastName",
     "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone"
+    "phone": "bpartnerRecord.phone",
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    }
   }
 ]
 
@@ -49,7 +84,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
     "firstName": "bpartnerRecord.firstName",
     "lastName": "bpartnerRecord.lastName",
     "email": "bpartnerRecord.email",
-    "phone": "bpartnerRecord.phone"
+    "phone": "bpartnerRecord.phone",
+    "changeInfo": {
+      "createdMillis": 1561133544,
+      "createdBy": 30,
+      "lastUpdatedMillis": 1561133544,
+      "lastUpdatedBy": 30
+    }
   }
 ]
 
@@ -69,7 +110,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone"
+        "phone": "bpartnerRecord.phone",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 30,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 30
+        }
       },
       {
         "metasfreshId": 31,
@@ -79,7 +126,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "firstName": "bpartnerRecord.firstName_1",
         "lastName": "bpartnerRecord.lastName_1",
         "email": "bpartnerRecord.email_1",
-        "phone": "bpartnerRecord.phone_1"
+        "phone": "bpartnerRecord.phone_1",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 31,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 31
+        }
       }
     ]
   },
@@ -97,7 +150,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "firstName": "bpartnerRecord.firstName_2",
         "lastName": "bpartnerRecord.lastName_2",
         "email": "bpartnerRecord.email_2",
-        "phone": "bpartnerRecord.phone_2"
+        "phone": "bpartnerRecord.phone_2",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 32,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 32
+        }
       },
       {
         "metasfreshId": 33,
@@ -107,7 +166,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "firstName": "bpartnerRecord.firstName_3",
         "lastName": "bpartnerRecord.lastName_3",
         "email": "bpartnerRecord.email_3",
-        "phone": "bpartnerRecord.phone_3"
+        "phone": "bpartnerRecord.phone_3",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 33,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 33
+        }
       }
     ]
   },
@@ -124,7 +189,13 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "firstName": "bpartnerRecord.firstName_4",
         "lastName": "bpartnerRecord.lastName_4",
         "email": "bpartnerRecord.email_4",
-        "phone": "bpartnerRecord.phone_4"
+        "phone": "bpartnerRecord.phone_4",
+        "changeInfo": {
+          "createdMillis": 1561133544,
+          "createdBy": 34,
+          "lastUpdatedMillis": 1561133544,
+          "lastUpdatedBy": 34
+        }
       }
     ]
   }

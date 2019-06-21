@@ -1,16 +1,16 @@
-package de.metas.rest_api.bpartner.response;
+package org.adempiere.ad.table;
 
 import java.util.List;
 
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import com.google.common.collect.ImmutableListMultimap;
 
 /*
  * #%L
- * de.metas.ordercandidate.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,10 +28,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public final class JsonResponseUpsert
+public interface LogEntriesRepository
 {
-	@Singular
-	List<JsonResponseUpsertItem> responseItems;
+	ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> getLogEntriesForRecordReferences(List<TableRecordReference> tableRecordReference);
 }
