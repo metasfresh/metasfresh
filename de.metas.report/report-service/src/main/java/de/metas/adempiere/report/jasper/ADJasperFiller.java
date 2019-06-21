@@ -84,8 +84,7 @@ import net.sf.jasperreports.engine.JasperReport;
 			}
 			else if (source instanceof JRDataSource)
 			{
-				final JRDataSource jrDataSource = (JRDataSource)source;
-				return JasperFillManager.fillReport(jasperReport, paramsFixed, jrDataSource);
+				return JasperFillManager.fillReport(jasperReport, paramsFixed);
 			}
 			else
 			{
