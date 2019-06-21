@@ -23,8 +23,8 @@ describe('Create Product', function() {
         .setName(productName)
         .setValue(productValue)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .setStocked(false)
-        .setPurchased(false)
+        .setStocked(true)
+        .setPurchased(true)
         .apply();
     });
   });

@@ -88,22 +88,22 @@ function applyProduct(product) {
 
     cy.writeIntoStringField('Description', product.description);
 
-    cy.isChecked('IsStocked').then(isIsStockedValue => {
+    cy.getFieldValue('IsStocked').then(isIsStockedValue => {
       if (product.isStocked && !isIsStockedValue) {
         cy.clickOnCheckBox('IsStocked');
       }
     });
-    cy.isChecked('IsPurchased').then(isPurchasedValue => {
+    cy.getFieldValue('IsPurchased').then(isPurchasedValue => {
       if (product.isPurchased && !isPurchasedValue) {
         cy.clickOnCheckBox('IsPurchased');
       }
     });
-    cy.isChecked('IsSold').then(isSoldValue => {
+    cy.getFieldValue('IsSold').then(isSoldValue => {
       if (product.isSold && !isSoldValue) {
         cy.clickOnCheckBox('IsSold');
       }
     });
-    cy.isChecked('IsDiverse').then(isDiverseValue => {
+    cy.getFieldValue('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
       }
