@@ -69,9 +69,19 @@ describe('New user tests', function() {
           });
         }
       });
+
+      roles.valueExists('Quicktest1').then(res => {
+        if (!res) {
+          roles.visitNew();
+
+          cy.fixture('user/role_quicktest.json').then(roleJSON => {
+            new Role({ ...roleJSON }).apply();
+          });
+        }
+      });
     });
 
-    it(`Create user's role`, function() {
+    it(`Create user's roles`, function() {
       users.visit();
 
       users.getHeaderFilter('Lastname').click();
@@ -84,7 +94,17 @@ describe('New user tests', function() {
         .should('exist')
         .click();
 
+      cy.get('.modal-content-wrapper').should('exist');
       cy.writeIntoLookupListField('AD_Role_ID', 'W', 'WebUI', true);
+      cy.pressDoneButton();
+
+      cy.get('.tabs-wrapper .form-flex-align .btn')
+        .contains(addNewText)
+        .should('exist')
+        .click();
+
+      cy.get('.modal-content-wrapper').should('exist');
+      cy.writeIntoLookupListField('AD_Role_ID', 'Q', 'Quicktest1', true);
       cy.pressDoneButton();
     });
 
@@ -104,15 +124,12 @@ describe('New user tests', function() {
         .type('{selectall}')
         .type(`${password}`)
         .type('{enter}');
-
-      const loginText = Cypress.messages.login.login.caption;
-      cy.clickButtonWithText(loginText);
     });
 
     it('Select role using form', function() {
       const roleText = Cypress.messages.login.selectRole.caption;
 
-      cy.get('.form-control-label').contains(roleText);
+      cy.get('.form-control-label').contains(roleText, { timeout: 10000 });
 
       cy.get('.select-dropdown')
         .find('.input-dropdown')
