@@ -72,12 +72,14 @@ public class HUAccessService
 
 	public List<I_M_HU> retrieveVhus(@NonNull final HuId huId)
 	{
-		return Services.get(IHandlingUnitsBL.class).getVHUs(huId);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		return handlingUnitsBL.getVHUs(huId);
 	}
 
 	public List<I_M_HU> retrieveVhus(@NonNull final I_M_HU hu)
 	{
-		return Services.get(IHandlingUnitsBL.class).getVHUs(hu);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		return handlingUnitsBL.getVHUs(hu);
 	}
 
 	/**

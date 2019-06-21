@@ -288,13 +288,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final I_M_HU_PI_Version piVersion = getPIVersion(hu);
-		if (piVersion == null)
-		{
-			return false;
-		}
-
-		return HuPackingInstructionsId.isVirtualRepoId(piVersion.getM_HU_PI_ID());
+		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
+		return piVersionId.isVirtual();
 	}
 
 	@Override

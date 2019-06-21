@@ -203,8 +203,11 @@ public class HUTraceEventsService
 		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 			final HuId vhuId = HuId.ofRepoId(shipmentScheduleQtyPicked.getVHU_ID());
-			vhus = huAccessService.retrieveVhus(vhuId);
+			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+			vhus = ImmutableList.of(vhu);
 		}
 		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
 		{
@@ -468,6 +471,7 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		for (final Object model : models)
@@ -492,7 +496,8 @@ public class HUTraceEventsService
 				if (huAssignment.getVHU_ID() > 0)
 				{
 					final HuId vhuId = HuId.ofRepoId(huAssignment.getVHU_ID());
-					vhus = huAccessService.retrieveVhus(vhuId);
+					final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+					vhus = ImmutableList.of(vhu);
 				}
 				else if (huAssignment.getM_TU_HU_ID() > 0)
 				{
