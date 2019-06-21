@@ -37,6 +37,11 @@ import de.metas.event.Topic;
  */
 public class PlainEventBusFactory implements IEventBusFactory
 {
+	public static PlainEventBusFactory newInstance()
+	{
+		return new PlainEventBusFactory();
+	}
+
 	private final HashMap<Topic, EventBus> eventBuses = new HashMap<>();
 
 	public PlainEventBusFactory()
