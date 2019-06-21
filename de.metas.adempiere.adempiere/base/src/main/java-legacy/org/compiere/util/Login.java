@@ -185,8 +185,7 @@ public class Login
 			}
 		}
 
-		//if (!userBL.isPasswordMatching(user, password))
-		if(false)
+		if (!userBL.isPasswordMatching(user, password))
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
