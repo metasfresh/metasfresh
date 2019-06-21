@@ -129,7 +129,7 @@ describe('New user tests', function() {
     it('Select role using form', function() {
       const roleText = Cypress.messages.login.selectRole.caption;
 
-      cy.get('.form-control-label').contains(roleText, { timeout: 10000 });
+      cy.get('.login-form').contains(roleText, { timeout: 10000 });
 
       cy.get('.select-dropdown')
         .find('.input-dropdown')
