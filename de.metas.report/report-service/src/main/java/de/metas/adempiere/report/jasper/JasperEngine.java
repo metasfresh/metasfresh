@@ -28,12 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -42,9 +37,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Process;
@@ -57,8 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -101,10 +92,8 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
 	private static final String PARAM_RESULT_SET = "RESULT_SET";
-	private static final String SYSCONFIG_RESTAPI_URL = "API_URL";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
-	private static final String MSG_URLnotValid = "URLnotValid";
 
 	/**
 	 * Desired output type.
@@ -116,6 +105,10 @@ public class JasperEngine extends AbstractReportEngine
 	// services
 	@Autowired
 	private UserAuthTokenRepository userAuthTokenRepo;
+	@Autowired
+	private JsonDataSourceService jsonDSService;
+	@Autowired
+	private JsonDataSourceRepository jsonRepo;
 
 	private final transient Logger log = LogManager.getLogger(getClass());
 
@@ -157,15 +150,23 @@ public class JasperEngine extends AbstractReportEngine
 		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
 		// JSON Data source
-		if (X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType())
-				&& !Check.isEmpty(reportContext.getJSONPath(), true))
+		if (isJasperJSONReport(reportContext))
 		{
+			//
+			// get authorization
 			final UserId userId = Env.getLoggedUserId();
 			final RoleId roleId = Env.getLoggedRoleId(Env.getCtx());
 			final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
 
-			final InputStream is = getURLInputStream(getJasperJSONURL(reportContext), token.getAuthToken());
-			final JsonDataSource dataSource = new JsonDataSource(is);
+			//
+			// create the json data source
+			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
+					.type(reportContext.getType())
+					.sql(reportContext.getSQLStatement())
+					.token(token.getAuthToken())
+					.JSONPath(reportContext.getJSONPath())
+					.build();
+			final JsonDataSource dataSource = jsonDSService.getJsonDataSource(request);
 
 			//
 			// Fill the report
@@ -210,6 +211,13 @@ public class JasperEngine extends AbstractReportEngine
 				conn = null;
 			}
 		}
+	}
+
+
+	private boolean isJasperJSONReport(final ReportContext reportContext)
+	{
+		return X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType())
+				&& !Check.isEmpty(reportContext.getJSONPath(), true);
 	}
 
 	private final JasperReport createJasperReport(final Properties ctx, final AdProcessId adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
@@ -295,13 +303,20 @@ public class JasperEngine extends AbstractReportEngine
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
 		}
 
-
-		final JRResultSetDataSource  rsDataSuorce = retrieveResultSetDataSourceIfNeeded(reportContext);
-		if (rsDataSuorce != null)
+		if (isJasperJSONReport(reportContext))
 		{
-			jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
-		}
+			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
+					.type(reportContext.getType())
+					.sql(reportContext.getSQLStatement())
+					.JSONPath(reportContext.getJSONPath())
+					.build();
 
+			final JRResultSetDataSource  rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
+			if (rsDataSuorce != null)
+			{
+				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
+			}
+		}
 
 		return jrParameters;
 	}
@@ -593,95 +608,5 @@ public class JasperEngine extends AbstractReportEngine
 		}
 
 		exporter.exportReport();
-	}
-
-	private String getAPI_URL()
-	{
-		final String url = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_RESTAPI_URL, "");
-		if (Check.isEmpty(url, true) || "-".equals(url))
-		{
-			log.warn("{} is not configured. JAsper JSOn reports will not work", SYSCONFIG_RESTAPI_URL);
-			return null;
-		}
-
-		return url.trim();
-	}
-
-	private String getJasperJSONURL(@NonNull final ReportContext reportContext)
-	{
-		String url = getAPI_URL();
-		if (url == null)
-		{
-			return null;
-		}
-
-		final String path = reportContext.getJSONPath();
-		if (Check.isEmpty(path, true) || "-".equals(path))
-		{
-			return null;
-		}
-
-		// parse variables
-
-		url = url + path;
-
-		return url;
-	}
-
-	private static InputStream getURLInputStream(@NonNull final String reportURL, @NonNull final String token)
-	{
-		try
-		{
-			final URL url = new URL(reportURL);
-			final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
-			conn.setRequestProperty ("Authorization", token);
-			conn.setRequestMethod("GET");
-			return conn.getInputStream();
-		}
-		catch (final IOException e)
-		{
-			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
-			throw new AdempiereException(errorMsg);
-		}
-	}
-
-	private JRResultSetDataSource  retrieveResultSetDataSourceIfNeeded(final ReportContext reportContext)
-	{
-		//
-		// Get SQL Statement
-		final String sql = reportContext.getSQLStatement();
-		if (!X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType()) || Check.isEmpty(sql, true))
-		{
-			return null;
-		}
-
-		// TODO
-		// Parse the SQL Statement
-		//		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql, IStringExpression.class);
-		//		final Evaluatee evalCtx = createEvaluationContext(reportContext);
-
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			rs = pstmt.executeQuery();
-
-			//
-			// Create & return the data source
-			return new JRResultSetDataSource(rs);
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-
 	}
 }
