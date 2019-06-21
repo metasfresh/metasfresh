@@ -35,12 +35,23 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-xml</artifactId>
+			<!-- com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.8.8 
+				depends on woodstox-core:5.0.3 and some stax2-api lower than 4.1 -->
 			<exclusions>
 				<exclusion>
 					<groupId>org.codehaus.woodstox</groupId>
 					<artifactId>stax2-api</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.woodstox</groupId>
+					<artifactId>woodstox-core</artifactId>
+				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.woodstox</groupId>
+			<artifactId>woodstox-core</artifactId>
+			<version>${woodstox.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
