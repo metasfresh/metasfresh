@@ -50,7 +50,7 @@ public class AD_Process
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
 	@CalloutMethod(columnNames = I_AD_Process.COLUMNNAME_Type)
-	public void setClassnameIfTypeJasperReportsSQ(final I_AD_Process process)
+	public void setClassnameIfTypeJasperReportsSQL(final I_AD_Process process)
 	{
 		final String processType = process.getType();
 		if (X_AD_Process.TYPE_JasperReportsSQL.equals(processType)
