@@ -67,6 +67,19 @@ Cypress.Commands.add('isChecked', (fieldName, modal) => {
   });
 });
 
+Cypress.Commands.add('resetListValue', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
+      .find('.meta-icon-close-alt')
+      .click();
+  });
+});
+
 Cypress.Commands.add('clickOnIsActive', modal => {
   describe('Click on the IsActive slider', function() {
     let path = `.form-field-IsActive`;

@@ -95,6 +95,9 @@ declare namespace Cypress {
      * @param stringValue (sub-)string of the list item to select
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
+     * @example
+     * // select a certain flatrate condition is a process dialog
+     * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
      */
     selectInListField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
 
