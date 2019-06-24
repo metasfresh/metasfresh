@@ -19,19 +19,19 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   // data for "before" section
-  // priceList + rest
+  // priceList
   const priceSystemName = `PriceSystem ${timestamp}`;
   const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceVersionList ${timestamp}`;
+  const priceListVersionName = `PriceListVersion ${timestamp}`;
 
-  // product + rest
+  // product
   const productCategoryName = `ProductCategory ${timestamp}`;
   const productCategoryValue = productCategoryName;
   const productName = `Product ${timestamp}`;
   const productValue = productName;
 
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-
+  // BPartner
+  const discountSchemaName = `DiscountSchema ${timestamp}`;
   const bPartnerName = `bPartner ${timestamp}`;
 
 
