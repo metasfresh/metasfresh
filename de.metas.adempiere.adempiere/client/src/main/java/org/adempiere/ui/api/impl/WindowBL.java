@@ -1,8 +1,13 @@
 package org.adempiere.ui.api.impl;
 
+import static org.compiere.util.Util.coalesce;
+
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 /*
@@ -15,27 +20,31 @@ import org.adempiere.model.InterfaceWrapperHelper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ui.api.IWindowBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.apps.WindowManager;
 import org.compiere.model.I_AD_Menu;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+
+import de.metas.lang.SOTrx;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public class WindowBL implements IWindowBL
 {
@@ -125,26 +134,46 @@ public class WindowBL implements IWindowBL
 		}
 		return AEnv.findInWindowManager(AD_Window_ID);
 	}
-	
+
 	@Override
 	public I_AD_Window getWindowFromMenu(final Properties ctx, final int menuID)
 	{
 		final I_AD_Menu menu = InterfaceWrapperHelper.create(ctx, menuID, I_AD_Menu.class, ITrx.TRXNAME_None);
-		
-		if(menu == null)
+
+		if (menu == null)
 		{
 			return null;
 		}
-		
+
 		final I_AD_Window window = menu.getAD_Window();
-		
+
 		// only return the window if active
-		if(window.isActive())
+		if (window.isActive())
 		{
 			return window;
 		}
 		return null;
-		
+
+	}
+
+	@Override
+	public AdWindowId getAdWindowId(
+			@NonNull final String tableName,
+			@NonNull final SOTrx soTrx,
+			@NonNull final AdWindowId defaultValue)
+	{
+
+		final I_AD_Table adTableRecord = Services.get(IADTableDAO.class).retrieveTable(tableName);
+
+		switch (soTrx)
+		{
+			case SALES:
+				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
+			case PURCHASE:
+				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
+			default:
+				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
+		}
 	}
 
 }
