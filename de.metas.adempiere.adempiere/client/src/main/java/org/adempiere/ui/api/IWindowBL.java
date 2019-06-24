@@ -2,9 +2,11 @@ package org.adempiere.ui.api;
 
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.apps.WindowManager;
 import org.compiere.model.I_AD_Window;
 
+import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 public interface IWindowBL extends ISingletonService
@@ -27,10 +29,18 @@ public interface IWindowBL extends ISingletonService
 
 	/**
 	 * Get the window from the menu if this menu points to a window
-	 * 
+	 *
 	 * @param ctx
 	 * @param menuID
 	 * @return the window if found, null otherwise
 	 */
 	I_AD_Window getWindowFromMenu(Properties ctx, int menuID);
+
+
+	/**
+	 * All parameters are mandatory for now.
+	 *
+	 * @return never return {@code null}
+	 */
+	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 }
