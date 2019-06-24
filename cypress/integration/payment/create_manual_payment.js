@@ -72,7 +72,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
         // .setTuQuantity(2)
       )
       // .addLine(
-      // todo @dh: how to add this line?
+      // todo @dh: how to add this line which depends on the packing item?
       //   new SalesInvoiceLine()
       //     .setProduct('IFCO 6410_P001512')
       //     .setQuantity(2)
@@ -180,10 +180,5 @@ describe('Create a manual Payment for a Sales Invoice', function () {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, true);
     });
-  });
-
-  it('After selecting the Sales Invoice, the currency and the amt are updated accordingly', function () {
-
-    // todo @dh: what do you mean by this
   });
 });
