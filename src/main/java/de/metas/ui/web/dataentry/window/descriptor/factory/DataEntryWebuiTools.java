@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
-import de.metas.dataentry.data.CreatedUpdatedInfo;
+import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -99,14 +99,14 @@ public class DataEntryWebuiTools
 			@NonNull final DataEntryRecord dataEntryRecord,
 			@NonNull final DataEntryFieldId dataEntryFieldId)
 	{
-		final Optional<CreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
+		final Optional<DataEntryCreatedUpdatedInfo> createdUpdatedInfo = dataEntryRecord.getCreatedUpdatedInfo(dataEntryFieldId);
 
 		return createdUpdatedInfo
 				.map(this::extractCreatedUpdatedInfo)
 				.orElse(ITranslatableString.empty());
 	}
 
-	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
 	{
 		final User creator = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());
 		final User updater = userRepository.getByIdInTrx(createdUpdatedInfo.getCreatedBy());

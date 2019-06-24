@@ -23,9 +23,10 @@ package de.metas.location.geocoding.process;
  */
 
 import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
@@ -130,7 +131,7 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 		if (!bpLocationIds.isEmpty())
 		{
 			// retrieve the selected location
-			final LocationId locationId = Adempiere.getBean(BPartnerLocationRepository.class).getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
+			final LocationId locationId = Adempiere.getBean(BPartnerLocationInfoRepository.class).getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
 			return Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(locationId.getRepoId()));
 		}
 		else

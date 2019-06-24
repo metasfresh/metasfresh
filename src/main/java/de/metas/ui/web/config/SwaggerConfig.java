@@ -1,7 +1,5 @@
 package de.metas.ui.web.config;
 
-import static de.metas.util.web.MetasfreshRestAPIConstants.createApiInfo;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,6 +10,7 @@ import org.springframework.context.annotation.Import;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import de.metas.util.web.SwaggerUtil;
 import de.pentabyte.springfox.ApiEnumDescriptionPlugin;
 import springfox.documentation.RequestHandler;
 import springfox.documentation.builders.PathSelectors;
@@ -54,7 +53,7 @@ public class SwaggerConfig
 				.select()
 				.paths(PathSelectors.any())
 				.build()
-				.apiInfo(createApiInfo(
+				.apiInfo(SwaggerUtil.createApiInfo(
 						"metasfresh webui REST API" /* title */,
 						"REST API backend for metasfresh UIs"/* description */));
 	}

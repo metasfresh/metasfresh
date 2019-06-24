@@ -189,16 +189,4 @@ public class ViewIdTests
 		final ViewId viewId = ViewId.ofViewIdString("packingHUs-351a5c70a1ff4d4fb2852468d6b5b01b-1-2-3");
 		assertThat(viewId.getOtherParts()).isEqualTo(ImmutableList.of("1", "2", "3"));
 	}
-
-	@Test
-	public void test_encodeUsingDigits()
-	{
-		final char[] BASE10 = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-		for (int i = 0; i < 1000; i++)
-		{
-			final String expected = String.valueOf(i);
-			final String actual = ViewId.encodeUsingDigits(i, BASE10);
-			assertThat(actual).isEqualTo(expected);
-		}
-	}
 }
