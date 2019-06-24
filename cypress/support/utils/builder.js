@@ -1,5 +1,6 @@
 import {Pricesystem} from "./pricesystem";
 import {PriceList, PriceListVersion} from "./pricelist";
+import {Product, ProductCategory, ProductPrice} from "./product";
 
 export class Builder {
 
@@ -9,6 +10,7 @@ export class Builder {
    * - Most tests should use this builder instead of copy pasting everything in the test file.
    *
    * - Only the tests which need customised Price* types should create their own (by copying the contents of this method and modifying as needed).
+   *
    * @param priceSystemName
    * @param priceListVersionName
    * @param priceListName
@@ -34,5 +36,45 @@ export class Builder {
         .apply();
     });
   }
+
+
+  /**
+   * Use this when you aren't interested in configuring anything (except for the name) for the ProductCategory, ProductPrice or Product, but you only need them to exist.
+   *
+   * - Most tests should use this builder instead of copy pasting everything in the test file.
+   *
+   * - Only the tests which need customised Product* types should create their own (by copying the contents of this method and modifying as needed).
+   *
+   * @param productCategoryName
+   * @param productCategoryValue
+   * @param priceListName
+   * @param productName
+   * @param productValue
+   */
+  static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue) {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson)
+        .setPriceList(priceListName)
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductType('Service')
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice)
+        .apply();
+    });
+  }
+
 
 }

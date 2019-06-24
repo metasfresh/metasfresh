@@ -1,6 +1,5 @@
 /// <reference types="Cypress" />
 
-import {Product, ProductCategory, ProductPrice} from '../../support/utils/product';
 import {BPartner} from '../../support/utils/bpartner';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DiscountSchema} from "../../support/utils/discountschema";
@@ -20,14 +19,16 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   // data for "before" section
+  // priceList + rest
   const priceSystemName = `PriceSystem ${timestamp}`;
   const priceListName = `PriceList ${timestamp}`;
   const priceListVersionName = `PriceVersionList ${timestamp}`;
 
+  // product + rest
+  const productCategoryName = `ProductCategory ${timestamp}`;
+  const productCategoryValue = productCategoryName;
   const productName = `Product ${timestamp}`;
-  const productValue = `manual_payment_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const productValue = productName;
 
   const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
 
@@ -38,28 +39,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-
-    let productPrice;
-    cy.fixture('product/product_price.json').then(productPriceJson => {
-      productPrice = Object.assign(new ProductPrice(), productPriceJson)
-        .setPriceList(priceListName)
-    });
-
-    cy.fixture('product/simple_product.json').then(productJson => {
-      Object.assign(new Product(), productJson)
-        .setName(productName)
-        .setValue(productValue)
-        .setProductType('Service')
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .addProductPrice(productPrice)
-        .apply();
-    });
+    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
