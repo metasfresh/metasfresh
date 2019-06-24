@@ -103,5 +103,27 @@ describe('Create Sales order', function() {
       .filter(':contains("' + customer + '")')
       .first()
       .click();
+    cy.wait(3000);
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.wait(3000);
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    cy.get('.reference_C_Invoice_Candidate').click();
+    cy.get('tbody tr')
+      .eq('0')
+      .click();
+    cy.get('.quick-actions-tag.pointer').click();
+    cy.get('.items-row-2 button')
+      .eq('1')
+      .should('contain', 'Start')
+      .click();
+    cy.wait(4000);
+    cy.get('.header-item-badge.icon-lg i').click();
+    cy.get('.inbox-item-unread .inbox-item-title')
+      .filter(':contains("' + customer + '")')
+      .first()
+      .click();
   });
 });
