@@ -274,7 +274,8 @@ public class SecurPharmClient
 	public DecommissionClientResponse decommission(@NonNull final ProductDetails productDetails)
 	{
 		final String clientTransactionId = newClientTransactionId();
-		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION);
+		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.DECOMMISSION)
+				.replaceQueryParam(QUERY_PARAM_CTX, clientTransactionId);
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
 
 		return DecommissionClientResponse.builder()
@@ -289,7 +290,8 @@ public class SecurPharmClient
 	{
 		final String clientTransactionId = newClientTransactionId();
 		final UriComponentsBuilder url = prepareActionURL(productDetails, SecurPharmAction.UNDO_DECOMMISSION)
-				.queryParam(QUERY_PARAM_TRX, serverTransactionId);
+				.replaceQueryParam(QUERY_PARAM_CTX, clientTransactionId)
+				.replaceQueryParam(QUERY_PARAM_TRX, serverTransactionId);
 
 		final SecurPharmLog log = executeAction(url, clientTransactionId);
 
@@ -367,7 +369,8 @@ public class SecurPharmClient
 			@NonNull final SecurPharmAction action)
 	{
 		return prepareProductURL(productDetails)
-				.queryParam(QUERY_PARAM_ACT, action.getCode());
+				.replaceQueryParam(QUERY_PARAM_SID, config.getApplicationUUID())
+				.replaceQueryParam(QUERY_PARAM_ACT, action.getCode());
 	}
 
 	private UriComponentsBuilder prepareProductURL(@NonNull final ProductDetails productDetails)
