@@ -1,5 +1,9 @@
 package de.metas.impexp.excel;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.service.ISysConfigBL;
 
 import de.metas.util.Services;
@@ -33,6 +37,11 @@ import lombok.Value;
 @Builder
 public class ExcelExportConstants
 {
+	public static ExcelExportConstants givenOrDefault(@Nullable final ExcelExportConstants constants)
+	{
+		return coalesce(constants, getFromSysConfig());
+	}
+
 	public static ExcelExportConstants getFromSysConfig()
 	{
 		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
