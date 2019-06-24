@@ -21,6 +21,7 @@ describe('Verify that the default inventory doctype is used on new inventory doc
         cy.clickOnCheckBox('IsDefault');
       }
     });
+    cy.screenshot();
   });
 
   it('Verify that a new inventory doc is created with aggregated-HUs inventory doc-type', function() {
@@ -31,6 +32,7 @@ describe('Verify that the default inventory doctype is used on new inventory doc
         expect(docTypeName).to.eq(getLanguageSpecific(inventoryJson, 'aggregatedHUsInventoryDocTypeName'));
       });
     });
+    cy.screenshot();
   });
 
   it('Make single-HU inventory doc-type the default', function() {
@@ -50,6 +52,7 @@ describe('Verify that the default inventory doctype is used on new inventory doc
         cy.clickOnCheckBox('IsDefault');
       }
     });
+    cy.screenshot();
   });
 
   it('Verify that a new inventory doc is created with single-HU inventory doc-type', function() {
@@ -60,5 +63,6 @@ describe('Verify that the default inventory doctype is used on new inventory doc
         expect(docTypeName).to.eq(getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName'));
       });
     });
+    cy.screenshot();
   });
 });
