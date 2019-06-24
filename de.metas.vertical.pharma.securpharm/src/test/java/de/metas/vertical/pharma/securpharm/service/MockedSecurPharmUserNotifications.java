@@ -12,6 +12,7 @@ import de.metas.vertical.pharma.securpharm.notifications.SecurPharmUserNotificat
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProduct;
 import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -37,54 +38,98 @@ import lombok.NonNull;
 
 public class MockedSecurPharmUserNotifications implements SecurPharmUserNotifications
 {
-	private final HashMap<SecurPharmProductId, SecurPharmProduct> decodeAndVerifyErrors = new HashMap<>();
-	private final HashMap<SecurPharmProductId, DecommissionResponse> decommissionErrors = new HashMap<>();
-	private final HashMap<SecurPharmProductId, UndoDecommissionResponse> undoDecommissionErrors = new HashMap<>();
+	private final HashMap<SecurPharmProductId, ProductVerifyErrorNotification> lastVerifyErrorByProductId = new HashMap<>();
+	private final HashMap<SecurPharmProductId, DecommissionErrorNotification> lastDecommissionErrorByProductId = new HashMap<>();
+	private final HashMap<SecurPharmProductId, UndoDecommissionErrorNotification> lastUndoDecommissionErrorByProductId = new HashMap<>();
 
 	@Override
-	public void notifyProductDecodeAndVerifyError(final UserId responsibleId, final SecurPharmProduct product)
+	public void notifyProductDecodeAndVerifyError(@NonNull final UserId responsibleId, @NonNull final SecurPharmProduct product)
 	{
-		Check.assumeNotNull(product.getId(), "product.getId() is not null");
-		decodeAndVerifyErrors.put(product.getId(), product);
+		final SecurPharmProductId productId = product.getId();
+		Check.assumeNotNull(productId, "product shall be saved: {}", product);
+
+		lastVerifyErrorByProductId.put(productId, ProductVerifyErrorNotification.of(responsibleId, product));
 	}
 
 	@Override
 	public void notifyDecommissionFailed(final UserId responsibleId, final DecommissionResponse response)
 	{
-		decommissionErrors.put(response.getProductId(), response);
+		lastDecommissionErrorByProductId.put(response.getProductId(), DecommissionErrorNotification.of(responsibleId, response));
 	}
 
 	@Override
 	public void notifyUndoDecommissionFailed(final UserId responsibleId, final UndoDecommissionResponse response)
 	{
-		undoDecommissionErrors.put(response.getProductId(), response);
+		lastUndoDecommissionErrorByProductId.put(response.getProductId(), UndoDecommissionErrorNotification.of(responsibleId, response));
 	}
 
 	public void assertNoErrors()
 	{
-		assertThat(decodeAndVerifyErrors).as("no decode & verify errors").isEmpty();
-		assertThat(decommissionErrors).as("no decommission errors").isEmpty();
-		assertThat(undoDecommissionErrors).as("no undo-decommission errors").isEmpty();
+		assertThat(lastVerifyErrorByProductId).as("no decode & verify errors").isEmpty();
+		assertThat(lastDecommissionErrorByProductId).as("no decommission errors").isEmpty();
+		assertThat(lastUndoDecommissionErrorByProductId).as("no undo-decommission errors").isEmpty();
 	}
 
-	public void assertProductDecodeAndVerifyError(@NonNull final SecurPharmProductId productId)
+	public void assertProductDecodeAndVerifyError(
+			@NonNull final SecurPharmProductId productId,
+			@NonNull final UserId expectedUserId)
 	{
-		assertThat(decodeAndVerifyErrors)
+		assertThat(lastVerifyErrorByProductId)
 				.as("" + productId + " was reported with decode & verify errors")
 				.containsKey(productId);
+
+		assertThat(lastVerifyErrorByProductId.get(productId).getUserId())
+				.isEqualTo(expectedUserId);
 	}
 
-	public void assertDecommissionError(@NonNull final SecurPharmProductId productId)
+	public void assertDecommissionError(
+			@NonNull final SecurPharmProductId productId,
+			@NonNull final UserId expectedUserId)
 	{
-		assertThat(decommissionErrors)
+		assertThat(lastDecommissionErrorByProductId)
 				.as("" + productId + " was reported with decommission errors")
 				.containsKey(productId);
+
+		assertThat(lastDecommissionErrorByProductId.get(productId).getUserId())
+				.isEqualTo(expectedUserId);
 	}
 
-	public void assertUndoDecommissionError(@NonNull final SecurPharmProductId productId)
+	public void assertUndoDecommissionError(
+			@NonNull final SecurPharmProductId productId,
+			@NonNull final UserId expectedUserId)
 	{
-		assertThat(undoDecommissionErrors)
+		assertThat(lastUndoDecommissionErrorByProductId)
 				.as("" + productId + " was reported with undo-decommission errors")
 				.containsKey(productId);
+
+		assertThat(lastUndoDecommissionErrorByProductId.get(productId).getUserId())
+				.isEqualTo(expectedUserId);
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ProductVerifyErrorNotification
+	{
+		@NonNull
+		private UserId userId;
+		@NonNull
+		private SecurPharmProduct product;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class DecommissionErrorNotification
+	{
+		@NonNull
+		private UserId userId;
+		@NonNull
+		private DecommissionResponse decommission;
+	}
+
+	@Value(staticConstructor = "of")
+	private static class UndoDecommissionErrorNotification
+	{
+		@NonNull
+		private UserId userId;
+		@NonNull
+		private UndoDecommissionResponse undoDecommission;
 	}
 }

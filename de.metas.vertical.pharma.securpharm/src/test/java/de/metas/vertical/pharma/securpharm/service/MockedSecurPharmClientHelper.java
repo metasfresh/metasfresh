@@ -22,6 +22,7 @@ import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
 import de.metas.vertical.pharma.securpharm.log.SecurPharmLog.SecurPharmLogBuilder;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.product.ProductDetails;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -56,7 +57,9 @@ public class MockedSecurPharmClientHelper
 	@Getter
 	private final SecurPharmClientFactory clientFactory;
 
-	public MockedSecurPharmClientHelper()
+	@Builder
+	private MockedSecurPharmClientHelper(
+			@NonNull final UserId supportUserId)
 	{
 		//
 		// Setup config & client
@@ -64,20 +67,22 @@ public class MockedSecurPharmClientHelper
 		clientFactory = Mockito.mock(SecurPharmClientFactory.class);
 		client = Mockito.mock(SecurPharmClient.class);
 		//
-		final SecurPharmConfig config = createDummyConfig();
+		final SecurPharmConfig config = createDummyConfig(supportUserId);
 		Mockito.when(configRespository.getDefaultConfig()).thenReturn(Optional.of(config));
 		Mockito.when(clientFactory.createClient(config)).thenReturn(client);
 		Mockito.when(client.getConfig()).thenReturn(config);
+		Mockito.when(client.getSupportUserId()).thenCallRealMethod();
 	}
 
-	private static SecurPharmConfig createDummyConfig()
+	private static SecurPharmConfig createDummyConfig(
+			@NonNull final UserId supportUserId)
 	{
 		return SecurPharmConfig.builder()
 				.applicationUUID("uuid")
 				.authBaseUrl("url")
 				.pharmaAPIBaseUrl("url")
 				.certificatePath("path")
-				.supportUserId(UserId.METASFRESH)
+				.supportUserId(supportUserId)
 				.keystorePassword("passw")
 				.build();
 	}

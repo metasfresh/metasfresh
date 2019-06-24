@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.InventoryId;
+import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.actions.DecommissionResponse;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmaActionRepository;
 import de.metas.vertical.pharma.securpharm.actions.UndoDecommissionResponse;
@@ -60,12 +61,16 @@ public class SecurPharmServiceTest
 	private MockedSecurPharmUserNotifications userNotifications;
 	private SecurPharmProductRepository productsRepo;
 
+	private final UserId supportUserId = UserId.ofRepoId(12345);
+
 	@Before
 	public void beforeEachTest()
 	{
 		AdempiereTestHelper.get().init();
 
-		clientHelper = new MockedSecurPharmClientHelper();
+		clientHelper = MockedSecurPharmClientHelper.builder()
+				.supportUserId(supportUserId)
+				.build();
 
 		//
 		// Other services
@@ -198,7 +203,7 @@ public class SecurPharmServiceTest
 						.huId(huId)
 						.build());
 
-		userNotifications.assertProductDecodeAndVerifyError(product.getId());
+		userNotifications.assertProductDecodeAndVerifyError(product.getId(), supportUserId);
 	}
 
 	@Test
@@ -221,7 +226,7 @@ public class SecurPharmServiceTest
 						.huId(huId)
 						.build());
 
-		userNotifications.assertProductDecodeAndVerifyError(product.getId());
+		userNotifications.assertProductDecodeAndVerifyError(product.getId(), supportUserId);
 	}
 
 	@Test
@@ -287,7 +292,7 @@ public class SecurPharmServiceTest
 		assertThat(product.getDecommissionServerTransactionId()).isNull();
 		assertProductSaved(product);
 
-		userNotifications.assertDecommissionError(product.getId());
+		userNotifications.assertDecommissionError(product.getId(), supportUserId);
 	}
 
 	@Test
@@ -353,7 +358,7 @@ public class SecurPharmServiceTest
 		assertThat(product.isDecommissioned()).isTrue();
 		assertProductSaved(product);
 
-		userNotifications.assertUndoDecommissionError(productId);
+		userNotifications.assertUndoDecommissionError(productId, supportUserId);
 	}
 
 }
