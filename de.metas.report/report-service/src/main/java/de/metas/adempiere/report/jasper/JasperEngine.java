@@ -71,7 +71,6 @@ import lombok.NonNull;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
 import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JRResultSetDataSource;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
@@ -91,7 +90,7 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
-	private static final String PARAM_RESULT_SET = "RESULT_SET";
+	private static final String PARAM_SQL_VALUE = "SQL_VALUE";
 
 	private static final String JRPROPERTY_ReportPath = JasperEngine.class.getName() + ".ReportPath";
 
@@ -300,10 +299,10 @@ public class JasperEngine extends AbstractReportEngine
 					.token(token.getAuthToken())
 					.build();
 
-			final JRResultSetDataSource rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
-			if (rsDataSuorce != null)
+			final String sql_value = jsonRepo.retrieveSQLValueIfNeeded(reportContext);
+			if (sql_value != null)
 			{
-				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
+				jrParameters.put(PARAM_SQL_VALUE, sql_value);
 			}
 
 			final InputStream is = jsonDSService.getInputStream(request);
