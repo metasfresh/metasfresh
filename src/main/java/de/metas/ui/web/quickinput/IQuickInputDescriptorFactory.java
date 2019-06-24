@@ -67,21 +67,21 @@ public interface IQuickInputDescriptorFactory
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
 	public static final class MatchingKey
 	{
-		public static final MatchingKey includedDocument(final DocumentType documentType, final int documentTypeIdInt, final String tableName)
+		public static MatchingKey includedDocument(final DocumentType documentType, final int documentTypeIdInt, final String tableName)
 		{
 			final DocumentId documentTypeId = DocumentId.of(documentTypeIdInt);
 			return new MatchingKey(documentType, documentTypeId, tableName);
 		}
 
-		public static final MatchingKey includedDocument(
-				final DocumentType rootDocumentType, 
+		public static MatchingKey includedDocument(
+				final DocumentType rootDocumentType,
 				final DocumentId rootDocumentTypeId,
 				final String includedTableName)
 		{
 			return new MatchingKey(rootDocumentType, rootDocumentTypeId, includedTableName);
 		}
 
-		public static final MatchingKey ofTableName(final String tableName)
+		public static MatchingKey ofTableName(final String tableName)
 		{
 			final DocumentType documentType = null;
 			final DocumentId documentTypeId = null;
