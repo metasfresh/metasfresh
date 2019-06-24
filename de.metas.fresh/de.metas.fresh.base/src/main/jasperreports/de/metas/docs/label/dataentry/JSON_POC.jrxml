@@ -12,6 +12,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false"/>
 	<queryString language="json">
 		<![CDATA[result.tabs.subtabs.sections.lines]]>
 	</queryString>
@@ -23,7 +24,7 @@
 		<band height="16" splitType="Stretch">
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" stretchType="ContainerHeight" x="0" y="0" width="540" height="16" isPrintWhenDetailOverflows="true" uuid="633aeeca-e559-4f1b-86ba-a975cd9f0e9f"/>
-				<dataSourceExpression><![CDATA[((net.sf.jasperreports.engine.data.JsonDataSource)$P{REPORT_DATA_SOURCE}).subDataSource("fields")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[($P{datasource}).subDataSource("fields")]]></dataSourceExpression>
 				<subreportExpression><![CDATA["de/metas/docs/label/dataentry/JSON_POC_subreport.jasper"]]></subreportExpression>
 			</subreport>
 		</band>

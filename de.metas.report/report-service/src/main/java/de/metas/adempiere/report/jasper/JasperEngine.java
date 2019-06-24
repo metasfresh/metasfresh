@@ -77,7 +77,6 @@ import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.data.JsonDataSource;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
-import net.sf.jasperreports.engine.query.JsonQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -174,7 +173,7 @@ public class JasperEngine extends AbstractReportEngine
 			final InputStream is = jsonDSService.getInputStream(request);
 			final JsonDataSource dataSource = new JsonDataSource(is);
 
-			jrParameters.put(JsonQueryExecuterFactory.JSON_INPUT_STREAM, is);
+			jrParameters.put("datasource", dataSource);
 			//
 			// Fill the report
 			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, dataSource, jasperLoader);

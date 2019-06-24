@@ -12,6 +12,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false"/>
 	<queryString language="JSON">
 		<![CDATA[result.tabs.subtabs.sections.lines.fields]]>
 	</queryString>
