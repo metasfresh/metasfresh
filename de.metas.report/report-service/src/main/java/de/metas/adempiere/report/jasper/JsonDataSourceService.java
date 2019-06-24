@@ -9,9 +9,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IExpressionFactory;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IMsgBL;
@@ -77,9 +81,7 @@ public class JsonDataSourceService
 		//
 		// create the json data source
 		final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
-				.type(reportContext.getType())
-				.sql(reportContext.getSQLStatement())
-				.JSONPath(reportContext.getJSONPath())
+				.reportContext(reportContext)
 				.authenticationToken(token.getAuthToken())
 				.build();
 
@@ -105,16 +107,21 @@ public class JsonDataSourceService
 
 	private URL getJasperJsonURL(@NonNull final JsonDataSourceRequest request)
 	{
+		@NonNull final ReportContext reportContext = request.getReportContext();
 		String url = repository.getAPI_URL();
-		final String path = request.getJSONPath();
-		final int recordId = request.getRecordId();
-		if (url == null || (Check.isEmpty(path, true) || "-".equals(path)) || (recordId  <= 0 ))
+		final String path = reportContext.getJSONPath();
+
+		if (url == null || (Check.isEmpty(path, true) || "-".equals(path)))
 		{
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
 			throw new AdempiereException(errorMsg);
 		}
 
-		url = url + recordId;
+		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(path, IStringExpression.class);
+		final Evaluatee evalCtx = repository.getEvalContext(reportContext);
+		final String finalPath = sqlExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
+
+		url = url + finalPath;
 
 		URL reportURL;
 		try

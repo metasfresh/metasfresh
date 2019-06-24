@@ -5,6 +5,7 @@ package de.metas.adempiere.report.jasper;
 
 import javax.annotation.Nullable;
 
+import de.metas.report.engine.ReportContext;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -35,13 +36,10 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final @Value
+@Value
 @Builder
-public class JsonDataSourceRequest
+final public class JsonDataSourceRequest
 {
-	@NonNull final String type;
-	@NonNull final String JSONPath;
-	@Nullable final String sql;
+	@NonNull final ReportContext reportContext;
 	@Nullable final String authenticationToken;
-	final int recordId;
 }

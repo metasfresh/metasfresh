@@ -3,11 +3,15 @@
  */
 package de.metas.adempiere.report.jasper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.X_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -17,6 +21,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessParams;
 import de.metas.report.engine.ReportContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -78,9 +83,39 @@ public class JsonDataSourceRepository
 
 		// Parse the SQL Statement
 		final IStringExpression sqlExpression = Services.get(IExpressionFactory.class).compile(sql, IStringExpression.class);
-		final Evaluatee evalCtx = Evaluatees.ofCtx(Env.getCtx());
+		final Evaluatee evalCtx = getEvalContext(reportContext);
 		final String sqlFinal = sqlExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 
-		return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, sqlFinal, new Object[] {reportContext.getRecord_ID()});
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, sqlFinal);
+	}
+
+
+	public Evaluatee getEvalContext(@NonNull final ReportContext reportContext)
+	{
+		final List<Evaluatee> contexts = new ArrayList<>();
+
+		//
+		// 1: Add process parameters
+		contexts.add(Evaluatees.ofRangeAwareParams(new ProcessParams(reportContext.getProcessInfoParameters())));
+
+		//
+		// 2: underlying record
+		final String recordTableName = reportContext.getTableNameOrNull();
+		final int recordId = reportContext.getRecord_ID();
+		if (recordTableName != null && recordId > 0)
+		{
+			final TableRecordReference recordRef = TableRecordReference.of(recordTableName, recordId);
+			final Evaluatee evalCtx = Evaluatees.ofTableRecordReference(recordRef);
+			if (evalCtx != null)
+			{
+				contexts.add(evalCtx);
+			}
+		}
+
+		//
+		// 3: global context
+		contexts.add(Evaluatees.ofCtx(Env.getCtx()));
+
+		return Evaluatees.compose(contexts);
 	}
 }
