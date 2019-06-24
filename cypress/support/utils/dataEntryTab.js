@@ -94,7 +94,7 @@ function applyDataEntryTab(dataEntryTab) {
     cy.log(`applyDataEntryTab - visitWindow yielded ${JSON.stringify(this.dataEntryTabId)}`);
 
     if (dataEntryTab.seqNo) {
-      cy.getFieldValue('SeqNo').then(currentValue => {
+      cy.getStringFieldValue('SeqNo').then(currentValue => {
         if (currentValue !== dataEntryTab.seqNo) {
           cy.log(`applyDataEntryTab - dataEntryTab.seqNo=${dataEntryTab.seqNo}; currentValue=${currentValue}`);
           cy.clearField('SeqNo');
@@ -137,7 +137,7 @@ function applyDataEntrySubTab(dataEntrySubTab) {
   cy.writeIntoStringField('TabName', dataEntrySubTab.tabName, true /*modal*/);
 
   if (dataEntrySubTab.seqNo) {
-    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+    cy.getStringFieldValue('SeqNo', true /*modal*/).then(currentValue => {
       cy.log(`applyDataEntrySubTab - dataEntryTab.seqNo=${dataEntrySubTab.seqNo}; currentValue=${currentValue}`);
       if (currentValue !== dataEntrySubTab.seqNo) {
         cy.clearField('SeqNo', true /*modal*/);

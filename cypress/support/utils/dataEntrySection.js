@@ -81,7 +81,7 @@ function applyDataEntrySection(dataEntrySection) {
   cy.writeIntoStringField('SectionName', dataEntrySection.sectionName);
 
   if (dataEntrySection.seqNo) {
-    cy.getFieldValue('SeqNo').then(currentValue => {
+    cy.getStringFieldValue('SeqNo').then(currentValue => {
       if (currentValue !== dataEntrySection.seqNo) {
         cy.log(
           `applyDataEntrySection - dataEntrySection.seqNo=${dataEntrySection.seqNo}; currentValue=${currentValue}`
@@ -112,7 +112,7 @@ function applyDataEntryLine(dataEntryLine) {
   cy.pressAddNewButton();
 
   if (dataEntryLine.seqNo) {
-    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+    cy.getStringFieldValue('SeqNo', true /*modal*/).then(currentValue => {
       cy.log(`applyDataEntryLine - dataEntryTab.seqNo=${dataEntryLine.seqNo}; currentValue=${currentValue}`);
       if (currentValue !== dataEntryLine.seqNo) {
         cy.clearField('SeqNo', true /*modal*/);

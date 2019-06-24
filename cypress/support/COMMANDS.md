@@ -29,8 +29,8 @@
 
 - assertFieldNotShown
 - clearField
-- getFieldValue
-- isChecked
+- getStringFieldValue
+- getCheckboxValue
 - clickOnIsActive
 - clickOnCheckBox
 - resetListValue

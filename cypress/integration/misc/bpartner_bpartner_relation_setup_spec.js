@@ -44,7 +44,7 @@ describe('Create test: bpartner relation, https://github.com/metasfresh/metasfre
       '/rest/api/process/.*' /*rewriteUrl*/
     );
 
-    cy.isChecked('IsBillTo');
+    cy.getCheckboxValue('IsBillTo');
     cy.clickOnCheckBox('IsShipTo', 'checked', true /*modal*/, '/rest/api/process/.*' /*rewriteUrl*/);
     cy.pressStartButton();
   });

@@ -66,8 +66,8 @@ describe('Create Product', function() {
     cy.get('table tr')
       .eq(1)
       .dblclick();
-    cy.isChecked('IsBOM');
-    cy.isChecked('IsVerified');
+    cy.getCheckboxValue('IsBOM');
+    cy.getCheckboxValue('IsVerified');
     /**Below is the implementation of how to check IsBOM field directly from the table, without entering the record. */
     // cy.get('table tr')
     //   .eq(0)
