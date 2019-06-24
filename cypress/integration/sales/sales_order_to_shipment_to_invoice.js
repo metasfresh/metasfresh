@@ -76,5 +76,32 @@ describe('Create Sales order', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
+    cy.wait(3000);
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.wait(3000);
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    cy.get('.reference_M_ShipmentSchedule').click();
+    cy.get('tbody tr')
+      .eq('0')
+      .click();
+    cy.get('.btn-icon.pointer i')
+      .click()
+      .get('#quickAction_M_ShipmentSchedule_EnqueueSelection')
+      .click();
+    cy.wait(4000);
+    cy.get('.items-row-2 button')
+      .eq('1')
+      .should('contain', 'Start')
+      .click();
+    cy.wait(4000);
+    cy.get('.header-item-badge.icon-lg i').click();
+    cy.wait(4000);
+    cy.get('.inbox-item-unread .inbox-item-title')
+      .filter(':contains("' + customer + '")')
+      .first()
+      .click();
   });
 });
