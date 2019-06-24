@@ -133,7 +133,7 @@ public final class ProcessInfo implements Serializable
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
 		type = builder.getType();
-		JSONPath = builder.getJSONPath();
+		jsonPath = builder.getJSONPath();
 
 		if (builder.isLoadParametersFromDB())
 		{
@@ -222,8 +222,10 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
-	@NonNull private final Optional<String> type;
-	private final Optional<String> JSONPath;
+	@Getter
+	@NonNull private final String type;
+	@Getter
+	private final Optional<String> jsonPath;
 
 	/** Process result */
 	@Getter
@@ -243,7 +245,7 @@ public final class ProcessInfo implements Serializable
 				.add("reportTemplate", reportTemplate.orElse(null))
 				.add("reportLanguage", reportLanguage)
 				.add("jrDesiredOutputType", jrDesiredOutputType)
-				.add("JSONPath", JSONPath)
+				.add("JSONPath", jsonPath)
 				.add("type", type)
 				.toString();
 	}
@@ -338,16 +340,6 @@ public final class ProcessInfo implements Serializable
 	public Optional<String> getSQLStatement()
 	{
 		return sqlStatement;
-	}
-
-	public Optional<String> getType()
-	{
-		return type;
-	}
-
-	public Optional<String> getJSONPath()
-	{
-		return JSONPath;
 	}
 
 	public int getAD_Workflow_ID()
@@ -1373,18 +1365,10 @@ public final class ProcessInfo implements Serializable
 			return jrDesiredOutputType;
 		}
 
-		public Optional<String> getType()
+		public String getType()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
-			final String type = process == null ? null : process.getType();
-			if (Check.isEmpty(type, true))
-			{
-				return Optional.empty();
-			}
-			else
-			{
-				return Optional.of(type.trim());
-			}
+			return process == null ? null : process.getType();
 		}
 
 		public Optional<String> getJSONPath()

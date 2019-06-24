@@ -87,10 +87,8 @@ UPDATE AD_Ref_List SET Name='JasperReports with JSON',Updated=TO_TIMESTAMP('2019
 
 -- 2019-06-20T15:38:47.723
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541281,'C',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'url for the rest api','D','Y','API_URL',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'http://localhost:8181/api')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541281,'C',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'url for the rest api','D','Y','API_URL',TO_TIMESTAMP('2019-06-20 15:38:46','YYYY-MM-DD HH24:MI:SS'),100,'http://app:8282/api')
 ;
-
-
 
 
 
@@ -224,6 +222,17 @@ UPDATE AD_Ref_List_Trl SET Name='JasperReports with SQL',Updated=TO_TIMESTAMP('2
 ;
 
 
+-- 2019-06-24T16:21:19.951
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@Type@=SQL | @Type@=Excel | @Type@=JasperReportsSQL | @Type@=JasperReportsJSON',Updated=TO_TIMESTAMP('2019-06-24 16:21:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=543154
+;
+
+
+-- 2019-06-24T16:23:59.265
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/label/dataentry/JSON_POC_Report.jasper',Updated=TO_TIMESTAMP('2019-06-24 16:23:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541154
+;
+
 
 
 COMMIT;
@@ -233,4 +242,6 @@ COMMIT;
 -- update Type for existent ones
 
 update ad_process set Type ='JasperReportsSQL' where Type='JasperReports';
+
+
 

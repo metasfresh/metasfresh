@@ -58,12 +58,7 @@ public class AD_Process
 		{
 			process.setClassname(JasperReportStarter.class.getName());
 		}
-	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Process.COLUMNNAME_Type)
-	public void checkJSONPathIfTypeJasperReportJSON(final I_AD_Process process)
-	{
-		final String processType = process.getType();
 		final String JSONPath = process.getJSONPath();
 		if (X_AD_Process.TYPE_JasperReportsJSON.equals(processType) && Check.isEmpty(JSONPath, true))
 		{

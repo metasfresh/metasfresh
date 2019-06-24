@@ -59,14 +59,14 @@ public class JsonDataSourceRepository
 		final String url = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_RESTAPI_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))
 		{
-			log.warn("{} is not configured. JAsper JSOn reports will not work", SYSCONFIG_RESTAPI_URL);
+			log.warn("{} is not configured. Jasper Json reports will not work", SYSCONFIG_RESTAPI_URL);
 			return null;
 		}
 
 		return url.trim();
 	}
 
-	public String retrieveSQLValueIfNeeded(@NonNull final ReportContext reportContext)
+	public String retrieveSQLValue(@NonNull final ReportContext reportContext)
 	{
 		//
 		// Get SQL
@@ -81,6 +81,6 @@ public class JsonDataSourceRepository
 		final Evaluatee evalCtx = Evaluatees.ofCtx(Env.getCtx());
 		final String sqlFinal = sqlExpression.evaluate(evalCtx, OnVariableNotFound.Fail);
 
-		return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, sqlFinal);
+		return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, sqlFinal, new Object[] {reportContext.getRecord_ID()});
 	}
 }

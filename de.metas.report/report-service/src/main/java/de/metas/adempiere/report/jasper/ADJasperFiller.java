@@ -58,7 +58,7 @@ import net.sf.jasperreports.engine.JasperReport;
 	public JasperPrint fillReport(
 			final JasperReport jasperReport,
 			final Map<String, Object> parameters,
-			final Connection source,
+			final Connection connection,
 			final ClassLoader jasperLoader) throws JRException
 	{
 		final Map<String, Object> paramsFixed = new HashMap<String, Object>(parameters);
@@ -75,7 +75,10 @@ import net.sf.jasperreports.engine.JasperReport;
 
 		try
 		{
-			final Connection connection = source;
+			if (connection == null)
+			{
+				return JasperFillManager.fillReport(jasperReport, paramsFixed);
+			}
 			return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
 		}
 		finally
@@ -91,28 +94,9 @@ import net.sf.jasperreports.engine.JasperReport;
 			final Map<String, Object> parameters,
 			final ClassLoader jasperLoader)  throws JRException
 	{
-		final Map<String, Object> paramsFixed = new HashMap<String, Object>(parameters);
-		fixParameterTypes(jasperReport, paramsFixed);
 
-		final Thread currentThread = Thread.currentThread();
-		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
 
-		// Set the jasper loader as thread context classloader.
-		// We do this to workaround the issue from net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle(),
-		// which is not fetching the right classloader.
-		// More, that method is executed a separate thread for sub-reports, so fetching resource bundles will fail.
-		currentThread.setContextClassLoader(jasperLoader);
-
-		try
-		{
-			return JasperFillManager.fillReport(jasperReport, paramsFixed);
-		}
-		finally
-		{
-			// restore the original class loader
-			currentThread.setContextClassLoader(classLoaderOld);
-		}
-
+		return fillReport(jasperReport, parameters, null, jasperLoader);
 	}
 
 	protected void fixParameterTypes(final JasperReport jasperReport, final Map<String, Object> params)

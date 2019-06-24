@@ -6,19 +6,21 @@ package de.metas.adempiere.report.jasper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IExpressionFactory;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Service;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.report.engine.ReportContext;
+import de.metas.security.RoleId;
+import de.metas.security.UserAuthToken;
+import de.metas.security.UserAuthTokenRepository;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,25 +57,41 @@ public class JsonDataSourceService
 {
 	private static final String MSG_URLnotValid = "URLnotValid";
 
+	private final UserAuthTokenRepository userAuthTokenRepo;
 	private final JsonDataSourceRepository repository;
 
-	public JsonDataSourceService(@NonNull final JsonDataSourceRepository repository)
+	public JsonDataSourceService(@NonNull final JsonDataSourceRepository repository, @NonNull final UserAuthTokenRepository userAuthTokenRepo)
 	{
 		this.repository = repository;
+		this.userAuthTokenRepo =userAuthTokenRepo;
 	}
 
-	public InputStream getInputStream(@NonNull final JsonDataSourceRequest request) throws JRException
+	public InputStream getInputStream(@NonNull final ReportContext reportContext) throws JRException
 	{
-		final InputStream is = getURLInputStream(getJasperJSONURL(request), request.getToken());
+		//
+		// get authorization
+		final UserId userId = Env.getLoggedUserId();
+		final RoleId roleId = Env.getLoggedRoleId();
+		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
+
+		//
+		// create the json data source
+		final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
+				.type(reportContext.getType())
+				.sql(reportContext.getSQLStatement())
+				.JSONPath(reportContext.getJSONPath())
+				.authenticationToken(token.getAuthToken())
+				.build();
+
+		final InputStream is = getURLInputStream(getJasperJsonURL(request), request.getAuthenticationToken());
 		return is;
 	}
 
-	private static InputStream getURLInputStream(@NonNull final String reportURL, @NonNull final String token)
+	private static InputStream getURLInputStream(@NonNull final URL reportURL, @NonNull final String token)
 	{
 		try
 		{
-			final URL url = new URL(reportURL);
-			final HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+			final HttpURLConnection conn = (HttpURLConnection)reportURL.openConnection();
 			conn.setRequestProperty("Authorization", token);
 			conn.setRequestMethod("GET");
 			return conn.getInputStream();
@@ -85,33 +103,40 @@ public class JsonDataSourceService
 		}
 	}
 
-	private String getJasperJSONURL(@NonNull final JsonDataSourceRequest request)
+	private URL getJasperJsonURL(@NonNull final JsonDataSourceRequest request)
 	{
 		String url = repository.getAPI_URL();
-		if (url == null)
-		{
-			return null;
-		}
-
 		final String path = request.getJSONPath();
-		if (Check.isEmpty(path, true) || "-".equals(path))
+		final int recordId = request.getRecordId();
+		if (url == null || (Check.isEmpty(path, true) || "-".equals(path)) || (recordId  <= 0 ))
 		{
-			return null;
+			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
+			throw new AdempiereException(errorMsg);
 		}
 
-		// parse variables TODO
-		final IStringExpression pathExpression = Services.get(IExpressionFactory.class).compile(path, IStringExpression.class);
-		final Evaluatee evalCtx = Evaluatees.ofCtx(Env.getCtx());
-		final String evaluatedPath = pathExpression.evaluate(evalCtx, OnVariableNotFound.ReturnNoResult);
+		url = url + recordId;
 
-		if (pathExpression.isNoResult(evaluatedPath))
+		URL reportURL;
+		try
 		{
-			// expression could not be evaluated
-			return null;
+			reportURL = new URL(url);
+		}
+		catch (final MalformedURLException e)
+		{
+			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
+			throw new AdempiereException(errorMsg);
 		}
 
-		url = url + evaluatedPath;
+		return reportURL;
+	}
 
-		return url;
+	public String retrieveJSON_SQL_Value(@NonNull final ReportContext reportContext)
+	{
+		return repository.retrieveSQLValue(reportContext);
+	}
+
+	public boolean isJasperJSONReport(final ReportContext reportContext)
+	{
+		return X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType());
 	}
 }

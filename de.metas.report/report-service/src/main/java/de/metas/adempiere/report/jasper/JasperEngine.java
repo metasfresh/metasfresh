@@ -41,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.X_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -59,11 +58,7 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.report.engine.AbstractReportEngine;
 import de.metas.report.engine.ReportContext;
 import de.metas.security.IUserRolePermissions;
-import de.metas.security.RoleId;
-import de.metas.security.UserAuthToken;
-import de.metas.security.UserAuthTokenRepository;
 import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -102,9 +97,7 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
-	private final UserAuthTokenRepository userAuthTokenRepo = Adempiere.getBean(UserAuthTokenRepository.class);
 	private final JsonDataSourceService jsonDSService = Adempiere.getBean(JsonDataSourceService.class);
-	private final JsonDataSourceRepository jsonRepo = Adempiere.getBean(JsonDataSourceRepository.class);
 
 	private final transient Logger log = LogManager.getLogger(getClass());
 
@@ -146,13 +139,12 @@ public class JasperEngine extends AbstractReportEngine
 		final JasperReport jasperReport = createJasperReport(ctx, reportContext.getAD_Process_ID(), jrParameters, jasperLoader);
 
 		// JSON Data source
-		if (isJasperJSONReport(reportContext))
+		if (jsonDSService.isJasperJSONReport(reportContext))
 		{
 			//
 			// Fill the report
 			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperLoader);
 			return jasperPrint;
-
 		}
 		else
 		{
@@ -191,12 +183,6 @@ public class JasperEngine extends AbstractReportEngine
 				conn = null;
 			}
 		}
-	}
-
-	private boolean isJasperJSONReport(final ReportContext reportContext)
-	{
-		return X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType())
-				&& !Check.isEmpty(reportContext.getJSONPath(), true);
 	}
 
 	private final JasperReport createJasperReport(final Properties ctx, final AdProcessId adProcessId, final Map<String, Object> jrParameters, final ClassLoader jasperLoader) throws JRException
@@ -282,31 +268,15 @@ public class JasperEngine extends AbstractReportEngine
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
 		}
 
-		if (isJasperJSONReport(reportContext))
+		if (jsonDSService.isJasperJSONReport(reportContext))
 		{
-			//
-			// get authorization
-			final UserId userId = Env.getLoggedUserId();
-			final RoleId roleId = Env.getLoggedRoleId(Env.getCtx());
-			final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
-
-			//
-			// create the json data source
-			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
-					.type(reportContext.getType())
-					.sql(reportContext.getSQLStatement())
-					.JSONPath(reportContext.getJSONPath())
-					.token(token.getAuthToken())
-					.build();
-
-			final String sql_value = jsonRepo.retrieveSQLValueIfNeeded(reportContext);
+			final String sql_value = jsonDSService.retrieveJSON_SQL_Value(reportContext);
 			if (sql_value != null)
 			{
 				jrParameters.put(PARAM_SQL_VALUE, sql_value);
 			}
 
-			final InputStream is = jsonDSService.getInputStream(request);
-
+			final InputStream is = jsonDSService.getInputStream(reportContext);
 			jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, is);
 		}
 

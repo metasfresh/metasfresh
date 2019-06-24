@@ -28,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -88,8 +87,8 @@ public class LocalJasperServer implements IJasperServer
 				.setReportTemplatePath(processInfo.getReportTemplate().orElse(null))
 				.setSQLStatement(processInfo.getSQLStatement().orElse(null))
 				.setApplySecuritySettings(processInfo.isReportApplySecuritySettings())
-				.setType(processInfo.getType().orElse(X_AD_Process.TYPE_JasperReportsSQL))
-				.setJSONPath(processInfo.getJSONPath().orElse(null))
+				.setType(processInfo.getType())
+				.setJSONPath(processInfo.getJsonPath().orElse(null))
 				.build();
 
 		//

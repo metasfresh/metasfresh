@@ -42,5 +42,6 @@ public class JsonDataSourceRequest
 	@NonNull final String type;
 	@NonNull final String JSONPath;
 	@Nullable final String sql;
-	@Nullable final String token;
+	@Nullable final String authenticationToken;
+	final int recordId;
 }

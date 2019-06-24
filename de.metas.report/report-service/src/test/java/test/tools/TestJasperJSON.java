@@ -80,7 +80,6 @@ public class TestJasperJSON
 		exporter.setParameter(JRExporterParameter.JASPER_PRINT, print);
 		exporter.exportReport();
 		System.out.println("File Created: " + pdf_File);
-
 	}
 
 }
