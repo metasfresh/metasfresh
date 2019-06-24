@@ -10,6 +10,18 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.109
+## Features
+* metasfresh
+  * [#5316](https://github.com/metasfresh/metasfresh/issues/5316) C_DocOutbound - improve mail attachment file name
+  * [#5328](https://github.com/metasfresh/metasfresh/issues/5328) PP_Order.C_Project_ID virtual column
+
+* metasfresh-e2e
+  * [#71](https://github.com/metasfresh/metasfresh-e2e/issues/71) Create new BOM
+  * [#72](https://github.com/metasfresh/metasfresh-e2e/issues/72) Create new bank
+  * [#124](https://github.com/metasfresh/metasfresh-e2e/issues/124) Create new Cost Center
+  * [#127](https://github.com/metasfresh/metasfresh-e2e/issues/127) Create quality note
+
 # metasfresh 5.108
 ## Features
 * metasfresh
