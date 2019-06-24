@@ -24,7 +24,7 @@ describe('Aggregated inventory test', function() {
     cy.visitWindow(inventory.windowId, 'NEW', 'newInventoryRecord');
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      cy.getFieldValue('C_DocType_ID').then(docTypeName => {
+      cy.getStringFieldValue('C_DocType_ID').then(docTypeName => {
         expect(docTypeName).to.eq(getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName')); /// <<====
       });
 
@@ -43,7 +43,7 @@ describe('Aggregated inventory test', function() {
     cy.writeIntoStringField('QtyCount', '20');
     cy.clickOnCheckBox('IsCounted');
 
-    cy.getFieldValue('HUAggregationType').then(huAggregationType => {
+    cy.getStringFieldValue('HUAggregationType').then(huAggregationType => {
       expect(huAggregationType).to.eq('Single HU'); /// <<====
     });
     cy.pressDoneButton();
@@ -61,7 +61,7 @@ describe('Aggregated inventory test', function() {
       .eq(0)
       .click();
     cy.openAdvancedEdit();
-    cy.getFieldValue('M_HU_ID', true /*modal*/) /// <<====
+    cy.getStringFieldValue('M_HU_ID', true /*modal*/) /// <<====
       .then(huValue => {
         expect(huValue).to.be.not.null;
       });

@@ -38,7 +38,7 @@ describe('Aggregated inventory test', function() {
     cy.writeIntoLookupListField('M_Locator_ID', '0_0_0', '0_0_0', true /*typeList*/, true /*modal*/);
     cy.writeIntoStringField('QtyCount', '20');
     cy.clickOnCheckBox('IsCounted');
-    cy.getFieldValue('HUAggregationType').then(huAggregationType => {
+    cy.getStringFieldValue('HUAggregationType').then(huAggregationType => {
       expect(huAggregationType).to.eq('Multiple HUs');
     });
     cy.pressDoneButton();

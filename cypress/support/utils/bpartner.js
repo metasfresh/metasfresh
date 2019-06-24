@@ -146,7 +146,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsVendor').then(isVendorValue => {
+      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
           cy.clickOnCheckBox('IsVendor');
         }
@@ -165,7 +165,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsCustomer').then(isCustomerValue => {
+      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
           cy.clickOnCheckBox('IsCustomer');
         }
