@@ -30,9 +30,9 @@ import org.springframework.stereotype.Service;
 
 import de.metas.banking.service.IBankingBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocation;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfo;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.Location;
 import de.metas.location.LocationRepository;
@@ -48,16 +48,16 @@ public class CreditPassTransactionDataFactory
 {
 	private final UserRepository userRepo;
 
-	private final BPartnerLocationRepository bPartnerLocationRepository;
+	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository;
 
 	private final LocationRepository locationRepository;
 
 	public CreditPassTransactionDataFactory(@NonNull final UserRepository userRepo,
-			@NonNull final BPartnerLocationRepository bPartnerLocationRepository,
+			@NonNull final BPartnerLocationInfoRepository bPartnerLocationRepository,
 			@NonNull final LocationRepository locatinoRepository)
 	{
 		this.userRepo = userRepo;
-		this.bPartnerLocationRepository = bPartnerLocationRepository;
+		this.bPartnerLocationInfoRepository = bPartnerLocationRepository;
 		this.locationRepository = locatinoRepository;
 	}
 
@@ -79,7 +79,7 @@ public class CreditPassTransactionDataFactory
 		final BPartnerLocationId bPartnerLocationId = bpartnersRepo.getBilltoDefaultLocationIdByBpartnerId(bPartnerId);
 		if (bPartnerLocationId != null)
 		{
-			BPartnerLocation bPartnerLocation = bPartnerLocationRepository.getByBPartnerLocationId(bPartnerLocationId);
+			BPartnerLocationInfo bPartnerLocation = bPartnerLocationInfoRepository.getByBPartnerLocationId(bPartnerLocationId);
 			if (bPartnerLocation != null)
 			{
 				location = locationRepository.getByLocationId(bPartnerLocation.getLocationId());

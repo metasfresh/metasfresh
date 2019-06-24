@@ -84,7 +84,9 @@ public class C_BPartner
 						.build());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_BPartner.COLUMNNAME_BPartner_Parent_ID)
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_AFTER_NEW/* needs to be after-new bc we need a C_BPartner_ID */, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = I_C_BPartner.COLUMNNAME_BPartner_Parent_ID)
 	public void avoidBPartnerParentLoops(@NonNull final I_C_BPartner bpartner)
 	{
 		final BPartnerId parentBPartnerId = BPartnerId.ofRepoIdOrNull(bpartner.getBPartner_Parent_ID());

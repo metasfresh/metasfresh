@@ -1,8 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import lombok.Builder;
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +33,8 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L

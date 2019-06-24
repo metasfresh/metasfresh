@@ -40,7 +40,7 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<LocalDate>
 
 	public static DataEntryRecordFieldDate of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final LocalDate value)
 	{
 		return new DataEntryRecordFieldDate(
@@ -51,7 +51,7 @@ public class DataEntryRecordFieldDate extends DataEntryRecordField<LocalDate>
 
 	private DataEntryRecordFieldDate(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final LocalDate value)
 	{
 		super(dataEntryFieldId, createdUpdatedInfo);

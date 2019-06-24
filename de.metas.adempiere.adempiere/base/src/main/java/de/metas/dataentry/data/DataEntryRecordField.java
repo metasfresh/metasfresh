@@ -53,11 +53,11 @@ public abstract class DataEntryRecordField<T>
 
 	@Getter
 	@JsonIgnore
-	private final CreatedUpdatedInfo createdUpdatedInfo;
+	private final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
 
 	protected DataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo)
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)
 	{
 		this.dataEntryFieldId = dataEntryFieldId;
 		this.createdUpdatedInfo = createdUpdatedInfo;
@@ -68,7 +68,7 @@ public abstract class DataEntryRecordField<T>
 	@SuppressWarnings("unchecked")
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final T value)
 	{
 		final DataEntryRecordField<T> result;

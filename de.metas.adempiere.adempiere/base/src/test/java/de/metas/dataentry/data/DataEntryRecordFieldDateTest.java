@@ -59,8 +59,8 @@ public class DataEntryRecordFieldDateTest
 		final ZonedDateTime updatedTime1 = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis + 100), ZoneId.of("CET"));
 		final ZonedDateTime updatedTime2 = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis + 100), ZoneId.of("CET"));
 
-		final CreatedUpdatedInfo createdUpdatedInfo1 = CreatedUpdatedInfo.of(createdTime1, UserId.ofRepoId(10), updatedTime1, UserId.ofRepoId(20));
-		final CreatedUpdatedInfo createdUpdatedInfo2 = CreatedUpdatedInfo.of(createdTime2, UserId.ofRepoId(10), updatedTime2, UserId.ofRepoId(20));
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo1 = DataEntryCreatedUpdatedInfo.of(createdTime1, UserId.ofRepoId(10), updatedTime1, UserId.ofRepoId(20));
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo2 = DataEntryCreatedUpdatedInfo.of(createdTime2, UserId.ofRepoId(10), updatedTime2, UserId.ofRepoId(20));
 		assertThat(createdUpdatedInfo1).isEqualTo(createdUpdatedInfo2); // guard
 
 		final DataEntryRecordFieldDate value1 = DataEntryRecordFieldDate.of(id1, createdUpdatedInfo1, date1);

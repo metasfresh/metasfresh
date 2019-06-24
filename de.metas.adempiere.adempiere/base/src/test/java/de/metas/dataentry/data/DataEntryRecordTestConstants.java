@@ -46,7 +46,7 @@ public class DataEntryRecordTestConstants
 
 	public static final ZonedDateTime UPDATED = ZonedDateTime.of(2019/* year */, 02/* month */, 12/* dayOfMonth */, 14/* hour */, 20/* minute */, 42/* second */, 2/* nanoOfSecond */, ZoneId.of("+01:00"));
 
-	public static final CreatedUpdatedInfo CREATED_UPDATED_INFO = CreatedUpdatedInfo
+	public static final DataEntryCreatedUpdatedInfo CREATED_UPDATED_INFO = DataEntryCreatedUpdatedInfo
 			.createNew(UserId.ofRepoId(10), CREATED)
 			.updated(UserId.ofRepoId(20), UPDATED);
 

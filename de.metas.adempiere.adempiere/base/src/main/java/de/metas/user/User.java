@@ -1,15 +1,16 @@
 package de.metas.user;
 
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.LocalDate;
 
 /*
  * #%L
@@ -37,48 +38,39 @@ import java.time.LocalDate;
 public class User
 {
 	/** can be null for not-yet-saved users */
-	@Nullable
 	UserId id;
 
-	@Nullable
 	BPartnerId bpartnerId;
 
-	@NonNull
 	String name;
 
-	@Nullable
 	String firstName;
 
-	@Nullable
 	String lastName;
 
-	@Nullable
 	String emailAddress;
 
-	@Nullable
 	LocalDate birthday;
 
-	@Nullable
 	String phone;
 
 	/**
 	 * Changes are persisted by the repo!
 	 */
-	@Nullable
 	Language userLanguage;
 
 	/**
 	 * Read-only; changes are <b>not</b> persisted by the repo!
 	 */
-	@Nullable
 	Language bPartnerLanguage;
 
 	/**
 	 * Either the user's or bPartner's or context's or base language. Never {@code null}.
 	 * Read-only; changes are <b>not</b> persisted by the repo!
 	 */
-	@NonNull
 	Language language;
+
+	ExternalId externalId;
 
 	@Builder(toBuilder = true)
 	private User(
@@ -92,7 +84,8 @@ public class User
 			@Nullable final String phone,
 			@Nullable final Language userLanguage,
 			@Nullable final Language bPartnerLanguage,
-			@NonNull final Language language)
+			@NonNull final Language language,
+			@Nullable final ExternalId externalId)
 	{
 		this.id = id;
 		this.bpartnerId = bpartnerId;
@@ -105,6 +98,7 @@ public class User
 		this.userLanguage = userLanguage;
 		this.bPartnerLanguage = bPartnerLanguage;
 		this.language = language;
+		this.externalId = externalId;
 
 		Check.assume(
 				userLanguage == null || userLanguage.equals(language),

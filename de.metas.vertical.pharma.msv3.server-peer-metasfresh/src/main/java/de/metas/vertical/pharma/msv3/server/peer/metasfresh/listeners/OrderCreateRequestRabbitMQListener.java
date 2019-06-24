@@ -16,10 +16,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCand;
-import de.metas.ordercandidate.api.OLCandBPartnerInfo;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.product.IProductBL;
@@ -77,7 +77,7 @@ public class OrderCreateRequestRabbitMQListener
 	private MSV3ServerPeerService serverPeerService;
 
 	@FunctionalInterface
-	private static interface OLCandSupplier
+	private interface OLCandSupplier
 	{
 		OLCand getByExternalId(Id id);
 	}
@@ -158,7 +158,7 @@ public class OrderCreateRequestRabbitMQListener
 		return olCandRequests;
 	}
 
-	private static OLCandBPartnerInfo toOLCandBPartnerInfo(final BPartnerId bpartnerId)
+	private static BPartnerInfo toOLCandBPartnerInfo(final BPartnerId bpartnerId)
 	{
 		if (bpartnerId == null)
 		{
@@ -168,7 +168,7 @@ public class OrderCreateRequestRabbitMQListener
 		final de.metas.bpartner.BPartnerId bPartnerId = de.metas.bpartner.BPartnerId.ofRepoIdOrNull(bpartnerId.getBpartnerId());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, bpartnerId.getBpartnerLocationId());
 
-		return OLCandBPartnerInfo.builder()
+		return BPartnerInfo.builder()
 				.bpartnerId(bPartnerId)
 				.bpartnerLocationId(bPartnerLocationId)
 				.build();

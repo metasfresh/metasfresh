@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
 import de.metas.marketing.base.model.CampaignId;
@@ -73,7 +73,7 @@ public class CampaignServiceTest
 
 		userRepository = new UserRepository();
 		campaignService = new CampaignService(
-				new ContactPersonRepository(new BPartnerLocationRepository()),
+				new ContactPersonRepository(new BPartnerLocationInfoRepository()),
 				new CampaignRepository(),
 				new PlatformRepository());
 	}

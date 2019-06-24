@@ -30,6 +30,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api-impl</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
@@ -51,13 +57,7 @@
 			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_base</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>de.metas.ordercandidate</groupId>
-			<artifactId>de.metas.ordercandidate.rest-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>

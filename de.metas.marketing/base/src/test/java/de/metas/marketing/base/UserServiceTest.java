@@ -22,7 +22,7 @@ import org.compiere.model.I_AD_User;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.service.BPartnerLocationRepository;
+import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.i18n.Language;
@@ -74,7 +74,7 @@ public class UserServiceTest
 		final UserRepository userRepository = new UserRepository();
 
 		userService = new UserService(userRepository);
-		contactPersonRepository = new ContactPersonRepository(new BPartnerLocationRepository());
+		contactPersonRepository = new ContactPersonRepository(new BPartnerLocationInfoRepository());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(userRepository));
 	}

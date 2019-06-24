@@ -1,6 +1,7 @@
 package de.metas.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.ZonedDateTime;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -80,15 +81,27 @@ public class JSONObjectMapper<T>
 		}
 	}
 
-	public T readValue(final String objectStr)
+	public T readValue(final String objectString)
 	{
 		try
 		{
-			return jsonObjectMapper.readValue(objectStr, clazz);
+			return jsonObjectMapper.readValue(objectString, clazz);
 		}
 		catch (IOException ex)
 		{
-			throw new AdempiereException("Failed converting json to class= " + clazz + "; object=" + objectStr, ex);
+			throw new AdempiereException("Failed converting json to class= " + clazz + "; object=" + objectString, ex);
+		}
+	}
+
+	public T readValue(final InputStream objectStream)
+	{
+		try
+		{
+			return jsonObjectMapper.readValue(objectStream, clazz);
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed converting json to class= " + clazz + "; object=" + objectStream, ex);
 		}
 	}
 }

@@ -1,13 +1,11 @@
 package de.metas.server.config;
 
-import static de.metas.util.web.MetasfreshRestAPIConstants.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER;
-import static de.metas.util.web.MetasfreshRestAPIConstants.createApiInfo;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.util.web.SwaggerUtil;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -43,11 +41,11 @@ public class SwaggerConfig
 	public Docket api()
 	{
 		return new Docket(DocumentationType.SWAGGER_2)
-				.globalOperationParameters(ImmutableList.of(SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
+				.globalOperationParameters(ImmutableList.of(SwaggerUtil.SWAGGER_GLOBAL_AUTH_TOKEN_PARAMETER))
 				.select()
 				.paths(PathSelectors.any())
 				.build()
-				.apiInfo(createApiInfo(
+				.apiInfo(SwaggerUtil.createApiInfo(
 						"metasfresh application server REST API" /* title */,
 						"metasfresh REST API"/* description */));
 	}

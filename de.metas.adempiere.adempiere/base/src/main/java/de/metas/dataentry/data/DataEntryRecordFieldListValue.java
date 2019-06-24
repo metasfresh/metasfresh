@@ -40,7 +40,7 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 
 	public static DataEntryRecordFieldListValue of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final DataEntryListValueId value)
 	{
 		return new DataEntryRecordFieldListValue(dataEntryFieldId, createdUpdatedInfo, value);
@@ -48,7 +48,7 @@ public class DataEntryRecordFieldListValue extends DataEntryRecordField<DataEntr
 
 	private DataEntryRecordFieldListValue(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final DataEntryListValueId listValueId)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);
