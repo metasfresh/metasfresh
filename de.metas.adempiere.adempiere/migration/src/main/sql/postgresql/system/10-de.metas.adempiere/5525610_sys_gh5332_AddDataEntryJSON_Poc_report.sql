@@ -430,17 +430,13 @@ UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/label/dataentry/JSON_P
 
 -- 2019-06-24T16:33:09.119
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET SQLStatement='SELECT attributes from  de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description( @PP_Order_ID@, 540034, ''de_DE'')',Updated=TO_TIMESTAMP('2019-06-24 16:33:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541154
+UPDATE AD_Process SET SQLStatement=null,Updated=TO_TIMESTAMP('2019-06-24 16:33:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=541154
 ;
 
 
+-- Add it to M_product
 
--- Add it to pp_order
-
--- 2019-06-24T16:27:05.181
+-- 2019-06-24T17:08:17.656
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541154,53027,540724,TO_TIMESTAMP('2019-06-24 16:27:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2019-06-24 16:27:04','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,541154,208,540725,TO_TIMESTAMP('2019-06-24 17:08:17','YYYY-MM-DD HH24:MI:SS'),100,'U','Y',TO_TIMESTAMP('2019-06-24 17:08:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N')
 ;
-
-
-
