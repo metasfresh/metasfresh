@@ -4,7 +4,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.adempiere.ui.api.IWindowBL;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -58,8 +60,8 @@ import lombok.NonNull;
 @Profile(CablesConstants.PROFILE)
 /* package */ class CableSalesOrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
-	private static final int WINDOW_ID_SalesOrder = 143; // FIXME: hardcoded sales order window id = 143
-	private static final int WINDOW_ID_PurchaseOrder = 181; // FIXME: hardcoded purchase order window id = 181
+	private static final AdWindowId WINDOW_ID_SalesOrder_DEFAULT = AdWindowId.ofRepoId(143); // sales order window id = 143
+	private static final AdWindowId WINDOW_ID_PurchaseOrder_DEFAULT = AdWindowId.ofRepoId(181); // purchase order window id = 181
 
 	private ProductLookupDescriptor productLookupDescriptor;
 
@@ -76,9 +78,13 @@ import lombok.NonNull;
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
 	{
+		final IWindowBL windowBL = Services.get(IWindowBL.class);
+		final AdWindowId salesOrderWindowId = windowBL.getAdWindowId(I_C_OrderLine.Table_Name, SOTrx.SALES, WINDOW_ID_SalesOrder_DEFAULT);
+		final AdWindowId purchaseOrderWindowId = windowBL.getAdWindowId(I_C_OrderLine.Table_Name, SOTrx.PURCHASE, WINDOW_ID_PurchaseOrder_DEFAULT);
+
 		return ImmutableSet.of(
-				MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_SalesOrder, org.compiere.model.I_C_OrderLine.Table_Name),
-				MatchingKey.includedDocument(DocumentType.Window, WINDOW_ID_PurchaseOrder, org.compiere.model.I_C_OrderLine.Table_Name));
+				MatchingKey.includedDocument(DocumentType.Window, salesOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name),
+				MatchingKey.includedDocument(DocumentType.Window, purchaseOrderWindowId.getRepoId(), I_C_OrderLine.Table_Name));
 	}
 
 	@Override
