@@ -54,6 +54,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(bPartnerName)
+        .setCustomerDiscountSchema(discountSchemaName)
         .apply();
     });
 
