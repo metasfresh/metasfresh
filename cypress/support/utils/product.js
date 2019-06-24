@@ -159,7 +159,10 @@ export class Product {
     cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true, null, true);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
-    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(productPrice.taxCategory, 'c_taxcategory'));
+    // this (getLanguageSpecific) fails for tbp with "CypressError: cy.contains() can only accept a string, number or regular expression."
+    // cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(productPrice.taxCategory, 'c_taxcategory'));
+
+    cy.selectInListField('C_TaxCategory_ID', productPrice.taxCategory);
     cy.pressDoneButton();
   }
 }
