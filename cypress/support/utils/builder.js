@@ -62,7 +62,7 @@ export class Builder {
     let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson)
-        .setPriceList(priceListName)
+        .setPriceList(priceListName);
     });
 
     cy.fixture('product/simple_product.json').then(productJson => {

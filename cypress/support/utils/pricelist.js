@@ -89,12 +89,12 @@ export class PriceList {
 
 export class PriceListVersion {
   constructor(name, plDocId) {
-    this.n = name;
+    this.name = name;
   }
 
   setName(name) {
     cy.log(`PriceListVersion - set n = ${name}`);
-    this.n = name;
+    this.name = name;
     return this;
   }
 
