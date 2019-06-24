@@ -1,4 +1,4 @@
-import { getLanguageSpecific } from './utils';
+import {getLanguageSpecific} from './utils';
 
 export class Product {
   constructor(name) {
@@ -98,22 +98,22 @@ export class Product {
 
       cy.writeIntoStringField('Description', product.description);
 
-    cy.getFieldValue('IsStocked').then(isIsStockedValue => {
+      cy.getFieldValue('IsStocked').then(isIsStockedValue => {
         if (product.isStocked && !isIsStockedValue) {
           cy.clickOnCheckBox('IsStocked');
         }
       });
-    cy.getFieldValue('IsPurchased').then(isPurchasedValue => {
+      cy.getFieldValue('IsPurchased').then(isPurchasedValue => {
         if (product.isPurchased && !isPurchasedValue) {
           cy.clickOnCheckBox('IsPurchased');
         }
       });
-    cy.getFieldValue('IsSold').then(isSoldValue => {
+      cy.getFieldValue('IsSold').then(isSoldValue => {
         if (product.isSold && !isSoldValue) {
           cy.clickOnCheckBox('IsSold');
         }
       });
-    cy.getFieldValue('IsDiverse').then(isDiverseValue => {
+      cy.getFieldValue('IsDiverse').then(isDiverseValue => {
         if (product.isDiverse && !isDiverseValue) {
           cy.clickOnCheckBox('IsDiverse');
         }
@@ -148,21 +148,19 @@ export class Product {
    * See complaint at ProductPrice class.
    */
   static applyProductPrice(productPrice) {
-    // const m_pricelist_version = getLanguageSpecific(productPrice, 'm_pricelist_version');
-
+    const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
 
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
+
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, false, true);
 
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
     cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true, null, true);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
-    // this (getLanguageSpecific) fails for tbp with "CypressError: cy.contains() can only accept a string, number or regular expression."
-    // cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(productPrice.taxCategory, 'c_taxcategory'));
+    cy.selectInListField('C_TaxCategory_ID', taxCategory, true);
 
-    cy.selectInListField('C_TaxCategory_ID', productPrice.taxCategory);
     cy.pressDoneButton();
   }
 }
