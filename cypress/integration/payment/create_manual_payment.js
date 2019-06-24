@@ -5,8 +5,7 @@ import {BPartner} from '../../support/utils/bpartner';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DiscountSchema} from "../../support/utils/discountschema";
 import {Bank} from "../../support/utils/bank";
-import {PriceList, PriceListVersion} from "../../support/utils/pricelist";
-import {Pricesystem} from "../../support/utils/pricesystem";
+import {Builder} from "../../support/utils/builder";
 
 describe('Create a manual Payment for a Sales Invoice', function () {
   const timestamp = new Date().getTime();
@@ -37,26 +36,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
   before(function () {
 
-    cy.fixture('price/pricesystem.json').then(priceSystemJson => {
-      Object.assign(new Pricesystem(/* useless to set anything here since it's replaced by the fixture */), priceSystemJson)
-        .setName(priceSystemName)
-        .apply();
-    });
-
-
-    let priceListVersion;
-    cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      priceListVersion = Object.assign(new PriceListVersion(/* useless to set anything here since it's replaced by the fixture */), priceListVersionJson)
-        .setName(priceListVersionName)
-    });
-
-    cy.fixture('price/pricelist.json').then(pricelistJson => {
-      Object.assign(new PriceList(/* useless to set anything here since it's replaced by the fixture */), pricelistJson)
-        .setName(priceListName)
-        .setPriceSystem(priceSystemName)
-        .addPriceListVersion(priceListVersion)
-        .apply();
-    });
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
