@@ -109,7 +109,7 @@ public class M_Inventory_SecurpharmActionRetry extends JavaProcess implements IP
 				.action(actionToRun)
 				.inventoryId(inventoryId);
 
-		for (final SecurPharmProduct product : securPharmService.findProductsForInventoryId(inventoryId))
+		for (final SecurPharmProduct product : securPharmService.findProductsToDecommissionForInventoryId(inventoryId))
 		{
 			if (actionToRun == Action.DECOMMISSION)
 			{

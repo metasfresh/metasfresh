@@ -125,7 +125,7 @@ public class SecurPharmService
 		return productsRepo.getProductById(id);
 	}
 
-	public Collection<SecurPharmProduct> findProductsForInventoryId(@NonNull final InventoryId inventoryId)
+	public Collection<SecurPharmProduct> findProductsToDecommissionForInventoryId(@NonNull final InventoryId inventoryId)
 	{
 		final Inventory inventory = inventoryRepo.getById(inventoryId);
 
@@ -202,7 +202,7 @@ public class SecurPharmService
 
 	public void decommissionProductsByInventoryId(@NonNull final InventoryId inventoryId)
 	{
-		final Collection<SecurPharmProduct> products = findProductsForInventoryId(inventoryId);
+		final Collection<SecurPharmProduct> products = findProductsToDecommissionForInventoryId(inventoryId);
 		if (products.isEmpty())
 		{
 			return;
