@@ -12,7 +12,9 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false" evaluationTime="Early"/>
+	<parameter name="SQL_VALUE" class="java.lang.String" isForPrompting="false" evaluationTime="Early">
+		<defaultValueExpression><![CDATA["Abzug für Beitrag Basic-Linie"]]></defaultValueExpression>
+	</parameter>
 	<queryString language="JSON">
 		<![CDATA[result.tabs.subtabs.sections.lines.fields]]>
 	</queryString>
@@ -50,7 +52,7 @@
 				<textElement markup="styled">
 					<font fontName="Arial"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[($F{value}).replace("VAR", $P{SQL_VALUE})]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
