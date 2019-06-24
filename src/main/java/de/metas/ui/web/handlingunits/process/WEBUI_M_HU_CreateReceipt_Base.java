@@ -25,6 +25,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -69,6 +70,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		extends WEBUI_M_HU_Receipt_Base
 		implements IProcessPrecondition
 {
+	private static final String MSG_ScanRequired = "securPharm.scanRequiredError";
 
 	@Autowired
 	private IViewsRepository viewsRepo;
@@ -148,7 +150,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 			final SecurPharmAttributesStatus status = SecurPharmAttributesStatus.ofNullableCodeOrKnown(attributes.getValueAsString(AttributeConstants.ATTR_SecurPharmScannedStatus));
 			if (status.isUnknown())
 			{
-				return ProcessPreconditionsResolution.reject("Vendor is different from manufacturer and product was not scanned (SecurPharm)");
+				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ScanRequired));
 			}
 		}
 
