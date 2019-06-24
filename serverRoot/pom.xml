@@ -62,27 +62,17 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.ordercandidate</groupId>
-			<artifactId>de.metas.ordercandidate.rest-api-impl</artifactId>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api-impl</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.rest-api-impl</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>de.metas.order</groupId>
-			<artifactId>de.metas.order.rest-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
 		
-		<dependency>
-			<groupId>de.metas.invoice</groupId>
-			<artifactId>de.metas.invoice.rest-api</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.inbound</groupId>
 			<artifactId>de.metas.inbound.mail</artifactId>
