@@ -68,23 +68,52 @@ export class SalesInvoice {
     });
   }
 
+  /**
+   * Possible workaround for applyLine_buggy:
+   * It could be that setting the qty before setting the product id will fix the issue where 'done' button is pressed BEFORE
+   * the QtyEntered is saved.
+   *
+   * This is just a workaround though which isn't very cool to use.
+   */
   static applyLine(salesInvoiceLine) {
     cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
-    if (salesInvoiceLine.packingItem) {
-      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, true, true);
-    }
-
     cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true, null, true);
+    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
+
     if (salesInvoiceLine.tuQuantity) {
       cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
     }
-
+    if (salesInvoiceLine.packingItem) {
+      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, true, true);
+    }
     cy.pressDoneButton();
 
   }
+
+  /*
+  static applyLine_buggy(salesInvoiceLine) {
+    cy.selectTab('C_InvoiceLine');
+    cy.pressAddNewButton();
+
+    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
+    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true, null, true);
+
+    if (salesInvoiceLine.packingItem) {
+      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, true, true);
+    }
+    if (salesInvoiceLine.tuQuantity) {
+      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
+    }
+    // something's flaky around here and, it seems that i need this delay as 'QtyEntered' or 'QtyEnteredTU' is sometimes NOT updated (it remains 1).
+    // problem is it only happens sometimes :(.
+    // how to fix? i'm not sure :( (is there a function "wait_until_all_requests_are_finished_before_pressing_done" ? maybe that helps)
+    // how to quickly test? ask me and i'll help.
+    cy.wait(5000);
+    cy.pressDoneButton();
+  }
+   */
 }
 
 export class SalesInvoiceLine {
