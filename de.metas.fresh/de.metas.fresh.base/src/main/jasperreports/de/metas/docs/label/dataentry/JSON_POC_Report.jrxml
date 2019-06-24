@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="JSON_POC_subreport" columnCount="2" printOrder="Horizontal" pageWidth="300" pageHeight="842" columnWidth="125" columnSpacing="10" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" uuid="d77f60d8-3ca8-42d0-9ca2-d19df969e682">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="JSONAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataSource.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -12,7 +12,7 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false"/>
+	<parameter name="datasource" class="net.sf.jasperreports.engine.data.JsonDataSource" isForPrompting="false" evaluationTime="Early"/>
 	<queryString language="JSON">
 		<![CDATA[result.tabs.subtabs.sections.lines.fields]]>
 	</queryString>
@@ -51,13 +51,6 @@
 					<font fontName="Arial"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="-20" y="0" width="20" height="16" uuid="9e31acd4-cd01-405f-814c-5024ab4fb2a3"/>
-				<textElement>
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["SUB"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

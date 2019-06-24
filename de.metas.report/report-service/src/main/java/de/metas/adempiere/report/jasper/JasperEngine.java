@@ -75,8 +75,8 @@ import net.sf.jasperreports.engine.JRResultSetDataSource;
 import net.sf.jasperreports.engine.JasperExportManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JsonDataSource;
 import net.sf.jasperreports.engine.export.JRXlsAbstractExporterParameter;
+import net.sf.jasperreports.engine.query.JsonQLQueryExecuterFactory;
 import net.sf.jasperreports.engine.util.JRLoader;
 import net.sf.jasperreports.export.XlsReportConfiguration;
 
@@ -150,33 +150,8 @@ public class JasperEngine extends AbstractReportEngine
 		if (isJasperJSONReport(reportContext))
 		{
 			//
-			// get authorization
-			final UserId userId = Env.getLoggedUserId();
-			final RoleId roleId = Env.getLoggedRoleId(Env.getCtx());
-			final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
-
-			//
-			// create the json data source
-			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
-					.type(reportContext.getType())
-					.sql(reportContext.getSQLStatement())
-					.token(token.getAuthToken())
-					.JSONPath(reportContext.getJSONPath())
-					.build();
-
-			final JRResultSetDataSource rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
-			if (rsDataSuorce != null)
-			{
-				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
-			}
-
-			final InputStream is = jsonDSService.getInputStream(request);
-			final JsonDataSource dataSource = new JsonDataSource(is);
-
-			jrParameters.put("datasource", dataSource);
-			//
 			// Fill the report
-			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, dataSource, jasperLoader);
+			final JasperPrint jasperPrint = ADJasperFiller.getInstance().fillReport(jasperReport, jrParameters, jasperLoader);
 			return jasperPrint;
 
 		}
@@ -270,7 +245,7 @@ public class JasperEngine extends AbstractReportEngine
 		return jasperReport;
 	}
 
-	private final Map<String, Object> createJRParameters(final ReportContext reportContext)
+	private final Map<String, Object> createJRParameters(final ReportContext reportContext) throws JRException
 	{
 		final Properties ctx = reportContext.getCtx();
 		final PInstanceId pinstanceId = reportContext.getPinstanceId();
@@ -306,6 +281,34 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			final String barcodeURL = Services.get(ISysConfigBL.class).getValue(JasperConstants.SYSCONFIG_BarcodeServlet, JasperConstants.SYSCONFIG_BarcodeServlet_DEFAULT);
 			jrParameters.put(PARAM_BARCODE_URL, barcodeURL);
+		}
+
+		if (isJasperJSONReport(reportContext))
+		{
+			//
+			// get authorization
+			final UserId userId = Env.getLoggedUserId();
+			final RoleId roleId = Env.getLoggedRoleId(Env.getCtx());
+			final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
+
+			//
+			// create the json data source
+			final JsonDataSourceRequest request = JsonDataSourceRequest.builder()
+					.type(reportContext.getType())
+					.sql(reportContext.getSQLStatement())
+					.JSONPath(reportContext.getJSONPath())
+					.token(token.getAuthToken())
+					.build();
+
+			final JRResultSetDataSource rsDataSuorce = jsonRepo.retrieveResultSetDataSourceIfNeeded(request);
+			if (rsDataSuorce != null)
+			{
+				jrParameters.put(PARAM_RESULT_SET, rsDataSuorce);
+			}
+
+			final InputStream is = jsonDSService.getInputStream(request);
+
+			jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, is);
 		}
 
 		return jrParameters;
