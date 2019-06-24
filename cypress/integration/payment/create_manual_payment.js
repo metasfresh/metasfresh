@@ -8,6 +8,8 @@ import {Builder} from "../../support/utils/builder";
 
 describe('Create a manual Payment for a Sales Invoice', function () {
   const timestamp = new Date().getTime();
+  // const timestamp = 'latest number'; // to use this just comment the `before` function
+
 
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let salesInvoiceNumber;
@@ -36,7 +38,6 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   before(function () {
-
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
     Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
