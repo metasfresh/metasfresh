@@ -2,6 +2,7 @@ package de.metas.report;
 
 import java.util.Collections;
 
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
@@ -40,11 +41,8 @@ import de.metas.util.StringUtils;
  * #L%
  */
 
-
-@SpringBootApplication(scanBasePackages =
-	{ "de.metas.report", "de.metas.adempiere.report.jasper" })
-@ServletComponentScan(value =
-	{ "de.metas.adempiere.report.jasper.servlet" })
+@SpringBootApplication(scanBasePackages = { "de.metas" })
+@ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
 @Profile(Profiles.PROFILE_JasperService)
 public class ReportServiceMain
 {
@@ -59,15 +57,19 @@ public class ReportServiceMain
 
 	public static void main(final String[] args)
 	{
-		Ini.setRunMode(RunMode.BACKEND);
+		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		{
+			Ini.setRunMode(RunMode.BACKEND);
 
-		final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
+			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 
-		new SpringApplicationBuilder(ReportServiceMain.class)
-				.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-				.web(true)
-				.profiles(Profiles.PROFILE_JasperService)
-				.run(args);
+			new SpringApplicationBuilder(ReportServiceMain.class)
+					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
+					.web(true)
+					.profiles(Profiles.PROFILE_JasperService)
+					.run(args);
+		}
+		// ModelValidationEngine is initialized by a spring startup listener
 	}
 
 	@Profile(Profiles.PROFILE_NotTest)
