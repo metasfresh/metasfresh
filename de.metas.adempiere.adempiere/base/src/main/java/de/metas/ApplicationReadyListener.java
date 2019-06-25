@@ -49,10 +49,14 @@ public class ApplicationReadyListener
 	@Order(Orders.ENABLE_ISSUE_LOG_APPENDER) // make sure this executes before ApplicationReadyEvent listeners that have no explicit order
 	public void enableIssueReporting()
 	{
+		final MetasfreshIssueAppender metasfreshIssueAppender = MetasfreshIssueAppender.get();
+		if (metasfreshIssueAppender == null)
+		{
+			logger.info("MetasfreshIssueAppender is NOT configured => won't create AD_Issue records for error log messages ");
+			return;
+		}
 		logger.info("Enabling MetasfreshIssueAppender to create AD_Issue records for error log messages");
-		MetasfreshIssueAppender
-				.get()
-				.enableIssueReporting();
+		metasfreshIssueAppender.enableIssueReporting();
 	}
 
 }
