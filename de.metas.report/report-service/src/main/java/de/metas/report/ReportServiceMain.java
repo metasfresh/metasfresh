@@ -69,7 +69,9 @@ public class ReportServiceMain
 					.profiles(Profiles.PROFILE_JasperService)
 					.run(args);
 		}
-		// ModelValidationEngine is initialized by a spring startup listener
+
+		// now init the model validation engine
+		ModelValidationEngine.get();
 	}
 
 	@Profile(Profiles.PROFILE_NotTest)
