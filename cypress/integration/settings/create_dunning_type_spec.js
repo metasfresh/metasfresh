@@ -1,31 +1,44 @@
 import { DunningType } from '../../support/utils/dunning_type';
+import { BPartner } from '../../support/utils/bpartner';
+import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 
 describe('create dunning type', function() {
-  // if creating more than 1 default dunning type will give an error
-  // const timestamp = new Date().getTime();
-  // const dunningTypeName = `dunning test ${timestamp}`;
+  const timestamp = new Date().getTime();
+  const dunningTypeName = `dunning test ${timestamp}`;
+  const bPartnerName = `Customer Dunning ${timestamp}`;
 
-  // before(function() {
-  //   cy.fixture('settings/dunning_type.json').then(dunningType => {
-  //     Object.assign(new DunningType(), dunningType)
-  //       .setName(dunningTypeName)
-  //       // .setCheckDefault(dunningType.default)
-  //       .apply();
-  //   });
-  // });
+  before(function() {
+    cy.fixture('settings/dunning_type.json').then(dunningType => {
+      Object.assign(new DunningType(), dunningType)
+        .setName(dunningTypeName)
+        .apply();
+    });
+
+    cy.fixture('settings/dunning_bpartner.json').then(customerJson => {
+      Object.assign(new BPartner(), customerJson)
+        .setName(bPartnerName)
+        .apply();
+    });
+  });
 
   it('operations on BP', function() {
-    cy.visit('/window/123');
+    cy.visitWindow('123');
 
-    cy.get(':nth-child(1) > .text-left.td-sm').dblclick();
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('Name', bPartnerName, false, undefined, true);
+    applyFilters();
+    cy.get('table tr')
+      .eq(1)
+      .dblclick();
     cy.selectTab('Customer');
-    cy.get('.tr-even > :nth-child(3)')
-      .dblclick()
-      .selectInListField('C_PaymentTerm_ID', 'immediately', false, null, true);
-    cy.selectTab('Customer');
-    cy.get('.tab-pane > :nth-child(1) > :nth-child(1) > :nth-child(1) > .panel').scrollTo('right');
-    cy.get('.tr-even > :nth-child(9)')
-      .dblclick()
-      .selectInListField('C_Dunning_ID', 'test Dunning', false, null, true);
+    cy.get('table tbody tr')
+      .should('have.length', 1)
+      .eq(0)
+      .click();
+    cy.openAdvancedEdit();
+    cy.selectInListField('C_PaymentTerm_ID', 'immediately', true, null, true);
+    cy.selectInListField('C_Dunning_ID', dunningTypeName, true, null, true);
+    cy.pressDoneButton();
   });
 });
