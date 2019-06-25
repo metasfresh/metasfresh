@@ -79,7 +79,10 @@ import net.sf.jasperreports.engine.JasperReport;
 			{
 				return JasperFillManager.fillReport(jasperReport, paramsFixed);
 			}
-			return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
+			else
+			{
+				return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
+			}
 		}
 		finally
 		{

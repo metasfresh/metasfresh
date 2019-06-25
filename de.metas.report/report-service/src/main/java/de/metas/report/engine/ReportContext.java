@@ -15,6 +15,7 @@ import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessType;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -61,7 +62,7 @@ public final class ReportContext
 	private final String reportTemplatePath;
 	private final String sqlStatement;
 	private final boolean applySecuritySettings;
-	private final String type;
+	private final ProcessType type;
 	private final String JSONPath;
 
 	private ReportContext(@NonNull final Builder builder)
@@ -179,7 +180,7 @@ public final class ReportContext
 		return processInfoParameters;
 	}
 
-	public String getType()
+	public ProcessType getType()
 	{
 		return type;
 	}
@@ -201,7 +202,7 @@ public final class ReportContext
 		private String reportTemplatePath;
 		private String sqlStatement;
 		private boolean applySecuritySettings;
-		private String type;
+		private ProcessType type;
 		private String JSONPath;
 
 		private Builder()
@@ -244,7 +245,7 @@ public final class ReportContext
 			return this;
 		}
 
-		public Builder setType(@NonNull final String type)
+		public Builder setType(@NonNull final ProcessType type)
 		{
 			this.type = type;
 			return this;

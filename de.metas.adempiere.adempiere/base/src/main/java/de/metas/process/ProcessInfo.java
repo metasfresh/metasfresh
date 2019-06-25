@@ -133,7 +133,7 @@ public final class ProcessInfo implements Serializable
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
 		type = builder.getType();
-		jsonPath = builder.getJSONPath();
+		jsonPath = builder.getJsonPath();
 
 		if (builder.isLoadParametersFromDB())
 		{
@@ -223,7 +223,7 @@ public final class ProcessInfo implements Serializable
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
 	@Getter
-	@NonNull private final String type;
+	@NonNull private final ProcessType type;
 	@Getter
 	private final Optional<String> jsonPath;
 
@@ -1365,13 +1365,13 @@ public final class ProcessInfo implements Serializable
 			return jrDesiredOutputType;
 		}
 
-		public String getType()
+		public ProcessType getType()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
-			return process == null ? null : process.getType();
+			return process == null ? null : ProcessType.ofCode(process.getType());
 		}
 
-		public Optional<String> getJSONPath()
+		public Optional<String> getJsonPath()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
 			final String JSONPath = process == null ? null : process.getJSONPath();

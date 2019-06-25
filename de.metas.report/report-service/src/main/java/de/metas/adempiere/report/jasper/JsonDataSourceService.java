@@ -16,7 +16,6 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.X_AD_Process;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessParams;
+import de.metas.process.ProcessType;
 import de.metas.report.engine.ReportContext;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
@@ -72,7 +72,7 @@ public class JsonDataSourceService
 	public JsonDataSourceService(@NonNull final JsonDataSourceRepository repository, @NonNull final UserAuthTokenRepository userAuthTokenRepo)
 	{
 		this.repository = repository;
-		this.userAuthTokenRepo =userAuthTokenRepo;
+		this.userAuthTokenRepo = userAuthTokenRepo;
 	}
 
 	public InputStream getInputStream(@NonNull final ReportContext reportContext) throws JRException
@@ -112,8 +112,9 @@ public class JsonDataSourceService
 
 	private URL getJasperJsonURL(@NonNull final JsonDataSourceRequest request)
 	{
-		@NonNull final ReportContext reportContext = request.getReportContext();
-		String url = repository.getAPI_URL();
+		@NonNull
+		final ReportContext reportContext = request.getReportContext();
+		String url = repository.getAPIUrlOrNull();
 		final String path = reportContext.getJSONPath();
 
 		if (url == null || (Check.isEmpty(path, true) || "-".equals(path)))
@@ -147,7 +148,9 @@ public class JsonDataSourceService
 		//
 		// Get SQL
 		final String sql = reportContext.getSQLStatement();
-		if (!X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType()) || Check.isEmpty(sql, true))
+
+		final ProcessType type = reportContext.getType();
+		if (type.isJasperJson() || Check.isEmpty(sql, true))
 		{
 			return null;
 		}
@@ -159,7 +162,6 @@ public class JsonDataSourceService
 
 		return repository.retrieveSQLValue(sqlFinal);
 	}
-
 
 	private Evaluatee getEvalContext(@NonNull final ReportContext reportContext)
 	{
@@ -192,6 +194,7 @@ public class JsonDataSourceService
 
 	public boolean isJasperJSONReport(final ReportContext reportContext)
 	{
-		return X_AD_Process.TYPE_JasperReportsJSON.equals(reportContext.getType());
+		final ProcessType type = reportContext.getType();
+		return type.isJasperJson();
 	}
 }

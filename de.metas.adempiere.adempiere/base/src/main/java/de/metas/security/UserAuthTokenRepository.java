@@ -96,7 +96,7 @@ public class UserAuthTokenRepository
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
-	public UserAuthToken retrieveByUserId(final UserId userId, final RoleId roleId)
+	public UserAuthToken retrieveByUserId( @NonNull final UserId userId,  @NonNull final RoleId roleId)
 	{
 		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_AuthToken.class)

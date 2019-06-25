@@ -46,7 +46,7 @@ public class JsonDataSourceRepository
 	private static final String SYSCONFIG_RESTAPI_URL = "API_URL";
 	private final transient Logger log = LogManager.getLogger(JsonDataSourceRepository.class);
 
-	public String getAPI_URL()
+	public String getAPIUrlOrNull()
 	{
 		final String url = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_RESTAPI_URL, "");
 		if (Check.isEmpty(url, true) || "-".equals(url))
