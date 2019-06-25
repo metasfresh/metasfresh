@@ -58,18 +58,23 @@ import lombok.NonNull;
  */
 public class TimeUtilTest
 {
+	private static Timestamp createTimestamp(final int year, int month, int day)
+	{
+		return TimeUtil.getDay(year, month, day);
+	}
+
 	@Test
 	public void testIsValid() throws Exception
 	{
-		final Timestamp date_2011_05_10 = TimeUtil.getDay(2011, 5, 10);
-		final Timestamp date_2011_05_20 = TimeUtil.getDay(2011, 5, 20);
+		final Timestamp date_2011_05_10 = createTimestamp(2011, 5, 10);
+		final Timestamp date_2011_05_20 = createTimestamp(2011, 5, 20);
 
 		// Standard test
-		assertIsValid(false, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(false, date_2011_05_10, date_2011_05_20, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(false, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 1));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 10));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 11));
+		assertIsValid(true, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 20));
+		assertIsValid(false, date_2011_05_10, date_2011_05_20, createTimestamp(2011, 5, 21));
 
 		// Test for interval beginning
 		assertIsValid(true, date_2011_05_10, date_2011_05_20, date_2011_05_10);
@@ -78,18 +83,18 @@ public class TimeUtilTest
 		assertIsValid(true, date_2011_05_10, date_2011_05_20, date_2011_05_20);
 
 		// Test for null interval beginning
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(false, null, date_2011_05_20, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 1));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 10));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 11));
+		assertIsValid(true, null, date_2011_05_20, createTimestamp(2011, 5, 20));
+		assertIsValid(false, null, date_2011_05_20, createTimestamp(2011, 5, 21));
 
 		// Test for null interval ending
-		assertIsValid(false, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 1));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 10));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 11));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 20));
-		assertIsValid(true, date_2011_05_10, null, TimeUtil.getDay(2011, 5, 21));
+		assertIsValid(false, date_2011_05_10, null, createTimestamp(2011, 5, 1));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 10));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 11));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 20));
+		assertIsValid(true, date_2011_05_10, null, createTimestamp(2011, 5, 21));
 
 	}
 
@@ -307,10 +312,10 @@ public class TimeUtilTest
 	@Test
 	public void testDateMin()
 	{
-		final Timestamp date1 = TimeUtil.getDay(2014, 1, 1);
-		final Timestamp date1_copy = TimeUtil.getDay(2014, 1, 1);
-		final Timestamp date2 = TimeUtil.getDay(2014, 1, 2);
-		final Timestamp date3 = TimeUtil.getDay(2014, 1, 3);
+		final Timestamp date1 = createTimestamp(2014, 1, 1);
+		final Timestamp date1_copy = createTimestamp(2014, 1, 1);
+		final Timestamp date2 = createTimestamp(2014, 1, 2);
+		final Timestamp date3 = createTimestamp(2014, 1, 3);
 
 		// NULLs check
 		assertDateMin(null, null, null);
@@ -375,12 +380,12 @@ public class TimeUtilTest
 	{
 		// NOTE: this test was initially in org.compiere.util.TimeUtil.main(String[])
 
-		final Timestamp t1 = TimeUtil.getDay(01, 01, 01);
-		final Timestamp t2 = TimeUtil.getDay(02, 02, 02);
-		final Timestamp t3 = TimeUtil.getDay(03, 03, 03);
+		final Timestamp t1 = createTimestamp(01, 01, 01);
+		final Timestamp t2 = createTimestamp(02, 02, 02);
+		final Timestamp t3 = createTimestamp(03, 03, 03);
 
-		final Timestamp t4 = TimeUtil.getDay(01, 01, 01);
-		final Timestamp t5 = TimeUtil.getDay(02, 02, 02);
+		final Timestamp t4 = createTimestamp(01, 01, 01);
+		final Timestamp t5 = createTimestamp(02, 02, 02);
 
 		assertSameDay(true, t1, t4);
 		assertSameDay(true, t2, t5);
@@ -546,10 +551,20 @@ public class TimeUtilTest
 		assertThat(actual).isEqualTo(expected);
 	}
 
-	private static <T> T castObject(final Object obj)
+	@Test
+	public void test_isLastDayOfMonth()
 	{
-		@SuppressWarnings("unchecked")
-		final T objCasted = (T)obj;
-		return objCasted;
+		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 1));
+		assertLastDayOfMonth(false, LocalDate.of(2019, 1, 30));
+		assertLastDayOfMonth(true, LocalDate.of(2019, 1, 31));
+
+		assertLastDayOfMonth(false, LocalDate.of(2019, 2, 27));
+		assertLastDayOfMonth(true, LocalDate.of(2019, 2, 28));
+	}
+
+	private void assertLastDayOfMonth(final boolean expectation, final LocalDate date)
+	{
+		assertThat(TimeUtil.isLastDayOfMonth(date)).isEqualTo(expectation);
+
 	}
 }

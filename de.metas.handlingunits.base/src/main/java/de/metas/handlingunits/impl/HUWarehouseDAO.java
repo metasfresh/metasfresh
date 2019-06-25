@@ -73,9 +73,10 @@ public class HUWarehouseDAO implements IHUWarehouseDAO
 	}
 
 	@Override
-	public I_M_Locator suggestAfterPickingLocator(final org.compiere.model.I_M_Locator locator)
+	public I_M_Locator suggestAfterPickingLocator(final int locatorRepoId)
 	{
-		Check.assumeNotNull(locator, "locator not null");
+		Check.assumeGreaterThanZero(locatorRepoId, "locatorRepoId");
+		final org.compiere.model.I_M_Locator locator = Services.get(IWarehouseDAO.class).getLocatorByRepoId(locatorRepoId);
 
 		//
 		// If given locator is "after-picking" return it

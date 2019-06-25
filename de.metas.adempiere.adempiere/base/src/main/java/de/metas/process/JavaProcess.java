@@ -888,7 +888,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
+	 * @deprecated use proper Repository
 	 */
+	@Deprecated
 	protected final <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		String trxName = getTrxName();

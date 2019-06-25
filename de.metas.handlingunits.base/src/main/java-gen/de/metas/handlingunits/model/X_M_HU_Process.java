@@ -14,7 +14,7 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1879959943L;
+	private static final long serialVersionUID = 595341497L;
 
     /** Standard Constructor */
     public X_M_HU_Process (Properties ctx, int M_HU_Process_ID, String trxName)
@@ -48,7 +48,7 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
     }
 
 	@Override
-	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException
+	public org.compiere.model.I_AD_Process getAD_Process()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class);
 	}
@@ -203,7 +203,7 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI getM_HU_PI() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI getM_HU_PI()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
 	}

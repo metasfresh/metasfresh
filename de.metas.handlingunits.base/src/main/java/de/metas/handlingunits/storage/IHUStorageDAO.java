@@ -70,13 +70,6 @@ public interface IHUStorageDAO
 	void save(I_M_HU_Item item);
 
 	/**
-	 *
-	 * @param storage
-	 * @return storage's UOM; never return null
-	 */
-	I_C_UOM getC_UOM(I_M_HU_Storage storage);
-
-	/**
 	 * <b>NOTE:</b> HU already contains it's children HUStorages due to storage lines already being created by rollupIncremental.<br>
 	 * <br>
 	 * <b>Returns</b> <code>null</code> if storage UOMType incompatibility was encountered (i.e one storage does not have it's UOM specified or has it different from the others)<br>

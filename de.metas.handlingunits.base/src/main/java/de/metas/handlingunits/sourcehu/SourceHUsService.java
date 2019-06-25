@@ -237,7 +237,7 @@ public class SourceHUsService
 					.map(IProductStorage::getProductId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(hu.getM_Locator().getM_Warehouse_ID());
+			final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseId(hu);
 			return new MatchingSourceHusQuery(productIds, warehouseId);
 		}
 	}

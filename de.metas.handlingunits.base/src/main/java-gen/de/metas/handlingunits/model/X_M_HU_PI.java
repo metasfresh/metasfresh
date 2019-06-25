@@ -14,7 +14,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 287280127L;
+	private static final long serialVersionUID = 1146893183L;
 
     /** Standard Constructor */
     public X_M_HU_PI (Properties ctx, int M_HU_PI_ID, String trxName)
@@ -105,9 +105,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -115,8 +113,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

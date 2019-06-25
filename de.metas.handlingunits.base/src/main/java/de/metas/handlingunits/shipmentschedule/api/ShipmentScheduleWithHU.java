@@ -485,7 +485,7 @@ public class ShipmentScheduleWithHU
 
 		if (topLevelHU.getM_HU_PI_Item_Product_ID() > 0)
 		{
-			return topLevelHU.getM_HU_PI_Item_Product();
+			return IHandlingUnitsBL.extractPIItemProductOrNull(topLevelHU);
 		}
 
 		final ImmutableList<I_M_HU_Item> huMaterialItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(topLevelHU).stream()

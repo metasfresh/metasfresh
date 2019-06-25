@@ -38,8 +38,8 @@ import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.X_M_Attribute;
 
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -418,12 +418,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 			return -1;
 		}
 
-		final I_M_Locator locator = hu.getM_Locator();
-		if (locator == null)
-		{
-			return -1;
-		}
-
-		return locator.getM_Warehouse_ID();
+		final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseIdOrNull(hu);
+		return WarehouseId.toRepoId(warehouseId);
 	}
 }

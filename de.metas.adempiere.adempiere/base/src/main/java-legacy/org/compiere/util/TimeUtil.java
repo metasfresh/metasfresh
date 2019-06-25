@@ -37,6 +37,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -1789,5 +1790,11 @@ public class TimeUtil
 		{
 			return duration2;
 		}
+	}
+
+	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
+	{
+		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
+		return localDate.equals(lastDayOfMonth);
 	}
 }	// TimeUtil

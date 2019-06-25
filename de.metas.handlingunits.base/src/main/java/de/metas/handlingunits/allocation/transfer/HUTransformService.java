@@ -20,7 +20,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -33,6 +32,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -66,7 +66,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -561,7 +560,7 @@ public class HUTransformService
 
 		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
 		final ProductId productId = ProductId.ofRepoId(tuPIItemProduct.getM_Product_ID());
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(tuPIItemProduct.getC_UOM_ID());
+		final I_C_UOM uom = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 		final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, productId, uom);
 		destination.addCUPerTU(capacity);
 
@@ -850,9 +849,9 @@ public class HUTransformService
 			// create the new LU
 			final I_M_HU newLuHU = handlingUnitsDAO
 					.createHUBuilder(huContext)
-					.setC_BPartner(sourceTuHU.getC_BPartner())
+					.setC_BPartner(IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
-					.setLocatorId(LocatorId.ofRecord(sourceTuHU.getM_Locator()))
+					.setLocatorId(IHandlingUnitsBL.extractLocatorId(sourceTuHU))
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
 					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());
@@ -966,7 +965,8 @@ public class HUTransformService
 			}
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuPI, sourceTuHU.getC_BPartner()).stream()
+					.retrievePIItems(tuPI, IHandlingUnitsBL.extractBPartnerOrNull(sourceTuHU))
+					.stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
 			if (materialItem == null)
@@ -1056,6 +1056,8 @@ public class HUTransformService
 				@Nullable final Boolean keepNewCUsUnderSameParent,
 				@Nullable final Boolean onlyFromUnreservedHUs)
 		{
+			Check.assumeNotEmpty(sourceHUs, "sourceHUs is not empty");
+			
 			this.sourceHUs = sourceHUs;
 			this.qtyCU = qtyCU;
 			this.productId = productId;

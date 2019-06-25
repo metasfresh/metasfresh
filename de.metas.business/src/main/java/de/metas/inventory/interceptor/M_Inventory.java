@@ -16,6 +16,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.inventory.event.InventoryUserNotificationsProducer;
 import de.metas.util.Services;
 
@@ -64,7 +65,8 @@ public class M_Inventory
 
 		final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
-		final boolean allLinesCounted = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID())
+		final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+		final boolean allLinesCounted = inventoryDAO.retrieveLinesForInventoryId(inventoryId)
 				.stream()
 				.allMatch(I_M_InventoryLine::isCounted);
 

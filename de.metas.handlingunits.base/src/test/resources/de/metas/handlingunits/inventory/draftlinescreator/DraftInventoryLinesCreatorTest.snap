@@ -1,173 +1,185 @@
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_MultipleHUInventoryLineAggregator=[
-  [
-    {
-      "id": 100012,
-      "asiId": 100009,
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": false,
-      "inventoryLineHUs": [
-        {
-          "id": 100013,
-          "huId": 100,
-          "qtyBook": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          }
-        },
-        {
-          "id": 100014,
-          "huId": 200,
-          "qtyBook": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          }
-        }
-      ]
+  {
+    "id": 100009,
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
     },
-    {
-      "id": 100019,
-      "asiId": 100015,
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11§&§12",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": false,
-      "inventoryLineHUs": [
-        {
-          "id": 100020,
-          "huId": 300,
-          "qtyBook": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "id": 100013,
+        "orgId": 5,
+        "asiId": 100010,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "MULTI_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "id": 100014,
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 10,
+              "sourceQty": 10,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 10,
+              "sourceQty": 10,
+              "infinite": false,
+              "zero": false
+            }
           },
-          "qtyCount": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
+          {
+            "id": 100015,
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 1,
+              "sourceQty": 1,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 1,
+              "sourceQty": 1,
+              "infinite": false,
+              "zero": false
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      },
+      {
+        "id": 100020,
+        "orgId": 5,
+        "asiId": 100016,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "MULTI_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "id": 100021,
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 2,
+              "sourceQty": 2,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 2,
+              "sourceQty": 2,
+              "infinite": false,
+              "zero": false
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]
 
 
 de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTest.execute_SingleHUInventoryLineAggregator=[
-  [
-    {
-      "id": 100013,
-      "asiId": 100009,
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11§&§12",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": 300,
-          "qtyBook": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 2,
-            "sourceQty": 2,
-            "infinite": false,
-            "zero": false
-          }
-        }
-      ]
+  {
+    "id": 100009,
+    "docBaseAndSubType": {
+      "docBaseType": "MMI",
+      "docSubType": "ISH"
     },
-    {
-      "id": 100017,
-      "asiId": 100014,
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
-      },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": 100,
-          "qtyBook": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 10,
-            "sourceQty": 10,
-            "infinite": false,
-            "zero": false
+    "inventoryType": "PHYSICAL",
+    "lines": [
+      {
+        "id": 100014,
+        "orgId": 5,
+        "asiId": 100010,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11§&§12",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 300,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 2,
+              "sourceQty": 2,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 2,
+              "sourceQty": 2,
+              "infinite": false,
+              "zero": false
+            }
           }
-        }
-      ]
-    },
-    {
-      "id": 100021,
-      "asiId": 100018,
-      "inventoryId": 100002,
-      "productId": 40,
-      "storageAttributesKey": "10§&§11",
-      "locatorId": {
-        "repoId": 100004,
-        "warehouseId": 100003
+        ]
       },
-      "singleHUAggregation": true,
-      "inventoryLineHUs": [
-        {
-          "huId": 200,
-          "qtyBook": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
-          },
-          "qtyCount": {
-            "qty": 1,
-            "sourceQty": 1,
-            "infinite": false,
-            "zero": false
+      {
+        "id": 100018,
+        "orgId": 5,
+        "asiId": 100015,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 100,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 10,
+              "sourceQty": 10,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 10,
+              "sourceQty": 10,
+              "infinite": false,
+              "zero": false
+            }
           }
-        }
-      ]
-    }
-  ]
+        ]
+      },
+      {
+        "id": 100022,
+        "orgId": 5,
+        "asiId": 100019,
+        "productId": 40,
+        "storageAttributesKey": "10§&§11",
+        "locatorId": "100002_100003",
+        "huAggregationType": "SINGLE_HU",
+        "inventoryType": "PHYSICAL",
+        "inventoryLineHUs": [
+          {
+            "huId": 200,
+            "inventoryType": "PHYSICAL",
+            "qtyBook": {
+              "qty": 1,
+              "sourceQty": 1,
+              "infinite": false,
+              "zero": false
+            },
+            "qtyCount": {
+              "qty": 1,
+              "sourceQty": 1,
+              "infinite": false,
+              "zero": false
+            }
+          }
+        ]
+      }
+    ]
+  }
 ]

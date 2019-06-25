@@ -52,8 +52,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -76,9 +74,6 @@ import lombok.NonNull;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
-	@VisibleForTesting
-	public static final HUPIItemProductId NO_HU_PI_Item_Product_ID = HUPIItemProductId.ofRepoId(100);
-
 	@Override
 	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
 	{
@@ -105,11 +100,11 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 	@Cached
 	public I_M_HU_PI_Item_Product retrieveVirtualPIMaterialItemProduct(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item_Product piip = getById(VIRTUAL_HU_PI_Item_Product_ID);
+		final I_M_HU_PI_Item_Product piip = getById(HUPIItemProductId.VIRTUAL_HU);
 
 		return Check.assumeNotNull(piip,
 				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
-				VIRTUAL_HU_PI_Item_Product_ID);
+				HUPIItemProductId.VIRTUAL_HU);
 	}
 
 	@Override
@@ -309,8 +304,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
 			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
-					NO_HU_PI_Item_Product_ID,
-					VIRTUAL_HU_PI_Item_Product_ID);
+					HUPIItemProductId.TEMPLATE_HU,
+					HUPIItemProductId.VIRTUAL_HU);
 
 			filters.addFilter(infiniteCapacityFilter);
 		}
@@ -387,14 +382,14 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		}
 
 		//
-		// Don't allow No HU PI
-		filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, NO_HU_PI_Item_Product_ID);
+		// Don't allow Template HU PI
+		filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId.TEMPLATE_HU);
 
 		//
 		// Don't allow Virtual PIs
 		if (!queryVO.isAllowVirtualPI())
 		{
-			filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, VIRTUAL_HU_PI_Item_Product_ID);
+			filters.addNotEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, HUPIItemProductId.VIRTUAL_HU);
 		}
 
 		//

@@ -71,4 +71,10 @@ public enum DocStatus implements ReferenceListAwareEnum
 	{
 		return this == DocStatus.Reversed || this == DocStatus.Voided;
 	}
+
+	public boolean isCompletedOrClosedOrReversed()
+	{
+		return this == DocStatus.Completed || this == DocStatus.Reversed || this == DocStatus.Voided;
+	}
+
 }

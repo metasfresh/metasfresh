@@ -64,8 +64,8 @@ public class HuPackingInstructionsId implements RepoIdAware
 		return HuPackingInstructionsId != null ? HuPackingInstructionsId.getRepoId() : -1;
 	}
 
-	public static HuPackingInstructionsId TEMPLATE = new HuPackingInstructionsId(100);
-	public static HuPackingInstructionsId VIRTUAL = new HuPackingInstructionsId(101);
+	public static final HuPackingInstructionsId TEMPLATE = new HuPackingInstructionsId(100);
+	public static final HuPackingInstructionsId VIRTUAL = new HuPackingInstructionsId(101);
 
 	int repoId;
 

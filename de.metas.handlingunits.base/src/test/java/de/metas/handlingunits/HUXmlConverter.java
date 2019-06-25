@@ -55,6 +55,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -204,7 +205,7 @@ public class HUXmlConverter
 			final Object value = e.getValue();
 			final String valueStr;
 
-			if(!Check.isEmpty(POJOWrapper.getInstanceName(model),true))
+			if (!Check.isEmpty(POJOWrapper.getInstanceName(model), true))
 			{
 				node.setAttribute("InstanceName", POJOWrapper.getInstanceName(model));
 			}
@@ -247,7 +248,9 @@ public class HUXmlConverter
 			{
 				final int id = (Integer)value;
 				final I_M_HU_PackingMaterial packingMaterial = POJOLookupMap.get().lookup(I_M_HU_PackingMaterial.class, id);
-				final String packingMaterialProductValue = packingMaterial == null ? "" : packingMaterial.getM_Product().getName();
+				final String packingMaterialProductValue = packingMaterial == null
+						? ""
+						: IHUPackingMaterialDAO.extractProductOrNull(packingMaterial).getName();
 				node.setAttribute("M_HU_PackingMaterial_Product_Value", packingMaterialProductValue);
 			}
 

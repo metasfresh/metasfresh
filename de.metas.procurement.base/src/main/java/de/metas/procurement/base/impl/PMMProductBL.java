@@ -2,6 +2,7 @@ package de.metas.procurement.base.impl;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -56,8 +57,7 @@ public class PMMProductBL implements IPMMProductBL
 			pmmProduct.setC_BPartner_ID(huPiItemProd.getC_BPartner_ID());
 			pmmProduct.setPackDescription(huPiItemProd.getDescription());
 
-			final I_M_Product product = huPiItemProd.getM_Product();
-			pmmProduct.setM_Product(product);
+			pmmProduct.setM_Product_ID(huPiItemProd.getM_Product_ID());
 		}
 		else
 		{
@@ -223,7 +223,7 @@ public class PMMProductBL implements IPMMProductBL
 					break;
 				}
 
-				if (!Check.equals(pmmStringValue,instanceStringValue))
+				if (!Objects.equals(pmmStringValue,instanceStringValue))
 				{
 					// not valid
 					isValid = false;

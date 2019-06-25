@@ -203,15 +203,21 @@ public class HUTraceEventsService
 		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
-			vhus = ImmutableList.of(shipmentScheduleQtyPicked.getVHU());
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+			final HuId vhuId = HuId.ofRepoId(shipmentScheduleQtyPicked.getVHU_ID());
+			final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+			vhus = ImmutableList.of(vhu);
 		}
 		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
 		{
-			vhus = huAccessService.retrieveVhus(shipmentScheduleQtyPicked.getM_TU_HU());
+			final HuId tuHUId = HuId.ofRepoId(shipmentScheduleQtyPicked.getM_TU_HU_ID());
+			vhus = huAccessService.retrieveVhus(tuHUId);
 		}
 		else if (shipmentScheduleQtyPicked.getM_LU_HU_ID() > 0)
 		{
-			vhus = huAccessService.retrieveVhus(shipmentScheduleQtyPicked.getM_LU_HU());
+			final HuId luHUId = HuId.ofRepoId(shipmentScheduleQtyPicked.getM_LU_HU_ID());
+			vhus = huAccessService.retrieveVhus(luHUId);
 		}
 		else
 		{
@@ -262,7 +268,8 @@ public class HUTraceEventsService
 			}
 			else if (huTrxLine.getM_HU_ID() > 0)
 			{
-				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+				final HuId huId = HuId.ofRepoId(huTrxLine.getM_HU_ID());
+				return huAccessService.retrieveVhus(huId);
 			}
 			else
 			{
@@ -464,6 +471,7 @@ public class HUTraceEventsService
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final List<?> models)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		for (final Object model : models)
@@ -487,19 +495,24 @@ public class HUTraceEventsService
 				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
 				{
-					vhus = ImmutableList.of(huAssignment.getVHU());
+					final HuId vhuId = HuId.ofRepoId(huAssignment.getVHU_ID());
+					final I_M_HU vhu = handlingUnitsBL.getById(vhuId);
+					vhus = ImmutableList.of(vhu);
 				}
 				else if (huAssignment.getM_TU_HU_ID() > 0)
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_TU_HU());
+					final HuId tuHUId = HuId.ofRepoId(huAssignment.getM_TU_HU_ID());
+					vhus = huAccessService.retrieveVhus(tuHUId);
 				}
 				else if (huAssignment.getM_LU_HU_ID() > 0)
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_LU_HU());
+					final HuId luHUId = HuId.ofRepoId(huAssignment.getM_LU_HU_ID());
+					vhus = huAccessService.retrieveVhus(luHUId);
 				}
 				else
 				{
-					vhus = huAccessService.retrieveVhus(huAssignment.getM_HU());
+					final HuId huId = HuId.ofRepoId(huAssignment.getM_HU_ID());
+					vhus = huAccessService.retrieveVhus(huId);
 				}
 
 				for (final I_M_HU vhu : vhus)

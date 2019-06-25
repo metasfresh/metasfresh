@@ -1,8 +1,19 @@
-package de.metas.inventory;
+package de.metas.vertical.pharma.securpharm.actions;
+
+import javax.annotation.Nullable;
+
+import de.metas.inventory.InventoryId;
+import de.metas.vertical.pharma.securpharm.product.SecurPharmProductId;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
- * de.metas.handlingunits.base
+ * metasfresh-pharma.securpharm
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -10,30 +21,36 @@ package de.metas.inventory;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class InventoryConstants
+@Value
+@Builder
+public class DecommissionResponse
 {
-	/**
-	 * Please keep in sync with list reference "HUAggregationType" {@code AD_Reference_ID=540976}
-	 */
-	public static final String HUAggregationType_SINGLE_HU = "S";
-	public static final String HUAggregationType_MULTI_HU = "M";
+	boolean error;
 
-	/**
-	 * Please keep in sync with list reference "C_DocType SubType" {@code AD_Reference_ID=148}
-	 */
-	public static final String DocSubType_INVENTORY_WITH_SINGLE_HU = "ISH";
-	public static final String DocSubType_INVENTORY_WITH_AGGREGATED_HUS = "IAH";
+	@NonNull
+	SecurPharmProductId productId;
 
+	@Nullable
+	String serverTransactionId;
+
+	@Nullable
+	InventoryId inventoryId;
+
+	//
+	@Nullable
+	@NonFinal
+	@Setter(AccessLevel.PACKAGE)
+	SecurPharmActionResultId id;
 }

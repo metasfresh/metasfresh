@@ -10,8 +10,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.X_M_Attribute;
 
+import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -35,6 +39,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@UtilityClass
 public class InventoryTestHelper
 {
 
@@ -97,5 +102,14 @@ public class InventoryTestHelper
 	{
 		final I_M_AttributeValue attributeValueRecord = attributesTestHelper.createM_AttributeValue(attributeRecord, valueRepoId, valueName);
 		return attributeValueRecord;
+	}
+
+	public static DocTypeId createDocType(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(docBaseAndSubType.getDocBaseType());
+		docType.setDocSubType(docBaseAndSubType.getDocSubType());
+		saveRecord(docType);
+		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}
 }

@@ -41,3 +41,6 @@ de.metas.material/dispo-service/application.properties
 **/.idea
 
 **/LICENSE.txt
+
+de.metas.vertical.pharma.securpharm/sandbox.properties
+

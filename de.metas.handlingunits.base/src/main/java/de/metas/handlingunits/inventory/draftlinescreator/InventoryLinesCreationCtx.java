@@ -5,8 +5,9 @@ import org.compiere.model.I_M_Inventory;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.GuavaCollectors;
@@ -45,37 +46,37 @@ import lombok.Value;
 @Value
 public class InventoryLinesCreationCtx
 {
-	transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
-	transient IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	private final InventoryRepository inventoryRepo;
 
-
-	InventoryId inventoryId;
+	Inventory inventory;
 	HUsForInventoryStrategy strategy;
-
 	InventoryLineAggregator inventoryLineAggregator;
 
 	ImmutableMap<InventoryLineAggregationKey, InventoryLine> preExistingInventoryLines;
-	InventoryLineRepository inventoryLineRepository;
-
 
 	@Builder
 	private InventoryLinesCreationCtx(
+			@NonNull final Inventory inventory,
+			@NonNull final InventoryRepository inventoryRepo,
 			@NonNull final InventoryLineAggregator inventoryLineAggregator,
-			@NonNull final InventoryLineRepository inventoryLineRepository,
-			@NonNull final InventoryId inventoryId,
 			@NonNull final HUsForInventoryStrategy strategy)
 	{
-		this.inventoryLineRepository = inventoryLineRepository;
+		this.inventory = inventory;
+		this.inventoryRepo = inventoryRepo;
 		this.inventoryLineAggregator = inventoryLineAggregator;
-
-
-		this.inventoryId = inventoryId;
 		this.strategy = strategy;
 
-		preExistingInventoryLines = inventoryLineRepository
-				.getByInventoryId(inventoryId)
+		preExistingInventoryLines = inventory
+				.getLines()
 				.stream()
 				.filter(il -> !il.getInventoryLineHUs().isEmpty())
 				.collect(GuavaCollectors.toImmutableMapByKey(inventoryLineAggregator::createAggregationKey));
+	}
+
+	public InventoryId getInventoryId()
+	{
+		return inventory.getId();
 	}
 }

@@ -512,7 +512,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		shipmentSchedule.setC_BPartner_Location(bpartnerLocation);
 		// Product/UOM and Qty
 		shipmentSchedule.setM_Product(product);
-		shipmentSchedule.setC_UOM(productUOM);
+		shipmentSchedule.setC_UOM_ID(productUOM.getC_UOM_ID());
 		shipmentSchedule.setQtyOrdered_Calculated(qtyOrdered);
 		// Warehouse
 		shipmentSchedule.setM_Warehouse(warehouse);

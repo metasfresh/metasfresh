@@ -236,7 +236,7 @@ public class HUMovementBuilder
 		{
 			throw new HUException("HU's locator does not match movement's locator from."
 					+ "\n Movement Locator From: " + locatorFrom
-					+ "\n HU's Locator: " + hu.getM_Locator());
+					+ "\n HU's Locator: " + IHandlingUnitsBL.extractLocatorOrNull(hu));
 		}
 
 		_husToMove.add(hu);

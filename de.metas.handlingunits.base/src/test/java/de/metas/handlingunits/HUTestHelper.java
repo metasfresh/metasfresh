@@ -7,6 +7,7 @@ import static de.metas.business.BusinessTestHelper.createUomEach;
 import static de.metas.business.BusinessTestHelper.createUomKg;
 import static de.metas.business.BusinessTestHelper.createUomPCE;
 import static de.metas.business.BusinessTestHelper.createWarehouse;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -120,8 +121,6 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
-import de.metas.handlingunits.impl.HUPIItemProductDAO;
-import de.metas.handlingunits.impl.HandlingUnitsDAO;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -667,8 +666,8 @@ public class HUTestHelper
 		final String huUnitType = null; // any
 		createVersion(huDefNone, true, huUnitType, HuPackingInstructionsVersionId.TEMPLATE);
 
-		huDefItemNone = createHU_PI_Item_Material(huDefNone, HandlingUnitsDAO.PACKING_ITEM_TEMPLATE_HU_PI_Item_ID);
-		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductDAO.NO_HU_PI_Item_Product_ID.getRepoId());
+		huDefItemNone = createHU_PI_Item_Material(huDefNone, HuPackingInstructionsItemId.TEMPLATE_MATERIAL_ITEM);
+		huDefItemProductNone = assignProductAny(huDefItemNone, HUPIItemProductId.TEMPLATE_HU);
 
 		return huDefNone;
 	}
@@ -684,8 +683,8 @@ public class HUTestHelper
 				true, // isCurrent
 				X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, HuPackingInstructionsVersionId.VIRTUAL);
 
-		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HandlingUnitsDAO.VIRTUAL_HU_PI_Item_ID);
-		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID.getRepoId());
+		huDefItemVirtual = createHU_PI_Item_Material(huDefVirtual, HuPackingInstructionsItemId.VIRTUAL);
+		huDefItemProductVirtual = assignProductAny(huDefItemVirtual, HUPIItemProductId.VIRTUAL_HU);
 
 		return huDefVirtual;
 	}
@@ -970,9 +969,9 @@ public class HUTestHelper
 
 	public I_M_HU_PackingMaterial createPackingMaterial(final String name, final I_M_Product product)
 	{
-		final I_M_HU_PackingMaterial packingMaterial = InterfaceWrapperHelper.create(ctx, I_M_HU_PackingMaterial.class, ITrx.TRXNAME_None);
+		final I_M_HU_PackingMaterial packingMaterial = newInstanceOutOfTrx(I_M_HU_PackingMaterial.class);
 		packingMaterial.setName(name);
-		packingMaterial.setM_Product(product);
+		packingMaterial.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		InterfaceWrapperHelper.save(packingMaterial);
 
 		return packingMaterial;
@@ -1030,20 +1029,20 @@ public class HUTestHelper
 
 	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi)
 	{
-		final int piItemId = -1;
+		final HuPackingInstructionsItemId piItemId = null;
 		return createHU_PI_Item_Material(pi, piItemId);
 	}
 
-	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi, final int piItemId)
+	public I_M_HU_PI_Item createHU_PI_Item_Material(final I_M_HU_PI pi, final HuPackingInstructionsItemId piItemId)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
 
 		final I_M_HU_PI_Item piItem = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class, version);
 		piItem.setItemType(X_M_HU_PI_Item.ITEMTYPE_Material);
 		piItem.setM_HU_PI_Version(version);
-		if (piItemId > 0)
+		if (piItemId != null)
 		{
-			piItem.setM_HU_PI_Item_ID(piItemId);
+			piItem.setM_HU_PI_Item_ID(piItemId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(piItem);
@@ -1073,13 +1072,13 @@ public class HUTestHelper
 	 * @param huDefinition
 	 * @param includedHuDefinition
 	 * @param qty
-	 * @param bPartner
+	 * @param bpartner
 	 * @return
 	 */
 	public I_M_HU_PI_Item createHU_PI_Item_IncludedHU(final I_M_HU_PI huDefinition,
 			final I_M_HU_PI includedHuDefinition,
 			final BigDecimal qty,
-			final I_C_BPartner bPartner)
+			final I_C_BPartner bpartner)
 	{
 		final I_M_HU_PI_Version version = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(huDefinition);
 
@@ -1087,7 +1086,7 @@ public class HUTestHelper
 		itemDefinition.setItemType(X_M_HU_PI_Item.ITEMTYPE_HandlingUnit);
 		itemDefinition.setIncluded_HU_PI(includedHuDefinition);
 		itemDefinition.setM_HU_PI_Version(version);
-		itemDefinition.setC_BPartner(bPartner);
+		itemDefinition.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		if (!Objects.equals(qty, QTY_NA))
 		{
 			itemDefinition.setQty(qty);
@@ -1141,31 +1140,31 @@ public class HUTestHelper
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product_ID(productId.getRepoId());
 		itemDefProduct.setQty(capacity);
-		itemDefProduct.setC_UOM(uom);
+		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner(bpartner);
+		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		InterfaceWrapperHelper.save(itemDefProduct);
 
 		return itemDefProduct;
 	}
 
-	public I_M_HU_PI_Item_Product assignProductAny(final I_M_HU_PI_Item itemPI, final int huPIItemProductId)
+	public I_M_HU_PI_Item_Product assignProductAny(final I_M_HU_PI_Item itemPI, final HUPIItemProductId huPIItemProductId)
 	{
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 
 		itemDefProduct.setIsAllowAnyProduct(true);
-		itemDefProduct.setM_Product(null);
+		itemDefProduct.setM_Product_ID(-1);
 
 		itemDefProduct.setIsInfiniteCapacity(true);
 		itemDefProduct.setQty(null);
-		itemDefProduct.setC_UOM(null);
+		itemDefProduct.setC_UOM_ID(-1);
 
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 
-		if (huPIItemProductId > 0)
+		if (huPIItemProductId != null)
 		{
-			itemDefProduct.setM_HU_PI_Item_Product_ID(huPIItemProductId);
+			itemDefProduct.setM_HU_PI_Item_Product_ID(huPIItemProductId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.save(itemDefProduct);
@@ -1406,7 +1405,7 @@ public class HUTestHelper
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = -1;
 		final ProductId cuProductId = ProductId.ofRepoIdOrNull(tuPIItemProduct.getM_Product_ID());
-		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
+		final I_C_UOM cuUOM = IHUPIItemProductBL.extractUOMOrNull(tuPIItemProduct);
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
@@ -1415,7 +1414,7 @@ public class HUTestHelper
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
 
@@ -1785,7 +1784,7 @@ public class HUTestHelper
 
 	public boolean isVirtualPIItem(final I_M_HU_PI_Item piItem)
 	{
-		return piItem.getM_HU_PI_Item_ID() == Services.get(IHandlingUnitsDAO.class).getVirtual_HU_PI_Item_ID();
+		return HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID());
 	}
 
 	public boolean isVirtualPIItemProduct(final I_M_HU_PI_Item_Product piItemProduct)

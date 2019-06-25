@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -121,14 +122,7 @@ public class ServerSyncBL implements IServerSyncBL
 		final String product_uuid = syncProductSupply.getProduct_uuid();
 		loadPMMProductAndProcess(
 				product_uuid,
-				new IEventProcessor()
-				{
-					@Override
-					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
-					{
-						createQtyReportEvent(context, pmmProduct, syncProductSupply);
-					}
-				});
+				(context, pmmProduct) -> createQtyReportEvent(context, pmmProduct, syncProductSupply));
 	}
 
 	private void createQtyReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncProductSupply syncProductSupply)
@@ -235,7 +229,7 @@ public class ServerSyncBL implements IServerSyncBL
 		final I_C_UOM uom;
 		if (huPIItemProduct != null)
 		{
-			uom = huPIItemProduct.getC_UOM();
+			uom = IHUPIItemProductBL.extractUOMOrNull(huPIItemProduct);
 		}
 		else
 		{
@@ -250,9 +244,13 @@ public class ServerSyncBL implements IServerSyncBL
 
 		// ASI
 		if (pmmProduct.getM_AttributeSetInstance_ID() > 0)
+		{
 			qtyReportEvent.setM_AttributeSetInstance_ID(pmmProduct.getM_AttributeSetInstance_ID());
+		}
 		else
+		{
 			qtyReportEvent.setM_AttributeSetInstance(null);
+		}
 
 		// M_Warehouse
 		final int warehouseId = pmmProduct.getM_Warehouse_ID();
@@ -296,7 +294,7 @@ public class ServerSyncBL implements IServerSyncBL
 		}
 	}
 
-	public static interface IEventProcessor
+	public interface IEventProcessor
 	{
 		void processEvent(IContextAware context, I_PMM_Product pmmProduct);
 	}
@@ -304,14 +302,7 @@ public class ServerSyncBL implements IServerSyncBL
 	private void createWeekReportEvent(final SyncWeeklySupply syncWeeklySupply)
 	{
 		final String product_uuid = syncWeeklySupply.getProduct_uuid();
-		loadPMMProductAndProcess(product_uuid, new IEventProcessor()
-		{
-			@Override
-			public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
-			{
-				createWeekReportEvent(context, pmmProduct, syncWeeklySupply);
-			}
-		});
+		loadPMMProductAndProcess(product_uuid, (context, pmmProduct) -> createWeekReportEvent(context, pmmProduct, syncWeeklySupply));
 	}
 
 	private void createWeekReportEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncWeeklySupply syncWeeklySupply)
@@ -443,14 +434,7 @@ public class ServerSyncBL implements IServerSyncBL
 		final String product_uuid = priceChangeEvent.getProduct_uuid();
 		loadPMMProductAndProcess(
 				product_uuid,
-				new IEventProcessor()
-				{
-					@Override
-					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
-					{
-						createRfQPriceChangeEvent(context, pmmProduct, priceChangeEvent);
-					}
-				});
+				(context, pmmProduct) -> createRfQPriceChangeEvent(context, pmmProduct, priceChangeEvent));
 	}
 
 	private void createRfQPriceChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQPriceChangeEvent syncPriceChangeEvent)
@@ -490,14 +474,7 @@ public class ServerSyncBL implements IServerSyncBL
 		final String product_uuid = qtyChangeEvent.getProduct_uuid();
 		loadPMMProductAndProcess(
 				product_uuid,
-				new IEventProcessor()
-				{
-					@Override
-					public void processEvent(final IContextAware context, final I_PMM_Product pmmProduct)
-					{
-						createRfQQtyChangeEvent(context, pmmProduct, qtyChangeEvent);
-					}
-				});
+				(context, pmmProduct) -> createRfQQtyChangeEvent(context, pmmProduct, qtyChangeEvent));
 	}
 
 	private void createRfQQtyChangeEvent(final IContextAware context, final I_PMM_Product pmmProduct, final SyncRfQQtyChangeEvent syncQtyChangeEvent)

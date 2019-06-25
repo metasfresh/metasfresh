@@ -624,7 +624,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		//
 		// Direct
 		{
-			final I_M_HU_PI_Item_Product huPIP = hu.getM_HU_PI_Item_Product();
+			final I_M_HU_PI_Item_Product huPIP = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 			if (huPIP != null)
 			{
 				return huPIP;

@@ -23,20 +23,21 @@ package org.adempiere.mm.attributes.api;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Date;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.exceptions.AttributeNotFoundException;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.compiere.model.I_M_Attribute;
-
-import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 /**
  * Goal of this interface: get an instance from an attribute set instance, one can use in a storage context.
@@ -125,6 +126,11 @@ public interface IAttributeSet
 		return TimeUtil.asLocalDateTime(getValueAsDate(attributeKey));
 	}
 
+	default LocalDate getValueAsLocalDate(final String attributeKey)
+	{
+		return TimeUtil.asLocalDate(getValueAsDate(attributeKey));
+	}
+
 	default Date getValueAsDate(final I_M_Attribute attribute)
 	{
 		return getValueAsDate(attribute.getValue());
@@ -137,7 +143,8 @@ public interface IAttributeSet
 		return getValueAsString(attribute.getValue());
 	}
 
-	@Nullable default AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
+	@Nullable
+	default AttributeValueId getAttributeValueIdOrNull(final String attributeKey)
 	{
 		return null;
 	}

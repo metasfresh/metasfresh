@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,8 +12,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLine.InventoryLineBuilder;
 import de.metas.handlingunits.inventory.InventoryLineHU;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
-import de.metas.inventory.AggregationType;
+import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.NonFinal;
@@ -85,10 +85,11 @@ public class DraftInventoryLinesCreator
 			countInventoryLines++;
 		}
 
-		final InventoryLineRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryLineRepository();
+		final InventoryRepository inventoryLineRepository = inventoryLinesCreationCtx.getInventoryRepo();
+		final InventoryId inventoryId = inventoryLinesCreationCtx.getInventoryId();
 		createdOrUpdatedLines
 				.values()
-				.forEach(inventoryLineRepository::save);
+				.forEach(line -> inventoryLineRepository.saveInventoryLine(line, inventoryId));
 
 	}
 
@@ -122,21 +123,15 @@ public class DraftInventoryLinesCreator
 			else
 			{
 				// create line
-				inventoryLineBuilder = InventoryLine
-						.builder()
-						.inventoryId(inventoryLinesCreationCtx.getInventoryId());
+				inventoryLineBuilder = InventoryLine.builder()
+						.orgId(huForInventoryLine.getOrgId());
 			}
 		}
 
-		final InventoryLineHU inventoryLineHU = InventoryLineHU
-				.builder()
-				.huId(huForInventoryLine.getHuId())
-				.qtyBook(huForInventoryLine.getQuantity())
-				.qtyCount(huForInventoryLine.getQuantity())
-				.build();
+		final InventoryLineHU inventoryLineHU = toInventoryLineHU(huForInventoryLine);
 
 		inventoryLineBuilder
-				.singleHUAggregation(extractIsSingleHUAggregation())
+				.huAggregationType(getHuAggregationType())
 				.storageAttributesKey(huForInventoryLine.getStorageAttributesKey())
 				.inventoryLineHU(inventoryLineHU)
 				.locatorId(huForInventoryLine.getLocatorId())
@@ -145,22 +140,20 @@ public class DraftInventoryLinesCreator
 		createdOrUpdatedLines.put(aggregationKey, inventoryLineBuilder.build());
 	}
 
-	private boolean extractIsSingleHUAggregation()
+	private static InventoryLineHU toInventoryLineHU(final HuForInventoryLine huForInventoryLine)
 	{
-		final AggregationType aggregationType = inventoryLinesCreationCtx
-				.getInventoryLineAggregator()
-				.getAggregationType();
+		return InventoryLineHU.builder()
+				.huId(huForInventoryLine.getHuId())
+				.qtyBook(huForInventoryLine.getQuantity())
+				.qtyCount(huForInventoryLine.getQuantity())
+				.build();
+	}
 
-		switch (aggregationType)
-		{
-			case MULTIPLE_HUS:
-				return false;
-			case SINGLE_HU:
-				return true;
-			default:
-				throw new AdempiereException("Unsupported AggregationType=" + aggregationType)
-						.appendParametersToMessage()
-						.setParameter("inventoryLinesCreationCtx", inventoryLinesCreationCtx);
-		}
+	private HUAggregationType getHuAggregationType()
+	{
+		return inventoryLinesCreationCtx
+				.getInventoryLineAggregator()
+				.getAggregationType()
+				.getHuAggregationType();
 	}
 }
