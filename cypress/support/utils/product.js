@@ -98,28 +98,28 @@ export class Product {
 
       cy.writeIntoStringField('Description', product.description);
 
-      cy.getFieldValue('IsStocked').then(isIsStockedValue => {
+      cy.getStringFieldValue('IsStocked').then(isIsStockedValue => {
         if (product.isStocked && !isIsStockedValue) {
           cy.clickOnCheckBox('IsStocked');
         }
       });
-      cy.getFieldValue('IsPurchased').then(isPurchasedValue => {
+      cy.getStringFieldValue('IsPurchased').then(isPurchasedValue => {
         if (product.isPurchased && !isPurchasedValue) {
           cy.clickOnCheckBox('IsPurchased');
         }
       });
-      cy.getFieldValue('IsSold').then(isSoldValue => {
+      cy.getStringFieldValue('IsSold').then(isSoldValue => {
         if (product.isSold && !isSoldValue) {
           cy.clickOnCheckBox('IsSold');
         }
       });
-      cy.getFieldValue('IsDiverse').then(isDiverseValue => {
+      cy.getStringFieldValue('IsDiverse').then(isDiverseValue => {
         if (product.isDiverse && !isDiverseValue) {
           cy.clickOnCheckBox('IsDiverse');
         }
       });
 
-      cy.getFieldValue('ProductType').then(productTypeValue => {
+      cy.getStringFieldValue('ProductType').then(productTypeValue => {
         const productType = getLanguageSpecific(product, 'productType');
 
         if (productType != productTypeValue) {
@@ -127,7 +127,7 @@ export class Product {
         }
       });
 
-      cy.getFieldValue('C_UOM_ID').then(uomValue => {
+      cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
         const c_uom = getLanguageSpecific(product, 'c_uom');
 
         if (c_uom && c_uom != uomValue) {

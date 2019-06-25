@@ -1,8 +1,10 @@
 {
     "singleHUInventoryDocTypeName": "Inventory",
     "de_DE__singleHUInventoryDocTypeName": "Inventur",
-    "aggregatedHUsInventoryDocTypeName": "Inventur mit aggregierten Materialangaben",
+
+    "aggregatedHUsInventoryDocTypeName": "Inventory with aggregated HUs",
     "de_DE__aggregatedHUsInventoryDocTypeName": "Inventur mit aggregierten Materialangaben",
+
     "stdWarehouseName": "Main Warehouse_MW",
     "de_DE__stdWarehouseName": "Hauptlager"
 }

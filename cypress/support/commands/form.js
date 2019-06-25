@@ -21,9 +21,9 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
   });
 });
 
-Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
+Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   describe('Get field value', function() {
-    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+    cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
     return cy
@@ -50,9 +50,9 @@ function createFieldPath(fieldName, modal) {
   return path;
 }
 
-Cypress.Commands.add('isChecked', (fieldName, modal) => {
+Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
   describe('Get field value', function() {
-    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+    cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
