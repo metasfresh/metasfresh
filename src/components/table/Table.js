@@ -6,6 +6,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
+import counterpart from 'counterpart';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
@@ -1310,9 +1311,10 @@ class Table extends Component {
         )}
         {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
           <span className="text-danger">
-            {/*TODO: use here translations, but how we define new keys?*/}
-            {/*{counterpart.translate('Limited to')}*/}
-            Limited to {MOBILE_TABLE_SIZE_LIMIT} results of {rows.length}
+            {counterpart.translate('view.limitTo', {
+              limit: MOBILE_TABLE_SIZE_LIMIT,
+              total: rows.length,
+            })}
           </span>
         )}
       </div>
