@@ -54,12 +54,12 @@ import org.slf4j.Logger;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.google.common.base.Predicates;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -74,8 +74,6 @@ public class Util
 {
 	/** Logger */
 	private static Logger log = LogManager.getLogger(Util.class.getName());
-
-
 
 	/**************************************************************************
 	 * Return a Iterator with only the relevant attributes. Fixes implementation in AttributedString, which returns everything
@@ -878,130 +876,82 @@ public class Util
 	}
 
 	/**
-	 * @return first not null value from list
-	 * @see #coalesce(Object...)
+	 * @deprecated please use {@link CoalesceUtil#coalesce(Object, Object)} instead.
 	 */
 	// NOTE: this method is optimized for common usage
+	@Deprecated
 	public static final <T> T coalesce(final T value1, final T value2)
 	{
-		return value1 == null ? value2 : value1;
+		return CoalesceUtil.coalesce(value1, value2);
 	}
 
 	/**
-	 * @return first not null value from list
-	 * @see #coalesce(Object...)
+	 * @deprecated please use {@link CoalesceUtil#coalesce(Object, Object, Object)} instead.
 	 */
 	// NOTE: this method is optimized for common usage
+	@Deprecated
 	public static final <T> T coalesce(final T value1, final T value2, final T value3)
 	{
-		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+		return CoalesceUtil.coalesce(value1, value2, value3);
 	}
 
 	/**
-	 *
-	 * @param values
-	 * @return first not null value from list
+	 * @deprecated please use {@link CoalesceUtil#coalesce(Object...)} instead.
 	 */
+	@Deprecated
 	@SafeVarargs
 	public static final <T> T coalesce(final T... values)
 	{
-		if (values == null || values.length == 0)
-		{
-			return null;
-		}
-		for (final T value : values)
-		{
-			if (value != null)
-			{
-				return value;
-			}
-		}
-		return null;
+		return CoalesceUtil.coalesce(values);
 	}
 
 	/**
-	 * Similar to {@link #coalesce(Object...)}, but invokes the given suppliers' get methods one by one.
-	 *
-	 * @param values
-	 * @return
+	 * @deprecated please use {@link CoalesceUtil#coalesceSuppliers(Supplier...)} instead.
 	 */
+	@Deprecated
 	@SafeVarargs
 	public static final <T> T coalesceSuppliers(final Supplier<T>... values)
 	{
-		return firstValidValue(Predicates.notNull(), values);
-	}
-
-	@SafeVarargs
-	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
-	{
-		if (values == null || values.length == 0)
-		{
-			return null;
-		}
-		for (final Supplier<T> supplier : values)
-		{
-			final T value = supplier.get();
-			if (isValidPredicate.test(value))
-			{
-				return value;
-			}
-		}
-		return null;
+		return CoalesceUtil.coalesceSuppliers(values);
 	}
 
 	/**
-	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
-	 *
-	 * @param values
-	 * @return first greater than zero value or zero
+	 * @deprecated please use {@link CoalesceUtil#firstValidValue(Predicate, Supplier...)} instead.
 	 */
-	public static final int firstGreaterThanZero(int... values)
+	@Deprecated
+	@SafeVarargs
+	public static final <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, final Supplier<T>... values)
 	{
-		if (values == null || values.length == 0)
-		{
-			return 0;
-		}
-		for (final int value : values)
-		{
-			if (value > 0)
-			{
-				return value;
-			}
-		}
-		return 0;
+		return CoalesceUtil.firstValidValue(isValidPredicate, values);
 	}
 
+	/**
+	 * @deprecated please use {@link CoalesceUtil#firstGreaterThanZeroSupplier(Supplier...)} instead.
+	 */
+	@Deprecated
+	public static final int firstGreaterThanZero(int... values)
+	{
+		return CoalesceUtil.firstGreaterThanZero(values);
+	}
+
+	/**
+	 * @deprecated please use {@link CoalesceUtil#firstGreaterThanZeroSupplier(Supplier...)} instead.
+	 */
+	@Deprecated
 	@SafeVarargs
 	public static final int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
-		{
-			return 0;
-		}
-		for (final Supplier<Integer> supplier : suppliers)
-		{
-			final Integer value = supplier.get();
-			if (value > 0)
-			{
-				return value;
-			}
-		}
-		return 0;
+		return CoalesceUtil.firstGreaterThanZeroSupplier(suppliers);
 	}
 
 	/**
 	 * @return the first non-empty string or {@code null}.
+	 * @deprecated please use {@link CoalesceUtil#firstNotEmptyTrimmed(String...)} instead
 	 */
+	@Deprecated
 	public static final String firstNotEmptyTrimmed(@NonNull final String... values)
 	{
-		for (int i = 0; i < values.length; i++)
-		{
-			if (!Check.isEmpty(values[i], true))
-			{
-				return values[i].trim();
-			}
-		}
-		return null;
+		return CoalesceUtil.firstNotEmptyTrimmed(values);
 	}
 
 	public static String replaceNonDigitCharsWithZero(String stringToModify)

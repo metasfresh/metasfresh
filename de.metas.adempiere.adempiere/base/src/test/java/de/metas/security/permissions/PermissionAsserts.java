@@ -26,10 +26,6 @@ package de.metas.security.permissions;
 import org.junit.Assert;
 import org.junit.Ignore;
 
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.Permissions;
-import de.metas.security.permissions.Resource;
-
 /**
  * Permissions related assertion utilities.
  * 

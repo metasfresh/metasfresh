@@ -171,10 +171,10 @@ public class DataEntryRecord
 		}
 
 		final ZonedDateTime updated = ZonedDateTime.now();
-		final CreatedUpdatedInfo createdUpdatedInfo;
+		final DataEntryCreatedUpdatedInfo createdUpdatedInfo;
 		if (previousFieldVersion == null)
 		{
-			createdUpdatedInfo = CreatedUpdatedInfo.createNew(updatedBy, updated);
+			createdUpdatedInfo = DataEntryCreatedUpdatedInfo.createNew(updatedBy, updated);
 		}
 		else
 		{
@@ -201,28 +201,28 @@ public class DataEntryRecord
 	public Optional<ZonedDateTime> getCreatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getCreated);
+				.map(DataEntryCreatedUpdatedInfo::getCreated);
 	}
 
 	public Optional<UserId> getCreatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getCreatedBy);
+				.map(DataEntryCreatedUpdatedInfo::getCreatedBy);
 	}
 
 	public Optional<ZonedDateTime> getUpdatedValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getUpdated);
+				.map(DataEntryCreatedUpdatedInfo::getUpdated);
 	}
 
 	public Optional<UserId> getUpdatedByValue(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getCreatedUpdatedInfo(fieldId)
-				.map(CreatedUpdatedInfo::getUpdatedBy);
+				.map(DataEntryCreatedUpdatedInfo::getUpdatedBy);
 	}
 
-	public Optional<CreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
+	public Optional<DataEntryCreatedUpdatedInfo> getCreatedUpdatedInfo(@NonNull final DataEntryFieldId fieldId)
 	{
 		return getOptional(fieldId)
 				.map(DataEntryRecordField::getCreatedUpdatedInfo);

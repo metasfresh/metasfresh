@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*package*/class SetColumnNameQueryUpdater<T> implements ISqlQueryUpdater<T>
 {
@@ -37,7 +38,7 @@ import de.metas.util.Check;
 	private final Object value;
 	private final ModelColumnNameValue<?> valueColumn;
 
-	public SetColumnNameQueryUpdater(final String columnName, final Object value)
+	public SetColumnNameQueryUpdater(@NonNull final String columnName, final Object value)
 	{
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;

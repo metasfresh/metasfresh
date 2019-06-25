@@ -13,7 +13,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.table.api.AdTableId;
+
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimaps;
 
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -142,6 +147,14 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	public Stream<TableRecordReference> streamByTableName(@NonNull final String tableName)
 	{
 		return recordRefs.stream().filter(recordRef -> tableName.equals(recordRef.getTableName()));
+	}
+
+	public ListMultimap<AdTableId, Integer> extractTableId2RecordIds()
+	{
+		final ImmutableListMultimap<AdTableId, TableRecordReference> tableName2References = Multimaps.index(recordRefs, TableRecordReference::getAdTableId);
+		final ListMultimap<AdTableId, Integer> tableName2RecordIds = Multimaps.transformValues(tableName2References, TableRecordReference::getRecord_ID);
+
+		return tableName2RecordIds;
 	}
 
 	public <T extends RepoIdAware> Stream<T> streamIds(@NonNull final String tableName, @NonNull final IntFunction<T> idMapper)

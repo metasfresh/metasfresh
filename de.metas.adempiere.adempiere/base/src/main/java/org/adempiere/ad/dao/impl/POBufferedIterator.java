@@ -25,14 +25,16 @@ package org.adempiere.ad.dao.impl;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.POInfo;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Buffered {@link Iterator} over a {@link TypedSqlQuery} result.
@@ -61,27 +63,21 @@ import de.metas.util.Check;
 	private boolean bufferFullyLoaded = false;
 
 	/**
-	 *
-	 * @param query
-	 * @param clazz
 	 * @param rowNumberColumn optional, may be <code>null</code>.
-	 *            If a column is given, then this iterator will not use offset, but assume that the column contain a row number that starts at 1,
+	 *            If a column is given, then this iterator will not use offset, but assume that the column contains a row number that starts at 1,
 	 *            as created by the <code>row_nbumber()</code> window function. This class will then use this column by not paging with offset, but with in the where-clause "rowNumberColumn > offset".
 	 *            Thanks to http://use-the-index-luke.com/no-offset.
-	 *
 	 */
 	/* package */ POBufferedIterator(
-			final TypedSqlQuery<T> query,
-			final Class<ET> clazz,
-			final String rowNumberColumn)
+			@NonNull final TypedSqlQuery<T> query,
+			@Nullable final Class<ET> clazz,
+			@Nullable final String rowNumberColumn)
 	{
-		// Make sure database paging is supported
 		if (!DB.getDatabase().isPagingSupported())
 		{
 			throw new DBException("Database paging support is required in order to have " + POBufferedIterator.class + " working");
 		}
 
-		Check.assume(query != null, "query != null");
 		this.query = query.copy();
 		if (Check.isEmpty(this.query.getOrderBy(), true))
 		{
@@ -95,7 +91,6 @@ import de.metas.util.Check;
 			this.query.setOrderBy(orderBy);
 		}
 
-		// Check.assume(clazz != null, "clazz != null"); // class can be null
 		this.clazz = clazz;
 		this.rowNumberColumn = rowNumberColumn;
 	}

@@ -1,7 +1,7 @@
 package org.adempiere.service;
 
 import static de.metas.util.Check.assumeNotEmpty;
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -70,7 +70,7 @@ public interface IOrgDAO extends ISingletonService
 		{
 			this.outOfTrx = coalesce(outOfTrx, false);
 			this.failIfNotExists = coalesce(failIfNotExists, false);
-			this.orgValue = assumeNotEmpty(orgValue.trim(), "Parameter 'value' may not be empty");
+			this.orgValue = assumeNotEmpty(orgValue.trim(), "Parameter 'orgValue' may not be empty");
 		}
 	}
 

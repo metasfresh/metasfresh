@@ -65,6 +65,33 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setAddress1 (java.lang.String Address1);
+
+	/**
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getAddress1();
+
+    /** Column definition for Address1 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Address1", null);
+    /** Column name Address1 */
+    public static final String COLUMNNAME_Address1 = "Address1";
+
+	/**
 	 * Set Sprache.
 	 * Language for this entity
 	 *
@@ -88,35 +115,6 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "AD_Language", null);
     /** Column name AD_Language */
     public static final String COLUMNNAME_AD_Language = "AD_Language";
-
-	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_Org_ID (int AD_Org_ID);
-
-	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org>(I_C_BPartner.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Linked Organization.
@@ -148,31 +146,33 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_AD_OrgBP_ID = "AD_OrgBP_ID";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setAddress1 (java.lang.String Address1);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAddress1();
+	public int getAD_Org_ID();
 
-    /** Column definition for Address1 */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Address1", null);
-    /** Column name Address1 */
-    public static final String COLUMNNAME_Address1 = "Address1";
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org>(I_C_BPartner.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+    /** Column name AD_Org_ID */
+    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Sammel-Lieferscheine erlaubt.
@@ -201,7 +201,7 @@ public interface I_C_BPartner
 	 * Set Partner Parent.
 	 * Business Partner Parent
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -211,45 +211,20 @@ public interface I_C_BPartner
 	 * Get Partner Parent.
 	 * Business Partner Parent
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getBPartner_Parent_ID();
 
+	public org.compiere.model.I_C_BPartner getBPartner_Parent();
+
+	public void setBPartner_Parent(org.compiere.model.I_C_BPartner BPartner_Parent);
+
     /** Column definition for BPartner_Parent_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_BPartner_Parent_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "BPartner_Parent_ID", null);
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner> COLUMN_BPartner_Parent_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BPartner>(I_C_BPartner.class, "BPartner_Parent_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name BPartner_Parent_ID */
     public static final String COLUMNNAME_BPartner_Parent_ID = "BPartner_Parent_ID";
-
-	/**
-	 * Set Geschäftspartnergruppe.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Geschäftspartnergruppe.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Group_ID();
-
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
-
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group>(I_C_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -275,6 +250,35 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "C_BPartner_ID", null);
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Geschäftspartnergruppe.
+	 * Business Partner Group
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/**
+	 * Get Geschäftspartnergruppe.
+	 * Business Partner Group
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Group_ID();
+
+	public org.compiere.model.I_C_BP_Group getC_BP_Group();
+
+	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+
+    /** Column definition for C_BP_Group_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group>(I_C_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+    /** Column name C_BP_Group_ID */
+    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
 	 * Set Mahnung.
@@ -304,6 +308,52 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_Dunning> COLUMN_C_Dunning_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_Dunning>(I_C_BPartner.class, "C_Dunning_ID", org.compiere.model.I_C_Dunning.class);
     /** Column name C_Dunning_ID */
     public static final String COLUMNNAME_C_Dunning_ID = "C_Dunning_ID";
+
+	/**
+	 * Set Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCertificateOfRegistrationCustomer (boolean CertificateOfRegistrationCustomer);
+
+	/**
+	 * Get Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCertificateOfRegistrationCustomer();
+
+    /** Column definition for CertificateOfRegistrationCustomer */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationCustomer = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CertificateOfRegistrationCustomer", null);
+    /** Column name CertificateOfRegistrationCustomer */
+    public static final String COLUMNNAME_CertificateOfRegistrationCustomer = "CertificateOfRegistrationCustomer";
+
+	/**
+	 * Set Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCertificateOfRegistrationVendor (boolean CertificateOfRegistrationVendor);
+
+	/**
+	 * Get Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCertificateOfRegistrationVendor();
+
+    /** Column definition for CertificateOfRegistrationVendor */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationVendor = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CertificateOfRegistrationVendor", null);
+    /** Column name CertificateOfRegistrationVendor */
+    public static final String COLUMNNAME_CertificateOfRegistrationVendor = "CertificateOfRegistrationVendor";
 
 	/**
 	 * Set Anrede (ID).
@@ -362,108 +412,6 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_InvoiceSchedule> COLUMN_C_InvoiceSchedule_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_InvoiceSchedule>(I_C_BPartner.class, "C_InvoiceSchedule_ID", org.compiere.model.I_C_InvoiceSchedule.class);
     /** Column name C_InvoiceSchedule_ID */
     public static final String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
-
-	/**
-	 * Set Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
-
-	/**
-	 * Get Zahlungsbedingung.
-	 * Die Bedingungen für die Bezahlung dieses Vorgangs
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_PaymentTerm_ID();
-
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
-
-	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
-
-    /** Column definition for C_PaymentTerm_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm>(I_C_BPartner.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
-    /** Column name C_PaymentTerm_ID */
-    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
-
-	/**
-	 * Set Tax Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_TaxGroup_ID (int C_TaxGroup_ID);
-
-	/**
-	 * Get Tax Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_TaxGroup_ID();
-
-	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup();
-
-	public void setC_TaxGroup(org.eevolution.model.I_C_TaxGroup C_TaxGroup);
-
-    /** Column definition for C_TaxGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup> COLUMN_C_TaxGroup_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup>(I_C_BPartner.class, "C_TaxGroup_ID", org.eevolution.model.I_C_TaxGroup.class);
-    /** Column name C_TaxGroup_ID */
-    public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
-
-	/**
-	 * Set Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCertificateOfRegistrationCustomer (boolean CertificateOfRegistrationCustomer);
-
-	/**
-	 * Get Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCertificateOfRegistrationCustomer();
-
-    /** Column definition for CertificateOfRegistrationCustomer */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationCustomer = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CertificateOfRegistrationCustomer", null);
-    /** Column name CertificateOfRegistrationCustomer */
-    public static final String COLUMNNAME_CertificateOfRegistrationCustomer = "CertificateOfRegistrationCustomer";
-
-	/**
-	 * Set Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCertificateOfRegistrationVendor (boolean CertificateOfRegistrationVendor);
-
-	/**
-	 * Get Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCertificateOfRegistrationVendor();
-
-    /** Column definition for CertificateOfRegistrationVendor */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationVendor = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CertificateOfRegistrationVendor", null);
-    /** Column name CertificateOfRegistrationVendor */
-    public static final String COLUMNNAME_CertificateOfRegistrationVendor = "CertificateOfRegistrationVendor";
 
 	/**
 	 * Set Ort.
@@ -560,6 +508,35 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ContactStatusInfoVendor = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ContactStatusInfoVendor", null);
     /** Column name ContactStatusInfoVendor */
     public static final String COLUMNNAME_ContactStatusInfoVendor = "ContactStatusInfoVendor";
+
+	/**
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_PaymentTerm_ID();
+
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm();
+
+	public void setC_PaymentTerm(org.compiere.model.I_C_PaymentTerm C_PaymentTerm);
+
+    /** Column definition for C_PaymentTerm_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_C_PaymentTerm>(I_C_BPartner.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
+    /** Column name C_PaymentTerm_ID */
+    public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Get Erstellt.
@@ -665,6 +642,33 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_CreditorId = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "CreditorId", null);
     /** Column name CreditorId */
     public static final String COLUMNNAME_CreditorId = "CreditorId";
+
+	/**
+	 * Set Tax Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_TaxGroup_ID (int C_TaxGroup_ID);
+
+	/**
+	 * Get Tax Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_TaxGroup_ID();
+
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup();
+
+	public void setC_TaxGroup(org.eevolution.model.I_C_TaxGroup C_TaxGroup);
+
+    /** Column definition for C_TaxGroup_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup> COLUMN_C_TaxGroup_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup>(I_C_BPartner.class, "C_TaxGroup_ID", org.eevolution.model.I_C_TaxGroup.class);
+    /** Column name C_TaxGroup_ID */
+    public static final String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
 
 	/**
 	 * Set Eigene-Kd. Nr. .
@@ -1693,6 +1697,81 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
+	 * Set Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo (java.lang.String Memo);
+
+	/**
+	 * Get Memo.
+	 * Memo Text
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo();
+
+    /** Column definition for Memo */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo", null);
+    /** Column name Memo */
+    public static final String COLUMNNAME_Memo = "Memo";
+
+	/**
+	 * Set Memo_Delivery.
+	 * Memo Lieferung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo_Delivery (java.lang.String Memo_Delivery);
+
+	/**
+	 * Get Memo_Delivery.
+	 * Memo Lieferung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo_Delivery();
+
+    /** Column definition for Memo_Delivery */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Delivery = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Delivery", null);
+    /** Column name Memo_Delivery */
+    public static final String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
+
+	/**
+	 * Set Memo_Invoicing.
+	 * Memo Abrechnung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMemo_Invoicing (java.lang.String Memo_Invoicing);
+
+	/**
+	 * Get Memo_Invoicing.
+	 * Memo Abrechnung
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMemo_Invoicing();
+
+    /** Column definition for Memo_Invoicing */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Invoicing = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Invoicing", null);
+    /** Column name Memo_Invoicing */
+    public static final String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
+
+	/**
 	 * Set Frachtkostenpauschale.
 	 *
 	 * <br>Type: TableDir
@@ -1774,6 +1853,29 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
+	 * Set MRP ausschliessen.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMRP_Exclude (java.lang.String MRP_Exclude);
+
+	/**
+	 * Get MRP ausschliessen.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMRP_Exclude();
+
+    /** Column definition for MRP_Exclude */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_MRP_Exclude = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "MRP_Exclude", null);
+    /** Column name MRP_Exclude */
+    public static final String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
+
+	/**
 	 * Set Lieferweg.
 	 * Methode oder Art der Warenlieferung
 	 *
@@ -1832,104 +1934,6 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo (java.lang.String Memo);
-
-	/**
-	 * Get Memo.
-	 * Memo Text
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo();
-
-    /** Column definition for Memo */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo", null);
-    /** Column name Memo */
-    public static final String COLUMNNAME_Memo = "Memo";
-
-	/**
-	 * Set Memo_Delivery.
-	 * Memo Lieferung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo_Delivery (java.lang.String Memo_Delivery);
-
-	/**
-	 * Get Memo_Delivery.
-	 * Memo Lieferung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo_Delivery();
-
-    /** Column definition for Memo_Delivery */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Delivery = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Delivery", null);
-    /** Column name Memo_Delivery */
-    public static final String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
-
-	/**
-	 * Set Memo_Invoicing.
-	 * Memo Abrechnung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMemo_Invoicing (java.lang.String Memo_Invoicing);
-
-	/**
-	 * Get Memo_Invoicing.
-	 * Memo Abrechnung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMemo_Invoicing();
-
-    /** Column definition for Memo_Invoicing */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Memo_Invoicing = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Memo_Invoicing", null);
-    /** Column name Memo_Invoicing */
-    public static final String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
-
-	/**
-	 * Set MRP ausschliessen.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setMRP_Exclude (java.lang.String MRP_Exclude);
-
-	/**
-	 * Get MRP ausschliessen.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getMRP_Exclude();
-
-    /** Column definition for MRP_Exclude */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_MRP_Exclude = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "MRP_Exclude", null);
-    /** Column name MRP_Exclude */
-    public static final String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
-
-	/**
 	 * Set NAICS/SIC.
 	 * Standard Industry Code or its successor NAIC - http://www.osha.gov/oshstats/sicser.html
 	 *
@@ -1956,7 +1960,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -1966,7 +1969,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -2103,6 +2105,31 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_PaymentRulePO = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "PaymentRulePO", null);
     /** Column name PaymentRulePO */
     public static final String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
+
+	/**
+	 * Set Telefon (alternativ).
+	 * Alternative Telefonnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPhone2 (java.lang.String Phone2);
+
+	/**
+	 * Get Telefon (alternativ).
+	 * Alternative Telefonnummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPhone2();
+
+    /** Column definition for Phone2 */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_Phone2 = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "Phone2", null);
+    /** Column name Phone2 */
+    public static final String COLUMNNAME_Phone2 = "Phone2";
 
 	/**
 	 * Set Lieferung.
@@ -2917,7 +2944,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Set URL3.
-	 * Full URL address - e.g. http://www.adempiere.org
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false
@@ -2927,7 +2953,6 @@ public interface I_C_BPartner
 
 	/**
 	 * Get URL3.
-	 * Full URL address - e.g. http://www.adempiere.org
 	 *
 	 * <br>Type: URL
 	 * <br>Mandatory: false

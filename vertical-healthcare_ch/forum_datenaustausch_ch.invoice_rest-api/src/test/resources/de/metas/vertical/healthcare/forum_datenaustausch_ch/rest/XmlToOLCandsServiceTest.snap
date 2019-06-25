@@ -1,7 +1,7 @@
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest=[ {
   "requests" : [ {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -22,8 +22,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -79,7 +81,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -100,8 +102,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -157,7 +161,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -178,8 +182,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -235,7 +241,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -256,8 +262,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -313,7 +321,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -334,8 +342,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -391,7 +401,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -412,8 +422,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -469,7 +481,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -490,8 +502,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -547,7 +561,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -568,8 +582,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -625,7 +641,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -646,8 +662,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -703,7 +721,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -724,8 +742,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -781,7 +801,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -802,8 +822,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -859,7 +881,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -880,8 +902,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -937,7 +961,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -958,8 +982,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1015,7 +1041,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1036,8 +1062,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1093,7 +1121,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1114,8 +1142,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1171,7 +1201,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1192,8 +1222,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1249,7 +1281,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1270,8 +1302,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1327,7 +1361,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1348,8 +1382,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1405,7 +1441,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1426,8 +1462,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1483,7 +1521,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1504,8 +1542,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1561,7 +1601,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1582,8 +1622,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1644,7 +1686,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
 de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTest.createJsonOLCandCreateBulkRequest2=[ {
   "requests" : [ {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1665,8 +1707,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1722,7 +1766,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1743,8 +1787,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1800,7 +1846,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1821,8 +1867,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1878,7 +1926,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1899,8 +1947,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -1956,7 +2006,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -1977,8 +2027,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2034,7 +2086,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2055,8 +2107,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2112,7 +2166,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2133,8 +2187,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2190,7 +2246,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2211,8 +2267,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2268,7 +2326,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2289,8 +2347,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2346,7 +2406,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2367,8 +2427,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2424,7 +2486,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2445,8 +2507,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2502,7 +2566,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2523,8 +2587,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2580,7 +2646,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2601,8 +2667,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2658,7 +2726,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2679,8 +2747,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2736,7 +2806,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2757,8 +2827,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2814,7 +2886,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2835,8 +2907,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2892,7 +2966,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2913,8 +2987,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -2970,7 +3046,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -2991,8 +3067,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -3048,7 +3126,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3069,8 +3147,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -3126,7 +3206,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3147,8 +3227,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {
@@ -3204,7 +3286,7 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
     }
   }, {
     "org" : {
-      "code" : "EAN-2011234567890",
+      "code" : "JsonExternalId(value=EAN-2011234567890)",
       "name" : "Biller AG",
       "syncAdvise" : {
         "ifNotExists" : "FAIL",
@@ -3225,8 +3307,10 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsServiceTes
           "gln" : "2011234567890"
         },
         "contact" : {
-          "externalId" : "EAN-2011234567890_singlePerson",
+          "metasfreshId" : null,
+          "externalId" : "JsonExternalId(value=EAN-2011234567890)_singlePerson",
           "name" : "Biller AG",
+          "lastName" : "Biller AG",
           "email" : "info@biller.ch"
         },
         "syncAdvise" : {

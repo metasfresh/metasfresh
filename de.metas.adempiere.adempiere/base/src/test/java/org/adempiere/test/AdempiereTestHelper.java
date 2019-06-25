@@ -3,6 +3,8 @@ package org.adempiere.test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -26,7 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.util.Properties;
-
+import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -56,9 +58,10 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.UnitTestServiceNamePolicy;
+import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatchingStragety;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
 import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 
 /**
@@ -83,7 +86,7 @@ public class AdempiereTestHelper
 		}
 
 		@Override
-		public SnapshotMatchingStragety getSnapshotMatchRule()
+		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
 		{
 			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
 		}
@@ -132,6 +135,8 @@ public class AdempiereTestHelper
 		// Make sure staticInit was called
 		staticInit();
 
+		POJOQuery.clear_UUID_TO_PAGE();
+
 		// Make sure database is clean
 		POJOLookupMap.resetAll();
 
@@ -162,8 +167,9 @@ public class AdempiereTestHelper
 		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 
-		// Reset System Time
-		SystemTime.setTimeSource(null);
+		// Reset System Time and random UUID
+		SystemTime.resetTimeSource();
+		UIDStringUtil.reset();
 
 		// Caching
 		AbstractModelListCacheLocal.DEBUG = true;
