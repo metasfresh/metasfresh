@@ -16,8 +16,30 @@ export class WithMobileDoubleTap extends React.Component {
   render() {
     const { children } = this.props;
     if (isMobileDevice) {
-      const { onDoubleClick } = children.props;
-      return <Hammer onDoubleTap={onDoubleClick}>{children}</Hammer>;
+      const { onDoubleClick, onClick } = children.props;
+      return (
+        <Hammer
+          options={{
+            recognizers: {
+              tap: {
+                requireFailure: 'doubletap',
+              },
+            },
+          }}
+          onTap={event => {
+            if (event.tapCount === 2) {
+              onDoubleClick(event.srcEvent);
+            } else {
+              onClick(event.srcEvent);
+            }
+          }}
+        >
+          {React.cloneElement(children, {
+            onDoubleClick: undefined,
+            onClick: undefined,
+          })}
+        </Hammer>
+      );
     }
     return children;
   }

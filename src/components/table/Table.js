@@ -663,7 +663,7 @@ class Table extends Component {
 
     if (e.button === 0) {
       const { selected } = this.state;
-      const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
+      const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
       const isSelected = selected.indexOf(id) > -1;
       const isAnySelected = selected.length > 0;
