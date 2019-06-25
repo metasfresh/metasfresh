@@ -1,9 +1,4 @@
 describe('Introduce Window Tabs Internal Name #4491', function() {
-  before(function() {
-    // login before each test
-    cy.loginByForm();
-  });
-
   it('Open bpartner window', function() {
     cy.visit('/window/123');
     cy.get('.cell-text-wrapper.text-cell')

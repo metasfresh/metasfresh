@@ -12,6 +12,12 @@ declare namespace Cypress {
     assertFieldNotShown(fieldName: string, modal: boolean): Chainable<any>
 
     /**
+     * @param fieldName name of the field is question
+     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     */
+    clearField(fieldName: string, modal: boolean): Chainable<any>
+
+    /**
      * Fire header action with a certain name and expect a modal dialog to pop up within 10 secs
      * 
      * @param actionName internal name of the action to be executed
@@ -31,22 +37,22 @@ declare namespace Cypress {
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * 
      * @example 
-     * cy.getFieldValue('Description').then(fieldValue => {
+     * cy.getStringFieldValue('Description').then(fieldValue => {
      *  cy.log(`Description = ${fieldValue}`)
      * });
      */
-    getFieldValue(fieldName: string, modal: boolean): Chainable<any>
+    getStringFieldValue(fieldName: string, modal: boolean): Chainable<any>
 
     /**
      * @param fieldName name of the field is question
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * 
      * @example 
-     * cy.isChecked('IsDefault').then(checkBoxValue => {
+     * cy.getCheckboxValue('IsDefault').then(checkBoxValue => {
      *  cy.log(`IsDefault = ${checkBoxValue}`)
      * });
      */
-    isChecked(fieldName: string, modal: boolean): Chainable<any>
+    getCheckboxValue(fieldName: string, modal: boolean): Chainable<any>
     
     /**
      * Open the advanced edit overlay via ALT+E shortcut
@@ -89,6 +95,9 @@ declare namespace Cypress {
      * @param stringValue (sub-)string of the list item to select
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
+     * @example
+     * // select a certain flatrate condition is a process dialog
+     * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
      */
     selectInListField(fieldName: string, stringValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
 

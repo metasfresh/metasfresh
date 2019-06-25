@@ -4,11 +4,6 @@ import { BPartner, BPartnerLocation, BPartnerContact } from '../../support/utils
 import { DiscountSchema } from '../../support/utils/discountschema';
 
 describe('purchase order Test', function() {
-    before(function() {
-        // login before each test
-        cy.loginByForm();
-    });
-    
     const timestamp = new Date().getTime() // used in the document names, for ordering
     const poReference = `${timestamp}`;
     const contactLastName = `2ndary ${timestamp}`;

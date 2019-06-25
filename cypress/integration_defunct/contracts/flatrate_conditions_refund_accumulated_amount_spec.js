@@ -3,11 +3,6 @@ import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 
 describe('Create accumulated amount-based (AA) refund conditions', function() {
-  before(function() {
-    // login before each test and open the flatrate conditions window
-    cy.loginByForm();
-  });
-
   it('Create accumulated amount-based refund conditions', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
 

@@ -37,8 +37,8 @@ import notificationFixtures from '../../fixtures/misc/notifications.json';
 
 const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
-context('Reusable "login" custom command', function() {
-  Cypress.Commands.add('loginByForm', (username, password, redirect) => {
+context('Reusable "login" custom command using API', function() {
+  Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
     let pass = password;
 
@@ -48,7 +48,7 @@ context('Reusable "login" custom command', function() {
     }
 
     Cypress.log({
-      name: 'loginByForm',
+      name: 'loginViaAPI',
       message: user + ' | ' + pass,
     });
 

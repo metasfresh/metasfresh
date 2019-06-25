@@ -10,9 +10,6 @@ function removeSubstringsWithCurlyBrackets(stringValue) {
   return stringValue.replace(regex, '');
 }
 
-/*
- * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
- */
 Cypress.Commands.add('clearField', (fieldName, modal) => {
   describe('Clear field', function() {
     cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
@@ -24,9 +21,9 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
   });
 });
 
-Cypress.Commands.add('getFieldValue', (fieldName, modal) => {
+Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   describe('Get field value', function() {
-    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+    cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
     return cy
@@ -53,20 +50,33 @@ function createFieldPath(fieldName, modal) {
   return path;
 }
 
-Cypress.Commands.add('isChecked', (fieldName, modal) => {
+Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
   describe('Get field value', function() {
-    cy.log(`getFieldValue - fieldName=${fieldName}; modal=${modal}`);
+    cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
 
     let path = `.form-field-${fieldName}`;
     if (modal) {
       path = `.panel-modal ${path}`;
     }
     return cy.get(path).then(el => {
-      if (el.find('checked').length) {
+      if (el.find('checked').length || el.find('.checked').length) {
         return true;
       }
       return false;
     });
+  });
+});
+
+Cypress.Commands.add('resetListValue', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
+      .find('.meta-icon-close-alt')
+      .click();
   });
 });
 
@@ -269,10 +279,42 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
       .find('.input-dropdown')
       .click();
 
-    cy.contains('.input-dropdown-list-option', listValue).click()
+    // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
+    cy.get('.input-dropdown-list')
+      .contains(listValue)
+      .click();
 
     if (!skipRequest) {
       cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
     }
+  });
+});
+
+/**
+ * Select the option with a given index from a static list. This command does not wait for response from the server.
+ *
+ * @param {string} fieldName - id of the field to select from
+ * @param {number} index - index of the item to select
+ * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
+  describe('Select n-th option in list field', function() {
+    cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
+
+    let path = `.form-field-${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
+    cy.get(path)
+      .find('.input-dropdown')
+      .click();
+
+    cy.get('.input-dropdown-list-option').then(options => {
+      for (let i = 0; i < options.length; i += 1) {
+        if (i === index) {
+          cy.get(options[i]).click();
+        }
+      }
+    });
   });
 });
