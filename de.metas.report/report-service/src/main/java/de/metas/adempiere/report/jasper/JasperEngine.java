@@ -270,12 +270,16 @@ public class JasperEngine extends AbstractReportEngine
 
 		if (jsonDSService.isJasperJSONReport(reportContext))
 		{
-			final String sql_value = jsonDSService.retrieveJSON_SQL_Value(reportContext);
+			final String sql_value = jsonDSService.retrieveJsonSqlValue(reportContext);
 			if (sql_value != null)
 			{
 				jrParameters.put(PARAM_SQL_VALUE, sql_value);
 			}
 
+			//
+			// We must provide the json as parameter input stream
+			// See  https://stackoverflow.com/questions/33300592/how-to-fill-report-using-json-datasource-without-getting-null-values/33301039
+			// See http://jasperreports.sourceforge.net/sample.reference/jsondatasource/
 			final InputStream is = jsonDSService.getInputStream(reportContext);
 			jrParameters.put(JsonQLQueryExecuterFactory.JSON_INPUT_STREAM, is);
 		}

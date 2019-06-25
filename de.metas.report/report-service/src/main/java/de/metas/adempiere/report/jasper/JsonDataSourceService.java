@@ -143,7 +143,7 @@ public class JsonDataSourceService
 		return reportURL;
 	}
 
-	public String retrieveJSON_SQL_Value(@NonNull final ReportContext reportContext)
+	public String retrieveJsonSqlValue(@NonNull final ReportContext reportContext)
 	{
 		//
 		// Get SQL
