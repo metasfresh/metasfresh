@@ -1731,6 +1731,10 @@ public class TimeUtil
 		{
 			return (Instant)obj;
 		}
+		else if (obj instanceof Timestamp)
+		{
+			return ((Timestamp)obj).toInstant();
+		}
 		else if (obj instanceof Date)
 		{
 			return ((Date)obj).toInstant();

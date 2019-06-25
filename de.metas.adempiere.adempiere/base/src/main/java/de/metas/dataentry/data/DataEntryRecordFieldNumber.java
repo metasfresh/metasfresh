@@ -41,7 +41,7 @@ public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 
 	public static DataEntryRecordFieldNumber of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final BigDecimal value)
 	{
 		return new DataEntryRecordFieldNumber(dataEntryFieldId, createdUpdatedInfo, value);
@@ -49,7 +49,7 @@ public class DataEntryRecordFieldNumber extends DataEntryRecordField<BigDecimal>
 
 	private DataEntryRecordFieldNumber(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final BigDecimal value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

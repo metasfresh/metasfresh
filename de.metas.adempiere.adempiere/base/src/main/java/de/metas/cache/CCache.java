@@ -100,7 +100,7 @@ public class CCache<K, V> implements CacheInterface
 				.build();
 	}
 
-	public static enum CacheMapType
+	public enum CacheMapType
 	{
 		/**
 		 * Data is cached in a normal hash map
@@ -142,7 +142,7 @@ public class CCache<K, V> implements CacheInterface
 	private boolean m_justReset = true;
 
 	/** Can provide a collection of cache keys for a given record reference. */
-	private final Optional<CacheInvalidationKeysMapper<K>> invalidationKeysMapper;
+	private final Optional<CachingKeysMapper<K>> invalidationKeysMapper;
 
 	/**
 	 * If {@link #DEBUG} is enabled, this variable contains the object's identity code (see {@link System#identityHashCode(Object)}).
@@ -180,7 +180,7 @@ public class CCache<K, V> implements CacheInterface
 				initialCapacity,
 				expireMinutes,
 				CacheMapType.HashMap,
-				(CacheInvalidationKeysMapper<K>)null,
+				(CachingKeysMapper<K>)null,
 				(CacheRemovalListener<K, V>)null);
 	}
 
@@ -192,7 +192,7 @@ public class CCache<K, V> implements CacheInterface
 			final Integer initialCapacity,
 			final Integer expireMinutes,
 			final CacheMapType cacheMapType,
-			@Nullable final CacheInvalidationKeysMapper<K> invalidationKeysMapper,
+			@Nullable final CachingKeysMapper<K> invalidationKeysMapper,
 			@Nullable final CacheRemovalListener<K, V> removalListener)
 	{
 		this.cacheId = NEXT_CACHE_ID.getAndIncrement();
@@ -438,7 +438,7 @@ public class CCache<K, V> implements CacheInterface
 
 	private long resetForRecordIdUsingKeysMapper(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull final CacheInvalidationKeysMapper<K> keysMapper)
+			@NonNull final CachingKeysMapper<K> keysMapper)
 	{
 		if (keysMapper.isResetAll(recordRef))
 		{
@@ -446,7 +446,7 @@ public class CCache<K, V> implements CacheInterface
 		}
 
 		long counter = 0; // note that also the "reset-all" reset() method only returns an approx number.
-		for (final K key : keysMapper.computeKeysToInvalidate(recordRef))
+		for (final K key : keysMapper.computeCachingKeys(recordRef))
 		{
 			final boolean keyRemoved = remove(key) != null;
 			if (keyRemoved)

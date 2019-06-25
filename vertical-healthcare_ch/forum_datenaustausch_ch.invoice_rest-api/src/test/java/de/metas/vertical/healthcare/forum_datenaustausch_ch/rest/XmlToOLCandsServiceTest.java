@@ -9,18 +9,18 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import de.metas.ordercandidate.rest.JsonOLCandCreateBulkRequest;
-import de.metas.ordercandidate.rest.JsonOLCandCreateRequest;
-import de.metas.ordercandidate.rest.OrderCandidatesRestEndpoint;
-import de.metas.ordercandidate.rest.SyncAdvise;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
+import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
+import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
@@ -48,7 +48,7 @@ import lombok.NonNull;
  * #L%
  */
 
-class XmlToOLCandsServiceTest
+public class XmlToOLCandsServiceTest
 {
 	@Mock
 	OrderCandidatesRestEndpoint orderCandidatesRestEndpoint;
@@ -56,28 +56,28 @@ class XmlToOLCandsServiceTest
 	@InjectMocks
 	XmlToOLCandsService xmlToOLCandsService;
 
-	@BeforeEach
-	void before()
+	@Before
+	public void before()
 	{
 		// note: if i add mockito-junit-jupiter to the dependencies in order to do "@ExtendWith(MockitoExtension.class)",
 		// then eclipse can't find my test methods anymore
 		MockitoAnnotations.initMocks(this);
 	}
 
-	@BeforeAll
-	static void beforeAll()
+	@BeforeClass
+	public static void beforeAll()
 	{
 		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
 	}
 
-	@AfterAll
-	static void afterAll()
+	@AfterClass
+	public static void afterAll()
 	{
 		validateSnapshots();
 	}
 
 	@Test
-	void createJsonOLCandCreateBulkRequest()
+	public void createJsonOLCandCreateBulkRequest()
 	{
 		// assertThat(orderCandidatesRestEndpoint).isNotNull();
 
@@ -89,7 +89,7 @@ class XmlToOLCandsServiceTest
 	}
 
 	@Test
-	void createJsonOLCandCreateBulkRequest2()
+	public void createJsonOLCandCreateBulkRequest2()
 	{
 		// assertThat(orderCandidatesRestEndpoint).isNotNull();
 
@@ -123,7 +123,7 @@ class XmlToOLCandsServiceTest
 
 		assertThat(requests).hasSize(21); // guards
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getName()).isEqualTo("Krankenkasse AG"));
-		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getExternalId()).isEqualTo("EAN-7634567890000"));
+		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getExternalId().getValue()).isEqualTo("EAN-7634567890000"));
 		assertThat(requests).allSatisfy(r -> assertThat(r.getBpartner().getLocation().getGln()).isEqualTo("7634567890000"));
 
 		final List<Object> xmlServices = xmlInvoice.getPayload().getBody().getServices().getRecordTarmedOrRecordDrgOrRecordLab();

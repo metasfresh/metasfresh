@@ -20,10 +20,10 @@ import lombok.NonNull;
  */
 public class IDCache<V> extends CCache<Object, V>
 {
-	private static final CacheInvalidationKeysMapper<Object> KEYS_MAPPER = new CacheInvalidationKeysMapper<Object>()
+	private static final CachingKeysMapper<Object> KEYS_MAPPER = new CachingKeysMapper<Object>()
 	{
 		@Override
-		public Collection<Object> computeKeysToInvalidate(@NonNull final TableRecordReference tableRecordReference)
+		public Collection<Object> computeCachingKeys(@NonNull final TableRecordReference tableRecordReference)
 		{
 			return ImmutableList.of(tableRecordReference.getRecord_ID());
 		}
@@ -33,7 +33,7 @@ public class IDCache<V> extends CCache<Object, V>
 	{
 		this(tableName, trxName, initialCapacity, expireMinutes, CacheMapType.HashMap);
 	}
-	
+
 	public IDCache(final String tableName,
 			final String trxName,
 			final int initialCapacity,

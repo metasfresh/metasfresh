@@ -1,5 +1,6 @@
 package de.metas.bpartner.service.impl;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -63,8 +65,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -99,6 +99,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -190,11 +191,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerContactId> getContactIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<BPartnerContactId> getContactIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveContacts(bpartnerId)
 				.stream()
-				.filter(contact -> externalId.equals(contact.getExternalId()))
+				.filter(contact -> Objects.equals(externalId.getValue(), contact.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerContactId.ofRepoId(bpartnerId, record.getAD_User_ID()));
 	}
@@ -219,7 +222,6 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return retrieveDefaultContactOrNull(ctx, bpartnerId, trxName, clazz);
 	}
-
 	@Override
 	public Optional<UserId> getDefaultContactId(@NonNull final BPartnerId bpartnerId)
 	{
@@ -240,11 +242,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(@NonNull final BPartnerId bpartnerId, @NonNull final String externalId)
+	public Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final ExternalId externalId)
 	{
 		return retrieveBPartnerLocations(bpartnerId)
 				.stream()
-				.filter(bpLocation -> externalId.equals(bpLocation.getExternalId()))
+				.filter(bpLocation -> Objects.equals(externalId.getValue(), bpLocation.getExternalId()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
 	}
@@ -997,6 +1001,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public Optional<BPartnerId> retrieveBPartnerIdBy(@NonNull final BPartnerQuery query)
 	{
+		if (query.getBBartnerId() != null)
+		{
+			return Optional.of(query.getBBartnerId());
+		}
+
 		final StringJoiner searchedByInfo = new StringJoiner(", ");
 		BPartnerId existingBPartnerId = null;
 
@@ -1039,8 +1048,10 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private Optional<BPartnerId> getBPartnerIdByExternalIdIfExists(@NonNull final BPartnerQuery query)
 	{
+		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
+
 		final IQueryBuilder<I_C_BPartner> queryBuilder = createQueryBuilder(query.isOutOfTrx(), I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, query.getExternalId());
+				.addEqualsFilter(I_C_BPartner.COLUMN_ExternalId, externalId.getValue());
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{

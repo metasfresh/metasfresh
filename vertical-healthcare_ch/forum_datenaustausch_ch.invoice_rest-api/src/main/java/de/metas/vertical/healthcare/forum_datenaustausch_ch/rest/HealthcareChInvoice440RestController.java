@@ -1,6 +1,6 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import de.metas.ordercandidate.rest.JsonAttachment;
-import de.metas.ordercandidate.rest.SyncAdvise;
-import de.metas.ordercandidate.rest.SyncAdvise.IfExists;
-import de.metas.ordercandidate.rest.SyncAdvise.IfNotExists;
+import de.metas.rest_api.SyncAdvise;
+import de.metas.rest_api.SyncAdvise.IfExists;
+import de.metas.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.XmlToOLCandsService.CreateOLCandsRequest;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,7 +46,7 @@ import lombok.NonNull;
 @RestController
 @RequestMapping(RestApiConstants.ENDPOINT_INVOICE_440)
 @Conditional(RestApiStartupCondition.class)
-@Api(value = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
+@Api(description = "forum-datenaustausch.ch invoice v4.4 XML endpoint")
 public class HealthcareChInvoice440RestController
 {
 	private final XmlToOLCandsService xmlToOLCandsService;
@@ -62,10 +62,10 @@ public class HealthcareChInvoice440RestController
 
 			@RequestParam("file") @NonNull final MultipartFile xmlInvoiceFile,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
+			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE", value = "This is always applied to the biller, but to the debitor it's applied only if the debitor is the XML's insurance") //
 			@RequestParam final SyncAdvise.IfExists ifBPartnersExist,
 
-			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "To the biller this is always applied, but to the debitor it's applied only if the debitor is the XML's insurance") //
+			@ApiParam(allowEmptyValue = true, defaultValue = "CREATE", value = "This is always applied to the biller, but to the debitor it's applied only if the debitor is the XML's insurance") //
 			@RequestParam final SyncAdvise.IfNotExists ifBPartnersNotExist,
 
 			@ApiParam(allowEmptyValue = true, defaultValue = "DONT_UPDATE") @RequestParam final SyncAdvise.IfExists ifProductsExist,

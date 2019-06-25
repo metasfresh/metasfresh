@@ -39,7 +39,7 @@ public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 
 	public static DataEntryRecordFieldYesNo of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final Boolean value)
 	{
 		return new DataEntryRecordFieldYesNo(dataEntryFieldId, createdUpdatedInfo, value);
@@ -47,7 +47,7 @@ public class DataEntryRecordFieldYesNo extends DataEntryRecordField<Boolean>
 
 	private DataEntryRecordFieldYesNo(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final Boolean value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

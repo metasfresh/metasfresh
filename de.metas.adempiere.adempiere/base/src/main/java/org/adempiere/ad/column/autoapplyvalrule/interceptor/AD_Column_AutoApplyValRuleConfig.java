@@ -120,7 +120,7 @@ public class AD_Column_AutoApplyValRuleConfig
 		{
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
 
-			final ValRuleAutoApplier valRuleAutoApplier = new ValRuleAutoApplier(tableName, columnsToHandle);
+			final ValRuleAutoApplier valRuleAutoApplier = new ValRuleAutoApplier(tableName, tableId2columns.get(adTableId));
 			valRuleAutoApplierService.registerApplier(valRuleAutoApplier);
 
 			tableNamesWithRegisteredColumn.add(tableName);
