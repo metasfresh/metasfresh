@@ -167,14 +167,14 @@ function applyBPartner(bPartner) {
       cy.openAdvancedEdit();
       cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer');
+          cy.clickOnCheckBox('IsCustomer', null, true);
         }
       });
       if (bPartner.customerDiscountSchema) {
-        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema);
-      }
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true);
+        }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
+        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true);
       }
       cy.pressDoneButton();
     }
@@ -207,7 +207,7 @@ function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
   //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`, true);
 
   cy.editAddress('C_Location_ID', function(url) {
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
@@ -216,7 +216,7 @@ function applyLocation(bPartnerLocation) {
       bPartnerLocation.country,
       bPartnerLocation.country,
       false /*typeList */,
-      false /*modal */,
+      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
       url
     );
   });
