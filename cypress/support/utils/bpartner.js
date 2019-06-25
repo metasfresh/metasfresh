@@ -90,6 +90,16 @@ export class BPartner {
     cy.log(`BPartner - apply - END (name=${this.name})`);
     return this;
   }
+
+
+  static applyBank(bank) {
+    cy.selectTab('C_BP_BankAccount');
+    cy.pressAddNewButton();
+    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+    cy.writeIntoStringField('A_Name', 'Test Account');
+    cy.pressDoneButton();
+  }
+
 }
 
 export class BPartnerLocation {
@@ -136,7 +146,7 @@ export class BPartnerContact {
 }
 
 function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function() {
+  describe(`Create new bPartner ${bPartner.name}`, function () {
     cy.visitWindow('123', 'NEW');
     cy.writeIntoStringField('CompanyName', bPartner.name);
     cy.writeIntoStringField('Name2', bPartner.name);
@@ -172,7 +182,7 @@ function applyBPartner(bPartner) {
       });
       if (bPartner.customerDiscountSchema) {
         cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true);
-        }
+      }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true);
       }
@@ -181,26 +191,25 @@ function applyBPartner(bPartner) {
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
+      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
       cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function(bPartnerContact) {
+      bPartner.contacts.forEach(function (bPartnerContact) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
+
+
     if (bPartner.bank) {
-      cy.selectTab('C_BP_BankAccount');
-      cy.pressAddNewButton();
-      cy.get('#lookup_C_Bank_ID input').type(bPartner.bank);
-      cy.contains('.input-dropdown-list-option', bPartner.bank).click();
-      cy.writeIntoStringField('A_Name', 'Test Account');
-      cy.pressDoneButton();
+      BPartner.applyBank(bPartner.bank);
     }
   });
+
+
 }
 
 function applyLocation(bPartnerLocation) {
@@ -209,7 +218,7 @@ function applyLocation(bPartnerLocation) {
   //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
   cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`, true);
 
-  cy.editAddress('C_Location_ID', function(url) {
+  cy.editAddress('C_Location_ID', function (url) {
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
@@ -227,8 +236,8 @@ function applyLocation(bPartnerLocation) {
 function applyContact(bPartnerContact) {
   cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField('Firstname', bPartnerContact.firstName);
-  cy.writeIntoStringField('Lastname', bPartnerContact.lastName);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true);
 
   if (bPartnerContact.isDefaultContact) {
     cy.clickOnCheckBox('IsDefaultContact');
