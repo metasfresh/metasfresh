@@ -9,6 +9,7 @@ describe('Create Sales order', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductNameValue ${timestamp}`;
   const productValue = `sales_order_test ${timestamp}`;
+  // const rowSelected = salesOrders.rowSelector;
 
   it('Create product category, product and customer for a sales order', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
@@ -53,6 +54,8 @@ describe('Create Sales order', function() {
 
     cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
 
+    // cy.pressBatchEntryButton();
+
     cy.get('.form-field-Qty')
       .click()
       .find('.input-body-container.focused')
@@ -71,55 +74,49 @@ describe('Create Sales order', function() {
       .type('1{enter}');
     // cy.wait('@resetQuickInputFields');
     cy.wait(3000);
+    /**Complete sales order */
     cy.get('.form-field-DocAction ul')
       .click({ force: true })
       .get('li')
       .eq('1')
       .click({ force: true });
-    cy.wait(3000);
+    cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.wait(3000);
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
       .find('i')
       .click({ force: true });
+    cy.wait(8000);
+    /** Go to Shipment disposition*/
     cy.get('.reference_M_ShipmentSchedule').click();
     cy.get('tbody tr')
       .eq('0')
       .click();
-    cy.get('.btn-icon.pointer i')
-      .click()
-      .get('#quickAction_M_ShipmentSchedule_EnqueueSelection')
-      .click();
-    cy.wait(4000);
-    cy.get('.items-row-2 button')
-      .eq('1')
-      .should('contain', 'Start')
-      .click();
-    cy.wait(4000);
+    /**Generate shipments */
+    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.pressStartButton();
+    /**Wait for the shipment schedule process to complete */
+    cy.wait(8000);
+    /**Open notifications */
     cy.get('.header-item-badge.icon-lg i').click();
-    cy.wait(4000);
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')
       .first()
       .click();
-    cy.wait(3000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.wait(3000);
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
       .find('i')
       .click({ force: true });
+    /**Billing - Invoice disposition */
     cy.get('.reference_C_Invoice_Candidate').click();
     cy.get('tbody tr')
       .eq('0')
       .click();
-    cy.get('.quick-actions-tag.pointer').click();
-    cy.get('.items-row-2 button')
-      .eq('1')
-      .should('contain', 'Start')
-      .click();
-    cy.wait(4000);
+    /**Generate invoices on billing candidates */
+    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+    cy.pressStartButton();
+    // /**Open notifications */
     cy.get('.header-item-badge.icon-lg i').click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')
