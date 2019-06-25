@@ -93,7 +93,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   it('Save values needed for the next step', function () {
-    cy.getFieldValue('DocumentNo').then(documentNumber => {
+    cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       salesInvoiceNumber = documentNumber;
     });
 
@@ -112,11 +112,11 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
     cy.writeIntoLookupListField('C_BPartner_ID', bPartnerName, bPartnerName);
 
-    cy.getFieldValue('DocumentNo').should('be.empty');
+    cy.getStringFieldValue('DocumentNo').should('be.empty');
     cy.selectInListField('C_DocType_ID', paymentDocumentType);
-    cy.getFieldValue('DocumentNo').should('not.be.empty');
+    cy.getStringFieldValue('DocumentNo').should('not.be.empty');
 
-    cy.getFieldValue('PayAmt').then(val => {
+    cy.getStringFieldValue('PayAmt').then(val => {
       const cast = parseFloat(val);
       assert.equal(cast, 0);
     });
@@ -134,11 +134,11 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     cy.openAdvancedEdit();
 
     let discountAmount;
-    cy.getFieldValue('DiscountAmt', true).then(val => {
+    cy.getStringFieldValue('DiscountAmt', true).then(val => {
       discountAmount = parseFloat(val);
     });
 
-    cy.getFieldValue('Amount').then(val => {
+    cy.getStringFieldValue('Amount').then(val => {
       const value = parseFloat(val).toFixed(2);
       paymentTotalAmount = parseFloat(salesInvoiceTotalAmount - discountAmount).toFixed(2);
       assert.equal(value, paymentTotalAmount);

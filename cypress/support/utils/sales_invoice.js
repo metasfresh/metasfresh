@@ -43,14 +43,16 @@ export class SalesInvoice {
         .should('contain', new Date().getFullYear());
 
       cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner);
-      cy.getFieldValue('M_PriceList_ID').should('not.be.empty');
-      cy.getFieldValue('C_Currency_ID').should('not.be.empty');
 
+      cy.getStringFieldValue('M_PriceList_ID').should('be.empty');
+      cy.getStringFieldValue('C_Currency_ID').should('be.empty');
       cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+      cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
+      cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
 
-      cy.getFieldValue('DocumentNo').should('be.empty');
+      cy.getStringFieldValue('DocumentNo').should('be.empty');
       cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
-      cy.getFieldValue('DocumentNo').should('not.be.empty');
+      cy.getStringFieldValue('DocumentNo').should('not.be.empty');
 
       salesInvoice.lines.forEach(line => {
         SalesInvoice.applyLine(line);
