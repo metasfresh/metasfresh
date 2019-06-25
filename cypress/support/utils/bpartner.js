@@ -5,9 +5,11 @@ export class BPartner {
     this.isVendor = false;
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
+    this.customerDiscountSchema = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
+    this.bank = undefined;
   }
 
   setName(name) {
@@ -43,6 +45,18 @@ export class BPartner {
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
+    return this;
+  }
+
+  setCustomerDiscountSchema(customerDiscountSchema) {
+    cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
+    this.customerDiscountSchema = customerDiscountSchema;
+    return this;
+  }
+
+  setBank(bank) {
+    cy.log(`BPartner - set Bank = ${bank}`);
+    this.bank = bank;
     return this;
   }
 
@@ -132,7 +146,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsVendor').then(isVendorValue => {
+      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
           cy.clickOnCheckBox('IsVendor');
         }
@@ -151,11 +165,14 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsCustomer').then(isCustomerValue => {
+      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
           cy.clickOnCheckBox('IsCustomer');
         }
       });
+      if (bPartner.customerDiscountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema);
+      }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
       }
@@ -174,6 +191,14 @@ function applyBPartner(bPartner) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
+    }
+    if (bPartner.bank) {
+      cy.selectTab('C_BP_BankAccount');
+      cy.pressAddNewButton();
+      cy.get('#lookup_C_Bank_ID input').type(bPartner.bank);
+      cy.contains('.input-dropdown-list-option', bPartner.bank).click();
+      cy.writeIntoStringField('A_Name', 'Test Account');
+      cy.pressDoneButton();
     }
   });
 }

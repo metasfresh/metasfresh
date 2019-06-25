@@ -251,8 +251,6 @@ describe('Existing sales order', function() {
   const vendorName = `Cypress Test Partner #1 ${timestamp}`;
 
   before(function() {
-    cy.loginByForm();
-
     cy.fixture('purchase/cypress_vendor.json').then(() => {
       new BPartner(vendorName).apply();
     });

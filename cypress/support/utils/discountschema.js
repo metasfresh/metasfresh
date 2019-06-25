@@ -19,6 +19,12 @@ export class DiscountSchema {
     return this;
   }
 
+  setName(name) {
+    cy.log(`DiscountSchemaBuilder - set name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
   addDiscountBreak(discountBreak) {
     cy.log(`DiscountSchemaBuilder - add discountBreak = ${discountBreak}`);
     this.discountBreaks.push(discountBreak);
@@ -47,10 +53,10 @@ export class DiscountBreak {
 }
 
 function applyDiscountSchema(discountSchema) {
-  describe(`Create new dicscount schema ${discountSchema.name}`, function() {
+  describe(`Create new discount schema ${discountSchema.name}`, function() {
     cy.visitWindow(233, 'NEW');
-    cy.selectInListField('DiscountType', 'Breaks');
     cy.writeIntoStringField('Name', discountSchema.name);
+    cy.selectInListField('DiscountType', 'Breaks');
 
     cy.writeIntoStringField(
       'ValidFrom',

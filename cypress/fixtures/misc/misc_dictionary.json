@@ -1,0 +1,9 @@
+{
+    "comment1": "A sortof lazy ad-hoc dictionary for language specific terms that are used in many different places, and are not provided by the APIs messages endpoint",
+
+    "docActionComplete": "Complete",
+    "de_DE__docActionComplete": "Fertigstellen",
+
+    "docStatusCompleted": "Completed",
+    "de_DE__docStatusCompleted": "Fertiggestellt"
+}
