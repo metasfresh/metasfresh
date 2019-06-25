@@ -132,6 +132,9 @@ public final class ProcessInfo implements Serializable
 		reportApplySecuritySettings = builder.isReportApplySecuritySettings();
 		jrDesiredOutputType = builder.getJRDesiredOutputType();
 
+		type = builder.getType();
+		jsonPath = builder.getJsonPath();
+
 		if (builder.isLoadParametersFromDB())
 		{
 			this.parameters = null; // to be loaded on demand
@@ -219,6 +222,10 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
+	@Getter
+	@NonNull private final ProcessType type;
+	@Getter
+	private final Optional<String> jsonPath;
 
 	/** Process result */
 	@Getter
@@ -238,6 +245,8 @@ public final class ProcessInfo implements Serializable
 				.add("reportTemplate", reportTemplate.orElse(null))
 				.add("reportLanguage", reportLanguage)
 				.add("jrDesiredOutputType", jrDesiredOutputType)
+				.add("JSONPath", jsonPath)
+				.add("type", type)
 				.toString();
 	}
 
@@ -631,8 +640,8 @@ public final class ProcessInfo implements Serializable
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
 
 		compositeFilter.addFilter(whereFilter)
-				.addFilter(clientFilter)
-				.addFilter(orgFilter);
+		.addFilter(clientFilter)
+		.addFilter(orgFilter);
 
 		return compositeFilter;
 	}
@@ -1355,6 +1364,27 @@ public final class ProcessInfo implements Serializable
 		{
 			return jrDesiredOutputType;
 		}
+
+		public ProcessType getType()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			return process == null ? null : ProcessType.ofCode(process.getType());
+		}
+
+		public Optional<String> getJsonPath()
+		{
+			final I_AD_Process process = getAD_ProcessOrNull();
+			final String JSONPath = process == null ? null : process.getJSONPath();
+			if (Check.isEmpty(JSONPath, true))
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(JSONPath.trim());
+			}
+		}
+
 
 		private Language getReportLanguage()
 		{

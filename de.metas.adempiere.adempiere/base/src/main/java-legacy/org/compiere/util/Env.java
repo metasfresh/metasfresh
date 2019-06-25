@@ -190,7 +190,7 @@ public final class Env
 			clearContext();
 		}
 		else
-		// clear window context only
+			// clear window context only
 		{
 			removeContextMatching(ctx, CTXNAME_MATCHER_AnyWindow);
 		}
@@ -208,7 +208,9 @@ public final class Env
 		if (!finalCall)
 		{
 			if (Ini.isSwingClient())
+			{
 				DB.setDBTarget(CConnection.get());
+			}
 
 			// NOTE: there is no need to reset the role because cache was reset
 			// MRole defaultRole = MRole.getDefault(ctx, false);
@@ -520,7 +522,9 @@ public final class Env
 	public static void setContext(final Properties ctx, final String context, final String value)
 	{
 		if (ctx == null || context == null)
+		{
 			return;
+		}
 		//
 		if (value == null || value.length() == 0)
 		{
@@ -744,7 +748,9 @@ public final class Env
 	public static void setAutoCommit(final Properties ctx, final int WindowNo, final boolean autoCommit)
 	{
 		if (ctx == null)
+		{
 			return;
+		}
 		setProperty(ctx, WindowNo + "|" + CTXNAME_AutoCommit, toString(autoCommit));
 	}	// setAutoCommit
 
@@ -757,7 +763,9 @@ public final class Env
 	public static void setAutoNew(Properties ctx, boolean autoNew)
 	{
 		if (ctx == null)
+		{
 			return;
+		}
 		setProperty(ctx, CTXNAME_AutoNew, toString(autoNew));
 	}	// setAutoNew
 
@@ -771,7 +779,9 @@ public final class Env
 	public static void setAutoNew(Properties ctx, int WindowNo, boolean autoNew)
 	{
 		if (ctx == null)
+		{
 			return;
+		}
 		setProperty(ctx, WindowNo + "|" + CTXNAME_AutoNew, toString(autoNew));
 	}	// setAutoNew
 
@@ -784,7 +794,9 @@ public final class Env
 	public static void setSOTrx(Properties ctx, boolean isSOTrx)
 	{
 		if (ctx == null)
+		{
 			return;
+		}
 		setProperty(ctx, CTXNAME_IsSOTrx, toString(isSOTrx));
 	}	// setSOTrx
 
@@ -875,9 +887,13 @@ public final class Env
 		}
 		String s = getContext(ctx, context);
 		if (isPropertyValueNull(s) || s.length() == 0)
+		{
 			s = getContext(ctx, 0, context, false);		// search 0 and defaults
+		}
 		if (isPropertyValueNull(s) || s.length() == 0)
+		{
 			return 0;
+		}
 		//
 		try
 		{
@@ -902,7 +918,9 @@ public final class Env
 	{
 		final String s = getContext(ctx, WindowNo, context, false);
 		if (isPropertyValueNull(s) || s.length() == 0)
+		{
 			return 0;
+		}
 		//
 		try
 		{
@@ -928,7 +946,9 @@ public final class Env
 	{
 		final String s = getContext(ctx, WindowNo, context, onlyWindow);
 		if (isPropertyValueNull(s) || s.length() == 0)
+		{
 			return 0;
+		}
 		//
 		try
 		{
@@ -954,7 +974,9 @@ public final class Env
 	{
 		final String s = getContext(ctx, WindowNo, TabNo, context);
 		if (isPropertyValueNull(s) || s.length() == 0)
+		{
 			return 0;
+		}
 		//
 		try
 		{
@@ -976,11 +998,15 @@ public final class Env
 	public static boolean isAutoCommit(final Properties ctx)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 
 		final String s = getContext(ctx, CTXNAME_AutoCommit);
 		if (s != null && s.equals("Y"))
+		{
 			return true;
+		}
 		return false;
 	}	// isAutoCommit
 
@@ -994,16 +1020,22 @@ public final class Env
 	public static boolean isAutoCommit(final Properties ctx, final int WindowNo)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 
 		final boolean onlyWindow = false; // fallback to global context
 		final String s = getContext(ctx, WindowNo, CTXNAME_AutoCommit, onlyWindow);
 		if (s != null)
 		{
 			if (s.equals("Y"))
+			{
 				return true;
+			}
 			else
+			{
 				return false;
+			}
 		}
 
 		return isAutoCommit(ctx);
@@ -1018,10 +1050,14 @@ public final class Env
 	public static boolean isAutoNew(Properties ctx)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 		final String s = getContext(ctx, CTXNAME_AutoNew);
 		if (s != null && s.equals("Y"))
+		{
 			return true;
+		}
 		return false;
 	}	// isAutoNew
 
@@ -1035,14 +1071,20 @@ public final class Env
 	public static boolean isAutoNew(Properties ctx, int WindowNo)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 		final String s = getContext(ctx, WindowNo, CTXNAME_AutoNew, false);
 		if (s != null)
 		{
 			if (s.equals("Y"))
+			{
 				return true;
+			}
 			else
+			{
 				return false;
+			}
 		}
 		return isAutoNew(ctx);
 	}	// isAutoNew
@@ -1057,7 +1099,9 @@ public final class Env
 	{
 		final String s = getContext(ctx, CTXNAME_IsSOTrx);
 		if (s != null && s.equals("N"))
+		{
 			return false;
+		}
 		return true;
 	}	// isSOTrx
 
@@ -1245,6 +1289,11 @@ public final class Env
 		return RoleId.ofRepoId(getAD_Role_ID(ctx));
 	}
 
+	public static RoleId getLoggedRoleId()
+	{
+		return getLoggedRoleId(getCtx());
+	}
+
 	public static IUserRolePermissions getUserRolePermissions()
 	{
 		final Properties ctx = getCtx();
@@ -1293,21 +1342,27 @@ public final class Env
 	public static String getPreference(final Properties ctx, final int AD_Window_ID, final String context, final boolean system)
 	{
 		if (ctx == null || context == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 		String retValue = null;
 		//
 		if (!system)         	// User Preferences
 		{
 			retValue = getProperty(ctx, createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
+			{
 				retValue = getProperty(ctx, createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));  			// Global Pref
+			}
 		}
 		else
-		// System Preferences
+			// System Preferences
 		{
 			retValue = getProperty(ctx, "#" + context);   				// Login setting
 			if (retValue == null)
+			{
 				retValue = getProperty(ctx, "$" + context);   			// Accounting setting
+			}
 		}
 		//
 		return (retValue == null ? "" : retValue);
@@ -1390,7 +1445,9 @@ public final class Env
 	{
 		if (tableName.startsWith("AD")
 				|| tableName.equals("C_Country_Trl"))
+		{
 			return true;
+		}
 		return false;
 	}	// isBaseTranslation
 
@@ -1548,7 +1605,9 @@ public final class Env
 	public static String[] getEntireContext(final Properties ctx)
 	{
 		if (ctx == null)
+		{
 			throw new IllegalArgumentException("Require Context");
+		}
 
 		final Set<String> keys = ctx.stringPropertyNames();
 		final String[] sList = new String[keys.size()];
@@ -1605,9 +1664,9 @@ public final class Env
 		}
 
 		sb.append(getContext(ctx, "#AD_User_Name")).append("@")
-				.append(getContext(ctx, "#AD_Client_Name")).append(".")
-				.append(getContext(ctx, "#AD_Org_Name"))
-				.append(" [").append(connectionInfo).append("]");
+		.append(getContext(ctx, "#AD_Client_Name")).append(".")
+		.append(getContext(ctx, "#AD_Org_Name"))
+		.append(" [").append(connectionInfo).append("]");
 		return sb.toString();
 	}	// getHeader
 
@@ -1630,7 +1689,9 @@ public final class Env
 
 		//
 		if (Ini.isSwingClient())
+		{
 			removeWindow(WindowNo);
+		}
 	}	// clearWinContext
 
 	/**
@@ -1962,7 +2023,9 @@ public final class Env
 				scopeActual = Scope.Tab;
 				// In initial implementation tab level variables does not support explicit global
 				if (Scope.Tab == scope)
+				{
 					isExplicitGlobal = false;
+				}
 			}
 			else
 			{
@@ -1985,7 +2048,9 @@ public final class Env
 
 			// In case of TAB_INFO, don't fallback to Window context
 			if (TAB_INFO != TabNo)
+			{
 				scopeActual = Scope.Window;
+			}
 		}
 
 		if (scopeActual == Scope.Window && scopeActual.compareTo(scope) >= 0)
@@ -2086,7 +2151,9 @@ public final class Env
 	public static void setContextAsInt(final Properties ctx, final int WindowNo, final int TabNo, final String context, final int value)
 	{
 		if (ctx == null || context == null)
+		{
 			return;
+		}
 
 		setProperty(ctx, WindowNo + "|" + TabNo + "|" + context, String.valueOf(value));
 	}	// setContext
@@ -2123,7 +2190,9 @@ public final class Env
 	public static void setContextAsDate(Properties ctx, int WindowNo, int TabNo, String context, Date value)
 	{
 		if (ctx == null || context == null)
+		{
 			return;
+		}
 
 		setProperty(ctx, WindowNo + "|" + TabNo + "|" + context, toString(value));
 	}	// setContext
@@ -2138,7 +2207,9 @@ public final class Env
 	private static final int toInteger(String s, String context)
 	{
 		if (CTXVALUE_NullString.equals(s))
+		{
 			return CTXVALUE_NoValueInt;
+		}
 
 		try
 		{
@@ -2195,7 +2266,7 @@ public final class Env
 			return null;
 		}
 
-		Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
+		final Timestamp timestamp = parseTimestampUsingJDBCFormatOrNull(timestampStr);
 		if (timestamp != null)
 		{
 			return timestamp;
