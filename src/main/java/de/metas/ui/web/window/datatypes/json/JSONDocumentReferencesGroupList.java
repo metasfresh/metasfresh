@@ -5,8 +5,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,6 +16,7 @@ import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup.JSONDocumentReferencesGroupBuilder;
 import de.metas.ui.web.window.model.DocumentReference;
+import de.metas.util.lang.UIDStringUtil;
 
 /*
  * #%L
@@ -57,8 +56,8 @@ public class JSONDocumentReferencesGroupList
 		}
 
 		final Map<String, JSONDocumentReferencesGroupBuilder> groupsBuilders = new HashMap<>();
-		
-		final String othersGroupId = "_others_" + UUID.randomUUID();
+
+		final String othersGroupId = "_others_" + UIDStringUtil.createRandomUUID();
 
 		for (final DocumentReference documentReference : documentReferences)
 		{
@@ -83,7 +82,7 @@ public class JSONDocumentReferencesGroupList
 		// Sort by Caption, but keep the "misc group" last
 		Comparator<JSONDocumentReferencesGroup> sorting = Comparator.<JSONDocumentReferencesGroup>comparingInt(group -> group.isMiscGroup() ? 1 : 0)
 				.thenComparing(JSONDocumentReferencesGroup::getCaption);
-		
+
 		final List<JSONDocumentReferencesGroup> groups = groupsBuilders.values()
 				.stream()
 				.map(groupBuilder -> groupBuilder.build())

@@ -75,7 +75,9 @@ import lombok.NonNull;
 
 		if (rowIds.isAll())
 		{
-			this.rows = new AllRowsSupplier(view);
+			this.rows = new AllRowsSupplier(
+					view,
+					getConstants().getAllRowsPageSize());
 		}
 		else if (rowIds.isEmpty())
 		{
@@ -190,7 +192,7 @@ import lombok.NonNull;
 		return false;
 	}
 
-	private static interface RowsSupplier
+	private interface RowsSupplier
 	{
 		IViewRow getRow(int rowIndex);
 
@@ -199,7 +201,7 @@ import lombok.NonNull;
 
 	private static class AllRowsSupplier implements RowsSupplier
 	{
-		private static final int PAGE_LENGTH = 100;
+		private final int pageSize;
 		private final IView view;
 		private LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
 				.maximumSize(2) // cache max 2 pages
@@ -214,9 +216,10 @@ import lombok.NonNull;
 
 				});
 
-		private AllRowsSupplier(@NonNull final IView view)
+		private AllRowsSupplier(@NonNull final IView view, final int pageSize)
 		{
 			this.view = view;
+			this.pageSize = pageSize;
 		}
 
 		private ViewResult getPage(final PageIndex pageIndex)
@@ -234,7 +237,7 @@ import lombok.NonNull;
 		@Override
 		public IViewRow getRow(final int rowIndex)
 		{
-			final ViewResult page = getPage(PageIndex.getPageContainingRow(rowIndex, PAGE_LENGTH));
+			final ViewResult page = getPage(PageIndex.getPageContainingRow(rowIndex, pageSize));
 
 			final int rowIndexInPage = rowIndex - page.getFirstRow();
 			if (rowIndexInPage < 0)
