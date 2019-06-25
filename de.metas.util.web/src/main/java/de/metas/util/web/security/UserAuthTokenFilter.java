@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.util.Check;
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 /*
  * #%L
@@ -97,7 +97,7 @@ public class UserAuthTokenFilter implements Filter
 		{
 			final String userAndTokenString = new String(DatatypeConverter.parseBase64Binary(authorizationString.substring(5).trim()));
 			final int index = userAndTokenString.indexOf(':');
-			// final String username = userAndTokenString.substring(0, index);
+
 			return userAndTokenString.substring(index + 1);
 		}
 		else

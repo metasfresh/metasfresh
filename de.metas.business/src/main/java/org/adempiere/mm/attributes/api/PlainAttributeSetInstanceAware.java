@@ -1,13 +1,17 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import javax.annotation.Nullable;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -31,10 +35,12 @@ import de.metas.util.Services;
  * #L%
  */
 
+@ToString
+@EqualsAndHashCode
 public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAware
 {
 	private final ProductId productId;
-	private final int attributeSetInstanceId;
+	private final AttributeSetInstanceId attributeSetInstanceId;
 
 	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
 			final int productId,
@@ -42,17 +48,28 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	{
 		return new PlainAttributeSetInstanceAware(
 				ProductId.ofRepoIdOrNull(productId),
-				attributeSetInstanceId);
+				AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId));
 	}
 
 	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
 			final ProductId productId,
 			final int attributeSetInstanceId)
 	{
+		return new PlainAttributeSetInstanceAware(
+				productId,
+				AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId));
+	}
+
+	public static PlainAttributeSetInstanceAware forProductIdAndAttributeSetInstanceId(
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
+	{
 		return new PlainAttributeSetInstanceAware(productId, attributeSetInstanceId);
 	}
 
-	private PlainAttributeSetInstanceAware(final ProductId productId, final int attributeSetInstanceId)
+	private PlainAttributeSetInstanceAware(
+			@Nullable final ProductId productId,
+			@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId;
@@ -78,13 +95,13 @@ public class PlainAttributeSetInstanceAware implements IAttributeSetInstanceAwar
 	@Override
 	public I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
-		return load(attributeSetInstanceId, I_M_AttributeSetInstance.class);
+		return Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId);
 	}
 
 	@Override
 	public int getM_AttributeSetInstance_ID()
 	{
-		return attributeSetInstanceId;
+		return attributeSetInstanceId.getRepoId();
 	}
 
 	@Override

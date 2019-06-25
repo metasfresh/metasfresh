@@ -53,14 +53,14 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUReturns}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="349" y="0" width="54" height="12" forecolor="#000000" uuid="f2805df3-fac3-4b9d-86b8-582327e2627e"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
@@ -88,14 +88,14 @@ WHERE org.ad_org_id = $P{ad_org_id} AND org.isActive = 'Y']]>
 			<textField>
 				<reportElement key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{GoodsNote}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Signature} + ":"]]></textFieldExpression>
 			</textField>

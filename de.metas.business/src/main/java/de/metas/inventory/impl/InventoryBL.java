@@ -42,8 +42,10 @@ import org.compiere.util.Env;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -103,12 +105,17 @@ public class InventoryBL implements IInventoryBL
 	}
 
 	@Override
-	public boolean isComplete(final I_M_Inventory inventory)
+	public DocStatus getDocStatus(@NonNull final InventoryId inventoryId)
 	{
-		final String docStatus = inventory.getDocStatus();
-		return IDocument.STATUS_Completed.equals(docStatus)
-				|| IDocument.STATUS_Closed.equals(docStatus)
-				|| IDocument.STATUS_Reversed.equals(docStatus);
+		final I_M_Inventory inventory = Services.get(IInventoryDAO.class).getById(inventoryId);
+		return DocStatus.ofCode(inventory.getDocStatus());
+	}
+
+	@Override
+	public boolean isComplete(@NonNull final I_M_Inventory inventory)
+	{
+		final DocStatus docStatus = DocStatus.ofCode(inventory.getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}
 
 	@Override

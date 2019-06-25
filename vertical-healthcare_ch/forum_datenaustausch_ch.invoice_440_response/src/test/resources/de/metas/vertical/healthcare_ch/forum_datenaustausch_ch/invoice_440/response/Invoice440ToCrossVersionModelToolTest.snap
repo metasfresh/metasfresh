@@ -16,6 +16,34 @@ de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response.Inv
               "text": "Error-Text"
             }
           ]
+        },
+        "patient": {
+          "person": {
+            "familyName": "Patient-FamilyName",
+            "givenName": "Patient-GivenName"
+          }
+        },
+        "biller": {
+          "eanParty": "1234567890123"
+        },
+        "contact": {
+          "company": {
+            "companyName": "Contact-CompanyName"
+          },
+          "employee": {
+            "familyName": "Contact-FamilyName",
+            "givenName": "Contact-GivenName",
+            "telecom": {
+              "phone": [
+                "Contact-Phone"
+              ]
+            },
+            "online": {
+              "email": [
+                "Contact@Email"
+              ]
+            }
+          }
         }
       }
     }

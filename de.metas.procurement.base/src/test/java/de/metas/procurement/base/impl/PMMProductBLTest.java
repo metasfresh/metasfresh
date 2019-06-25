@@ -508,11 +508,11 @@ public class PMMProductBLTest
 	{
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
-		itemDefProduct.setM_Product(product);
+		itemDefProduct.setM_Product_ID(product != null ? product.getM_Product_ID() : -1);
 		itemDefProduct.setQty(qty);
-		itemDefProduct.setC_UOM(uom);
+		itemDefProduct.setC_UOM_ID(uom.getC_UOM_ID());
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
-		itemDefProduct.setC_BPartner(bpartner);
+		itemDefProduct.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		InterfaceWrapperHelper.save(itemDefProduct);
 		return itemDefProduct;
 	}

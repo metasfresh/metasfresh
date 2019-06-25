@@ -14,7 +14,7 @@ public class X_DataEntry_Tab extends org.compiere.model.PO implements I_DataEntr
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 879612166L;
+	private static final long serialVersionUID = -1937493860L;
 
     /** Standard Constructor */
     public X_DataEntry_Tab (Properties ctx, int DataEntry_Tab_ID, String trxName)
@@ -25,7 +25,7 @@ public class X_DataEntry_Tab extends org.compiere.model.PO implements I_DataEntr
 			setDataEntry_Tab_ID (0);
 			setDataEntry_TargetWindow_ID (0);
 			setName (null);
-			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Group WHERE DataEntry_TargetWindow_ID=@DataEntry_TargetWindow_ID/0@
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM DataEntry_Tab WHERE DataEntry_TargetWindow_ID=@DataEntry_TargetWindow_ID/0@
 			setTabName (null);
         } */
     }

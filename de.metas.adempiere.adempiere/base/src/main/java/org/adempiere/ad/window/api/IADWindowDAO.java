@@ -1,30 +1,6 @@
 package org.adempiere.ad.window.api;
 
 import java.util.List;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -61,17 +37,19 @@ public interface IADWindowDAO extends ISingletonService
 
 	String retrieveInternalWindowName(int adWindowId);
 
+	AdWindowId getWindowIdByInternalName(String internalName);
+
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
 
 	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
 
-	IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(int adTabId);
+	IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(AdTabId adTabId);
 
 	List<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn);
 
 	List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection);
 
-	List<I_AD_UI_Section> retrieveUISections(final Properties ctx, final int AD_Tab_ID);
+	List<I_AD_UI_Section> retrieveUISections(AdTabId adTabId);
 
 	List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab);
 
@@ -93,7 +71,7 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	I_AD_Tab retrieveFirstTab(final int adWindowId);
 
-	void copyWindow(int targetWindowId, int sourceWindowId);
+	void copyWindow(AdWindowId targetWindowId, AdWindowId sourceWindowId);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
@@ -112,4 +90,6 @@ public interface IADWindowDAO extends ISingletonService
 	void deleteUIElementsByFieldId(AdFieldId adFieldId);
 
 	void deleteUISectionsByTabId(AdTabId adTabId);
+
+	int getUIElementNextSeqNo(UIElementGroupId uiElementGroupId);
 }

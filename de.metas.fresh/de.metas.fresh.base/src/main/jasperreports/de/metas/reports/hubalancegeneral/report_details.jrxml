@@ -81,14 +81,14 @@ FROM
 				<textField>
 					<reportElement key="textField-16" x="193" y="0" width="364" height="12" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="93" y="0" width="101" height="12" forecolor="#000000" uuid="e3a3a157-9553-4096-afad-27a6d1d72804"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 				</textField>
@@ -103,7 +103,7 @@ FROM
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-16" x="193" y="0" width="71" height="12" forecolor="#000000" uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126"/>
 					<textElement markup="none">
-						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$P{StartDate}]]></textFieldExpression>
 				</textField>
@@ -114,7 +114,7 @@ FROM
 .floatValue() >= 0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{carryincoming}
 .subtract($F{carryoutgoing})]]></textFieldExpression>
@@ -126,7 +126,7 @@ FROM
 .floatValue() >= 0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{carryoutgoing}
 .subtract($F{carryincoming})]]></textFieldExpression>
@@ -134,14 +134,14 @@ FROM
 				<textField isBlankWhenNull="true">
 					<reportElement key="textField-16" x="263" y="0" width="120" height="12" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement markup="none">
-						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000" uuid="9b87d719-0673-47b7-8e3e-faeb59bc469f"/>
 					<textElement markup="none">
-						<font size="9" isBold="false" pdfFontName="Helvetica-Bold"/>
+						<font size="9" isBold="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 				</textField>
@@ -160,7 +160,7 @@ FROM
 .floatValue() >= 0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )
 .subtract($V{incomingtotal}.add( $F{carryincoming} ) )]]></textFieldExpression>
@@ -176,7 +176,7 @@ FROM
 .floatValue() >= 0]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )
 .subtract( $V{outgoingtotal}.add($F{carryoutgoing}))]]></textFieldExpression>
@@ -184,21 +184,21 @@ FROM
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-16" x="193" y="2" width="71" height="12" forecolor="#000000" uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="263" y="2" width="120" height="12" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="93" y="2" width="101" height="12" forecolor="#000000" uuid="24d2a51f-3dc6-4e27-8c19-550fcc0956b7"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 				</textField>
@@ -210,7 +210,7 @@ FROM
 			<textField>
 				<reportElement key="textField-20" x="476" y="22" width="82" height="12" forecolor="#000000" uuid="249e8f15-3d41-4509-b78b-1b420d5a4d29"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ofus}]]></textFieldExpression>
 			</textField>
@@ -280,63 +280,63 @@ $F{carryoutgoing}
 			<textField>
 				<reportElement key="textField-16" x="39" y="0" width="54" height="12" forecolor="#000000" uuid="4f3a5b33-aed9-490d-8366-326ee3318669"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000" uuid="d7a07967-c542-4d65-a16f-520e70e95bdd"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="193" y="0" width="71" height="12" forecolor="#000000" uuid="b7f5c84e-0907-459e-983d-2683fb198c3f"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="263" y="0" width="120" height="12" forecolor="#000000" uuid="9b86885e-e30a-423d-a260-a62f1ea89f31"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000" uuid="d3f810ac-9345-49fb-8fbe-833577c4e7ee"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="383" y="11" width="92" height="12" forecolor="#000000" uuid="93780e22-a260-474b-a71e-4a3cdf5f54a7"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="383" y="22" width="92" height="12" forecolor="#000000" uuid="341e7057-6974-4c65-a1d1-9f99c184a117"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="476" y="0" width="82" height="12" forecolor="#000000" uuid="4ae00a22-ea98-4718-b5b3-9155bff93c3b"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="476" y="11" width="82" height="12" forecolor="#000000" uuid="55baf521-200b-4dfe-ac0a-9f9abcbcfd03"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>

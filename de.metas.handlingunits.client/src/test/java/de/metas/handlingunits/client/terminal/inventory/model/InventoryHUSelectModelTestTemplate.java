@@ -128,9 +128,9 @@ public abstract class InventoryHUSelectModelTestTemplate
 	protected I_M_HU createHU(final I_C_BPartner bpartner, final I_C_BPartner_Location bpLocation, final I_M_Locator locator, final String huStatus)
 	{
 		final I_M_HU hu = InterfaceWrapperHelper.newInstance(I_M_HU.class, helper.getTerminalContext());
-		hu.setC_BPartner(bpartner);
-		hu.setC_BPartner_Location(bpLocation);
-		hu.setM_Locator(locator);
+		hu.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
+		hu.setC_BPartner_Location_ID(bpLocation != null ? bpLocation.getC_BPartner_Location_ID() : -1);
+		hu.setM_Locator_ID(locator != null ? locator.getM_Locator_ID() : -1);
 		hu.setHUStatus(huStatus);
 		InterfaceWrapperHelper.save(hu);
 

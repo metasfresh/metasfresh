@@ -58,6 +58,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
@@ -111,7 +112,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public ShipmentScheduleWithHU addQtyPickedAndUpdateHU(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull Quantity qtyPicked,
-			@NonNull HuId tuOrVHUId)
+			@NonNull HuId tuOrVHUId,
+			@NonNull final IHUContext huContext)
 	{
 		Check.assume(qtyPicked.signum() > 0, "qtyPicked is positive but it was {}", qtyPicked);
 
@@ -121,14 +123,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
 
-		return addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU);
+		return addQtyPicked(shipmentSchedule, qtyPicked, tuOrVHU, huContext);
 	}
 
 	@Override
 	public ShipmentScheduleWithHU addQtyPicked(
 			@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
 			@NonNull final Quantity qtyPicked,
-			@NonNull final I_M_HU tuOrVHU)
+			@NonNull final I_M_HU tuOrVHU,
+			@NonNull final IHUContext huContext)
 	{
 		// Services
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -147,7 +150,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_ShipmentSchedule_QtyPicked schedQtyPickedHU = create(schedQtyPicked, I_M_ShipmentSchedule_QtyPicked.class);
 		setHUs(schedQtyPickedHU, husPair);
 
-		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU)
+		ShipmentScheduleWithHU
+				.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext)
 				.updateQtyTUAndQtyLU();
 		saveRecord(schedQtyPickedHU);
 
@@ -158,7 +162,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		setHUPartnerAndLocationFromSched(topLevelHU, sched);
 		handlingUnitsRepo.saveHU(topLevelHU);
 
-		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU);
+		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext);
 	}
 
 	private void setHUs(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord, final LUTUCUPair husPair)
@@ -211,10 +215,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{} shall be a TU", tuHU);
 
 		final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(tuHU);
+
+		final IHUContext huContext = huContextFactory.createMutableHUContext(getContextAware(tuHU));
 
 		//
 		// Iterate all QtyPicked records and update M_LU_HU_ID
@@ -230,7 +237,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			// Update LU
 			ssQtyPicked.setM_LU_HU(luHU);
 			ShipmentScheduleWithHU
-					.ofShipmentScheduleQtyPicked(ssQtyPicked)
+					.ofShipmentScheduleQtyPicked(ssQtyPicked, huContext)
 					.updateQtyTUAndQtyLU();
 
 			save(ssQtyPicked);
@@ -553,7 +560,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				cuUOM,
 				bpartner,
 				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
-		lutuConfiguration.setC_BPartner(bpartner);
+		lutuConfiguration.setC_BPartner_ID(bpartner != null ? bpartner.getC_BPartner_ID() : -1);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 		lutuConfiguration.setM_Locator_ID(locatorId.getRepoId());
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Planning);

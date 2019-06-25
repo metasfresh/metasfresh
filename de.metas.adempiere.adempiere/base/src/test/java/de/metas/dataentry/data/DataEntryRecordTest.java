@@ -1,6 +1,6 @@
 package de.metas.dataentry.data;
 
-import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE_TIME;
+import static de.metas.dataentry.data.DataEntryRecordTestConstants.DATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -72,7 +72,7 @@ public class DataEntryRecordTest
 		dataEntryRecord.setRecordField(fieldId3, UserId.ofRepoId(20), "longText");
 		dataEntryRecord.setRecordField(fieldId4, UserId.ofRepoId(20), true);
 		dataEntryRecord.setRecordField(fieldId5, UserId.ofRepoId(20), new BigDecimal("15"));
-		dataEntryRecord.setRecordField(fieldId6, UserId.ofRepoId(20), DATE_TIME);
+		dataEntryRecord.setRecordField(fieldId6, UserId.ofRepoId(20), DATE);
 
 		assertThat(dataEntryRecord.getFields()).isNotEmpty();
 		assertThat(dataEntryRecord.getFields()).doesNotContainNull();
@@ -84,7 +84,7 @@ public class DataEntryRecordTest
 		assertThat(resultMap.get(fieldId3).getValue()).isEqualTo("longText");
 		assertThat(resultMap.get(fieldId4).getValue()).isEqualTo(true);
 		assertThat(resultMap.get(fieldId5).getValue()).isEqualTo(new BigDecimal("15"));
-		assertThat(resultMap.get(fieldId6).getValue()).isEqualTo(DATE_TIME);
+		assertThat(resultMap.get(fieldId6).getValue()).isEqualTo(DATE);
 	}
 
 	@Test

@@ -98,7 +98,7 @@ public final class ReceiptScheduleHUTrxListener implements IHUTrxListener
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final BigDecimal qtyToAllocateOnHU = trxLine.getQty();
-		final I_C_UOM uom = trxLine.getC_UOM();
+		final I_C_UOM uom = IHUTrxBL.extractUOMOrNull(trxLine);
 
 		//
 		// Handling Unit which was actually involved in this HU transaction (i.e. our TU)

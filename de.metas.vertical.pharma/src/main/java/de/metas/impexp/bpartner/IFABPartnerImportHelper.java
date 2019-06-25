@@ -74,9 +74,9 @@ import lombok.experimental.UtilityClass;
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 
 		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
-		bpartner.setCompanyName(importRecord.getb00name1());
+		bpartner.setCompanyName(extractCompanyName(importRecord));
 		bpartner.setIsCompany(true);
-		bpartner.setName(importRecord.getb00name1());
+		bpartner.setName(extractCompanyName(importRecord));
 		bpartner.setName2(importRecord.getb00name2());
 		bpartner.setName3(importRecord.getb00name3());
 		bpartner.setIFA_Manufacturer(importRecord.getb00adrnr());
@@ -86,6 +86,27 @@ import lombok.experimental.UtilityClass;
 
 		return bpartner;
 	}
+	
+	private String extractCompanyName(@NonNull final I_I_Pharma_BPartner importRecord)
+	{
+		if (!Check.isEmpty(importRecord.getb00name1(), true))
+		{
+			return importRecord.getb00name1();
+		}
+		
+		if (!Check.isEmpty(importRecord.getb00email(), true))
+		{
+			return importRecord.getb00email();
+		}
+		
+		if (!Check.isEmpty(importRecord.getb00email2(), true))
+		{
+			return importRecord.getb00email2();
+		}
+		
+		return importRecord.getb00adrnr();
+	}
+
 
 	private I_C_BPartner updateExistingBPartner(@NonNull final I_I_Pharma_BPartner importRecord)
 	{

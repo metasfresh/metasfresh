@@ -179,7 +179,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// If HU is already in target warehouse then there is nothing to move
-		final I_M_Locator huLocator = hu.getM_Locator();
+		final I_M_Locator huLocator = IHandlingUnitsBL.extractLocator(hu);
 		if (huLocator.getM_Warehouse_ID() == destinationWarehouse.getM_Warehouse_ID())
 		{
 			return;

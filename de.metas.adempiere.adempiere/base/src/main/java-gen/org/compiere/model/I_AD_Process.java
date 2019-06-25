@@ -586,7 +586,8 @@ public interface I_AD_Process
     public static final String COLUMNNAME_IsServerProcess = "IsServerProcess";
 
 	/**
-	 * Set Translate Excel Headers.
+	 * Set Excel-Spaltenüberschriften übersetzen.
+	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -595,7 +596,8 @@ public interface I_AD_Process
 	public void setIsTranslateExcelHeaders (boolean IsTranslateExcelHeaders);
 
 	/**
-	 * Get Translate Excel Headers.
+	 * Get Excel-Spaltenüberschriften übersetzen.
+	 * Wenn angehakt, dann wird metasfresh die jeweiligen Spaltenüberschriften durch Übersetzungen ersetzen, sofern welche in Meldung (AD_Message) oder Element (AD_Element) vorhanden sind.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -680,6 +682,29 @@ public interface I_AD_Process
     public static final String COLUMNNAME_JasperReport_Tabular = "JasperReport_Tabular";
 
 	/**
+	 * Set JSON Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setJSONPath (java.lang.String JSONPath);
+
+	/**
+	 * Get JSON Path.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getJSONPath();
+
+    /** Column definition for JSONPath */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_JSONPath = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "JSONPath", null);
+    /** Column name JSONPath */
+    public static final String COLUMNNAME_JSONPath = "JSONPath";
+
+	/**
 	 * Set Wait Timeout.
 	 * If only one instance is allowed to run at a time, how many seconds to wait for it. Zero or negative number means forever.
 	 *
@@ -706,7 +731,6 @@ public interface I_AD_Process
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -716,7 +740,6 @@ public interface I_AD_Process
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

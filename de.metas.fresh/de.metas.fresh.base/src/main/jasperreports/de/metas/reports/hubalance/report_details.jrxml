@@ -96,35 +96,35 @@ FROM
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645" key="textField-20" x="481" y="0" width="82" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement uuid="578a9e2a-24cd-4647-806b-2d80c108ea91" key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<text><![CDATA[Saldo]]></text>
 				</staticText>
 				<textField pattern="dd.MM.yyyy">
 					<reportElement uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7" key="textField-16" x="256" y="0" width="126" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
@@ -136,70 +136,70 @@ FROM
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="37" y="0" width="53" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Beleg Nr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="481" y="0" width="82" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Menge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="93" y="0" width="101" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Belegart]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="194" y="0" width="53" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="ae6b9054-e9e0-47c1-bd00-0ed156301f00" key="textField-16" x="256" y="0" width="126" height="12" forecolor="#000000"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gebindeart]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="481" y="11" width="82" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Zu Gunsten]]></text>
 			</staticText>
 			<textField>
 				<reportElement uuid="249e8f15-3d41-4509-b78b-1b420d5a4d29" key="textField-20" x="481" y="22" width="82" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{vonuns}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="383" y="0" width="92" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Menge]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="383" y="22" width="92" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Geschäftspartner]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="8810b708-ecb1-4a33-91a8-9971754ada0b" key="textField-20" x="383" y="11" width="92" height="12" forecolor="#000000"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Zu Gunsten]]></text>
 			</staticText>

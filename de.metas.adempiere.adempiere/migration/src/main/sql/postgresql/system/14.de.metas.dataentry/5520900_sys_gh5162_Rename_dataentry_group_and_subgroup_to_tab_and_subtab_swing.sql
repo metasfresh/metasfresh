@@ -10,7 +10,7 @@ UPDATE AD_Sequence SET Name='DataEntry_Tab',Updated=TO_TIMESTAMP('2019-05-06 12:
 
 -- 2019-05-06T12:54:58.634
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE DataEntry_Group_SEQ RENAME TO DataEntry_Tab_SEQ
+ALTER SEQUENCE IF EXISTS DataEntry_Group_SEQ RENAME TO DataEntry_Tab_SEQ
 ;
 
 -- 2019-05-06T12:59:58.304
@@ -180,6 +180,6 @@ UPDATE AD_Sequence SET Name='DataEntry_SubTab',Updated=TO_TIMESTAMP('2019-05-06 
 
 -- 2019-05-06T13:09:30.779
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE DataEntry_SubGroup_SEQ RENAME TO DataEntry_SubTab_SEQ
+ALTER SEQUENCE IF EXISTS DataEntry_SubGroup_SEQ RENAME TO DataEntry_SubTab_SEQ
 ;
 

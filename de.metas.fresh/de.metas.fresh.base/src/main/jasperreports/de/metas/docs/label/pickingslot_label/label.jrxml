@@ -42,7 +42,7 @@ report.pickingslot_label($P{m_pickingslot_id});]]>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="20" isBold="true"/>
+					<font size="20" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{pickingslot}]]></textFieldExpression>
 			</textField>
@@ -51,7 +51,7 @@ report.pickingslot_label($P{m_pickingslot_id});]]>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="20" isBold="true"/>
+					<font size="20" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pickingslot}]]></textFieldExpression>
 			</textField>

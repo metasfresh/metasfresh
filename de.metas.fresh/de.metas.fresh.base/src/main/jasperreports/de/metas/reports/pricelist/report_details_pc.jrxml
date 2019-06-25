@@ -76,7 +76,7 @@ ORDER BY
 			<staticText>
 				<reportElement x="37" y="0" width="200" height="12" uuid="93ecd647-d233-466b-88a5-552f92b20507"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Reihenfolge der Produktkategorien:]]></text>
 			</staticText>

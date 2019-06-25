@@ -39,7 +39,7 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 
 	public static DataEntryRecordFieldString of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final String value)
 	{
 		return new DataEntryRecordFieldString(dataEntryFieldId, createdUpdatedInfo, value);
@@ -47,7 +47,7 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 
 	private DataEntryRecordFieldString(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final String value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

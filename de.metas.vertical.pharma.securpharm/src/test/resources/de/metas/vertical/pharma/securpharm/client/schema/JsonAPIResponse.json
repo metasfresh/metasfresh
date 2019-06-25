@@ -1,0 +1,32 @@
+{
+    "res": {
+      "cod": "SP-030",
+      "mes": "UI parsing request successfully processed",
+      "hid": ""
+    },
+    "tx": {
+      "ctx": "9b9206dc-842e-429e-adf4-2fb8a85bf9ce",
+      "stx": "cefea8c2-52ca-47d1-a1b3-e84cc7d2d797"
+    },
+    "prod": {
+      "pc": "111234568408",
+      "pcs": "PPN",
+      "lot": "47U5217",
+      "exp": "220800",
+      "expNMVS": "220800",
+      "nhrn": null,
+      "info": {
+        "ref": null,
+        "dat": null,
+        "upd": null
+      }
+    },
+    "pack": {
+      "sn": "18019731537612",
+      "state": null,
+      "reasons": null
+    }
+}
+
+
+

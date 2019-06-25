@@ -58,7 +58,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Balance}]]></textFieldExpression>
 			</textField>
@@ -68,7 +68,7 @@ $P{ExcludeYearEndBooking}
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Number}]]></textFieldExpression>
 			</textField>
@@ -77,7 +77,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Name}]]></textFieldExpression>
 			</textField>
@@ -86,7 +86,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SameYearSum}]]></textFieldExpression>
 			</textField>
@@ -104,7 +104,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$P{Date}]]></textFieldExpression>
 			</textField>
@@ -122,7 +122,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -131,7 +131,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -140,7 +140,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -149,7 +149,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -158,7 +158,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -167,14 +167,14 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="348" y="9" width="102" height="12" uuid="3ce54fde-7939-44f1-b584-83d82444847d"/>
 				<textElement>
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -183,7 +183,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
@@ -192,7 +192,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{LastYearSum}]]></textFieldExpression>
 			</textField>
@@ -207,7 +207,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
 			</textField>
@@ -216,7 +216,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
 			</textField>
@@ -225,7 +225,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{parentname1}]]></textFieldExpression>
 			</textField>
@@ -234,7 +234,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{parentvalue1}]]></textFieldExpression>
 			</textField>
@@ -248,7 +248,7 @@ $P{ExcludeYearEndBooking}
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 			</textField>
@@ -257,7 +257,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l1_sameyearsum}]]></textFieldExpression>
 			</textField>
@@ -266,7 +266,7 @@ $P{ExcludeYearEndBooking}
 					<property name="net.sf.jasperreports.export.xls.cell.locked" value="false"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="10" isBold="true"/>
+					<font size="10" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{l1_lastyearsum}]]></textFieldExpression>
 			</textField>

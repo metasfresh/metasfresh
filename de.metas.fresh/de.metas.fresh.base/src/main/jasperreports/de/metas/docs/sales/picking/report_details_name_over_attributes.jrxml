@@ -60,21 +60,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="440" y="0" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
 				<reportElement key="textField-13" x="211" y="0" width="63" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 			</textField>
@@ -84,7 +84,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
@@ -93,14 +93,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="117" y="0" width="94" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
@@ -109,7 +109,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QuantityToDeliver}]]></textFieldExpression>
 			</textField>
@@ -119,7 +119,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Barcode}]]></textFieldExpression>
 			</textField>
@@ -128,7 +128,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QuantityDelivered}]]></textFieldExpression>
 			</textField>

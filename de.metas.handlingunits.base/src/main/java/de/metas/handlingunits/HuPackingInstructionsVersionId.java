@@ -2,6 +2,9 @@ package de.metas.handlingunits;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -19,11 +22,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -31,6 +34,7 @@ import lombok.Value;
 @Value
 public class HuPackingInstructionsVersionId implements RepoIdAware
 {
+	@JsonCreator
 	public static HuPackingInstructionsVersionId ofRepoId(final int repoId)
 	{
 		if (repoId == TEMPLATE.repoId)
@@ -57,14 +61,21 @@ public class HuPackingInstructionsVersionId implements RepoIdAware
 		return HuPackingInstructionsVersionId != null ? HuPackingInstructionsVersionId.getRepoId() : -1;
 	}
 
-	public static HuPackingInstructionsVersionId TEMPLATE = new HuPackingInstructionsVersionId(100);
-	public static HuPackingInstructionsVersionId VIRTUAL = new HuPackingInstructionsVersionId(101);
+	public static final HuPackingInstructionsVersionId TEMPLATE = new HuPackingInstructionsVersionId(100);
+	public static final HuPackingInstructionsVersionId VIRTUAL = new HuPackingInstructionsVersionId(101);
 
 	int repoId;
 
 	private HuPackingInstructionsVersionId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "M_HU_PI_Version_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 
 	public static boolean equals(final HuPackingInstructionsVersionId o1, final HuPackingInstructionsVersionId o2)

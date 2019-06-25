@@ -54,14 +54,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 			<textField>
 				<reportElement key="textField-19" x="393" y="0" width="41" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="436" y="0" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
@@ -70,14 +70,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-13" x="270" y="0" width="41" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
@@ -86,14 +86,14 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="117" y="0" width="90" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
@@ -103,21 +103,21 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_Picking_Details( $P{c_order_
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Barcode}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="523" y="0" width="58" height="12" forecolor="#000000" uuid="fee5f722-766c-4a8c-b25d-36e424b71246"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QuantityToDeliver}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-19" x="476" y="0" width="47" height="12" forecolor="#000000" uuid="8847bd9f-3971-4865-a671-76a6dc7cc1b4"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QuantityDelivered}]]></textFieldExpression>
 			</textField>

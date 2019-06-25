@@ -89,7 +89,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		saveRecord(miHuPiItem);
 
 		final I_M_HU_PackingMaterial huPackingMaterial = newInstance(I_M_HU_PackingMaterial.class);
-		huPackingMaterial.setM_Product(packageProduct);
+		huPackingMaterial.setM_Product_ID(packageProduct.getM_Product_ID());
 		saveRecord(huPackingMaterial);
 
 		final I_M_HU_PI_Item pmHuPiItem = newInstance(I_M_HU_PI_Item.class);
@@ -100,7 +100,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 
 		huPiItemProduct = newInstance(I_M_HU_PI_Item_Product.class);
 		huPiItemProduct.setM_HU_PI_Item(pmHuPiItem);
-		huPiItemProduct.setM_Product(materialProduct);
+		huPiItemProduct.setM_Product_ID(materialProduct.getM_Product_ID());
 		huPiItemProduct.setQty(TEN);
 		saveRecord(huPiItemProduct);
 

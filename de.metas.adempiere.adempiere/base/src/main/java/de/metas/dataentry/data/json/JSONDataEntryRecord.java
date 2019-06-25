@@ -1,14 +1,14 @@
 package de.metas.dataentry.data.json;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.data.CreatedUpdatedInfo;
+import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -38,7 +38,7 @@ import lombok.Value;
 @Value
 public class JSONDataEntryRecord
 {
-	Map<Integer, ZonedDateTime> dates;
+	Map<Integer, LocalDate> dates;
 
 	Map<Integer, DataEntryListValueId> listValues;
 
@@ -48,17 +48,17 @@ public class JSONDataEntryRecord
 
 	Map<Integer, Boolean> yesNos;
 
-	Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos;
+	Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos;
 
 	@Builder
 	@JsonCreator
 	private JSONDataEntryRecord(
-			@Singular @JsonProperty("dates") final Map<Integer, ZonedDateTime> dates,
+			@Singular @JsonProperty("dates") final Map<Integer, LocalDate> dates,
 			@Singular @JsonProperty("listValues") final Map<Integer, DataEntryListValueId> listValues,
 			@Singular @JsonProperty("numbers") final Map<Integer, BigDecimal> numbers,
 			@Singular @JsonProperty("strings") final Map<Integer, String> strings,
 			@Singular @JsonProperty("yesNos") final Map<Integer, Boolean> yesNos,
-			@Singular @JsonProperty("createdUpdatedInfos") final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos)
+			@Singular @JsonProperty("createdUpdatedInfos") final Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos)
 	{
 		this.dates = dates;
 		this.listValues = listValues;

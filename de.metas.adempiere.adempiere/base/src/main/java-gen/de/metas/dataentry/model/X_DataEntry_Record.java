@@ -14,7 +14,7 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2097173568L;
+	private static final long serialVersionUID = 774645598L;
 
     /** Standard Constructor */
     public X_DataEntry_Record (Properties ctx, int DataEntry_Record_ID, String trxName)
@@ -81,25 +81,6 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 		return ii.intValue();
 	}
 
-	/** Set DataEntry_RecordData.
-		@param DataEntry_RecordData 
-		Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
-	  */
-	@Override
-	public void setDataEntry_RecordData (java.lang.String DataEntry_RecordData)
-	{
-		set_Value (COLUMNNAME_DataEntry_RecordData, DataEntry_RecordData);
-	}
-
-	/** Get DataEntry_RecordData.
-		@return Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
-	  */
-	@Override
-	public java.lang.String getDataEntry_RecordData () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_RecordData);
-	}
-
 	/** Set DataEntry_Record.
 		@param DataEntry_Record_ID DataEntry_Record	  */
 	@Override
@@ -120,6 +101,25 @@ public class X_DataEntry_Record extends org.compiere.model.PO implements I_DataE
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set DataEntry_RecordData.
+		@param DataEntry_RecordData 
+		Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	  */
+	@Override
+	public void setDataEntry_RecordData (java.lang.String DataEntry_RecordData)
+	{
+		set_Value (COLUMNNAME_DataEntry_RecordData, DataEntry_RecordData);
+	}
+
+	/** Get DataEntry_RecordData.
+		@return Holds the (JSON-)data of all fields for a data entry. The json is supposed to be rendered into the respective fields, the column is not intended for actual display
+	  */
+	@Override
+	public java.lang.String getDataEntry_RecordData () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataEntry_RecordData);
 	}
 
 	@Override

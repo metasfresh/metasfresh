@@ -8,6 +8,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
@@ -51,10 +52,10 @@ public final class OLCand implements IProductPriceAware
 
 	private final I_C_OLCand candidate;
 
-	private final OLCandBPartnerInfo bpartnerInfo;
-	private final OLCandBPartnerInfo billBPartnerInfo;
-	private final OLCandBPartnerInfo dropShipBPartnerInfo;
-	private final OLCandBPartnerInfo handOverBPartnerInfo;
+	private final BPartnerInfo bpartnerInfo;
+	private final BPartnerInfo billBPartnerInfo;
+	private final BPartnerInfo dropShipBPartnerInfo;
+	private final BPartnerInfo handOverBPartnerInfo;
 	private final PricingSystemId pricingSystemId;
 
 	@Getter
@@ -72,22 +73,22 @@ public final class OLCand implements IProductPriceAware
 		this.candidate = candidate;
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL != null ? olCandEffectiveValuesBL : Services.get(IOLCandEffectiveValuesBL.class);
 
-		this.bpartnerInfo = OLCandBPartnerInfo.builder()
+		this.bpartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(candidate))
 				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(candidate))
 				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(candidate))
 				.build();
-		this.billBPartnerInfo = OLCandBPartnerInfo.builder()
+		this.billBPartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(candidate))
 				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(candidate))
 				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(candidate))
 				.build();
-		this.dropShipBPartnerInfo = OLCandBPartnerInfo.builder()
+		this.dropShipBPartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(this.olCandEffectiveValuesBL.getDropShipBPartnerEffectiveId(candidate))
 				.bpartnerLocationId(this.olCandEffectiveValuesBL.getDropShipLocationEffectiveId(candidate))
 				.contactId(this.olCandEffectiveValuesBL.getDropShipContactEffectiveId(candidate))
 				.build();
-		this.handOverBPartnerInfo = OLCandBPartnerInfo.builder()
+		this.handOverBPartnerInfo = BPartnerInfo.builder()
 				.bpartnerId(this.olCandEffectiveValuesBL.getHandOverPartnerEffectiveId(candidate))
 				.bpartnerLocationId(this.olCandEffectiveValuesBL.getHandOverLocationEffectiveId(candidate))
 				// .contactId(this.xolCandEffectiveValuesBL.getHandOver_User_Effective_ID(candidate))
@@ -130,22 +131,22 @@ public final class OLCand implements IProductPriceAware
 		return candidate.getAD_Org_ID();
 	}
 
-	public OLCandBPartnerInfo getBPartnerInfo()
+	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getBillBPartnerInfo()
+	public BPartnerInfo getBillBPartnerInfo()
 	{
 		return billBPartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getDropShipBPartnerInfo()
+	public BPartnerInfo getDropShipBPartnerInfo()
 	{
 		return dropShipBPartnerInfo;
 	}
 
-	public OLCandBPartnerInfo getHandOverBPartnerInfo()
+	public BPartnerInfo getHandOverBPartnerInfo()
 	{
 		return handOverBPartnerInfo;
 	}

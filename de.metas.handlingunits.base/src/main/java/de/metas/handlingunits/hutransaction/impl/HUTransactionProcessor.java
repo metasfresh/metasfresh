@@ -217,7 +217,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUItemStorage itemStorage = storageFactory.getStorage(vhuItem);
 			final ProductId productId = ProductId.ofRepoId(trxLine.getM_Product_ID());
-			itemStorage.addQty(productId, trxLine.getQty(), trxLine.getC_UOM());
+			itemStorage.addQty(productId, trxLine.getQty(), IHUTrxBL.extractUOMOrNull(trxLine));
 		}
 
 		trxLine.setProcessed(true);

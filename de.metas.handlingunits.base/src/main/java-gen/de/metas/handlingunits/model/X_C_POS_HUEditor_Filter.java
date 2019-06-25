@@ -14,7 +14,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -748303681L;
+	private static final long serialVersionUID = 1428178003L;
 
     /** Standard Constructor */
     public X_C_POS_HUEditor_Filter (Properties ctx, int C_POS_HUEditor_Filter_ID, String trxName)
@@ -67,7 +67,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class);
 	}
@@ -104,7 +104,7 @@ public class X_C_POS_HUEditor_Filter extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value() throws RuntimeException
+	public org.compiere.model.I_AD_Reference getAD_Reference_Value()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class);
 	}

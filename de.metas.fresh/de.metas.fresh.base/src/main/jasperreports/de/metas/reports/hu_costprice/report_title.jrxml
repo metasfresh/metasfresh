@@ -71,7 +71,7 @@
 			<textField>
 				<reportElement key="textField-1" x="153" y="4" width="194" height="19" uuid="053744b4-5049-459e-ad39-288a8e8832a3"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>

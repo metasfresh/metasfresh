@@ -14,7 +14,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1123049521L;
+	private static final long serialVersionUID = -1004078185L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
@@ -31,6 +31,7 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 			setIsRemitTo (false); // N
 			setIsShipTo (true); // Y
 			setName (null); // .
+			setVisitorsAddress (false); // N
         } */
     }
 
@@ -654,5 +655,28 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public java.lang.String getPhone2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
+	}
+
+	/** Set Visitors Address.
+		@param VisitorsAddress Visitors Address	  */
+	@Override
+	public void setVisitorsAddress (boolean VisitorsAddress)
+	{
+		set_Value (COLUMNNAME_VisitorsAddress, Boolean.valueOf(VisitorsAddress));
+	}
+
+	/** Get Visitors Address.
+		@return Visitors Address	  */
+	@Override
+	public boolean isVisitorsAddress () 
+	{
+		Object oo = get_Value(COLUMNNAME_VisitorsAddress);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }

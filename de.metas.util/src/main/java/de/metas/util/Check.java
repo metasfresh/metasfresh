@@ -97,6 +97,11 @@ public final class Check
 		Check.logger = logger;
 	}
 
+	public static RuntimeException mkEx(final String msg)
+	{
+		return mkEx(defaultExClazz, msg);
+	}
+
 	private static RuntimeException mkEx(final Class<? extends RuntimeException> exClazz, final String msg)
 	{
 		final boolean exceptionHasItsOwnHeaderMessage = ExceptionWithOwnHeaderMessage.class.isAssignableFrom(exClazz);
@@ -121,7 +126,7 @@ public final class Check
 		}
 	}
 
-	public static interface ExceptionWithOwnHeaderMessage
+	public interface ExceptionWithOwnHeaderMessage
 	{
 	}
 
@@ -157,7 +162,7 @@ public final class Check
 	{
 		assume(cond, defaultExClazz, errMsg, params);
 	}
-	
+
 	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
 	{
 		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
@@ -605,7 +610,7 @@ public final class Check
 			return ex;
 		};
 	}
-	
+
 	public static RuntimeException newException(final String errMsg, final Object... params)
 	{
 		final String errMsgFormated = StringUtils.formatMessage(errMsg, params);
@@ -713,7 +718,7 @@ public final class Check
 	 * @deprecated: as of java-8, there is {@link Objects#equals(Object, Object)}. Please use that instead.
 	 */
 	@Deprecated
-	public static final boolean equals(final Object a, final Object b)
+	public static boolean equals(final Object a, final Object b)
 	{
 		if (a == b || a != null && b != null && a.equals(b))
 		{

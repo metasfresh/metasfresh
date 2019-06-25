@@ -67,7 +67,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -130,10 +129,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
-	public InOutProducerFromShipmentScheduleWithHU(final InOutGenerateResult result)
+	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
-		super();
-
 		this.result = result;
 
 		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
@@ -141,7 +138,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public InOutGenerateResult createShipments(final List<ShipmentScheduleWithHU> candidates)
+	public InOutGenerateResult createShipments(@NonNull final List<ShipmentScheduleWithHU> candidates)
 	{
 		final InOutUserNotificationsProducer shipmentGeneratedNotifications = InOutUserNotificationsProducer.newInstance();
 
@@ -200,10 +197,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public boolean isSameChunk(final ShipmentScheduleWithHU item)
+	public boolean isSameChunk(@NonNull final ShipmentScheduleWithHU item)
 	{
-		Check.assumeNotNull(item, "Param item' is not null");
-
 		//
 		// If there is no last item (i.e. this is the first item), consider it as a new chunk
 		if (lastItem == null)
@@ -557,7 +552,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// => currentShipmentLineBuilder = null;
 		}
 
-		final boolean isManualPackingMaterial = candidate.isCreateManualPackingMaterial();
 
 		//
 		// If we don't have an active shipment line builder
@@ -565,10 +559,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 		if (currentShipmentLineBuilder == null)
 		{
 			currentShipmentLineBuilder = new ShipmentLineBuilder(currentShipment);
-			currentShipmentLineBuilder.setManualPackingMaterial(isManualPackingMaterial);
+			currentShipmentLineBuilder.setManualPackingMaterial(candidate.isAdviseManualPackingMaterial());
 			currentShipmentLineBuilder.setQtyTypeToUse(candidate.getQtyTypeToUse());
 			currentShipmentLineBuilder.setAlreadyAssignedTUIds(tuIdsAlreadyAssignedToShipmentLine);
-
 		}
 
 		//

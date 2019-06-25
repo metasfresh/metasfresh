@@ -41,7 +41,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{uomprice}]]></textFieldExpression>
 			</textField>
@@ -59,7 +59,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{quality}]]></textFieldExpression>
 			</textField>
@@ -75,7 +75,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shipping}]]></textFieldExpression>
 			</textField>
@@ -92,7 +92,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{shortcoming}]]></textFieldExpression>
 			</textField>
@@ -115,7 +115,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="135" height="12" forecolor="#000000" uuid="3f40f4a1-b2d8-42ee-bf3d-37e6abad2832"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{commitment}]]></textFieldExpression>
 			</textField>
@@ -124,7 +124,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="21" width="135" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{signature1}]]></textFieldExpression>
 			</textField>
@@ -137,7 +137,7 @@
 			<textField>
 				<reportElement key="textField-16" x="37" y="58" width="135" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{signature2}]]></textFieldExpression>
 			</textField>

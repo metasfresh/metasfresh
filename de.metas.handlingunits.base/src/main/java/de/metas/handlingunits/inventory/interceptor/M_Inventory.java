@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.inventory.IInventoryDAO;
+import de.metas.inventory.InventoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,6 +76,13 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void beforeComplete(final I_M_Inventory inventoryRecord)
 	{
+		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
+
+		if (huInventoryBL.isMaterialDisposal(inventoryRecord))
+		{
+			return; // nothing to do
+		}
+
 		inventoryLineRecordService.syncToHUs(inventoryRecord);
 	}
 
@@ -98,7 +106,8 @@ public class M_Inventory
 		//
 		// restore HUs from snapshots
 		{
-			final List<Integer> topLevelHUIds = inventoryDAO.retrieveLinesForInventoryId(inventory.getM_Inventory_ID(), I_M_InventoryLine.class)
+			final InventoryId inventoryId = InventoryId.ofRepoId(inventory.getM_Inventory_ID());
+			final List<Integer> topLevelHUIds = inventoryDAO.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
 					.stream()
 					.map(I_M_InventoryLine::getM_HU_ID)
 					.collect(ImmutableList.toImmutableList());

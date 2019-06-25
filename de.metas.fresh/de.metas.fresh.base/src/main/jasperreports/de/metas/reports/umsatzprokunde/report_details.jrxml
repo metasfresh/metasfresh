@@ -161,7 +161,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 				</textField>
@@ -174,7 +174,7 @@ ORDER BY
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 				</textField>
@@ -202,7 +202,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{kunden_summe1}]]></textFieldExpression>
 				</textField>
@@ -215,7 +215,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{kunden_summe2}]]></textFieldExpression>
 				</textField>
@@ -228,7 +228,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -241,7 +241,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{kunden_summe3}]]></textFieldExpression>
 				</textField>
@@ -254,7 +254,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -267,7 +267,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -291,7 +291,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{monat_summe1}]]></textFieldExpression>
 				</textField>
@@ -304,7 +304,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{monat_summe2}]]></textFieldExpression>
 				</textField>
@@ -317,7 +317,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -330,7 +330,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{monat_summe3}]]></textFieldExpression>
 				</textField>
@@ -343,7 +343,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -356,7 +356,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Left">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{cursymbol}]]></textFieldExpression>
 				</textField>
@@ -369,7 +369,7 @@ $P{monate_drucken}.equals("Y")?
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{monat}.intValue()==1 ? $R{january}:
 ($F{monat}.intValue()==2 ? $R{february}:

@@ -67,7 +67,7 @@ FROM
 			<textField>
 				<reportElement key="textField-16" x="37" y="0" width="99" height="12" forecolor="#000000" uuid="613a4095-25a8-4f37-888f-4a997ea9d115"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sumtitle}]]></textFieldExpression>
 			</textField>

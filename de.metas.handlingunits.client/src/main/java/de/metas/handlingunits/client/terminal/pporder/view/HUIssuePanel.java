@@ -398,12 +398,12 @@ public class HUIssuePanel implements IHUSelectPanel
 			if (packingMaterialIterator.hasNext())
 			{
 				final I_M_HU_PackingMaterial firstPackingMaterial = packingMaterialIterator.next();
-				final I_M_Product firstPMProduct = firstPackingMaterial.getM_Product();
+				final I_M_Product firstPMProduct = IHUPackingMaterialDAO.extractProductOrNull(firstPackingMaterial);
 				details.append(firstPMProduct.getName());
 				while (packingMaterialIterator.hasNext())
 				{
 					final I_M_HU_PackingMaterial packingMaterial = packingMaterialIterator.next();
-					final I_M_Product product = packingMaterial.getM_Product();
+					final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(packingMaterial);
 					details.append(", ").append(product.getName());
 				}
 			}

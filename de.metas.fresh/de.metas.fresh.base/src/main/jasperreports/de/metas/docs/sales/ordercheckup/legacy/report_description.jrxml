@@ -93,21 +93,21 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="35" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Kd.-Bestellnummer]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="365" y="63" width="97" height="13" forecolor="#000000" uuid="44c496d6-bc82-4c9a-b96b-db76a659ebd7"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" isUnderline="true" />
 				</textElement>
 				<text><![CDATA[Lieferung an:]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="90" y="63" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Abw. Anlieferort]]></text>
 			</staticText>
@@ -127,7 +127,7 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="90" y="8" width="218" height="13" forecolor="#000000" uuid="2d94c569-3bc2-49b0-a3c8-c3b965d541fb"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[AnsprechpartnerIn / Telefon]]></text>
 			</staticText>
@@ -162,14 +162,14 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="90" y="35" width="218" height="13" forecolor="#000000" uuid="0efbbf25-8d77-49c0-b29d-e6c0ef6c1198"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Fax-Nr.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement key="textField-6" x="90" y="90" width="218" height="13" forecolor="#000000" uuid="343b743c-921e-474a-a8eb-12320275ef79"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Abfahrts- / Abholzeit]]></text>
 			</staticText>
@@ -189,7 +189,7 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Auftragsnummer]]></text>
 			</staticText>
@@ -225,7 +225,7 @@ LIMIT 1
 			<staticText>
 				<reportElement key="textField-6" x="365" y="8" width="135" height="13" forecolor="#000000" uuid="bd068152-b0a3-45cb-b96a-bcefd6c351e1"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="10" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Datum]]></text>
 			</staticText>

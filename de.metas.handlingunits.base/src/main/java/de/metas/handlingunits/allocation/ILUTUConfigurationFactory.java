@@ -27,11 +27,20 @@ import java.math.BigDecimal;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
@@ -143,5 +152,39 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	 * @return quantity converted to {@link I_M_HU_LUTU_Configuration}'s UOM.
 	 */
 	Quantity convertQtyToLUTUConfigurationUOM(BigDecimal qty, I_C_UOM qtyUOM, I_M_HU_LUTU_Configuration lutuConfiguration);
+
+	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final UomId uomId = UomId.ofRepoIdOrNull(lutuConfiguration.getC_UOM_ID());
+		return uomId != null
+				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
+	}
+
+	static I_C_BPartner extractBPartnerOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(lutuConfiguration.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId)
+				: null;
+	}
+
+	static I_M_HU_PI_Item_Product extractHUPIItemProduct(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(lutuConfiguration);
+		if (huPIItemProduct == null)
+		{
+			throw new HUException("No PI Item Product set for " + lutuConfiguration);
+		}
+		return huPIItemProduct;
+	}
+
+	static I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration)
+	{
+		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNull(lutuConfiguration.getM_HU_PI_Item_Product_ID());
+		return huPIItemProductId != null
+				? Services.get(IHUPIItemProductDAO.class).getById(huPIItemProductId)
+				: null;
+	}
 
 }

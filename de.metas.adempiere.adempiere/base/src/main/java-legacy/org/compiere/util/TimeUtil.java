@@ -37,6 +37,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -1597,6 +1598,10 @@ public class TimeUtil
 		{
 			return (LocalDate)obj;
 		}
+		else if (obj instanceof String)
+		{
+			return LocalDate.parse(obj.toString());
+		}
 		else
 		{
 			return asLocalDateTime(obj).toLocalDate();
@@ -1726,6 +1731,10 @@ public class TimeUtil
 		{
 			return (Instant)obj;
 		}
+		else if (obj instanceof Timestamp)
+		{
+			return ((Timestamp)obj).toInstant();
+		}
 		else if (obj instanceof Date)
 		{
 			return ((Date)obj).toInstant();
@@ -1781,5 +1790,11 @@ public class TimeUtil
 		{
 			return duration2;
 		}
+	}
+
+	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
+	{
+		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
+		return localDate.equals(lastDayOfMonth);
 	}
 }	// TimeUtil

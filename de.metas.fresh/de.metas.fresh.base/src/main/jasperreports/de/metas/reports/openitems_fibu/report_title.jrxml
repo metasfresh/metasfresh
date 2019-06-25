@@ -30,7 +30,7 @@
 			<staticText>
 				<reportElement uuid="0ba00d35-11c8-46c2-8b18-6052f7ffe473" key="textField-1" x="153" y="4" width="194" height="19"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Offene Posten Fibu]]></text>
 			</staticText>

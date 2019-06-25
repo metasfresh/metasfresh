@@ -76,6 +76,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAndItemsDAO;
 import de.metas.handlingunits.IHUBuilder;
@@ -102,12 +103,7 @@ import lombok.NonNull;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
-
-	// NOTE: it's public only for testing purposes
-	public static final int PACKING_ITEM_TEMPLATE_HU_PI_Item_ID = 540004;
-
-	public static final int VIRTUAL_HU_PI_Item_ID = 101;
+	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsDAO.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
 
@@ -149,13 +145,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Cached
 	public I_M_HU_PI_Item retrievePackingItemTemplatePIItem(@CacheCtx final Properties ctx)
 	{
-		final I_M_HU_PI_Item noPIItem = InterfaceWrapperHelper.create(ctx, PACKING_ITEM_TEMPLATE_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
-		if (noPIItem == null)
+		final I_M_HU_PI_Item templatePIItem = InterfaceWrapperHelper.create(ctx, HuPackingInstructionsItemId.TEMPLATE_MATERIAL_ITEM.getRepoId(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		if (templatePIItem == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + PACKING_ITEM_TEMPLATE_HU_PI_Item_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ NoPI (ID=" + HuPackingInstructionsItemId.TEMPLATE_MATERIAL_ITEM + ")");
 		}
 
-		return noPIItem;
+		return templatePIItem;
 	}
 
 	@Override
@@ -168,10 +164,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Cached
 	public I_M_HU_PI_Item retrieveVirtualPIItem(final @CacheCtx Properties ctx)
 	{
-		final I_M_HU_PI_Item virtualPIItem = InterfaceWrapperHelper.create(ctx, VIRTUAL_HU_PI_Item_ID, I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
+		final I_M_HU_PI_Item virtualPIItem = InterfaceWrapperHelper.create(ctx, HuPackingInstructionsItemId.VIRTUAL.getRepoId(), I_M_HU_PI_Item.class, ITrx.TRXNAME_None);
 		if (virtualPIItem == null)
 		{
-			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ virtual (ID=" + VIRTUAL_HU_PI_Item_ID + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_PI_Item_ID@ virtual (ID=" + HuPackingInstructionsItemId.VIRTUAL + ")");
 		}
 
 		return virtualPIItem;
@@ -196,18 +192,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 			throw new AdempiereException("@NotFound@ @M_HU_PI_ID@: " + piId);
 		}
 		return pi;
-	}
-
-	@Override
-	public int getPackingItemTemplate_HU_PI_Item_ID()
-	{
-		return PACKING_ITEM_TEMPLATE_HU_PI_Item_ID;
-	}
-
-	@Override
-	public int getVirtual_HU_PI_Item_ID()
-	{
-		return VIRTUAL_HU_PI_Item_ID;
 	}
 
 	@Override
@@ -766,7 +750,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addInArrayFilter(I_M_HU_PI_Item.COLUMN_C_BPartner_ID, null, parentHU.getC_BPartner_ID())
 
 				// order by C_BPartner_ID descending to favor any piItem with a matching C_BPartner_ID
-				.orderBy().addColumn(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, false).endOrderBy()
+				.orderByDescending(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID)
 
 				.create()
 				.first(); // get the first one (favoring the one with C_BPartner_ID = parentHU.getC_BPartner_ID() if it exists)
@@ -812,7 +796,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		Check.assumeNotNull(hu, "hu not null");
 		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
-		final I_C_BPartner bpartner = hu.getC_BPartner();
+		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(hu);
 		final I_M_HU_PackingMaterial pm = retrievePackingMaterial(piVersion, bpartner);
 		return pm;
 	}
@@ -859,17 +843,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setContext(ctx, trxName)
 				.setOnlyTopLevelHUs()
 				.addOnlyInWarehouseIds(warehouseIds)
-				.list();
-	}
-
-	@Override
-	public List<I_M_HU> retrieveHUsForWarehousesAndProductId(final Properties ctx, final Collection<WarehouseId> warehouseIds, final int productId, final String trxName)
-	{
-		return createHUQueryBuilder()
-				.setContext(ctx, trxName)
-				.setOnlyTopLevelHUs()
-				.addOnlyInWarehouseIds(warehouseIds)
-				.addOnlyWithProductId(productId)
 				.list();
 	}
 

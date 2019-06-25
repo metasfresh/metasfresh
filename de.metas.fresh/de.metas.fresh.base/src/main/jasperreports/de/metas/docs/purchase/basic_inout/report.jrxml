@@ -227,14 +227,14 @@ LIMIT 1
 			<textField>
 				<reportElement x="26" y="7" width="147" height="13" uuid="28195b63-fb7c-4969-b51e-91b03815e997"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{RecipientSignature}+":"]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="28" y="44" width="143" height="13" uuid="e476d2e4-4673-4b60-8dd6-3d2c229d5426"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ShipperSignature}+":"]]></textFieldExpression>
 			</textField>

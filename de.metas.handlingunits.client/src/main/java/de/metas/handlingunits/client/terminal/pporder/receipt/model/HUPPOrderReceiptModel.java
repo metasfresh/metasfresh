@@ -35,6 +35,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.client.terminal.lutuconfig.model.LUTUConfigurationEditorModel;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -45,7 +46,6 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -57,7 +57,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final transient IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 
-	private List<I_M_HU> createdPlanningHUs = new ArrayList<I_M_HU>();
+	private List<I_M_HU> createdPlanningHUs = new ArrayList<>();
 
 	public List<I_M_HU> getCreatedPlanningHUs()
 	{
@@ -117,7 +117,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
+		final I_C_UOM uom = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.order(ppOrder)
 				.productId(ProductId.ofRepoId(lutuConfiguration.getM_Product_ID()))
@@ -153,7 +153,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 				.updateFromModel();
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationEditor.getEditingLUTUConfiguration();
 
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(lutuConfiguration.getC_UOM_ID());
+		final I_C_UOM uom = ILUTUConfigurationFactory.extractUOMOrNull(lutuConfiguration);
 		final ReceiptCostCollectorCandidate receiptCostCollectorCandidate = ReceiptCostCollectorCandidate.builder()
 				.order(ppOrder)
 				.orderBOMLine(ppOrderBOMLine)
@@ -194,7 +194,7 @@ public class HUPPOrderReceiptModel extends LUTUConfigurationEditorModel
 		final I_M_HU_LUTU_Configuration luTuConfiguration = lutuConfigurationEditor.getLUTUConfiguration();
 
 		// Get UOM
-		final I_C_UOM qtyToReceiveUOM = luTuConfiguration.getC_UOM();
+		final I_C_UOM qtyToReceiveUOM = ILUTUConfigurationFactory.extractUOMOrNull(luTuConfiguration);
 
 		//
 		// Receive new HUs, update their attributes, and automatically assign them to PP_Order/PP_Order_BOMLine

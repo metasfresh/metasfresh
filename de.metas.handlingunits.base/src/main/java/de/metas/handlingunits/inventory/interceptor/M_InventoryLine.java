@@ -1,18 +1,20 @@
 package de.metas.handlingunits.inventory.interceptor;
 
-import org.adempiere.ad.dao.IQueryBL;
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.handlingunits.inventory.InventoryLineRepository;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.inventory.InventoryConstants;
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -42,9 +44,9 @@ import lombok.NonNull;
 @Component("de.metas.handlingunits.inventory.interceptor.M_InventoryLine")
 public class M_InventoryLine
 {
-	private final InventoryLineRepository inventoryLineRepository;
+	private final InventoryRepository inventoryLineRepository;
 
-	public M_InventoryLine(@NonNull final InventoryLineRepository inventoryLineRepository)
+	public M_InventoryLine(@NonNull final InventoryRepository inventoryLineRepository)
 	{
 		this.inventoryLineRepository = inventoryLineRepository;
 	}
@@ -52,32 +54,41 @@ public class M_InventoryLine
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_M_InventoryLine.COLUMNNAME_QtyCount)
 	public void distributeQuantityToHUs(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		if (extractIsSingleHU(inventoryLineRecord))
+		final HUAggregationType huAggregationType = extractHUAggregationType(inventoryLineRecord);
+		if (HUAggregationType.SINGLE_HU.equals(huAggregationType))
 		{
 			return; // nothing to do
 		}
+		else
+		{
+			final Quantity qtyCount = extractQtyCount(inventoryLineRecord);
 
-		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
-		final InventoryLine inventoryLine = inventoryLineRepository.getById(inventoryLineId);
+			final InventoryLine inventoryLine = inventoryLineRepository
+					.toInventoryLine(inventoryLineRecord)
+					.distributeQtyCountToHUs(qtyCount);
 
-		final Quantity qtyCount = Quantity.of(inventoryLineRecord.getQtyCount(), inventoryLineRecord.getC_UOM());
-		inventoryLine.withQtyCount(qtyCount);
-
-		inventoryLineRepository.save(inventoryLine);
+			inventoryLineRepository.saveInventoryLineHURecords(inventoryLine);
+		}
 	}
 
-	private boolean extractIsSingleHU(@NonNull final I_M_InventoryLine inventoryLineRecord)
+	private Quantity extractQtyCount(final I_M_InventoryLine inventoryLineRecord)
 	{
-		return InventoryConstants.HUAggregationType_SINGLE_HU.equals(inventoryLineRecord.getHUAggregationType());
+		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+
+		final I_C_UOM uom = uomsRepo.getById(inventoryLineRecord.getC_UOM_ID());
+		return Quantity.of(inventoryLineRecord.getQtyCount(), uom);
+	}
+
+	@Nullable
+	private static HUAggregationType extractHUAggregationType(final I_M_InventoryLine inventoryLineRecord)
+	{
+		return HUAggregationType.ofNullableCode(inventoryLineRecord.getHUAggregationType());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteInventoryLineHURecords(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_InventoryLine_HU.class)
-				.addEqualsFilter(I_M_InventoryLine_HU.COLUMN_M_InventoryLine_ID, inventoryLineRecord.getM_InventoryLine_ID())
-				.create()
-				.delete();
+		final InventoryLineId inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
+		inventoryLineRepository.deleteInventoryLineHUs(inventoryLineId);
 	}
 }

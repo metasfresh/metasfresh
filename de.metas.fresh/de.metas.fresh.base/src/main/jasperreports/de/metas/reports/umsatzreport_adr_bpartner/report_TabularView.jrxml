@@ -45,35 +45,35 @@ $P{Base_Period_Start}
 			<textField>
 				<reportElement x="2" y="1" width="627" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="12" isBold="true"/>
+					<font size="12" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{headline}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="2" y="59" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{periodrange}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="282" y="45" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("Y") ? $R{sales} : $R{purchase}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="2" y="31" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="282" y="31" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpartnername}.equals("alle") ?
 $R{all} : $F{bpartnername}]]></textFieldExpression>
@@ -81,7 +81,7 @@ $R{all} : $F{bpartnername}]]></textFieldExpression>
 			<textField isBlankWhenNull="true">
 				<reportElement x="282" y="73" width="347" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{attributes}.equals("alle") ?
 $R{all} : $F{attributes}]]></textFieldExpression>
@@ -89,42 +89,42 @@ $R{all} : $F{attributes}]]></textFieldExpression>
 			<textField>
 				<reportElement x="2" y="73" width="280" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="2" y="45" width="280" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{issotrx}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement x="282" y="59" width="347" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{startdate} + " - " + $F{enddate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="3" y="124" width="279" height="24" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{product}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="282" y="124" width="178" height="24" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{sameperiodsum}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="461" y="124" width="168" height="24" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="9" isBold="true"/>
+					<font size="9" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{productcategory}]]></textFieldExpression>
 			</textField>

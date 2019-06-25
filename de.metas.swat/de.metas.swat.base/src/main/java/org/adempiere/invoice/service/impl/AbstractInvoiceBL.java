@@ -70,6 +70,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.ICopyHandlerBL;
@@ -92,6 +93,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
@@ -107,7 +110,6 @@ import lombok.NonNull;
  * Implements those methods that are DB decoupled
  *
  * @author ts
- *
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
@@ -1011,7 +1013,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoiceLine);
 		final I_C_Tax invoiceTax = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Tax_ID(), I_C_Tax.class, trxName);
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
-		final int taxPrecision = getPrecision(invoiceLine);
+		final CurrencyPrecision taxPrecision = getAmountPrecision(invoiceLine);
 
 		// ts: note: our taxes are always on document, so currently the following if-block doesn't apply to us
 		final boolean documentLevel = invoiceTax != null // guard against NPE
@@ -1045,8 +1047,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				log.debug("stdTax rate is " + stdTax.getRate());
 				log.debug("invoiceTax rate is " + invoiceTax.getRate());
 
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
@@ -1055,10 +1057,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			}
 		}
 
-		if (lineNetAmt.scale() > taxPrecision)
-		{
-			lineNetAmt = lineNetAmt.setScale(taxPrecision, BigDecimal.ROUND_HALF_UP);
-		}
+		lineNetAmt = taxPrecision.roundIfNeeded(lineNetAmt);
 
 		invoiceLine.setLineNetAmt(lineNetAmt);
 
@@ -1083,8 +1082,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
-		final int taxPrecision = getPrecision(invoiceLine);
-		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision);
+		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
+		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1241,19 +1240,51 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final int getPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	public final CurrencyPrecision getPricePrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
-		final int currencyPrecision = invoice.getC_Currency_ID() > 0 ? invoice.getC_Currency().getStdPrecision() : 0;
-		final int plPrecision = invoice.getM_PriceList_ID() > 0 ? invoice.getM_PriceList().getPricePrecision() : 0;
-
-		return Integer.max(currencyPrecision, plPrecision);
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getPricePrecision(priceListId)
+				: CurrencyPrecision.ZERO;
 	}
 
 	@Override
-	public final int getPrecision(final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public final CurrencyPrecision getPricePrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
-		return getPrecision(invoice);
+		return getPricePrecision(invoice);
+	}
+
+	@Override
+	public final CurrencyPrecision getAmountPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getAmountPrecision(priceListId)
+				: CurrencyPrecision.ZERO;
+	}
+
+	@Override
+	public final CurrencyPrecision getAmountPrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return getAmountPrecision(invoice);
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
+		return priceListId != null
+				? Services.get(IPriceListBL.class).getTaxPrecision(priceListId)
+				: CurrencyPrecision.ZERO;
+	}
+
+	@Override
+	public final CurrencyPrecision getTaxPrecision(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return getTaxPrecision(invoice);
 	}
 
 	@Override

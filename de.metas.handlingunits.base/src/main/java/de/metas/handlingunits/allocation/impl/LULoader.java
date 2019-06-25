@@ -107,7 +107,7 @@ public class LULoader
 	 */
 	private LULoaderInstance createLULoaderInstanceForTU(final I_M_HU tuHU)
 	{
-		final I_C_BPartner bpartner = tuHU.getC_BPartner();
+		final I_C_BPartner bpartner = IHandlingUnitsBL.extractBPartnerOrNull(tuHU);
 		final int bpartnerLocationId = tuHU.getC_BPartner_Location_ID();
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(tuHU.getM_Locator_ID());
 		final String huStatus = tuHU.getHUStatus();

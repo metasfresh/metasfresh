@@ -124,7 +124,10 @@ public class DataEntryRecordRepository
 
 		saveRecord(dataRecord);
 
-		return DataEntryRecordId.ofRepoId(dataRecord.getDataEntry_Record_ID());
+		final DataEntryRecordId dataEntryRecordId = DataEntryRecordId.ofRepoId(dataRecord.getDataEntry_Record_ID());
+		dataEntryRecord.setId(dataEntryRecordId);
+
+		return dataEntryRecordId;
 	}
 
 	public void deleteBy(@NonNull final DataEntryRecordQuery query)

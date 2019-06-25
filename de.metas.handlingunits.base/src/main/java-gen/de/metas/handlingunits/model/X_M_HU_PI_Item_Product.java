@@ -15,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1709215247L;
+	private static final long serialVersionUID = 1394772433L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -47,18 +47,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Bezeichnet einen Geschäftspartner
@@ -82,18 +70,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -184,7 +160,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_HU_PI_Item()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_PI_Item_ID, de.metas.handlingunits.model.I_M_HU_PI_Item.class);
 	}
@@ -239,18 +215,6 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
-	}
-
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -277,9 +241,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
+		@param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -287,8 +249,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
+		@return Name	  */
 	@Override
 	public java.lang.String getName () 
 	{

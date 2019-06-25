@@ -32,8 +32,6 @@ public interface I_M_InventoryLine_HU
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_AD_Client>(I_M_InventoryLine_HU.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,14 +57,35 @@ public interface I_M_InventoryLine_HU
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_AD_Org>(I_M_InventoryLine_HU.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_C_UOM>(I_M_InventoryLine_HU.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -99,35 +118,6 @@ public interface I_M_InventoryLine_HU
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, org.compiere.model.I_C_UOM>(I_M_InventoryLine_HU.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -156,7 +146,7 @@ public interface I_M_InventoryLine_HU
 	 * Set Handling Unit.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setM_HU_ID (int M_HU_ID);
@@ -165,7 +155,7 @@ public interface I_M_InventoryLine_HU
 	 * Get Handling Unit.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_HU_ID();
@@ -280,6 +270,31 @@ public interface I_M_InventoryLine_HU
     public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyCount = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "QtyCount", null);
     /** Column name QtyCount */
     public static final String COLUMNNAME_QtyCount = "QtyCount";
+
+	/**
+	 * Set Internal Use Qty.
+	 * Internal Use Quantity removed from Inventory
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse);
+
+	/**
+	 * Get Internal Use Qty.
+	 * Internal Use Quantity removed from Inventory
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInternalUse();
+
+    /** Column definition for QtyInternalUse */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object> COLUMN_QtyInternalUse = new org.adempiere.model.ModelColumn<I_M_InventoryLine_HU, Object>(I_M_InventoryLine_HU.class, "QtyInternalUse", null);
+    /** Column name QtyInternalUse */
+    public static final String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
 
 	/**
 	 * Get Aktualisiert.

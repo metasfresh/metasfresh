@@ -1,8 +1,10 @@
 package de.metas.contracts;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-
 import lombok.Value;
 
 /*
@@ -32,13 +34,26 @@ public class FlatrateTermId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
 	public static FlatrateTermId ofRepoId(final int repoId)
 	{
 		return new FlatrateTermId(repoId);
 	}
 
+	public static FlatrateTermId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
 	private FlatrateTermId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

@@ -1,8 +1,7 @@
 package de.metas.dataentry;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
+import java.time.LocalDate;
 import lombok.Getter;
 
 /*
@@ -40,7 +39,7 @@ public enum FieldType
 
 	NUMBER(BigDecimal.class),
 
-	DATE(ZonedDateTime.class),
+	DATE(LocalDate.class),
 
 	LIST(DataEntryListValueId.class),
 

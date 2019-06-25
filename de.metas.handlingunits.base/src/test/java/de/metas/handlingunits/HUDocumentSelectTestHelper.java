@@ -301,7 +301,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefIFCO, pmIFCO);
 			pmIFCO.setAllowedPackingWeight(new BigDecimal("100"));
-			pmIFCO.setC_UOM_Weight(uomEach);
+			pmIFCO.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmIFCO);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)
@@ -336,7 +336,7 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 
 			createHU_PI_Item_PackingMaterial(huDefPalet, pmPalet);
 			pmPalet.setAllowedPackingWeight(new BigDecimal("400"));
-			pmPalet.setC_UOM_Weight(uomEach);
+			pmPalet.setC_UOM_Weight_ID(uomEach.getC_UOM_ID());
 			InterfaceWrapperHelper.save(pmPalet);
 
 			createM_HU_PI_Attribute(new HUPIAttributeBuilder(attr_CountryMadeIn)

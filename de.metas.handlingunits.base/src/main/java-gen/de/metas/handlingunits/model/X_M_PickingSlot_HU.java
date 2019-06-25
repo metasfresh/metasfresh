@@ -14,7 +14,7 @@ public class X_M_PickingSlot_HU extends org.compiere.model.PO implements I_M_Pic
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -126175437L;
+	private static final long serialVersionUID = 1041431695L;
 
     /** Standard Constructor */
     public X_M_PickingSlot_HU (Properties ctx, int M_PickingSlot_HU_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_M_PickingSlot_HU extends org.compiere.model.PO implements I_M_Pic
     }
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getM_HU()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
@@ -55,8 +55,8 @@ public class X_M_PickingSlot_HU extends org.compiere.model.PO implements I_M_Pic
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Units.
-		@param M_HU_ID Handling Units	  */
+	/** Set Handling Unit.
+		@param M_HU_ID Handling Unit	  */
 	@Override
 	public void setM_HU_ID (int M_HU_ID)
 	{
@@ -66,8 +66,8 @@ public class X_M_PickingSlot_HU extends org.compiere.model.PO implements I_M_Pic
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
 	}
 
-	/** Get Handling Units.
-		@return Handling Units	  */
+	/** Get Handling Unit.
+		@return Handling Unit	  */
 	@Override
 	public int getM_HU_ID () 
 	{

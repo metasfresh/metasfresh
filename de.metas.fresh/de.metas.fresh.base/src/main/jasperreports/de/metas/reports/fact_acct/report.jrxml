@@ -44,14 +44,14 @@
 				<textField>
 					<reportElement x="355" y="12" width="100" height="10" uuid="57ce5783-0241-4a23-9207-b7b7cd151c5f"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" isItalic="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{total}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Report" pattern="#,##0.00">
 					<reportElement x="455" y="12" width="62" height="10" uuid="4cf80f1e-44c5-4e6f-9f28-db080e115bb2"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font size="7" fontName="Arial" isBold="true" isItalic="false" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{TotalAmt}]]></textFieldExpression>
 				</textField>
@@ -66,7 +66,7 @@
 			<textField>
 				<reportElement x="34" y="14" width="198" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 			</textField>
@@ -128,49 +128,49 @@
 			<textField>
 				<reportElement x="34" y="0" width="45" height="12" uuid="6a60666a-f9c0-4e2b-a5a5-f5d13c0c3a31"/>
 				<textElement markup="none">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="79" y="0" width="99" height="12" uuid="363e0f20-9350-4db0-a315-eaf0ea38cebb"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="178" y="0" width="54" height="12" uuid="bd38817c-7341-4ae1-ad01-fdb7e2abecac"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{searchkey}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="232" y="0" width="142" height="12" uuid="c56195f4-9fb8-4715-a9ee-302c86357f56"/>
 				<textElement>
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{reference}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="374" y="0" width="51" height="12" uuid="5434c9c9-2295-4c20-811c-72ca84fc09ba"/>
 				<textElement markup="none">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{valutadate}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="425" y="0" width="30" height="12" uuid="73ec0d10-10d6-4b80-9348-735d628782d2"/>
 				<textElement markup="none">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{lineno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="455" y="0" width="54" height="12" uuid="20e308a0-bccb-42a9-9dde-0f5a0c909ae6"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="7" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="7" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{amount}]]></textFieldExpression>
 			</textField>

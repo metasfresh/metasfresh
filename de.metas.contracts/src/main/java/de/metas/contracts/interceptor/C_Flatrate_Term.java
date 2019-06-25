@@ -1,7 +1,5 @@
 package de.metas.contracts.interceptor;
 
-import lombok.NonNull;
-
 import java.sql.Timestamp;
 
 /*
@@ -83,7 +81,6 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_Term.class)
@@ -251,7 +248,7 @@ public class C_Flatrate_Term
 
 		if (!errors.isEmpty())
 		{
-			throw new AdempiereException(concatStrings(errors));
+			throw new AdempiereException(concatStrings(errors)).markAsUserValidationError();
 		}
 	}
 

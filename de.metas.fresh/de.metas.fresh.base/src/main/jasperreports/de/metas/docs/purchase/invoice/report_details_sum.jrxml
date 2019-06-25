@@ -38,14 +38,14 @@
 				<textField>
 					<reportElement uuid="c39ef06f-dd21-4ea8-ae51-9088b40e43f3" key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="f3887bd5-7222-4cc3-9daa-878ed48f1acd" key="textField-20" x="483" y="0" width="60" height="12" forecolor="#000000"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
@@ -54,7 +54,7 @@
 						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
@@ -71,7 +71,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font size="9" isBold="true"/>
+						<font size="9" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{InvoiceTotal} + " " + $F{iso_code} + (
     $F{isprinttax}.equals( 'Y' ) ? " " + $R{VATIncluded} : ""
@@ -86,7 +86,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font size="9" isBold="true"/>
+						<font size="9" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 				</textField>

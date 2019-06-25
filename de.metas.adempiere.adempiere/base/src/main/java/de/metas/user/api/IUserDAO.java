@@ -52,6 +52,10 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
+	/**
+	 * @deprecated please use {@link #getById(UserId)} instead
+	 */
+	@Deprecated
 	default I_AD_User getById(final int adUserRepoId)
 	{
 		return getById(UserId.ofRepoId(adUserRepoId));
@@ -81,4 +85,6 @@ public interface IUserDAO extends ISingletonService
 	Set<UserId> retrieveSystemUserIds();
 
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
+
+	Set<UserId> getUserIdsByBPartnerId(BPartnerId bpartnerId);
 }

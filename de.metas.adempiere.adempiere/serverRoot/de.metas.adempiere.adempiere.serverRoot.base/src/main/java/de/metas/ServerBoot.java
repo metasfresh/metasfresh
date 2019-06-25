@@ -9,8 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.adempiere.ad.dao.impl.QuerySelectionToDeleteHelper;
-import org.adempiere.ad.dao.model.I_T_Query_Selection;
 import org.adempiere.ad.element.process.AD_Element_CreateMissing_HousekeepingTask;
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.service.ISysConfigBL;
@@ -37,6 +35,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.dao.selection.QuerySelectionToDeleteHelper;
+import de.metas.dao.selection.model.I_T_Query_Selection;
 import de.metas.elasticsearch.ESLoggingInit;
 import de.metas.logging.LogManager;
 import de.metas.server.housekeep.MissingTranslationHouseKeepingTask;

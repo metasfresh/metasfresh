@@ -10,6 +10,89 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.109
+## Features
+* metasfresh
+  * [#5316](https://github.com/metasfresh/metasfresh/issues/5316) C_DocOutbound - improve mail attachment file name
+  * [#5328](https://github.com/metasfresh/metasfresh/issues/5328) PP_Order.C_Project_ID virtual column
+
+* metasfresh-e2e
+  * [#71](https://github.com/metasfresh/metasfresh-e2e/issues/71) Create new BOM
+  * [#72](https://github.com/metasfresh/metasfresh-e2e/issues/72) Create new bank
+  * [#124](https://github.com/metasfresh/metasfresh-e2e/issues/124) Create new Cost Center
+  * [#127](https://github.com/metasfresh/metasfresh-e2e/issues/127) Create quality note
+
+# metasfresh 5.108
+## Features
+* metasfresh
+  * [#5233](https://github.com/metasfresh/metasfresh/issues/5233) Separate eMail Text for Notifications
+
+* metasfresh-e2e
+  * [#92](https://github.com/metasfresh/metasfresh-e2e/issues/92) Cypress tests shall not be sensitive to menu language
+  * [#100](https://github.com/metasfresh/metasfresh-e2e/issues/100) Create a new user and set a password
+  * [#104](https://github.com/metasfresh/metasfresh-e2e/issues/104) Create command for selecting a date from calendar icon
+
+## Fixes
+* metasfresh
+  * [#5313](https://github.com/metasfresh/metasfresh/issues/5313) Automatischer Debitorenlisten-Export mit falschen Formaten
+  * [#5296](https://github.com/metasfresh/metasfresh/issues/5296) Exception on invoicing an invoice candidate
+
+## Fixes
+
+# metasfresh 5.107
+## Features
+* metasfresh
+  * [#5204](https://github.com/metasfresh/metasfresh/issues/5204) On-the-fly auto-allocate available HUs while creating shipments
+  * [#5208](https://github.com/metasfresh/metasfresh/issues/5208) Attribute Age automatism
+  * [#5210](https://github.com/metasfresh/metasfresh/issues/5210) Customs Document
+  * [#5231](https://github.com/metasfresh/metasfresh/issues/5231) Import Replenishments
+  * [#5237](https://github.com/metasfresh/metasfresh/issues/5237) Attribute "Herkunft" is not updated after country change
+  * [#5238](https://github.com/metasfresh/metasfresh/issues/5238) Finetuning Area Search: Params from selected BPartner>>Location
+  * [#5239](https://github.com/metasfresh/metasfresh/issues/5239) Jasper for Customs Invoice
+  * [#5261](https://github.com/metasfresh/metasfresh/issues/5261) Prevent Users from Accidentally deleting attachment files
+  * [#5262](https://github.com/metasfresh/metasfresh/issues/5262) Adjustments for Specifications
+  * [#5265](https://github.com/metasfresh/metasfresh/issues/5265) Show different Bestellkontrolle views in Jasper based on type
+  * [#5276](https://github.com/metasfresh/metasfresh/issues/5276) Finetuning dunning window
+  * [#5282](https://github.com/metasfresh/metasfresh/issues/5282) WARN if webui.frontend.url is not configured
+  * [#5285](https://github.com/metasfresh/metasfresh/issues/5285) Make sure AD_Column.IsTranslatable could be set when the column is eligible
+  * [#5288](https://github.com/metasfresh/metasfresh/issues/5288) Customization tool: Process to add/update a field to selected UI element group
+  * [#5290](https://github.com/metasfresh/metasfresh/issues/5290) Fix BPartner->Vendor wrong tab name
+  * [#5291](https://github.com/metasfresh/metasfresh/issues/5291) Automated test: make sure RepoIds are correctly defined
+
+* metasfresh-webui-frontend
+  * [#2284](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2284) Make OpenViewAction open data in a new browser tab
+  * [#2287](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2287) Add a confirmation popup before deleting attachment file
+
+## Fixes
+
+* metasfresh
+  * [#5280](https://github.com/metasfresh/metasfresh/issues/5280) Enable MetasfreshIssueAppender when the system is ready for it
+  * [#5284](https://github.com/metasfresh/metasfresh/issues/5284) Non-Barcode Order-Checkup doesn't show C_BPartner_Location.Name
+
+* metasfresh-webui-api
+  * [#1206](https://github.com/metasfresh/metasfresh-webui-api/issues/1206) HU Transform and Serial Number Processes don't start
+
+* metasfresh-webui-frontend
+  * [#2149](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2149) Decimal value .00 not added to product price at first
+  * [#2232](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2232) Wrong Button color after first Date click in Range Widget
+  * [#2274](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2274) Calendar icon should react to clicks
+  * [#2279](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2279) Patching broken for Attributes widget
+
+# metasfresh 5.106
+
+## Features
+* metasfresh
+  * [#5205](https://github.com/metasfresh/metasfresh/issues/5205) Improve IFA import
+  * [#5212](https://github.com/metasfresh/metasfresh/issues/5212) Add Specifications product report
+  * [#5216](https://github.com/metasfresh/metasfresh/issues/5216) Allow deleting candidates if processed_override and not invoiced
+  * [#5224](https://github.com/metasfresh/metasfresh/issues/5224) Adjust Balance report
+  * [#5229](https://github.com/metasfresh/metasfresh/issues/5229) Adjust production order report
+
+## Fixes
+* metasfresh-e2e
+  * [#87](https://github.com/metasfresh/metasfresh-e2e/issues/87) Filter buttons not reachable if many records
+  * [#91](https://github.com/metasfresh/metasfresh-e2e/issues/91) Fix sales order to invoice test
+
 # metasfresh 5.105
 
 ## Features
@@ -27,6 +110,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#2263](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2263) HU Panel too small in material receipt candidates' modal overlay
   * [#2265](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2265) Notifications and user menu will not close
+  * [#2272](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2272) frontend fields readonly during (patch) request
 
 # metasfresh 5.104
 

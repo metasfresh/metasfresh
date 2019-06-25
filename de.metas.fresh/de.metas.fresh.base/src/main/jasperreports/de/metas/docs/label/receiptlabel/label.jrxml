@@ -147,7 +147,7 @@
 			<textField>
 				<reportElement x="97" y="475" width="400" height="58" uuid="0b495f32-ff01-43c8-9278-a7f7ff3c1a3a"/>
 				<textElement markup="none">
-					<font size="22" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="22" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
@@ -205,7 +205,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="129" y="533" width="368" height="23" uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{adr}]]></textFieldExpression>
 			</textField>
@@ -239,14 +239,14 @@
 					<printWhenExpression><![CDATA[new Boolean($F{deliverydate}==null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
-					<font size="20" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="20" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="148" y="603" width="349" height="23" uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{beurteilung}.floatValue() <= 5 ? "Lieferung in Ordnung" :
 $F{beurteilung}.floatValue() <= 10 ? "Vorbehalt klein" :
@@ -293,7 +293,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 			<textField isBlankWhenNull="true">
 				<reportElement x="97" y="625" width="400" height="23" uuid="ddf9e2ff-3180-45ad-aeda-f77966edc0de"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notiz}]]></textFieldExpression>
 			</textField>
@@ -307,7 +307,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 			<textField isBlankWhenNull="true">
 				<reportElement x="129" y="555" width="368" height="23" uuid="f5f21f45-a2c1-4b9d-b0e2-8996cba03e3f"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="18" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="18" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{packinginstruction}]]></textFieldExpression>
 			</textField>
@@ -356,7 +356,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 			<textField pattern="dd.MM.yy" isBlankWhenNull="true">
 				<reportElement x="228" y="577" width="269" height="27" uuid="027ed372-3ff8-480d-8773-e73d83259037"/>
 				<textElement textAlignment="Right">
-					<font size="20" isBold="true"/>
+					<font size="20" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deliverydate}]]></textFieldExpression>
 			</textField>
@@ -377,7 +377,7 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 			<textField isBlankWhenNull="true">
 				<reportElement x="160" y="120" width="279" height="52" uuid="bc4a9beb-541b-4f81-ba27-c83e275ed95a"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="20" isBold="true"/>
+					<font size="20" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qualityinspectioncycle} !=null ? $F{qualityinspectioncycle} : (("Y").equals($F{isqualityinspection}) ?$R{isqualityinspection} : null)]]></textFieldExpression>
 			</textField>

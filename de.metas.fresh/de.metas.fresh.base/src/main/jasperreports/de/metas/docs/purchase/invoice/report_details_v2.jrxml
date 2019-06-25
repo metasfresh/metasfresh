@@ -138,7 +138,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement>
-						<font fontName="SansSerif" size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{inouts} + " "+ $R{of} + " "+ $F{inouts_datefrom}]]></textFieldExpression>
 				</textField>
@@ -156,7 +156,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="9" isBold="false" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+						<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
 				</textField>
@@ -165,7 +165,7 @@
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="false" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+						<font fontName="Arial" size="9" isBold="false" isItalic="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 				</textField>
@@ -179,7 +179,7 @@
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0)]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TotalAmount} + " " + $F{doctype}]]></textFieldExpression>
 				</textField>
@@ -194,7 +194,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
 				</textField>
@@ -212,7 +212,7 @@
 						<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 				</textField>
@@ -221,7 +221,7 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 				</textField>
@@ -231,7 +231,7 @@
 						<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 				</textField>
@@ -240,7 +240,7 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 				</textField>
@@ -249,28 +249,28 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-19" x="366" y="0" width="46" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="500" y="0" width="43" height="12" forecolor="#000000" uuid="4072d60d-3d0c-4127-82d8-38c5898de5e6"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="451" y="0" width="46" height="12" forecolor="#000000" uuid="4829f110-fa95-429a-b450-10c28f535158"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 				</textField>
@@ -279,7 +279,7 @@
 						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
@@ -289,7 +289,7 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement>
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 				</textField>
@@ -301,35 +301,35 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="37" y="0" width="161" height="12" forecolor="#000000" uuid="743f68ba-ff0c-4320-b5d5-47e666b38490"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-19" x="366" y="0" width="46" height="12" forecolor="#000000" uuid="ff1b3d6c-bd7e-4888-821c-e2f84cd91664"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Return}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="500" y="0" width="43" height="12" forecolor="#000000" uuid="bf46f72e-5d4d-4f1a-a45a-0a46bbe56e51"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-19" x="310" y="0" width="56" height="12" forecolor="#000000" uuid="9e1558f1-316c-48dc-9e8c-9cb1ddd3660f"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Delivered}]]></textFieldExpression>
 				</textField>
@@ -338,14 +338,14 @@
 						<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="414" y="0" width="37" height="12" forecolor="#000000" uuid="ab85f5d6-b118-45bb-b5ec-dc863e51b7bf"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
@@ -358,7 +358,7 @@
 						<printWhenExpression><![CDATA[new Boolean ( $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<textElement markup="none">
-						<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Bold"/>
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TotalAmount} + " " + ($F{ishu}?$R{PackingMaterial}:$R{Article})]]></textFieldExpression>
 				</textField>
@@ -373,7 +373,7 @@
 						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textElement textAlignment="Right">
-						<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Oblique"/>
+						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{CategorySum}]]></textFieldExpression>
 				</textField>
@@ -614,7 +614,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" pdfFontName="Helvetica"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
@@ -714,7 +714,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font fontName="SansSerif" size="9" isBold="false" pdfFontName="Helvetica"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productdescription}]]></textFieldExpression>
 			</textField>
@@ -774,7 +774,7 @@
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Oblique"/>
+					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
@@ -789,7 +789,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font fontName="SansSerif" size="9" isBold="true" isItalic="false" pdfFontName="Helvetica-Oblique"/>
+					<font fontName="Arial" isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
 			</textField>

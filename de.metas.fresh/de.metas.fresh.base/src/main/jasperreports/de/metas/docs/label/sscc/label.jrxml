@@ -71,7 +71,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField>
 				<reportElement x="149" y="206" width="297" height="19" uuid="0ec3f744-7821-4d60-b2c4-9b7f5f312c8e"/>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
@@ -81,7 +81,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement x="149" y="228" width="297" height="19" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
 				<textElement textAlignment="Center">
-					<font size="14" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="14" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
 			</textField>
@@ -118,14 +118,14 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement x="154" y="263" width="139" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9"/>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_customervalue}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="true">
 				<reportElement x="334" y="263" width="98" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a"/>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
 			</textField>
@@ -141,7 +141,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
 			</textField>
@@ -157,7 +157,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<printWhenExpression><![CDATA[new Boolean( $F{cu_per_tu}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{cu_per_tu}]]></textFieldExpression>
 			</textField>
@@ -166,7 +166,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 					<printWhenExpression><![CDATA[new Boolean( $F{tu_per_lu}.floatValue() != 0 )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tu_per_lu}]]></textFieldExpression>
 			</textField>
@@ -180,7 +180,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="265" y="330" width="84" height="20" uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1"/>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{net_weight}]]></textFieldExpression>
 			</textField>
@@ -201,7 +201,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField pattern="###0.00 kg" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="355" y="330" width="87" height="20" uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb"/>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gross_weight}]]></textFieldExpression>
 			</textField>
@@ -242,28 +242,28 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="311" y="349" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="311" y="367" width="130" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="386" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="424" width="148" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement textAlignment="Right">
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
 			</textField>
@@ -277,7 +277,7 @@ See REPORT_SQL_QUERY_EFFECTIVE]]></parameterDescription>
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="154" y="459" width="291" height="42" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
 				<textElement>
-					<font size="15" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="15" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
@@ -293,7 +293,7 @@ $F{sscc} +
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="162" y="600" width="271" height="14" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886"/>
 				<textElement textAlignment="Center">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
 			</textField>
@@ -307,7 +307,7 @@ $F{sscc} +
 			<textField isBlankWhenNull="true">
 				<reportElement positionType="Float" x="293" y="405" width="148" height="20" uuid="9a08e298-10e1-496f-86a7-563a5edf0741"/>
 				<textElement textAlignment="Right">
-					<font size="15" isBold="true"/>
+					<font size="15" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{LotNumberDate}]]></textFieldExpression>
 			</textField>

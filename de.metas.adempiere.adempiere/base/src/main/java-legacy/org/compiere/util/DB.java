@@ -21,6 +21,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -88,6 +89,7 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /**
  * General Database Interface
@@ -119,6 +121,7 @@ import lombok.NonNull;
  *         <li>FR [
  *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  */
+@UtilityClass
 public final class DB
 {
 	public static final String SYSCONFIG_SYSTEM_NATIVE_SEQUENCE = "SYSTEM_NATIVE_SEQUENCE";
@@ -128,7 +131,7 @@ public final class DB
 	/**
 	 * Specifies what to do in case the SQL command fails.
 	 */
-	public static enum OnFail
+	public enum OnFail
 	{
 		/**
 		 * Throws {@link DBException}
@@ -291,7 +294,7 @@ public final class DB
 	 *
 	 * @return current {@link CConnection} or <code>null</code>
 	 */
-	private static final CConnection getCConnection()
+	private static CConnection getCConnection()
 	{
 		s_connectionLock.lock();
 		try
@@ -450,8 +453,8 @@ public final class DB
 	 * Create new Connection. The connection must be closed explicitly by the application
 	 *
 	 * @param autoCommit auto commit
+	 * @param readOnly
 	 * @param trxLevel - Connection.TRANSACTION_READ_UNCOMMITTED, Connection.TRANSACTION_READ_COMMITTED, Connection.TRANSACTION_REPEATABLE_READ, or Connection.TRANSACTION_READ_COMMITTED.
-	 * @return Connection connection
 	 */
 	public static Connection createConnection(boolean autoCommit, boolean readOnly, int trxLevel)
 	{
@@ -896,17 +899,15 @@ public final class DB
 	@Deprecated
 	public static int executeUpdate(final String sql,
 			final Object[] params,
-			final OnFail onFail,
+			@NonNull final OnFail onFail,
 			final String trxName,
 			final int timeOut,
 			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
-		if (sql == null || sql.length() == 0)
+		if (Check.isEmpty(sql, true))
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + sql);
 		}
-
-		Check.assumeNotNull(onFail, "onFail not null");
 
 		//
 		int no = -1;
@@ -1883,7 +1884,7 @@ public final class DB
 	 * @param param
 	 * @return parameter as SQL code
 	 */
-	public static final String TO_SQL(final Object param)
+	public static String TO_SQL(final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
@@ -2074,7 +2075,7 @@ public final class DB
 	 * @param comment
 	 * @return SQL multiline comment
 	 */
-	public static final String TO_COMMENT(final String comment)
+	public static String TO_COMMENT(final String comment)
 	{
 		if (Check.isEmpty(comment, true))
 		{
@@ -2100,7 +2101,7 @@ public final class DB
 		}
 		catch (SQLException e)
 		{
-			;
+
 		}
 	}
 
@@ -2118,7 +2119,7 @@ public final class DB
 		}
 		catch (SQLException e)
 		{
-			;
+
 		}
 	}
 
@@ -2454,7 +2455,7 @@ public final class DB
 		return sql.insert(0, "(").append(")").toString();
 	}
 
-	public static final boolean isUseNativeSequences()
+	public static boolean isUseNativeSequences()
 	{
 		final boolean useNativeSequencesDefault = false;
 		final boolean result = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, useNativeSequencesDefault);
@@ -2497,7 +2498,7 @@ public final class DB
 		return useNativeSequences;
 	}
 
-	public static final void setUseNativeSequences(final boolean enabled)
+	public static void setUseNativeSequences(final boolean enabled)
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
@@ -2508,7 +2509,7 @@ public final class DB
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, adOrgId);
 	}
 
-	public static final String getTableSequenceName(final String tableName)
+	public static String getTableSequenceName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		return tableName + "_SEQ";
@@ -2517,7 +2518,7 @@ public final class DB
 	/**
 	 * Create database table sequence for given table name.
 	 */
-	public static final void createTableSequence(final String tableName)
+	public static void createTableSequence(final String tableName)
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
@@ -2536,7 +2537,7 @@ public final class DB
 	 * @param fieldLength length
 	 * @return SQL Data Type in Oracle Notation
 	 */
-	public static final String getSQLDataType(int displayType, String columnName, int fieldLength)
+	public static String getSQLDataType(int displayType, String columnName, int fieldLength)
 	{
 		return getDatabase().getSQLDataType(displayType, columnName, fieldLength);
 	}
@@ -2553,7 +2554,7 @@ public final class DB
 	 * @param sql
 	 * @return converted SQL
 	 */
-	public static final String convertSqlToNative(final String sql)
+	public static String convertSqlToNative(final String sql)
 	{
 		Check.assumeNotEmpty(sql, "sql not empty");
 		final Convert converter = getDatabase().getConvert();
@@ -2577,7 +2578,7 @@ public final class DB
 	 * @return default value for given <code>returnType</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveDefaultValue(final Class<AT> returnType)
+	public static <AT> AT retrieveDefaultValue(final Class<AT> returnType)
 	{
 		if (returnType.isAssignableFrom(BigDecimal.class))
 		{
@@ -2614,7 +2615,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValue(final ResultSet rs, final String columnName, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2659,7 +2660,7 @@ public final class DB
 	 * The value is converted to given type.<br/>
 	 */
 	@SuppressWarnings("unchecked")
-	public static final <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValue(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value;
 		if (returnType.isAssignableFrom(BigDecimal.class))
@@ -2709,7 +2710,7 @@ public final class DB
 		return value;
 	}
 
-	public static final <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
+	public static <AT> AT retrieveValueOrDefault(final ResultSet rs, final int columnIndex, final Class<AT> returnType) throws SQLException
 	{
 		final AT value = retrieveValue(rs, columnIndex, returnType);
 		if (value != null)
@@ -2721,7 +2722,7 @@ public final class DB
 	}
 
 	@FunctionalInterface
-	public static interface ResultSetConsumer
+	public interface ResultSetConsumer
 	{
 		void accept(ResultSet rs) throws SQLException;
 	}
@@ -2754,7 +2755,7 @@ public final class DB
 	}
 
 	@FunctionalInterface
-	public static interface ResultSetRowLoader<T>
+	public interface ResultSetRowLoader<T>
 	{
 		T retrieveRow(ResultSet rs) throws SQLException;
 	}
@@ -2820,6 +2821,73 @@ public final class DB
 		{
 			close(rs, pstmt);
 		}
+	}
+
+	public static String normalizeDBIdentifier(@NonNull final String dbIdentifier, @NonNull final DatabaseMetaData md)
+	{
+		try
+		{
+			if (md.storesUpperCaseIdentifiers())
+			{
+				return dbIdentifier.toUpperCase();
+			}
+			else if (md.storesLowerCaseIdentifiers())
+			{
+				return dbIdentifier.toLowerCase();
+			}
+			else
+			{
+				return dbIdentifier;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex);
+		}
+	}
+
+	public static boolean isDBColumnPresent(@NonNull final String tableName, @NonNull final String columnName)
+	{
+		final String catalog = getDatabase().getCatalog();
+		final String schema = getDatabase().getSchema();
+		String tableNameNorm = tableName;
+		String columnNameNorm = columnName;
+
+		Connection conn = null;
+		ResultSet rs = null;
+		try
+		{
+			conn = getConnectionRO();
+			final DatabaseMetaData md = conn.getMetaData();
+			tableNameNorm = normalizeDBIdentifier(tableName, md);
+			columnNameNorm = normalizeDBIdentifier(columnName, md);
+
+			//
+			rs = md.getColumns(catalog, schema, tableNameNorm, columnNameNorm);
+			if (rs.next())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex)
+					.appendParametersToMessage()
+					.setParameter("catalog", catalog)
+					.setParameter("schema", schema)
+					.setParameter("tableNameNorm", tableNameNorm)
+					.setParameter("columnNameNorm", columnNameNorm);
+		}
+		finally
+		{
+			DB.close(rs);
+			DB.close(conn);
+		}
+
 	}
 
 } // DB

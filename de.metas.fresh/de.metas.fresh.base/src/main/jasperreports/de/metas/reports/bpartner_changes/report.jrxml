@@ -66,14 +66,14 @@ order By bpc.bpValue, bpc.tablename;]]>
 				<textField>
 					<reportElement uuid="d2a6ab8b-1b4c-4831-9f1a-1822815a1a73" x="2" y="22" width="60" height="12"/>
 					<textElement markup="none">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpvalue}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement uuid="d2a6ab8b-1b4c-4831-9f1a-1822815a1a73" x="62" y="22" width="140" height="12"/>
 					<textElement markup="none">
-						<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="8" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
 				</textField>
@@ -256,63 +256,63 @@ order By bpc.bpValue, bpc.tablename;]]>
 			<staticText>
 				<reportElement uuid="00493caf-c45a-4b4b-bc55-ae2465b8c7cd" x="1" y="27" width="90" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Name der DB-Tabelle]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="3d65158c-0cb5-4d0b-aa2c-123151bc089e" x="90" y="27" width="66" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Datensatz-ID]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="504c711c-d560-4819-b1ee-a069de446836" x="156" y="27" width="90" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Spaltenname]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="dd3556f7-6251-4d3f-80c9-9c75dc846edf" x="246" y="27" width="70" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Erstellt]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="fbe652f9-f58c-4b3f-bd7c-823c0dabea5a" x="317" y="27" width="60" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Erstellt durch]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="28e153da-98fb-4011-ad95-e8cee328ad00" x="502" y="27" width="110" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Alter Wert]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="60269184-31a8-4696-8d49-e9717750b74f" x="612" y="27" width="110" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Neuer Wert]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="fbe652f9-f58c-4b3f-bd7c-823c0dabea5a" x="377" y="27" width="70" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Aktualisiert]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="fbe652f9-f58c-4b3f-bd7c-823c0dabea5a" x="447" y="27" width="55" height="12"/>
 				<textElement>
-					<font size="8" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="8" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Aktualisiert durch]]></text>
 			</staticText>

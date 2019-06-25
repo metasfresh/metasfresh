@@ -275,4 +275,16 @@ public class UserDAO implements IUserDAO
 		final T user = load(userId, modelClass);
 		return user;
 	}
+
+	@Override
+	public Set<UserId> getUserIdsByBPartnerId(final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.orderBy(I_AD_User.COLUMNNAME_AD_User_ID)
+				.create()
+				.listIds(UserId::ofRepoId);
+	}
+
 }

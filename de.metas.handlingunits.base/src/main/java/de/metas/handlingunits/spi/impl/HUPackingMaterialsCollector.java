@@ -287,7 +287,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final ArrayKey key = mkCandidateKey(huPackingMaterial, materialTrackingId, hu);
 			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 			HUPackingMaterialDocumentLineCandidate innerCandidate = null;
-			I_M_HU_PI_Item_Product materialItemProduct = hu.getM_HU_PI_Item_Product();
+			I_M_HU_PI_Item_Product materialItemProduct = IHandlingUnitsBL.extractPIItemProductOrNull(hu);
 
 			// Check if the material item product does have a different packing material, and make a candidate for it too in case it does
 			if (materialItemProduct != null && isCollectAggregatedHUs)
@@ -515,7 +515,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final int materialTrackingId,
 			final I_M_HU hu)
 	{
-		final I_M_Product product = huPackingMaterial.getM_Product();
+		final I_M_Product product = IHUPackingMaterialDAO.extractProductOrNull(huPackingMaterial);
 
 		// 07734: also include the M_Material_Tracking if one was collected.
 		final I_M_Material_Tracking material_Tracking;
@@ -528,7 +528,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			material_Tracking = InterfaceWrapperHelper.create(huContext.getCtx(), materialTrackingId, I_M_Material_Tracking.class, huContext.getTrxName());
 		}
 
-		final I_M_Locator locator = hu == null ? null : hu.getM_Locator();
+		final I_M_Locator locator = hu == null ? null : IHandlingUnitsBL.extractLocatorOrNull(hu);
 
 		// hu without locator is OK sometimes (e.g. in InOutProducerFromReceiptScheduleHUTest), so we can't assert this here.
 		// Check.errorIf(hu != null && hu.getM_Locator() == null, "The given hu has no locator; hu={}", hu);

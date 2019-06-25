@@ -15,6 +15,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -191,12 +193,18 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveAttributeValues(final I_M_Attribute attribute)
 	{
-		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+		final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, false/*includeInactive*/);
 		return ImmutableList.copyOf(map.values());
 	}
 
 	@Override
 	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
+	{
+		return retrieveAttributeValueOrNull(attribute, value, false);
+	}
+
+	@Override
+	public I_M_AttributeValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value, final boolean includeInactive)
 	{
 		//
 		// In case we are dealing with a high-volume attribute values set, we can not fetch all of them,
@@ -212,7 +220,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 		else
 		{
-			final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute);
+			final Map<String, I_M_AttributeValue> map = retrieveAttributeValuesMap(attribute, includeInactive);
 			return map.get(value);
 		}
 	}
@@ -236,7 +244,7 @@ public class AttributeDAO implements IAttributeDAO
 		}
 		else
 		{
-			return retrieveAttributeValuesMap(attribute)
+			return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
 					.values()
 					.stream()
 					.filter(av -> av.getM_AttributeValue_ID() == attributeValueId.getRepoId())
@@ -339,7 +347,9 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public I_M_AttributeInstance retrieveAttributeInstance(final I_M_AttributeSetInstance attributeSetInstance, final AttributeId attributeId)
+	public I_M_AttributeInstance retrieveAttributeInstance(
+			@Nullable final I_M_AttributeSetInstance attributeSetInstance,
+			final AttributeId attributeId)
 	{
 		if (attributeSetInstance == null)
 		{
@@ -356,7 +366,7 @@ public class AttributeDAO implements IAttributeDAO
 	@Override
 	public List<I_M_AttributeValue> retrieveFilteredAttributeValues(final I_M_Attribute attribute, final SOTrx soTrx)
 	{
-		return retrieveAttributeValuesMap(attribute)
+		return retrieveAttributeValuesMap(attribute, false/*includeInactive*/)
 				.values()
 				.stream()
 				.filter(av -> isAttributeValueMatchingSOTrx(av, soTrx))
@@ -403,9 +413,10 @@ public class AttributeDAO implements IAttributeDAO
 	/**
 	 *
 	 * @param attribute
+	 * @param includeInactive
 	 * @return value to {@link I_M_AttributeValue} map
 	 */
-	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute)
+	private Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute, final boolean includeInactive)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
 
@@ -424,7 +435,7 @@ public class AttributeDAO implements IAttributeDAO
 			validationRuleQueryFilter = null;
 		}
 
-		return retrieveAttributeValuesMap(ctx, attributeId, validationRuleQueryFilter);
+		return retrieveAttributeValuesMap(ctx, attributeId, includeInactive, validationRuleQueryFilter);
 	}
 
 	@Cached(cacheName = I_M_AttributeValue.Table_Name
@@ -433,6 +444,7 @@ public class AttributeDAO implements IAttributeDAO
 	Map<String, I_M_AttributeValue> retrieveAttributeValuesMap(
 			@CacheCtx final Properties ctx,
 			final int attributeId,
+			final boolean includeInactive,
 			// NOTE: we are caching this method only if we don't have a filter.
 			// If we have a filter:
 			// * that's mutable so it will screw up up our case
@@ -443,7 +455,10 @@ public class AttributeDAO implements IAttributeDAO
 				.createQueryBuilder(I_M_AttributeValue.class, ctx, ITrx.TRXNAME_None);
 
 		final ICompositeQueryFilter<I_M_AttributeValue> filters = queryBuilder.getCompositeFilter();
-		filters.addOnlyActiveRecordsFilter();
+		if (!includeInactive)
+		{
+			filters.addOnlyActiveRecordsFilter();
+		}
 		filters.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeId);
 
 		if (validationRuleQueryFilter != null)

@@ -28,7 +28,7 @@
 			<staticText>
 				<reportElement uuid="ec73b25f-4efe-4942-8bef-eca4c9314925" x="265" y="20" width="265" height="20"/>
 				<textElement textAlignment="Center">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Bundesamt Statistik]]></text>
 			</staticText>
@@ -59,14 +59,14 @@
 			<staticText>
 				<reportElement uuid="b9a66223-1069-4669-a92b-29fffae36f76" x="380" y="6" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Klassischer ]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="7493e8dc-69e4-4da5-8e11-7f939756e495" x="530" y="6" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Discounter]]></text>
 			</staticText>
@@ -103,7 +103,7 @@
 			<staticText>
 				<reportElement uuid="ec66df54-ba81-4666-a548-e84240cdeed2" stretchType="RelativeToBandHeight" x="680" y="6" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gastronomie und ]]></text>
 			</staticText>
@@ -115,14 +115,14 @@
 			<staticText>
 				<reportElement uuid="32c600a9-61ba-410c-ac49-f41f38d6b5ab" x="680" y="21" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[ Grosshandel]]></text>
 			</staticText>
 			<staticText>
 				<reportElement uuid="b9a66223-1069-4669-a92b-29fffae36f76" x="380" y="21" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[ Detailhandel]]></text>
 			</staticText>
@@ -139,7 +139,7 @@
 			<staticText>
 				<reportElement uuid="7493e8dc-69e4-4da5-8e11-7f939756e495" x="530" y="21" width="150" height="15"/>
 				<textElement textAlignment="Center">
-					<font isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[]]></text>
 			</staticText>

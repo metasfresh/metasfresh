@@ -1,7 +1,7 @@
 package de.metas.dataentry.data.json;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
-import de.metas.dataentry.data.CreatedUpdatedInfo;
+import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordFieldDate;
 import de.metas.dataentry.data.DataEntryRecordFieldListValue;
@@ -97,23 +97,15 @@ public class JSONDataEntryRecordMapper
 		final ImmutableList.Builder<DataEntryRecordField<?>> result = ImmutableList.builder();
 
 		final JSONDataEntryRecord record = delegate.readValue(recordString);
-		final Map<Integer, CreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
+		final Map<Integer, DataEntryCreatedUpdatedInfo> createdUpdatedInfos = record.getCreatedUpdatedInfos();
 
-		for (final Entry<Integer, ZonedDateTime> data : record.getDates().entrySet())
+		for (final Entry<Integer, LocalDate> data : record.getDates().entrySet())
 		{
 			final DataEntryRecordFieldDate dataEntryRecordField = DataEntryRecordFieldDate
 					.of(
 							DataEntryFieldId.ofRepoId(data.getKey()),
 							createdUpdatedInfos.get(data.getKey()), data.getValue());
 
-			result.add(dataEntryRecordField);
-		}
-		for (final Entry<Integer, ZonedDateTime> data : record.getDates().entrySet())
-		{
-			final DataEntryRecordFieldDate dataEntryRecordField = DataEntryRecordFieldDate
-					.of(
-							DataEntryFieldId.ofRepoId(data.getKey()),
-							createdUpdatedInfos.get(data.getKey()), data.getValue());
 			result.add(dataEntryRecordField);
 		}
 		for (final Entry<Integer, DataEntryListValueId> data : record.getListValues().entrySet())

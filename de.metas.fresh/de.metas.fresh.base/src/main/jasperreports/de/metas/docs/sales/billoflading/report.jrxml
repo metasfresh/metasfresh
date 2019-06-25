@@ -105,14 +105,14 @@ ORDER BY
 				<textField>
 					<reportElement x="4" y="0" width="33" height="15" uuid="fcd00918-ff3e-4dde-95fd-61d82188fcb7"/>
 					<textElement textAlignment="Right">
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{gln}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="45" y="0" width="335" height="15" uuid="e5095a38-9f42-43ba-b4a6-0e5272b8dab1"/>
 					<textElement>
-						<font size="10" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="10" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bplname}]]></textFieldExpression>
 				</textField>
@@ -124,7 +124,7 @@ ORDER BY
 				<textField pattern="###0.00;-###0.00">
 					<reportElement x="81" y="3" width="38" height="12" uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8"/>
 					<textElement textAlignment="Right">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{qtysum}]]></textFieldExpression>
 				</textField>
@@ -163,7 +163,7 @@ ORDER BY
 				<textField evaluationTime="Group" evaluationGroup="Product" pattern="###0.00;-###0.00" isBlankWhenNull="false">
 					<reportElement x="81" y="0" width="38" height="13" uuid="084cd64b-0b55-4698-8ade-c2b77da88aa2"/>
 					<textElement textAlignment="Right">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{qty}]]></textFieldExpression>
 				</textField>
@@ -177,7 +177,7 @@ ORDER BY
 				<textField>
 					<reportElement x="147" y="0" width="259" height="13" uuid="fffb7b2f-baf4-4d18-9192-11e982835a46"/>
 					<textElement>
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 				</textField>
@@ -223,21 +223,21 @@ ORDER BY
 			<textField>
 				<reportElement x="122" y="6" width="310" height="15" uuid="0fc04462-fd77-4010-b1d5-aa784c3aaba9"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="11" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA["Artikel Rüstliste " +  $F{docno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="122" y="20" width="310" height="18" uuid="66a140ef-89cf-4a01-8d98-6058c1065341"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="12" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bpname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="122" y="37" width="310" height="15" uuid="7045dfb8-1a4d-4985-9023-ac1093027d11"/>
 				<textElement textAlignment="Center" markup="none">
-					<font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="11" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$F{docdate}]]></textFieldExpression>
 			</textField>
@@ -288,14 +288,14 @@ ORDER BY
 			<textField pattern="###0.00;-###0.00">
 				<reportElement x="81" y="16" width="38" height="12" uuid="5c263df5-fdf7-41df-8e78-33b41d31a4d8"/>
 				<textElement textAlignment="Right">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$V{qtytotalsum}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="10" y="16" width="71" height="12" uuid="4371e6d9-22e2-4bca-a888-f61915d85726"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Gesamt Menge]]></text>
 			</staticText>

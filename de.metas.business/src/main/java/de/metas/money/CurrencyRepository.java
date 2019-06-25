@@ -40,7 +40,7 @@ public class CurrencyRepository
 
 		return ofRecord(currencyRecord);
 	}
-	
+
 	public Currency getById(final int currencyId)
 	{
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);

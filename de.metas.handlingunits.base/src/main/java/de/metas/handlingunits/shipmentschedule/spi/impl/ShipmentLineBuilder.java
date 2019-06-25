@@ -126,7 +126,7 @@ import lombok.NonNull;
 
 	private Object attributesAggregationKey = null;
 	private OrderAndLineId orderLineId = null;
-	
+
 	private Quantity qtyEntered = null;
 	// note that we maintain both QtyEntered and MovementQty to avoid rounding/conversion issues
 	private Quantity movementQty = null;
@@ -255,9 +255,9 @@ import lombok.NonNull;
 		productId = candidate.getProductId();
 		attributeValues.addAll(candidate.getAttributeValues());
 		attributesAggregationKey = candidate.getAttributesAggregationKey();
-		
+
 		qtyEntered = Quantity.zero(candidate.getUOM());
-		
+
 		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
 

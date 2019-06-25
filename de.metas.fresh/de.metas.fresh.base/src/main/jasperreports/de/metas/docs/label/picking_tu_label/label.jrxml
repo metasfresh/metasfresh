@@ -35,7 +35,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="10" y="10" width="272" height="14" uuid="f48ef71f-b642-4fe7-a981-b19690ad27ce"/>
 				<textElement textAlignment="Center">
-					<font size="11" isBold="true"/>
+					<font size="11" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
@@ -54,7 +54,7 @@
 			<textField isBlankWhenNull="true">
 				<reportElement x="25" y="47" width="50" height="21" uuid="f57f4587-5a39-4194-8275-279f829378d9"/>
 				<textElement textAlignment="Left">
-					<font size="14" isBold="true"/>
+					<font size="14" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_gln_9_12}]]></textFieldExpression>
 			</textField>
@@ -63,7 +63,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font size="14" isBold="true"/>
+					<font size="14" fontName="Arial" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{addr_name}]]></textFieldExpression>
 			</textField>

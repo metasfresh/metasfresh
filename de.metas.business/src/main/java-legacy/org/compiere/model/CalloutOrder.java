@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.pricing.PriceListId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -261,13 +262,6 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param mTab Model Tab
-	 * @param mField Model Field
-	 * @param value The new value
-	 * @return Error message or ""
 	 */
 	public String bPartnerLocation(final ICalloutField calloutField)
 	{
@@ -310,13 +304,6 @@ public class CalloutOrder extends CalloutEngine
 	/**
 	 * Order Header - BPartner. - M_PriceList_ID (+ Context) - C_BPartner_Location_ID - Bill_BPartner_ID/Bill_Location_ID - AD_User_ID - POReference - SO_Description - IsDiscountPrinted -
 	 * InvoiceRule/DeliveryRule/PaymentRule/FreightCost/DeliveryViaRule - C_PaymentTerm_ID
-	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param mTab Model Tab
-	 * @param mField Model Field
-	 * @param value The new value
-	 * @return Error message or ""
 	 */
 	public String bPartner(final ICalloutField calloutField)
 	{
@@ -594,13 +581,6 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Header - Invoice BPartner. - M_PriceList_ID (+ Context) - Bill_Location_ID - Bill_User_ID - POReference - SO_Description - IsDiscountPrinted - InvoiceRule/PaymentRule - C_PaymentTerm_ID
-	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param mTab Model Tab
-	 * @param mField Model Field
-	 * @param value The new value
-	 * @return Error message or ""
 	 */
 	public String bPartnerBill(final ICalloutField calloutField)
 	{
@@ -1031,7 +1011,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Order Line - Amount. - calculates Discount or Actual Amount - calculates LineNetAmt - enforces PriceLimit
-	 *
+	 * <p>
 	 * Triggered by: C_UOM_ID, Discount, PriceActual, PriceEntered, PriceList, QtyOrdered, S_ResourceAssignment_ID
 	 */
 	public String amt(final ICalloutField calloutField)
@@ -1050,7 +1030,7 @@ public class CalloutOrder extends CalloutEngine
 
 		final int priceUOMId = orderLine.getPrice_UOM_ID();
 		final int productId = orderLine.getM_Product_ID();
-		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(order.getM_PriceList_ID());
+		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(order.getM_PriceList_ID()));
 
 		//
 		PriceAndDiscount priceAndDiscount;
@@ -1319,7 +1299,7 @@ public class CalloutOrder extends CalloutEngine
 
 	/**
 	 * Evaluates the fields {@link I_C_OrderLine#COLUMNNAME_M_Product_ID} and {@link I_C_OrderLine#COLUMNNAME_IsIndividualDescription}.
-	 *
+	 * <p>
 	 * If Both are set and isIndividualDescription is true the product's description is copied into the order line's {@link I_C_OrderLine#COLUMNNAME_ProductDescription} field.
 	 */
 	private void handleIndividualDescription(final I_C_OrderLine ol)
@@ -1346,11 +1326,9 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull
-		final String creditStatus;
+		@NonNull final String creditStatus;
 		final boolean evalCreditstatus;
-		@NonNull
-		final Timestamp evaluationDate;
+		@NonNull final Timestamp evaluationDate;
 	}
 
 	/**

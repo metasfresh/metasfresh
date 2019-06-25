@@ -5,6 +5,7 @@ import java.util.List;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
@@ -25,6 +26,8 @@ public interface IInventoryBL extends ISingletonService
 
 	void addDescription(I_M_InventoryLine inventoryLine, String descriptionToAdd);
 
+	DocStatus getDocStatus(InventoryId inventoryId);
+
 	boolean isComplete(I_M_Inventory inventory);
 
 	boolean isSOTrx(I_M_InventoryLine inventoryLine);
@@ -40,5 +43,4 @@ public interface IInventoryBL extends ISingletonService
 	Quantity getMovementQtyInStockingUOM(I_M_InventoryLine inventoryLine);
 
 	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
-
 }

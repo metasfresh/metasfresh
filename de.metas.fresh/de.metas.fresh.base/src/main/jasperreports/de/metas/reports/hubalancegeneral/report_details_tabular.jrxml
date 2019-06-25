@@ -97,14 +97,14 @@ FROM
 				<textField>
 					<reportElement key="textField-16" x="251" y="14" width="350" height="24" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement verticalAlignment="Bottom" markup="none">
-						<font size="9" isBold="true"/>
+						<font size="9" fontName="Arial" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bpartner}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-20" x="138" y="14" width="113" height="24" forecolor="#000000" uuid="e3908bf6-4e15-4363-b21f-78b1f22cce05"/>
 					<textElement verticalAlignment="Bottom" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 				</textField>
@@ -157,35 +157,35 @@ FROM
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement key="textField-20" x="601" y="10" width="100" height="12" forecolor="#000000" uuid="ae2700b1-5858-4f9a-8dba-84a3b6f39645"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{outgoingtotal}.add( $F{carryoutgoing} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0" isBlankWhenNull="true">
 					<reportElement key="textField-20" x="501" y="10" width="100" height="12" forecolor="#000000" uuid="e4839925-cfc9-4bd1-920b-805e17eb53e2"/>
 					<textElement textAlignment="Right" markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$V{incomingtotal}.add( $F{carryincoming} )]]></textFieldExpression>
 				</textField>
 				<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 					<reportElement key="textField-16" x="251" y="10" width="80" height="12" forecolor="#000000" uuid="c9657899-0453-4f44-a3fc-b0cbd7eb9126"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$P{EndDate}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="331" y="10" width="170" height="12" forecolor="#000000" uuid="b1531e1a-cb5c-4b6a-864e-971e6fd346b7"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement key="textField-16" x="138" y="10" width="113" height="12" forecolor="#000000" uuid="7ce25859-be89-4f0e-b2f5-8dd56d630d5a"/>
 					<textElement markup="none">
-						<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+						<font size="9" fontName="Arial" isBold="true" />
 					</textElement>
 					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 				</textField>
@@ -197,7 +197,7 @@ FROM
 			<textField>
 				<reportElement key="textField-20" x="601" y="144" width="100" height="12" forecolor="#000000" uuid="249e8f15-3d41-4509-b78b-1b420d5a4d29"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{ofus}]]></textFieldExpression>
 			</textField>
@@ -317,7 +317,7 @@ FROM
 			<textField>
 				<reportElement key="textField-6" x="37" y="10" width="214" height="12" forecolor="#000000" uuid="7cf154c3-4c1c-4d44-ab9c-fb3c56ba6c35"/>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{hubalance}]]></textFieldExpression>
 			</textField>
@@ -351,63 +351,63 @@ FROM
 			<textField>
 				<reportElement key="textField-16" x="37" y="144" width="101" height="12" forecolor="#000000" uuid="5d19a1bb-9b09-44bf-85a1-9e8f41e86913"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{documentno}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="138" y="144" width="113" height="12" forecolor="#000000" uuid="f56ebcc4-03ae-4fe8-ad85-c3c1b66c6b2f"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{doctype}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="251" y="144" width="80" height="12" forecolor="#000000" uuid="535d664e-02b8-4a1a-bbc0-761be3a00f7d"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="331" y="144" width="170" height="12" forecolor="#000000" uuid="f09cc352-d7bd-4562-8415-3beaaccd6c2b"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{packageart}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="501" y="120" width="100" height="12" forecolor="#000000" uuid="310e47e0-de5e-4a46-8de0-07fe43e59898"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="501" y="132" width="100" height="12" forecolor="#000000" uuid="cbda260e-3d84-4908-8c0a-c9b93338f269"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="501" y="144" width="100" height="12" forecolor="#000000" uuid="1e7502b5-73a8-43f4-a00b-a01c2d73981a"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpartner}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="601" y="120" width="100" height="12" forecolor="#000000" uuid="a708b6cb-33b9-4567-8ca3-b14c0b4f1b87"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="601" y="132" width="100" height="12" forecolor="#000000" uuid="a91141bc-4687-44e7-a5ca-f252b65b5f36"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<textFieldExpression><![CDATA[$R{infavourof}]]></textFieldExpression>
 			</textField>

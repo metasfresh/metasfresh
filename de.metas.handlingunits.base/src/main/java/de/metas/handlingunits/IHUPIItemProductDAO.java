@@ -52,8 +52,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
-	HUPIItemProductId VIRTUAL_HU_PI_Item_Product_ID = HUPIItemProductId.ofRepoId(101);
-
 	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
 
 	IHUPIItemProductQuery createHUPIItemProductQuery();

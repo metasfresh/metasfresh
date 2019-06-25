@@ -81,7 +81,7 @@ WHERE
 			<staticText>
 				<reportElement key="textField-3" x="37" y="180" width="200" height="13" uuid="74a18506-8dad-4c05-b9d9-06c257ab2271"/>
 				<textElement markup="none">
-					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
+					<font size="9" fontName="Arial" isBold="true" />
 				</textElement>
 				<text><![CDATA[Kreditor Zahlungsanzeige]]></text>
 			</staticText>
