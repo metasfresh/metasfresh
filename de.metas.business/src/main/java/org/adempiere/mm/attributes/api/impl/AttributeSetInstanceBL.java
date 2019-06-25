@@ -1,8 +1,8 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.compiere.util.Util.coalesce;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
