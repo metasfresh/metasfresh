@@ -145,7 +145,7 @@ class TableFilter extends Component {
       shortcutActions.push({
         name: `FILTER_ACTION_${i}`,
         handler: () => this.handleClick(action),
-        shortcut: action.shortcut.replace('-', '+'),
+        shortcut: action.shortcut ? action.shortcut.replace('-', '+') : '',
       });
     }
 
@@ -244,7 +244,9 @@ class TableFilter extends Component {
                     key={`top-action-${action.processId}`}
                   >
                     <Tooltips
-                      name={action.shortcut.replace('-', '+')}
+                      name={
+                        action.shortcut ? action.shortcut.replace('-', '+') : ''
+                      }
                       action={action.caption}
                       type={''}
                     />
