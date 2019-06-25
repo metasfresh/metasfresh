@@ -11,16 +11,29 @@ Additional notes:
 Here come the actual release notes:
 
 # metasfresh 5.109
+
 ## Features
 * metasfresh
+  * [#5273](https://github.com/metasfresh/metasfresh/issues/5273) BPartner REST-API
   * [#5316](https://github.com/metasfresh/metasfresh/issues/5316) C_DocOutbound - improve mail attachment file name
   * [#5328](https://github.com/metasfresh/metasfresh/issues/5328) PP_Order.C_Project_ID virtual column
+  * [#5332](https://github.com/metasfresh/metasfresh/issues/5332) Extend Jasper API to run reports using JSON data source
+  * [#5334](https://github.com/metasfresh/metasfresh/issues/5334) REST-API - add updated-timestamp to all result objects
+
+* metasfresh-webui-frontend
+  * [#2156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2156) Modal views: shall be easily editable without using mouse
 
 * metasfresh-e2e
   * [#71](https://github.com/metasfresh/metasfresh-e2e/issues/71) Create new BOM
   * [#72](https://github.com/metasfresh/metasfresh-e2e/issues/72) Create new bank
+  * [#122](https://github.com/metasfresh/metasfresh-e2e/issues/122) Create GL Journal entry and change posting type
   * [#124](https://github.com/metasfresh/metasfresh-e2e/issues/124) Create new Cost Center
   * [#127](https://github.com/metasfresh/metasfresh-e2e/issues/127) Create quality note
+
+
+## fixes
+* metasfresh-e2e
+  * [#160](https://github.com/metasfresh/metasfresh-e2e/issues/160) Fix isChecked command again
 
 # metasfresh 5.108
 ## Features
