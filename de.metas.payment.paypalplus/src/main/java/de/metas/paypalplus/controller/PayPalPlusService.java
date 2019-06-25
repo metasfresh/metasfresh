@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +31,7 @@ import de.metas.paypalplus.model.PaymentCaptureRequest;
 import de.metas.paypalplus.model.PaymentCaptureResponse;
 import de.metas.paypalplus.model.PaymentReservationRequest;
 import de.metas.paypalplus.model.PaymentReservationResponse;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -114,7 +114,7 @@ public class PayPalPlusService implements PayPalPlusRestEndpoint
 				.captureId(apiResponse.getId())
 				.currency(apiResponse.getAmount().getCurrency())
 				.amount(new BigDecimal(apiResponse.getAmount().getTotal()))
-				.finalCapture(Util.coalesce(apiResponse.getIsFinalCapture(), Boolean.FALSE))
+				.finalCapture(CoalesceUtil.coalesce(apiResponse.getIsFinalCapture(), Boolean.FALSE))
 				.state(apiResponse.getState())
 				.reasonCode(apiResponse.getReasonCode())
 				.build();

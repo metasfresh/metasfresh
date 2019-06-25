@@ -4,7 +4,7 @@ import de.metas.paypalplus.model.PaymentCaptureRequest;
 import de.metas.paypalplus.model.PaymentCaptureResponse;
 import de.metas.paypalplus.model.PaymentReservationRequest;
 import de.metas.paypalplus.model.PaymentReservationResponse;
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.util.rest.MetasfreshRestAPIConstants;
 
 /*
  * #%L
