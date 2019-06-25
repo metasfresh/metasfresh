@@ -6,6 +6,7 @@ export class BPartner {
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
     this.customerDiscountSchema = undefined;
+    this.customerDunning = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
@@ -33,6 +34,12 @@ export class BPartner {
   setVendorDiscountSchema(vendorDiscountSchema) {
     cy.log(`BPartner - set vendorDiscountSchema = ${vendorDiscountSchema}`);
     this.vendorDiscountSchema = vendorDiscountSchema;
+    return this;
+  }
+
+  setCustomerDunning(customerDunning) {
+    cy.log(`BPartner - set customerDunning = ${customerDunning}`);
+    this.customerDunning = customerDunning;
     return this;
   }
 
@@ -175,6 +182,9 @@ function applyBPartner(bPartner) {
       }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
+      }
+      if (bPartner.customerDunning) {
+        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning);
       }
       cy.pressDoneButton();
     }
