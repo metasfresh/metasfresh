@@ -81,6 +81,7 @@ export class DocumentList extends Component {
       isShowIncluded: false,
       hasShowIncluded: false,
       triggerSpinner: true,
+      error: false,
       rowDataMap: Map({ 1: List() }),
 
       // in some scenarios we don't want to reload table data
@@ -222,7 +223,6 @@ export class DocumentList extends Component {
 
     connectWS.call(this, `/view/${viewId}`, msg => {
       const { fullyChanged, changedIds } = msg;
-
       if (changedIds) {
         getViewRowsByIds(windowType, viewId, changedIds.join()).then(
           response => {
@@ -361,7 +361,6 @@ export class DocumentList extends Component {
 
               if (viewId) {
                 this.connectWebSocket(viewId);
-
                 if (!isNewFilter) {
                   this.browseView();
                 } else {
@@ -446,32 +445,37 @@ export class DocumentList extends Component {
   filterView = () => {
     const { windowType, isIncluded, dispatch } = this.props;
     const { page, sort, filtersActive, viewId } = this.state;
-
     filterViewRequest(
       windowType,
       viewId,
       filtersActive.toIndexedSeq().toArray()
-    ).then(response => {
-      const viewId = response.data.viewId;
+    )
+      .then(response => {
+        const viewId = response.data.viewId;
+        if (isIncluded) {
+          dispatch(setListIncludedView({ windowType, viewId }));
+        }
 
-      if (isIncluded) {
-        dispatch(setListIncludedView({ windowType, viewId }));
-      }
-
-      this.mounted &&
-        this.setState(
-          {
-            data: {
-              ...response.data,
+        this.mounted &&
+          this.setState(
+            {
+              data: {
+                ...response.data,
+              },
+              viewId: viewId,
+              triggerSpinner: false,
             },
-            viewId: viewId,
-            triggerSpinner: false,
-          },
-          () => {
-            this.getData(viewId, page, sort);
-          }
-        );
-    });
+            () => {
+              this.getData(viewId, page, sort);
+            }
+          );
+      })
+      .catch(() => {
+        this.setState({
+          error: true,
+          triggerSpinner: false,
+        });
+      });
   };
 
   /**
@@ -793,6 +797,7 @@ export class DocumentList extends Component {
       rowEdited,
       initialValuesNulled,
       rowDataMap,
+      error,
     } = this.state;
     let { selected, childSelected, parentSelected } = this.getSelected();
     const modalType = modal ? modal.modalType : null;
@@ -831,7 +836,6 @@ export class DocumentList extends Component {
     }
 
     const showQuickActions = true;
-
     return (
       <div
         className={classnames('document-list-wrapper', {
@@ -855,7 +859,6 @@ export class DocumentList extends Component {
             />
           </div>
         )}
-
         {layout && !readonly && (
           <div className="panel panel-primary panel-spaced panel-inline document-list-header">
             <div className={hasIncluded ? 'disabled' : ''}>
@@ -881,9 +884,9 @@ export class DocumentList extends Component {
                   filterData={filtersToMap(layout.filters)}
                   updateDocList={this.handleFilterChange}
                   resetInitialValues={this.resetInitialFilters}
+                  error={error}
                 />
               )}
-
               {data && data.staticFilters && (
                 <FiltersStatic
                   {...{ windowType, viewId }}

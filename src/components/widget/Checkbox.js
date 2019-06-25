@@ -72,7 +72,7 @@ Checkbox.propTypes = {
   filterWidget: PropTypes.bool,
   handlePatch: PropTypes.func,
   widgetField: PropTypes.string,
-  id: PropTypes.string,
+  id: PropTypes.number,
 };
 
 export default Checkbox;
