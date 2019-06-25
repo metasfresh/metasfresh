@@ -1,6 +1,5 @@
 describe('Sales order window widgets test', function() {
   before(function() {
-    cy.loginByForm();
     cy.visit('/window/143/1000489');
     cy.get('.header-breadcrumb-sitename').should('contain', '0359');
   });

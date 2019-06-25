@@ -88,28 +88,28 @@ function applyProduct(product) {
 
     cy.writeIntoStringField('Description', product.description);
 
-    cy.isChecked('IsStocked').then(isIsStockedValue => {
+    cy.getStringFieldValue('IsStocked').then(isIsStockedValue => {
       if (product.isStocked && !isIsStockedValue) {
         cy.clickOnCheckBox('IsStocked');
       }
     });
-    cy.isChecked('IsPurchased').then(isPurchasedValue => {
+    cy.getStringFieldValue('IsPurchased').then(isPurchasedValue => {
       if (product.isPurchased && !isPurchasedValue) {
         cy.clickOnCheckBox('IsPurchased');
       }
     });
-    cy.isChecked('IsSold').then(isSoldValue => {
+    cy.getStringFieldValue('IsSold').then(isSoldValue => {
       if (product.isSold && !isSoldValue) {
         cy.clickOnCheckBox('IsSold');
       }
     });
-    cy.isChecked('IsDiverse').then(isDiverseValue => {
+    cy.getStringFieldValue('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
       }
     });
 
-    cy.getFieldValue('ProductType').then(productTypeValue => {
+    cy.getStringFieldValue('ProductType').then(productTypeValue => {
       const productType = getLanguageSpecific(product, 'productType');
 
       if (productType != productTypeValue) {
@@ -117,7 +117,7 @@ function applyProduct(product) {
       }
     });
 
-    cy.getFieldValue('C_UOM_ID').then(uomValue => {
+    cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
       const c_uom = getLanguageSpecific(product, 'c_uom');
 
       if (c_uom && c_uom != uomValue) {
@@ -186,10 +186,7 @@ function applyProductPrice(price) {
 
     cy.writeIntoStringField('PriceStd', price.priceStd, false /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
 
-    // @TODO This approach doesn't work correctly
-    // cy.writeIntoStringField('PriceStd', `{selectall}{backspace}${price.priceStd}`);
-
-    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
+    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'c_taxcategory'));
     cy.pressDoneButton();
   });
 }

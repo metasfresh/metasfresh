@@ -29,10 +29,11 @@
 
 - assertFieldNotShown
 - clearField
-- getFieldValue
-- isChecked
+- getStringFieldValue
+- getCheckboxValue
 - clickOnIsActive
 - clickOnCheckBox
+- resetListValue
 - writeIntoStringField: insert text in text input
 - writeIntoTextField: insert text in a textarea
 - writeIntoLookupListField
