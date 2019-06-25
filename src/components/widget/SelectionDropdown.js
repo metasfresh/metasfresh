@@ -168,6 +168,18 @@ export default class SelectionDropdown extends Component {
           event.preventDefault();
           navigate(false);
           break;
+        case 'Tab':
+          event.preventDefault();
+          onCancel();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          onCancel();
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          onCancel();
+          break;
         case 'Escape':
           event.preventDefault();
           onCancel();
