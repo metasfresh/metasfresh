@@ -7,8 +7,8 @@ import {Bank} from "../../support/utils/bank";
 import {Builder} from "../../support/utils/builder";
 
 describe('Create a manual Payment for a Sales Invoice', function () {
-  const timestamp = new Date().getTime();
-  // const timestamp = 'latest number'; // to use this just comment the `before` function
+  // const timestamp = new Date().getTime();
+  const timestamp = '1561461010659'; // to use this just comment the `before` function
 
 
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
@@ -38,19 +38,19 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   before(function () {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    // Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    //
+    // Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
 
-    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
-
-    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-      Object.assign(new DiscountSchema(), discountSchemaJson)
-        .setName(discountSchemaName)
-        .apply();
-    });
-    cy.fixture('finance/bank.json').then(productJson => {
-      Object.assign(new Bank(), productJson)
-        .apply();
-    });
+    // cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
+    //   Object.assign(new DiscountSchema(), discountSchemaJson)
+    //     .setName(discountSchemaName)
+    //     .apply();
+    // });
+    // cy.fixture('finance/bank.json').then(productJson => {
+    //   Object.assign(new Bank(), productJson)
+    //     .apply();
+    // });
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(bPartnerName)
