@@ -205,7 +205,7 @@ declare namespace Cypress {
      *
      * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
      */
-    pressDoneButton(waitBeforePress: number): Chainable<any>
+    pressDoneButton(waitBeforePress?: number): Chainable<any>
 
     /**
      * Select a tab by its name.
