@@ -182,7 +182,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 		// TU
 		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-		lutuConfigurationNew.setM_HU_PI_Item_Product(tuPIItemProduct);
+		lutuConfigurationNew.setM_HU_PI_Item_Product_ID(tuPIItemProduct.getM_HU_PI_Item_Product_ID());
 		lutuConfigurationNew.setM_TU_HU_PI(tuPI);
 		lutuConfigurationNew.setQtyTU(qtyTU);
 		lutuConfigurationNew.setIsInfiniteQtyTU(false);
@@ -200,7 +200,11 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final I_M_HU_PI_Version luPIV = handlingUnitsDAO.retrievePICurrentVersion(luPI);
-			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, lutuConfigurationNew.getC_BPartner())
+			final I_M_HU_PI_Item luPI_Item = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+					tuPI,
+					X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit,
+					ILUTUConfigurationFactory.extractBPartnerOrNull(lutuConfigurationNew))
+					//
 					.stream()
 					.filter(piItem -> piItem.getM_HU_PI_Version_ID() == luPIV.getM_HU_PI_Version_ID())
 					.findFirst()

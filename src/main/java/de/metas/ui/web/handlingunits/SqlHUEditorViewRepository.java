@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
@@ -241,7 +242,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setType(huRecordType)
 				.setTopLevel(topLevelHUId == null)
 				.setProcessed(processed)
-				.setBPartnerId(hu.getC_BPartner_ID())
+				.setBPartnerId(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()))
 				.setAttributesProvider(attributesProvider)
 				//
 				.setCode(hu.getValue())

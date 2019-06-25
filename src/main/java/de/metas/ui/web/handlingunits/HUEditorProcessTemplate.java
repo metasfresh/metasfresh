@@ -2,11 +2,10 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.IQueryBL;
-
 import com.google.common.base.Predicates;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -45,6 +44,8 @@ import lombok.NonNull;
  */
 public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 {
+	protected final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+
 	protected final boolean isHUEditorView()
 	{
 		return isViewClass(HUEditorView.class);
@@ -102,10 +103,6 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		final Stream<HuId> huIds = streamSelectedHUIds(filter);
 		return StreamUtils
 				.dice(huIds, 100)
-				.flatMap(huIdsChunk -> Services.get(IQueryBL.class)
-						.createQueryBuilder(I_M_HU.class)
-						.addInArrayFilter(I_M_HU.COLUMNNAME_M_HU_ID, huIdsChunk)
-						.create()
-						.stream(I_M_HU.class));
+				.flatMap(huIdsChunk -> handlingUnitsRepo.getByIds(huIdsChunk).stream());
 	}
 }

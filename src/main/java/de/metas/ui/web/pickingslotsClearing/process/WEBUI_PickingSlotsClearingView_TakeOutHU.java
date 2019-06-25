@@ -114,10 +114,10 @@ public class WEBUI_PickingSlotsClearingView_TakeOutHU extends PickingSlotsCleari
 
 		//
 		// Move the HU to an after picking locator
-		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator());
+		final I_M_Locator afterPickingLocator = huWarehouseDAO.suggestAfterPickingLocator(hu.getM_Locator_ID());
 		if(afterPickingLocator == null)
 		{
-			throw new AdempiereException("No after picking locator found for " + hu.getM_Locator());
+			throw new AdempiereException("No after picking locator found for locatorId=" + hu.getM_Locator_ID());
 		}
 		if (afterPickingLocator.getM_Locator_ID() != hu.getM_Locator_ID())
 		{

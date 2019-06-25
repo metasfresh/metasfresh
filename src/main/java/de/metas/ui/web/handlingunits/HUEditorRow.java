@@ -21,6 +21,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -101,7 +102,7 @@ public final class HUEditorRow implements IViewRow
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
-	private final int bpartnerId;
+	private final BPartnerId bpartnerId;
 
 	public static final String FIELDNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
 	@ViewColumn(fieldName = FIELDNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
@@ -286,7 +287,7 @@ public final class HUEditorRow implements IViewRow
 		return processed;
 	}
 
-	public int getBPartnerId()
+	public BPartnerId getBPartnerId()
 	{
 		return bpartnerId;
 	}
@@ -611,7 +612,7 @@ public final class HUEditorRow implements IViewRow
 		private BigDecimal qtyCU;
 		private Date bestBeforeDate;
 		private JSONLookupValue locator;
-		private int bpartnerId;
+		private BPartnerId bpartnerId;
 
 		private List<HUEditorRow> includedRows = null;
 		private OrderLineId orderLineReservation = null;
@@ -758,13 +759,13 @@ public final class HUEditorRow implements IViewRow
 			return locator;
 		}
 
-		public Builder setBPartnerId(final int bpartnerId)
+		public Builder setBPartnerId(final BPartnerId bpartnerId)
 		{
 			this.bpartnerId = bpartnerId;
 			return this;
 		}
 
-		private int getBPartnerId()
+		private BPartnerId getBPartnerId()
 		{
 			return bpartnerId;
 		}

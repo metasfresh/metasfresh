@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -17,16 +18,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductRepository;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributes;
 import de.metas.ui.web.handlingunits.HUEditorView;
@@ -36,6 +40,8 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 import lombok.NonNull;
 
 /*
@@ -64,13 +70,16 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 		extends WEBUI_M_HU_Receipt_Base
 		implements IProcessPrecondition
 {
+	private static final String MSG_ScanRequired = "securPharm.scanRequiredError";
 
 	@Autowired
 	private IViewsRepository viewsRepo;
-
 	@Autowired
 	private DocumentCollection documentsCollection;
-
+	@Autowired
+	private SecurPharmService securPharmService;
+	@Autowired
+	private ProductRepository productRepository;
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
@@ -80,11 +89,23 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 	@Override
 	protected final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
-		if (!document.isHUStatusPlanning())
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Only planning HUs can be received");
-		}
+		return ProcessPreconditionsResolution.firstRejectOrElseAccept(
+				() -> rejectIfNotPlanningHUStatus(document),
+				() -> rejectIfMandatoryAttributesAreNotFilled(document),
+				() -> rejectIfSecurPharmAttributesAreNotOK(document));
+	}
 
+	private static ProcessPreconditionsResolution rejectIfNotPlanningHUStatus(final HUEditorRow document)
+	{
+		return document.isHUStatusPlanning()
+				? ProcessPreconditionsResolution.accept()
+				: ProcessPreconditionsResolution.rejectWithInternalReason("Only planning HUs can be received");
+	}
+
+	private ProcessPreconditionsResolution rejectIfMandatoryAttributesAreNotFilled(final HUEditorRow document)
+	{
+		//
+		// Make sure all mandatory attributes are filled
 		final HUEditorRowAttributes attributes = document.getAttributes();
 		for (final String mandatoryAttributeName : attributes.getMandatoryAttributeNames())
 		{
@@ -97,12 +118,50 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 				return ProcessPreconditionsResolution.reject(msg);
 			}
 		}
-		return null;
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
+	private ProcessPreconditionsResolution rejectIfSecurPharmAttributesAreNotOK(final HUEditorRow document)
+	{
+		//
+		// OK if this is not a Pharma product
+		final HUEditorRowAttributes attributes = document.getAttributes();
+		if (!attributes.hasAttribute(AttributeConstants.ATTR_SecurPharmScannedStatus))
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		//
+		// NOK if SecurPharm connection is not configured and we deal with a pharma product
+		if (!securPharmService.hasConfig())
+		{
+			return ProcessPreconditionsResolution.reject("SecurPharm not configured");
+		}
+
+		//
+		// NOK if not scanned and vendor != manufacturer
+		final BPartnerId vendorId = document.getBPartnerId();
+		final BPartnerId manufacturerId = productRepository
+				.getById(document.getProductId())
+				.getManufacturerId();
+		if (!BPartnerId.equals(vendorId, manufacturerId))
+		{
+			final SecurPharmAttributesStatus status = SecurPharmAttributesStatus.ofNullableCodeOrKnown(attributes.getValueAsString(AttributeConstants.ATTR_SecurPharmScannedStatus));
+			if (status.isUnknown())
+			{
+				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ScanRequired));
+			}
+		}
+
+		//
+		// OK
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	@RunOutOfTrx // IHUReceiptScheduleBL.processReceiptSchedules creates its own transaction
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		// Generate material receipts
 		final List<I_M_ReceiptSchedule> receiptSchedules = getM_ReceiptSchedules();

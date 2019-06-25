@@ -12,8 +12,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.util.Services;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -50,7 +50,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if(!isHUEditorView())
+		if (!isHUEditorView())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
