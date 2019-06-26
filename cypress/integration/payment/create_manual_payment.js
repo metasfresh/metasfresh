@@ -86,7 +86,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   it('The Sales Invoice should not be paid', function () {
-    cy.isChecked('IsPaid').then(checkBoxValue => {
+    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       assert.equal(checkBoxValue, false);
     });
   });
@@ -177,7 +177,7 @@ describe('Create a manual Payment for a Sales Invoice', function () {
 
 
   it('Sales Invoice is now marked as paid', function () {
-    cy.isChecked('IsPaid').then(checkBoxValue => {
+    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, true);
     });
