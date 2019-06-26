@@ -29,7 +29,7 @@ export class Taxcategory {
 
   setID(id) {
     cy.log(`Taxcategory - set ID = ${id}`);
-    this.ID = id;
+    this.id = id;
     return this;
   }
 
@@ -49,21 +49,24 @@ export class Taxcategory {
 }
 
 function applyTaxcategory(taxcat) {
-  const timestamp = new Date().getTime();
+  //const timestamp = new Date().getTime();
 
-  describe(`Create new Taxcategory ${taxcat.Name}`, function() {
+  describe(`Create new Taxcategory ${taxcat.name}`, function() {
     cy.visitWindow('138', 'NEW', 'taxCatObj');
-    cy.log(`Taxcategory - Name = ${taxcat.Name} ${timestamp}`);
-    cy.writeIntoStringField('Name', `${taxcat.Name} ${timestamp}`);
-    cy.log(`Taxcategory - Description = ${taxcat.Description}`);
-    cy.writeIntoStringField('Description', `${taxcat.Description}`, false, null, true);
+    //cy.log(`Taxcategory - Name = ${taxcat.Name} ${timestamp}`);
+    cy.log(`Taxcategory - Name = ${taxcat.name}`);
+    //cy.writeIntoStringField('Name', `${taxcat.Name} ${timestamp}`);
+    cy.writeIntoStringField('Name', `${taxcat.name}`);
+    cy.log(`Taxcategory - Description = ${taxcat.description}`);
+    cy.writeIntoStringField('Description', `${taxcat.description}`, false, null, true);
     cy.log(`Taxcat - VATType = ${taxcat.vatType}`);
-    cy.selectInListField('VATType', taxcat.VATType);
+    cy.selectInListField('VATType', taxcat.vatType);
+    return this;
   });
 }
 
 function applyActive(taxcat) {
-  describe(`Create new Taxrate ${taxcat.Name}`, function() {
+  describe(`Create new Taxrate ${taxcat.name}`, function() {
     if (this.ID) {
       cy.visitWindow('138', `${this.ID}`);
     }
@@ -72,7 +75,7 @@ function applyActive(taxcat) {
         cy.clickOnIsActive();
       }
     });
-    cy.log(`Taxcategory - activate ${taxcat.Name} END`);
+    cy.log(`Taxcategory - activate ${taxcat.name} END`);
     return this;
   });
 }
