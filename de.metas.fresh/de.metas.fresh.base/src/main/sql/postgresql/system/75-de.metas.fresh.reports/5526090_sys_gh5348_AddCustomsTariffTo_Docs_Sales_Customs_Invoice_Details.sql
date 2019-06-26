@@ -1,5 +1,10 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Description ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Details ( IN p_C_Customs_Invoice_ID numeric, IN p_AD_Language Character Varying(6) );
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Details(
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details ( IN p_C_Customs_Invoice_ID numeric, IN p_AD_Language Character Varying(6) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details(
   IN p_C_Customs_Invoice_ID numeric,
   IN p_AD_Language          Character Varying(6))
   RETURNS TABLE
@@ -63,3 +68,90 @@ ORDER BY
 $$
 LANGUAGE sql
 STABLE;
+
+
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Description ( IN C_Invoice_ID numeric, IN AD_Language Character Varying (6) )
+RETURNS TABLE 
+	(documentno character varying(30),
+	dateinvoiced timestamp without time zone,
+	VATaxID character varying(60),
+	bp_value character varying(40),
+	cont_name text,
+	cont_phone character varying(40),
+	cont_fax character varying(40),
+	cont_email character varying(60),
+	PrintName character varying(60)
+	)
+AS
+$$	
+SELECT
+	i.documentno 	as documentno,
+	i.dateinvoiced	as dateinvoiced,
+	bp.VATaxID,
+	bp.value	as bp_value,
+	Coalesce(cogr.name, '')||
+	Coalesce(' ' || cont.title, '') ||
+	Coalesce(' ' || cont.firstName, '') ||
+	Coalesce(' ' || cont.lastName, '') as cont_name,
+	cont.phone	as cont_phone,
+	cont.fax	as cont_fax,
+	cont.email	as cont_email,
+	COALESCE(dtt.PrintName, dt.PrintName) AS PrintName
+FROM
+	C_Customs_Invoice i
+	JOIN C_BPartner bp 		ON i.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+		LEFT JOIN AD_User cont	ON i.AD_User_ID = cont.AD_User_ID AND cont.isActive = 'Y'
+	LEFT JOIN C_Greeting cogr	ON cont.C_Greeting_ID = cogr.C_Greeting_ID AND cogr.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType dt ON i.c_doctype_id = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON i.c_doctype_id = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+	LEFT JOIN C_Customs_Invoice_Line il on il.C_Customs_Invoice_id=i.C_Customs_Invoice_ID
+WHERE
+	i.C_Customs_Invoice_id = $1
+$$
+LANGUAGE sql STABLE	
+;
+
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
+RETURNS TABLE 
+	(AD_Org_ID numeric,
+	DocStatus character(2),
+	PrintName character varying(60),
+	countrycode character(2),
+	displayhu text
+	)
+AS
+$$	
+SELECT
+	i.AD_Org_ID,
+	i.DocStatus,
+	dt.PrintName,
+	c.countrycode,
+	CASE
+		WHEN
+		EXISTS(
+			SELECT 0
+			FROM C_Customs_Invoice_Line il
+			INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+			INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+			WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+			AND il.C_Customs_Invoice_ID = i.C_Customs_Invoice_ID AND il.isActive = 'Y'
+		)
+		THEN 'Y'
+		ELSE 'N'
+	END as displayhu
+FROM
+	C_Customs_Invoice  i
+	INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+	LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+
+	LEFT OUTER JOIN AD_OrgInfo orginfo ON orginfo.ad_org_id = i.ad_org_id AND orginfo.isActive = 'Y'
+	LEFT OUTER JOIN C_BPartner_Location org_loc ON orginfo.Orgbp_Location_ID = org_loc.C_BPartner_Location_ID AND org_loc.isActive = 'Y'
+	LEFT OUTER JOIN C_Location org_l ON org_loc.C_Location_ID = org_l.C_Location_ID AND org_l.isActive = 'Y'
+	LEFT OUTER JOIN C_Country c ON org_l.C_Country_ID = c.C_Country_ID AND c.isActive = 'Y'
+WHERE
+	i.C_Customs_Invoice_ID = $1 AND i.isActive = 'Y'
+$$
+LANGUAGE sql STABLE	
+;
