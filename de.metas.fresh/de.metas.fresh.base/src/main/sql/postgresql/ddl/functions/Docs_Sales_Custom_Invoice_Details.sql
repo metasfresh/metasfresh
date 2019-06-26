@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs
    bp_product_name character varying(100),
    p_value         character varying(40),
    p_description   character varying(255),
-   CustomsTariff   numeric,
+   CustomsTariff   character varying,
    cursymbol       character varying(10),
    InvoiceDocNo    character varying
   )
