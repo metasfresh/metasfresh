@@ -132,7 +132,7 @@
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/custom_invoice/report_page_header.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/customs_invoice/report_page_header.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-11" x="0" y="0" width="595" height="85" uuid="3987685a-ab7a-4fdc-be33-8c501454c286">
