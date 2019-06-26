@@ -6,6 +6,7 @@ import { salesInvoices } from '../../page_objects/sales_invoices';
 
 describe('New sales order test', function() {
   const timestamp = new Date().getTime();
+  let notificationsNumber = null;
 
   const poReference = `Sales Order-to-Invoice Test ${timestamp}`;
   const productName = `Sales Order-to-Invoice Test ${timestamp}`;
@@ -35,11 +36,14 @@ describe('New sales order test', function() {
         .setName(customerName)
         .apply();
     });
+
+    cy.readAllNotifications();
   });
 
   describe('Create a new sales order', function() {
     it('Create new sales order header', function() {
       cy.visitWindow(salesOrders.windowId, 'NEW');
+      // cy.resetNotifications();
 
       cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName);
 
@@ -80,7 +84,9 @@ describe('New sales order test', function() {
 
   describe('create an invoice', function() {
     it("Zoom to the sales order's invoice candidate", function() {
-      cy.wait(5000); // wait a bit for the invoice candidate(s) to be created, just like the user would
+      // TODO: This is erally, really bad ! Unfortunately right now I see no way of fixing this, unless we'll
+      // get a push notification from the server that would update this panel
+      cy.wait(10000); // wait a bit for the invoice candidate(s) to be created, just like the user would
       cy.get('body').type('{alt}6'); // open referenced-records-sidelist
 
       cy.server();
@@ -90,6 +96,7 @@ describe('New sales order test', function() {
       cy.route('GET', `/rest/api/documentView/${invoiceCandidates.windowId}/*?firstRow=0&pageLength=*`).as(
         getDataAlias
       );
+
       cy.selectReference('C_Order_C_Invoice_Candidate').click();
       cy.wait(`@${getDataAlias}`);
     });
@@ -105,7 +112,7 @@ describe('New sales order test', function() {
       cy.clickElementWithClass('.pagination-link.pointer');
       cy.wait(`@${quickActionsAlias}`);
 
-      // and *now* execute the invoiceing action
+      // and *now* execute the invoicing action
       cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.writeIntoStringField(
         'POReference',
@@ -117,28 +124,30 @@ describe('New sales order test', function() {
     });
 
     it('Zoom to the new invoice', function() {
-      cy.wait(5000);
-      cy.server();
+      cy.getNotificationModal();
+      cy.getDOMNotificationsNumber().then(number => {
+        expect(number).to.equal(1);
 
-      cy.server();
+        cy.server();
 
-      const invoiceCandidateTab = `tab-${timestamp}`;
-      cy.route('GET', `/rest/api/window/${invoiceCandidates.windowId}/*/AD_Tab*`).as(invoiceCandidateTab);
-      invoiceCandidates
-        .getRows()
-        .eq(0)
-        .find('td')
-        .eq(0)
-        .dblclick();
-      cy.wait(`@${invoiceCandidateTab}`);
+        const invoiceCandidateTab = `tab-${timestamp}`;
+        cy.route('GET', `/rest/api/window/${invoiceCandidates.windowId}/*/AD_Tab*`).as(invoiceCandidateTab);
+        invoiceCandidates
+          .getRows()
+          .eq(0)
+          .find('td')
+          .eq(0)
+          .dblclick();
+        cy.wait(`@${invoiceCandidateTab}`);
 
-      cy.get('body').type('{alt}6'); // open referenced-records-sidelist
+        cy.get('body').type('{alt}6'); // open referenced-records-sidelist
 
-      // zoom to the invoice candidate's iinvoice, but also make sure to wait until the data is available
-      const getDataAlias = `data-${timestamp}`;
-      cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
-      cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
-      cy.wait(`@${getDataAlias}`);
+        // zoom to the invoice candidate's iinvoice, but also make sure to wait until the data is available
+        const getDataAlias = `data-${timestamp}`;
+        cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
+        cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
+        cy.wait(`@${getDataAlias}`);
+      });
     });
   });
 });

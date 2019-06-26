@@ -3,11 +3,6 @@
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 
 describe('New org test', function() {
-    before(function() {
-        // login before each test
-        cy.loginByForm();
-    });
-
     const timestamp = new Date().getTime(); // used in the document names, for ordering
     const orgName = `Org ${timestamp}`; // name needs to match regex ^[a-zA-Z0-9-_+]+?
     const bPartnerName = `Org-BPartner ${timestamp}`

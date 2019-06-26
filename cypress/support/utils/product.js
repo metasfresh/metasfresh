@@ -1,3 +1,5 @@
+import { getLanguageSpecific } from './utils';
+
 export class Product {
   constructor(name) {
     cy.log(`Product - set name = ${name}`);
@@ -23,7 +25,13 @@ export class Product {
     return this;
   }
 
-  setStocked(isPurchased) {
+  setStocked(isStocked) {
+    cy.log(`Product - set isStocked = ${isStocked}`);
+    this.isStocked = isStocked;
+    return this;
+  }
+
+  setPurchased(isPurchased) {
     cy.log(`Product - set isPurchased = ${isPurchased}`);
     this.isPurchased = isPurchased;
     return this;
@@ -80,42 +88,46 @@ function applyProduct(product) {
 
     cy.writeIntoStringField('Description', product.description);
 
-    cy.isChecked('IsStocked').then(isIsStockedValue => {
+    cy.getStringFieldValue('IsStocked').then(isIsStockedValue => {
       if (product.isStocked && !isIsStockedValue) {
         cy.clickOnCheckBox('IsStocked');
       }
     });
-    cy.isChecked('IsPurchased').then(isPurchasedValue => {
+    cy.getStringFieldValue('IsPurchased').then(isPurchasedValue => {
       if (product.isPurchased && !isPurchasedValue) {
         cy.clickOnCheckBox('IsPurchased');
       }
     });
-    cy.isChecked('IsSold').then(isSoldValue => {
+    cy.getStringFieldValue('IsSold').then(isSoldValue => {
       if (product.isSold && !isSoldValue) {
         cy.clickOnCheckBox('IsSold');
       }
     });
-    cy.isChecked('IsDiverse').then(isDiverseValue => {
+    cy.getStringFieldValue('IsDiverse').then(isDiverseValue => {
       if (product.isDiverse && !isDiverseValue) {
         cy.clickOnCheckBox('IsDiverse');
       }
     });
 
-    cy.getFieldValue('ProductType').then(productType => {
-      if (product.productType != productType) {
-        cy.selectInListField('ProductType', product.productType);
+    cy.getStringFieldValue('ProductType').then(productTypeValue => {
+      const productType = getLanguageSpecific(product, 'productType');
+
+      if (productType != productTypeValue) {
+        cy.selectInListField('ProductType', productType);
       }
     });
 
-    cy.getFieldValue('C_UOM_ID').then(uomValue => {
-      if (product.c_uom && product.c_uom != uomValue) {
-        cy.selectInListField('C_UOM_ID', product.c_uom);
+    cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
+      const c_uom = getLanguageSpecific(product, 'c_uom');
+
+      if (c_uom && c_uom != uomValue) {
+        cy.selectInListField('C_UOM_ID', c_uom);
       }
     });
 
     if (product.prices.length > 0) {
-      product.prices.forEach(function(product) {
-        applyProductPrice(product);
+      product.prices.forEach(function(price) {
+        applyProductPrice(price);
       });
       cy.get('table tbody tr').should('have.length', product.prices.length);
     }
@@ -154,25 +166,27 @@ function applyProductCategory(productCategory) {
     cy.writeIntoStringField('Name', productCategory.name);
 
     // Value is updateable
-    cy.clearField('Value');
     cy.writeIntoStringField('Value', productCategory.value);
   });
 }
 
 function applyProductPrice(price) {
   describe(`Create new Product Price ${price.m_pricelist_version}`, function() {
+    const m_pricelist_version = getLanguageSpecific(price, 'm_pricelist_version');
+
     cy.get('#tab_M_ProductPrice').click();
     cy.pressAddNewButton();
     cy.writeIntoLookupListField(
       'M_PriceList_Version_ID',
-      price.m_pricelist_version,
-      price.m_pricelist_version,
+      m_pricelist_version,
+      m_pricelist_version,
       false /*typeList*/,
       true /*modal*/
     );
-    cy.clearField('PriceStd');
-    cy.writeIntoStringField('PriceStd', price.priceStd);
-    cy.selectInListField('C_TaxCategory_ID', price.c_taxcategory);
+
+    cy.writeIntoStringField('PriceStd', price.priceStd, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
+
+    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'c_taxcategory'), true);
     cy.pressDoneButton();
   });
 }

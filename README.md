@@ -2,7 +2,11 @@
 
 Right now, the actual cypress tests reside in the [metasfresh-webui-frontend](https://github.com/metasfresh/metasfresh-webui-frontend) repo. This is going to change as of issue [#7](https://github.com/metasfresh/metasfresh-e2e/issues/7) Move existing cypress tests into this repo
 
-# Build the docker image
+# Docker
+
+Note that if you just ant to run order develop cypress tests from your local machine, you probable won't need to deal with the docker-stuff at all.
+
+## Build the docker image
 
 To build the docker image locally, you can do
 
@@ -11,7 +15,7 @@ To build the docker image locally, you can do
 docker build --tag metasfresh-e2e --build-arg CACHEBUST=$(date "+%Y-%m-%d") .
 ```
 
-# Run the docker image
+## Run the docker image
 
 run the docker container, e.g. like this
 
@@ -63,11 +67,11 @@ For my local minikube (with webui-api running in my IDE)
 
 ...edit the `cypress/config.js` like this:
 
-```json
+```javascript
 module.exports = {
   API_URL: 'http://localhost:8080/rest/api',
+  WS_URL:  'http://localhost:8080/stomp',
   PLUGIN_API_URL: 'http://localhost:9192/',
-  WS_URL: 'http://localhost:8080/stomp',
   username: 'metasfresh',
   password: '<your-pw>',
 };
@@ -81,10 +85,10 @@ For a dev-instance (dev133 in this example)
 
 ...edit the `cypress/config.js` like this:
 
-```json
+```javascript
 module.exports = {
   API_URL: 'https://dev133.metasfresh.com/rest/api/',
-  WS_URL: 'https://dev133.metasfresh.com/stomp',
+  WS_URL:  'https://dev133.metasfresh.com/stomp',
   PLUGIN_API_URL: 'http://localhost:9192/',
   username: 'dev',
   password: '<your-pw>',

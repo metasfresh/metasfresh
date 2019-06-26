@@ -37,8 +37,8 @@ import notificationFixtures from '../../fixtures/misc/notifications.json';
 
 const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
-context('Reusable "login" custom command', function() {
-  Cypress.Commands.add('loginByForm', (username, password, redirect) => {
+context('Reusable "login" custom command using API', function() {
+  Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
     let pass = password;
 
@@ -48,7 +48,7 @@ context('Reusable "login" custom command', function() {
     }
 
     Cypress.log({
-      name: 'loginByForm',
+      name: 'loginViaAPI',
       message: user + ' | ' + pass,
     });
 
@@ -243,6 +243,36 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = '
   });
 });
 
+Cypress.Commands.add('resetNotifications', () => {
+  describe('Clear current notifications', function() {
+    return cy
+      .window()
+      .its('store')
+      .invoke('dispatch', {
+        type: 'REMOVE_ALL_NOTIFICATIONS',
+      });
+  });
+});
+
+Cypress.Commands.add('readAllNotifications', () => {
+  describe('Mark all current notifications as read in the API and reset counter', function() {
+    return cy
+      .request({
+        method: 'PUT',
+        url: config.API_URL + '/notifications/all/read',
+        failOnStatusCode: false,
+        followRedirect: false,
+      })
+      .then(() => {
+        cy.window()
+          .its('store')
+          .invoke('dispatch', {
+            type: 'READ_ALL_NOTIFICATIONS',
+          });
+      });
+  });
+});
+
 const getNotificationFixture = () => {
   const timestamp = new Date().getTime();
   const message = `Test notification ${timestamp}`;
@@ -257,7 +287,8 @@ Cypress.Commands.add('addNotification', notificationObject => {
   describe('Push a new notification to the existing list', function() {
     notificationObject = notificationObject || getNotificationFixture();
 
-    cy.window()
+    return cy
+      .window()
       .its('store')
       .invoke('dispatch', {
         type: 'ADD_NOTIFICATION',
@@ -275,7 +306,8 @@ Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) =>
   describe('Clear current notifications and add a new one', function() {
     notificationObject = notificationObject || getNotificationFixture();
 
-    cy.window()
+    return cy
+      .window()
       .its('store')
       .invoke('dispatch', {
         type: 'NEW_NOTIFICATION',
@@ -290,7 +322,8 @@ Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) =>
 
 Cypress.Commands.add('getDOMNotificationsNumber', () => {
   describe('Get the number of notifications displayed in the header alert element', function() {
-    cy.get('.header-item-badge')
+    return cy
+      .get('.header-item-badge')
       .find('.notification-number')
       .then(el => {
         const val = el[0].textContent;
@@ -302,12 +335,29 @@ Cypress.Commands.add('getDOMNotificationsNumber', () => {
 
 Cypress.Commands.add('getNotificationsInbox', () => {
   describe('Get the notifications inbox in the app state', function() {
-    cy.window()
+    return cy
+      .window()
       .its('store')
       .invoke('getState')
       .then(state => {
         return state.appHandler.inbox;
       });
+  });
+});
+
+/*
+ * if `optionalText` is given it will look for it inside the notification element
+ */
+Cypress.Commands.add('getNotificationModal', optionalText => {
+  describe('Get the number of notifications displayed in the header alert element', function() {
+    if (!optionalText) {
+      return cy.get('.notification-handler').find('.notification-content');
+    } else {
+      return cy
+        .get('.notification-handler')
+        .find('.notification-content')
+        .contains(optionalText);
+    }
   });
 });
 
@@ -341,6 +391,7 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
       }
 
       const actualFieldValue = fieldsByName[fieldName].value;
+      // @TODO: Why is this check written like that ? Sometimes we get an object value, and not string
       if (!isString(actualFieldValue)) {
         cy.log(
           `4 waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}'; the current response body's field has ${fieldName}=${actualFieldValue}; I don't know how do check if non-string values are correct; stop waiting`

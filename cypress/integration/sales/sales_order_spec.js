@@ -63,7 +63,7 @@ describe('New sales order test', function() {
           .contains(menuOption)
           .click();
       } else {
-        cy.clickHeaderNav('New');
+        cy.clickHeaderNav(Cypress.messages.window.new);
       }
 
       cy.get('.header-breadcrumb-sitename').should('contain', '<');
@@ -125,7 +125,6 @@ describe('New sales order test', function() {
         .click();
 
       cy.get('.quick-input-container .form-group').should('exist');
-      cy.get('.quick-input-container').toMatchSnapshot('Empty Quick Inp');
 
       // enter just the timestamp which is also part of the product name
       cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
@@ -252,8 +251,6 @@ describe('Existing sales order', function() {
   const vendorName = `Cypress Test Partner #1 ${timestamp}`;
 
   before(function() {
-    cy.loginByForm();
-
     cy.fixture('purchase/cypress_vendor.json').then(() => {
       new BPartner(vendorName).apply();
     });

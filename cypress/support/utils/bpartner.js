@@ -5,9 +5,12 @@ export class BPartner {
     this.isVendor = false;
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
+    this.customerDiscountSchema = undefined;
+    this.customerDunning = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
+    this.bank = undefined;
   }
 
   setName(name) {
@@ -34,6 +37,12 @@ export class BPartner {
     return this;
   }
 
+  setCustomerDunning(customerDunning) {
+    cy.log(`BPartner - set customerDunning = ${customerDunning}`);
+    this.customerDunning = customerDunning;
+    return this;
+  }
+
   setCustomer(isCustomer) {
     cy.log(`BPartner - set isCustomer = ${isCustomer}`);
     this.isCustomer = isCustomer;
@@ -46,15 +55,39 @@ export class BPartner {
     return this;
   }
 
+  setCustomerDiscountSchema(customerDiscountSchema) {
+    cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
+    this.customerDiscountSchema = customerDiscountSchema;
+    return this;
+  }
+
+  setBank(bank) {
+    cy.log(`BPartner - set Bank = ${bank}`);
+    this.bank = bank;
+    return this;
+  }
+
   addLocation(bPartnerLocation) {
     cy.log(`BPartner - add location = ${JSON.stringify(bPartnerLocation)}`);
     this.bPartnerLocations.push(bPartnerLocation);
     return this;
   }
 
+  clearLocations() {
+    cy.log(`BPartner - clear locations`);
+    this.bPartnerLocations = [];
+    return this;
+  }
+
   addContact(contact) {
     cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
     this.contacts.push(contact);
+    return this;
+  }
+
+  clearContacts() {
+    cy.log(`BPartner - clear contacts`);
+    this.contacts = [];
     return this;
   }
 
@@ -120,7 +153,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsVendor').then(isVendorValue => {
+      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
           cy.clickOnCheckBox('IsVendor');
         }
@@ -139,13 +172,24 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsCustomer').then(isCustomerValue => {
+      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer');
+          cy.clickOnCheckBox('IsCustomer', true, true);
         }
       });
+      if (bPartner.customerDiscountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true);
+      }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
+        cy.selectInListField(
+          'M_PricingSystem_ID',
+          bPartner.customerPricingSystem,
+          bPartner.customerPricingSystem,
+          true
+        );
+      }
+      if (bPartner.customerDunning) {
+        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning);
       }
       cy.pressDoneButton();
     }
@@ -163,16 +207,25 @@ function applyBPartner(bPartner) {
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
+    if (bPartner.bank) {
+      cy.selectTab('C_BP_BankAccount');
+      cy.pressAddNewButton();
+      cy.writeIntoLookupListField('C_Bank_ID', bPartner.bank, bPartner.bank, false, true);
+      cy.writeIntoStringField('A_Name', 'Test Account', true);
+      cy.pressDoneButton();
+    }
   });
 }
 
 function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
-  //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`);
+  cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true, false, true);
+  cy.get('.panel-modal-header-title').click();
 
   cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
@@ -190,11 +243,11 @@ function applyLocation(bPartnerLocation) {
 function applyContact(bPartnerContact) {
   cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField('Firstname', bPartnerContact.firstName);
-  cy.writeIntoStringField('Lastname', bPartnerContact.lastName);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox('IsDefaultContact');
+    cy.clickOnCheckBox('IsDefaultContact', true, true);
   }
   cy.pressDoneButton();
 }

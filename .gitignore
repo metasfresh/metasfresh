@@ -7,3 +7,6 @@ npm-debug.log*
 .DS_Store
 cypress-git-repo
 debug.log
+.metadata
+cypress/config.js
+cypress.json
