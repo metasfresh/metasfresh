@@ -193,7 +193,7 @@ function applyBPartner(bPartner) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true);
       }
       if (bPartner.paymentTerm) {
-        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
+        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
         cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
         cy.wait(2000);
       }
