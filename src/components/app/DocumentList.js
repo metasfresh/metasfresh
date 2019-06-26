@@ -569,12 +569,16 @@ export class DocumentList extends Component {
         });
 
         // process modal specific
-        const { parentViewId, parentWindowId } = response.data;
-
+        const {
+          parentViewId,
+          parentWindowId,
+          headerProperties,
+        } = response.data;
         dispatch(
           updateRawModal(windowType, {
             parentViewId,
             parentWindowId,
+            headerProperties,
           })
         );
       }
