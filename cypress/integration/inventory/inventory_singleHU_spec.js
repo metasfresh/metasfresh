@@ -29,7 +29,7 @@ describe('Aggregated inventory test', function() {
       });
 
       // set warehouse by its language-specific name
-      cy.selectInListField('M_Warehouse_ID', getLanguageSpecific(inventoryJson, 'stdWarehouseName'));
+      cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
     });
 
     cy.selectTab('M_InventoryLine');

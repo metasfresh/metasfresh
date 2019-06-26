@@ -23,7 +23,7 @@ describe('Aggregated inventory test', function() {
       const docTypeName = getLanguageSpecific(inventoryJson, 'aggregatedHUsInventoryDocTypeName');
       cy.selectInListField('C_DocType_ID', docTypeName);
 
-      cy.selectInListField('M_Warehouse_ID', getLanguageSpecific(inventoryJson, 'stdWarehouseName'));
+      cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
     });
 
     cy.selectTab('M_InventoryLine');
