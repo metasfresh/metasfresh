@@ -193,14 +193,14 @@ class PharmaPriceLimitRuleInstance
 
 	private BigDecimal getPaymentTermDiscountPercent()
 	{
-		final int paymentTermId = context.getPaymentTermId();
-		if (paymentTermId <= 0)
+		final PaymentTermId paymentTermId = context.getPaymentTermId();
+		if (paymentTermId == null)
 		{
 			return BigDecimal.ZERO;
 		}
 
 		return paymentTermsRepo
-				.getPaymentTermDiscount(PaymentTermId.ofRepoId(paymentTermId))
+				.getPaymentTermDiscount(paymentTermId)
 				.getValue();
 	}
 

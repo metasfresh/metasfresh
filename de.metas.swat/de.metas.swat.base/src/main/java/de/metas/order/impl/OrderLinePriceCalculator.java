@@ -114,7 +114,7 @@ class OrderLinePriceCalculator
 					.pricingContext(pricingCtx)
 					.priceLimit(priceAndDiscount.getPriceLimit())
 					.priceActual(priceAndDiscount.getPriceActual())
-					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
+					.paymentTermId(orderLineBL.getPaymentTermId(orderLine))
 					.build());
 
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
@@ -205,7 +205,7 @@ class OrderLinePriceCalculator
 
 		if (!orderLine.isManualPaymentTerm())
 		{
-			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
+			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(paymentTermId));
 			orderLine.setPaymentDiscount(paymentDiscount);
 		}
 
@@ -483,7 +483,7 @@ class OrderLinePriceCalculator
 				.pricingContext(createPricingContext())
 				.priceLimit(orderLine.getPriceLimit())
 				.priceActual(orderLine.getPriceActual())
-				.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
+				.paymentTermId(orderLineBL.getPaymentTermId(orderLine))
 				.build());
 	}
 }

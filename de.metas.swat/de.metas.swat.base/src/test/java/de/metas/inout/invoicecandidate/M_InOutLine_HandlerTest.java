@@ -68,6 +68,7 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
+	private I_C_PaymentTerm orderPaymentTerm;
 	private I_C_PaymentTerm paymentTermA;
 	private I_C_PaymentTerm paymentTermB;
 	private M_InOutLine_Handler inOutLineHandlerUnderTest;
@@ -104,19 +105,22 @@ public class M_InOutLine_HandlerTest
 		packagingInOutLine.setMovementQty(TEN);
 		save(packagingInOutLine);
 
-		paymentTermA = newInstance(I_C_PaymentTerm.class);
-		paymentTermA.setName("paymentTermA");
-		save(paymentTermA);
-		POJOWrapper.setInstanceName(paymentTermA, "paymentTermA");
-
-		paymentTermB = newInstance(I_C_PaymentTerm.class);
-		paymentTermB.setName("paymentTermB");
-		save(paymentTermB);
-		POJOWrapper.setInstanceName(paymentTermB, "paymentTermB");
+		orderPaymentTerm = createPaymentTerm("orderPaymentTerm");
+		paymentTermA = createPaymentTerm("paymentTermA");
+		paymentTermB = createPaymentTerm("paymentTermB");
 
 		inOutLineHandlerUnderTest = new M_InOutLine_Handler();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+	}
+
+	private I_C_PaymentTerm createPaymentTerm(final String name)
+	{
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setName(name);
+		save(paymentTerm);
+		POJOWrapper.setInstanceName(paymentTerm, name);
+		return paymentTerm;
 	}
 
 	@Test
@@ -136,7 +140,7 @@ public class M_InOutLine_HandlerTest
 
 		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
 
-		assertThat(paymentTermId).isLessThanOrEqualTo(0);
+		assertThat(paymentTermId).isLessThanOrEqualTo(orderPaymentTerm.getC_PaymentTerm_ID());
 	}
 
 	@Test
@@ -162,18 +166,6 @@ public class M_InOutLine_HandlerTest
 
 		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
 		assertThat(paymentTermId).isEqualTo(paymentTermB.getC_PaymentTerm_ID());
-	}
-
-	@Test
-	public void extractPaymentTermId_from_packagingInOutLine_with_two_materialInOutLines_butno_paymentTerm()
-	{
-		createMaterialInOutLine(null);
-		createMaterialInOutLine(null);
-
-		createUnrelatedMaterialInOutLine(paymentTermA, TEN);
-
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
 	}
 
 	@Test
@@ -232,26 +224,6 @@ public class M_InOutLine_HandlerTest
 	}
 
 	@Test
-	public void createCandidatesForInOutLine_two_materialInOutLines_one_without_paymentterm()
-	{
-		createMaterialInOutLine(null, FIVE);
-		createMaterialInOutLine(paymentTermB, SIX);
-
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
-
-		assertThat(result).hasSize(1);
-		final I_C_Invoice_Candidate ic = result.get(0);
-		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(paymentTermB));
-		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
-
-		// make sure that on later updates, the qty remains the same
-		inOutLineHandlerUnderTest.setOrderedData(ic);
-		inOutLineHandlerUnderTest.setDeliveredData(ic);
-		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
-	}
-
-	@Test
 	public void createCandidatesForInOutLine_two_materialInOutLines_both_without_paymentterm()
 	{
 		createMaterialInOutLine(null, FIVE);
@@ -262,7 +234,7 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -282,7 +254,7 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -590,7 +562,7 @@ public class M_InOutLine_HandlerTest
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
-		assertThat(ic).has(invoiceCandidateWithTerm(null));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 
@@ -708,6 +680,7 @@ public class M_InOutLine_HandlerTest
 		save(materialProduct);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_PaymentTerm_ID(orderPaymentTerm.getC_PaymentTerm_ID());
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);

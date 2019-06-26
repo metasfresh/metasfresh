@@ -52,7 +52,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -80,6 +79,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.IOrderLineBL;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -89,6 +89,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -255,7 +256,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	enum Mode
 	{
 		CREATE, UPDATE
-	};
+	}
 
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLine,
@@ -496,7 +497,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
-			final BigDecimal qtyOrdered = Util.coalesceSuppliers(
+			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
 					() -> forcedQtyOrdered,
 					() -> extractQtyDelivered(ic, callerCanCreateAdditionalICs));
 
@@ -660,7 +661,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		return Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(ol);
+		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(ol);
+		return paymentTermId.getRepoId();
 	}
 
 	/**

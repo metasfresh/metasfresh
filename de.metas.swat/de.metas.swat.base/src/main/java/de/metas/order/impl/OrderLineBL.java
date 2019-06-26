@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,7 +70,9 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -691,10 +692,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public PaymentTermId getPaymentTermId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		int paymentTermOverrideId = orderLine.getC_PaymentTerm_Override_ID();
-		return paymentTermOverrideId > 0 ? paymentTermOverrideId : orderLine.getC_Order().getC_PaymentTerm_ID();
+		PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());
+		return paymentTermOverrideId != null
+				? paymentTermOverrideId
+				: PaymentTermId.ofRepoId(orderLine.getC_Order().getC_PaymentTerm_ID());
 	}
 
 	@Override

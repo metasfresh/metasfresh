@@ -17,7 +17,6 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -79,7 +78,7 @@ public class C_OrderLine
 
 		final Percent paymentDiscount = Percent.of(orderLineRecord.getPaymentDiscount());
 		final PaymentTermId derivedPaymentTermId = paymentTermService.getOrCreateDerivedPaymentTerm(basePaymentTermId, paymentDiscount);
-		orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(derivedPaymentTermId));
+		orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(derivedPaymentTermId));
 	}
 
 	@CalloutMethod(skipIfCopying = true, columnNames = { I_C_OrderLine.COLUMNNAME_C_PaymentTerm_Override_ID, I_C_OrderLine.COLUMNNAME_PaymentDiscount })
