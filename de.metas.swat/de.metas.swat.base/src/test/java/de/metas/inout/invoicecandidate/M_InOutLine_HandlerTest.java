@@ -23,6 +23,8 @@ import org.compiere.model.X_M_InOut;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.jgoodies.common.base.Objects;
+
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
@@ -31,6 +33,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -68,9 +71,9 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
-	private I_C_PaymentTerm orderPaymentTerm;
-	private I_C_PaymentTerm paymentTermA;
-	private I_C_PaymentTerm paymentTermB;
+	private PaymentTermId orderPaymentTermId;
+	private PaymentTermId paymentTermA;
+	private PaymentTermId paymentTermB;
 	private M_InOutLine_Handler inOutLineHandlerUnderTest;
 
 	@Before
@@ -105,7 +108,7 @@ public class M_InOutLine_HandlerTest
 		packagingInOutLine.setMovementQty(TEN);
 		save(packagingInOutLine);
 
-		orderPaymentTerm = createPaymentTerm("orderPaymentTerm");
+		orderPaymentTermId = createPaymentTerm("orderPaymentTerm");
 		paymentTermA = createPaymentTerm("paymentTermA");
 		paymentTermB = createPaymentTerm("paymentTermB");
 
@@ -114,13 +117,13 @@ public class M_InOutLine_HandlerTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
-	private I_C_PaymentTerm createPaymentTerm(final String name)
+	private PaymentTermId createPaymentTerm(final String name)
 	{
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		paymentTerm.setName(name);
 		save(paymentTerm);
 		POJOWrapper.setInstanceName(paymentTerm, name);
-		return paymentTerm;
+		return PaymentTermId.ofRepoId(paymentTerm.getC_PaymentTerm_ID());
 	}
 
 	@Test
@@ -128,9 +131,9 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLineOrNull(materialInOutLine);
 
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
+		assertThat(paymentTermId).isEqualTo(paymentTermA);
 	}
 
 	@Test
@@ -138,9 +141,9 @@ public class M_InOutLine_HandlerTest
 	{
 		final I_M_InOutLine materialInOutLine = createMaterialInOutLine(null);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLine(materialInOutLine);
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdViaOrderLineOrNull(materialInOutLine);
 
-		assertThat(paymentTermId).isLessThanOrEqualTo(orderPaymentTerm.getC_PaymentTerm_ID());
+		assertThat(paymentTermId).isLessThanOrEqualTo(orderPaymentTermId);
 	}
 
 	@Test
@@ -148,9 +151,8 @@ public class M_InOutLine_HandlerTest
 	{
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-
-		assertThat(paymentTermId).isEqualTo(paymentTermA.getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdOrNull(packagingInOutLine);
+		assertThat(paymentTermId).isEqualTo(paymentTermA);
 	}
 
 	/**
@@ -164,8 +166,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB);
 		createMaterialInOutLine(paymentTermA);
 
-		final int paymentTermId = M_InOutLine_Handler.extractPaymentTermId(packagingInOutLine);
-		assertThat(paymentTermId).isEqualTo(paymentTermB.getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = M_InOutLine_Handler.extractPaymentTermIdOrNull(packagingInOutLine);
+		assertThat(paymentTermId).isEqualTo(paymentTermB);
 	}
 
 	@Test
@@ -234,7 +236,7 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -254,7 +256,7 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 		assertThat(ic.isPackagingMaterial()).isTrue();
-		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN);
 
 		// make sure that on later updates, the qty remains the same
@@ -562,7 +564,7 @@ public class M_InOutLine_HandlerTest
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
-		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTerm));
+		assertThat(ic).has(invoiceCandidateWithTerm(orderPaymentTermId));
 		assertThat(ic.isPackagingMaterial()).isTrue();
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 
@@ -651,20 +653,20 @@ public class M_InOutLine_HandlerTest
 				});
 	}
 
-	private I_M_InOutLine createMaterialInOutLine(@Nullable final I_C_PaymentTerm paymentTerm)
+	private I_M_InOutLine createMaterialInOutLine(@Nullable final PaymentTermId paymentTermId)
 	{
 		return createMaterialInOutLine(
-				paymentTerm,
+				paymentTermId,
 				TEN// qtyEnteredTU
 		);
 	}
 
 	private I_M_InOutLine createMaterialInOutLine(
-			@Nullable final I_C_PaymentTerm paymentTerm,
+			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
 		final I_M_InOutLine unrelatedMaterialInOutLine = createUnrelatedMaterialInOutLine(
-				paymentTerm,
+				paymentTermId,
 				qtyEnteredTU);
 		unrelatedMaterialInOutLine.setM_PackingMaterial_InOutLine(packagingInOutLine);
 		save(unrelatedMaterialInOutLine);
@@ -673,19 +675,19 @@ public class M_InOutLine_HandlerTest
 	}
 
 	private I_M_InOutLine createUnrelatedMaterialInOutLine(
-			@Nullable final I_C_PaymentTerm paymentTerm,
+			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal qtyEnteredTU)
 	{
 		final I_M_Product materialProduct = newInstance(I_M_Product.class);
 		save(materialProduct);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setC_PaymentTerm_ID(orderPaymentTerm.getC_PaymentTerm_ID());
+		order.setC_PaymentTerm_ID(orderPaymentTermId.getRepoId());
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order(order);
-		orderLine.setC_PaymentTerm_Override(paymentTerm);
+		orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(paymentTermId));
 		save(orderLine);
 
 		final I_M_InOutLine materialInOutLine = newInstance(I_M_InOutLine.class);
@@ -700,23 +702,17 @@ public class M_InOutLine_HandlerTest
 		return materialInOutLine;
 	}
 
-	private Condition<I_C_Invoice_Candidate> invoiceCandidateWithTerm(
-			@Nullable final I_C_PaymentTerm term)
+	private Condition<I_C_Invoice_Candidate> invoiceCandidateWithTerm(@Nullable final PaymentTermId termId)
 	{
-		final String description = term == null
-				? "C_PaymentTerm_ID=0"
-				: "C_PaymentTerm_ID=" + term.getC_PaymentTerm_ID() + " (" + term.getName() + ")";
+		final String description = termId == null ? "C_PaymentTerm_ID=0" : termId.toString();
 
 		return new Condition<I_C_Invoice_Candidate>(description)
 		{
 			@Override
-			public boolean matches(I_C_Invoice_Candidate value)
+			public boolean matches(final I_C_Invoice_Candidate ic)
 			{
-				if (term == null)
-				{
-					return value.getC_PaymentTerm_ID() <= 0;
-				}
-				return value.getC_PaymentTerm_ID() == term.getC_PaymentTerm_ID();
+				final PaymentTermId icPaymentTermId = PaymentTermId.ofRepoId(ic.getC_PaymentTerm_ID());
+				return Objects.equals(icPaymentTermId, termId);
 			}
 		};
 	}
