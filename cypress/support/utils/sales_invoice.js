@@ -63,8 +63,6 @@ export class SalesInvoice {
           cy.processDocument(salesInvoice.documentAction);
         }
       }
-
-
     });
   }
 

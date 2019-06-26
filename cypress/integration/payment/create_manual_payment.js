@@ -5,6 +5,7 @@ import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice'
 import {DiscountSchema} from "../../support/utils/discountschema";
 import {Bank} from "../../support/utils/bank";
 import {Builder} from "../../support/utils/builder";
+import {getLanguageSpecific} from "../../support/utils/utils";
 
 describe('Create a manual Payment for a Sales Invoice', function () {
   const timestamp = new Date().getTime();
@@ -61,27 +62,28 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     cy.readAllNotifications();
   });
 
-
-  it('Creates a Sales Invoice', function () {
-    new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-      .addLine(
-        new SalesInvoiceLine()
-          .setProduct(productName)
-          .setQuantity(20)
-        // todo @dh: how to add packing item
-        // .setPackingItem('IFCO 6410 x 10 Stk')
-        // .setTuQuantity(2)
-      )
-      // .addLine(
-      // todo @dh: how to add this line which depends on the packing item?
-      //   new SalesInvoiceLine()
-      //     .setProduct('IFCO 6410_P001512')
-      //     .setQuantity(2)
-      // )
-      .setPriceList(priceListName)
-      .setDocumentAction('Complete')
-      .setDocumentStatus('Completed')
-      .apply();
+  cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
+    it('Creates a Sales Invoice', function () {
+      new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
+        .addLine(
+          new SalesInvoiceLine()
+            .setProduct(productName)
+            .setQuantity(20)
+          // todo @dh: how to add packing item
+          // .setPackingItem('IFCO 6410 x 10 Stk')
+          // .setTuQuantity(2)
+        )
+        // .addLine(
+        // todo @dh: how to add this line which depends on the packing item?
+        //   new SalesInvoiceLine()
+        //     .setProduct('IFCO 6410_P001512')
+        //     .setQuantity(2)
+        // )
+        .setPriceList(priceListName)
+        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, 'docActionComplete'))
+        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, 'docStatusCompleted'))
+        .apply();
+    });
   });
 
 
