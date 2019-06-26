@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
