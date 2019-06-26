@@ -1,5 +1,5 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Details ( IN p_C_Customs_Invoice_ID numeric, IN p_AD_Language Character Varying(6) );
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_Invoice_Details(
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details ( IN p_C_Customs_Invoice_ID numeric, IN p_AD_Language Character Varying(6) );
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details(
   IN p_C_Customs_Invoice_ID numeric,
   IN p_AD_Language          Character Varying(6))
   RETURNS TABLE
@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Custom_
    bp_product_name character varying(100),
    p_value         character varying(40),
    p_description   character varying(255),
+   CustomsTariff   numeric,
    cursymbol       character varying(10),
    InvoiceDocNo    character varying
   )
@@ -28,6 +29,7 @@ SELECT
   COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name) as bp_product_name,
   p.value                                                AS p_value,
   p.description                                          AS p_description,
+  p.CustomsTariff,
   c.cursymbol,
   i.DocumentNo                                           as CustomInvoiceDocNo
 FROM
