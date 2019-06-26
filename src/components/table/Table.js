@@ -310,12 +310,8 @@ class Table extends Component {
     this.selectRangeProduct(leafsIds);
   };
 
-  setListenTrue = () => {
-    this.setState({ listenOnKeys: true });
-  };
-
-  setListenFalse = () => {
-    this.setState({ listenOnKeys: false });
+  changeListen = listenOnKeys => {
+    this.setState({ listenOnKeys: !!listenOnKeys });
   };
 
   selectProduct = (id, idFocused, idFocusedDown) => {
@@ -568,6 +564,7 @@ class Table extends Component {
       }
       case 'ArrowUp': {
         e.preventDefault();
+
         const array =
           collapsedArrayMap.length > 0
             ? collapsedArrayMap.map(item => item[keyProperty])
@@ -1034,8 +1031,8 @@ class Table extends Component {
               supportFieldEdit
             )
           }
-          changeListenOnTrue={this.setListenTrue}
-          changeListenOnFalse={this.setListenFalse}
+          changeListenOnTrue={() => this.changeListen(true)}
+          changeListenOnFalse={() => this.changeListen(false)}
           newRow={i === rows.length - 1 ? newRow : false}
           isSelected={
             selected &&
@@ -1326,5 +1323,3 @@ export default connect(
   false,
   { withRef: true }
 )(onClickOutside(Table, clickOutsideConfig));
-
-export { Table };

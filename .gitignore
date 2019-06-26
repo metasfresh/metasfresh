@@ -24,4 +24,3 @@ cypress.json
 yarn-error.log
 /cypress.json
 yarn.lock
-package.sublime-workspace

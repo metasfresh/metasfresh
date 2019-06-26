@@ -2,7 +2,6 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { Map } from 'immutable';
-import memoize from 'memoize-one';
 
 import RawWidget from '../RawWidget';
 
@@ -12,78 +11,8 @@ class AttributesDropdown extends Component {
 
     this.state = {
       patchCallbacks: Map(),
-      focusedField: null,
     };
   }
-
-  componentDidMount() {
-    if (this.form) {
-      this.focusField(0);
-    }
-  }
-
-  focusField = idx => {
-    const { focusedField } = this.state;
-    const inputs = this.form.getElementsByClassName('js-input-field');
-
-    if (inputs.length) {
-      if (focusedField !== null) {
-        this.blurField(focusedField);
-      }
-
-      this.setState(
-        {
-          focusedField: idx,
-        },
-        () => {
-          inputs[idx] && inputs[idx].focus();
-        }
-      );
-    }
-  };
-
-  blurField = idx => {
-    const inputs = this.form.getElementsByClassName('js-input-field');
-
-    inputs[idx] && inputs[idx].blur();
-  };
-
-  // Re-run fields length calculation whenever layout changes
-  getFieldsLength = memoize((data, layout) => {
-    let fieldsLength = 0;
-
-    layout.forEach(item => {
-      const widgetData = item.fields.map(elem => data[elem.field] || -1);
-
-      if (widgetData && widgetData.length && widgetData[0].displayed) {
-        fieldsLength += 1;
-      }
-    });
-
-    return fieldsLength;
-  });
-
-  /*
-   * To have a better control of the flow, we set the tabIndex for all inputs to -1
-   * and focus/blur them programmatically. If we reach the end of the fields, modal should
-   * be closed on next tab.
-   */
-  handleKeyDown = e => {
-    const { focusedField } = this.state;
-    const { onClickOutside, layout, data } = this.props;
-    const fieldsLength = this.getFieldsLength(data, layout);
-
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (focusedField + 1 < fieldsLength) {
-        this.focusField(focusedField + 1);
-      } else {
-        onClickOutside();
-      }
-    }
-  };
 
   handleClickOutside = () => {
     const { onClickOutside } = this.props;
@@ -165,11 +94,7 @@ class AttributesDropdown extends Component {
 
   render() {
     return (
-      <div
-        className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced"
-        ref={c => (this.form = c)}
-        onKeyDown={this.handleKeyDown}
-      >
+      <div className="attributes-dropdown panel-shadowed panel-primary panel-bordered panel-spaced">
         {this.renderFields()}
       </div>
     );

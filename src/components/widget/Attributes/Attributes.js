@@ -105,9 +105,11 @@ export default class Attributes extends Component {
   };
 
   handleKeyDown = e => {
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      this.handleCompletion();
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        this.handleCompletion();
+        break;
     }
   };
 
@@ -242,17 +244,6 @@ export default class Attributes extends Component {
 
 Attributes.propTypes = {
   patch: PropTypes.func.isRequired,
-  dataId: PropTypes.string,
-  docType: PropTypes.string,
-  entity: PropTypes.string,
-  widgetData: PropTypes.object,
-  tabIndex: PropTypes.number,
-  tabId: PropTypes.string,
-  fieldName: PropTypes.string,
   handleBackdropLock: PropTypes.func,
   isModal: PropTypes.bool,
-  readonly: PropTypes.bool,
-  rowId: PropTypes.string,
-  attributeType: PropTypes.string,
-  onBlur: PropTypes.func,
 };
