@@ -12,35 +12,34 @@ describe('Create Taxcategory for Automatic End2End Tests with cypress https://gi
       .then(taxcategoryJson => {
         Object.assign(new Taxcategory(), taxcategoryJson)
           .setName(name)
-          .apply()
-          .setActive(false) // 2. Deactivate Taxcategory
-          .activate();
+          .apply();
+        //.setActive(true) // 2. Deactivate Taxcategory
+        //.activate();
       });
-    // 2. Open Window Product Prices and new Record. Deactivated Taxrate cannot be selected.
-    //Pricesystem
+    // 2. Open Window Product Prices and new Record. Activated Taxrate can be selected.
+    //    Open Product Prices
     cy.log(`Select inactive Taxcategory - name = ${name}`);
     cy.visitWindow('540325', '2767012');
-    cy.clearField('C_TaxCategory_ID');
-    cy.selectInListField('C_TaxCategory_ID', `${name}`, false).should('not.exist');
+    cy.selectInListField('C_TaxCategory_ID', `${name}`, false);
 
     // 3. Open existing Taxcategory and activate the Taxcategory
     cy.get('@taxCatObj').then(obj => {
       // access the users argument
       cy.log(`Taxcategory - ID = ${obj.documentId}`);
-      cy.get('@taxCatJSON').then(json => {
-        // access the users argument
-        Object.assign(new Taxcategory(), json)
-          .setName(name)
-          .setID(obj.documentId)
-          .setActive(true) // 4. Activate Taxcategory
-          .activate();
-      });
+      cy.visitWindow('138', `${obj.documentId}`);
+      cy.clickOnIsActive();
     });
 
-    // 5. Open Window Product Prices and new Record. Activated Taxrate can be selected.
+    // 4. Open Window Product Prices and new Record. Activated Taxrate can be selected.
+    //    Open Product Prices
     cy.log(`Select inactive Taxcategory - name = ${name}`);
     cy.visitWindow('540325', '2767012');
-    //cy.clearField('C_TaxCategory_ID');
-    cy.selectInListField('C_TaxCategory_ID', `${name}`, false);
+    cy.get(`.form-field-C_TaxCategory_ID`)
+      .find('.input-dropdown')
+      .click();
+
+    cy.get('.input-dropdown-list-option')
+      .contains(`${name}`)
+      .should('not.exist');
   });
 });

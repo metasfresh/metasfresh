@@ -70,7 +70,7 @@ function applyActive(taxcat) {
     if (this.ID) {
       cy.visitWindow('138', `${this.ID}`);
     }
-    cy.isChecked('IsActive').then(isActive => {
+    cy.getCheckboxValue('IsActive').then(isActive => {
       if (!isActive) {
         cy.clickOnIsActive();
       }
