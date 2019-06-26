@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -29,6 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,12 +44,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -242,6 +242,8 @@ public class ProductPrices
 
 	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final BigDecimal price = ppRequest.getPrice().setScale(2);
 		I_M_ProductPrice pp = ProductPrices.retrieveMainProductPriceOrNull(plv, ProductId.ofRepoId(ppRequest.getProductId()));
 		if (pp == null)
@@ -249,7 +251,7 @@ public class ProductPrices
 			pp = newInstance(I_M_ProductPrice.class, plv);
 		}
 		// do not update the price with value 0; 0 means that no price was changed
-		else if (pp != null && price.signum()== 0)
+		else if (pp != null && price.signum() == 0)
 		{
 			return pp;
 		}
@@ -260,8 +262,9 @@ public class ProductPrices
 		pp.setPriceLimit(price);
 		pp.setPriceList(price);
 		pp.setPriceStd(price);
-		final I_C_UOM uom = InterfaceWrapperHelper.load(ppRequest.getProductId(), I_M_Product.class).getC_UOM();
-		pp.setC_UOM(uom);
+
+		final org.compiere.model.I_M_Product product = productDAO.getById(ppRequest.getProductId());
+		pp.setC_UOM_ID(product.getC_UOM_ID());
 		pp.setC_TaxCategory_ID(ppRequest.getTaxCategoryId());
 		save(pp);
 

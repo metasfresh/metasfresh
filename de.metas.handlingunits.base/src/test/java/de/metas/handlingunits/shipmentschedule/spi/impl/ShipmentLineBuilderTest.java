@@ -100,7 +100,7 @@ public class ShipmentLineBuilderTest
 		save(shipmentSchedule);
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
-		one = Quantity.of(ONE, huTestHelper.pTomato.getC_UOM());
+		one = Quantity.of(ONE, huTestHelper.uomEach);
 
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.class);
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());

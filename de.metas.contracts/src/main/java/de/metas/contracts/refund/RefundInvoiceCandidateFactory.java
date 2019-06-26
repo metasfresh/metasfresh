@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -48,6 +49,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -253,6 +255,8 @@ public class RefundInvoiceCandidateFactory
 
 	public Optional<RefundInvoiceCandidate> ofNullableRefundRecord(@Nullable final I_C_Invoice_Candidate refundRecord)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		if (refundRecord == null)
 		{
 			return Optional.empty();
@@ -293,12 +297,14 @@ public class RefundInvoiceCandidateFactory
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
+		final I_C_UOM productUom = uomDAO.getById(refundRecord.getM_Product().getC_UOM_ID());
+
 		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
 				.builder()
 				.id(invoiceCandidateId)
 				.refundContract(refundContract)
 				.refundConfigs(refundConfigs)
-				.assignedQuantity(Quantity.of(assignedQuantity, refundRecord.getM_Product().getC_UOM()))
+				.assignedQuantity(Quantity.of(assignedQuantity, productUom))
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)

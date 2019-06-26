@@ -33,6 +33,8 @@ import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateRequest;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 import mockit.Mocked;
 
 /*
@@ -125,6 +127,8 @@ public class OrderCandidatesRestControllerImplTest
 	@Test
 	public void createOrderLineCandidates()
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final JsonOLCandCreateBulkRequest bulkRequestFromFile = JsonOLCandUtil.fromResource("/JsonOLCandCreateBulkRequest.json");
 		assertThat(bulkRequestFromFile.getRequests()).hasSize(21); // guards
 		assertThat(bulkRequestFromFile.getRequests()).allSatisfy(r -> assertThat(r.getBpartner().getBpartner().getName()).isEqualTo("Krankenkasse AG"));
@@ -158,7 +162,10 @@ public class OrderCandidatesRestControllerImplTest
 
 			final I_M_Product productRecord = load(olCand.getProductId(), I_M_Product.class);
 			assertThat(productRecord.getValue()).isEqualTo(request.getProduct().getCode());
-			assertThat(productRecord.getC_UOM().getX12DE355()).isEqualTo(request.getProduct().getUomCode());
+
+			final I_C_UOM uom = uomDAO.getById(productRecord.getC_UOM_ID());
+
+			assertThat(uom.getX12DE355()).isEqualTo(request.getProduct().getUomCode());
 		}
 	}
 

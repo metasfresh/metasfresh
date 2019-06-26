@@ -41,7 +41,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
 		createLocator(warehouseForIssues);
-		
+
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
@@ -88,7 +88,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				null, // shall not be set
 				schedule.getM_Warehouse_Override());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
-				order1_line1_product1_wh1.getM_Product().getM_Locator().getM_Warehouse(),
+				warehouse2,
 				schedule.getM_Warehouse_Dest());
 		// Guard agaist testing error
 		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
