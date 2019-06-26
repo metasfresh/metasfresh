@@ -156,10 +156,10 @@ export class Product {
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, false, true);
 
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true, null, true);
+    cy.writeIntoStringField('PriceStd', price.priceStd, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
-    cy.selectInListField('C_TaxCategory_ID', taxCategory, true);
+    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'taxCategory'), true);
 
     cy.pressDoneButton();
   }

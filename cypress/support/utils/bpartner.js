@@ -6,6 +6,7 @@ export class BPartner {
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
     this.customerDiscountSchema = undefined;
+    this.customerDunning = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
@@ -33,6 +34,12 @@ export class BPartner {
   setVendorDiscountSchema(vendorDiscountSchema) {
     cy.log(`BPartner - set vendorDiscountSchema = ${vendorDiscountSchema}`);
     this.vendorDiscountSchema = vendorDiscountSchema;
+    return this;
+  }
+
+  setCustomerDunning(customerDunning) {
+    cy.log(`BPartner - set customerDunning = ${customerDunning}`);
+    this.customerDunning = customerDunning;
     return this;
   }
 
@@ -101,8 +108,8 @@ export class BPartner {
   static applyBank(bank) {
     cy.selectTab('C_BP_BankAccount');
     cy.pressAddNewButton();
-    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
-    cy.writeIntoStringField('A_Name', 'Test Account');
+    cy.writeIntoLookupListField('C_Bank_ID', bPartner.bank, bPartner.bank, false, true);
+    cy.writeIntoStringField('A_Name', 'Test Account', true);
     cy.pressDoneButton();
   }
 
@@ -152,7 +159,7 @@ export class BPartnerContact {
 }
 
 function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function () {
+  describe(`Create new bPartner ${bPartner.name}`, function() {
     cy.visitWindow('123', 'NEW');
     cy.writeIntoStringField('CompanyName', bPartner.name);
     cy.writeIntoStringField('Name2', bPartner.name);
@@ -183,19 +190,26 @@ function applyBPartner(bPartner) {
       cy.openAdvancedEdit();
       cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer', null, true);
+          cy.clickOnCheckBox('IsCustomer', true, true);
         }
       });
       if (bPartner.customerDiscountSchema) {
         cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true);
       }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true);
+        cy.selectInListField(
+          'M_PricingSystem_ID',
+          bPartner.customerPricingSystem,
+          bPartner.customerPricingSystem,
+          true
+        );
+      }
+      if (bPartner.customerDunning) {
+        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning);
       }
       if (bPartner.paymentTerm) {
         // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
         cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
-        cy.wait(2000);
       }
       cy.pressDoneButton();
     }
@@ -213,23 +227,21 @@ function applyBPartner(bPartner) {
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
-
-
     if (bPartner.bank) {
       BPartner.applyBank(bPartner.bank);
     }
   });
-
-
 }
 
 function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
-  //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`, true);
+  cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true, false, true);
+  cy.get('.panel-modal-header-title').click();
 
-  cy.editAddress('C_Location_ID', function (url) {
+  cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
@@ -251,7 +263,7 @@ function applyContact(bPartnerContact) {
   cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox('IsDefaultContact');
+    cy.clickOnCheckBox('IsDefaultContact', true, true);
   }
   cy.pressDoneButton();
 }
