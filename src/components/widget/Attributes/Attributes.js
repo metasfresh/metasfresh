@@ -124,7 +124,7 @@ export default class Attributes extends Component {
     const { data, loading } = this.state;
 
     if (!loading && data) {
-      return patchRequest({
+      patchRequest({
         entity: attributeType,
         docType: null,
         docId: id,
@@ -133,7 +133,6 @@ export default class Attributes extends Component {
       }).then(response => {
         if (response.data && response.data.length) {
           const fields = response.data[0].fieldsByName;
-
           Object.keys(fields).map(fieldName => {
             this.setState(
               prevState => ({
@@ -151,12 +150,9 @@ export default class Attributes extends Component {
               }
             );
           });
-          return Promise.resolve(true);
         }
-        return Promise.resolve(false);
       });
     }
-    return Promise.resolve(true);
   };
 
   handleCompletion = () => {
