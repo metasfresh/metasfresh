@@ -184,9 +184,9 @@ function applyProductPrice(price) {
       true /*modal*/
     );
 
-    cy.writeIntoStringField('PriceStd', price.priceStd, false /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
+    cy.writeIntoStringField('PriceStd', price.priceStd, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
 
-    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'c_taxcategory'));
+    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'c_taxcategory'), true);
     cy.pressDoneButton();
   });
 }
