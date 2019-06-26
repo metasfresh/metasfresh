@@ -220,20 +220,20 @@ public interface I_M_Product
 	/**
 	 * Set Zolltarifnummer.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCustomsTariff (java.math.BigDecimal CustomsTariff);
+	public void setCustomsTariff (java.lang.String CustomsTariff);
 
 	/**
 	 * Get Zolltarifnummer.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getCustomsTariff();
+	public java.lang.String getCustomsTariff();
 
     /** Column definition for CustomsTariff */
     public static final org.adempiere.model.ModelColumn<I_M_Product, Object> COLUMN_CustomsTariff = new org.adempiere.model.ModelColumn<I_M_Product, Object>(I_M_Product.class, "CustomsTariff", null);

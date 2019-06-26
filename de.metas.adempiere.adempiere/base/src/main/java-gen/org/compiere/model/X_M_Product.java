@@ -15,7 +15,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1948350743L;
+	private static final long serialVersionUID = -2011702306L;
 
     /** Standard Constructor */
     public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
@@ -178,7 +178,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** Set Zolltarifnummer.
 		@param CustomsTariff Zolltarifnummer	  */
 	@Override
-	public void setCustomsTariff (java.math.BigDecimal CustomsTariff)
+	public void setCustomsTariff (java.lang.String CustomsTariff)
 	{
 		set_Value (COLUMNNAME_CustomsTariff, CustomsTariff);
 	}
@@ -186,12 +186,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** Get Zolltarifnummer.
 		@return Zolltarifnummer	  */
 	@Override
-	public java.math.BigDecimal getCustomsTariff () 
+	public java.lang.String getCustomsTariff () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_CustomsTariff);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		return (java.lang.String)get_Value(COLUMNNAME_CustomsTariff);
 	}
 
 	/** Set Beschreibung.
