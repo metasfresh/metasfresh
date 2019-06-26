@@ -211,7 +211,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
 
 			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
-			final int paymentTermRepoId = PaymentTermId.getRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
+			final int paymentTermRepoId = PaymentTermId.toRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
 			orderLineRecord.setC_PaymentTerm_Override_ID(paymentTermRepoId);
 			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
 
