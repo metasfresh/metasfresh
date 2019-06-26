@@ -35,6 +35,7 @@ import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -144,7 +145,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.huProcessDescriptor(huProcessDescriptor)
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
-						.setInternalName(huProcessDescriptor.getInternalName())
+						.setInternalName(InternalName.ofNullableString(huProcessDescriptor.getInternalName()))
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()

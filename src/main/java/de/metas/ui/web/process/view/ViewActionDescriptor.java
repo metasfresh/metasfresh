@@ -12,6 +12,7 @@ import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -113,7 +114,7 @@ public final class ViewActionDescriptor
 
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
-				.setInternalName(actionId)
+				.setInternalName(InternalName.ofNullableString(actionId))
 				.setType(ProcessDescriptorType.Process)
 				//
 				.setLayout(processLayout)
@@ -121,7 +122,7 @@ public final class ViewActionDescriptor
 				.build();
 	}
 
-	public final WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
+	public WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
 	{
 		final IView view = viewContext.getView();
 		final DocumentIdsSelection selectedDocumentIds = viewContext.getSelectedRowIds();
@@ -139,7 +140,7 @@ public final class ViewActionDescriptor
 				.build();
 	}
 
-	private final ProcessPreconditionsResolution checkPreconditions(final IView view, final DocumentIdsSelection selectedDocumentIds)
+	private ProcessPreconditionsResolution checkPreconditions(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		try
 		{
@@ -151,7 +152,7 @@ public final class ViewActionDescriptor
 		}
 	}
 
-	private final Precondition getPreconditionsInstance() throws InstantiationException, IllegalAccessException
+	private Precondition getPreconditionsInstance() throws InstantiationException, IllegalAccessException
 	{
 		if (preconditionSharedInstance != null)
 		{
@@ -178,14 +179,14 @@ public final class ViewActionDescriptor
 	}
 
 	@FunctionalInterface
-	public static interface ViewActionMethodReturnTypeConverter
+	public interface ViewActionMethodReturnTypeConverter
 	{
 		ProcessInstanceResult.ResultAction convert(Object returnValue);
 	}
 
 	@FunctionalInterface
-	public static interface ViewActionMethodArgumentExtractor
+	public interface ViewActionMethodArgumentExtractor
 	{
-		public Object extractArgument(IView view, Document processParameters, DocumentIdsSelection selectedDocumentIds);
+		Object extractArgument(IView view, Document processParameters, DocumentIdsSelection selectedDocumentIds);
 	}
 }

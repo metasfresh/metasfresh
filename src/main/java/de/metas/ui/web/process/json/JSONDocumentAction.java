@@ -120,7 +120,9 @@ public final class JSONDocumentAction implements Serializable
 		final Duration preconditionsResolutionCalcDuration = relatedProcessDescriptor.getPreconditionsResolutionCalcDuration();
 		evaluateDurationStr = preconditionsResolutionCalcDuration != null ? TimeUtil.formatElapsed(preconditionsResolutionCalcDuration) : null;
 
-		internalName = relatedProcessDescriptor.getInternalName();
+		internalName = relatedProcessDescriptor.getInternalName() != null
+				? relatedProcessDescriptor.getInternalName().getAsString()
+				: null;
 
 		//
 		// Debug properties
