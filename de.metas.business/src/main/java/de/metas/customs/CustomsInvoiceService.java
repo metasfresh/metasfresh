@@ -3,9 +3,12 @@ package de.metas.customs;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -36,8 +39,10 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -74,6 +79,8 @@ public class CustomsInvoiceService
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 
+	final Set<ProductId> productIdsWithNoCustomsTariff = new HashSet<>();
+
 	public CustomsInvoiceService(
 			@NonNull final CustomsInvoiceRepository customsInvoiceRepo,
 			@NonNull final OrderLineRepository orderLineRepo)
@@ -91,7 +98,9 @@ public class CustomsInvoiceService
 
 		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
 
-		if (customsInvoiceRequest.isDoComplete())
+		notifyProductsWithNoCustomsTariff();
+
+		if (customsInvoiceRequest.isDoComplete() && productIdsWithNoCustomsTariff.isEmpty())
 		{
 			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
@@ -99,6 +108,12 @@ public class CustomsInvoiceService
 		}
 
 		return customsInvoice;
+	}
+
+	private void notifyProductsWithNoCustomsTariff()
+	{
+		ProductWithNoCustomsTariffUserNotificationsProducer.newInstance()
+				.notify(productIdsWithNoCustomsTariff);
 	}
 
 	private CustomsInvoice createCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
@@ -149,10 +164,18 @@ public class CustomsInvoiceService
 			@NonNull final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final I_M_Product product = productDAO.getById(productId);
 
-		Quantity qty = Quantity.of(BigDecimal.ZERO, product.getC_UOM());
+		if (product.getCustomsTariff() == null)
+		{
+			productIdsWithNoCustomsTariff.add(productId);
+		}
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
 
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());
