@@ -1,22 +1,21 @@
+import { Tour } from '../../support/utils/tour';
+import { TransportationOrder } from '../../support/utils/transportationOrder';
+
 describe('create new tour and transportation order', function() {
-  before(function() {
-    cy.visit('/window/540331');
-  });
+  const timestamp = new Date().getTime();
+  const testTour = `TestTour ${timestamp}`;
 
-  const testTour = 'TestTour';
+  it('create tour and transportation order', function() {
+    cy.fixture('logistics/tour.json').then(tour => {
+      Object.assign(new Tour(), tour)
+        .setName(testTour)
+        .apply();
+    });
 
-  it('create tour', function() {
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
-    cy.writeIntoStringField('Name', testTour);
-  });
-
-  it('create transportation order', function() {
-    cy.visit('/window/540020');
-
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
-    cy.selectInListField('Shipper_BPartner_ID', 'metasfresh AG');
-    cy.selectInListField('Shipper_Location_ID', 'Am Nossbacher Weg 2');
-    cy.selectInListField('M_Tour_ID', testTour);
-    cy.writeIntoStringField('DocumentNo', 'X');
+    cy.fixture('logistics/transportation_order.json').then(tour => {
+      Object.assign(new TransportationOrder(), tour)
+        .setTour(testTour)
+        .apply();
+    });
   });
 });
