@@ -401,7 +401,6 @@
 
 .applyBtn:hover,
 .applyBtn:focus,
-.applyBtn:disabled,
 .daterangepicker .applyBtn:active {
     background-color: $brand-success-dark-color;
     border-color: $brand-success-dark-color;
