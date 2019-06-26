@@ -15,7 +15,7 @@ describe('create new packing material', function() {
   it('config product', function() {
     cy.writeIntoStringField('Name', 'TestPackingMaterial');
     cy.selectInListField('M_Product_Category_ID', '24_Gebinde');
-    //cy.getFieldValue('Value').then(val => (text = val)); // IDK what this supposed to do
+    cy.getStringFieldValue('Value').then(val => (text = val)); // store the value that metasfresh assigned in 'text'
   });
 
   it('configure new packing material', function() {
