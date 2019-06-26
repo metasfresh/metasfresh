@@ -137,7 +137,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
 		productRecord.setName("product.Name");
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		productRecord.setM_Product_Category(productCategory);
 		saveRecord(productRecord);
 

@@ -23,8 +23,10 @@ import java.util.Properties;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
 
@@ -490,8 +492,10 @@ public class CalloutInOut extends CalloutEngine
 
 	private static final void updateLocator(final I_M_InOutLine inoutLine, final int suggestedLocatorId)
 	{
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
 		final I_M_InOut inout = inoutLine.getM_InOut();
-		final int allowedWarehouseId = inout.getM_Warehouse_ID();
+		final int allowedWarehouseRecordId = inout.getM_Warehouse_ID();
 
 		//
 		// Validate suggested locator and set it if valid
@@ -500,7 +504,7 @@ public class CalloutInOut extends CalloutEngine
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
 			final I_M_Locator locatorToSet = InterfaceWrapperHelper.create(ctx, locatorIdToSet, I_M_Locator.class, ITrx.TRXNAME_None);
-			if (locatorToSet == null || allowedWarehouseId != locatorToSet.getM_Warehouse_ID())
+			if (locatorToSet == null || allowedWarehouseRecordId != locatorToSet.getM_Warehouse_ID())
 			{
 				locatorIdToSet = -1;
 			}
@@ -516,7 +520,7 @@ public class CalloutInOut extends CalloutEngine
 		// Validate current locator and if OK, do nothing
 		{
 			final I_M_Locator currentLocator = inoutLine.getM_Locator();
-			if (currentLocator != null && allowedWarehouseId == currentLocator.getM_Warehouse_ID())
+			if (currentLocator != null && allowedWarehouseRecordId == currentLocator.getM_Warehouse_ID())
 			{
 				return;
 			}
@@ -525,12 +529,18 @@ public class CalloutInOut extends CalloutEngine
 		//
 		// Set product's default locator, if valid
 		final I_M_Product product = inoutLine.getM_Product();
-		if (product.getM_Locator_ID() > 0)
+
+		int productLocatorRecordId = product.getM_Locator_ID();
+
+		if (productLocatorRecordId > 0)
 		{
-			final I_M_Locator productDefaultLocator = product.getM_Locator();
-			if (productDefaultLocator != null && allowedWarehouseId == productDefaultLocator.getM_Warehouse_ID())
+			final WarehouseId allowedWarehouseId = WarehouseId.ofRepoId(allowedWarehouseRecordId);
+
+			final LocatorId locatorId = LocatorId.ofRepoIdOrNull(allowedWarehouseId, productLocatorRecordId);
+
+			if(locatorId != null)
 			{
-				inoutLine.setM_Locator(productDefaultLocator);
+				inoutLine.setM_Locator_ID(productLocatorRecordId);
 				return;
 			}
 		}

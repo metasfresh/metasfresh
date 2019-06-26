@@ -72,7 +72,7 @@ public class ProductionAdvisedEventCreatorTest
 		save(uom);
 
 		product = newInstance(I_M_Product.class);
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		save(product);
 	}
 

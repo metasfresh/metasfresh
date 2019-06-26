@@ -105,7 +105,7 @@ public class HUSnapshotDAOTest extends AbstractHUTest
 
 	protected void setupMasterData_HU_PI()
 	{
-		pTomato.setC_UOM(uomKg);
+		pTomato.setC_UOM_ID(uomKg.getC_UOM_ID());
 		InterfaceWrapperHelper.save(pTomato);
 
 		//

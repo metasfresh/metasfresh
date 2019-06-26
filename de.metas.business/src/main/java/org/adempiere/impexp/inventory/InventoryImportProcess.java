@@ -251,7 +251,7 @@ public class InventoryImportProcess extends AbstractImportProcess<I_I_Inventory>
 			inventoryLine.setM_Inventory(inventory);
 			inventoryLine.setM_Locator(importRecord.getM_Locator());
 			inventoryLine.setM_Product(importRecord.getM_Product());
-			inventoryLine.setC_UOM(importRecord.getM_Product().getC_UOM());
+			inventoryLine.setC_UOM_ID(importRecord.getM_Product().getC_UOM_ID());
 			inventoryLine.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
 			final int chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId();
 			inventoryLine.setC_Charge_ID(chargeId);
