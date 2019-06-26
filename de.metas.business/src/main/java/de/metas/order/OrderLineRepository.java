@@ -9,7 +9,6 @@ import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import de.metas.bpartner.BPartnerId;
@@ -19,6 +18,7 @@ import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -54,19 +54,19 @@ public class OrderLineRepository
 
 	public OrderLine ofRecord(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		final int warehouseRepoId = Util.firstGreaterThanZeroSupplier(
+		final int warehouseRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getM_Warehouse_ID(),
 				() -> orderLineRecord.getC_Order().getM_Warehouse_ID());
 
-		final int bPartnerRepoId = Util.firstGreaterThanZeroSupplier(
+		final int bPartnerRepoId = CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
-		final int paymentTermId = Util.firstGreaterThanZeroSupplier(
+		final int paymentTermId = CoalesceUtil.firstGreaterThanZeroSupplier(
 				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
 				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
 		
-		final LocalDateTime datePromised = Util.firstValidValue(
+		final LocalDateTime datePromised = CoalesceUtil.firstValidValue(
 				date -> date != null,
 				() -> TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()),
 				() -> TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getDatePromised()));
