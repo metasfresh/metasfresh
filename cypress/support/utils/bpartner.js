@@ -210,9 +210,7 @@ function applyBPartner(bPartner) {
     if (bPartner.bank) {
       cy.selectTab('C_BP_BankAccount');
       cy.pressAddNewButton();
-      // cy.get('#lookup_C_Bank_ID input').type(bPartner.bank);
       cy.writeIntoLookupListField('C_Bank_ID', bPartner.bank, bPartner.bank, false, true);
-      cy.contains('.input-dropdown-list-option', bPartner.bank).click();
       cy.writeIntoStringField('A_Name', 'Test Account', true);
       cy.pressDoneButton();
     }
@@ -222,10 +220,12 @@ function applyBPartner(bPartner) {
 function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
-  //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true);
+  cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true, false, true);
+  cy.get('.panel-modal-header-title').click();
 
   cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
