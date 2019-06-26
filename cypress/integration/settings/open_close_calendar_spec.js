@@ -12,10 +12,10 @@ describe('Filter calendar periods', function() {
   });
 
   it('change year', function() {
-    cy.selectInListField('C_Year_ID', '2018', false, null, true);
+    cy.selectInListField('C_Year_ID', '2018', false /*modal*/, null, true /*skipRequest*/);
   });
   it('write name', function() {
-    cy.writeIntoStringField('Name', 'Dez-18', false, null, true);
+    cy.writeIntoStringField('Name', 'Dez-18', false, null, true /*skipRequest*/);
   });
 
   it('Apply filter', function() {
@@ -33,7 +33,7 @@ describe('Filter calendar periods', function() {
 describe('Actions on selected item', function() {
   it('open/close action - close periods', function() {
     cy.executeHeaderAction('C_Period_Process');
-    cy.selectInListField('PeriodAction', 'Close Period', false, null, true);
+    cy.selectInListField('PeriodAction', 'Close Period', true /*modal*/, '/rest/api/process/');
     cy.pressStartButton();
     cy.wait(500);
   });

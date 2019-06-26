@@ -27,23 +27,18 @@ describe('Create Product', function() {
     });
 
     cy.openAdvancedEdit();
-    cy.writeIntoTextField('DocumentNote', '{selectall}{backspace}blah-blah-blah');
+    cy.writeIntoTextField('DocumentNote', '{selectall}{backspace}blah-blah-blah', true /*modal*/);
     cy.pressDoneButton();
   });
 
   it(`Set product's CU-TU allocation`, function() {
-    const addNewText = Cypress.messages.window.addNew.caption;
-
     cy.selectTab('M_HU_PI_Item_Product');
 
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
+    cy.pressAddNewButton();
 
-    cy.selectInListField('M_HU_PI_Item_ID', 'IFCO', 'IFCO 6410');
-    cy.writeIntoStringField('Qty', '1');
-    cy.selectDateViaPicker('ValidFrom');
+    cy.selectInListField('M_HU_PI_Item_ID', 'IFCO 6410', true /*modal*/);
+    cy.writeIntoStringField('Qty', '1', true /*modal*/);
+    cy.selectDateViaPicker('ValidFrom', true /*modal*/);
     cy.pressDoneButton();
   });
 });
