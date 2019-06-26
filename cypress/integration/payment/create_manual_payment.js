@@ -11,7 +11,6 @@ describe('Create a manual Payment for a Sales Invoice', function () {
   const timestamp = new Date().getTime();
   // const timestamp = 'latest timestamp'; // to use this just comment the `before` function
 
-
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let salesInvoiceNumber;
   let salesInvoiceTotalAmount = 0;
@@ -62,8 +61,8 @@ describe('Create a manual Payment for a Sales Invoice', function () {
     cy.readAllNotifications();
   });
 
-  cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-    it('Creates a Sales Invoice', function () {
+  it('Creates a Sales Invoice', function () {
+    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
         .addLine(
           new SalesInvoiceLine()

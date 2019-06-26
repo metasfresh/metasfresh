@@ -1,3 +1,5 @@
+"use strict";
+
 import {getLanguageSpecific} from './utils';
 
 export class Product {
@@ -136,8 +138,8 @@ export class Product {
       });
 
       if (product.productPrices.length > 0) {
-        product.productPrices.forEach(function (price) {
-          Product.applyProductPrice(price);
+        product.productPrices.forEach(function (pp) {
+          Product.applyProductPrice(pp);
         });
         cy.get('table tbody tr').should('have.length', product.productPrices.length);
       }
@@ -148,18 +150,17 @@ export class Product {
    * See complaint at ProductPrice class.
    */
   static applyProductPrice(productPrice) {
-    const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
-
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
 
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, false, true);
 
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField('PriceStd', price.priceStd, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
+    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
-    cy.selectInListField('C_TaxCategory_ID', getLanguageSpecific(price, 'taxCategory'), true);
+    const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
+    cy.selectInListField('C_TaxCategory_ID', taxCategory, true);
 
     cy.pressDoneButton();
   }
@@ -188,7 +189,6 @@ export class ProductCategory {
     cy.log(`Product Category - apply - START (name=${this.name})`);
     ProductCategory.applyProductCategory(this);
     cy.log(`Product Category - apply - END (name=${this.name})`);
-    return this;
   }
 
 
@@ -197,7 +197,7 @@ export class ProductCategory {
       cy.visitWindow('144', 'NEW');
       cy.writeIntoStringField('Name', productCategory.name);
 
-      // Value is updateable
+      // Value can be updated
       cy.writeIntoStringField('Value', productCategory.value);
     });
   }

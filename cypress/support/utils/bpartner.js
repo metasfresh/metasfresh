@@ -108,11 +108,10 @@ export class BPartner {
   static applyBank(bank) {
     cy.selectTab('C_BP_BankAccount');
     cy.pressAddNewButton();
-    cy.writeIntoLookupListField('C_Bank_ID', bPartner.bank, bPartner.bank, false, true);
+    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
     cy.writeIntoStringField('A_Name', 'Test Account', true);
     cy.pressDoneButton();
   }
-
 }
 
 export class BPartnerLocation {
