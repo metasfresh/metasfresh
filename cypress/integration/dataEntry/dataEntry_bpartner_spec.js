@@ -109,12 +109,12 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
     cy.get(`@${dataEntryTabName}`).then(dataEntryTab => {
       cy.log(`going to open the tab for dataEntryTab=${JSON.stringify(dataEntryTab)}`);
-      cy.selectTab(`DataEntry_Group_ID-${dataEntryTab.documentId}`);
+      cy.selectTab(`DataEntry_Tab_ID-${dataEntryTab.documentId}`);
     });
 
     cy.get(`@${dataEntrySubTab1Name}`).then(dataEntrySubTab => {
       cy.log(`going to open the tab for dataEntrySubTab=${JSON.stringify(dataEntrySubTab)}`);
-      cy.selectTab(`DataEntry_SubGroup_ID-${dataEntrySubTab.documentId}`);
+      cy.selectTab(`DataEntry_SubTab_ID-${dataEntrySubTab.documentId}`);
     });
 
     // deactivate the custom tab, because we don't want other tests to unexpectedly have it among their respective bpartner-tabs
