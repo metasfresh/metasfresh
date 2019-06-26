@@ -694,7 +694,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public PaymentTermId getPaymentTermId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());
+		final PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());
 		return paymentTermOverrideId != null
 				? paymentTermOverrideId
 				: PaymentTermId.ofRepoId(orderLine.getC_Order().getC_PaymentTerm_ID());

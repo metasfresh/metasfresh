@@ -18,6 +18,7 @@ import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
@@ -62,9 +63,7 @@ public class OrderLineRepository
 				() -> orderLineRecord.getC_BPartner_ID(),
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
-		final int paymentTermId = CoalesceUtil.firstGreaterThanZeroSupplier(
-				() -> orderLineRecord.getC_PaymentTerm_Override_ID(),
-				() -> orderLineRecord.getC_Order().getC_PaymentTerm_ID());
+		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
 		
 		final LocalDateTime datePromised = CoalesceUtil.firstValidValue(
 				date -> date != null,
@@ -83,7 +82,7 @@ public class OrderLineRepository
 				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
-				.PaymentTermId(PaymentTermId.ofRepoId(paymentTermId))
+				.paymentTermId(paymentTermId)
 				.soTrx(SOTrx.ofBoolean(orderLineRecord.getC_Order().isSOTrx()))
 				.build();
 	}
