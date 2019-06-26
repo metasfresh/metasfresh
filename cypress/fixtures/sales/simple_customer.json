@@ -5,6 +5,8 @@
   "bank":"Raiffeisen",
   "customerPricingSystem": "Testpreisliste Kunden",
   "customerDiscountSchema": "DiscountSchemaTest",
+  "paymentTerm": "30 days net",
+  "de_DE__paymentTerm": "30 Tage netto",
   "bPartnerLocations": [
     {
       "name": "Address1",

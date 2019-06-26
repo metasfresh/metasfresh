@@ -42,6 +42,12 @@ export class BPartner {
     return this;
   }
 
+  setPaymentTerm(paymentTerm) {
+    cy.log(`BPartner - set paymentTerm = ${paymentTerm}`);
+    this.paymentTerm = paymentTerm;
+    return this;
+  }
+
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
@@ -185,6 +191,11 @@ function applyBPartner(bPartner) {
       }
       if (bPartner.customerPricingSystem) {
         cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true);
+      }
+      if (bPartner.paymentTerm) {
+        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
+        cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
+        cy.wait(2000);
       }
       cy.pressDoneButton();
     }
