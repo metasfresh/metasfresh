@@ -6,13 +6,14 @@ import java.util.Set;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.conditions.PriceSpecification;
@@ -168,9 +169,11 @@ public class M_DiscountSchemaBreak
 			return;
 		}
 
-		if (priceLimitResult.isBelowPriceLimit(price))
+		final BooleanWithReason priceBelowLimit = priceLimitResult.checkApplicableAndBelowPriceLimit(price);
+		if (priceBelowLimit.isTrue())
 		{
-			throw new AdempiereException(MSG_UnderLimitPriceWithExplanation, new Object[] { price, priceLimitResult.getPriceLimit(), priceLimitResult.getPriceLimitExplanation() })
+			final Object[] msgArgs = new Object[] { price, priceLimitResult.getPriceLimit(), priceLimitResult.getPriceLimitExplanation() };
+			throw new AdempiereException(MSG_UnderLimitPriceWithExplanation, msgArgs)
 					.markAsUserValidationError()
 					.setParameter("context", context)
 					.setParameter("pricingCtx", request.getPricingCtx());
