@@ -11,6 +11,7 @@ describe('Aggregated inventory test', function() {
   const productValue = `${timestamp}`;
 
   before(function() {
+    cy.wait(1000); // see comment/doc of getLanguageSpecific
     // setSingleHUsDocTypeAsDefault();
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
@@ -34,18 +35,20 @@ describe('Aggregated inventory test', function() {
 
     cy.selectTab('M_InventoryLine');
     cy.pressAddNewButton();
+
+    cy.getStringFieldValue('HUAggregationType', true /*modal*/).then(huAggregationType => {
+      expect(huAggregationType).to.eq('Single HU'); /// <<====
+    });
+
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false /*typeList*/, true /*modal*/);
     cy.fixture('product/simple_product.json').then(productJson => {
       const uomName = getLanguageSpecific(productJson, 'c_uom');
       cy.writeIntoLookupListField('C_UOM_ID', uomName, uomName, false /*typeList*/, true /*modal*/);
     });
     cy.writeIntoLookupListField('M_Locator_ID', '0_0_0', '0_0_0', true /*typeList*/, true /*modal*/);
-    cy.writeIntoStringField('QtyCount', '20');
-    cy.clickOnCheckBox('IsCounted');
+    cy.writeIntoStringField('QtyCount', '20', true /*modal*/);
+    cy.clickOnCheckBox('IsCounted', true, true /*modal*/);
 
-    cy.getStringFieldValue('HUAggregationType').then(huAggregationType => {
-      expect(huAggregationType).to.eq('Single HU'); /// <<====
-    });
     cy.pressDoneButton();
 
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
@@ -55,11 +58,9 @@ describe('Aggregated inventory test', function() {
       );
     });
 
+    // make sure that the inventory line has an HU (created on completion)
     cy.selectTab('M_InventoryLine');
-    cy.get('table tbody tr')
-      .should('have.length', 1)
-      .eq(0)
-      .click();
+    cy.selectSingleTabRow();
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_HU_ID', true /*modal*/) /// <<====
       .then(huValue => {

@@ -30,7 +30,7 @@ describe('Create Test: set packing item in product window https://github.com/met
     cy.selectTab('M_HU_PI_Item_Product')
       .pressAddNewButton()
       .selectInListField('M_HU_PI_Item_ID', 'IFCO 6410', true /*modal*/)
-      .clearField('Qty')
+      .clearField('Qty', true /*modal*/)
       .writeIntoStringField('Qty', '10', true /*modal*/)
       .selectDateViaPicker('ValidFrom', 'today', true /*modal*/)
       .pressDoneButton();
