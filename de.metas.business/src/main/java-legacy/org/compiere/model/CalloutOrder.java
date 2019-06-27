@@ -896,7 +896,7 @@ public class CalloutOrder extends CalloutEngine
 				orderLine.setPriceStd(BigDecimal.ZERO); // metas
 
 				// metas: also displaying PLV-ID
-				orderLine.setM_PriceList_Version(null);
+				orderLine.setM_PriceList_Version_ID(-1);
 				// metas: end
 			}
 		}

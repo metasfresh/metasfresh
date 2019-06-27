@@ -172,7 +172,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(ol, newTerm);
 
 		newTerm.setPriceActual(ol.getPriceActual());
-		newTerm.setC_Currency(ol.getC_Currency());
+		newTerm.setC_Currency_ID(ol.getC_Currency_ID());
 
 		setPricingSystemTaxCategAndIsTaxIncluded(ol, newTerm);
 

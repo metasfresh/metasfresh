@@ -301,10 +301,10 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		cOrderLine.setM_Product_ID(mProduct.getM_Product_ID());
 		cOrderLine.setM_Warehouse_ID(mWarehouse.getM_Warehouse_ID());
 		cOrderLine.setC_BPartner_ID(cbPartner.getC_BPartner_ID());
-		cOrderLine.setC_PaymentTerm_Override(cPaymentTerm);
+		cOrderLine.setC_PaymentTerm_Override_ID(cPaymentTerm.getC_PaymentTerm_ID());
 		cOrderLine.setDatePromised(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-		cOrderLine.setC_Order(cOrder);
-		cOrderLine.setC_Currency(cCurrency);
+		cOrderLine.setC_Order_ID(cOrder.getC_Order_ID());
+		cOrderLine.setC_Currency_ID(cCurrency.getC_Currency_ID());
 		cOrderLine.setPriceActual(priceActual);
 		cOrderLine.setQtyEntered(qtyEntered);
 		cOrderLine.setC_UOM_ID(cUom.getC_UOM_ID());
