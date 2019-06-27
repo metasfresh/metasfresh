@@ -2,13 +2,18 @@ package de.metas.vertical.pharma;
 
 import java.util.Set;
 
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -103,5 +108,28 @@ public final class PharmaCustomerPermissions
 	public boolean hasOnlyPermission(final PharmaCustomerPermission permission)
 	{
 		return permissions.size() == 1 && permissions.contains(permission);
+	}
+
+	public ITranslatableString toTrlString()
+	{
+		if (permissions.isEmpty())
+		{
+			return ImmutableTranslatableString.anyLanguage("-");
+		}
+
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final TranslatableStringBuilder builder = TranslatableStringBuilder.newInstance();
+		for (final PharmaCustomerPermission permission : permissions)
+		{
+			if (!builder.isEmpty())
+			{
+				builder.append(", ");
+			}
+
+			builder.append(msgBL.translatable(permission.getDisplayNameAdMessage()));
+		}
+
+		return builder.build();
 	}
 }
