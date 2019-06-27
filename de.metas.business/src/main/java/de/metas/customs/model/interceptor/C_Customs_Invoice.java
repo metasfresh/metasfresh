@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.ModelValidator;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Component;
 
 import de.metas.customs.CustomsInvoiceId;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
-import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -39,6 +42,8 @@ import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProduce
 @Component("de.metas.customs.model.interceptor.C_Customs_Invoice")
 public class C_Customs_Invoice
 {
+	private static final String MSG_C_Customs_Invoice_Tariff_NotSet = "C_Customs_Invoice_Tariff_NotSet";
+
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void doNotCompleteUnlessCustomsTariff(final I_C_Customs_Invoice customsInvoiceRecord)
 	{
@@ -50,8 +55,12 @@ public class C_Customs_Invoice
 
 		if (!productIdsWithNoCustomsTariff.isEmpty())
 		{
-			ProductWithNoCustomsTariffUserNotificationsProducer.newInstance()
-					.notify(productIdsWithNoCustomsTariff);
+
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_C_Customs_Invoice_Tariff_NotSet);
+			throw new AdempiereException(translatableMsgText)
+					.markAsUserValidationError();
 		}
 	}
 }

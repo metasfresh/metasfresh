@@ -47,8 +47,6 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 {
 	private static final String MSG_ProductWithNoCustomsTariff = "M_Product_No_CustomsTariff";
 
-
-
 	public static final ProductWithNoCustomsTariffUserNotificationsProducer newInstance()
 	{
 		return new ProductWithNoCustomsTariffUserNotificationsProducer();
@@ -80,11 +78,9 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 		return this;
 	}
 
-
-
 	private final UserNotificationRequest createUserNotification(@NonNull final ProductId productId)
 	{
-		final IADWindowDAO adWindowDAO  = Services.get(IADWindowDAO.class);
+		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 		final AdWindowId productWindowId = adWindowDAO.getAdWindowId(I_M_Product.Table_Name, SOTrx.SALES, DEFAULT_WINDOW_Product);
 

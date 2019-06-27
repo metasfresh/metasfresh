@@ -64,6 +64,10 @@ import lombok.NonNull;
 @Repository
 public class CustomsInvoiceRepository
 {
+	I_C_Customs_Invoice getByIdInTrx(final CustomsInvoiceId id)
+	{
+		return load(id, I_C_Customs_Invoice.class);
+	}
 
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
 	{
