@@ -124,13 +124,13 @@ public class ShipmentSchedule_QtyPicked_Test
 	private final I_M_ShipmentSchedule createShipmentSchedule()
 	{
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, contextProvider);
-		orderLine.setC_UOM(uom);
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(orderLine);
 
 		final Properties ctx = Env.getCtx();
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(ctx, I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
-		shipmentSchedule.setM_Product(product);
-		shipmentSchedule.setC_OrderLine(orderLine);
+		shipmentSchedule.setM_Product_ID(product.getM_Product_ID());
+		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setQtyToDeliver(new BigDecimal(13));
 
 		InterfaceWrapperHelper.save(shipmentSchedule);

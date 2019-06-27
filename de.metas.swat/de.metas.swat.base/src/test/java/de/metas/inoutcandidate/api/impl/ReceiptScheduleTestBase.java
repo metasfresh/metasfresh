@@ -324,8 +324,8 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// Product & UOM
-		orderLine.setM_Product(product);
-		orderLine.setC_UOM(productUOM);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
 		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 
@@ -344,8 +344,8 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// BPartner
-		orderLine.setC_BPartner(order.getC_BPartner());
-		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
+		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
+		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 
 		// more if needed
 

@@ -55,6 +55,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -831,9 +832,8 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
-		final I_M_Product product = orderLine.getM_Product();
-		orderLine.setC_UOM(Services.get(IProductBL.class).getStockingUOM(product));
-		orderLine.setPrice_UOM(null); // reset; will be set when we update pricing
+		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOMId(orderLine.getM_Product_ID()).getRepoId());
+		orderLine.setPrice_UOM_ID(-1); // reset; will be set when we update pricing
 
 		// Set Attribute
 		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
@@ -1129,9 +1129,11 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
+			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+			
 			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
-			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
-			final I_C_UOM uomTo = orderLine.getC_UOM();
+			final I_C_UOM uomFrom = uomsRepo.getById(orderLineOld.getC_UOM_ID());
+			final I_C_UOM uomTo = uomsRepo.getById(orderLine.getC_UOM_ID());
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
@@ -1318,7 +1320,7 @@ public class CalloutOrder extends CalloutEngine
 			return;
 		}
 
-		final I_M_Product product = ol.getM_Product();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(ol.getM_Product_ID());
 		ol.setProductDescription(product.getDescription());
 
 		return;

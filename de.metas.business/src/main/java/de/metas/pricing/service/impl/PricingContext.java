@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import de.metas.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,6 +42,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.PriceListId;
@@ -397,10 +397,16 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
+	public IEditablePricingContext setCountryId(@Nullable final CountryId countryId)
+	{
+		this.countryId = countryId;
+		return this;
+	}
+
+	@Override
 	public IEditablePricingContext setC_Country_ID(final int countryId)
 	{
-		this.countryId = CountryId.ofRepoIdOrNull(countryId);
-		return this;
+		return setCountryId(CountryId.ofRepoIdOrNull(countryId));
 	}
 
 	@Override

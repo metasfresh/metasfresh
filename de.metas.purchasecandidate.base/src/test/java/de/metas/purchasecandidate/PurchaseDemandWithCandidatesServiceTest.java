@@ -178,7 +178,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final I_C_OrderLine purchaseOrderLineRecord = salesOrderLineRecord;
 		purchaseOrderLineRecord.setQtyOrdered(PO_QTY_ORDERED_ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 

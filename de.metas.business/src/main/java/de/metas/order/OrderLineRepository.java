@@ -64,12 +64,12 @@ public class OrderLineRepository
 				() -> orderLineRecord.getC_Order().getC_BPartner_ID());
 
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
-		
+
 		final LocalDateTime datePromised = CoalesceUtil.firstValidValue(
 				date -> date != null,
 				() -> TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()),
 				() -> TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getDatePromised()));
-		
+
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))
 				.orderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()))
@@ -78,8 +78,8 @@ public class OrderLineRepository
 				.bPartnerId(BPartnerId.ofRepoId(bPartnerRepoId))
 				.datePromised(datePromised)
 				.productId(ProductId.ofRepoId(orderLineRecord.getM_Product_ID()))
-				.priceActual(moneyOfRecordsPriceActual(orderLineRecord))
-				.orderedQty(quantityOfRecordsQtyEntered(orderLineRecord))
+				.priceActual(extractPriceActual(orderLineRecord))
+				.orderedQty(extractQtyEntered(orderLineRecord))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(orderLineRecord.getM_AttributeSetInstance_ID()))
 				.warehouseId(WarehouseId.ofRepoId(warehouseRepoId))
 				.paymentTermId(paymentTermId)
@@ -87,20 +87,16 @@ public class OrderLineRepository
 				.build();
 	}
 
-	private Money moneyOfRecordsPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
+	private Money extractPriceActual(@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		// note that C_OrderLine.C_Currency_ID is mandatory, so there won't be an NPE
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLineRecord.getC_Currency_ID());
 
-		return Money.of(
-				orderLineRecord.getPriceActual(),
-				currencyId);
+		return Money.of(orderLineRecord.getPriceActual(), currencyId);
 	}
 
-	private Quantity quantityOfRecordsQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
+	private Quantity extractQtyEntered(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		return Quantity.of(
-				orderLineRecord.getQtyEntered(),
-				orderLineRecord.getC_UOM());
+		return Services.get(IOrderLineBL.class).getQtyEntered(orderLineRecord);
 	}
 }

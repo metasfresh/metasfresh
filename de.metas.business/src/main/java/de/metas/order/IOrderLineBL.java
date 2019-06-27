@@ -52,6 +52,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	Quantity getQtyOrdered(OrderAndLineId orderAndLineId);
 
+	Quantity getQtyOrdered(I_C_OrderLine orderLine);
+
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
 	/**

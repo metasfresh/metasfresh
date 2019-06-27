@@ -211,7 +211,7 @@ public class PurchaseOrderFromItemFactoryTest
 		save(salesOrder);
 
 		final I_C_OrderLine salesOrderLine = newInstance(I_C_OrderLine.class);
-		salesOrderLine.setM_Product(product);
+		salesOrderLine.setM_Product_ID(product.getM_Product_ID());
 		salesOrderLine.setC_Order(salesOrder);
 		save(salesOrderLine);
 

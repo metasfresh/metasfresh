@@ -28,6 +28,7 @@ import java.time.LocalDate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
@@ -103,7 +104,10 @@ public interface IEditablePricingContext extends IPricingContext
 	 *
 	 * @param c_Country_ID
 	 */
+	@Deprecated
 	IEditablePricingContext setC_Country_ID(int c_Country_ID);
+
+	IEditablePricingContext setCountryId(CountryId countryId);
 
 	IEditablePricingContext setFailIfNotCalculated(boolean failIfNotCalculated);
 

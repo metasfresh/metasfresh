@@ -6,6 +6,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -15,6 +16,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ddorder.IDistributionNetworkDAO;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 
@@ -70,7 +72,8 @@ import de.metas.util.Services;
 		//
 		// Fallback if no planning destination warehouse was found
 		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
-		final I_M_Locator locator = context.getM_Product().getM_Locator();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(context.getM_Product_ID());
+		final I_M_Locator locator = product.getM_Locator();
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{
 			return locator.getM_Warehouse();

@@ -85,6 +85,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -103,10 +104,10 @@ public class OrderLineBL implements IOrderLineBL
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_UOM uom = orderLine.getC_UOM();
-		if (uom != null)
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (uomId != null)
 		{
-			return uom;
+			return Services.get(IUOMDAO.class).getById(uomId);
 		}
 
 		// fallback to stocking UOM
@@ -132,11 +133,14 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
-		Check.assumeNotNull(orderLine, "orderLine is not null");
+		return getQtyOrdered(orderLine);
+	}
 
+	@Override
+	public Quantity getQtyOrdered(@NonNull final I_C_OrderLine orderLine)
+	{
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
 		final I_C_UOM uom = getStockingUOM(orderLine);
-
 		return Quantity.of(qtyOrdered, uom);
 	}
 
@@ -364,7 +368,8 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		// make two simple checks that work without loading additional stuff
-		if (orderLine.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			logger.debug("Given orderLine {} has M_Product_ID<=0; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
@@ -399,10 +404,10 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		if (!orderLine.getM_Product().isStocked())
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
+		if (!product.isStocked())
 		{
-			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.",
-					new Object[] { orderLine, orderLine.getM_Product() });
+			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.", orderLine, product);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -507,34 +512,40 @@ public class OrderLineBL implements IOrderLineBL
 
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
-		ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
-		final I_C_UOM uom = orderLine.getC_UOM();
-		if (productId == null || uom == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			return qtyEntered;
 		}
-
+		
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if(uomId == null)
+		{
+			return qtyEntered;
+		}
+		
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
 		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
 		return qtyOrdered;
 	}
 
 	Quantity convertToPriceUOM(@NonNull final Quantity qtyEntered, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLineExt = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-		final I_C_UOM priceUOM = orderLineExt.getPrice_UOM();
-		if (priceUOM == null || priceUOM.getC_UOM_ID() <= 0)
+		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		if(priceUOMId == null)
 		{
 			return qtyEntered;
 		}
 
 		final int qtyUOMId = qtyEntered.getUOMId();
-		if (qtyUOMId == priceUOM.getC_UOM_ID())
+		if (qtyUOMId == priceUOMId.getRepoId())
 		{
 			return qtyEntered;
 		}
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
+		final I_C_UOM priceUOM = Services.get(IUOMDAO.class).getById(priceUOMId);
 		return uomConversionBL.convertQuantityTo(qtyEntered, conversionCtx, priceUOM);
 	}
 
@@ -745,19 +756,19 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_M_Product product = orderLine.getM_Product();
-
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			orderLine.setM_Product_DocumentNote(null);
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
 
-		final org.compiere.model.I_C_BPartner partner = order.getC_BPartner();
-
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		final String adLanguage = partner.getAD_Language();
 
+		final org.compiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		final org.compiere.model.I_M_Product translatedProduct = translate(product, org.compiere.model.I_M_Product.class, adLanguage);
 
 		orderLine.setM_Product_DocumentNote(translatedProduct.getDocumentNote());

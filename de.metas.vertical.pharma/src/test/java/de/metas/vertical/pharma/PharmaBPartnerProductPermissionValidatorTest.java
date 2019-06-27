@@ -1,15 +1,23 @@
 package de.metas.vertical.pharma;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.order.OrderLineRepository;
-import de.metas.vertical.pharma.model.I_C_BPartner;
-import de.metas.vertical.pharma.model.I_M_Product;
-import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.Adempiere;
-import org.compiere.model.*;
+import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -19,17 +27,16 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.order.OrderLineRepository;
+import de.metas.vertical.pharma.model.I_C_BPartner;
+import de.metas.vertical.pharma.model.I_M_Product;
+import de.metas.vertical.pharma.model.interceptor.C_OrderLine;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-		//		 needed to register the spring context with the Adempiere main class
+		// needed to register the spring context with the Adempiere main class
 		StartupListener.class, ShutdownListener.class,
 
 		// needed so that the spring context can discover those components. Note that there are other ways too, but this one is very fast
@@ -41,7 +48,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 })
 public class PharmaBPartnerProductPermissionValidatorTest
 {
-	@Rule public ExpectedException thrown = ExpectedException.none();
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
 	private C_OrderLine orderLineInterceptor;
 
@@ -250,7 +258,6 @@ public class PharmaBPartnerProductPermissionValidatorTest
 		orderLineInterceptor.validatebPartnerProductPermissions(cOrderLine);
 	}
 
-
 	@Test
 	public void assertTypeBbPartnerCanNotSellRxNarcoticProduct()
 	{
@@ -291,16 +298,16 @@ public class PharmaBPartnerProductPermissionValidatorTest
 	private I_C_OrderLine createCOrderLine(final I_M_Product mProduct, final I_M_Warehouse mWarehouse, final I_C_BPartner cbPartner, final I_C_PaymentTerm cPaymentTerm, final I_C_Order cOrder, final I_C_Currency cCurrency, final I_C_UOM cUom, final BigDecimal priceActual, final BigDecimal qtyEntered)
 	{
 		final I_C_OrderLine cOrderLine = newInstance(I_C_OrderLine.class);
-		cOrderLine.setM_Product(mProduct);
-		cOrderLine.setM_Warehouse(mWarehouse);
-		cOrderLine.setC_BPartner(cbPartner);
+		cOrderLine.setM_Product_ID(mProduct.getM_Product_ID());
+		cOrderLine.setM_Warehouse_ID(mWarehouse.getM_Warehouse_ID());
+		cOrderLine.setC_BPartner_ID(cbPartner.getC_BPartner_ID());
 		cOrderLine.setC_PaymentTerm_Override(cPaymentTerm);
 		cOrderLine.setDatePromised(Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
 		cOrderLine.setC_Order(cOrder);
 		cOrderLine.setC_Currency(cCurrency);
 		cOrderLine.setPriceActual(priceActual);
 		cOrderLine.setQtyEntered(qtyEntered);
-		cOrderLine.setC_UOM(cUom);
+		cOrderLine.setC_UOM_ID(cUom.getC_UOM_ID());
 		save(cOrderLine);
 		return cOrderLine;
 	}

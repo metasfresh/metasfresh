@@ -38,6 +38,8 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -310,12 +312,15 @@ public class MOrderLine extends X_C_OrderLine
 
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
+		
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
 				OrgId.ofRepoId(getAD_Org_ID()),
-				getC_BPartner_Location(),		// should be bill to
+				bpLocation, // should be bill to
 				getDateOrdered(),
 				taxCategoryId,
 				getParent().isSOTrx(),
@@ -324,9 +329,7 @@ public class MOrderLine extends X_C_OrderLine
 		setC_Tax_ID(taxId);
 
 		final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId, I_C_Tax.class, ITrx.TRXNAME_None);
-
-		final I_C_TaxCategory taxCategory = tax.getC_TaxCategory();
-		setC_TaxCategory(taxCategory);
+		setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 	}	// setTax
 
 	/**

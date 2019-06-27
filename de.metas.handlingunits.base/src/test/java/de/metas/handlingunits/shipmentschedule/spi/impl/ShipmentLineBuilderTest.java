@@ -81,22 +81,22 @@ public class ShipmentLineBuilderTest
 
 		orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setM_Product(huTestHelper.pTomato);
+		orderLine.setM_Product_ID(huTestHelper.pTomato.getM_Product_ID());
 		save(orderLine);
 
 		shipment = newInstance(I_M_InOut.class);
-		shipment.setM_Warehouse(huTestHelper.defaultWarehouse);
+		shipment.setM_Warehouse_ID(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
 		save(shipment);
 
 		shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
-		shipmentSchedule.setM_Warehouse(huTestHelper.defaultWarehouse);
+		shipmentSchedule.setM_Warehouse_ID(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
 		shipmentSchedule.setC_Order_ID(order.getC_Order_ID());
-		shipmentSchedule.setC_OrderLine(orderLine);
+		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
 		shipmentSchedule.setM_Product(huTestHelper.pTomato);
 		shipmentSchedule.setQtyTU_Calculated(TEN);
-		shipmentSchedule.setM_HU_PI_Item_Product(piipWithCapacityEight);
+		shipmentSchedule.setM_HU_PI_Item_Product_ID(piipWithCapacityEight.getM_HU_PI_Item_Product_ID());
 		save(shipmentSchedule);
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();

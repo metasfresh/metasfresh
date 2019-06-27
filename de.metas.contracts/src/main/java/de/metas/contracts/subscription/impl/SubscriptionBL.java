@@ -45,6 +45,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
@@ -63,6 +64,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.FlatrateTermPricing;
@@ -101,6 +103,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductDAO;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -242,7 +245,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	{
 		final org.compiere.model.I_C_Order order = ol.getC_Order();
 		return FlatrateTermPricing.builder()
-				.termRelatedProduct(ol.getM_Product())
+				.termRelatedProduct(Services.get(IProductDAO.class).getById(ol.getM_Product_ID()))
 				.qty(ol.getQtyEntered())
 				.term(newTerm)
 				.priceDate(order.getDateOrdered())
@@ -769,12 +772,15 @@ public class SubscriptionBL implements ISubscriptionBL
 		final I_C_OrderLine ol = InterfaceWrapperHelper.create(
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
+		
+		BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final I_M_PriceList pl = InterfaceWrapperHelper.create(
 				priceListDAO.retrievePriceListByPricingSyst(
 						pricingSystemId,
-						ol.getC_BPartner_Location(),
+						bpLocation,
 						SOTrx.SALES),
 				I_M_PriceList.class);
 

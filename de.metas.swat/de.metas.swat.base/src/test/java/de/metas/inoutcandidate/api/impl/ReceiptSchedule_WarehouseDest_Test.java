@@ -27,6 +27,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.IProductActivityProvider;
+import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 
 public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
@@ -41,7 +42,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 		warehouseForIssues.setValue("Warehouse for Issues");
 		InterfaceWrapperHelper.save(warehouseForIssues);
 		createLocator(warehouseForIssues);
-		
+
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 	}
 
@@ -82,13 +83,14 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				order1.getM_Warehouse(),
 				schedule.getM_Warehouse());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.C_BPartner",
-				order1_line1_product1_wh1.getC_BPartner(),
+				order1_line1_product1_wh1.getC_BPartner_ID(),
 				schedule.getC_BPartner());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
 				null, // shall not be set
 				schedule.getM_Warehouse_Override());
+
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Dest_ID",
-				order1_line1_product1_wh1.getM_Product().getM_Locator().getM_Warehouse(),
+				Services.get(IProductDAO.class).getById(order1_line1_product1_wh1.getM_Product_ID()).getM_Locator().getM_Warehouse(),
 				schedule.getM_Warehouse_Dest());
 		// Guard agaist testing error
 		Assert.assertFalse("M_ReceiptSchedule M_Warehouse_ID != M_Warehouse_Dest_ID: " + schedule,
@@ -133,8 +135,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				movementLine.getM_LocatorTo().getM_Warehouse());
 		// Check Movement Line product & qty
 		Assert.assertEquals("Invalid movement line product (compared with order line's product)",
-				order1_line1_product1_wh1.getM_Product(),
-				movementLine.getM_Product());
+				order1_line1_product1_wh1.getM_Product_ID(),
+				movementLine.getM_Product_ID());
 		Assert.assertThat("Invalid movement line Qty (compared with order line's qty)",
 				movementLine.getMovementQty(), // actual
 				Matchers.comparesEqualTo(order1_line1_product1_wh1.getQtyOrdered()));

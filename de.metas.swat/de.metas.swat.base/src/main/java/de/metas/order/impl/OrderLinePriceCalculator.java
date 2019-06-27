@@ -12,8 +12,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -287,11 +290,11 @@ class OrderLinePriceCalculator
 		{
 			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
 			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
-			final int countryId = getCountryIdOrZero(orderLine);
+			final CountryId countryId = getCountryIdOrNull(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
 			pricingCtx.setPriceListVersionId(null);
-			pricingCtx.setC_Country_ID(countryId);
+			pricingCtx.setCountryId(countryId);
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 		}
 
@@ -310,21 +313,16 @@ class OrderLinePriceCalculator
 		return pricingCtx;
 	}
 
-	private static int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	private static CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		if (orderLine.getC_BPartner_Location_ID() <= 0)
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
+		if (bpLocationId == null)
 		{
-			return 0;
+			return null;
 		}
 
-		final I_C_BPartner_Location bPartnerLocation = orderLine.getC_BPartner_Location();
-		if (bPartnerLocation.getC_Location_ID() <= 0)
-		{
-			return 0;
-		}
-
-		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
-		return countryId;
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()
