@@ -12,6 +12,7 @@ import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
+import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -27,6 +28,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -80,7 +83,7 @@ public final class ViewActionDescriptor
 		return actionId;
 	}
 
-	public DocumentEntityDescriptor createParametersEntityDescriptor(final ProcessId processId)
+	@Nullable public DocumentEntityDescriptor createParametersEntityDescriptor(@NonNull final ProcessId processId)
 	{
 		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
@@ -113,7 +116,7 @@ public final class ViewActionDescriptor
 
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
-				.setInternalName(actionId)
+				.setInternalName(InternalName.ofString(actionId))
 				.setType(ProcessDescriptorType.Process)
 				//
 				.setLayout(processLayout)
@@ -121,7 +124,7 @@ public final class ViewActionDescriptor
 				.build();
 	}
 
-	public final WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
+	public WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
 	{
 		final IView view = viewContext.getView();
 		final DocumentIdsSelection selectedDocumentIds = viewContext.getSelectedRowIds();
@@ -139,19 +142,19 @@ public final class ViewActionDescriptor
 				.build();
 	}
 
-	private final ProcessPreconditionsResolution checkPreconditions(final IView view, final DocumentIdsSelection selectedDocumentIds)
+	private ProcessPreconditionsResolution checkPreconditions(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		try
 		{
 			return getPreconditionsInstance().matches(view, selectedDocumentIds);
 		}
-		catch (InstantiationException | IllegalAccessException ex)
+		catch (final InstantiationException | IllegalAccessException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
 	}
 
-	private final Precondition getPreconditionsInstance() throws InstantiationException, IllegalAccessException
+	private Precondition getPreconditionsInstance() throws InstantiationException, IllegalAccessException
 	{
 		if (preconditionSharedInstance != null)
 		{
@@ -160,7 +163,7 @@ public final class ViewActionDescriptor
 		return preconditionClass.newInstance();
 	}
 
-	public Method getViewActionMethod()
+	@NonNull public Method getViewActionMethod()
 	{
 		return viewActionMethod;
 	}
@@ -170,7 +173,7 @@ public final class ViewActionDescriptor
 		return viewActionReturnTypeConverter.convert(returnValue);
 	}
 
-	public Object[] extractMethodArguments(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
+	@NonNull public Object[] extractMethodArguments(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
 	{
 		return viewActionParamDescriptors.stream()
 				.map(paramDesc -> paramDesc.extractArgument(view, processParameters, selectedDocumentIds))
@@ -178,14 +181,14 @@ public final class ViewActionDescriptor
 	}
 
 	@FunctionalInterface
-	public static interface ViewActionMethodReturnTypeConverter
+	public interface ViewActionMethodReturnTypeConverter
 	{
 		ProcessInstanceResult.ResultAction convert(Object returnValue);
 	}
 
 	@FunctionalInterface
-	public static interface ViewActionMethodArgumentExtractor
+	public interface ViewActionMethodArgumentExtractor
 	{
-		public Object extractArgument(IView view, Document processParameters, DocumentIdsSelection selectedDocumentIds);
+		Object extractArgument(IView view, Document processParameters, DocumentIdsSelection selectedDocumentIds);
 	}
 }

@@ -35,6 +35,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
@@ -53,12 +54,13 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
-import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -212,7 +214,7 @@ import lombok.NonNull;
 		// Process descriptor
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
-				.setInternalName(adProcess.getValue())
+				.setInternalName(InternalName.ofString(adProcess.getValue()))
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor)
@@ -360,7 +362,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
+	private static ProcessDescriptorType extractType(final I_AD_Process adProcess)
 	{
 		if (adProcess.getAD_Form_ID() > 0)
 		{
@@ -380,7 +382,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final String extractClassnameOrNull(final I_AD_Process adProcess)
+	@Nullable private static String extractClassnameOrNull(final I_AD_Process adProcess)
 	{
 		//
 		// First try: Check process classname
@@ -423,7 +425,7 @@ import lombok.NonNull;
 
 	private static final class ProcessParametersCallout
 	{
-		private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField)
+		private static void forwardValueToCurrentProcessInstance(final ICalloutField calloutField)
 		{
 			final JavaProcess processInstance = JavaProcess.currentInstance();
 
@@ -459,15 +461,7 @@ import lombok.NonNull;
 	{
 		public static final transient ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
 
-		private static final DocumentEntityDataBindingDescriptor dataBinding = new DocumentEntityDataBindingDescriptor()
-		{
-			@Override
-			public DocumentsRepository getDocumentsRepository()
-			{
-				return ADProcessParametersRepository.instance;
-			}
-
-		};
+		private static final DocumentEntityDataBindingDescriptor dataBinding = () -> ADProcessParametersRepository.instance;
 
 		@Override
 		public DocumentEntityDataBindingDescriptor getOrBuild()

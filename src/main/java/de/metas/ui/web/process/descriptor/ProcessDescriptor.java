@@ -24,6 +24,8 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -50,21 +52,21 @@ public final class ProcessDescriptor implements ETagAware
 {
 	private static final Logger logger = LogManager.getLogger(ProcessDescriptor.class);
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static enum ProcessDescriptorType
+	public enum ProcessDescriptorType
 	{
 		Form, Workflow, Process, Report
-	};
+	}
 
 	@Getter
 	private final ProcessId processId;
 
 	@Getter
-	private final String internalName;
+	private final InternalName internalName;
 
 	@Getter
 	private final ProcessDescriptorType type;
@@ -154,7 +156,7 @@ public final class ProcessDescriptor implements ETagAware
 				.checkApplies();
 	}
 
-	public IProcessDefaultParametersProvider getDefaultParametersProvider()
+	@Nullable public IProcessDefaultParametersProvider getDefaultParametersProvider()
 	{
 		if (defaultParametersProviderClass == null)
 		{
@@ -165,7 +167,7 @@ public final class ProcessDescriptor implements ETagAware
 		{
 			return defaultParametersProviderClass.newInstance();
 		}
-		catch (InstantiationException | IllegalAccessException ex)
+		catch (final InstantiationException | IllegalAccessException ex)
 		{
 			throw new AdempiereException("Failed to instantiate the process", ex);
 		}
@@ -189,7 +191,7 @@ public final class ProcessDescriptor implements ETagAware
 		private ProcessId processId;
 
 		@Getter
-		private String internalName;
+		private InternalName internalName;
 
 		private String processClassname;
 		private Optional<Class<?>> processClass = Optional.empty();
@@ -208,7 +210,7 @@ public final class ProcessDescriptor implements ETagAware
 			return new ProcessDescriptor(this);
 		}
 
-		public Builder setInternalName(final String internalName)
+		public Builder setInternalName(final InternalName internalName)
 		{
 			this.internalName = internalName;
 			return this;
@@ -250,7 +252,7 @@ public final class ProcessDescriptor implements ETagAware
 			return processClassname;
 		}
 
-		private Class<?> getProcessClassOrNull()
+		@Nullable private Class<?> getProcessClassOrNull()
 		{
 			return processClass.orElse(null);
 		}
@@ -275,7 +277,7 @@ public final class ProcessDescriptor implements ETagAware
 			}
 		}
 
-		private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
+		@Nullable private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
 		{
 			final Class<?> processClass = getProcessClassOrNull();
 			if (processClass == null || !IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))

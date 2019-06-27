@@ -58,7 +58,7 @@ public final class WebuiRelatedProcessDescriptor
 	private final ProcessId processId;
 
 	@Getter
-	private final String internalName;
+	private final InternalName internalName;
 
 	private final ITranslatableString processCaption;
 	private final ITranslatableString processDescription;
@@ -80,7 +80,7 @@ public final class WebuiRelatedProcessDescriptor
 	@lombok.Builder
 	private WebuiRelatedProcessDescriptor(
 			final ProcessId processId,
-			final String internalName,
+			final InternalName internalName,
 			final ITranslatableString processCaption,
 			final ITranslatableString processDescription,
 			@NonNull @Singular final ImmutableSet<DisplayPlace> displayPlaces,
