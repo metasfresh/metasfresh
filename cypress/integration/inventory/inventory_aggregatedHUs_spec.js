@@ -10,9 +10,8 @@ describe('Aggregated inventory test', function() {
   const productName = `AggregatedHUsInventory ${timestamp}`;
   const productValue = `${timestamp}`;
 
-  cy.wait(1000); // see comment/doc of getLanguageSpecific
-
   it('Create a new aggregated-HUs inventory doc', function() {
+    cy.wait(1000); // see comment/doc of getLanguageSpecific
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
@@ -31,6 +30,10 @@ describe('Aggregated inventory test', function() {
     cy.selectTab('M_InventoryLine');
     cy.pressAddNewButton();
 
+    cy.getStringFieldValue('HUAggregationType', true /*modal*/).then(huAggregationType => {
+      expect(huAggregationType).to.eq('Multiple HUs');
+    });
+
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false /*typeList*/, true /*modal*/);
     cy.fixture('product/simple_product.json').then(productJson => {
       const uomName = getLanguageSpecific(productJson, 'c_uom');
@@ -38,23 +41,21 @@ describe('Aggregated inventory test', function() {
     });
 
     cy.writeIntoLookupListField('M_Locator_ID', '0_0_0', '0_0_0', true /*typeList*/, true /*modal*/);
-    cy.writeIntoStringField('QtyCount', '20');
-    cy.clickOnCheckBox('IsCounted');
-    cy.getStringFieldValue('HUAggregationType').then(huAggregationType => {
-      expect(huAggregationType).to.eq('Multiple HUs');
-    });
+    cy.writeIntoStringField('QtyCount', '20', true /*modal*/);
+    cy.clickOnCheckBox('IsCounted', true, true /*modal*/);
     cy.pressDoneButton();
+
+    // complete it
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
         getLanguageSpecific(miscDictionary, 'docActionComplete'),
         getLanguageSpecific(miscDictionary, 'docStatusCompleted')
       );
     });
+
+	// make sure that the inventory line does not show the HU field, bc the created HUs shall remain under the hood)
     cy.selectTab('M_InventoryLine');
-    cy.get('table tbody tr')
-      .should('have.length', 1)
-      .eq(0)
-      .click();
+    cy.selectSingleTabRow();
     cy.openAdvancedEdit();
     cy.assertFieldNotShown('M_HU_ID', true /*modal*/);
     cy.pressDoneButton();
