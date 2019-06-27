@@ -1,33 +1,42 @@
-const fillFormInModal = (productFromList, quantity) => {
-  cy.pressAddNewButton();
-  cy.writeIntoLookupListField('M_Product_ID', 'prod', productFromList, true);
-
-  cy.writeIntoStringField('QtyCount', quantity, true);
-  cy.selectInListField('PP_Plant_ID', 'test', true);
-  cy.pressDoneButton();
-};
+import { StockControlPurchase, StockControlPurchaseProduct } from '../../support/utils/stockControlPurchase';
+import { Product } from '../../support/utils/product';
 
 describe('create new stock control purchase', function() {
+  const timestamp = new Date().getTime();
+  const description = `test ${timestamp}`;
+  const productName1 = `StockControlPurchase1 ${timestamp}`;
+  const productName2 = `StockControlPurchase2 ${timestamp}`;
+  const productName3 = `StockControlPurchase3 ${timestamp}`;
+
   before(function() {
-    cy.visit('/window/540253');
+    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName1)
+        .apply();
+    });
+
+    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName2)
+        .apply();
+    });
+
+    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName3)
+        .apply();
+    });
   });
 
   it('create process', function() {
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
-
-    cy.writeIntoStringField('Description', 'test');
-  });
-
-  it('first product', function() {
-    fillFormInModal('ProductName 1560426460548_1000003', '100');
-  });
-
-  it('second product', function() {
-    fillFormInModal('ProductName 1560502091488_1000012', '200');
-  });
-
-  it('third product', function() {
-    fillFormInModal('ProductName 1560502118834_1000013', '50');
+    cy.fixture('warehouse/stock_control_purchase.json').then(stockControlPurchase => {
+      Object.assign(new StockControlPurchase(), stockControlPurchase)
+        .setDescription(description)
+        .addProduct(new StockControlPurchaseProduct().setProduct(productName1).setQuantity('100'))
+        .addProduct(new StockControlPurchaseProduct().setProduct(productName2).setQuantity('200'))
+        .addProduct(new StockControlPurchaseProduct().setProduct(productName3).setQuantity('500'))
+        .apply();
+    });
   });
 
   it('header actions', function() {
