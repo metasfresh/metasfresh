@@ -1,6 +1,8 @@
 import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
 import { Product, ProductCategory } from '../../support/utils/product';
+import { DiscountSchema } from '../../support/utils/discountschema';
+import { Bank } from '../../support/utils/bank';
 
 describe('Create Sales order', function() {
   const timestamp = new Date().getTime();
@@ -9,13 +11,29 @@ describe('Create Sales order', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductNameValue ${timestamp}`;
   const productValue = `sales_order_test ${timestamp}`;
+  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
+  const bankName = `Raiffeisen Test ${timestamp}`;
+  const BLZ = '80027';
   // const rowSelected = salesOrders.rowSelector;
 
   it('Create product category, product and customer for a sales order', function() {
+    cy.fixture('discount/discountschema.json').then(discountschemaJson => {
+      Object.assign(new DiscountSchema(), discountschemaJson)
+        .setName(discountSchemaName)
+        .apply();
+    });
+    cy.fixture('finance/bank.json').then(productJson => {
+      Object.assign(new Bank(), productJson)
+        .setName(bankName)
+        .setBLZ(BLZ)
+        .apply();
+    });
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(customer)
+        .setBank(bankName)
         .setCustomer(true)
+        .setCustomerDiscountSchema(discountSchemaName)
         .apply();
     });
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -31,17 +49,12 @@ describe('Create Sales order', function() {
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .apply();
     });
-    cy.visitWindow('540651', 'NEW');
+    cy.visitWindow('143', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
       .type(customer)
       .type('\n');
     cy.contains('.input-dropdown-list-option', customer).click();
-    // cy.wait(3000);
-    cy.get('.form-field-C_DocTypeTarget_ID input')
-      .click()
-      .get('.input-dropdown-list')
-      .wait(2000)
-      .click();
+    cy.wait(3000);
 
     const addNewText = Cypress.messages.window.batchEntry.caption;
 
@@ -86,7 +99,6 @@ describe('Create Sales order', function() {
       .eq('1')
       .find('i')
       .click({ force: true });
-    cy.wait(8000);
     /** Go to Shipment disposition*/
     cy.get('.reference_M_ShipmentSchedule').click();
     cy.get('tbody tr')
@@ -103,6 +115,7 @@ describe('Create Sales order', function() {
       .filter(':contains("' + customer + '")')
       .first()
       .click();
+    cy.wait(5000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
