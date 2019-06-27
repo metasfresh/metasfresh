@@ -56,7 +56,7 @@ public final class InternalName
 	private static String normalizeString(@NonNull final String str)
 	{
 		return str.trim()
-				.replace(" ", ""); // remove spaces because of cypress
+				.replace(" ", "_"); // remove spaces because of cypress
 	}
 
 	private final String stringValue;
