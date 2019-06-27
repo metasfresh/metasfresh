@@ -95,22 +95,22 @@ export class Product {
 
       cy.writeIntoStringField('Description', product.description);
 
-      cy.getStringFieldValue('IsStocked').then(isIsStockedValue => {
+      cy.getCheckboxValue('IsStocked').then(isIsStockedValue => {
         if (product.isStocked && !isIsStockedValue) {
           cy.clickOnCheckBox('IsStocked');
         }
       });
-      cy.getStringFieldValue('IsPurchased').then(isPurchasedValue => {
+      cy.getCheckboxValue('IsPurchased').then(isPurchasedValue => {
         if (product.isPurchased && !isPurchasedValue) {
           cy.clickOnCheckBox('IsPurchased');
         }
       });
-      cy.getStringFieldValue('IsSold').then(isSoldValue => {
+      cy.getCheckboxValue('IsSold').then(isSoldValue => {
         if (product.isSold && !isSoldValue) {
           cy.clickOnCheckBox('IsSold');
         }
       });
-      cy.getStringFieldValue('IsDiverse').then(isDiverseValue => {
+      cy.getCheckboxValue('IsDiverse').then(isDiverseValue => {
         if (product.isDiverse && !isDiverseValue) {
           cy.clickOnCheckBox('IsDiverse');
         }

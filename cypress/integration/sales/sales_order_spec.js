@@ -1,79 +1,75 @@
-import { getBreadcrumbs } from '../../support/apiRequests';
 import { salesOrders } from '../../page_objects/sales_orders';
-import config from '../../config';
-import { Product, ProductCategory } from '../../support/utils/product';
+
 import { SalesOrder } from '../../support/utils/sales_order';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 import { BPartner } from '../../support/utils/bpartner';
-import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
+import { getLanguageSpecific } from '../../support/utils/utils';
+import { Builder } from '../../support/utils/builder';
+
+const timestamp = new Date().getTime();
+const customerName = `Sales Order Test ${timestamp}`;
+
 describe('New sales order test', function() {
-  const windowId = salesOrders.windowId;
-  let headerCaption = '';
-  let menuOption = '';
-  const timestamp = new Date().getTime();
   const productName = `Sales Order Test ${timestamp}`;
-  const customerName = `Sales Order Test ${timestamp}`;
 
-  before(function() {
-    getBreadcrumbs(windowId, '1000040-new').then(({ option, caption }) => {
-      menuOption = option;
-      headerCaption = caption;
+  const productValue = `sales_order_test ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${timestamp}`;
+  const productCategoryValue = `ProductNameValue ${timestamp}`;
+
+  const priceSystemName = `PriceSystem ${timestamp}`;
+  const priceListName = `PriceList ${timestamp}`;
+  const priceListVersionName = `PriceListVersion ${timestamp}`;
+
+  describe('Do test preparations', function() {
+    it('Create product and price', function() {
+      Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+      Builder.createBasicProductEntities(
+        productCategoryName,
+        productCategoryValue,
+        priceListName,
+        productName,
+        productValue
+      );
     });
-
-    const productValue = `sales_order_test ${timestamp}`;
-    const productCategoryName = `ProductCategoryName ${timestamp}`;
-    const productCategoryValue = `ProductNameValue ${timestamp}`;
-    const discountSchemaName = `sales_order_test ${timestamp}`;
-
-    new DiscountSchema(discountSchemaName)
-      .addDiscountBreak(new DiscountBreak().setBreakValue(0).setBreakDiscount(0))
-      .apply();
-
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customerName)
-        .setCustomerDiscountSchema(discountSchemaName)
-        .apply();
+    it('Create customer', function() {
+      cy.fixture('sales/simple_customer.json').then(customerJson => {
+        Object.assign(new BPartner(), customerJson)
+          .setName(customerName)
+          .setCustomerPricingSystem(priceSystemName)
+          .setBank(undefined) // we don't need a bank for this test
+          .apply();
+      });
     });
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-    cy.fixture('product/simple_product.json').then(productJson => {
-      Object.assign(new Product(), productJson)
-        .setName(productName)
-        .setValue(productValue)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .apply();
-    });
-
-    salesOrders.visit();
   });
 
-  describe('Create a new sales order', function() {
-    before(function() {
-      cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
+  describe('Sales order tests', function() {
+    it('Create a new sales order', function() {
+      // getBreadcrumbs(windowId, '1000011-new').then(({ option, caption }) => {
+      //   menuOption = option;
+      //   headerCaption = caption;
+      // });
+      cy.visitWindow(salesOrders.windowId, 'NEW');
 
-      const option = ~~(Math.random() * (2 - 0)) + 0;
+      // cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
 
-      if (option === 0) {
-        cy.get('.header-breadcrumb')
-          .contains('.header-item', headerCaption)
-          .click();
+      // const option = ~~(Math.random() * (2 - 0)) + 0;
 
-        cy.get('.header-breadcrumb')
-          .find('.menu-overlay')
-          .should('exist')
-          .find('.menu-overlay-link')
-          .contains(menuOption)
-          .click();
-      } else {
-        cy.clickHeaderNav(Cypress.messages.window.new);
-      }
+      // if (option === 0) {
+      //   cy.get('.header-breadcrumb')
+      //     .contains('.header-item', headerCaption)
+      //     .click();
 
-      cy.get('.header-breadcrumb-sitename').should('contain', '<');
+      //   cy.get('.header-breadcrumb')
+      //     .find('.menu-overlay')
+      //     .should('exist')
+      //     .find('.menu-overlay-link')
+      //     .contains(menuOption)
+      //     .click();
+      // } else {
+      //cy.clickHeaderNav(Cypress.messages.window.new);
+      // }
+
+      //cy.get('.header-breadcrumb-sitename').should('contain', '<');
     });
 
     it('Fill Business Partner', function() {
@@ -160,41 +156,45 @@ describe('New sales order test', function() {
         .should('have.value', '');
     });
 
-    it('Change document status', function() {
-      let completeActionCaption = '';
-      const draftedCaption = Cypress.reduxStore.getState().windowHandler.master.data.DocStatus.value.caption;
-      const docId = Cypress.reduxStore.getState().windowHandler.master.docId;
-
-      cy.request('GET', `${config.API_URL}/window/${windowId}/${docId}/field/DocAction/dropdown`).then(response => {
-        const resp = response.body;
-
-        expect(resp).to.have.property('values');
-        expect(resp.values.length).to.be.gt(0);
-
-        for (let i = 0; i < resp.values.length; i += 1) {
-          if (resp.values[i].key === 'CO') {
-            completeActionCaption = resp.values[i].caption;
-
-            break;
-          }
-        }
-
-        cy.get('.form-field-DocAction')
-          .find('.meta-dropdown-toggle')
-          .click();
-
-        cy.get('.form-field-DocAction')
-          .find('.dropdown-status-toggler')
-          .should('have.class', 'dropdown-status-open');
-
-        cy.get('.form-field-DocAction .dropdown-status-list')
-          .find('.dropdown-status-item')
-          .contains(completeActionCaption)
-          .click();
-
-        cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-        cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
+    it('Complete sales order', function() {
+      // complete it and verify the status
+      cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+        cy.processDocument(
+          getLanguageSpecific(miscDictionary, 'docActionComplete'),
+          getLanguageSpecific(miscDictionary, 'docStatusCompleted')
+        );
       });
+
+      // cy.request('GET', `${config.API_URL}/window/${windowId}/${docId}/field/DocAction/dropdown`).then(response => {
+      //   const resp = response.body;
+
+      //   expect(resp).to.have.property('values');
+      //   expect(resp.values.length).to.be.gt(0);
+
+      //   for (let i = 0; i < resp.values.length; i += 1) {
+      //     if (resp.values[i].key === 'CO') {
+      //       completeActionCaption = resp.values[i].caption;
+
+      //       break;
+      //     }
+      //   }
+
+      //   cy.get('.form-field-DocAction')
+      //     .find('.meta-dropdown-toggle')
+      //     .click();
+
+      //   cy.get('.form-field-DocAction')
+      //     .find('.dropdown-status-toggler')
+      //     .should('have.class', 'dropdown-status-open');
+
+      //   cy.get('.form-field-DocAction .dropdown-status-list')
+      //     .find('.dropdown-status-item')
+      //     .contains(completeActionCaption)
+      //     .click();
+
+      //   cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
+      //   cy.get('.meta-dropdown-toggle .tag-success').should('not.contain', draftedCaption);
+      // });
     });
   });
 });
@@ -206,10 +206,8 @@ describe('List tests', function() {
   before(function() {
     const salesReference = `Cypress Test ${timestamp}`;
 
-    new SalesOrder(salesReference)
-      .setBPartner('G0001_Test Kunde 1')
-      .setBPartnerLocation('Testadresse 3')
-      .apply();
+    // make sure to have at least one more sales order
+    new SalesOrder(salesReference).setBPartner(customerName).apply();
 
     salesOrders.visit();
     salesOrders.verifyElements();
@@ -249,7 +247,6 @@ describe('List tests', function() {
     list.getRows().should('have.length', 0);
   });
 });
-
 /*
  * Not implemented yet
  *
