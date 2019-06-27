@@ -123,9 +123,14 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_UOM")
 			.add("org.compiere.model.I_M_Product")
 			//
+			.add("org.compiere.model.I_M_PricingSystem")
+			.add("org.compiere.model.I_M_PriceList")
+			.add("org.compiere.model.I_M_PriceList_Version")
+			//
 			.add("org.compiere.model.I_M_Warehouse")
 			.add("org.compiere.model.I_M_Locator")
 			//
+			.add("org.compiere.model.I_C_Currency")
 			.add("org.compiere.model.I_C_DocType")
 			.add("org.compiere.model.I_M_Attribute")
 			//
