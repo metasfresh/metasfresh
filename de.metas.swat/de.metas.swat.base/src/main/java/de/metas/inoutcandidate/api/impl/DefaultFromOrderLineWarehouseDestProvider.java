@@ -5,6 +5,7 @@ import java.util.List;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.OrgId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -72,7 +73,9 @@ import de.metas.util.Services;
 		//
 		// Fallback if no planning destination warehouse was found
 		// see: http://dewiki908/mediawiki/index.php/05940_Wareneingang_Lagerumbuchung
-		final I_M_Locator locator = warehouseDAO.getLocatorByRepoId(context.getM_Product().getM_Locator_ID());
+
+		final LocatorId locatorId = warehouseDAO.getLocatorIdByRepoIdOrNull(context.getM_Product().getM_Locator_ID());
+		final I_M_Locator locator = locatorId == null? null : warehouseDAO.getLocatorById(locatorId);
 		if (locator != null && locator.getM_Locator_ID() > 0)
 		{
 			return locator.getM_Warehouse();
