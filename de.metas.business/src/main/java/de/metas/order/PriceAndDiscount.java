@@ -15,6 +15,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.util.lang.CoalesceUtil;
@@ -230,5 +231,15 @@ public class PriceAndDiscount
 		orderLine.setDiscount(discount.getValue());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
+
+		final String adLanguage = Language.getBaseAD_Language();
+		if (priceLimitEnforced)
+		{
+			orderLine.setPriceLimitNote(priceLimitEnforcedExplanation.translate(adLanguage));
+		}
+		else
+		{
+			orderLine.setPriceLimitNote(priceLimitNotEnforcedExplanation.translate(adLanguage));
+		}
 	}
 }

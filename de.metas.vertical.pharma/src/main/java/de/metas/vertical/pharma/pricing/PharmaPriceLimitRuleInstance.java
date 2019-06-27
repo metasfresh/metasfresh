@@ -140,7 +140,7 @@ class PharmaPriceLimitRuleInstance
 		if (!pharmaCustomerPermissions.hasOnlyPermission(PharmaCustomerPermission.PHARMACIE))
 		{
 			return BooleanWithReason.falseBecause(TranslatableStringBuilder.newInstance()
-					.append("bpartner shall have only PHARMACIE permission but it has: ")
+					.append("BPartner shall have only PHARMACIE permission but it has: ")
 					.append(pharmaCustomerPermissions.toTrlString())
 					.build());
 		}
