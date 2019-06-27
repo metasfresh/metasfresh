@@ -36,7 +36,7 @@ import lombok.NonNull;
 @EqualsAndHashCode(doNotUseGetters = true)
 public final class InternalName
 {
-	public static InternalName ofNullableString(@Nullable final String str)
+	@Nullable public static InternalName ofNullableString(@Nullable final String str)
 	{
 		return Check.isEmpty(str, true) ? null : ofString(str);
 	}
@@ -53,10 +53,19 @@ public final class InternalName
 		return new InternalName(strNorm);
 	}
 
-	private static String normalizeString(@NonNull final String str)
+	/**
+	 * This is mostly for cypress and also to be in line with the html specification (https://www.w3.org/TR/html50/dom.html#the-id-attribute).
+	 *
+	 * There are some processes (actions) which have space in their #ID.
+	 * On the frontend side: that internalName field is used to create the JSON.
+	 * On the backend side: the process value is used to create the internalName.
+	 *
+	 * The simple solution is to replace spaces with underscores.
+	 */
+	@NonNull private static String normalizeString(@NonNull final String str)
 	{
 		return str.trim()
-				.replace(" ", "_"); // remove spaces because of cypress
+				.replace(" ", "_");
 	}
 
 	private final String stringValue;

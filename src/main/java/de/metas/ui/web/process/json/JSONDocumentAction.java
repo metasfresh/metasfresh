@@ -160,7 +160,7 @@ public final class JSONDocumentAction implements Serializable
 	@JsonIgnore
 	public boolean isDisabled()
 	{
-		return disabled != null && disabled.booleanValue();
+		return disabled != null && disabled;
 	}
 
 	@JsonIgnore

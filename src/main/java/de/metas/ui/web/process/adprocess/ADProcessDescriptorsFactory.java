@@ -60,6 +60,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -212,7 +214,7 @@ import lombok.NonNull;
 		// Process descriptor
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
-				.setInternalName(InternalName.ofNullableString(adProcess.getValue()))
+				.setInternalName(InternalName.ofString(adProcess.getValue()))
 				.setType(extractType(adProcess))
 				.setProcessClassname(extractClassnameOrNull(adProcess))
 				.setParametersDescriptor(parametersDescriptor)
@@ -360,7 +362,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
+	private static ProcessDescriptorType extractType(final I_AD_Process adProcess)
 	{
 		if (adProcess.getAD_Form_ID() > 0)
 		{
@@ -380,7 +382,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final String extractClassnameOrNull(final I_AD_Process adProcess)
+	@Nullable private static String extractClassnameOrNull(final I_AD_Process adProcess)
 	{
 		//
 		// First try: Check process classname

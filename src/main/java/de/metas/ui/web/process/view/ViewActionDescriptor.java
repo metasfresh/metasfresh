@@ -29,6 +29,8 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -81,7 +83,7 @@ public final class ViewActionDescriptor
 		return actionId;
 	}
 
-	public DocumentEntityDescriptor createParametersEntityDescriptor(final ProcessId processId)
+	@Nullable public DocumentEntityDescriptor createParametersEntityDescriptor(@NonNull final ProcessId processId)
 	{
 		final DocumentEntityDescriptor.Builder parametersDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
@@ -114,7 +116,7 @@ public final class ViewActionDescriptor
 
 		return ProcessDescriptor.builder()
 				.setProcessId(processId)
-				.setInternalName(InternalName.ofNullableString(actionId))
+				.setInternalName(InternalName.ofString(actionId))
 				.setType(ProcessDescriptorType.Process)
 				//
 				.setLayout(processLayout)
@@ -146,7 +148,7 @@ public final class ViewActionDescriptor
 		{
 			return getPreconditionsInstance().matches(view, selectedDocumentIds);
 		}
-		catch (InstantiationException | IllegalAccessException ex)
+		catch (final InstantiationException | IllegalAccessException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
@@ -161,7 +163,7 @@ public final class ViewActionDescriptor
 		return preconditionClass.newInstance();
 	}
 
-	public Method getViewActionMethod()
+	@NonNull public Method getViewActionMethod()
 	{
 		return viewActionMethod;
 	}
@@ -171,7 +173,7 @@ public final class ViewActionDescriptor
 		return viewActionReturnTypeConverter.convert(returnValue);
 	}
 
-	public Object[] extractMethodArguments(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
+	@NonNull public Object[] extractMethodArguments(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
 	{
 		return viewActionParamDescriptors.stream()
 				.map(paramDesc -> paramDesc.extractArgument(view, processParameters, selectedDocumentIds))

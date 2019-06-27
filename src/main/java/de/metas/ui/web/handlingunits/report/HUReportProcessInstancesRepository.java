@@ -145,7 +145,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.huProcessDescriptor(huProcessDescriptor)
 				.processDescriptor(ProcessDescriptor.builder()
 						.setProcessId(processId)
-						.setInternalName(InternalName.ofNullableString(huProcessDescriptor.getInternalName()))
+						.setInternalName(InternalName.ofString(huProcessDescriptor.getInternalName()))
 						.setType(ProcessDescriptorType.Report)
 						.setParametersDescriptor(parametersDescriptor)
 						.setLayout(ProcessLayout.builder()
@@ -184,7 +184,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.map(descriptor -> descriptor.toWebuiRelatedProcessDescriptor());
 	}
 
-	private boolean checkApplies(WebuiHUProcessDescriptor descriptor, ViewAsPreconditionsContext viewContext)
+	private boolean checkApplies(final WebuiHUProcessDescriptor descriptor, @NonNull ViewAsPreconditionsContext viewContext)
 	{
 		final DocumentIdsSelection rowIds = viewContext.getSelectedRowIds();
 		if (rowIds.isEmpty())
@@ -245,7 +245,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	}
 
 	@Override
-	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
+	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, @NonNull final Function<IProcessInstanceController, R> processor)
 	{
 		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForReading())
 		{
@@ -257,7 +257,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 	}
 
 	@Override
-	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, final Function<IProcessInstanceController, R> processor)
+	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, @NonNull final Function<IProcessInstanceController, R> processor)
 	{
 		try (final IAutoCloseable readLock = getInstance(pinstanceId).lockForWriting())
 		{

@@ -24,6 +24,8 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -154,7 +156,7 @@ public final class ProcessDescriptor implements ETagAware
 				.checkApplies();
 	}
 
-	public IProcessDefaultParametersProvider getDefaultParametersProvider()
+	@Nullable public IProcessDefaultParametersProvider getDefaultParametersProvider()
 	{
 		if (defaultParametersProviderClass == null)
 		{
@@ -165,7 +167,7 @@ public final class ProcessDescriptor implements ETagAware
 		{
 			return defaultParametersProviderClass.newInstance();
 		}
-		catch (InstantiationException | IllegalAccessException ex)
+		catch (final InstantiationException | IllegalAccessException ex)
 		{
 			throw new AdempiereException("Failed to instantiate the process", ex);
 		}
@@ -250,7 +252,7 @@ public final class ProcessDescriptor implements ETagAware
 			return processClassname;
 		}
 
-		private Class<?> getProcessClassOrNull()
+		@Nullable private Class<?> getProcessClassOrNull()
 		{
 			return processClass.orElse(null);
 		}
@@ -275,7 +277,7 @@ public final class ProcessDescriptor implements ETagAware
 			}
 		}
 
-		private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
+		@Nullable private Class<? extends IProcessDefaultParametersProvider> getProcessDefaultParametersProvider()
 		{
 			final Class<?> processClass = getProcessClassOrNull();
 			if (processClass == null || !IProcessDefaultParametersProvider.class.isAssignableFrom(processClass))
