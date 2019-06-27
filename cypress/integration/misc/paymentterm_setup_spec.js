@@ -1,27 +1,13 @@
-describe('Create test: payment term, https://github.com/metasfresh/metasfresh-e2e/issues/45', function() {
-  before(function() {
-    // login before each test
-    cy.loginByForm();
-  });
+import { PaymentTerm } from '../../support/utils/paymentterm';
 
-  it('Create a new Payment Term', function() {
-    const timestamp = new Date().getTime(); // used in the document names, for ordering
-    const paymenttermName = `ListPaymentTermName ${timestamp}`;
-    const paymenttermValue = `ListPaymentTermValue ${timestamp}`;
-
-    //create PaymentTerm 5 Tage Netto
-    cy.visitWindow('141', 'NEW');
-    cy.writeIntoStringField('Name', paymenttermName);
-    cy.clearField('Value');
-    cy.writeIntoStringField('Value', paymenttermValue);
-
-    cy.clearField('NetDays');
-    cy.writeIntoStringField('NetDays', '5');
-    cy.clearField('GraceDays');
-    cy.writeIntoStringField('GraceDays', '3');
-
-    cy.isChecked('IsValid').then(isValidValue => {
-      expect(isValidValue).to.equal(true);
+describe('Create test: payment term, https://github.com/metasfresh/metasfresh-e2e/issues/45 with fixt+obj', function(){
+    it('Create a new Payment Term', function() {
+        cy.fixture('misc/paymentterm.json').then(paymenttermJson => {
+            Object.assign(new PaymentTerm(), paymenttermJson)
+            .getNameAndValue()
+            .setNetDays(5)
+            .setGraceDays(3)
+            .apply();
+        });
     });
-  });
 });

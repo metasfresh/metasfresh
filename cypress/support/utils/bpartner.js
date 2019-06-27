@@ -5,9 +5,12 @@ export class BPartner {
     this.isVendor = false;
     this.vendorPricingSystem = undefined;
     this.vendorDiscountSchema = undefined;
+    this.customerDiscountSchema = undefined;
+    this.customerDunning = undefined;
     this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
+    this.bank = undefined;
   }
 
   setName(name) {
@@ -34,15 +37,39 @@ export class BPartner {
     return this;
   }
 
+  setCustomerDunning(customerDunning) {
+    cy.log(`BPartner - set customerDunning = ${customerDunning}`);
+    this.customerDunning = customerDunning;
+    return this;
+  }
+
   setCustomer(isCustomer) {
     cy.log(`BPartner - set isCustomer = ${isCustomer}`);
     this.isCustomer = isCustomer;
     return this;
   }
 
+  setPaymentTerm(paymentTerm) {
+    cy.log(`BPartner - set paymentTerm = ${paymentTerm}`);
+    this.paymentTerm = paymentTerm;
+    return this;
+  }
+
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
+    return this;
+  }
+
+  setCustomerDiscountSchema(customerDiscountSchema) {
+    cy.log(`BPartner - set customerDiscountSchema = ${customerDiscountSchema}`);
+    this.customerDiscountSchema = customerDiscountSchema;
+    return this;
+  }
+
+  setBank(bank) {
+    cy.log(`BPartner - set Bank = ${bank}`);
+    this.bank = bank;
     return this;
   }
 
@@ -75,6 +102,15 @@ export class BPartner {
     applyBPartner(this);
     cy.log(`BPartner - apply - END (name=${this.name})`);
     return this;
+  }
+
+
+  static applyBank(bank) {
+    cy.selectTab('C_BP_BankAccount');
+    cy.pressAddNewButton();
+    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+    cy.writeIntoStringField('A_Name', 'Test Account', true);
+    cy.pressDoneButton();
   }
 }
 
@@ -132,16 +168,16 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsVendor').then(isVendorValue => {
+      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
-          cy.clickOnCheckBox('IsVendor');
+          cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
         }
       });
       if (bPartner.vendorPricingSystem) {
-        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
+        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, true /*modal*/);
       }
       if (bPartner.vendorDiscountSchema) {
-        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, bPartner.vendorDiscountSchema);
+        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
       }
       cy.pressDoneButton();
     }
@@ -151,29 +187,42 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.isChecked('IsCustomer').then(isCustomerValue => {
+      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer');
+          cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
         }
       });
+      if (bPartner.customerDiscountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
+      }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
+        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true /*modal*/);
+      }
+      if (bPartner.customerDunning) {
+        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
+      }
+      if (bPartner.paymentTerm) {
+        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
+        cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
       }
       cy.pressDoneButton();
     }
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
+      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
       cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function(bPartnerContact) {
+      bPartner.contacts.forEach(function (bPartnerContact) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
+    }
+    if (bPartner.bank) {
+      BPartner.applyBank(bPartner.bank);
     }
   });
 }
@@ -181,17 +230,19 @@ function applyBPartner(bPartner) {
 function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
-  //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`);
+  cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
+  cy.get('.panel-modal-header-title').click();
 
   cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
       bPartnerLocation.country,
       bPartnerLocation.country,
       false /*typeList */,
-      false /*modal */,
+      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
       url
     );
   });
@@ -202,11 +253,11 @@ function applyLocation(bPartnerLocation) {
 function applyContact(bPartnerContact) {
   cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField('Firstname', bPartnerContact.firstName);
-  cy.writeIntoStringField('Lastname', bPartnerContact.lastName);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true /*modal*/);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true /*modal*/);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox('IsDefaultContact');
+    cy.clickOnCheckBox('IsDefaultContact', true /*expectedPatchValue*/, true /*modal*/);
   }
   cy.pressDoneButton();
 }

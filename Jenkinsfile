@@ -12,8 +12,9 @@ chuckNorris()
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger metasfresh builds.<br>
-Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
+		booleanParam(defaultValue: false, description: '''Set to true if this build shall trigger metasfresh builds.<br>
+Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere<br><br>
+Currently, downstream builds fail for some reason..that's why the default value is now <code>false</code> for the time being''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]),
 	pipelineTriggers([]),

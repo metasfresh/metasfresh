@@ -7,7 +7,7 @@ describe('Serial letter tests', function() {
   const marketingContactName = `${timestamp} Serial letter marketing contact`;
 
   it('Create print format', function() {
-    cy.visit('/window/240/NEW');
+    cy.visitWindow('240', 'NEW');
 
     cy.writeIntoStringField('Name', printFormatName);
     cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
@@ -17,22 +17,21 @@ describe('Serial letter tests', function() {
   });
 
   it('Create outbound document', function() {
-    cy.visit('/window/540173/NEW');
-    // cy.visit('http://google.com');
+    cy.visitWindow('540173', 'NEW');
     cy.writeIntoLookupListField('AD_Table_ID', 'Letter', 'Letter');
     cy.writeIntoLookupListField('AD_PrintFormat_ID', printFormatName, printFormatName);
     cy.clickOnCheckBox('IsCreatePrintJob');
   });
 
   it('creates Marketing platform', function() {
-    cy.visit('/window/540437/NEW');
+    cy.visitWindow('540437', 'NEW');
     cy.writeIntoStringField('Name', marketingPlatformName);
     cy.clickOnCheckBox('IsRequiredLocation');
     //cy.wait(500);
   });
 
   it('Creates boiler plate (text-snippet)', function() {
-    cy.visit('/window/504410/NEW');
+    cy.visitWindow('504410', 'NEW');
     cy.writeIntoStringField('Name', boilerPlateName);
     cy.writeIntoStringField('Subject', 'Subject');
     cy.writeIntoTextField('TextSnippet', 'TextSnippet');
@@ -40,7 +39,7 @@ describe('Serial letter tests', function() {
   });
 
   it('Creates contact person', function() {
-    cy.visit('/window/540435/NEW');
+    cy.visitWindow('540435', 'NEW');
     cy.writeIntoStringField('Name', marketingContactName);
     cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
     cy.editAddress('C_Location_ID', function(url) {
@@ -50,7 +49,7 @@ describe('Serial letter tests', function() {
   });
 
   it('Create marketing campaign', function() {
-    cy.visit('/window/540434/NEW');
+    cy.visitWindow('540434', 'NEW');
     cy.writeIntoStringField('Name', marketingCampaignName);
     cy.writeIntoLookupListField('MKTG_Platform_ID', marketingPlatformName, marketingPlatformName);
     cy.writeIntoLookupListField('AD_BoilerPlate_ID', boilerPlateName, boilerPlateName);
@@ -59,7 +58,13 @@ describe('Serial letter tests', function() {
   it('add contact person to campaign', function() {
     cy.selectTab('MKTG_Campaign_ContactPerson');
     cy.pressAddNewButton();
-    cy.writeIntoLookupListField('MKTG_ContactPerson_ID', marketingContactName, marketingContactName);
+    cy.writeIntoLookupListField(
+      'MKTG_ContactPerson_ID',
+      marketingContactName,
+      marketingContactName,
+      false /*typeList*/,
+      true /*modal*/
+    );
     cy.pressDoneButton();
 
     // needs https://github.com/metasfresh/metasfresh-webui-frontend/issues/1978#issuecomment-445274540

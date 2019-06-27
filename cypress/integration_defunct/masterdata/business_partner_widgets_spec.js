@@ -1,8 +1,6 @@
 
 describe('Business partner window widgets test', function() {
   before(function() {
-    // login before each test
-    cy.loginByForm();
     cy.visit('/window/123/2156447');
     cy
       .get('.header-breadcrumb-sitename')

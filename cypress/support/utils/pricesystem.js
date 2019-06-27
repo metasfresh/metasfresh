@@ -1,23 +1,23 @@
 export class Pricesystem {
   constructor(name) {
-    this.Name = name;
+    this.name = name;
   }
 
   setName(name) {
     cy.log(`Pricesystem - set name = ${name}`);
-    this.Name = name;
+    this.name = name;
     return this;
   }
 
   setDescription(description) {
     cy.log(`Pricesystem - set description = ${description}`);
-    this.Description = description;
+    this.description = description;
     return this;
   }
 
   setValue(value) {
     cy.log(`Pricesystem - set value = ${value}`);
-    this.Value = value;
+    this.value = value;
     return this;
   }
 
@@ -36,11 +36,9 @@ export class Pricesystem {
 }
 
 function applyPricesystem(pricesystem) {
-  const timestamp = new Date().getTime();
-
-  describe(`Create new Pricesystem ${pricesystem.Name}`, function() {
+  describe(`Create new Pricesystem ${pricesystem.name}`, function() {
     cy.visitWindow('540320', 'NEW');
-    cy.writeIntoStringField('Name', `${pricesystem.Name} ${timestamp}`);
-    cy.writeIntoStringField('Description', `${pricesystem.Description}`);
+    cy.writeIntoStringField('Name', `${pricesystem.name}`);
+    cy.writeIntoStringField('Description', `${pricesystem.description}`);
   });
 }

@@ -5,7 +5,7 @@ import { Product, ProductCategory } from '../../support/utils/product';
 import { SalesOrder } from '../../support/utils/sales_order';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 import { BPartner } from '../../support/utils/bpartner';
-
+import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
 describe('New sales order test', function() {
   const windowId = salesOrders.windowId;
   let headerCaption = '';
@@ -23,9 +23,16 @@ describe('New sales order test', function() {
     const productValue = `sales_order_test ${timestamp}`;
     const productCategoryName = `ProductCategoryName ${timestamp}`;
     const productCategoryValue = `ProductNameValue ${timestamp}`;
+    const discountSchemaName = `sales_order_test ${timestamp}`;
+
+    new DiscountSchema(discountSchemaName)
+      .addDiscountBreak(new DiscountBreak().setBreakValue(0).setBreakDiscount(0))
+      .apply();
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(customerName)
+        .setCustomerDiscountSchema(discountSchemaName)
         .apply();
     });
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -251,8 +258,6 @@ describe('Existing sales order', function() {
   const vendorName = `Cypress Test Partner #1 ${timestamp}`;
 
   before(function() {
-    cy.loginByForm();
-
     cy.fixture('purchase/cypress_vendor.json').then(() => {
       new BPartner(vendorName).apply();
     });

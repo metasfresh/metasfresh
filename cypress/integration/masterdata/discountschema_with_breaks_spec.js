@@ -1,4 +1,4 @@
-describe('New subscription flatrate conditions Test', function() {
+describe('New sdiscount schema Test', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
   const discountschemaName = `${timestamp} (Cypress Test)`;
 
@@ -20,9 +20,12 @@ describe('New subscription flatrate conditions Test', function() {
 
 function addBreakRecord(productValue, breakValue, breakDiscount) {
   cy.pressAddNewButton();
-  cy.selectInListField('PriceBase', 'Fixed', true /*modal*/);
+
   cy.writeIntoLookupListField('M_Product_ID', productValue, productValue, true /*modal*/);
   cy.clearField('BreakValue').writeIntoStringField('BreakValue', breakValue, true /*modal*/);
   cy.clearField('BreakDiscount').writeIntoStringField('BreakDiscount', breakDiscount, true /*modal*/);
+
+  cy.resetListValue('PriceBase', true /*modal*/);
+
   cy.pressDoneButton();
 }

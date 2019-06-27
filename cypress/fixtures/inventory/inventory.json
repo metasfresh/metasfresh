@@ -1,0 +1,10 @@
+{
+    "singleHUInventoryDocTypeName": "Inventory",
+    "de_DE__singleHUInventoryDocTypeName": "Inventur",
+
+    "aggregatedHUsInventoryDocTypeName": "Inventory with aggregated HUs",
+    "de_DE__aggregatedHUsInventoryDocTypeName": "Inventur mit aggregierten Materialangaben",
+
+    "warehouseName_comment": "Note that there is no trl for warehouse names",
+    "warehouseName": "Hauptlager"
+}
