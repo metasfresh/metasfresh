@@ -10,6 +10,8 @@ describe('Aggregated inventory test', function() {
   const productName = `SingleHUInventory ${timestamp}`;
   const productValue = `${timestamp}`;
 
+  cy.wait(1000); // see comment/doc of getLanguageSpecific
+
   before(function() {
     // setSingleHUsDocTypeAsDefault();
     cy.fixture('product/simple_product.json').then(productJson => {

@@ -10,6 +10,8 @@ describe('Aggregated inventory test', function() {
   const productName = `AggregatedHUsInventory ${timestamp}`;
   const productValue = `${timestamp}`;
 
+  cy.wait(1000); // see comment/doc of getLanguageSpecific
+
   it('Create a new aggregated-HUs inventory doc', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
