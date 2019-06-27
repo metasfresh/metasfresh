@@ -1420,7 +1420,7 @@ public class InterfaceWrapperHelper
 			return interfaceClass.isAssignableFrom(model.getClass());
 		}
 
-		final String modelTableName = getModelTableName(model);
+		final String modelTableName = getModelTableNameOrNull(model); // make sure not to fail if 'model' has some unrelated class
 
 		return interfaceTableName.equals(modelTableName);
 	}
