@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.pricing.PriceListId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,6 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -51,6 +51,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
@@ -58,7 +59,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UOMConversionContext;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -173,7 +173,7 @@ public class CalloutOrder extends CalloutEngine
 				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
 		{
 			// for POS/PrePay
-			;
+
 		}
 		else
 		{
@@ -1093,9 +1093,12 @@ public class CalloutOrder extends CalloutEngine
 		orderLineBL.updateLineNetAmt(orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
 
-		if (!Check.isEmpty(priceAndDiscount.getPriceLimitEnforceExplanation(), true))
+		if (priceAndDiscount.isPriceLimitEnforced())
 		{
-			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, priceAndDiscount.getPriceLimitEnforceExplanation(), /* isError */false);
+			calloutField.fireDataStatusEEvent(
+					MSG_UnderLimitPrice,
+					priceAndDiscount.getPriceLimitEnforcedExplanation().translate(Env.getAD_Language()),
+					/* isError */false);
 		}
 
 		//
@@ -1326,9 +1329,11 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull final String creditStatus;
+		@NonNull
+		final String creditStatus;
 		final boolean evalCreditstatus;
-		@NonNull final Timestamp evaluationDate;
+		@NonNull
+		final Timestamp evaluationDate;
 	}
 
 	/**
@@ -1360,17 +1365,17 @@ public class CalloutOrder extends CalloutEngine
 		return !dontCheck;
 	}
 
-	private static interface DropShipPartnerAware
+	private interface DropShipPartnerAware
 	{
-		public int getDropShip_BPartner_ID();
+		int getDropShip_BPartner_ID();
 
-		public void setDropShip_Location_ID(int DropShip_Location_ID);
+		void setDropShip_Location_ID(int DropShip_Location_ID);
 
-		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
+		void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
 
-		public void setDropShip_User_ID(int DropShip_User_ID);
+		void setDropShip_User_ID(int DropShip_User_ID);
 
-		public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
+		void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
 	}
 
 	public String deliveryToBPartnerID(final ICalloutField calloutField)
