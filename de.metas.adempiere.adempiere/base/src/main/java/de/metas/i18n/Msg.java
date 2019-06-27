@@ -62,7 +62,7 @@ public final class Msg
 	/**
 	 * @return {@link Msg} singleton instance
 	 */
-	private static final Msg get()
+	private static Msg get()
 	{
 		return instance;
 	}	// get
@@ -92,7 +92,7 @@ public final class Msg
 	}
 
 	/** @return given adLanguage if not null or base language */
-	private static final String notNullOrBaseLanguage(@Nullable final String adLanguage)
+	private static String notNullOrBaseLanguage(@Nullable final String adLanguage)
 	{
 		return Check.isEmpty(adLanguage, true) ? Language.getBaseAD_Language() : adLanguage;
 	}
@@ -280,7 +280,7 @@ public final class Msg
 		return getMessage(adLanguage, adMessage).getMsgTextAndTip();
 	}
 
-	private final static Message getMessage(final String adLanguage, final String adMessage)
+	private static Message getMessage(final String adLanguage, final String adMessage)
 	{
 		if (adMessage == null || adMessage.length() == 0)
 		{
@@ -382,30 +382,62 @@ public final class Msg
 	 * Get clear text for AD_Message with parameters
 	 *
 	 * @param adLanguage Language
-	 * @param AD_Message Message key
+	 * @param adMessage Message key
 	 * @param args MessageFormat arguments
 	 * @return translated text
 	 * @see java.text.MessageFormat for formatting options
 	 */
-	public static String getMsg(final String adLanguage, final String AD_Message, final Object[] args)
+	public static String getMsg(final String adLanguage, final String adMessage, final Object[] args)
 	{
-		final String msg = getMsg(adLanguage, AD_Message);
+		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
+		final Message message = getMessage(adLanguageToUse, adMessage);
+		return format(adLanguageToUse, message, args);
+	}	// getMsg
+	
+	private static String format(@NonNull final String adLanguage, @NonNull final Message message, @Nullable final Object[] args)
+	{
+		final String messageStr = message.getMsgTextAndTip();
 		if (args == null || args.length == 0)
 		{
-			return msg;
+			return messageStr;
 		}
 
-		String retStr = msg;
+		String retStr = messageStr;
 		try
 		{
-			retStr = MessageFormat.format(msg, args);	// format string
+			normalizeArgsBeforeFormat(args, adLanguage);
+			retStr = MessageFormat.format(messageStr, args);	// format string
 		}
 		catch (final Exception e)
 		{
-			s_log.error(msg, e);
+			s_log.error(messageStr, e);
 		}
 		return retStr;
-	}	// getMsg
+	}
+	
+	private static void normalizeArgsBeforeFormat(final Object[] args, final String adLanguage)
+	{
+		if(args == null || args.length == 0)
+		{
+			return;
+		}
+		
+		for (int i = 0; i < args.length; i++)
+		{
+			final Object arg = args[i];
+			final Object argNorm;
+			if(arg instanceof ITranslatableString)
+			{
+				argNorm = ((ITranslatableString)arg).translate(adLanguage);
+			}
+			else
+			{
+				argNorm = arg;
+			}
+			
+			args[i] = argNorm;
+		}
+	}
 
 	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
 	{
@@ -833,14 +865,14 @@ public final class Msg
 		public static final Message EMPTY = ofMissingADMessage("");
 
 		/** @return instance for given message text and tip */
-		public static final Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
+		public static Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
 		{
 			final boolean missing = false;
 			return new Message(adMessage, msgText, msgTip, missing);
 		}
 
 		/** @return instance of given missing adMessage */
-		public static final Message ofMissingADMessage(final String adMessage)
+		public static Message ofMissingADMessage(final String adMessage)
 		{
 			final String msgText = adMessage;
 			final String msgTip = null; // no tip
@@ -943,7 +975,7 @@ public final class Msg
 			this.poDescription = toTranslatableString(poDescriptions, this.description);
 		}
 
-		private static final ITranslatableString toTranslatableString(final Map<String, String> map, final ITranslatableString fallback)
+		private static ITranslatableString toTranslatableString(final Map<String, String> map, final ITranslatableString fallback)
 		{
 			final String defaultValue = normalizeString(map.get(DEFAULT_LANG), fallback.getDefaultValue());
 
@@ -962,7 +994,7 @@ public final class Msg
 			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
 		}
 
-		private static final String normalizeString(final String str, final String fallback)
+		private static String normalizeString(final String str, final String fallback)
 		{
 			if (!Check.isEmpty(str, true))
 			{
