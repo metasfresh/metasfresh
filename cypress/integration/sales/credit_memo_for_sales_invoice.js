@@ -29,10 +29,17 @@ import {salesInvoices} from "../../page_objects/sales_invoices";
 
 describe('Create a Credit memo for Sales Invoice', function () {
 
-  it('Open the Create Credit Memo action', function () {
+  const creditMemo = 'Credit Memo';
+  let originalSalesInvoiceNumber;
+  let originalPriceList;
+  let originalCurrency;
+  let originalProduct;
+  let originalQuantity;
+
+  it('Open Sales Invoice Window', () => {
     cy.visitWindow('167', '1000010');
-    cy.executeHeaderActionWithDialog('C_Invoice_Create_CreditMemo');
   });
+
 
   it('Sales Invoice is not paid', function () {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
@@ -42,11 +49,40 @@ describe('Create a Credit memo for Sales Invoice', function () {
   });
 
   it('Sales Invoice is Completed', function () {
-    documentStatusIsCompleted(DocumentStatus.Completed);
+    expectDocumentStatus(DocumentStatus.Completed);
+  });
+
+  it('Save values needed for the next step', function () {
+    cy.getStringFieldValue('DocumentNo').then(documentNumber => {
+      originalSalesInvoiceNumber = documentNumber;
+    });
+
+    cy.getStringFieldValue('M_PriceList_ID').then(priceList => {
+      originalPriceList = priceList;
+    });
+
+    cy.getStringFieldValue('C_Currency_ID').then(currency => {
+      originalCurrency = currency;
+    });
+
+
+    cy.selectTab('C_InvoiceLine');
+    cy.selectSingleTabRow();
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_Product_ID', true).then(product => {
+      originalProduct = product;
+    });
+
+    cy.getStringFieldValue('QtyEntered', true).then(qty => {
+      originalQuantity = qty;
+    });
+    cy.pressDoneButton();
   });
 
   it('Create the Credit Memo', function () {
-    cy.selectInListField('C_DocType_ID', 'Credit Memo', true, null, true);
+    cy.executeHeaderActionWithDialog('C_Invoice_Create_CreditMemo');
+
+    cy.selectInListField('C_DocType_ID', creditMemo, true, null, true);
 
     // ensure all the checkboxes are ok
     setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
@@ -65,22 +101,42 @@ describe('Create a Credit memo for Sales Invoice', function () {
   });
 
 
-  it('Ensures there is only 1 Sales Invoice document and opens it', function () {
-    cy.log(`the number of rows is: ${JSON.stringify(salesInvoices.getRows())}`);
+  it('Ensure there is only 1 Sales Invoice row and open it', function () {
+    // salesInvoices.getRows().should('have.length', 1);
 
-    cy.log('HELPME!');
-
-    cy.log('manual work: open the Credit Memo');
-    cy.wait(5000);
-
+    // select the first Table Row and click it (open it)
+    salesInvoices.getRows().eq(0).dblclick();
   });
 
 
   it('The Sales Invoice is a Credit Memo', function () {
-    documentStatusIsCompleted(DocumentStatus.InProgress);
+    expectDocumentStatus(DocumentStatus.InProgress);
+    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemo);
   });
 
 
+  it('Has the same properties and reference to the original', function () {
+    cy.getStringFieldValue('DocumentNo').should('not.be.equal', originalSalesInvoiceNumber);
+    cy.getStringFieldValue('M_PriceList_ID').should('be.equal', originalPriceList);
+    cy.getStringFieldValue('C_Currency_ID').should('be.equal', originalCurrency);
+  });
+
+
+  it('Has the same properties and reference to the original -- Advanced edit', function () {
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('Ref_Invoice_ID', true).should('be.equal', originalSalesInvoiceNumber);
+    cy.pressDoneButton();
+  });
+
+
+  it('Has the same properties and reference to the original -- Line advanced edit', function () {
+    cy.selectTab('C_InvoiceLine');
+    cy.selectSingleTabRow();
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_Product_ID', true).should('be.equal', originalProduct);
+    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity);
+    cy.pressDoneButton();
+  });
 });
 
 
@@ -147,7 +203,7 @@ export class DocumentStatus {
   static _tag_docStatusInProgress = '.tag-default';
 }
 
-function documentStatusIsCompleted(expectedDocumentStatus) {
+function expectDocumentStatus(expectedDocumentStatus) {
   cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
     const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
     const documentTag = DocumentStatus[`_tag_${expectedDocumentStatus}`];
