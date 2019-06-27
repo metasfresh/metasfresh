@@ -1,30 +1,30 @@
-import { DataEntryGroup, DataEntrySubGroup } from '../../support/utils/dataEntryGroup';
+import { DataEntryTab, DataEntrySubTab } from '../../support/utils/dataEntryTab';
 import { DataEntrySection, DataEntryLine } from '../../support/utils/dataEntrySection';
 import { DataEntryField, DataEntryListValue } from '../../support/utils/dataEntryField';
 
 describe('Create bpartner with custom dataentry based tabs', function() {
   it('Create bpartner with custom dataentry based tabs', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
-    const dataEntryGroupName = `Group1 ${timestamp}`;
+    const dataEntryTabName = `Group1 ${timestamp}`;
 
-    const dataEntrySubGroup1Name = `SubGroup1-1 ${timestamp}`;
+    const dataEntrySubTab1Name = `SubGroup1-1 ${timestamp}`;
     const dataEntrySection1Name = `Section1-1 ${timestamp}`;
     const dataEntrySection2Name = `Section1-2 ${timestamp}`;
 
-    new DataEntryGroup(dataEntryGroupName, 'Business Partner')
+    new DataEntryTab(dataEntryTabName, 'Business Partner')
       .setTabName('Group1-Tab1')
       .setSeqNo('21')
-      .setDescription(`Description of ${dataEntryGroupName}`)
+      .setDescription(`Description of ${dataEntryTabName}`)
       //.setActive(false) // you can set it to inactive, but then no subgroups can be added
-      .addDataEntrySubGroup(
-        new DataEntrySubGroup(dataEntrySubGroup1Name)
+      .addDataEntrySubTab(
+        new DataEntrySubTab(dataEntrySubTab1Name)
           .setTabName('Group1-Tab1-SubTab1')
-          .setDescription(`${dataEntrySubGroup1Name} - Description`)
+          .setDescription(`${dataEntrySubTab1Name} - Description`)
           .setSeqNo('11')
       )
       .apply();
 
-    new DataEntrySection(dataEntrySection1Name, dataEntrySubGroup1Name)
+    new DataEntrySection(dataEntrySection1Name, dataEntrySubTab1Name)
       .setDescription(
         'Section with 3 lines; in the 1st, just one col is used; in the 2nd, one field is long-text, yet the two fields of the 3rd line shall still be alligned!'
       )
@@ -36,7 +36,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
     const section1FieldBuilder = new DataEntryField(
       'Tab1-Section1-Line1-Field1',
-      `${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_11`
+      `${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_11`
     )
       .setDescription('Yes-No, single field in its line')
       .setMandatory(true)
@@ -47,7 +47,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
     section1FieldBuilder.apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line2-Field2')
-      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_22`)
+      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_22`)
       .setDescription('LongText, first field in its line')
       .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
       .setDataEntryRecordType('Long text')
@@ -61,7 +61,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .apply();
     section1FieldBuilder
       .setName('Tab1-Section1-Line3-Field4')
-      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_33`)
+      .setDataEntryLine(`${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_33`)
       .setDescription('Text, first field in its line')
       .setDataEntryRecordType('Text')
       .setSeqNo('10')
@@ -72,7 +72,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .setSeqNo('20')
       .apply();
 
-    new DataEntrySection(dataEntrySection2Name, dataEntrySubGroup1Name)
+    new DataEntrySection(dataEntrySection2Name, dataEntrySubTab1Name)
       .setDescription('Section with one line; its two columns shall appear to be aligned with the first section')
       .setSeqNo('25')
       .addDataEntryLine(new DataEntryLine().setSeqNo('10'))
@@ -80,7 +80,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
     new DataEntryField(
       'Tab1-Section2-Line1-Field1',
-      `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`
+      `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`
     )
       .setDescription('Tab1-Section2-Field1 Description')
       .setMandatory(true)
@@ -90,7 +90,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
     new DataEntryField(
       'Tab1-Section2-Line1-Field2',
-      `${dataEntrySection2Name}_${dataEntryGroupName}_${dataEntrySubGroup1Name}_10`
+      `${dataEntrySection2Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_10`
     )
       .setDescription('Tab1-Section2-Field2 Description')
       .setMandatory(false) // setting only the section's 1st field to be mandatory because right now, only the first field is actually displayed
@@ -107,19 +107,19 @@ describe('Create bpartner with custom dataentry based tabs', function() {
     cy.visitWindow('123', 'NEW');
     cy.writeIntoStringField('CompanyName', `DataEntryBPartnerTestName ${timestamp}`);
 
-    cy.get(`@${dataEntryGroupName}`).then(dataEntryGroup => {
-      cy.log(`going to open the tab for dataEntryGroup=${JSON.stringify(dataEntryGroup)}`);
-      cy.selectTab(`DataEntry_Group_ID-${dataEntryGroup.documentId}`);
+    cy.get(`@${dataEntryTabName}`).then(dataEntryTab => {
+      cy.log(`going to open the tab for dataEntryTab=${JSON.stringify(dataEntryTab)}`);
+      cy.selectTab(`DataEntry_Tab_ID-${dataEntryTab.documentId}`);
     });
 
-    cy.get(`@${dataEntrySubGroup1Name}`).then(dataEntrySubGroup => {
-      cy.log(`going to open the tab for dataEntrySubGroup=${JSON.stringify(dataEntrySubGroup)}`);
-      cy.selectTab(`DataEntry_SubGroup_ID-${dataEntrySubGroup.documentId}`);
+    cy.get(`@${dataEntrySubTab1Name}`).then(dataEntrySubTab => {
+      cy.log(`going to open the tab for dataEntrySubTab=${JSON.stringify(dataEntrySubTab)}`);
+      cy.selectTab(`DataEntry_SubTab_ID-${dataEntrySubTab.documentId}`);
     });
 
     // deactivate the custom tab, because we don't want other tests to unexpectedly have it among their respective bpartner-tabs
-    cy.get(`@${dataEntryGroupName}`).then(dataEntryGroup => {
-      cy.visitWindow('540571', dataEntryGroup.documentId);
+    cy.get(`@${dataEntryTabName}`).then(dataEntryTab => {
+      cy.visitWindow('540571', dataEntryTab.documentId);
       cy.clickOnIsActive();
     });
   });

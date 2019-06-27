@@ -1,8 +1,8 @@
 export class DataEntrySection {
-  constructor(name, dataEntrySubGroup) {
-    cy.log(`DataEntrySection - set name = ${name}; dataEntrySubGroup= ${dataEntrySubGroup}`);
+  constructor(name, dataEntrySubTab) {
+    cy.log(`DataEntrySection - set name = ${name}; dataEntrySubTab= ${dataEntrySubTab}`);
     this.name = name;
-    this.dataEntrySubGroup = dataEntrySubGroup;
+    this.dataEntrySubTab = dataEntrySubTab;
     this.sectionName = name;
     this.seqNo = undefined;
     this.description = undefined;
@@ -72,16 +72,16 @@ function applyDataEntrySection(dataEntrySection) {
   cy.visitWindow('540593', 'NEW');
 
   cy.writeIntoLookupListField(
-    'DataEntry_SubGroup_ID',
-    dataEntrySection.dataEntrySubGroup,
-    dataEntrySection.dataEntrySubGroup
+    'DataEntry_SubTab_ID',
+    dataEntrySection.dataEntrySubTab,
+    dataEntrySection.dataEntrySubTab
   );
 
   cy.writeIntoStringField('Name', dataEntrySection.name);
   cy.writeIntoStringField('SectionName', dataEntrySection.sectionName);
 
   if (dataEntrySection.seqNo) {
-    cy.getFieldValue('SeqNo').then(currentValue => {
+    cy.getStringFieldValue('SeqNo').then(currentValue => {
       if (currentValue !== dataEntrySection.seqNo) {
         cy.log(
           `applyDataEntrySection - dataEntrySection.seqNo=${dataEntrySection.seqNo}; currentValue=${currentValue}`
@@ -112,8 +112,8 @@ function applyDataEntryLine(dataEntryLine) {
   cy.pressAddNewButton();
 
   if (dataEntryLine.seqNo) {
-    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
-      cy.log(`applyDataEntryLine - dataEntryGroup.seqNo=${dataEntryLine.seqNo}; currentValue=${currentValue}`);
+    cy.getStringFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+      cy.log(`applyDataEntryLine - dataEntryTab.seqNo=${dataEntryLine.seqNo}; currentValue=${currentValue}`);
       if (currentValue !== dataEntryLine.seqNo) {
         cy.clearField('SeqNo', true /*modal*/);
         cy.writeIntoStringField('SeqNo', `${dataEntryLine.seqNo}`, true /*modal*/);

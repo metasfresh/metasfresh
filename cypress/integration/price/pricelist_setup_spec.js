@@ -1,19 +1,28 @@
-import { PriceList } from '../../support/utils/pricelist';
-import { PriceListVersion } from '../../support/utils/pricelistversion';
+import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
+import { Pricesystem } from '../../support/utils/pricesystem';
 
 describe('Create Pricelist for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/95', function() {
-  const priceListName = 'Test Preisliste DEU EUR';
-
-  it('Create new Pricelist', function() {
-    cy.fixture('price/pricelist.json').then(pricelistJson => {
-      Object.assign(new PriceList(priceListName), pricelistJson).apply();
+  const timestamp = new Date().getTime();
+  const priceSystemName = `Test Preissystem ${timestamp}`;
+  const priceListName = `Test Preisliste DEU EUR ${timestamp}`;
+  it('Create new Pricesystem', function() {
+    cy.fixture('price/pricesystem.json').then(priceSystemJson => {
+      Object.assign(
+        new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
+        priceSystemJson
+      )
+        .setName(priceSystemName)
+        .apply();
     });
-    cy.get('@priceListObj').then(obj => {
-      // access the users argument
+  });
+  it('Create new Pricelist and PLV', function() {
+    cy.fixture('price/pricelist.json').then(pricelistJson => {
       cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-        cy.log(`PriceList - Name = ${priceListName}`);
-        cy.log(`PriceList - DocID = ${obj.documentId}`);
-        Object.assign(new PriceListVersion(`${priceListName}`, `${obj.documentId}`), priceListVersionJson).apply();
+        Object.assign(new PriceList(), pricelistJson)
+          .setName(priceListName)
+          .setPriceSystem(priceSystemName)
+          .addPriceListVersion(Object.assign(new PriceListVersion(), priceListVersionJson))
+          .apply();
       });
     });
   });

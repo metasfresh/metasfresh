@@ -1,18 +1,8 @@
 {
-    "AD_Client_ID": 1000000,
-    "AD_Org_ID": 1000000,
-    "Name": "Test Preisliste DEU EUR",
-    "Country": "Deutschland",
-    "C_Country_ID": 101,
-    "Currency": "EUR",
-    "C_Currency_ID": 318,
-    "Description": "Test Preisliste Description",
-    "IsActive": true,
-    "IsDefault": false,
-    "IsMandatory": false,
-    "IsSOPriceList": true,
-    "IsTaxIncluded": false,
-    "M_PricingSystem_ID": "",
-    "PricingSystem": "Test Preissystem",
-    "PricePrecision": 2
+    "name": "Test Preisliste DEU EUR",
+    "country": "Deutschland",
+    "currency": "EUR",
+    "description": "Test Preisliste Description",
+    "priceSystem": "Test Preissystem",
+    "pricePrecision": 2
 }

@@ -1,22 +1,14 @@
 {
-    "name": "ProductName",
-    "description": "TestProduct1",
-    "value": "TestProduct1",
-    "m_product_category": "06_Kartoffeln",
-    "c_uom": "Each",
-    "de_DE__c_uom": "Stück",
-    "isStocked": true,
-    "isPurchased": true,
-    "isSold": true,
-    "isDiverse": false,
-    "productType": "Item",
-    "de_DE__productType": "Artikel",
-    "prices": [
-      {
-        "priceStd": 2.00,
-        "m_pricelist_version": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
-        "de_DE__m_pricelist_version": "Testpreise Kunden (Deutschland)_Deutschland_EUR_2015-01-01",
-        "c_taxcategory": "Normaler Steuersatz 19% (Deutschland)"
-      }
-    ]
+  "name": "ProductName",
+  "description": "TestProduct1",
+  "value": "TestProduct1",
+  "m_product_category": "06_Kartoffeln",
+  "c_uom": "Each",
+  "de_DE__c_uom": "Stück",
+  "isStocked": true,
+  "isPurchased": true,
+  "isSold": true,
+  "isDiverse": false,
+  "productType": "Item",
+  "de_DE__productType": "Artikel"
 }
