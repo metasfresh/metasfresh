@@ -54,6 +54,21 @@ declare namespace Cypress {
      */
     getCheckboxValue(fieldName: string, modal?: boolean): Chainable<any>
 
+
+    /**
+     * @param fieldName name of the field is question
+     * @param expectedPatchValue - the expected value of the checkbox
+     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch
+     *
+     * @example
+     * // click on a checkbox in a modal started from action
+     * cy.clickOnCheckBox('CompleteIt', true, true, '/rest/api/process/');
+     *
+     */
+    clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal?: boolean, rewriteUrl ?: string): Chainable<any>
+
+
     /**
      * Open the advanced edit overlay via ALT+E shortcut
      */
@@ -184,21 +199,11 @@ declare namespace Cypress {
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
      * cy.writeIntoTextField('Description', 'myname')
      *
+     * @example
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoTextField('Description', 'myname', true)
      */
     writeIntoTextField(fieldName: string, stringValue: string, modal?: boolean): Chainable<any>
-
-
-    // /**
-    //  * Click on a checkbox field
-    //  *
-    //  * @param fieldName
-    //  * @param expectedPatchValue
-    //  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
-    //  * @param rewriteUrl
-    //  */
-    // clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
 
 
     /**
@@ -226,6 +231,30 @@ declare namespace Cypress {
      * Mark all current notifications as read in the API and reset counter.
      */
     readAllNotifications(): Chainable<any>
+
+
+    /**
+     * @param waitBeforePress optional, default 0 - wait this many milliseconds before pressing the start button
+     */
+    pressStartButton(waitBeforePress ?: number): Chainable<any>
+
+    /**
+     * Get the notification modal from the top-right of the screen
+     * which appears when an error happens, or when a process produces a notification.
+     *
+     * @param containsText optional, default null - look for the given test in the notification element
+     *
+     * @example
+     * // This will regex match the text "Created: Gutschrift, Document No 170256" (observe the "/" at start and end which denotes a regex)
+     * // (regex docs: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+     * cy.getNotificationModal(/Created.*Document No/);
+     *
+     * @example
+     * // This will work as String.contains('Tibi'):
+     * cy.getNotificationModal('Tibi');
+     */
+    getNotificationModal(containsText?: string | RegExp)
+
 
   }
 }
