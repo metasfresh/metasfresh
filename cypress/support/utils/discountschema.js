@@ -83,12 +83,12 @@ function applyDiscountBreak(discountBreak) {
   // we want neither a fixed nor a pricelist based price
   cy.resetListValue('PriceBase', true);
 
-  cy.getFieldValue('BreakValue', true /*modal*/).then(breakValueFieldValue => {
+  cy.getStringFieldValue('BreakValue', true /*modal*/).then(breakValueFieldValue => {
     if (discountBreak.breakValue && breakValueFieldValue != discountBreak.breakValue) {
       cy.writeIntoStringField('BreakValue', discountBreak.breakValue, true /*modal*/);
     }
   });
-  cy.getFieldValue('BreakDiscount', true /*modal*/).then(breakDiscountFieldValue => {
+  cy.getStringFieldValue('BreakDiscount', true /*modal*/).then(breakDiscountFieldValue => {
     if (discountBreak.breakDiscount && breakDiscountFieldValue != discountBreak.breakDiscount) {
       cy.writeIntoStringField('BreakDiscount', discountBreak.breakDiscount);
     }

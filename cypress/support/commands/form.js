@@ -123,9 +123,11 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
 /*
  * Right now it can only select the current date
  */
-Cypress.Commands.add('selectDateViaPicker', fieldName => {
-  const path = `.form-field-${fieldName}`;
-
+Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
+  let path = `.form-field-${fieldName}`;
+  if (modal) {
+    path = `.panel-modal ${path}`;
+  }
   cy.get(path)
     .find('.datepicker')
     .click();

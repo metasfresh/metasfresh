@@ -5,6 +5,6 @@
     "aggregatedHUsInventoryDocTypeName": "Inventory with aggregated HUs",
     "de_DE__aggregatedHUsInventoryDocTypeName": "Inventur mit aggregierten Materialangaben",
 
-    "stdWarehouseName": "Main Warehouse_MW",
-    "de_DE__stdWarehouseName": "Hauptlager"
+    "warehouseName_comment": "Note that there is no trl for warehouse names",
+    "warehouseName": "Hauptlager"
 }

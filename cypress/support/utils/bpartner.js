@@ -170,14 +170,14 @@ function applyBPartner(bPartner) {
       cy.openAdvancedEdit();
       cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
-          cy.clickOnCheckBox('IsVendor');
+          cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
         }
       });
       if (bPartner.vendorPricingSystem) {
-        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
+        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, true /*modal*/);
       }
       if (bPartner.vendorDiscountSchema) {
-        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, bPartner.vendorDiscountSchema);
+        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
       }
       cy.pressDoneButton();
     }
@@ -189,22 +189,17 @@ function applyBPartner(bPartner) {
       cy.openAdvancedEdit();
       cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer', true, true);
+          cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
         }
       });
       if (bPartner.customerDiscountSchema) {
-        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true);
+        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
       }
       if (bPartner.customerPricingSystem) {
-        cy.selectInListField(
-          'M_PricingSystem_ID',
-          bPartner.customerPricingSystem,
-          bPartner.customerPricingSystem,
-          true
-        );
+        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true /*modal*/);
       }
       if (bPartner.customerDunning) {
-        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning);
+        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
       }
       if (bPartner.paymentTerm) {
         // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
@@ -236,7 +231,7 @@ function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
   cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true, false, true);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
   cy.get('.panel-modal-header-title').click();
 
   cy.editAddress('C_Location_ID', function(url) {
@@ -258,11 +253,11 @@ function applyLocation(bPartnerLocation) {
 function applyContact(bPartnerContact) {
   cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true);
-  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true /*modal*/);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true /*modal*/);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox('IsDefaultContact', true, true);
+    cy.clickOnCheckBox('IsDefaultContact', true /*expectedPatchValue*/, true /*modal*/);
   }
   cy.pressDoneButton();
 }
