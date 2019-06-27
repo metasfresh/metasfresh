@@ -120,7 +120,9 @@ public final class JSONDocumentAction implements Serializable
 		final Duration preconditionsResolutionCalcDuration = relatedProcessDescriptor.getPreconditionsResolutionCalcDuration();
 		evaluateDurationStr = preconditionsResolutionCalcDuration != null ? TimeUtil.formatElapsed(preconditionsResolutionCalcDuration) : null;
 
-		internalName = relatedProcessDescriptor.getInternalName();
+		internalName = relatedProcessDescriptor.getInternalName() != null
+				? relatedProcessDescriptor.getInternalName().getAsString()
+				: null;
 
 		//
 		// Debug properties
@@ -158,7 +160,7 @@ public final class JSONDocumentAction implements Serializable
 	@JsonIgnore
 	public boolean isDisabled()
 	{
-		return disabled != null && disabled.booleanValue();
+		return disabled != null && disabled;
 	}
 
 	@JsonIgnore

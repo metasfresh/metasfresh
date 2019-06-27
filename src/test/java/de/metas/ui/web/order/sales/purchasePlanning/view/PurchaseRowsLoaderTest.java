@@ -65,6 +65,7 @@ import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -136,7 +137,7 @@ public class PurchaseRowsLoaderTest
 
 		product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 
 		final I_C_BPartner bPartnerCustomer = newInstance(I_C_BPartner.class);
@@ -281,6 +282,8 @@ public class PurchaseRowsLoaderTest
 			final I_C_OrderLine orderLine,
 			final VendorProductInfo vendorProductInfo)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currencyId);

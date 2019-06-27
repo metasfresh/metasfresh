@@ -108,7 +108,7 @@ public class MaterialCockpitRowFactoryTest
 		product.setValue("productValue");
 		product.setName("productName");
 		product.setIsStocked(true);
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		product.setM_Product_Category(productCategory);
 		save(product);
 
