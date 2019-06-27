@@ -26,7 +26,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DisplayType;
 
@@ -492,8 +491,6 @@ public class CalloutInOut extends CalloutEngine
 
 	private static final void updateLocator(final I_M_InOutLine inoutLine, final int suggestedLocatorId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
 		final I_M_InOut inout = inoutLine.getM_InOut();
 		final int allowedWarehouseRecordId = inout.getM_Warehouse_ID();
 
