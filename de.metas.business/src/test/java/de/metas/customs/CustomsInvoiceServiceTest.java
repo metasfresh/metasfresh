@@ -171,8 +171,6 @@ public class CustomsInvoiceServiceTest
 
 		final String bpartnerAddress = "Bpartner Address";
 
-		final boolean doComplete = true;
-
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
 				.bpartnerAddress(bpartnerAddress)
@@ -182,7 +180,6 @@ public class CustomsInvoiceServiceTest
 				.invoiceDate(invoiceDate)
 				.userId(logisticUserId)
 				.linesToExportMap(linesToExportMap)
-				.doComplete(doComplete)
 				.build();
 
 		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
@@ -197,7 +194,7 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
 		assertThat(customsInvoice.getUserId(), is(logisticUserId));
 
-		assertThat(DocStatus.Completed, is(customsInvoice.getDocStatus()));
+		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
@@ -255,8 +252,6 @@ public class CustomsInvoiceServiceTest
 				.put(product1, shipmentLine2)
 				.build();
 
-		final boolean doComplete = true;
-
 		final String bpartnerAddress = "Bpartner Address";
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
@@ -268,7 +263,6 @@ public class CustomsInvoiceServiceTest
 				.invoiceDate(invoiceDate)
 				.userId(logisticUserId)
 				.linesToExportMap(linesToExportMap)
-				.doComplete(doComplete)
 				.build();
 
 		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
@@ -283,7 +277,7 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
 		assertThat(customsInvoice.getUserId(), is(logisticUserId));
 
-		assertThat(DocStatus.Completed, is(customsInvoice.getDocStatus()));
+		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
@@ -340,8 +334,6 @@ public class CustomsInvoiceServiceTest
 				.put(product1, shipmentLine2)
 				.build();
 
-		final boolean doComplete = true;
-
 		final String bpartnerAddress = "Bpartner Address";
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
@@ -353,7 +345,6 @@ public class CustomsInvoiceServiceTest
 				.invoiceDate(invoiceDate)
 				.userId(logisticUserId)
 				.linesToExportMap(linesToExportMap)
-				.doComplete(doComplete)
 				.build();
 
 		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
@@ -368,7 +359,7 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
 		assertThat(customsInvoice.getUserId(), is(logisticUserId));
 
-		assertThat(DocStatus.Completed, is(customsInvoice.getDocStatus()));
+		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 
@@ -428,8 +419,6 @@ public class CustomsInvoiceServiceTest
 				.put(product1, shipmentLine2)
 				.build();
 
-		final boolean doComplete = true;
-
 		final String bpartnerAddress = "Bpartner Address";
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
@@ -441,7 +430,6 @@ public class CustomsInvoiceServiceTest
 				.invoiceDate(invoiceDate)
 				.userId(logisticUserId)
 				.linesToExportMap(linesToExportMap)
-				.doComplete(doComplete)
 				.build();
 
 		final CustomsInvoice customsInvoice = service.generateCustomsInvoice(customsInvoiceRequest);
@@ -456,7 +444,7 @@ public class CustomsInvoiceServiceTest
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
 		assertThat(customsInvoice.getUserId(), is(logisticUserId));
 
-		assertThat(DocStatus.Completed, is(customsInvoice.getDocStatus()));
+		assertThat(DocStatus.Drafted, is(customsInvoice.getDocStatus()));
 
 		final ImmutableList<CustomsInvoiceLine> lines = customsInvoice.getLines();
 

@@ -1,7 +1,11 @@
 package de.metas.handlingunits.inventory;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isNew;
+
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -387,18 +391,32 @@ public class InventoryLineRecordService
 			@NonNull final I_M_InventoryLine inventoryLineRecord,
 			@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
-		final InventoryLine inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
+		final InventoryLine inventoryLine;
+		if (isNew(inventoryLineRecord))
+		{
+			// We might not even be able to create and inventoryLine since the record might not yet have e.g. a M_Product_ID.
+			inventoryLine = null;
+		}
+		else
+		{
+			inventoryLine = inventoryLineRepository.toInventoryLine(inventoryLineRecord);
+		}
 		return computeHUAggregationType(inventoryLine, docBaseAndSubType);
 	}
 
 	private static HUAggregationType computeHUAggregationType(
-			@NonNull final InventoryLine inventoryLine,
+			@Nullable final InventoryLine inventoryLine,
 			@NonNull final DocBaseAndSubType baseAndSubType)
 	{
 		final HUAggregationType huAggregationTypeToUse = Optional
 				.ofNullable(AggregationType.getByDocTypeOrNull(baseAndSubType))
 				.map(AggregationType::getHuAggregationType)
 				.orElse(HUAggregationType.SINGLE_HU); // the default
+
+		if (inventoryLine == null)
+		{
+			return huAggregationTypeToUse; // nothing more to check
+		}
 
 		final HUAggregationType huAggregationTypeCurrent = inventoryLine.getHuAggregationType();
 		if (huAggregationTypeCurrent == null)

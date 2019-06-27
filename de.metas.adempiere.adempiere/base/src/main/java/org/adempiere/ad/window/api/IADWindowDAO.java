@@ -17,6 +17,7 @@ import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
 public interface IADWindowDAO extends ISingletonService
@@ -92,4 +93,12 @@ public interface IADWindowDAO extends ISingletonService
 	void deleteUISectionsByTabId(AdTabId adTabId);
 
 	int getUIElementNextSeqNo(UIElementGroupId uiElementGroupId);
+
+
+	/**
+	 * All parameters are mandatory for now.
+	 *
+	 * @return never return {@code null}
+	 */
+	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 }

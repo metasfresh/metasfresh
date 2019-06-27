@@ -13,11 +13,11 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,7 @@ import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -153,6 +154,8 @@ import de.metas.util.Services;
 
 	private final void loadQtysIfNeeded()
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		if (_loaded)
 		{
 			return;
@@ -162,7 +165,7 @@ import de.metas.util.Services;
 		//
 		// Vendor Product
 		final int productId = _product.getM_Product_ID();
-		final I_C_UOM productUOM = _product.getC_UOM();
+		final I_C_UOM productUOM = uomDAO.getById(_product.getC_UOM_ID());
 		Check.assumeNotNull(productUOM, "productUOM not null");
 
 		// Define the conversion context (in case we need it)

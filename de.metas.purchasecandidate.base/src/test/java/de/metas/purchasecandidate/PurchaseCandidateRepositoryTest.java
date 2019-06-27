@@ -85,7 +85,7 @@ public class PurchaseCandidateRepositoryTest
 
 		productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
-		productRecord.setC_UOM(uom);
+		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(productRecord);
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
