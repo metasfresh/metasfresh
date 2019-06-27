@@ -1875,6 +1875,29 @@ public interface I_C_OrderLine
     public static final String COLUMNNAME_PriceLimit = "PriceLimit";
 
 	/**
+	 * Set Mindestpreis Notiz.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPriceLimitNote (java.lang.String PriceLimitNote);
+
+	/**
+	 * Get Mindestpreis Notiz.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPriceLimitNote();
+
+    /** Column definition for PriceLimitNote */
+    public static final org.adempiere.model.ModelColumn<I_C_OrderLine, Object> COLUMN_PriceLimitNote = new org.adempiere.model.ModelColumn<I_C_OrderLine, Object>(I_C_OrderLine.class, "PriceLimitNote", null);
+    /** Column name PriceLimitNote */
+    public static final String COLUMNNAME_PriceLimitNote = "PriceLimitNote";
+
+	/**
 	 * Set Auszeichnungspreis.
 	 * Auszeichnungspreis
 	 *

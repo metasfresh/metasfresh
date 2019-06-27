@@ -1907,6 +1907,22 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd;
 	}
 
+	/** Set Mindestpreis Notiz.
+		@param PriceLimitNote Mindestpreis Notiz	  */
+	@Override
+	public void setPriceLimitNote (java.lang.String PriceLimitNote)
+	{
+		set_Value (COLUMNNAME_PriceLimitNote, PriceLimitNote);
+	}
+
+	/** Get Mindestpreis Notiz.
+		@return Mindestpreis Notiz	  */
+	@Override
+	public java.lang.String getPriceLimitNote () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PriceLimitNote);
+	}
+
 	/** Set Auszeichnungspreis.
 		@param PriceList 
 		Auszeichnungspreis
