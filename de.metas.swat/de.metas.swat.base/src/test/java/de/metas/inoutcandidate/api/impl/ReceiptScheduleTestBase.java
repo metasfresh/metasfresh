@@ -115,7 +115,6 @@ public abstract class ReceiptScheduleTestBase
 
 	protected I_C_DocType receiptDocType;
 
-	protected I_C_UOM productUOM = null;
 	protected I_C_UOM priceUOM; // 07090
 
 	// #653
@@ -268,7 +267,7 @@ public abstract class ReceiptScheduleTestBase
 		receiptSchedule.setM_Warehouse(warehouse);
 
 		receiptSchedule.setM_Product(product);
-		receiptSchedule.setC_UOM(productUOM);
+		//receiptSchedule.setC_UOM(productUOM);
 
 		receiptSchedule.setQtyOrdered(qtyBD);
 		receiptSchedule.setQtyToMove(qtyBD);
@@ -325,7 +324,7 @@ public abstract class ReceiptScheduleTestBase
 		//
 		// Product & UOM
 		orderLine.setM_Product_ID(product.getM_Product_ID());
-		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
+		// orderLine.setC_UOM_ID(productUOM != null ? productUOM.getC_UOM_ID() : -1);
 		// 07090: when setting a priceActual, we also need to specify a PriceUOM
 		InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class).setPrice_UOM_ID(priceUOM.getC_UOM_ID());
 

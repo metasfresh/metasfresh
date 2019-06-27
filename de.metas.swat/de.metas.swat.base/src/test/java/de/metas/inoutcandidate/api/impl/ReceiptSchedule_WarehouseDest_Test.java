@@ -84,7 +84,7 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 				schedule.getM_Warehouse());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.C_BPartner",
 				order1_line1_product1_wh1.getC_BPartner_ID(),
-				schedule.getC_BPartner());
+				schedule.getC_BPartner_ID());
 		Assert.assertEquals("Invalid M_ReceiptSchedule.M_Warehouse_Override_ID",
 				null, // shall not be set
 				schedule.getM_Warehouse_Override());
