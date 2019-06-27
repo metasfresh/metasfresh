@@ -1,73 +1,64 @@
 import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
-import { Product, ProductCategory } from '../../support/utils/product';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
+import { Builder } from '../../support/utils/builder';
 
 describe('Create Sales order', function() {
   const timestamp = new Date().getTime();
   const customer = `CustomerTest ${timestamp}`;
-  const productName = `Product Test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const productName = `ProductTest ${timestamp}`;
   const productValue = `sales_order_test ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${timestamp}`;
+  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
   const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const bankName = `Raiffeisen Test ${timestamp}`;
-  const BLZ = '80027';
-  // const rowSelected = salesOrders.rowSelector;
+  const priceSystemName = `PriceSystem ${timestamp}`;
+  const priceListName = `PriceList ${timestamp}`;
+  const priceListVersionName = `PriceListVersion ${timestamp}`;
 
-  it('Create product category, product and customer for a sales order', function() {
-    cy.fixture('discount/discountschema.json').then(discountschemaJson => {
-      Object.assign(new DiscountSchema(), discountschemaJson)
+  before(function() {
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicProductEntities(
+      productCategoryName,
+      productCategoryValue,
+      priceListName,
+      productName,
+      productValue
+    );
+    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
+      Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
         .apply();
     });
     cy.fixture('finance/bank.json').then(productJson => {
-      Object.assign(new Bank(), productJson)
-        .setName(bankName)
-        .setBLZ(BLZ)
-        .apply();
+      Object.assign(new Bank(), productJson).apply();
     });
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(customer)
-        .setBank(bankName)
-        .setCustomer(true)
         .setCustomerDiscountSchema(discountSchemaName)
         .apply();
     });
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-    cy.fixture('product/simple_product.json').then(productJson => {
-      Object.assign(new Product(), productJson)
-        .setName(productName)
-        .setValue(productValue)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .apply();
-    });
+
+    cy.readAllNotifications();
+  });
+  it('Create a sales order', function() {
     cy.visitWindow('143', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
       .type(customer)
       .type('\n');
     cy.contains('.input-dropdown-list-option', customer).click();
-    cy.wait(3000);
 
+    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
+  
     const addNewText = Cypress.messages.window.batchEntry.caption;
-
     cy.get('.tabs-wrapper .form-flex-align .btn')
       .contains(addNewText)
       .should('exist')
       .click();
-
+    cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-
     cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
-
-    // cy.pressBatchEntryButton();
 
     cy.get('.form-field-Qty')
       .click()
@@ -76,7 +67,6 @@ describe('Create Sales order', function() {
       .find('i')
       .eq(0)
       .click();
-
     cy.server();
     cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
       'resetQuickInputFields'
