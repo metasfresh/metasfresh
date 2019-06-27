@@ -1,18 +1,19 @@
-import { salesOrders } from '../../page_objects/sales_orders';
-import { Product, ProductCategory } from '../../support/utils/product';
-import { BPartner } from '../../support/utils/bpartner';
-import { invoiceCandidates } from '../../page_objects/invoice_candidates';
-import { salesInvoices } from '../../page_objects/sales_invoices';
+import {salesOrders} from '../../page_objects/sales_orders';
+import {Product, ProductCategory, ProductPrice} from '../../support/utils/product';
+import {BPartner} from '../../support/utils/bpartner';
+import {invoiceCandidates} from '../../page_objects/invoice_candidates';
+import {salesInvoices} from '../../page_objects/sales_invoices';
 
-describe('New sales order test', function() {
+describe('New sales order test', function () {
   const timestamp = new Date().getTime();
   let notificationsNumber = null;
 
   const poReference = `Sales Order-to-Invoice Test ${timestamp}`;
   const productName = `Sales Order-to-Invoice Test ${timestamp}`;
+  const priceListName = `PriceList ${timestamp}`;
   const customerName = `Sales Order-to-Invoice Test ${timestamp}`;
 
-  before(function() {
+  before(function () {
     const productValue = `sales_order_to_invoice_test ${timestamp}`;
     const productCategoryName = `ProductCategoryName ${timestamp}`;
     const productCategoryValue = `ProductNameValue ${timestamp}`;
@@ -23,12 +24,19 @@ describe('New sales order test', function() {
         .setValue(productCategoryValue)
         .apply();
     });
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson)
+        .setPriceList(priceListName)
+    });
+
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
         .setValue(productValue)
         .setProductType('Service')
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice)
         .apply();
     });
     cy.fixture('sales/simple_customer.json').then(customerJson => {
@@ -40,8 +48,8 @@ describe('New sales order test', function() {
     cy.readAllNotifications();
   });
 
-  describe('Create a new sales order', function() {
-    it('Create new sales order header', function() {
+  describe('Create a new sales order', function () {
+    it('Create new sales order header', function () {
       cy.visitWindow(salesOrders.windowId, 'NEW');
       // cy.resetNotifications();
 
@@ -53,7 +61,7 @@ describe('New sales order test', function() {
       cy.get('.indicator-pending').should('not.exist');
     });
 
-    it('Add new product via Batch Entry', function() {
+    it('Add new product via Batch Entry', function () {
       const addNewText = Cypress.messages.window.batchEntry.caption;
 
       cy.get('.tabs-wrapper .form-flex-align .btn')
@@ -77,13 +85,13 @@ describe('New sales order test', function() {
       cy.wait(`@${aliasName}`);
     });
 
-    it('Complete sales order', function() {
+    it('Complete sales order', function () {
       cy.processDocument('Complete', 'Completed');
     });
   });
 
-  describe('create an invoice', function() {
-    it("Zoom to the sales order's invoice candidate", function() {
+  describe('create an invoice', function () {
+    it("Zoom to the sales order's invoice candidate", function () {
       // TODO: This is erally, really bad ! Unfortunately right now I see no way of fixing this, unless we'll
       // get a push notification from the server that would update this panel
       cy.wait(10000); // wait a bit for the invoice candidate(s) to be created, just like the user would
@@ -101,7 +109,7 @@ describe('New sales order test', function() {
       cy.wait(`@${getDataAlias}`);
     });
 
-    it('Select all invoice candidates and invoice them', function() {
+    it('Select all invoice candidates and invoice them', function () {
       cy.server();
 
       // select all invoice candidates and wait for the list of available quick action to be updated
@@ -123,7 +131,7 @@ describe('New sales order test', function() {
       cy.pressStartButton();
     });
 
-    it('Zoom to the new invoice', function() {
+    it('Zoom to the new invoice', function () {
       cy.getNotificationModal();
       cy.getDOMNotificationsNumber().then(number => {
         expect(number).to.equal(1);

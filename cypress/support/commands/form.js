@@ -244,6 +244,7 @@ Cypress.Commands.add(
           );
         }
 
+        cy.get('.lookup-dropdown').click();
         return cy.get('.lookup-dropdown').click();
       });
 

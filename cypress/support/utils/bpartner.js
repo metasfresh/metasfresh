@@ -49,6 +49,12 @@ export class BPartner {
     return this;
   }
 
+  setPaymentTerm(paymentTerm) {
+    cy.log(`BPartner - set paymentTerm = ${paymentTerm}`);
+    this.paymentTerm = paymentTerm;
+    return this;
+  }
+
   setCustomerPricingSystem(customerPricingSystem) {
     cy.log(`BPartner - set customerPricingSystem = ${customerPricingSystem}`);
     this.customerPricingSystem = customerPricingSystem;
@@ -96,6 +102,15 @@ export class BPartner {
     applyBPartner(this);
     cy.log(`BPartner - apply - END (name=${this.name})`);
     return this;
+  }
+
+
+  static applyBank(bank) {
+    cy.selectTab('C_BP_BankAccount');
+    cy.pressAddNewButton();
+    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+    cy.writeIntoStringField('A_Name', 'Test Account', true);
+    cy.pressDoneButton();
   }
 }
 
@@ -186,28 +201,28 @@ function applyBPartner(bPartner) {
       if (bPartner.customerDunning) {
         cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
       }
+      if (bPartner.paymentTerm) {
+        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
+        cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
+      }
       cy.pressDoneButton();
     }
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
+      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
       cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function(bPartnerContact) {
+      bPartner.contacts.forEach(function (bPartnerContact) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
     if (bPartner.bank) {
-      cy.selectTab('C_BP_BankAccount');
-      cy.pressAddNewButton();
-      cy.writeIntoLookupListField('C_Bank_ID', bPartner.bank, bPartner.bank, false, true /*modal*/);
-      cy.writeIntoStringField('A_Name', 'Test Account', true /*modal*/);
-      cy.pressDoneButton();
+      BPartner.applyBank(bPartner.bank);
     }
   });
 }
@@ -227,7 +242,7 @@ function applyLocation(bPartnerLocation) {
       bPartnerLocation.country,
       bPartnerLocation.country,
       false /*typeList */,
-      false /*modal */,
+      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
       url
     );
   });

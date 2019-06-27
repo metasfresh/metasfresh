@@ -5,7 +5,7 @@
  * we pass it through this function, which selects keys accordingly.
  */
 const getLanguageSpecific = (data, key) => {
-  //console.log(`key=${key}`);
+  // console.log(`getLanguageSpecific key=${key}`);
   const lang = Cypress.reduxStore.getState().appHandler.me.language.key;
   console.log(`lang=${lang}`);
   if (lang !== 'en_US') {
