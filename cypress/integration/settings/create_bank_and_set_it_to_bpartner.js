@@ -3,7 +3,7 @@ import { BPartner } from '../../support/utils/bpartner';
 
 describe('Create Bank', function() {
   const timestamp = new Date().getTime();
-  const bankName = `Raiffeisen Test ${timestamp}`;
+  const bankName = `Bank ${timestamp}`;
   const BLZ = '80027';
   const customer1Name = `Customer ${timestamp}`;
 
@@ -21,6 +21,8 @@ describe('Create Bank', function() {
       Object.assign(new BPartner(), customerJson)
         .setName(customer1Name)
         .setBank(bankName)
+        .clearContacts() // save time by not creating locations and contacts which are not of this spec's concern right now
+        .clearLocations()
         .apply();
     });
   });
