@@ -54,10 +54,8 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
   describe('Get field value', function() {
     cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
+
     return cy.get(path).then(el => {
       if (el.find('checked').length || el.find('.checked').length) {
         return true;
@@ -67,26 +65,29 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
   });
 });
 
-Cypress.Commands.add('resetListValue', (fieldName, modal) => {
+Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => {
   describe('Get field value', function() {
     cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchListValueAliasName = `patchListValue-${new Date().getTime()}`;
+
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
+
+    const path = createFieldPath(fieldName, modal);
+
     cy.get(path)
       .find('.meta-icon-close-alt')
-      .click();
+      .click()
+      .waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
   });
 });
 
 Cypress.Commands.add('clickOnIsActive', modal => {
   describe('Click on the IsActive slider', function() {
-    let path = `.form-field-IsActive`;
+    const path = createFieldPath('IsActive', modal);
 
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
     cy.get(path)
       .find('.input-slider')
       .click();
@@ -108,10 +109,7 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
 
     cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
 
     cy.get(path)
       .find('.input-checkbox-tick')
@@ -124,10 +122,8 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
  * Right now it can only select the current date
  */
 Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
-  let path = `.form-field-${fieldName}`;
-  if (modal) {
-    path = `.panel-modal ${path}`;
-  }
+  const path = createFieldPath(fieldName, modal);
+
   cy.get(path)
     .find('.datepicker')
     .click();
@@ -196,10 +192,8 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
+
     cy.get(path)
       .find('textarea')
       .type(`${stringValue}{enter}`);
@@ -298,10 +292,7 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
   describe('Select n-th option in list field', function() {
     cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('.input-dropdown')
       .click();

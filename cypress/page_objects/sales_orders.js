@@ -13,7 +13,7 @@ class SalesOrders extends Metasfresh {
   }
 
   visit() {
-    cy.visit(`/window/${this.windowId}`);
+    cy.visitWindow(this.windowId);
   }
 
   verifyElements() {
