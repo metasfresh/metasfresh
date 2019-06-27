@@ -162,10 +162,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
       cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     }
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('input')
       .type('{selectall}')
@@ -273,11 +270,8 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
 
-    let path = `.form-field-${fieldName}`;
-    if (modal) {
-      //path = `.panel-modal-content ${path}`;
-      path = `.panel-modal ${path}`;
-    }
+    const path = createFieldPath(fieldName, modal);
+
     cy.get(path)
       .find('.input-dropdown')
       .click();
