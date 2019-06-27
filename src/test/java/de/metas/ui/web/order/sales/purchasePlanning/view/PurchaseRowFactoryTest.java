@@ -151,7 +151,7 @@ public class PurchaseRowFactoryTest
 		save(productCategory);
 
 		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		product.setM_Product_Category_ID(productCategory.getM_Product_Category_ID());
 		save(product);
 

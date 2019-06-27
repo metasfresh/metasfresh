@@ -9,6 +9,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
@@ -25,6 +26,7 @@ import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -100,6 +102,8 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 			@NonNull final I_M_Forecast forecast,
 			@NonNull final IForecastLineQuickInput quickInput)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
 		huPackingAware.setC_BPartner(forecast.getC_BPartner());
 		huPackingAware.setDateOrdered(forecast.getDatePromised());
@@ -108,7 +112,10 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
 		final I_M_Product product = load(productAndAttributes.getProductId(), I_M_Product.class);
 		huPackingAware.setM_Product_ID(product.getM_Product_ID());
-		huPackingAware.setC_UOM(product.getC_UOM());
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		huPackingAware.setC_UOM(uom);
 		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
 
 		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();
