@@ -105,6 +105,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -756,6 +757,7 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -769,7 +771,8 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			for (final I_M_Product product : products)
 			{
-				final I_C_UOM uom = product.getC_UOM();
+				final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
 				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
 				if (existingEntry != null)
 				{
@@ -1202,11 +1205,11 @@ public class FlatrateBL implements IFlatrateBL
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
 		final UserId recipientUserId = currentTerm.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(currentTerm.getAD_User_InCharge_ID()) : null;
-		if(recipientUserId == null)
+		if (recipientUserId == null)
 		{
 			return;
 		}
-		
+
 		flatrateGeneratedEventBus.notifyUser(currentTerm, recipientUserId, msgValue);
 	}
 

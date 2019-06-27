@@ -66,5 +66,4 @@ public class CustomsInvoiceRequest
 	@NonNull
 	String documentNo;
 
-	boolean doComplete;
 }

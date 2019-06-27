@@ -189,12 +189,12 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	private I_C_OrderLine createOrderLine(@NonNull final I_M_Product product, @NonNull final I_C_Flatrate_Conditions conditions)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setAD_Org(product.getAD_Org());
+		order.setAD_Org_ID(product.getAD_Org_ID());
 		order.setDocStatus(X_C_Order.DOCSTATUS_Completed);
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-		orderLine.setAD_Org(product.getAD_Org());
+		orderLine.setAD_Org_ID(product.getAD_Org_ID());
 		orderLine.setC_Order(order);
 		orderLine.setC_Flatrate_Conditions(conditions);
 		orderLine.setM_Product(product);

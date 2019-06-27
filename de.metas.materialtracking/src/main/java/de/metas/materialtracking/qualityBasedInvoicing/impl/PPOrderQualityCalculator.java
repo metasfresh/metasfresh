@@ -48,6 +48,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IVendorReceipt;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -180,10 +181,13 @@ public class PPOrderQualityCalculator
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		Check.assumeNotNull(product, "product not null");
 		final int receivedProductId = product.getM_Product_ID();
-		final I_C_UOM productUOM = product.getC_UOM();
+
+		final I_C_UOM productUOM = uomDAO.getById(product.getC_UOM_ID());
+
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(receivedProductId);
 
 		BigDecimal qtyReceivedTotal = BigDecimal.ZERO;

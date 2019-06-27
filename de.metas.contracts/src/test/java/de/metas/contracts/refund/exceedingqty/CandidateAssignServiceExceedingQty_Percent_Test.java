@@ -123,7 +123,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 		saveRecord(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 
