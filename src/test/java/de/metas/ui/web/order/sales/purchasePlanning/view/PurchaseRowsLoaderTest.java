@@ -39,6 +39,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.pricing.conditions.PricingConditions;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
@@ -65,6 +66,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowsLoader.PurchaseRowsList;
 import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -187,11 +189,11 @@ public class PurchaseRowsLoaderTest
 		//
 		// set up salesOrderLineRecord
 		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
-		salesOrderLineRecord.setAD_Org(org);
-		salesOrderLineRecord.setM_Product(product);
-		salesOrderLineRecord.setM_Warehouse(warehouse);
-		salesOrderLineRecord.setC_Order(salesOrderRecord);
-		salesOrderLineRecord.setC_Currency(currency);
+		salesOrderLineRecord.setAD_Org_ID(org.getAD_Org_ID());
+		salesOrderLineRecord.setM_Product_ID(product.getM_Product_ID());
+		salesOrderLineRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		salesOrderLineRecord.setC_Order_ID(salesOrderRecord.getC_Order_ID());
+		salesOrderLineRecord.setC_Currency_ID(currency.getC_Currency_ID());
 		salesOrderLineRecord.setC_UOM_ID(TEN.getUOMId());
 		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
@@ -283,13 +285,15 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currencyId);
 
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final I_C_UOM productStockingUOM = Services.get(IProductBL.class).getStockingUOM(productId);
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(20))
 				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
-				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
+				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
-				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), orderLine.getM_Product().getC_UOM()))
+				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), productStockingUOM))
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()))
 				.vendorId(vendorProductInfo.getVendorId())
 				.vendorProductNo(vendorProductInfo.getVendorProductNo())

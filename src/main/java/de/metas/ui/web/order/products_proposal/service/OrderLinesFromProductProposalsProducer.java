@@ -8,7 +8,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -26,6 +25,7 @@ import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -93,7 +93,7 @@ public final class OrderLinesFromProductProposalsProducer
 		}
 	}
 
-	private final void updateOrderLine(
+	private void updateOrderLine(
 			final I_C_Order order,
 			final I_C_OrderLine newOrderLine,
 			final ProductsProposalRow fromRow)
@@ -136,15 +136,15 @@ public final class OrderLinesFromProductProposalsProducer
 	{
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner(order.getC_BPartner());
+		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
 		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
-		final I_C_UOM uom = productBL.getStockingUOM(fromRow.getProductId());
+		final UomId uomId = productBL.getStockingUOMId(fromRow.getProductId());
 		huPackingAware.setM_Product_ID(fromRow.getProductId().getRepoId());
-		huPackingAware.setC_UOM(uom);
+		huPackingAware.setC_UOM_ID(uomId.getRepoId());
 		// huPackingAware.setM_AttributeSetInstance_ID(...);
-		// huPackingAware.setM_HU_PI_Item_Product(...);
+		// huPackingAware.setM_HU_PI_Item_Product_ID(...);
 
 		return huPackingAware;
 	}
