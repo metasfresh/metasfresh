@@ -10,6 +10,8 @@ import org.compiere.model.I_C_UOM;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -63,7 +65,9 @@ public class MainRowBucket
 
 	public void addDataRecord(@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final I_C_UOM uom = cockpitRecord.getM_Product().getC_UOM();
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final I_C_UOM uom = uomDAO.getById(cockpitRecord.getM_Product().getC_UOM_ID());
 
 		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
 		qtyMaterialentnahme = addToNullable(qtyMaterialentnahme, cockpitRecord.getQtyMaterialentnahme(), uom);
@@ -78,7 +82,9 @@ public class MainRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final I_C_UOM uom = stockRecord.getM_Product().getC_UOM();
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final I_C_UOM uom = uomDAO.getById(stockRecord.getM_Product().getC_UOM_ID());
 
 		qtyOnHand = addToNullable(qtyOnHand, stockRecord.getQtyOnHand(), uom);
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
