@@ -51,7 +51,7 @@ export class Builder {
    * @param productName
    * @param productValue
    */
-  static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue) {
+  static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType) {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -69,7 +69,7 @@ export class Builder {
       Object.assign(new Product(), productJson)
         .setName(productName)
         .setValue(productValue)
-        .setProductType('Service')
+        .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .apply();
