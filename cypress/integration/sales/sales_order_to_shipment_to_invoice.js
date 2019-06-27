@@ -15,6 +15,7 @@ describe('Create Sales order', function() {
   const priceSystemName = `PriceSystem ${timestamp}`;
   const priceListName = `PriceList ${timestamp}`;
   const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const productType = 'Item';
 
   before(function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
@@ -23,7 +24,8 @@ describe('Create Sales order', function() {
       productCategoryValue,
       priceListName,
       productName,
-      productValue
+      productValue,
+      productType
     );
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
