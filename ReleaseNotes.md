@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.109
+# metasfresh 5.110
 
 ## Features
 * metasfresh
