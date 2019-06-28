@@ -4,7 +4,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
@@ -76,13 +75,10 @@ import lombok.NonNull;
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return MoreObjects.toStringHelper("constant")
-				.omitNullValues()
-				.add("value", value)
-				.addValue(anyLanguage ? "anyLanguage" : null)
-				.toString();
+		return value;
 	}
 
 	@Override

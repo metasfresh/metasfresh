@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
 @EqualsAndHashCode
 final class NumberTranslatableString implements ITranslatableString
 {
@@ -59,6 +57,13 @@ final class NumberTranslatableString implements ITranslatableString
 			throw new IllegalArgumentException("displayType is not numeric: " + displayType);
 		}
 		this.displayType = displayType;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return valueBD.toString();
 	}
 
 	@Override

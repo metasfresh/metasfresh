@@ -14,9 +14,9 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -40,7 +40,6 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
 @EqualsAndHashCode
 final class DateTimeTranslatableString implements ITranslatableString
 {
@@ -127,14 +126,22 @@ final class DateTimeTranslatableString implements ITranslatableString
 
 	private DateTimeTranslatableString(final long epochMillis, final boolean dateTime)
 	{
-		this.epochMillis = epochMillis;
-		displayType = dateTime ? DisplayType.DateTime : DisplayType.Date;
+		this(epochMillis,
+				dateTime ? DisplayType.DateTime : DisplayType.Date);
 	}
 
 	private DateTimeTranslatableString(final long epochMillis, final int displayType)
 	{
+		Check.assumeGreaterThanZero(epochMillis, "epochMillis");
 		this.epochMillis = epochMillis;
 		this.displayType = displayType;
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getDefaultValue();
 	}
 
 	@Override
@@ -142,15 +149,20 @@ final class DateTimeTranslatableString implements ITranslatableString
 	{
 		final Language language = Language.getLanguage(adLanguage);
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType, language);
-		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
+		final String dateStr = dateFormat.format(toDate());
 		return dateStr;
+	}
+
+	private java.util.Date toDate()
+	{
+		return new java.util.Date(epochMillis);
 	}
 
 	@Override
 	public String getDefaultValue()
 	{
 		final SimpleDateFormat dateFormat = DisplayType.getDateFormat(displayType);
-		final String dateStr = dateFormat.format(new java.util.Date(epochMillis));
+		final String dateStr = dateFormat.format(toDate());
 		return dateStr;
 	}
 

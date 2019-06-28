@@ -5,7 +5,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import lombok.EqualsAndHashCode;
@@ -55,13 +54,10 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return MoreObjects.toStringHelper("trl")
-				.omitNullValues()
-				.add("trls", trlMap.isEmpty() ? null : trlMap)
-				.add("default", defaultValue)
-				.toString();
+		return defaultValue;
 	}
 
 	@Override

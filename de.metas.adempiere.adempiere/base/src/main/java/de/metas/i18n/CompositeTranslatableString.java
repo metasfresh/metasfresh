@@ -47,9 +47,10 @@ final class CompositeTranslatableString implements ITranslatableString
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return list.stream().map(trl -> trl.toString()).collect(Collectors.joining(joinString));
+		return list.stream().map(ITranslatableString::toString).collect(Collectors.joining(joinString));
 	}
 
 	@Override
