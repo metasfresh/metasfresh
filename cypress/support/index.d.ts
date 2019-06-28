@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+import {RewriteURL} from "./commands/byTbp";
+
 declare namespace Cypress {
   interface Chainable<Subject> {
 
@@ -260,5 +262,16 @@ declare namespace Cypress {
      * The URL looks like `/window/123/123456789` and the value returned is `123456789`.
      */
     getCurrentRecordId(): Chainable<any>
+
+
+    /**
+     * Change the current value of a checkBox (Yes/No box) to the desired state (checked (true) or not checked (false).
+     *
+     * @param fieldName name of the field is question
+     * @param isChecked if true the checkbox is set to checked state, if false the checkbox is set to unchecked state
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
+     */
+    setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL): Chainable<any>
   }
 }

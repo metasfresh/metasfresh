@@ -160,10 +160,10 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.selectInListField('C_DocType_ID', creditMemo, true, null, true);
 
     // ensure all the checkboxes are ok
-    setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
-    setCheckBoxValue('IsReferenceOriginalOrder', true, true, RewriteURL.PROCESS);
-    setCheckBoxValue('IsReferenceInvoice', true, true, RewriteURL.PROCESS);
-    setCheckBoxValue('IsCreditedInvoiceReinvoicable', false, true, RewriteURL.PROCESS);
+    cy.setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
+    cy.setCheckBoxValue('IsReferenceOriginalOrder', true, true, RewriteURL.PROCESS);
+    cy.setCheckBoxValue('IsReferenceInvoice', true, true, RewriteURL.PROCESS);
+    cy.setCheckBoxValue('IsCreditedInvoiceReinvoicable', false, true, RewriteURL.PROCESS);
 
     cy.pressStartButton(100);
     cy.getNotificationModal(/Created.*Document No/);
@@ -222,50 +222,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
 //
 
 
-//////////////////////////////////////////
-//////////////////////////////////////////
-function setCheckBoxValue(fieldName, checked, modal = false, rewriteUrl = null) {
-
-  // the expected value is the same as the checked state
-  // (used only for verification if the checkbox has the correct value)
-  const expectedPatchValue = checked;
-
-  cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
-    if (checked) {
-      if (theCheckboxValue) {
-        // Nothing to do, already checked
-      } else {
-        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
-      }
-    } else {
-      if (theCheckboxValue) {
-        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
-      } else {
-        // Nothing to do, already unchecked
-      }
-    }
-  });
-}
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-export class RewriteURL {
-  /**
-   * This is the default
-   *
-   * @type {string}
-   */
-  static WINDOW = '/rest/api/window/.*[^/][^N][^E][^W]$';
-
-  static PROCESS = '/rest/api/process/';
-}
-
-//////////////////////////////////////////
-//////////////////////////////////////////
 
 
 ///////////////////////////
