@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
@@ -203,7 +203,7 @@ public class KPIRepository
 		else
 		{
 			caption = kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_Name, kpiFieldDef.getName());
-			description = ImmutableTranslatableString.empty();
+			description = TranslatableStrings.empty();
 		}
 
 		//
@@ -211,7 +211,7 @@ public class KPIRepository
 		final ITranslatableString offsetCaption;
 		if (!isComputeOffset)
 		{
-			offsetCaption = ImmutableTranslatableString.empty();
+			offsetCaption = TranslatableStrings.empty();
 		}
 		else if (Check.isEmpty(kpiFieldDef.getOffsetName(), true))
 		{

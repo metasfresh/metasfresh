@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -59,16 +59,14 @@ public class ProcessLayout
 
 	private ProcessLayout(final Builder builder)
 	{
-		super();
-
 		Preconditions.checkNotNull(builder.processId, "processId not set: %s", builder);
 		processId = builder.processId;
 
 		Preconditions.checkNotNull(builder.layoutType, "layoutType not set: %s", builder);
 		layoutType = builder.layoutType;
 
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
+		caption = TranslatableStrings.nullToEmpty(builder.caption);
+		description = TranslatableStrings.nullToEmpty(builder.description);
 		elements = ImmutableList.copyOf(builder.elements);
 	}
 

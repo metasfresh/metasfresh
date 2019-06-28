@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElementField.JSONFieldType;
@@ -47,7 +48,7 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public final class DocumentLayoutElementFieldDescriptor implements Serializable
 {
-	public static final Builder builder(final String fieldName)
+	public static Builder builder(final String fieldName)
 	{
 		return new Builder(fieldName);
 	}
@@ -55,19 +56,19 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 	/**
 	 * Please keep in sync with {@link JSONLookupSource}.
 	 */
-	public static enum LookupSource
+	public enum LookupSource
 	{
 		lookup,
 
 		list,
 
 		text
-	};
+	}
 
 	/**
 	 * Please keep in sync with {@link JSONFieldType}.
 	 */
-	public static enum FieldType
+	public enum FieldType
 	{
 		ActionButtonStatus,
 
@@ -126,7 +127,7 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 		}
 
 		publicField = builder.publicField;
-		emptyText = ImmutableTranslatableString.copyOfNullable(builder.emptyText);
+		emptyText = TranslatableStrings.copyOfNullable(builder.emptyText);
 		devices = builder.getDevices();
 
 		lookupSource = builder.lookupSource;
@@ -181,9 +182,9 @@ public final class DocumentLayoutElementFieldDescriptor implements Serializable
 
 		// FIXME TRL HARDCODED_FIELD_EMPTY_TEXT
 		private static final ITranslatableString HARDCODED_FIELD_EMPTY_TEXT = ImmutableTranslatableString.builder()
-				.setDefaultValue("none")
-				.put("de_DE", "leer")
-				.put("de_CH", "leer")
+				.defaultValue("none")
+				.trl("de_DE", "leer")
+				.trl("de_CH", "leer")
 				.build();
 
 		private String internalName;

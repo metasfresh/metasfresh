@@ -17,7 +17,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -49,7 +49,7 @@ import lombok.NonNull;
 
 public final class DocumentLayoutDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -186,7 +186,7 @@ public final class DocumentLayoutDescriptor
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutDescriptor.Builder.class);
 
 		private WindowId windowId;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
 		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 
@@ -273,7 +273,7 @@ public final class DocumentLayoutDescriptor
 
 		public Builder setCaption(ITranslatableString caption)
 		{
-			this.caption = caption == null ? ImmutableTranslatableString.empty() : caption;
+			this.caption = TranslatableStrings.nullToEmpty(caption);
 			return this;
 		}
 

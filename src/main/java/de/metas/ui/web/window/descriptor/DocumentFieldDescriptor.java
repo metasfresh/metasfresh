@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -62,7 +62,7 @@ import lombok.NonNull;
 
 public final class DocumentFieldDescriptor
 {
-	public static final Builder builder(final String fieldName)
+	public static Builder builder(final String fieldName)
 	{
 		return new Builder(fieldName);
 	}
@@ -102,7 +102,7 @@ public final class DocumentFieldDescriptor
 	private final Optional<IExpression<?>> defaultValueExpression;
 	private final ImmutableList<IDocumentFieldCallout> callouts;
 
-	public static enum Characteristic
+	public enum Characteristic
 	{
 		PublicField //
 		, AdvancedField //
@@ -114,7 +114,7 @@ public final class DocumentFieldDescriptor
 		, SpecialField_DocAction //
 		// , SpecialField_DocumentSummary //
 		;
-	};
+	}
 
 	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
 			// Characteristic.SpecialField_DocumentNo // NOP, don't exclude it (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 )
@@ -446,7 +446,7 @@ public final class DocumentFieldDescriptor
 			return _fieldBuilt;
 		}
 
-		private final void assertNotBuilt()
+		private void assertNotBuilt()
 		{
 			if (_fieldBuilt != null)
 			{
@@ -461,7 +461,7 @@ public final class DocumentFieldDescriptor
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
 		{
-			caption = ImmutableTranslatableString.ofMap(captionTrls, defaultCaption);
+			caption = TranslatableStrings.ofMap(captionTrls, defaultCaption);
 			return this;
 		}
 
@@ -473,7 +473,7 @@ public final class DocumentFieldDescriptor
 
 		public Builder setCaption(final String caption)
 		{
-			this.caption = ImmutableTranslatableString.constant(caption);
+			this.caption = TranslatableStrings.constant(caption);
 			return this;
 		}
 
@@ -481,7 +481,7 @@ public final class DocumentFieldDescriptor
 		{
 			if (caption == null)
 			{
-				return ImmutableTranslatableString.constant(fieldName);
+				return TranslatableStrings.constant(fieldName);
 			}
 
 			return caption;
@@ -489,7 +489,7 @@ public final class DocumentFieldDescriptor
 
 		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
 		{
-			description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			description = TranslatableStrings.ofMap(descriptionTrls, defaultDescription);
 			return this;
 		}
 
@@ -501,7 +501,7 @@ public final class DocumentFieldDescriptor
 
 		public Builder setDescription(final String description)
 		{
-			this.description = ImmutableTranslatableString.constant(description);
+			this.description = TranslatableStrings.constant(description);
 			return this;
 		}
 
@@ -509,7 +509,7 @@ public final class DocumentFieldDescriptor
 		{
 			if (description == null)
 			{
-				return ImmutableTranslatableString.constant("");
+				return TranslatableStrings.empty();
 			}
 			return description;
 		}
@@ -913,7 +913,7 @@ public final class DocumentFieldDescriptor
 			return _mandatoryLogicEffective;
 		}
 
-		private final ILogicExpression buildMandatoryLogicEffective()
+		private ILogicExpression buildMandatoryLogicEffective()
 		{
 			if (isParentLinkEffective())
 			{

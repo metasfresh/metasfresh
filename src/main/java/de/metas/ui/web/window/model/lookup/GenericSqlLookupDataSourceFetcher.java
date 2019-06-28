@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -221,13 +221,13 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		if (isTranslatable)
 		{
 			final String adLanguage = evalCtx.getAD_Language();
-			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, displayName);
-			descriptionTrl = ImmutableTranslatableString.singleLanguage(adLanguage, description);
+			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, displayName);
+			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, description);
 		}
 		else
 		{
-			displayNameTrl = ImmutableTranslatableString.anyLanguage(displayName);
-			descriptionTrl = ImmutableTranslatableString.anyLanguage(description);
+			displayNameTrl = TranslatableStrings.anyLanguage(displayName);
+			descriptionTrl = TranslatableStrings.anyLanguage(description);
 		}
 
 		//

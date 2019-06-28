@@ -11,7 +11,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -61,7 +61,7 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		DONT_DISPLAY;
 	}
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -119,8 +119,8 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutSectionDescriptor.Builder.class);
 
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
-		private ITranslatableString description = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
+		private ITranslatableString description = TranslatableStrings.empty();
 		private String internalName;
 		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
 

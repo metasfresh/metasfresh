@@ -37,7 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -434,8 +434,8 @@ public class DocumentEntityDescriptor
 
 		private String _internalName;
 
-		private ITranslatableString _caption = ImmutableTranslatableString.empty();
-		private ITranslatableString _description = ImmutableTranslatableString.empty();
+		private ITranslatableString _caption = TranslatableStrings.empty();
+		private ITranslatableString _description = TranslatableStrings.empty();
 
 		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
 		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
@@ -494,7 +494,7 @@ public class DocumentEntityDescriptor
 			return new DocumentEntityDescriptor(this);
 		}
 
-		private final void assertNotBuilt()
+		private void assertNotBuilt()
 		{
 			if (_built)
 			{
@@ -556,7 +556,7 @@ public class DocumentEntityDescriptor
 			return _detailId;
 		}
 
-		private final void assertFieldsNotBuilt()
+		private void assertFieldsNotBuilt()
 		{
 			assertNotBuilt();
 			Check.assumeNull(_fields, "Fields not already built");
@@ -610,7 +610,7 @@ public class DocumentEntityDescriptor
 			return _fieldBuilders.size();
 		}
 
-		private final void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
+		private void updateFieldBuilders(final Consumer<DocumentFieldDescriptor.Builder> fieldUpdater)
 		{
 			assertFieldsNotBuilt();
 
@@ -853,7 +853,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
 		{
-			_caption = ImmutableTranslatableString.ofMap(captionTrls, defaultCaption);
+			_caption = TranslatableStrings.ofMap(captionTrls, defaultCaption);
 			return this;
 		}
 
@@ -866,7 +866,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setCaption(final String caption)
 		{
-			_caption = ImmutableTranslatableString.constant(caption);
+			_caption = TranslatableStrings.constant(caption);
 			return this;
 		}
 
@@ -877,7 +877,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setDescription(final Map<String, String> descriptionTrls, final String defaultDescription)
 		{
-			_description = ImmutableTranslatableString.ofMap(descriptionTrls, defaultDescription);
+			_description = TranslatableStrings.ofMap(descriptionTrls, defaultDescription);
 			return this;
 		}
 
@@ -890,7 +890,7 @@ public class DocumentEntityDescriptor
 
 		public Builder setDescription(final String description)
 		{
-			_description = ImmutableTranslatableString.constant(description);
+			_description = TranslatableStrings.constant(description);
 			return this;
 		}
 
@@ -1052,7 +1052,7 @@ public class DocumentEntityDescriptor
 			return calloutExecutorBuilder.build();
 		}
 
-		private final DocumentFilterDescriptorsProvider createFilterDescriptors()
+		private DocumentFilterDescriptorsProvider createFilterDescriptors()
 		{
 			final String tableName = getTableName().orElse(null);
 			final AdTabId adTabId = getAdTabId().orElse(null);

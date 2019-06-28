@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -50,7 +50,7 @@ import lombok.Getter;
 @EqualsAndHashCode // required for (ETag) caching
 public final class DocumentFilterDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -188,7 +188,7 @@ public final class DocumentFilterDescriptor
 
 		public Builder setDisplayName(final Map<String, String> displayNameTrls)
 		{
-			this.displayNameTrls = ImmutableTranslatableString.ofMap(displayNameTrls);
+			this.displayNameTrls = TranslatableStrings.ofMap(displayNameTrls);
 			return this;
 		}
 
@@ -200,7 +200,7 @@ public final class DocumentFilterDescriptor
 
 		public Builder setDisplayName(final String displayName)
 		{
-			displayNameTrls = ImmutableTranslatableString.constant(displayName);
+			displayNameTrls = TranslatableStrings.constant(displayName);
 			return this;
 		}
 

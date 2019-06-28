@@ -8,7 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -60,8 +60,8 @@ public class DocumentLayoutSingleRow
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
 
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
+		caption = TranslatableStrings.nullToEmpty(builder.caption);
+		description = TranslatableStrings.nullToEmpty(builder.description);
 		sections = ImmutableList.copyOf(builder.buildSections());
 	}
 

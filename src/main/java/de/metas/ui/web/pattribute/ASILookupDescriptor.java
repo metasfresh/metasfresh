@@ -15,7 +15,7 @@ import org.compiere.util.NamePair;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache.CCacheStats;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -54,7 +54,7 @@ import lombok.ToString;
 @ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	public static final ASILookupDescriptor of(final I_M_Attribute attribute)
+	public static ASILookupDescriptor of(final I_M_Attribute attribute)
 	{
 		final IAttributeValuesProvider attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
 		return new ASILookupDescriptor(attributeValuesProvider);
@@ -186,13 +186,12 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		final int limit = evalCtx.getLimit(Integer.MAX_VALUE);
 		final int offset = evalCtx.getOffset(0);
 
-		ITranslatableString.constant("");
 		return attributeValuesProvider.getAvailableValues(evalCtx)
 				.stream()
 				.map(namePair -> StringLookupValue.of(
 						namePair.getID(),
-						ITranslatableString.constant(namePair.getName()),
-						ITranslatableString.constant(namePair.getDescription())))
+						TranslatableStrings.constant(namePair.getName()),
+						TranslatableStrings.constant(namePair.getDescription())))
 				.filter(filter)
 				.skip(offset)
 				.limit(limit)

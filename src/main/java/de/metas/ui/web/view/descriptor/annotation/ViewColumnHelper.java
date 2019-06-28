@@ -30,7 +30,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
@@ -244,12 +244,12 @@ public final class ViewColumnHelper
 		{
 			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 			return attributesRepo.getAttributeDisplayNameByValue(captionKey)
-					.orElseGet(() -> ImmutableTranslatableString.anyLanguage(captionKey));
+					.orElseGet(() -> TranslatableStrings.anyLanguage(captionKey));
 		}
 		else
 		{
 			logger.warn("Unknown TranslationSource={} for {}. Returning the captionKey={}", captionTranslationSource, field, captionKey);
-			return ImmutableTranslatableString.anyLanguage(captionKey);
+			return TranslatableStrings.anyLanguage(captionKey);
 		}
 	}
 
@@ -354,7 +354,7 @@ public final class ViewColumnHelper
 				.collect(GuavaCollectors.toImmutableMap());
 	}
 
-	private static final <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJson(final T row, final ClassViewColumnDescriptor column)
+	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJson(final T row, final ClassViewColumnDescriptor column)
 	{
 		final Object value = extractFieldValueAsJson(row, column);
 		if (JSONNullValue.isNull(value))
@@ -365,7 +365,7 @@ public final class ViewColumnHelper
 		return GuavaCollectors.entry(column.getFieldName(), value);
 	}
 
-	private static final <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnDescriptor column)
+	private static <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnDescriptor column)
 	{
 		try
 		{

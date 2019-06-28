@@ -2,9 +2,8 @@ package de.metas.ui.web.view;
 
 import java.time.LocalDateTime;
 
-import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,12 +49,12 @@ public class ViewHeaderProperty
 
 		public ViewHeaderPropertyBuilder value(final String value)
 		{
-			return value(ImmutableTranslatableString.anyLanguage(value));
+			return value(TranslatableStrings.anyLanguage(value));
 		}
 
 		public ViewHeaderPropertyBuilder value(final LocalDateTime value)
 		{
-			return value(DateTimeTranslatableString.ofDateTime(value));
+			return value(TranslatableStrings.dateAndTime(value));
 		}
 	}
 }

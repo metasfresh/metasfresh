@@ -18,7 +18,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue.IntegerLookupValueBuilder;
@@ -58,20 +58,20 @@ import lombok.NonNull;
 public final class JSONLookupValue
 {
 
-	public static final JSONLookupValue of(final int key, final String caption)
+	public static JSONLookupValue of(final int key, final String caption)
 	{
 		final String keyStr = String.valueOf(key);
 		return of(keyStr, caption, null/* description */);
 	}
 
-	public static final JSONLookupValue of(
+	public static JSONLookupValue of(
 			final String key,
 			final String caption)
 	{
 		return of(key, caption, null/* description */);
 	}
 
-	public static final JSONLookupValue of(
+	public static JSONLookupValue of(
 			final String key,
 			final String caption,
 			@Nullable final String description)
@@ -81,7 +81,7 @@ public final class JSONLookupValue
 		return new JSONLookupValue(key, caption, description, attributes, active);
 	}
 
-	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
+	public static JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
 		final String id = lookupValue.getIdAsString();
 
@@ -98,12 +98,12 @@ public final class JSONLookupValue
 		return new JSONLookupValue(id, displayName, description, lookupValue.getAttributes(), active);
 	}
 
-	public static final JSONLookupValue ofNamePair(final NamePair namePair)
+	public static JSONLookupValue ofNamePair(final NamePair namePair)
 	{
 		return of(namePair.getID(), namePair.getName(), namePair.getDescription());
 	}
 
-	public static final IntegerLookupValue integerLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
+	public static IntegerLookupValue integerLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		if (keyObj == null)
@@ -137,7 +137,7 @@ public final class JSONLookupValue
 		return builder.build();
 	}
 
-	public static final StringLookupValue stringLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
+	public static StringLookupValue stringLookupValueFromJsonMap(@NonNull final Map<String, Object> map)
 	{
 		final Object keyObj = map.get(PROPERTY_Key);
 		final String key = keyObj != null ? keyObj.toString() : null;
@@ -166,7 +166,7 @@ public final class JSONLookupValue
 	{
 		final Object captionObj = map.get(PROPERTY_Caption);
 		final String caption = captionObj != null ? captionObj.toString() : "";
-		final ITranslatableString displayName = ImmutableTranslatableString.anyLanguage(caption);
+		final ITranslatableString displayName = TranslatableStrings.anyLanguage(caption);
 		return displayName;
 	}
 
@@ -174,7 +174,7 @@ public final class JSONLookupValue
 	{
 		final Object descriptionObj = map.get(PROPERTY_Description);
 		final String descriptionStr = descriptionObj != null ? descriptionObj.toString() : "";
-		final ITranslatableString description = ImmutableTranslatableString.anyLanguage(descriptionStr);
+		final ITranslatableString description = TranslatableStrings.anyLanguage(descriptionStr);
 		return description;
 	}
 
@@ -188,7 +188,7 @@ public final class JSONLookupValue
 		return of(id, "<" + id + ">");
 	}
 
-	public static final JSONLookupValue concat(final JSONLookupValue lookupValue1, final JSONLookupValue lookupValue2)
+	public static JSONLookupValue concat(final JSONLookupValue lookupValue1, final JSONLookupValue lookupValue2)
 	{
 		if (lookupValue1 == null)
 		{
@@ -278,7 +278,7 @@ public final class JSONLookupValue
 	{
 		return IntegerLookupValue.builder()
 				.id(getKeyAsInt())
-				.displayName(ImmutableTranslatableString.constant(getCaption()))
+				.displayName(TranslatableStrings.constant(getCaption()))
 				.attributes(getAttributes())
 				.active(isActive())
 				.build();
@@ -288,7 +288,7 @@ public final class JSONLookupValue
 	{
 		return StringLookupValue.builder()
 				.id(getKey())
-				.displayName(ImmutableTranslatableString.constant(getCaption()))
+				.displayName(TranslatableStrings.constant(getCaption()))
 				.attributes(getAttributes())
 				.active(isActive())
 				.build();

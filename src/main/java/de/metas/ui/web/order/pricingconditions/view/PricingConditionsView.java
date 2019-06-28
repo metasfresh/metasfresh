@@ -11,7 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -78,7 +78,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			@Singular final List<RelatedProcessDescriptor> relatedProcessDescriptors,
 			@NonNull final DocumentFilterDescriptorsProvider filterDescriptors)
 	{
-		super(viewId, ITranslatableString.empty(), rowsData, filterDescriptors);
+		super(viewId, TranslatableStrings.empty(), rowsData, filterDescriptors);
 		this.rowsData = rowsData;
 		this.relatedProcessDescriptors = ImmutableList.copyOf(relatedProcessDescriptors);
 	}

@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
@@ -49,12 +49,12 @@ import lombok.NonNull;
 
 public final class DocumentLayoutElementDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final Builder builder(final DocumentFieldDescriptor... fields)
+	public static Builder builder(final DocumentFieldDescriptor... fields)
 	{
 		Check.assumeNotEmpty(fields, "fields is not empty");
 
@@ -77,7 +77,7 @@ public final class DocumentLayoutElementDescriptor
 		return elementBuilder;
 	}
 
-	public static final Builder builder(
+	public static Builder builder(
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final String... fieldNames)
 	{
@@ -363,13 +363,13 @@ public final class DocumentLayoutElementDescriptor
 
 		public Builder setCaption(final ITranslatableString caption)
 		{
-			_caption = caption == null ? ImmutableTranslatableString.empty() : caption;
+			_caption = caption == null ? TranslatableStrings.empty() : caption;
 			return this;
 		}
 
 		public Builder setCaption(final String caption)
 		{
-			setCaption(ImmutableTranslatableString.constant(caption));
+			setCaption(TranslatableStrings.constant(caption));
 			return this;
 		}
 
@@ -381,7 +381,7 @@ public final class DocumentLayoutElementDescriptor
 
 		public Builder setCaptionNone()
 		{
-			setCaption(ImmutableTranslatableString.empty());
+			setCaption(TranslatableStrings.empty());
 			return this;
 		}
 
@@ -399,23 +399,18 @@ public final class DocumentLayoutElementDescriptor
 				return Services.get(IMsgBL.class).translatable(fieldName);
 			}
 
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 
 		public Builder setDescription(final ITranslatableString description)
 		{
-			_description = description == null ? ImmutableTranslatableString.empty() : description;
+			_description = TranslatableStrings.nullToEmpty(description);
 			return this;
 		}
 
 		private ITranslatableString getDescription()
 		{
-			if (_description != null)
-			{
-				return _description;
-			}
-
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.nullToEmpty(_description);
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)

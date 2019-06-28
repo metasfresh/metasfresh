@@ -26,6 +26,7 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineInputValidator;
@@ -118,7 +119,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		if (!validationErrorMessages.isEmpty())
 		{
-			throw new AdempiereException(ITranslatableString.compose("\n", validationErrorMessages));
+			throw new AdempiereException(TranslatableStrings.compose("\n", validationErrorMessages));
 		}
 
 	}

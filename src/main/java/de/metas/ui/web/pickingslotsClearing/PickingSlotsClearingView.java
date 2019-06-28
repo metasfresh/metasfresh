@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -89,7 +90,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 			@NonNull @Singular final ImmutableList<DocumentFilter> filters)
 	{
 		this.viewId = viewId;
-		this.description = ITranslatableString.nullToEmpty(description);
+		this.description = TranslatableStrings.nullToEmpty(description);
 		this.rows = PickingSlotRowsCollection.ofSupplier(rows);
 
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();

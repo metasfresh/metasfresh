@@ -4,7 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ public class NoMenuNodesFoundException extends AdempiereException
 {
 	public NoMenuNodesFoundException()
 	{
-		super(ImmutableTranslatableString.empty());
+		super(TranslatableStrings.empty());
 	}
 
 	public NoMenuNodesFoundException(final String message)
