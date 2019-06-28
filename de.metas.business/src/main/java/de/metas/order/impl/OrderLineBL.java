@@ -199,7 +199,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void setShipper(final I_C_OrderLine ol)
 	{
-		final org.compiere.model.I_C_Order order = ol.getC_Order();
+		final I_C_Order order = ol.getC_Order();
 
 		final int orderShipperId = order.getM_Shipper_ID();
 		if (orderShipperId > 0)
@@ -255,7 +255,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public I_C_OrderLine createOrderLine(@NonNull final org.compiere.model.I_C_Order order)
+	public I_C_OrderLine createOrderLine(@NonNull final I_C_Order order)
 	{
 		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class);
 		ol.setC_Order(order);
@@ -277,7 +277,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final org.compiere.model.I_C_Order order)
+	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final I_C_Order order)
 	{
 		ol.setAD_Org_ID(order.getAD_Org_ID());
 		final boolean isDropShip = order.isDropShip();
@@ -304,7 +304,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public <T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, Class<T> orderLineClass)
+	public <T extends I_C_OrderLine> T createOrderLine(I_C_Order order, Class<T> orderLineClass)
 	{
 		final I_C_OrderLine orderLine = createOrderLine(order);
 		return InterfaceWrapperHelper.create(orderLine, orderLineClass);
@@ -478,7 +478,7 @@ public class OrderLineBL implements IOrderLineBL
 	 */
 	static LocalDate getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
-			final org.compiere.model.I_C_Order order)
+			final I_C_Order order)
 	{
 		LocalDate date = TimeUtil.asLocalDate(orderLine.getDatePromised());
 		// if null, then get date promised from order
@@ -518,13 +518,13 @@ public class OrderLineBL implements IOrderLineBL
 		{
 			return qtyEntered;
 		}
-		
+
 		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
-		if(uomId == null)
+		if (uomId == null)
 		{
 			return qtyEntered;
 		}
-		
+
 		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
 		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
 		return qtyOrdered;
@@ -533,7 +533,7 @@ public class OrderLineBL implements IOrderLineBL
 	Quantity convertToPriceUOM(@NonNull final Quantity qtyEntered, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
-		if(priceUOMId == null)
+		if (priceUOMId == null)
 		{
 			return qtyEntered;
 		}
@@ -557,43 +557,36 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(orderLine.getC_Tax_ID());
 
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).isTaxIncluded(order, tax);
 	}
 
 	@Override
 	public CurrencyPrecision getPricePrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getPricePrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getAmountPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getAmountPrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getTaxPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getTaxPrecision(order);
 	}
 
 	@Override
 	public boolean isAllowedCounterLineCopy(final org.compiere.model.I_C_OrderLine fromLine)
 	{
-		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(fromLine, de.metas.interfaces.I_C_OrderLine.class);
-
-		if (ol.isPackagingMaterial())
-		{
-			// DO not copy the line if it's packing material. The packaging lines will be created later
-			return false;
-		}
-
-		return true;
+		// DO not copy the line if it's packing material. The packaging lines will be created later
+		return !fromLine.isPackagingMaterial();
 	}
 
 	@Override
