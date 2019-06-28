@@ -1,10 +1,9 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
-import java.util.List;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
@@ -17,12 +16,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
-import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -47,8 +44,7 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n" //
-		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
+@ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
 public final class JsonRequestComposite
 {
@@ -59,15 +55,15 @@ public final class JsonRequestComposite
 
 	JsonRequestBPartner bpartner;
 
-	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if nultiple locations with GLN are provided, then only the first one is used")
+	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonRequestLocation> locations;
+	JsonRequestLocationUpsert locations;
 
 	@JsonInclude(Include.NON_EMPTY)
-	List<JsonRequestContact> contacts;
+	JsonRequestContactUpsert contacts;
 
 	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
-			+ BPARTER_SYNC_ADVISE_DOC)
+			+ READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -76,28 +72,21 @@ public final class JsonRequestComposite
 	private JsonRequestComposite(
 			@JsonProperty("orgCode") @Nullable final String orgCode,
 			@JsonProperty("bpartner") @NonNull final JsonRequestBPartner bpartner,
-			@JsonProperty("locations") @Singular final List<JsonRequestLocation> locations,
-			@JsonProperty("contacts") @Singular final List<JsonRequestContact> contacts,
+			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
+			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
-		this.locations = coalesce(locations, ImmutableList.of());
-		this.contacts = coalesce(contacts, ImmutableList.of());
+		this.locations = coalesce(locations, JsonRequestLocationUpsert.builder().build());
+		this.contacts = coalesce(contacts, JsonRequestContactUpsert.builder().build());
 		this.syncAdvise = syncAdvise;
-
-		final boolean lokupValuesAreOk = !isEmpty(bpartner.getCode(), true)
-				|| bpartner.getExternalId() != null
-				|| !extractLocationGlns().isEmpty();
-		Check.errorUnless(
-				lokupValuesAreOk,
-				"At least one of bpartner.code, bpartner.externalId or one location.gln needs to be non-empty; this={}", this);
 	}
 
 	public ImmutableList<String> extractLocationGlns()
 	{
-		return this.locations
-				.stream()
+		return this.locations.getRequestItems().stream()
+				.map(JsonRequestLocationUpsertItem::getLocation)
 				.map(JsonRequestLocation::getGln)
 				.filter(gln -> !isEmpty(gln, true))
 				.collect(ImmutableList.toImmutableList());
