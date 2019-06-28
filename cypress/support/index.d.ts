@@ -255,6 +255,10 @@ declare namespace Cypress {
      */
     getNotificationModal(containsText?: string | RegExp)
 
-
+    /**
+     * Select the current record ID from the URL.
+     * The URL looks like `/window/123/123456789` and the value returned is `123456789`.
+     */
+    getCurrentRecordId(): Chainable<any>
   }
 }
