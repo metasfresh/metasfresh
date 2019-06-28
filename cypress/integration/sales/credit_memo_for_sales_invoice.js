@@ -1,27 +1,4 @@
-/*
- * #%L
- * metasfresh-pharma
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /// <reference types="Cypress" />
-
 
 import {getLanguageSpecific} from "../../support/utils/utils";
 import {salesInvoices} from "../../page_objects/sales_invoices";
@@ -30,7 +7,7 @@ import {DiscountSchema} from "../../support/utils/discountschema";
 import {Bank} from "../../support/utils/bank";
 import {BPartner} from "../../support/utils/bpartner";
 import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
-import {DocumentStatusKey, RewriteURL} from "../../support/commands/byTbp";
+import {DocumentStatusKey, RewriteURL} from "../../support/utils/constants";
 
 
 describe('Create a Credit memo for Sales Invoice', function () {
@@ -113,11 +90,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
   });
 
 
-  // it('Open Sales Invoice Window', () => {
-  //   cy.visitWindow('167', '1000089');
-  // });
-
-
   it('Sales Invoice is Completed', function () {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
@@ -163,6 +135,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
 
     cy.selectInListField('C_DocType_ID', creditMemo, true, null, true);
 
+
     // ensure all the checkboxes are ok
     cy.setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
     cy.setCheckBoxValue('IsReferenceOriginalOrder', true, true, RewriteURL.PROCESS);
@@ -181,7 +154,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
 
 
   it('Ensure there is only 1 Sales Invoice row and open it', function () {
-    // salesInvoices.getRows().should('have.length', 1);
+    salesInvoices.getRows().should('have.length', 1);
 
     // select the first Table Row and click it (open it)
     salesInvoices.getRows().eq(0).dblclick();
