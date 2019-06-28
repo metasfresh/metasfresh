@@ -76,8 +76,7 @@ docker run --rm\\
  -e "CYPRESS_BROWSER=chrome"\\
  -e "DEBUG_CYPRESS_OUTPUT=n"\\
  -e "DEBUG_PRINT_BASH_CMDS=n"\\
- -e "DEBUG_PRINT_BASH_CMDS=n"\\
- -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
+  -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
  ${publishedE2eDockerImageName}
 </pre>
 <p/>
