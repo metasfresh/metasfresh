@@ -92,8 +92,8 @@ timestamps
 			{
 				final String recordKey = params.MF_CYPRESS_DASHBOARD ? secretCypressRecorcdKey : 'NOT_SET'
 				final String debugOutput = params.MF_CYPRESS_DEBUG ? 'y' : 'n'
-				final String browser = params.MF_CYPRESS_CHROME ?: 'chrome' : 'electron'
-				final String spec = params.MF_CYPRESS_SPEC ? 'NOT_SET'
+				final String browser = params.MF_CYPRESS_CHROME ? 'chrome' : 'electron'
+				final String spec = params.MF_CYPRESS_SPEC ?: 'NOT_SET'
 
 				// create a local results folder and mount it into the docker container
 				// the patch wiwthing the docker container needs to be in sync with reporter-config.json
