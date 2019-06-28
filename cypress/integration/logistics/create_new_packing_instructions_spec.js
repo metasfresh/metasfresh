@@ -53,15 +53,15 @@ describe('create new packing instructions ', function() {
 
   it('add new in modal', function() {
     cy.pressAddNewButton();
-    cy.selectInListField('ItemType', 'Packmittel');
-    cy.selectInListField('M_HU_PackingMaterial_ID', packingMaterial);
+    cy.selectInListField('ItemType', 'Packmittel', true);
+    cy.selectInListField('M_HU_PackingMaterial_ID', packingMaterial, true);
     cy.pressDoneButton();
 
     cy.pressAddNewButton();
-    cy.selectInListField('ItemType', 'Unter-Packvorschrift');
-    cy.selectInListField('Included_HU_PI_ID', 'IFCO 6416');
-    cy.writeIntoStringField('Qty', '10');
-    cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName);
+    cy.selectInListField('ItemType', 'Unter-Packvorschrift', true);
+    cy.selectInListField('Included_HU_PI_ID', 'IFCO 6416', true);
+    cy.writeIntoStringField('Qty', '10', true);
+    cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName, true, true);
     cy.pressDoneButton();
   });
 });
