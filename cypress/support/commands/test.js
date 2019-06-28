@@ -40,7 +40,6 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
       expect(str).to.eq('Everything is awesome and the process has started');
     });
 
-    //webui.modal.actions.done
     const startText = Cypress.messages.modal.actions.start;
     cy.clickButtonWithText(startText);
   });
@@ -122,6 +121,7 @@ Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName = 'newInc
       .as(includedDocumentIdAliasName);
 
     cy.get('.panel-modal').should('exist');
+    //cy.get('.modal-content-wrapper').should('exist'); // this might be another good indicator that we are done loading the modal dialog
   });
 });
 

@@ -2,7 +2,14 @@ export class BillOfMaterial {
   constructor(product) {
     cy.log(`BillOfMaterial - set product = ${product}`);
     this.product = product;
+    this.name = `${product}-BOM`;
     this.productComponent = undefined;
+  }
+
+  setName(name) {
+    cy.log(`BillOfMaterial - set name = ${name}`);
+    this.name = name;
+    return this;
   }
 
   setProduct(product) {
@@ -24,22 +31,27 @@ export class BillOfMaterial {
 }
 function applyBillOfMaterial(billOfMaterial) {
   describe(`Create new BillOfMaterial ${billOfMaterial.product}`, function() {
-    cy.visitWindow('53006', 'NEW');
-    cy.get('#lookup_M_Product_ID input')
-      .type(billOfMaterial.product)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', billOfMaterial.product).click();
+    cy.visitWindow('53006', 'NEW', billOfMaterial.name /*documentIdAliasName*/);
+
+    cy.writeIntoTextField('Name', billOfMaterial.name);
+
+    cy.writeIntoLookupListField('M_Product_ID', billOfMaterial.product, billOfMaterial.product);
     cy.writeIntoStringField('DocumentNo', 'X');
 
     cy.selectTab('PP_Product_BOMLine');
     cy.pressAddNewButton();
-    cy.get('#lookup_M_Product_ID input')
-      .eq(0)
-      .type(billOfMaterial.productComponent);
-    cy.contains('.input-dropdown-list-option', billOfMaterial.productComponent).click();
-    cy.get('.form-field-IsQtyPercentage input').click({ force: true });
-    cy.writeIntoStringField('QtyBatch', '44');
-    cy.writeIntoStringField('Scrap', '10');
+
+    cy.writeIntoLookupListField(
+      'M_Product_ID',
+      billOfMaterial.productComponent,
+      billOfMaterial.productComponent,
+      false,
+      true /*modal*/
+    );
+
+    cy.writeIntoStringField('QtyBOM', '44', true /*modal */);
+    cy.writeIntoStringField('Scrap', '10', true /*modal */);
+
     cy.pressDoneButton();
   });
 }
