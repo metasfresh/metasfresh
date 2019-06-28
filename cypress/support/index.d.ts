@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import {DocumentStatusKey, RewriteURL} from "./commands/byTbp";
+import {DocumentStatusKey, RewriteURL} from "./utils/constants";
 
 declare namespace Cypress {
   interface Chainable<Subject> {
@@ -273,7 +273,6 @@ declare namespace Cypress {
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
     setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL): Chainable<any>
-
 
 
     /**

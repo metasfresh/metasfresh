@@ -413,3 +413,14 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
     return typeof object === 'string' || object instanceof String;
   }
 });
+
+
+Cypress.Commands.add('getCurrentRecordId', () => {
+  describe('Select the current record ID from the url', function () {
+    let currentRecordId = 0;
+    cy.url().then(ulrr => {
+      currentRecordId = ulrr.split('/').pop();
+    });
+    return currentRecordId;
+  });
+});
