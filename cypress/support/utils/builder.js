@@ -54,13 +54,7 @@ export class Builder {
    * @param productName
    * @param productValue
    */
-  static createBasicProductEntities(
-    productCategoryName,
-    productCategoryValue,
-    priceListName,
-    productName,
-    productValue
-  ) {
+  static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType) {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -77,7 +71,7 @@ export class Builder {
       Object.assign(new Product(), productJson)
         .setName(productName)
         .setValue(productValue)
-        .setProductType('Item') // item-products are usedful in more scenarios that service-products
+        .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
         .apply();
