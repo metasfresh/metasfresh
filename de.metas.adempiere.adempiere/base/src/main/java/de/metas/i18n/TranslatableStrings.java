@@ -46,6 +46,9 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
+/**
+ * Translatable Strings Facade.
+ */
 @UtilityClass
 public class TranslatableStrings
 {
