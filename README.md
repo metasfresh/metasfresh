@@ -38,7 +38,7 @@ docker run --rm\
 
 ### The `CYPRESS_SPEC` environment variable
 
-If `CYPRESS_SPEC` is set, then cypress is run with `--spec`. 
+If `CYPRESS_SPEC` is set, then cypress is run with the `--spec` command line parameter. 
 See the documentation at https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt 
 
 Examples:
