@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import {RewriteURL} from "./commands/byTbp";
+import {DocumentStatusKey, RewriteURL} from "./commands/byTbp";
 
 declare namespace Cypress {
   interface Chainable<Subject> {
@@ -285,6 +285,19 @@ declare namespace Cypress {
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
     resetListValue(fieldName: string, modal?: boolean, rewriteUrl?: RewriteURL): Chainable<any>
+
+
+    /**
+     * Expect specific document status
+     * @param expectedDocumentStatus - the status the document should have
+     *
+     * @example
+     * cy.expectDocumentStatus(DocumentStatusKey.Completed);
+     *
+     * @example
+     * cy.expectDocumentStatus(DocumentStatusKey.InProgress);
+     */
+    expectDocumentStatus(expectedDocumentStatus: DocumentStatusKey): Chainable<any>;
 
   }
 }

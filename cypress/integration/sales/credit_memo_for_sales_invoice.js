@@ -30,7 +30,7 @@ import {DiscountSchema} from "../../support/utils/discountschema";
 import {Bank} from "../../support/utils/bank";
 import {BPartner} from "../../support/utils/bpartner";
 import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
-import {RewriteURL} from "../../support/commands/byTbp";
+import {DocumentStatusKey, RewriteURL} from "../../support/commands/byTbp";
 
 
 describe('Create a Credit memo for Sales Invoice', function () {
@@ -119,7 +119,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
 
 
   it('Sales Invoice is Completed', function () {
-    expectDocumentStatus(DocumentStatus.Completed);
+    cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
 
 
@@ -189,7 +189,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
 
 
   it('The Sales Invoice is a Credit Memo', function () {
-    expectDocumentStatus(DocumentStatus.InProgress);
+    cy.expectDocumentStatus(DocumentStatusKey.InProgress);
     cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemo);
   });
 
@@ -217,34 +217,3 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.pressDoneButton();
   });
 });
-
-
-//////////////////////////////////////////
-//////////////////////////////////////////
-//        all the functions/classes below should be public and/or added as `cy.helper`
-//
-//
-
-
-///////////////////////////
-///////////////////////////
-export class DocumentStatus {
-  static Completed = 'docStatusCompleted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusCompleted = '.tag-success';
-
-  static InProgress = 'docStatusInProgress';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusInProgress = '.tag-default';
-}
-
-function expectDocumentStatus(expectedDocumentStatus) {
-  cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
-    const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
-    const documentTag = DocumentStatus[`_tag_${expectedDocumentStatus}`];
-    cy.get(`.meta-dropdown-toggle ${documentTag}`).contains(expectedTrl);
-  });
-}
-
-//////////////////////////////////////////
-//////////////////////////////////////////

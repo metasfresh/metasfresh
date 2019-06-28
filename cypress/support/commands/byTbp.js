@@ -5,6 +5,8 @@ Pls tell me the _organisation_ standards for cypress/js :^).
  */
 
 
+import {getLanguageSpecific} from "../utils/utils";
+
 Cypress.Commands.add('getCurrentRecordId', () => {
   describe('Select the current record ID from the url', function () {
     let currentRecordId = 0;
@@ -55,5 +57,23 @@ export class RewriteURL {
 }
 
 
+Cypress.Commands.add('expectDocumentStatus', (expectedDocumentStatus) => {
+  describe(`Expect specific document status`, function () {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
+      const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
+      const documentTag = DocumentStatusKey[`_tag_${expectedDocumentStatus}`];
+      cy.get(`.meta-dropdown-toggle ${documentTag}`).contains(expectedTrl);
+    });
+  });
+});
+
+export class DocumentStatusKey {
+  static Completed = 'docStatusCompleted';
+  // noinspection JSUnusedGlobalSymbols
+  static _tag_docStatusCompleted = '.tag-success';
 
 
+  static InProgress = 'docStatusInProgress';
+  // noinspection JSUnusedGlobalSymbols
+  static _tag_docStatusInProgress = '.tag-default';
+}
