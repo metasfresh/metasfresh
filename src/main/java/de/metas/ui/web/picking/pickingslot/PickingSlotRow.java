@@ -269,7 +269,7 @@ public final class PickingSlotRow implements IViewRow
 
 	private static ITranslatableString buildPickingSlotCaption(final String pickingSlotName, final LookupValue pickingSlotBPartner, final LookupValue pickingSlotBPLocation)
 	{
-		return TranslatableStrings.compose(" ",
+		return TranslatableStrings.join(" ",
 				TranslatableStrings.constant(pickingSlotName),
 				pickingSlotBPartner != null ? pickingSlotBPartner.getDisplayNameTrl() : TranslatableStrings.empty(),
 				pickingSlotBPLocation != null ? pickingSlotBPLocation.getDisplayNameTrl() : TranslatableStrings.empty());

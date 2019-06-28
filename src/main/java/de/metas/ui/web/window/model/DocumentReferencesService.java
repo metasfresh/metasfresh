@@ -125,7 +125,7 @@ public class DocumentReferencesService
 		}
 
 		// Window caption + document info
-		return TranslatableStrings.compose(" ", windowCaption, documentSummary);
+		return TranslatableStrings.join(" ", windowCaption, documentSummary);
 	}
 
 	private static final DocumentReference createDocumentReference(

@@ -271,7 +271,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			final String township,
 			final ITranslatableString countryName)
 	{
-		final ITranslatableString displayName = TranslatableStrings.compose("", postal, " ", city, " ", township, " (", countryName, ")");
+		final ITranslatableString displayName = TranslatableStrings.join("", postal, " ", city, " ", township, " (", countryName, ")");
 		return IntegerLookupValue.of(postalId, displayName, null/* description */);
 	}
 }

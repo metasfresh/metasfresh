@@ -119,7 +119,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		if (!validationErrorMessages.isEmpty())
 		{
-			throw new AdempiereException(TranslatableStrings.compose("\n", validationErrorMessages));
+			throw new AdempiereException(TranslatableStrings.joinList("\n", validationErrorMessages));
 		}
 
 	}

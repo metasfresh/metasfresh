@@ -160,7 +160,7 @@ public class AvailableToPromiseResultForWebui
 								.getColumnTrl(I_M_AttributeValue.COLUMNNAME_Name, attributeValue.getName());
 						singleStrings.add(attributeValueStr);
 					}
-					result = TranslatableStrings.compose(" ", singleStrings);
+					result = TranslatableStrings.joinList(" ", singleStrings);
 
 					break;
 				case OTHER_STORAGE_KEYS:

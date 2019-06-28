@@ -210,7 +210,7 @@ class PPOrderLinesLoader
 
 		final ITranslatableString documentNoStr = TranslatableStrings.constant(ppOrder.getDocumentNo());
 
-		return TranslatableStrings.compose(" ", docTypeStr, documentNoStr);
+		return TranslatableStrings.join(" ", docTypeStr, documentNoStr);
 	}
 
 	private PPOrderLineRow createRowForMainProduct(

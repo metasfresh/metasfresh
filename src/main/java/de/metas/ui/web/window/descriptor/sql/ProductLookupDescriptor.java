@@ -686,7 +686,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			final ITranslatableString uomSymbolStr = productWithATP.getUomSymbolStr();
 			final ITranslatableString storageAttributeString = productWithATP.getStorageAttributesString();
 
-			return TranslatableStrings.compose("",
+			return TranslatableStrings.join("",
 					productDisplayName,
 					": ", qtyValueStr, " ", uomSymbolStr,
 					" (", storageAttributeString, ")");

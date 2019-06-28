@@ -249,7 +249,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		final String vendorName = bpartnersService.getBPartnerValueAndName(vendorBPartnerId);
 		final LocalDateTime notificationTime = reminder.getNotificationTime();
 
-		final ITranslatableString caption = TranslatableStrings.compose(" / ",
+		final ITranslatableString caption = TranslatableStrings.join(" / ",
 				vendorName,
 				TranslatableStrings.dateAndTime(notificationTime));
 

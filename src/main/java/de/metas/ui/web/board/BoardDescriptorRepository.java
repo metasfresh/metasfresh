@@ -589,7 +589,7 @@ public class BoardDescriptorRepository
 				.filter(fieldDescription -> fieldDescription != null)
 				.collect(ImmutableList.toImmutableList());
 
-		return TranslatableStrings.compose("\n", fieldDescriptions);
+		return TranslatableStrings.joinList("\n", fieldDescriptions);
 	}
 
 	private static ITranslatableString toDisplayValue(final Object value, final DocumentFieldWidgetType widgetType)
@@ -604,7 +604,7 @@ public class BoardDescriptorRepository
 		if (value instanceof Amount)
 		{
 			final Amount amount = (Amount)value;
-			return TranslatableStrings.compose(" ",
+			return TranslatableStrings.join(" ",
 					TranslatableStrings.number(amount.getValue(), DisplayType.Amount),
 					TranslatableStrings.constant(amount.getCurrencyCode()));
 
@@ -665,7 +665,7 @@ public class BoardDescriptorRepository
 		}
 
 		final ITranslatableString valueStr = toDisplayValue(value, cardField.getWidgetType());
-		return TranslatableStrings.compose(": ", cardField.getCaption(), valueStr);
+		return TranslatableStrings.join(": ", cardField.getCaption(), valueStr);
 	}
 
 	private LaneCardsSequence retrieveCardIdsOrdered(final int boardId, final int laneId)
