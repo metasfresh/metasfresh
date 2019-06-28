@@ -119,7 +119,8 @@ export class Product {
       cy.getStringFieldValue('ProductType').then(productTypeValue => {
         const productType = getLanguageSpecific(product, 'productType');
 
-        if (productType != productTypeValue) {
+       if (productType != productTypeValue) {
+          cy.resetListValue('ProductType');
           cy.selectInListField('ProductType', productType);
         }
       });
