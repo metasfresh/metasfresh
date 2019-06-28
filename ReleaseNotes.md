@@ -27,7 +27,7 @@ Here come the actual release notes:
   * [#71](https://github.com/metasfresh/metasfresh-e2e/issues/71) Create new BOM
   * [#72](https://github.com/metasfresh/metasfresh-e2e/issues/72) Create new bank
   * [#122](https://github.com/metasfresh/metasfresh-e2e/issues/122) Create GL Journal entry and change posting type
-  * [#124](https://github.com/metasfresh/metasfresh-e2e/issues/124) Create new Cost Center
+  * [#124](https://github.com/metasfresh/metasfresh-e2e/issues/124) Create new cost center
   * [#127](https://github.com/metasfresh/metasfresh-e2e/issues/127) Create quality note
 
 
