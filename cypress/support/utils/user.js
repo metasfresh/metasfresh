@@ -54,7 +54,7 @@ export class User {
 
 function applyUser(user) {
   describe(`Create new user ${user.name}`, function() {
-    cy.visitWindow('108', 'NEW');
+    cy.visitWindow('108', 'NEW', user.email /*documentIdAliasName*/);
     cy.writeIntoStringField('Firstname', user.firstName);
     cy.writeIntoStringField('Lastname', user.lastName);
     cy.writeIntoStringField('EMail', user.email);
