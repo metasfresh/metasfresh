@@ -13,8 +13,8 @@ properties([
 			description: 'Host name of the metasfresh instance to run the tests against',
 			name: 'MF_TARGET_HOST'),
 
-		string(description: 'If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
-See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.',
+		string(description: '''If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
+See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.''',
 			name: 'MF_CYPRESS_SPEC'),
 
 		// string(defaultValue: 'nexus.metasfresh.com:6001',
