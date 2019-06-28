@@ -2,9 +2,9 @@
 # running the docker image with electron fails, probably due to one of these reasons: https://github.com/cypress-io/cypress/issues/1235
 #FROM cypress/base:10
 
-# This docker image contains the latest (currently 71) chrome;
-# See the Dockerfile here: https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/chrome69/Dockerfile
-FROM cypress/browsers:node11.13.0-chrome73
+# This docker image contains the latest (currently 75) chrome;
+# See the available Docker images here: https://github.com/cypress-io/cypress-docker-images/tree/master/browsers
+FROM cypress/browsers:node10.11.0-chrome75
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
@@ -20,7 +20,7 @@ WORKDIR /e2e
 COPY package.json .
 
 #TODO: verify that with our package.json file, only the npm install down there is needed
-RUN npm install --save-dev cypress@3.3.1
+RUN npm install --save-dev cypress@3.3.2
 RUN npm install
 
 COPY .babelrc .

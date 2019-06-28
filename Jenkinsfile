@@ -71,14 +71,17 @@ docker run --rm\\
  -e "WS_URL=https://\${hostname}:443/stomp"\\
  -e "USERNAME=dev"\\
  -e "PASSWORD=password"\\
- -e "RECORD_KEY=NOT_SET"\\
- -e "BROWSER=chrome"\\
+ -e "CYPRESS_SPEC=NOT_SET"\\
+ -e "CYPRESS_RECORD_KEY=NOT_SET"\\
+ -e "CYPRESS_BROWSER=chrome"\\
  -e "DEBUG_CYPRESS_OUTPUT=n"\\
  -e "DEBUG_PRINT_BASH_CMDS=n"\\
  -e "DEBUG_PRINT_BASH_CMDS=n"\\
  -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
  ${publishedE2eDockerImageName}
 </pre>
+<p/>
+Also see metasfresh-e2e's <a href="https://github.com/metasfresh/metasfresh-e2e/blob/master/README.md">README.md</a>.
 <p/>
 Related jenkins jobs:
 <ul>

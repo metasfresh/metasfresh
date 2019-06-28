@@ -2,7 +2,7 @@
 
 ** General (general.js)
 
-- loginByForm: reusable form login
+- loginViaAPI: reusable form login
 - tab: emulates tab
 - active: query for active element
 - waitForHeader: wait for breadcrumb in header
