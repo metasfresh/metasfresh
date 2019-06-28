@@ -117,7 +117,6 @@ Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, r
       .waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
   });
 });
-
 /*
  * Right now it can only select the current date
  */
@@ -133,7 +132,27 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
     .find('.form-control-label')
     .click();
 });
+/**Selects tomorrow's date in the picker
+ *
+ * @param {string} fieldName - name of the field
+ * @param {number} dayOffset - the number of days before/after today;
+ * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+ */
+Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) => {
+  const path = createFieldPath(fieldName, modal);
 
+  cy.get(path)
+    .find('.datepicker')
+    .click();
+  cy.get('.rdtPicker td').then(e => {
+    /**get the get the index of the day to select in the date picker */
+    let dayIndex = e.index(e.filter('.rdtToday')) + dayOffset;
+    e.filter(i => dayIndex == i).click();
+  });
+  cy.get(path)
+    .find('.form-control-label')
+    .click();
+});
 /**
  * Function to fill in text inputs
  *
