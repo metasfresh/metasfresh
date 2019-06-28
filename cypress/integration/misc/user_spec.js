@@ -10,6 +10,7 @@ describe('New user tests', function() {
   let password = null;
   let userJSON = null;
   let user = null;
+  let userId = null;
 
   before(function() {
     cy.fixture('user/user.json').then(userJson => {
@@ -23,6 +24,9 @@ describe('New user tests', function() {
   it('Create a user', function() {
     user = new User({ ...userJSON, lastName: customLastName, email: customEmail });
     user.apply();
+    cy.get(`@${customEmail}`).then(user => {
+      userId = user.documentId;
+    });
 
     cy.get('form-field-Login').should('not.exist');
   });
@@ -38,9 +42,18 @@ describe('New user tests', function() {
   it(`Set user's password`, function() {
     users.visit();
 
-    users.getHeaderFilter('Lastname').click();
-
-    users.getRowWithValue(customLastName).click();
+    // the following two failed (locally and when run from jenkins) with
+    // ---
+    // CypressError: Timed out retrying: cy.click() failed because this element:
+    // <span title="Lastname" class="th-caption">Lastname</span>
+    //  is being covered by another element:
+    // <div class="header-breadcrumb">...</div>
+    //  Fix this problem, or use {force: true} to disable error checking.
+    // ---
+    // so, instead we directly open the user's document view
+    // users.getHeaderFilter('Lastname').click();
+    // users.getRowWithValue(customLastName).click();
+    cy.visitWindow(users.windowId, userId);
 
     cy.executeHeaderActionWithDialog('AD_User_ChangePassword');
 
@@ -84,27 +97,22 @@ describe('New user tests', function() {
     it(`Create user's roles`, function() {
       users.visit();
 
-      users.getHeaderFilter('Lastname').click();
-      users.getRowWithValue(customLastName).dblclick();
+      // fails in the same manner as further up
+      // users.getHeaderFilter('Lastname').click();
+      // users.getRowWithValue(customLastName).dblclick();
+      cy.visitWindow(users.windowId, userId);
 
-      const addNewText = Cypress.messages.window.addNew.caption;
-
-      cy.get('.tabs-wrapper .form-flex-align .btn')
-        .contains(addNewText)
-        .should('exist')
-        .click();
-
-      cy.get('.modal-content-wrapper').should('exist');
-      cy.writeIntoLookupListField('AD_Role_ID', 'W', 'WebUI', true);
+      cy.pressAddNewButton();
+      cy.writeIntoLookupListField('AD_Role_ID', 'WebU', 'WebUI', true, true /*modal */);
       cy.pressDoneButton();
 
-      cy.get('.tabs-wrapper .form-flex-align .btn')
-        .contains(addNewText)
-        .should('exist')
-        .click();
-
-      cy.get('.modal-content-wrapper').should('exist');
-      cy.writeIntoLookupListField('AD_Role_ID', 'Q', 'Quicktest1', true);
+      // add another role so we will later get the role selection dialog
+      // on my local machine, this failed with
+      // ---
+      //Error: Uncaught TypeError: Cannot read property 'value' of null (http://localhost:30080/bundle-856223f013aa9eba84ce-git-3d66a8f.js:95)
+      // ---
+      cy.pressAddNewButton();
+      cy.writeIntoLookupListField('AD_Role_ID', 'Quickt', 'Quicktest1', true, true /*modal */);
       cy.pressDoneButton();
     });
 
@@ -114,8 +122,9 @@ describe('New user tests', function() {
       cy.url().should('include', 'login');
     });
 
-    it('Re-login using form', function() {
+    it('Wait for login prompt and re-login using form', function() {
       cy.get('[name="username"]')
+        .should('exist')
         .type('{selectall}')
         .type(`${user.lastName.toLowerCase()}`)
         .type('{enter}');
