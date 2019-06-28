@@ -17,8 +17,8 @@ properties([
 See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.<p>
 Examples:
 <ul>
-<li><code>CYPRESS_SPEC=cypress/integration/currency/**</code> runs all specs in the <code>currency</code> folder</li>
-<li><code>CYPRESS_SPEC=cypress/integration/currency/currency_activate_spec.js</code> runs exactly the <code>currency_activate_spec.js</code> spec</li>
+<li><code>cypress/integration/currency/**</code> runs all specs in the <code>currency</code> folder</li>
+<li><code>cypress/integration/currency/currency_activate_spec.js</code> runs exactly the <code>currency_activate_spec.js</code> spec</li>
 </ul>''',
 			name: 'MF_CYPRESS_SPEC'),
 
