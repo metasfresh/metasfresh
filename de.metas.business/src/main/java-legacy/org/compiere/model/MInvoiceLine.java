@@ -157,7 +157,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		this(invoice.getCtx(), 0, invoice.get_TrxName());
 		if (invoice.get_ID() == 0)
+		{
 			throw new IllegalArgumentException("Header not saved");
+		}
 		setClientOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
 		setC_Invoice_ID(invoice.getC_Invoice_ID());
 		setInvoice(invoice);
@@ -240,7 +242,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setDescription(oLine.getDescription());
 		//
 		if (oLine.getM_Product_ID() == 0)
+		{
 			setC_Charge_ID(oLine.getC_Charge_ID());
+		}
 		//
 		setM_Product_ID(oLine.getM_Product_ID());
 		setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
@@ -264,12 +268,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (tax == null)
 		{
 			setC_Tax_ID(oLine.getC_Tax_ID());
-			setC_TaxCategory(oLine.getC_TaxCategory());
+			setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
 		}
 
 		else
 		{
-			setC_TaxCategory(tax.getC_TaxCategory());
+			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 		}
 		setLineNetAmt(oLine.getLineNetAmt());
 		//
@@ -318,14 +322,20 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		//
 		setM_Product_ID(sLine.getM_Product_ID());
 		if (sLine.sameOrderLineUOM())
+		{
 			setC_UOM_ID(sLine.getC_UOM_ID());
+		}
 		else
+		{
 			// use product UOM if the shipment hasn't the same uom than the order
 			setC_UOM_ID(getProduct().getC_UOM_ID());
+		}
 		setM_AttributeSetInstance_ID(sLine.getM_AttributeSetInstance_ID());
 		// setS_ResourceAssignment_ID(sLine.getS_ResourceAssignment_ID());
 		if (getM_Product_ID() == 0)
+		{
 			setC_Charge_ID(sLine.getC_Charge_ID());
+		}
 		//
 		int C_OrderLine_ID = sLine.getC_OrderLine_ID();
 		if (C_OrderLine_ID != 0)
@@ -335,17 +345,23 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			setS_ResourceAssignment_ID(oLine.getS_ResourceAssignment_ID());
 			//
 			if (sLine.sameOrderLineUOM())
+			{
 				setPriceEntered(oLine.getPriceEntered());
+			}
 			else
+			{
 				setPriceEntered(oLine.getPriceActual());
+			}
 			setPriceActual(oLine.getPriceActual());
 			setPriceLimit(oLine.getPriceLimit());
 			setPriceList(oLine.getPriceList());
 			// metas: begin: US1184
 			if (getPriceActual().compareTo(getPriceList()) != 0)
+			 {
 				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setIsManualPrice(true);
 			// metas: end
 			//
+			}
 
 			// 07442
 			// Do not change the tax (or tax category) if it was already set
@@ -354,12 +370,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
 				setC_Tax_ID(oLine.getC_Tax_ID());
-				setC_TaxCategory(oLine.getC_TaxCategory());
+				setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
 			}
 
 			else
 			{
-				setC_TaxCategory(tax.getC_TaxCategory());
+				setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 			}
 			setLineNetAmt(oLine.getLineNetAmt());
 			setC_Project_ID(oLine.getC_Project_ID());
@@ -421,9 +437,13 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	// addDescription
 
 	/**
@@ -434,10 +454,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	@Override
 	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID == 0)		// 0 is valid ID
+		if (M_AttributeSetInstance_ID == 0)
+		{
 			set_Value("M_AttributeSetInstance_ID", new Integer(0));
+		}
 		else
+		{
 			super.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
+		}
 	}	// setM_AttributeSetInstance_ID
 
 	/**************************************************************************
@@ -446,11 +470,17 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public void setPrice()
 	{
 		if (getM_Product_ID() == 0 || isDescription())
+		{
 			return;
+		}
 		if (m_M_PriceList_ID == 0 || m_C_BPartner_ID == 0)
+		{
 			setInvoice(getParent());
+		}
 		if (m_M_PriceList_ID == 0 || m_C_BPartner_ID == 0)
+		{
 			throw new IllegalStateException("setPrice - PriceList unknown!");
+		}
 		setPrice(m_M_PriceList_ID, m_C_BPartner_ID);
 	}	// setPrice
 
@@ -463,7 +493,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	private void setPrice(int M_PriceList_ID, int C_BPartner_ID)
 	{
 		if (getM_Product_ID() == 0 || isDescription())
+		{
 			return;
+		}
 		//
 		log.debug("M_PriceList_ID={}", M_PriceList_ID);
 		m_productPricing = new MProductPricing(getM_Product_ID(), C_BPartner_ID,
@@ -499,16 +531,21 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setPriceLimit(m_productPricing.getPriceLimit());
 		//
 		if (getQtyEntered().compareTo(getQtyInvoiced()) == 0)
+		{
 			setPriceEntered(m_productPricing.getPriceStd());
-		else
+		}
+		else {
 			setPriceEntered(m_productPricing.getPriceStd().multiply(getQtyInvoiced()
 					.divide(getQtyEntered(), 6, BigDecimal.ROUND_HALF_UP)));	// precision
+		}
 
 		setC_TaxCategory_ID(m_productPricing.getC_TaxCategory_ID());
 
 		//
 		if (getC_UOM_ID() == 0)
+		{
 			setC_UOM_ID(m_productPricing.getC_UOM_ID());
+		}
 
 		if (il.getPrice_UOM_ID() == 0)
 		{
@@ -539,7 +576,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public void setPriceActual(BigDecimal PriceActual)
 	{
 		if (PriceActual == null)
+		{
 			throw new IllegalArgumentException("PriceActual is mandatory");
+		}
 		set_ValueNoCheck("PriceActual", PriceActual);
 	}	// setPriceActual
 
@@ -630,17 +669,25 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		BigDecimal TaxAmt = Env.ZERO;
 		if (getC_Tax_ID() == 0)
+		{
 			return;
+		}
 		// setLineNetAmt();
 		MTax tax = MTax.get(getCtx(), getC_Tax_ID());
-		if (tax.isDocumentLevel() && m_IsSOTrx)		// AR Inv Tax
+		if (tax.isDocumentLevel() && m_IsSOTrx)
+		{
 			return;
+		}
 		//
 		TaxAmt = tax.calculateTax(getLineNetAmt(), isTaxIncluded(), getAmountPrecision().toInt());
 		if (isTaxIncluded())
+		{
 			setLineTotalAmt(getLineNetAmt());
+		}
 		else
+		{
 			setLineTotalAmt(getLineNetAmt().add(TaxAmt));
+		}
 		super.setTaxAmt(TaxAmt);
 	}	// setTaxAmt
 
@@ -663,7 +710,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public MCharge getCharge()
 	{
 		if (m_charge == null && getC_Charge_ID() != 0)
+		{
 			m_charge = MCharge.get(getCtx(), getC_Charge_ID());
+		}
 		return m_charge;
 	}
 
@@ -675,7 +724,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	protected MTax getTax()
 	{
 		if (m_tax == null)
+		{
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
+		}
 		return m_tax;
 	}	// getTax
 
@@ -764,9 +815,13 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public void setM_Product_ID(int M_Product_ID, boolean setUOM)
 	{
 		if (setUOM)
+		{
 			setProduct(MProduct.get(getCtx(), M_Product_ID));
+		}
 		else
+		{
 			super.setM_Product_ID(M_Product_ID);
+		}
 		setM_AttributeSetInstance_ID(0);
 	}	// setM_Product_ID
 
@@ -791,7 +846,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public MProduct getProduct()
 	{
 		if (m_product == null && getM_Product_ID() != 0)
+		{
 			m_product = MProduct.get(getCtx(), getM_Product_ID());
+		}
 		return m_product;
 	}	// getProduct
 
@@ -805,7 +862,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getC_Project_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Project_ID();
+		}
 		return ii;
 	}	// getC_Project_ID
 
@@ -819,7 +878,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getC_Activity_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Activity_ID();
+		}
 		return ii;
 	}	// getC_Activity_ID
 
@@ -833,7 +894,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getC_Campaign_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Campaign_ID();
+		}
 		return ii;
 	}	// getC_Campaign_ID
 
@@ -847,7 +910,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getUser1_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser1_ID();
+		}
 		return ii;
 	}	// getUser1_ID
 
@@ -861,7 +926,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getUser2_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser2_ID();
+		}
 		return ii;
 	}	// getUser2_ID
 
@@ -875,7 +942,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		int ii = super.getAD_OrgTrx_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getAD_OrgTrx_ID();
+		}
 		return ii;
 	}	// getAD_OrgTrx_ID
 
@@ -916,12 +985,16 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				pstmt.setInt(1, getC_InvoiceLine_ID());
 				ResultSet rs = pstmt.executeQuery();
 				if (rs.next())
+				{
 					m_name = rs.getString(1);
+				}
 				rs.close();
 				pstmt.close();
 				pstmt = null;
 				if (m_name == null)
+				{
 					m_name = "??";
+				}
 			}
 			catch (Exception e)
 			{
@@ -932,7 +1005,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				try
 				{
 					if (pstmt != null)
+					{
 						pstmt.close();
+					}
 				}
 				catch (Exception e)
 				{
@@ -1010,7 +1085,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (getC_Charge_ID() != 0)
 		{
 			if (getM_Product_ID() != 0)
+			{
 				setM_Product_ID(0);
+			}
 		}
 		else
 		{
@@ -1048,7 +1125,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		// Set Tax
 		if (getC_Tax_ID() == 0)
+		{
 			setTax();
+		}
 
 		// Get Line No
 		if (getLine() == 0)
@@ -1062,7 +1141,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
 			if (C_UOM_ID > 0)
+			{
 				setC_UOM_ID(C_UOM_ID);
+			}
 		}
 
 		// price UOM
@@ -1070,9 +1151,13 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		// Qty Precision
 		if (newRecord || is_ValueChanged("QtyEntered"))
+		{
 			setQtyEntered(getQtyEntered());
+		}
 		if (newRecord || is_ValueChanged("QtyInvoiced"))
+		{
 			setQtyInvoiced(getQtyInvoiced());
+		}
 
 		// Calculations & Rounding
 		setLineNetAmt();
@@ -1140,12 +1225,16 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		if (!newRecord && is_ValueChanged("C_Tax_ID"))
 		{
 			// Recalculate Tax for old Tax
 			if (!updateInvoiceTax(true))
+			{
 				return false;
+			}
 		}
 		return updateHeaderTax();
 	}	// afterSave
@@ -1160,7 +1249,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	protected boolean afterDelete(boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 
 		// reset shipment line invoiced flag
 		if (getM_InOutLine_ID() > 0)
@@ -1182,7 +1273,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	{
 		// Update header only if the document is not processed - teo_sarca BF [ 2317305 ]
 		if (isProcessed() && !is_ValueChanged(COLUMNNAME_Processed))
+		{
 			return true;
+		}
 
 		// Recalculate Tax for this Tax
 		if (!updateInvoiceTax(false))
@@ -1230,14 +1323,20 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public String allocateLandedCosts()
 	{
 		if (isProcessed())
+		{
 			return "Processed";
+		}
 		MLandedCost[] lcs = MLandedCost.getLandedCosts(this);
 		if (lcs.length == 0)
+		{
 			return "";
+		}
 		String sql = "DELETE FROM C_LandedCostAllocation WHERE C_InvoiceLine_ID=" + getC_InvoiceLine_ID();
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 0)
+		{
 			log.debug("Deleted #" + no);
+		}
 
 		int inserted = 0;
 		// *** Single Criteria ***
@@ -1252,13 +1351,19 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				for (MInOutLine line : ship.getLines())
 				{
 					if (line.isDescription() || line.getM_Product_ID() == 0)
+					{
 						continue;
+					}
 					if (lc.getM_Product_ID() == 0
 							|| lc.getM_Product_ID() == line.getM_Product_ID())
+					{
 						list.add(line);
+					}
 				}
 				if (list.size() == 0)
+				{
 					return "No Matching Lines (with Product) in Shipment";
+				}
 				// Calculate total & base
 				BigDecimal total = Env.ZERO;
 				for (int i = 0; i < list.size(); i++)
@@ -1267,7 +1372,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					total = total.add(iol.getBase(lc.getLandedCostDistribution()));
 				}
 				if (total.signum() == 0)
+				{
 					return "Total of Base values is 0 - " + lc.getLandedCostDistribution();
+				}
 				// Create Allocations
 				for (int i = 0; i < list.size(); i++)
 				{
@@ -1288,7 +1395,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 						lca.setAmt(result, getAmountPrecision());
 					}
 					if (!lca.save())
+					{
 						return "Cannot save line Allocation = " + lca;
+					}
 					inserted++;
 				}
 				log.debug("Inserted " + inserted);
@@ -1300,7 +1409,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				MInOutLine iol = new MInOutLine(getCtx(), lc.getM_InOutLine_ID(), get_TrxName());
 				if (iol.isDescription() || iol.getM_Product_ID() == 0)
+				{
 					return "Invalid Receipt Line - " + iol;
+				}
 				MLandedCostAllocation lca = new MLandedCostAllocation(this, lc.getM_CostElement_ID());
 				lca.setM_Product_ID(iol.getM_Product_ID());
 				lca.setM_AttributeSetInstance_ID(iol.getM_AttributeSetInstance_ID());
@@ -1310,7 +1421,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				lca.setQty(iol.getMovementQty());
 				// end MZ
 				if (lca.save())
+				{
 					return "";
+				}
 				return "Cannot save single line Allocation = " + lc;
 			}
 			// Single Product
@@ -1320,11 +1433,15 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				lca.setM_Product_ID(lc.getM_Product_ID());	// No ASI
 				lca.setAmt(getLineNetAmt());
 				if (lca.save())
+				{
 					return "";
+				}
 				return "Cannot save Product Allocation = " + lc;
 			}
 			else
+			{
 				return "No Reference for " + lc;
+			}
 		}
 
 		// *** Multiple Criteria ***
@@ -1334,11 +1451,17 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			MLandedCost lc = lc2;
 			if (!LandedCostDistribution.equals(lc.getLandedCostDistribution()))
+			{
 				return "Multiple Landed Cost Rules must have consistent Landed Cost Distribution";
+			}
 			if (lc.getM_Product_ID() != 0 && lc.getM_InOut_ID() == 0 && lc.getM_InOutLine_ID() == 0)
+			{
 				return "Multiple Landed Cost Rules cannot directly allocate to a Product";
+			}
 			if (M_CostElement_ID != lc.getM_CostElement_ID())
+			{
 				return "Multiple Landed Cost Rules cannot different Cost Elements";
+			}
 		}
 		// Create List
 		ArrayList<MInOutLine> list = new ArrayList<>();
@@ -1352,21 +1475,29 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				{
 					if (line.isDescription()		// decription or no product
 							|| line.getM_Product_ID() == 0)
+					{
 						continue;
+					}
 					if (lc.getM_Product_ID() == 0		// no restriction or product match
 							|| lc.getM_Product_ID() == line.getM_Product_ID())
+					{
 						list.add(line);
+					}
 				}
 			}
 			else if (lc.getM_InOutLine_ID() != 0)	// receipt line
 			{
 				MInOutLine iol = new MInOutLine(getCtx(), lc.getM_InOutLine_ID(), get_TrxName());
 				if (!iol.isDescription() && iol.getM_Product_ID() != 0)
+				{
 					list.add(iol);
+				}
 			}
 		}
 		if (list.size() == 0)
+		{
 			return "No Matching Lines (with Product)";
+		}
 		// Calculate total & base
 		BigDecimal total = Env.ZERO;
 		for (int i = 0; i < list.size(); i++)
@@ -1375,7 +1506,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			total = total.add(iol.getBase(LandedCostDistribution));
 		}
 		if (total.signum() == 0)
+		{
 			return "Total of Base values is 0 - " + LandedCostDistribution;
+		}
 		// Create Allocations
 		for (int i = 0; i < list.size(); i++)
 		{
@@ -1396,7 +1529,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				lca.setAmt(result, getAmountPrecision());
 			}
 			if (!lca.save())
+			{
 				return "Cannot save line Allocation = " + lca;
+			}
 			inserted++;
 		}
 
@@ -1418,7 +1553,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			if (largestAmtAllocation == null
 					|| allocation.getAmt().compareTo(largestAmtAllocation.getAmt()) > 0)
+			{
 				largestAmtAllocation = allocation;
+			}
 			allocationAmt = allocationAmt.add(allocation.getAmt());
 		}
 		BigDecimal difference = getLineNetAmt().subtract(allocationAmt);
@@ -1444,7 +1581,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		ArrayList<MLandedCost> list = new ArrayList<>();
 		String sql = "SELECT * FROM C_LandedCost WHERE C_InvoiceLine_ID=? ";
 		if (whereClause != null)
+		{
 			sql += whereClause;
+		}
 		PreparedStatement pstmt = null;
 		try
 		{
@@ -1469,7 +1608,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			try
 			{
 				if (pstmt != null)
+				{
 					pstmt.close();
+				}
 			}
 			catch (Exception e)
 			{
@@ -1492,7 +1633,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 	public int copyLandedCostFrom(MInvoiceLine otherInvoiceLine)
 	{
 		if (otherInvoiceLine == null)
+		{
 			return 0;
+		}
 		MLandedCost[] fromLandedCosts = otherInvoiceLine.getLandedCost(null);
 		int count = 0;
 		for (MLandedCost fromLandedCost : fromLandedCosts)
@@ -1502,10 +1645,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			landedCost.setC_InvoiceLine_ID(getC_InvoiceLine_ID());
 			landedCost.set_ValueNoCheck("C_LandedCost_ID", I_ZERO);	// new
 			if (landedCost.save(get_TrxName()))
+			{
 				count++;
+			}
 		}
 		if (fromLandedCosts.length != count)
+		{
 			log.error("LandedCost difference - From=" + fromLandedCosts.length + " <> Saved=" + count);
+		}
 		return count;
 	}	// copyLinesFrom
 
@@ -1549,7 +1696,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		setPrice(rmaLine.getAmt());
 		BigDecimal qty = rmaLine.getQty();
 		if (rmaLine.getQtyInvoiced() != null)
+		{
 			qty = qty.subtract(rmaLine.getQtyInvoiced());
+		}
 		setQty(qty);
 		setLineNetAmt();
 		setTaxAmt();

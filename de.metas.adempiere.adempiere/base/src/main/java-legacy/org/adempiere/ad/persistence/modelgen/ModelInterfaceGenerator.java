@@ -130,6 +130,9 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_M_Warehouse")
 			.add("org.compiere.model.I_M_Locator")
 			//
+			.add("org.compiere.model.I_C_TaxCategory")
+			.add("org.compiere.model.I_C_Tax")
+			//
 			.add("org.compiere.model.I_C_Currency")
 			.add("org.compiere.model.I_C_DocType")
 			.add("org.compiere.model.I_M_Attribute")

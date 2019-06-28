@@ -83,6 +83,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -550,11 +551,11 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(final org.compiere.model.I_C_OrderLine orderLine)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 
-		final I_C_Tax tax = orderLine.getC_Tax();
+		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(orderLine.getC_Tax_ID());
 
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).isTaxIncluded(order, tax);

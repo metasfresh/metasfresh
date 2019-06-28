@@ -50,11 +50,19 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class TaxDAO implements ITaxDAO
 {
+	@Override
+	public I_C_Tax getTaxById(final int taxRepoId)
+	{
+		Check.assumeGreaterThanZero(taxRepoId, "taxRepoId");
+		return loadOutOfTrx(taxRepoId, I_C_Tax.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_VAT_SmallBusiness.Table_Name + "#By#C_BPartner_ID#Date")
 	public boolean retrieveIsTaxExempt(
