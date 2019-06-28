@@ -5,12 +5,14 @@ import java.math.RoundingMode;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -264,9 +266,14 @@ class PharmaPriceLimitRuleInstance
 			valueAsBigDecimal = value;
 		}
 
-		public String toFormulaString()
+		public ITranslatableString toFormulaString()
 		{
-			return "(" + basePrice + " + " + priceAddAmt + ") - " + discountPercentToSubtract + "% + " + paymentTermDiscountPercentToAdd + "% (precision: " + precision + ")";
+			return TranslatableStrings.builder()
+					.append("(").append(basePrice, DisplayType.CostPrice).append(" + ").append(priceAddAmt, DisplayType.CostPrice).append(")")
+					.append(" - ").append(discountPercentToSubtract, DisplayType.Number).append("%")
+					.append(" + ").append(paymentTermDiscountPercentToAdd, DisplayType.Number).append("%")
+					.append(" (precision: ").append(precision.toInt()).append(")")
+					.build();
 		}
 	}
 }
