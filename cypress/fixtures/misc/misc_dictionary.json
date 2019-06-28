@@ -1,13 +1,16 @@
 {
-    "general_comment1": "A sortof lazy ad-hoc dictionary for language specific terms that are used in many different places, and are not provided by the APIs messages endpoint",
+  "general_comment1": "A sortof lazy ad-hoc dictionary for language specific terms that are used in many different places, and are not provided by the APIs messages endpoint",
 
-    "docActionComplete": "Complete",
-    "de_DE__docActionComplete": "Fertigstellen",
+  "docActionComplete": "Complete",
+  "de_DE__docActionComplete": "Fertigstellen",
 
-    "docStatusCompleted": "Completed",
-    "de_DE__docStatusCompleted": "Fertiggestellt",
+  "docStatusCompleted": "Completed",
+  "de_DE__docStatusCompleted": "Fertiggestellt",
 
-    "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
-    "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
-    "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)"
+  "docStatusInProgress": "In Progress",
+  "de_DE__docStatusInProgress": "In Verarbeitung",
+
+  "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
+  "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
+  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)"
 }
