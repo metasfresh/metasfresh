@@ -2,9 +2,11 @@
 # running the docker image with electron fails, probably due to one of these reasons: https://github.com/cypress-io/cypress/issues/1235
 #FROM cypress/base:10
 
-# This docker image contains the latest (currently 75) chrome;
+# This docker image contains the latest (currently 73) chrome;
 # See the Dockerfile here: https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/chrome69/Dockerfile
-FROM cypress/browsers:node11.13.0-chrome75
+FROM cypress/browsers:node11.13.0-chrome73
+#according to this should be the latest base image, but currently I get "manifest for cypress/browsers:node11.13.0-chrome75 not found"
+#FROM cypress/browsers:node11.13.0-chrome75
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
