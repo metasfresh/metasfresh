@@ -1,5 +1,5 @@
 import { BPartner } from '../../support/utils/bpartner';
-import { Product } from '../../support/utils/product';
+import { Product, ProductCategory } from '../../support/utils/product';
 
 describe('create new packing instructions ', function() {
   const timestamp = new Date().getTime();
@@ -7,12 +7,21 @@ describe('create new packing instructions ', function() {
   const packingMaterialInstruction = `TestPackingMaterialInstruction ${timestamp}`;
   const productName = `TestProductPackingMaterial ${timestamp}`;
   const packingMaterial = `TestPackingMaterial ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${timestamp}`;
+  const productCategoryValue = `ProductNameValue ${timestamp}`;
 
   before(function() {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setProductCategory('24_Gebinde')
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .apply();
     });
 
