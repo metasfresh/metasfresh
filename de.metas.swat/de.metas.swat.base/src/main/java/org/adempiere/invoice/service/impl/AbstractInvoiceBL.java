@@ -194,12 +194,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
 			final boolean isSOTrx,
-			final boolean counter,
+			final boolean isCounterpart,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef,
-			final boolean copyLines)
+			final boolean isSetLineInvoiceRef,
+			final boolean isCopyLines)
 	{
-		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, counter, setOrderRef, setInvoiceRef, copyLines, AbstractInvoiceBL.defaultDocCopyHandler);
+		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
 	}
 
 	private final org.compiere.model.I_C_Invoice copyFrom(
@@ -207,10 +207,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
 			final boolean isSOTrx,
-			final boolean counter,
+			final boolean isCounterpart,
 			final boolean setOrderRef,
-			final boolean setInvoiceRef,
-			final boolean copyLines,
+			final boolean isSetLineInvoiceRef,
+			final boolean isCopyLines,
 			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> additionalDocCopyHandler)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(from);
@@ -268,7 +268,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			to.setC_Order_ID(0);
 		}
 
-		if (counter)
+		if (isCounterpart)
 		{
 			to.setRef_Invoice_ID(from.getC_Invoice_ID());
 			from.setRef_Invoice_ID(to.getC_Invoice_ID());
@@ -278,7 +278,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			to.setRef_Invoice_ID(0);
 		}
 
-		if (counter)
+		if (isCounterpart)
 		{
 			// Try to find Order link
 			if (from.getC_Order_ID() != 0)
@@ -313,7 +313,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// Lines
-		if (copyLines && copyLinesFrom(from, to, counter, setOrderRef, setInvoiceRef, additionalDocLineCopyHandler) == 0)
+		if (isCopyLines && copyLinesFrom(from, to, isCounterpart, setOrderRef, isSetLineInvoiceRef, additionalDocLineCopyHandler) == 0)
 		{
 			throw new IllegalStateException("Could not create Invoice Lines");
 		}
