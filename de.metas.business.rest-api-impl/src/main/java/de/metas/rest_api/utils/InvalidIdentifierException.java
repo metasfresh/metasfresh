@@ -28,9 +28,8 @@ public class InvalidIdentifierException extends AdempiereException
 {
 	private static final long serialVersionUID = -1973403699430819624L;
 
-	public InvalidIdentifierException(String string)
+	public InvalidIdentifierException(String invalidIdentifierString)
 	{
-		super(string);
+		super(invalidIdentifierString);
 	}
-
 }

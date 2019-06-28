@@ -32,11 +32,11 @@ import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
@@ -218,13 +218,14 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 		for (final JsonRequestBPartnerUpsertItem requestItem : bpartnerUpsertRequest.getRequestItems())
 		{
 			final BPartnerComposite syncToMetasfresh = persister.persist(
-					requestItem.getEffectiveBPartnerComposite(),
+					requestItem.getBpartnerIdentifier(),
+					requestItem.getBpartnerComposite(),
 					defaultSyncAdvise);
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(syncToMetasfresh.getBpartner().getId());
 
 			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem.builder()
-					.externalId(requestItem.getExternalId())
+					.identifier(requestItem.getBpartnerIdentifier())
 					.metasfreshId(metasfreshId)
 					.build();
 			response.responseItem(responseItem);
@@ -238,36 +239,32 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden")
 	})
-	@ApiOperation("Create of update a location for a particular bpartner. If the location exists, then the properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a locations for a particular bpartner. If a location exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/location")
 	@Override
-	public ResponseEntity<JsonResponseUpsertItem> createOrUpdateLocation(
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonRequestLocation jsonLocation)
+			@RequestBody @NonNull final JsonRequestLocationUpsert jsonLocation)
 	{
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<MetasfreshId> jsonLocationId = persister.persist(
+		final Optional<JsonResponseUpsert> jsonLocationId = persister.persistForBPartner(
 				bpartnerIdentifier,
 				jsonLocation,
 				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
 
 		if (!jsonLocationId.isPresent())
 		{
-			return new ResponseEntity<JsonResponseUpsertItem>(
-					(JsonResponseUpsertItem)null,
+			return new ResponseEntity<JsonResponseUpsert>(
+					(JsonResponseUpsert)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		final JsonResponseUpsertItem result = JsonResponseUpsertItem.builder()
-				.externalId(jsonLocation.getExternalId())
-				.metasfreshId(jsonLocationId.get())
-				.build();
-		return new ResponseEntity<JsonResponseUpsertItem>(
-				result,
+		return new ResponseEntity<JsonResponseUpsert>(
+				jsonLocationId.get(),
 				HttpStatus.CREATED);
 	}
 
@@ -277,37 +274,32 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
 			@ApiResponse(code = 404, message = "The bpartner you were trying to reach is not found")
 	})
-	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
+	@ApiOperation("Create or update a contacts for a particular bpartner. If a contact exists, then its properties that are *not* specified are left untouched.")
 	@PutMapping("{bpartnerIdentifier}/contact")
 	@Override
-	public ResponseEntity<JsonResponseUpsertItem> createOrUpdateContact(
+	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
 			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@RequestBody @NonNull final JsonRequestContact jsonContact)
+			@RequestBody @NonNull final JsonRequestContactUpsert jsonContactUpsert)
 	{
-
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
-		final Optional<MetasfreshId> jsonContactId = persister.persist(
+		final Optional<JsonResponseUpsert> jsonContactId = persister.persistForBPartner(
 				bpartnerIdentifier,
-				jsonContact,
-				SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
+				jsonContactUpsert,
+				SyncAdvise.CREATE_OR_MERGE);
 
 		if (!jsonContactId.isPresent())
 		{
-			return new ResponseEntity<JsonResponseUpsertItem>(
-					(JsonResponseUpsertItem)null,
+			return new ResponseEntity<JsonResponseUpsert>(
+					(JsonResponseUpsert)null,
 					HttpStatus.NOT_FOUND);
 		}
 
-		final JsonResponseUpsertItem result = JsonResponseUpsertItem.builder()
-				.externalId(jsonContact.getExternalId())
-				.metasfreshId(jsonContactId.get())
-				.build();
-		return new ResponseEntity<JsonResponseUpsertItem>(
-				result,
+		return new ResponseEntity<JsonResponseUpsert>(
+				jsonContactId.get(),
 				HttpStatus.CREATED);
 	}
 

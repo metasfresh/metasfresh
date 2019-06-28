@@ -1,20 +1,14 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -40,22 +34,28 @@ import lombok.Value;
  */
 
 @Value
-@ApiModel
-public class JsonRequestBPartnerUpsert
+@Builder
+@ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
+public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(position = 10)
-	List<JsonRequestBPartnerUpsertItem> requestItems;
+	@ApiModelProperty(allowEmptyValue = false, //
+			position = 10,
+			value = LOCATION_IDENTIFIER_DOC) //
+	@NonNull
+	final String locationIdentifier;
 
-	@ApiModelProperty(position = 20, value = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
-	SyncAdvise syncAdvise;
+	@ApiModelProperty(allowEmptyValue = false, //
+			position = 20,
+			value = "The location to upsert")
+	@NonNull
+	JsonRequestLocation location;
 
 	@JsonCreator
-	@Builder
-	public JsonRequestBPartnerUpsert(
-			@Singular @JsonProperty("requestItems") final List<JsonRequestBPartnerUpsertItem> requestItems,
-			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+	public JsonRequestLocationUpsertItem(
+			@NonNull @JsonProperty("locationIdentifier") String locationIdentifier,
+			@NonNull @JsonProperty("location") JsonRequestLocation location)
 	{
-		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.locationIdentifier = locationIdentifier;
+		this.location = location;
 	}
 }
