@@ -65,19 +65,8 @@ public class TranslatableStrings
 				.map(TranslatableStrings::toTranslatableStringOrNull)
 				.filter(trl -> trl != null) // skip nulls
 				.collect(ImmutableList.toImmutableList());
-
-		if (trlsList.isEmpty())
-		{
-			return empty();
-		}
-		else if (trlsList.size() == 1)
-		{
-			return trlsList.get(0);
-		}
-		else
-		{
-			return new CompositeTranslatableString(trlsList, joiningString);
-		}
+		
+		return compose(joiningString, trlsList);
 	}
 
 	/**

@@ -40,10 +40,10 @@ final class CompositeTranslatableString implements ITranslatableString
 	private transient String defaultValue; // lazy
 	private transient ImmutableSet<String> adLanguages; // lazy
 
-	public CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
+	CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
 	{
 		this.list = ImmutableList.copyOf(list);
-		this.joinString = joinString;
+		this.joinString = joinString != null ? joinString : "";
 	}
 
 	@Override
@@ -53,7 +53,7 @@ final class CompositeTranslatableString implements ITranslatableString
 	}
 
 	@Override
-	public String translate(String adLanguage)
+	public String translate(final String adLanguage)
 	{
 		return list.stream().map(trl -> trl.translate(adLanguage)).collect(Collectors.joining(joinString));
 	}
@@ -61,9 +61,10 @@ final class CompositeTranslatableString implements ITranslatableString
 	@Override
 	public String getDefaultValue()
 	{
+		String defaultValue = this.defaultValue;
 		if (defaultValue == null)
 		{
-			defaultValue = list.stream().map(trl -> trl.getDefaultValue()).collect(Collectors.joining(joinString));
+			this.defaultValue = defaultValue = list.stream().map(trl -> trl.getDefaultValue()).collect(Collectors.joining(joinString));
 
 		}
 		return defaultValue;
@@ -72,9 +73,10 @@ final class CompositeTranslatableString implements ITranslatableString
 	@Override
 	public Set<String> getAD_Languages()
 	{
+		ImmutableSet<String> adLanguages = this.adLanguages;
 		if (adLanguages == null)
 		{
-			adLanguages = list.stream().flatMap(trl -> trl.getAD_Languages().stream()).collect(ImmutableSet.toImmutableSet());
+			this.adLanguages = adLanguages = list.stream().flatMap(trl -> trl.getAD_Languages().stream()).collect(ImmutableSet.toImmutableSet());
 		}
 		return adLanguages;
 	}
