@@ -1,18 +1,6 @@
 package de.metas.i18n;
 
-import lombok.NonNull;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collector;
-import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableList;
 
 
 /*
@@ -39,114 +27,18 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * A string which can be translated to a given <code>AD_Language</code>.<br>
- * You can use e.g. {@link IMsgBL#getTranslatableMsgText(String, Object...)} to obtain an instance.
+ * For more helpers, check {@link TranslatableStrings}.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
 public interface ITranslatableString
 {
-	public static ITranslatableString compose(final String joiningString, final Object... trls)
-	{
-		if (trls == null || trls.length == 0)
-		{
-			throw new IllegalArgumentException("trls is null or empty");
-		}
+	String translate(final String adLanguage);
 
-		final List<ITranslatableString> trlsList = Stream.of(trls)
-				.map(ITranslatableString::toTranslatableStringOrNull)
-				.filter(trl -> trl != null) // skip nulls
-				.collect(ImmutableList.toImmutableList());
+	String getDefaultValue();
 
-		if (trlsList.isEmpty())
-		{
-			return empty();
-		}
-		else if (trlsList.size() == 1)
-		{
-			return trlsList.get(0);
-		}
-		else
-		{
-			return new CompositeTranslatableString(trlsList, joiningString);
-		}
-	}
-
-	/**
-	 * @return translatable string or null if the <code>trlObj</code> is null or empty string
-	 */
-	static ITranslatableString toTranslatableStringOrNull(final Object trlObj)
-	{
-		if (trlObj == null)
-		{
-			return null;
-		}
-		else if (trlObj instanceof ITranslatableString)
-		{
-			return (ITranslatableString)trlObj;
-		}
-		else
-		{
-			final String trlStr = trlObj.toString();
-			if (trlStr == null || trlStr.isEmpty())
-			{
-				return null;
-			}
-			else
-			{
-				return constant(trlStr);
-			}
-		}
-	}
-
-	public static ITranslatableString compose(final String joiningString, @NonNull final List<ITranslatableString> trls)
-	{
-		if (trls.isEmpty())
-		{
-			return empty();
-		}
-		else if (trls.size() == 1)
-		{
-			return trls.get(0);
-		}
-		else
-		{
-			return new CompositeTranslatableString(trls, joiningString);
-		}
-	}
-
-	public static Collector<ITranslatableString, ?, ITranslatableString> joining(final String joiningString)
-	{
-		final Supplier<List<ITranslatableString>> supplier = ArrayList::new;
-		final BiConsumer<List<ITranslatableString>, ITranslatableString> accumulator = (accum, e) -> accum.add(e);
-		final BinaryOperator<List<ITranslatableString>> combiner = (accum1, accum2) -> {
-			accum1.addAll(accum2);
-			return accum1;
-		};
-		final Function<List<ITranslatableString>, ITranslatableString> finisher = accum -> compose(joiningString, accum);
-		return Collector.of(supplier, accumulator, combiner, finisher);
-	}
-
-	public static ITranslatableString constant(final String value)
-	{
-		return ImmutableTranslatableString.constant(value);
-	}
-
-	public static ITranslatableString empty()
-	{
-		return ImmutableTranslatableString.empty();
-	}
-
-	public static ITranslatableString nullToEmpty(final ITranslatableString trl)
-	{
-		return trl != null ? trl : empty();
-	}
-
-	public String translate(final String adLanguage);
-
-	public String getDefaultValue();
-
-	public Set<String> getAD_Languages();
+	Set<String> getAD_Languages();
 
 	default boolean isTranslatedTo(final String adLanguage)
 	{

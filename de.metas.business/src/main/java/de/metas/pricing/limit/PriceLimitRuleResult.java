@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ public class PriceLimitRuleResult
 {
 	public static PriceLimitRuleResult notApplicable(@NonNull final String reason)
 	{
-		return notApplicable(ImmutableTranslatableString.anyLanguage(reason));
+		return notApplicable(TranslatableStrings.anyLanguage(reason));
 	}
 
 	public static PriceLimitRuleResult notApplicable(@NonNull final ITranslatableString reason)
@@ -50,7 +50,7 @@ public class PriceLimitRuleResult
 
 	public static PriceLimitRuleResult priceLimit(@NonNull final BigDecimal priceLimit, final String priceLimitExplanation)
 	{
-		return priceLimit(priceLimit, ImmutableTranslatableString.anyLanguage(priceLimitExplanation));
+		return priceLimit(priceLimit, TranslatableStrings.anyLanguage(priceLimitExplanation));
 	}
 
 	public static PriceLimitRuleResult priceLimit(@NonNull final BigDecimal priceLimit, @NonNull final ITranslatableString priceLimitExplanation)

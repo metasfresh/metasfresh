@@ -46,7 +46,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
@@ -165,13 +165,13 @@ public class TaxDAO implements ITaxDAO
 	{
 		if (id == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("?");
+			return TranslatableStrings.anyLanguage("?");
 		}
 
 		final I_C_TaxCategory taxCategory = getTaxCategoryById(id);
 		if (taxCategory == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("<" + id.getRepoId() + ">");
+			return TranslatableStrings.anyLanguage("<" + id.getRepoId() + ">");
 		}
 
 		return InterfaceWrapperHelper.getModelTranslationMap(taxCategory)

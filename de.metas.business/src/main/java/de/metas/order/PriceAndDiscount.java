@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.util.lang.CoalesceUtil;
@@ -94,13 +94,13 @@ public class PriceAndDiscount
 		this.priceLimitEnforced = priceLimitEnforced;
 		if (priceLimitEnforced)
 		{
-			this.priceLimitEnforcedExplanation = CoalesceUtil.coalesce(priceLimitEnforcedExplanation, ImmutableTranslatableString.empty());
+			this.priceLimitEnforcedExplanation = TranslatableStrings.nullToEmpty(priceLimitEnforcedExplanation);
 			this.priceLimitNotEnforcedExplanation = null;
 		}
 		else
 		{
 			this.priceLimitEnforcedExplanation = null;
-			this.priceLimitNotEnforcedExplanation = CoalesceUtil.coalesce(priceLimitNotEnforcedExplanation, ImmutableTranslatableString.empty());
+			this.priceLimitNotEnforcedExplanation = TranslatableStrings.nullToEmpty(priceLimitNotEnforcedExplanation);
 		}
 	}
 

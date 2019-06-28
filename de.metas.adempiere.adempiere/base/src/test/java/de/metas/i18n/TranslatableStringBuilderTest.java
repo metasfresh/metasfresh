@@ -4,9 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,7 +37,7 @@ public class TranslatableStringBuilderTest
 				.append("c")
 				.build();
 
-		final ITranslatableString expected = ImmutableTranslatableString.constant("abc");
+		final ITranslatableString expected = TranslatableStrings.constant("abc");
 		assertThat(actual).isEqualTo(expected);
 	}
 
@@ -54,9 +51,9 @@ public class TranslatableStringBuilderTest
 				.append(66)
 				.build();
 
-		final ITranslatableString expected = ITranslatableString.compose("",
-				ImmutableTranslatableString.constant("abc"),
-				NumberTranslatableString.of(66));
+		final ITranslatableString expected = TranslatableStrings.compose("",
+				TranslatableStrings.constant("abc"),
+				TranslatableStrings.number(66));
 
 		assertThat(actual).isEqualTo(expected);
 	}

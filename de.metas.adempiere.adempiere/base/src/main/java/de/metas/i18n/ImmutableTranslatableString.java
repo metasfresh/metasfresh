@@ -1,18 +1,15 @@
 package de.metas.i18n;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
+import lombok.Singular;
 
 /*
  * #%L
@@ -45,166 +42,16 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public final class ImmutableTranslatableString implements ITranslatableString
 {
-	public static final ITranslatableString ofMap(final Map<String, String> trlMap, final String defaultValue)
-	{
-		if (trlMap == null || trlMap.isEmpty())
-		{
-			return ImmutableTranslatableString.constant(defaultValue);
-		}
-		else
-		{
-			return new ImmutableTranslatableString(trlMap, defaultValue);
-		}
-	}
-
-	public static final ITranslatableString ofMap(final Map<String, String> trlMap)
-	{
-		if (trlMap == null || trlMap.isEmpty())
-		{
-			return ConstantTranslatableString.EMPTY;
-		}
-
-		return new ImmutableTranslatableString(trlMap, ConstantTranslatableString.EMPTY.getDefaultValue());
-	}
-
-	public static final ITranslatableString singleLanguage(@Nullable final String adLanguage, @Nullable final String value)
-	{
-		if (Check.isEmpty(adLanguage, true))
-		{
-			return constant(value);
-		}
-
-		final String valueNorm = value == null ? "" : value;
-		return new ImmutableTranslatableString(ImmutableMap.of(adLanguage, valueNorm), valueNorm);
-	}
-
-	public static final ITranslatableString constant(@Nullable final String value)
-	{
-		return ConstantTranslatableString.of(value);
-	}
-
-	public static final ITranslatableString anyLanguage(final String value)
-	{
-		final boolean anyLanguage = true;
-		return ConstantTranslatableString.of(value, anyLanguage);
-	}
-
-	public static final ITranslatableString empty()
-	{
-		return ConstantTranslatableString.EMPTY;
-	}
-
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
-
-	public static final ITranslatableString copyOf(final ITranslatableString trl)
-	{
-		Preconditions.checkNotNull(trl, "trl");
-		return copyOfNullable(trl);
-	}
-
-	/**
-	 *
-	 * @param trl
-	 * @return {@link ImmutableTranslatableString} or {@link #EMPTY} if <code>trl</code> was null
-	 */
-	public static final ITranslatableString copyOfNullable(@Nullable final ITranslatableString trl)
-	{
-		if (trl == null)
-		{
-			return ConstantTranslatableString.EMPTY;
-		}
-
-		if (trl instanceof ConstantTranslatableString)
-		{
-			return trl;
-		}
-		if (trl instanceof ImmutableTranslatableString)
-		{
-			return trl;
-		}
-
-		final Set<String> adLanguages = trl.getAD_Languages();
-		final Map<String, String> trlMap = new LinkedHashMap<>(adLanguages.size());
-		for (final String adLanguage : adLanguages)
-		{
-			final String trlString = trl.translate(adLanguage);
-			if (trlString == null)
-			{
-				continue;
-			}
-
-			trlMap.put(adLanguage, trlString);
-		}
-
-		return ofMap(trlMap, trl.getDefaultValue());
-	}
-
-	public static boolean isBlank(final ITranslatableString trl)
-	{
-		if (trl == null)
-		{
-			return true;
-		}
-		else if(trl == ConstantTranslatableString.EMPTY)
-		{
-			return true;
-		}
-		else if (trl instanceof ConstantTranslatableString)
-		{
-			return Check.isEmpty(trl.getDefaultValue(), true);
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	public static boolean isEmpty(final ITranslatableString trl)
-	{
-		if (trl == null)
-		{
-			return true;
-		}
-		else if(trl == ConstantTranslatableString.EMPTY)
-		{
-			return true;
-		}
-		else if (trl instanceof ConstantTranslatableString)
-		{
-			return Check.isEmpty(trl.getDefaultValue(), false);
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-
-	private final Map<String, String> trlMap;
+	private final ImmutableMap<String, String> trlMap;
 	private final String defaultValue;
 
-	private ImmutableTranslatableString(final Map<String, String> trlMap, final String defaultValue)
+	@lombok.Builder
+	ImmutableTranslatableString(
+			@Nullable @Singular final Map<String, String> trls,
+			@Nullable final String defaultValue)
 	{
-		super();
-		this.trlMap = trlMap == null ? ImmutableMap.of() : ImmutableMap.copyOf(trlMap);
+		this.trlMap = trls == null ? ImmutableMap.of() : ImmutableMap.copyOf(trls);
 		this.defaultValue = defaultValue == null ? "" : defaultValue;
-	}
-
-	private ImmutableTranslatableString()
-	{
-		super();
-		trlMap = ImmutableMap.of();
-		defaultValue = "";
-	}
-
-	private ImmutableTranslatableString(final Builder builder)
-	{
-		super();
-		trlMap = ImmutableMap.copyOf(builder.trlMap);
-		defaultValue = builder.defaultValue == null ? "" : builder.defaultValue;
 	}
 
 	@Override
@@ -233,37 +80,5 @@ public final class ImmutableTranslatableString implements ITranslatableString
 	public Set<String> getAD_Languages()
 	{
 		return trlMap.keySet();
-	}
-
-	public static final class Builder
-	{
-		private final Map<String, String> trlMap = new HashMap<>();
-		private String defaultValue;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public ImmutableTranslatableString build()
-		{
-			return new ImmutableTranslatableString(this);
-		}
-
-		public Builder put(final String adLanguage, final String trlString)
-		{
-			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-			Check.assumeNotNull(trlString, "trlString is not empty");
-
-			trlMap.put(adLanguage, trlString);
-
-			return this;
-		}
-
-		public Builder setDefaultValue(final String defaultValue)
-		{
-			this.defaultValue = defaultValue;
-			return this;
-		}
 	}
 }

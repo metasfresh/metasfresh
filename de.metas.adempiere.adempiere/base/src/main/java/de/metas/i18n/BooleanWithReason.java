@@ -42,7 +42,7 @@ public final class BooleanWithReason
 
 	public static BooleanWithReason trueBecause(@NonNull final ITranslatableString reason)
 	{
-		if (ImmutableTranslatableString.isBlank(reason))
+		if (TranslatableStrings.isBlank(reason))
 		{
 			return TRUE;
 		}
@@ -59,7 +59,7 @@ public final class BooleanWithReason
 
 	public static BooleanWithReason falseBecause(@NonNull final ITranslatableString reason)
 	{
-		if (ImmutableTranslatableString.isBlank(reason))
+		if (TranslatableStrings.isBlank(reason))
 		{
 			return FALSE;
 		}
@@ -73,16 +73,16 @@ public final class BooleanWithReason
 	{
 		if (Check.isEmpty(reasonStr, true))
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 		else
 		{
-			return ImmutableTranslatableString.anyLanguage(reasonStr.trim());
+			return TranslatableStrings.anyLanguage(reasonStr.trim());
 		}
 	}
 
-	public static final BooleanWithReason TRUE = new BooleanWithReason(true, ImmutableTranslatableString.empty());
-	public static final BooleanWithReason FALSE = new BooleanWithReason(false, ImmutableTranslatableString.empty());
+	public static final BooleanWithReason TRUE = new BooleanWithReason(true, TranslatableStrings.empty());
+	public static final BooleanWithReason FALSE = new BooleanWithReason(false, TranslatableStrings.empty());
 
 	private final boolean value;
 	private final ITranslatableString reason;
@@ -98,7 +98,7 @@ public final class BooleanWithReason
 	@Override
 	public String toString()
 	{
-		final String reasonStr = reason != null && !ImmutableTranslatableString.isBlank(reason)
+		final String reasonStr = !TranslatableStrings.isBlank(reason)
 				? reason.getDefaultValue()
 				: null;
 

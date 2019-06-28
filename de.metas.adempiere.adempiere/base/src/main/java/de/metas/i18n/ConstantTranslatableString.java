@@ -22,31 +22,37 @@ import lombok.EqualsAndHashCode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @EqualsAndHashCode
-/*package*/final class ConstantTranslatableString implements ITranslatableString
+/* package */final class ConstantTranslatableString implements ITranslatableString
 {
-	static final ConstantTranslatableString of(@Nullable final String value)
+	static ConstantTranslatableString of(@Nullable final String value)
 	{
 		final boolean anyLanguage = false;
 		return of(value, anyLanguage);
 	}
 
-	static final ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
+	static ITranslatableString anyLanguage(final String value)
 	{
-		if(value == null || value.isEmpty())
+		final boolean anyLanguage = true;
+		return of(value, anyLanguage);
+	}
+
+	static ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
+	{
+		if (value == null || value.isEmpty())
 		{
 			return EMPTY;
 		}
-		if(" ".equals(value))
+		if (" ".equals(value))
 		{
 			return SPACE;
 		}

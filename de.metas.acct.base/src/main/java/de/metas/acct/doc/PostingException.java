@@ -10,8 +10,8 @@ import org.compiere.model.I_Fact_Acct;
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.AcctSchema;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 
 /**
@@ -30,7 +30,7 @@ public final class PostingException extends AdempiereException
 	private AcctSchema _acctSchema;
 	private Fact _fact;
 	private I_Fact_Acct _factLine;
-	private ITranslatableString _detailMessage = ImmutableTranslatableString.empty();
+	private ITranslatableString _detailMessage = TranslatableStrings.empty();
 	private boolean _preserveDocumentPostedStatus = false;
 	private Level _logLevel = Level.ERROR;
 
@@ -49,18 +49,18 @@ public final class PostingException extends AdempiereException
 
 	public PostingException(final String message)
 	{
-		super(ImmutableTranslatableString.empty());
+		super(TranslatableStrings.empty());
 		setDetailMessage(message);
 	}
 
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		// Error message
 		final ITranslatableString detailMessage = getDetailMessage();
-		if (ImmutableTranslatableString.isEmpty(detailMessage))
+		if (TranslatableStrings.isEmpty(detailMessage))
 		{
 			message.append("Posting error");
 		}
@@ -185,14 +185,14 @@ public final class PostingException extends AdempiereException
 	 */
 	public PostingException setDetailMessage(final ITranslatableString detailMessage)
 	{
-		_detailMessage = detailMessage != null ? detailMessage : ImmutableTranslatableString.empty();
+		_detailMessage = TranslatableStrings.nullToEmpty(detailMessage);
 		resetMessageBuilt();
 		return this;
 	}
 
 	public PostingException setDetailMessage(final String detailMessage)
 	{
-		return setDetailMessage(ImmutableTranslatableString.anyLanguage(detailMessage));
+		return setDetailMessage(TranslatableStrings.anyLanguage(detailMessage));
 	}
 
 	/**
@@ -211,13 +211,13 @@ public final class PostingException extends AdempiereException
 
 		//
 		// Set append the detail message
-		if (ImmutableTranslatableString.isEmpty(_detailMessage))
+		if (TranslatableStrings.isEmpty(_detailMessage))
 		{
-			_detailMessage = ImmutableTranslatableString.anyLanguage(detailMessageToAppend);
+			_detailMessage = TranslatableStrings.anyLanguage(detailMessageToAppend);
 		}
 		else
 		{
-			_detailMessage = ITranslatableString.compose("\n", _detailMessage, detailMessageToAppend);
+			_detailMessage = TranslatableStrings.compose("\n", _detailMessage, detailMessageToAppend);
 		}
 
 		resetMessageBuilt();

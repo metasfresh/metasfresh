@@ -8,8 +8,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.model.I_C_BPartner;
 import lombok.EqualsAndHashCode;
@@ -114,12 +114,12 @@ public final class PharmaCustomerPermissions
 	{
 		if (permissions.isEmpty())
 		{
-			return ImmutableTranslatableString.anyLanguage("-");
+			return TranslatableStrings.anyLanguage("-");
 		}
 
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-		final TranslatableStringBuilder builder = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 		for (final PharmaCustomerPermission permission : permissions)
 		{
 			if (!builder.isEmpty())

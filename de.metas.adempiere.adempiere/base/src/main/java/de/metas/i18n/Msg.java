@@ -967,9 +967,9 @@ public final class Msg
 				@Singular final Map<String, String> poDescriptions)
 		{
 			this.elementName = elementName;
-			this.name = toTranslatableString(names, ITranslatableString.empty());
-			this.printName = toTranslatableString(printNames, ITranslatableString.empty());
-			this.description = toTranslatableString(descriptions, ITranslatableString.empty());
+			this.name = toTranslatableString(names, TranslatableStrings.empty());
+			this.printName = toTranslatableString(printNames, TranslatableStrings.empty());
+			this.description = toTranslatableString(descriptions, TranslatableStrings.empty());
 			this.poName = toTranslatableString(poNames, this.name);
 			this.poPrintName = toTranslatableString(poPrintNames, this.printName);
 			this.poDescription = toTranslatableString(poDescriptions, this.description);
@@ -991,7 +991,7 @@ public final class Msg
 						return GuavaCollectors.entry(adLanguage, text);
 					})
 					.collect(GuavaCollectors.toImmutableMap());
-			return ImmutableTranslatableString.ofMap(trlMap, defaultValue);
+			return TranslatableStrings.ofMap(trlMap, defaultValue);
 		}
 
 		private static String normalizeString(final String str, final String fallback)

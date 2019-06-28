@@ -47,6 +47,7 @@ import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -86,13 +87,19 @@ public class MRequest extends X_R_Request
 	public static int getR_Request_ID(String mailText)
 	{
 		if (mailText == null)
+		{
 			return 0;
+		}
 		int indexStart = mailText.indexOf(TAG_START);
 		if (indexStart == -1)
+		{
 			return 0;
+		}
 		int indexEnd = mailText.indexOf(TAG_END, indexStart);
 		if (indexEnd == -1)
+		{
 			return 0;
+		}
 		//
 		indexStart += 5;
 		String idString = mailText.substring(indexStart, indexEnd);
@@ -187,9 +194,13 @@ public class MRequest extends X_R_Request
 	{
 		m_requestType = MRequestType.getDefault(getCtx());
 		if (m_requestType == null)
+		{
 			log.warn("No default found");
+		}
 		else
+		{
 			super.setR_RequestType_ID(m_requestType.getR_RequestType_ID());
+		}
 	}	// setR_RequestType_ID
 
 	/**
@@ -202,10 +213,14 @@ public class MRequest extends X_R_Request
 		{
 			log.warn("No default found");
 			if (getR_Status_ID() != 0)
+			{
 				setR_Status_ID(0);
+			}
 		}
 		else
+		{
 			setR_Status_ID(status.getR_Status_ID());
+		}
 	}	// setR_Status_ID
 
 	/**
@@ -217,11 +232,17 @@ public class MRequest extends X_R_Request
 	{
 		String oldResult = getResult();
 		if (Result == null || Result.length() == 0)
-			;
+		{
+			
+		}
 		else if (oldResult == null || oldResult.length() == 0)
+		{
 			setResult(Result);
+		}
 		else
+		{
 			setResult(oldResult + "\n-\n" + Result);
+		}
 	}	// addToResult
 
 	/**
@@ -231,16 +252,22 @@ public class MRequest extends X_R_Request
 	{
 		Timestamp due = getDateNextAction();
 		if (due == null)
+		{
 			return;
+		}
 		//
 		Timestamp overdue = TimeUtil.addDays(due, getRequestType().getDueDateTolerance());
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		//
 		String DueType = DUETYPE_Faellig;
 		if (now.before(due))
+		{
 			DueType = DUETYPE_Geplant;
+		}
 		else if (now.after(overdue))
+		{
 			DueType = DUETYPE_Ueberfaellig;
+		}
 		super.setDueType(DueType);
 	}	// setDueType
 
@@ -265,16 +292,22 @@ public class MRequest extends X_R_Request
 				// Private only if private
 				if (ru.getConfidentialTypeEntry().equals(CONFIDENTIALTYPEENTRY_PrivateInformation)
 						&& !confidentialType.equals(CONFIDENTIALTYPEENTRY_PrivateInformation))
+				{
 					continue;
+				}
 				// Internal not if Customer/Public
 				if (ru.getConfidentialTypeEntry().equals(CONFIDENTIALTYPEENTRY_Internal)
 						&& (confidentialType.equals(CONFIDENTIALTYPEENTRY_PartnerConfidential)
 								|| confidentialType.equals(CONFIDENTIALTYPEENTRY_PublicInformation)))
+				{
 					continue;
+				}
 				// No Customer if public
 				if (ru.getConfidentialTypeEntry().equals(CONFIDENTIALTYPEENTRY_PartnerConfidential)
 						&& confidentialType.equals(CONFIDENTIALTYPEENTRY_PublicInformation))
+				{
 					continue;
+				}
 			}
 			list.add(ru);
 		}
@@ -341,21 +374,27 @@ public class MRequest extends X_R_Request
 	public I_AD_User getSalesRep()
 	{
 		if (getSalesRep_ID() <= 0)
+		{
 			return null;
+		}
 		return Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getSalesRep_ID());
 	}	// getSalesRep
 
 	private I_C_BPartner getBPartner()
 	{
 		if (getC_BPartner_ID() <= 0)
+		{
 			return null;
+		}
 		return loadOutOfTrx(getC_BPartner_ID(), I_C_BPartner.class);
 	}
 
 	private void setPriority()
 	{
 		if (getPriorityUser() == null)
+		{
 			setPriorityUser(PRIORITYUSER_Low);
+		}
 		//
 		if (getBPartner() != null)
 		{
@@ -366,25 +405,39 @@ public class MRequest extends X_R_Request
 			{
 				char targetPrio = getPriorityUser().charAt(0);
 				if (prioBase.equals(X_C_BP_Group.PRIORITYBASE_Lower))
+				{
 					targetPrio += 2;
+				}
 				else
+				{
 					targetPrio -= 2;
-				if (targetPrio < PRIORITY_High.charAt(0))	// 1
+				}
+				if (targetPrio < PRIORITY_High.charAt(0))
+				{
 					targetPrio = PRIORITY_High.charAt(0);
-				if (targetPrio > PRIORITY_Low.charAt(0))	// 9
+				}
+				if (targetPrio > PRIORITY_Low.charAt(0))
+				{
 					targetPrio = PRIORITY_Low.charAt(0);
+				}
 				if (getPriority() == null)
+				{
 					setPriority(String.valueOf(targetPrio));
+				}
 				else	// previous priority
 				{
 					if (targetPrio < getPriority().charAt(0))
+					{
 						setPriority(String.valueOf(targetPrio));
+					}
 				}
 			}
 		}
 		// Same if nothing else
 		if (getPriority() == null)
+		{
 			setPriority(getPriorityUser());
+		}
 	}	// setPriority
 
 	/**
@@ -396,29 +449,43 @@ public class MRequest extends X_R_Request
 	public void setConfidentialTypeEntry(String ConfidentialTypeEntry)
 	{
 		if (ConfidentialTypeEntry == null)
+		{
 			ConfidentialTypeEntry = getConfidentialType();
+		}
 		//
 		if (CONFIDENTIALTYPE_Internal.equals(getConfidentialType()))
+		{
 			super.setConfidentialTypeEntry(CONFIDENTIALTYPE_Internal);
+		}
 		else if (CONFIDENTIALTYPE_PrivateInformation.equals(getConfidentialType()))
 		{
 			if (CONFIDENTIALTYPE_Internal.equals(ConfidentialTypeEntry)
 					|| CONFIDENTIALTYPE_PrivateInformation.equals(ConfidentialTypeEntry))
+			{
 				super.setConfidentialTypeEntry(ConfidentialTypeEntry);
+			}
 			else
+			{
 				super.setConfidentialTypeEntry(CONFIDENTIALTYPE_PrivateInformation);
+			}
 		}
 		else if (CONFIDENTIALTYPE_PartnerConfidential.equals(getConfidentialType()))
 		{
 			if (CONFIDENTIALTYPE_Internal.equals(ConfidentialTypeEntry)
 					|| CONFIDENTIALTYPE_PrivateInformation.equals(ConfidentialTypeEntry)
 					|| CONFIDENTIALTYPE_PartnerConfidential.equals(ConfidentialTypeEntry))
+			{
 				super.setConfidentialTypeEntry(ConfidentialTypeEntry);
+			}
 			else
+			{
 				super.setConfidentialTypeEntry(CONFIDENTIALTYPE_PartnerConfidential);
+			}
 		}
 		else if (CONFIDENTIALTYPE_PublicInformation.equals(getConfidentialType()))
+		{
 			super.setConfidentialTypeEntry(ConfidentialTypeEntry);
+		}
 	}	// setConfidentialTypeEntry
 
 	@Override
@@ -479,10 +546,14 @@ public class MRequest extends X_R_Request
 			if (m_requestType != null)
 			{
 				if (isInvoiced() != m_requestType.isInvoiced())
+				{
 					setIsInvoiced(m_requestType.isInvoiced());
+				}
 				if (getDateNextAction() == null && m_requestType.getAutoDueDateDays() > 0)
+				{
 					setDateNextAction(TimeUtil.addDays(new Timestamp(System.currentTimeMillis()),
 							m_requestType.getAutoDueDateDays()));
+				}
 			}
 			// Is Status Valid
 			if (getR_Status_ID() != 0)
@@ -490,13 +561,17 @@ public class MRequest extends X_R_Request
 				MStatus sta = MStatus.get(getCtx(), getR_Status_ID());
 				MRequestType rt = MRequestType.get(getCtx(), getR_RequestType_ID());
 				if (sta.getR_StatusCategory_ID() != rt.getR_StatusCategory_ID())
+				 {
 					setR_Status_ID();	// set to default
+				}
 			}
 		}
 
 		// Request Status
 		if (getR_Status_ID() == 0)
+		{
 			setR_Status_ID();
+		}
 		// Validate/Update Due Type
 		setDueType();
 		MStatus status = MStatus.get(getCtx(), getR_Status_ID());
@@ -506,15 +581,23 @@ public class MRequest extends X_R_Request
 			if (status.isOpen())
 			{
 				if (getStartDate() == null)
+				{
 					setStartDate(new Timestamp(System.currentTimeMillis()));
+				}
 				if (getCloseDate() != null)
+				{
 					setCloseDate(null);
+				}
 			}
 			if (status.isClosed()
 					&& getCloseDate() == null)
+			{
 				setCloseDate(new Timestamp(System.currentTimeMillis()));
+			}
 			if (status.isFinalClose())
+			{
 				setProcessed(true);
+			}
 		}
 
 		// Confidential Info
@@ -525,22 +608,32 @@ public class MRequest extends X_R_Request
 			{
 				String ct = m_requestType.getConfidentialType();
 				if (ct != null)
+				{
 					setConfidentialType(ct);
+				}
 			}
 			if (getConfidentialType() == null)
+			{
 				setConfidentialType(CONFIDENTIALTYPEENTRY_PublicInformation);
+			}
 		}
 		if (getConfidentialTypeEntry() == null)
+		{
 			setConfidentialTypeEntry(getConfidentialType());
+		}
 		else
+		{
 			setConfidentialTypeEntry(getConfidentialTypeEntry());
+		}
 
 		// Importance / Priority
 		setPriority();
 
 		// New
 		if (newRecord)
+		{
 			return true;
+		}
 
 		// Change Log
 		m_changed = false;
@@ -548,27 +641,41 @@ public class MRequest extends X_R_Request
 		MRequestAction ra = new MRequestAction(this, false);
 		//
 		if (checkChange(ra, "R_RequestType_ID"))
+		{
 			sendInfo.add("R_RequestType_ID");
+		}
 		if (checkChange(ra, "R_Group_ID"))
+		{
 			sendInfo.add("R_Group_ID");
+		}
 		if (checkChange(ra, "R_Category_ID"))
+		{
 			sendInfo.add("R_Category_ID");
+		}
 		if (checkChange(ra, "R_Status_ID"))
+		{
 			sendInfo.add("R_Status_ID");
+		}
 		if (checkChange(ra, "R_Resolution_ID"))
+		{
 			sendInfo.add("R_Resolution_ID");
+		}
 		//
 		if (checkChange(ra, "SalesRep_ID"))
 		{
 			// Sender
 			int AD_User_ID = Env.getAD_User_ID(getCtx());
 			if (AD_User_ID == 0)
+			{
 				AD_User_ID = getUpdatedBy();
+			}
 			// Old
 			Object oo = get_ValueOld("SalesRep_ID");
 			int oldSalesRep_ID = 0;
 			if (oo instanceof Integer)
+			{
 				oldSalesRep_ID = ((Integer)oo).intValue();
+			}
 			if (oldSalesRep_ID != 0)
 			{
 				final IUserDAO userDAO = Services.get(IUserDAO.class);
@@ -587,9 +694,13 @@ public class MRequest extends X_R_Request
 		//
 		checkChange(ra, "Priority");
 		if (checkChange(ra, "PriorityUser"))
+		{
 			sendInfo.add("PriorityUser");
+		}
 		if (checkChange(ra, "IsEscalated"))
+		{
 			sendInfo.add("IsEscalated");
+		}
 		//
 		checkChange(ra, "ConfidentialType");
 		checkChange(ra, "Summary");
@@ -619,14 +730,20 @@ public class MRequest extends X_R_Request
 		checkChange(ra, "DateCompletePlan");
 		//
 		if (m_changed)
+		{
 			ra.save();
+		}
 
 		// Current Info
 		MRequestUpdate update = new MRequestUpdate(this);
 		if (update.isNewInfo())
+		{
 			update.save();
+		}
 		else
+		{
 			update = null;
+		}
 		//
 		if (update != null || sendInfo.size() > 0)
 		{
@@ -668,9 +785,13 @@ public class MRequest extends X_R_Request
 		{
 			Object value = get_ValueOld(columnName);
 			if (value == null)
+			{
 				ra.addNullColumn(columnName);
+			}
 			else
+			{
 				ra.set_ValueNoCheck(columnName, value);
+			}
 			m_changed = true;
 			return true;
 		}
@@ -686,9 +807,13 @@ public class MRequest extends X_R_Request
 	public void setSalesRep_ID(int SalesRep_ID)
 	{
 		if (SalesRep_ID != 0)
+		{
 			super.setSalesRep_ID(SalesRep_ID);
+		}
 		else if (getSalesRep_ID() != 0)
+		{
 			log.warn("Ignored - Tried to set SalesRep_ID to 0 from " + getSalesRep_ID());
+		}
 	}	// setSalesRep_ID
 
 	/**
@@ -702,7 +827,9 @@ public class MRequest extends X_R_Request
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 
 		// Create Update
 		if (newRecord && getResult() != null)
@@ -770,7 +897,7 @@ public class MRequest extends X_R_Request
 		}
 
 		// Subject
-		final ITranslatableString subject = TranslatableStringBuilder.newInstance()
+		final ITranslatableString subject = TranslatableStrings.builder()
 				.appendADElement("R_Request_ID").append(" ").appendADElement("Updated").append(": " + getDocumentNo())
 				.build();
 
@@ -808,16 +935,22 @@ public class MRequest extends X_R_Request
 	private ITranslatableString buildEMailNotificationContent(final I_AD_User from, final List<String> changedColumnNames)
 	{
 		// Message
-		final TranslatableStringBuilder messageBuilder = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder messageBuilder = TranslatableStrings.builder();
 
 		// UpdatedBy: Joe
 		if (from != null)
+		{
 			messageBuilder.appendADElement(COLUMNNAME_UpdatedBy).append(": ").append(from.getName());
+		}
 		// LastAction/Created: ...
 		if (getDateLastAction() != null)
+		{
 			messageBuilder.append("\n").appendADElement(COLUMNNAME_DateLastAction).append(": ").appendDateTime(getDateLastAction());
+		}
 		else
+		{
 			messageBuilder.append("\n").appendADElement(COLUMNNAME_Created).append(": ").appendDateTime(getCreated());
+		}
 
 		// Changes
 		for (final String columnName : changedColumnNames)
@@ -829,13 +962,17 @@ public class MRequest extends X_R_Request
 
 		// NextAction
 		if (getDateNextAction() != null)
+		{
 			messageBuilder.append("\n").appendADElement(COLUMNNAME_DateNextAction).append(": ").appendDateTime(getDateNextAction());
+		}
 
 		messageBuilder.append(SEPARATOR)
 				.append(getSummary());
 
 		if (getResult() != null)
+		{
 			messageBuilder.append("\n----------\n").append(getResult());
+		}
 
 		// Mail Trailer
 		messageBuilder.append(SEPARATOR)

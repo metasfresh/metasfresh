@@ -1,68 +1,73 @@
-package de.metas.i18n;
+package de.metas.i18n.impl;
 
+import java.util.Properties;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Msg;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
- * de.metas.util
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@ToString
-@EqualsAndHashCode
-final class ForwardingTranslatableString implements ITranslatableString
+/**
+ * Wraps a given <code>text</code> and will call {@link Msg#translate(Properties, String, boolean)}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ */
+@lombok.EqualsAndHashCode
+final class ADElementOrADMessageTranslatableString implements ITranslatableString
 {
-	private final Supplier<ITranslatableString> delegateSupplier;
+	private final String text;
 
-	ForwardingTranslatableString(@NonNull final Supplier<ITranslatableString> delegateSupplier)
+	ADElementOrADMessageTranslatableString(@NonNull final String text)
 	{
-		this.delegateSupplier = delegateSupplier;
+		this.text = text;
 	}
 
-	private ITranslatableString getDelegate()
+	@Override
+	public String toString()
 	{
-		final ITranslatableString delegate = delegateSupplier.get();
-		Check.assumeNotNull(delegate, "delegate supplier shall not return null instances: {}", delegateSupplier);
-		return delegate;
+		return text;
 	}
 
 	@Override
 	public String translate(final String adLanguage)
 	{
-		return getDelegate().translate(adLanguage);
+		final boolean isSOTrx = true;
+		return Msg.translate(adLanguage, isSOTrx, text);
 	}
 
 	@Override
 	public String getDefaultValue()
 	{
-		return getDelegate().getDefaultValue();
+		return "@" + text + "@";
 	}
 
 	@Override
 	public Set<String> getAD_Languages()
 	{
-		return getDelegate().getAD_Languages();
+		return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
 	}
 }

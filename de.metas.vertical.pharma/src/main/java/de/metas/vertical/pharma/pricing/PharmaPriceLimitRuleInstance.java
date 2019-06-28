@@ -11,7 +11,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -139,7 +139,7 @@ class PharmaPriceLimitRuleInstance
 		final PharmaCustomerPermissions pharmaCustomerPermissions = PharmaCustomerPermissions.of(bpartner);
 		if (!pharmaCustomerPermissions.hasOnlyPermission(PharmaCustomerPermission.PHARMACIE))
 		{
-			return BooleanWithReason.falseBecause(TranslatableStringBuilder.newInstance()
+			return BooleanWithReason.falseBecause(TranslatableStrings.builder()
 					.append("BPartner shall have only PHARMACIE permission but it has: ")
 					.append(pharmaCustomerPermissions.toTrlString())
 					.build());

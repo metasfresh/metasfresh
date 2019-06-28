@@ -1,13 +1,13 @@
 package de.metas.i18n;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableSet;
  */
 
 @EqualsAndHashCode
-public class CompositeTranslatableString implements ITranslatableString
+final class CompositeTranslatableString implements ITranslatableString
 {
 	private final ImmutableList<ITranslatableString> list;
 	private final String joinString;

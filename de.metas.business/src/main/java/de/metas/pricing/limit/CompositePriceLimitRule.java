@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import lombok.NonNull;
 import lombok.ToString;
@@ -115,7 +116,7 @@ public class CompositePriceLimitRule implements IPriceLimitRule
 			return notApplicableResults.get(0);
 		}
 
-		final TranslatableStringBuilder builder = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
 		for (final PriceLimitRuleResult notApplicableResult : notApplicableResults)
 		{
 			if (!builder.isEmpty())
