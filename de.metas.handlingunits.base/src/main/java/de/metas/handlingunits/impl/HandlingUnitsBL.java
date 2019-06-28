@@ -56,6 +56,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -117,8 +118,11 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public I_C_UOM getHandlingUOM(final I_M_Product product)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		// FIXME: not sure that is correct
-		return product.getC_UOM();
+		return uomDAO.getById(product.getC_UOM_ID());
+
 	}
 
 	@Override
@@ -429,7 +433,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		{
 			return false;
 		}
-		
+
 		return HuPackingInstructionsItemId.isVirtualRepoId(huItem.getM_HU_PI_Item_ID());
 	}
 

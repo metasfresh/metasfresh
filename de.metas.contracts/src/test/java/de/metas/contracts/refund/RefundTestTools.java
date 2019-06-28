@@ -163,7 +163,7 @@ public class RefundTestTools
 		saveRecord(uomRecord);
 
 		productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 
 		final I_C_InvoiceSchedule invoiceScheduleRecord = newInstance(I_C_InvoiceSchedule.class);

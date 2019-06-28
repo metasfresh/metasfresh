@@ -57,10 +57,10 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param dateDoc
 	 * @param C_DocTypeTarget_ID
 	 * @param isSOTrx parameter is set as the copy's <code>IsSOtrx</code> value
-	 * @param counter if <code>true</code>, then the copy shall be the counter document of <code>from</code>
+	 * @param isCounterpart if <code>true</code>, then the copy shall be the counter document of <code>from</code>
 	 * @param setOrderRef if true, then the copy shall reference the same C_Order that <code>from</code> references
-	 * @param setInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
-	 * @param copyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
+	 * @param isSetLineInvoiceRef if true, then the copy shall reference the <code>from</code> C_Invoice
+	 * @param isCopyLines if true, the invoice lines are also copied using {@link #copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean, IDocLineCopyHandler)}
 	 * @return
 	 */
 	org.compiere.model.I_C_Invoice copyFrom(
@@ -68,10 +68,10 @@ public interface IInvoiceBL extends ISingletonService
 			Timestamp dateDoc,
 			int C_DocTypeTarget_ID,
 			boolean isSOTrx,
-			boolean counter,
+			boolean isCounterpart,
 			boolean setOrderRef,
-			boolean setInvoiceRef,
-			boolean copyLines);
+			boolean isSetLineInvoiceRef,
+			boolean isCopyLines);
 
 	int copyLinesFrom(I_C_Invoice fromInvoice, I_C_Invoice toInvoice, boolean counter, boolean setOrderRef, boolean setInvoiceRef);
 

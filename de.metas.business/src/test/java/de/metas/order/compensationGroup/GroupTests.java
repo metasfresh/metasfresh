@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
-import de.metas.currency.CurrencyPrecision;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.order.compensationGroup.GroupCompensationLine.GroupCompensationLineBuilder;
 import de.metas.product.ProductId;
@@ -64,7 +64,7 @@ public class GroupTests
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		saveRecord(productRecord);
 		productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
 	}
