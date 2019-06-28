@@ -12,6 +12,11 @@ properties([
 		string(defaultValue: 'INSTANCE.metasfresh.com',
 			description: 'Host name of the metasfresh instance to run the tests against',
 			name: 'MF_TARGET_HOST'),
+
+		string(description: 'If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
+See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.',
+			name: 'MF_CYPRESS_SPEC'),
+
 		// string(defaultValue: 'nexus.metasfresh.com:6001',
 		// 	description: 'Registry of the metasfresh-e2e docker image to run. Only used if <code>MF_DOCKER_IMAGE_FULL_NAME</code> is empty;',
 		// 	name: 'MF_DOCKER_REGISTRY'),
@@ -36,10 +41,6 @@ properties([
 		booleanParam(defaultValue: true,
 			description: 'Run the cypress tests in chrome as opposed to electron; note that video is only supported with electron; but currently, electron "hangs"',
 			name: 'MF_CYPRESS_CHROME'),
-
-		string(description: 'If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
-See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.',
-			name: 'MF_CYPRESS_SPEC'),
 
 		// see https://github.com/metasfresh/metasfresh-scripts/issues/2
 		// note: I tried to use https://wiki.jenkins-ci.org/display/JENKINS/Readonly+Parameter+Plugin
