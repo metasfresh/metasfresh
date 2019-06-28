@@ -57,7 +57,6 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private I_M_HU_PI_Item_Product huPiItemProduct;
-	private I_C_UOM materialProductUOM;
 	private I_M_Product materialProduct;
 	private I_M_Product packageProduct;
 
@@ -81,7 +80,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		packageProduct.setC_UOM_ID(packageProductUom.getC_UOM_ID());
 		saveRecord(packageProduct);
 
-		materialProductUOM = newInstance(I_C_UOM.class);
+		final I_C_UOM materialProductUOM = newInstance(I_C_UOM.class);
 		saveRecord(materialProductUOM);
 
 		materialProduct = newInstance(I_M_Product.class);
