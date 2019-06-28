@@ -353,7 +353,7 @@ public class ZoomInfoFactory
 		public ITranslatableString getLabel()
 		{
 			final ITranslatableString postfix = TranslatableStrings.constant(" (#" + getRecordCount() + ")");
-			return TranslatableStrings.compose("", _destinationDisplay, postfix);
+			return TranslatableStrings.join("", _destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()

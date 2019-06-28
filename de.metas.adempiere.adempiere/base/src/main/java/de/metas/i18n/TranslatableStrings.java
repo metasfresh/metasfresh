@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -57,16 +59,36 @@ public class TranslatableStrings
 		return TranslatableStringBuilder.newInstance();
 	}
 
-	public static ITranslatableString compose(final String joiningString, final Object... trls)
+	public static ITranslatableString join(final String joiningString, final Object... trls)
 	{
 		Check.assumeNotEmpty(trls, "trls is not empty");
 
 		final List<ITranslatableString> trlsList = Stream.of(trls)
+				.flatMap(TranslatableStrings::explodeCollections)
 				.map(TranslatableStrings::toTranslatableStringOrNull)
-				.filter(trl -> trl != null) // skip nulls
+				.filter(Predicates.notNull()) // skip nulls
 				.collect(ImmutableList.toImmutableList());
-		
-		return compose(joiningString, trlsList);
+
+		return joinList(joiningString, trlsList);
+	}
+
+	private static Stream<Object> explodeCollections(final Object obj)
+	{
+		if (obj == null)
+		{
+			return Stream.empty();
+		}
+		else if (obj instanceof Collection)
+		{
+			@SuppressWarnings("unchecked")
+			final Collection<Object> coll = (Collection<Object>)obj;
+			return coll.stream()
+					.flatMap(TranslatableStrings::explodeCollections);
+		}
+		else
+		{
+			return Stream.of(obj);
+		}
 	}
 
 	/**
@@ -96,7 +118,7 @@ public class TranslatableStrings
 		}
 	}
 
-	private static ITranslatableString compose(final String joiningString, @NonNull final List<ITranslatableString> trls)
+	public static ITranslatableString joinList(final String joiningString, @NonNull final List<ITranslatableString> trls)
 	{
 		if (trls.isEmpty())
 		{
@@ -120,7 +142,7 @@ public class TranslatableStrings
 			accum1.addAll(accum2);
 			return accum1;
 		};
-		final Function<List<ITranslatableString>, ITranslatableString> finisher = accum -> compose(joiningString, accum);
+		final Function<List<ITranslatableString>, ITranslatableString> finisher = accum -> joinList(joiningString, accum);
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 

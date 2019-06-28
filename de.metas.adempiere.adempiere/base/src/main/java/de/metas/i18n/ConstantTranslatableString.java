@@ -8,6 +8,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,12 +53,14 @@ import lombok.EqualsAndHashCode;
 		{
 			return EMPTY;
 		}
-		if (" ".equals(value))
+		else if (" ".equals(value))
 		{
 			return SPACE;
 		}
-
-		return new ConstantTranslatableString(value, anyLanguage);
+		else
+		{
+			return new ConstantTranslatableString(value, anyLanguage);
+		}
 	}
 
 	static final ConstantTranslatableString EMPTY = new ConstantTranslatableString("", true);
@@ -66,7 +69,7 @@ import lombok.EqualsAndHashCode;
 	private final String value;
 	private final boolean anyLanguage;
 
-	private ConstantTranslatableString(final String value, final boolean anyLanguage)
+	private ConstantTranslatableString(@NonNull final String value, final boolean anyLanguage)
 	{
 		this.value = value;
 		this.anyLanguage = anyLanguage;

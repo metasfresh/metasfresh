@@ -217,7 +217,7 @@ public final class PostingException extends AdempiereException
 		}
 		else
 		{
-			_detailMessage = TranslatableStrings.compose("\n", _detailMessage, detailMessageToAppend);
+			_detailMessage = TranslatableStrings.join("\n", _detailMessage, detailMessageToAppend);
 		}
 
 		resetMessageBuilt();
