@@ -21,7 +21,7 @@ describe('create new packing instructions ', function() {
     cy.writeIntoStringField('Name', packingMaterial);
     cy.selectInListField('M_Product_ID', productName);
 
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
+    cy.fixture('settings/dunning_bpartner.json').then(customerJson => {
       Object.assign(new BPartner(), customerJson)
         .setName(customerName)
         .apply();
