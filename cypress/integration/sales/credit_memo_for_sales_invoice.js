@@ -30,6 +30,7 @@ import {DiscountSchema} from "../../support/utils/discountschema";
 import {Bank} from "../../support/utils/bank";
 import {BPartner} from "../../support/utils/bpartner";
 import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
+import {RewriteURL} from "../../support/commands/byTbp";
 
 
 describe('Create a Credit memo for Sales Invoice', function () {
