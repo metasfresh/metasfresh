@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-import {getLanguageSpecific} from './utils';
+import { getLanguageSpecific } from './utils';
 
 export class Product {
   constructor(name) {
@@ -79,7 +79,6 @@ export class Product {
     return this;
   }
 
-
   apply() {
     cy.log(`Product - apply - START (name=${this.name})`);
     Product.applyProduct(this);
@@ -88,34 +87,30 @@ export class Product {
   }
 
   static applyProduct(product) {
-    describe(`Create new Product ${product.name}`, function () {
-      cy.visitWindow('140', 'NEW');
+    describe(`Create new Product ${product.name}`, function() {
+      cy.visitWindow('140', 'NEW', product.name /*documentIdAliasName*/);
       cy.writeIntoStringField('Name', product.name);
-
-      // Value is readonly
-      //cy.clearField('Value');
-      //cy.writeIntoStringField('Value', product.value);
 
       cy.selectInListField('M_Product_Category_ID', product.m_product_category);
 
       cy.writeIntoStringField('Description', product.description);
 
-      cy.getStringFieldValue('IsStocked').then(isIsStockedValue => {
+      cy.getCheckboxValue('IsStocked').then(isIsStockedValue => {
         if (product.isStocked && !isIsStockedValue) {
           cy.clickOnCheckBox('IsStocked');
         }
       });
-      cy.getStringFieldValue('IsPurchased').then(isPurchasedValue => {
+      cy.getCheckboxValue('IsPurchased').then(isPurchasedValue => {
         if (product.isPurchased && !isPurchasedValue) {
           cy.clickOnCheckBox('IsPurchased');
         }
       });
-      cy.getStringFieldValue('IsSold').then(isSoldValue => {
+      cy.getCheckboxValue('IsSold').then(isSoldValue => {
         if (product.isSold && !isSoldValue) {
           cy.clickOnCheckBox('IsSold');
         }
       });
-      cy.getStringFieldValue('IsDiverse').then(isDiverseValue => {
+      cy.getCheckboxValue('IsDiverse').then(isDiverseValue => {
         if (product.isDiverse && !isDiverseValue) {
           cy.clickOnCheckBox('IsDiverse');
         }
@@ -124,7 +119,8 @@ export class Product {
       cy.getStringFieldValue('ProductType').then(productTypeValue => {
         const productType = getLanguageSpecific(product, 'productType');
 
-        if (productType != productTypeValue) {
+       if (productType != productTypeValue) {
+          cy.resetListValue('ProductType');
           cy.selectInListField('ProductType', productType);
         }
       });
@@ -138,7 +134,7 @@ export class Product {
       });
 
       if (product.productPrices.length > 0) {
-        product.productPrices.forEach(function (pp) {
+        product.productPrices.forEach(function(pp) {
           Product.applyProductPrice(pp);
         });
         cy.get('table tbody tr').should('have.length', product.productPrices.length);
@@ -156,7 +152,13 @@ export class Product {
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, false, true);
 
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
+    cy.writeIntoStringField(
+      'PriceStd',
+      productPrice.standardPriceAmount,
+      true /*modal*/,
+      null /*rewriteUrl*/,
+      true /*noRequest*/
+    );
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
     const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
@@ -165,7 +167,6 @@ export class Product {
     cy.pressDoneButton();
   }
 }
-
 
 export class ProductCategory {
   constructor(name) {
@@ -191,9 +192,8 @@ export class ProductCategory {
     cy.log(`Product Category - apply - END (name=${this.name})`);
   }
 
-
   static applyProductCategory(productCategory) {
-    describe(`Create new Product ${productCategory.name}`, function () {
+    describe(`Create new Product ${productCategory.name}`, function() {
       cy.visitWindow('144', 'NEW');
       cy.writeIntoStringField('Name', productCategory.name);
 
@@ -202,7 +202,6 @@ export class ProductCategory {
     });
   }
 }
-
 
 /**
  * i dont like this, but it seems when i search for a price list version, the search does NOT use PriceListVersion.Name,
