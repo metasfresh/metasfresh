@@ -273,5 +273,18 @@ declare namespace Cypress {
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
     setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL): Chainable<any>
+
+
+
+    /**
+     * Unset the value of a list.
+     * Similar to pressing the (x) button of a list.
+     *
+     * @param fieldName name of the field is question
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
+     */
+    resetListValue(fieldName: string, modal?: boolean, rewriteUrl?: RewriteURL): Chainable<any>
+
   }
 }

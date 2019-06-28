@@ -55,6 +55,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
   const productCategoryValue = productCategoryName;
   const productName = `Product ${timestamp}`;
   const productValue = productName;
+  const productType = 'Item';
 
   // BPartner
   const discountSchemaName = `DiscountSchema ${timestamp}`;
@@ -67,7 +68,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
   before(function () {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
-    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue);
+    Builder.createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType);
 
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -111,11 +112,16 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.readAllNotifications();
   });
 
-  //
+
   // it('Open Sales Invoice Window', () => {
-  //   cy.visitWindow('167', '1000010');
+  //   cy.visitWindow('167', '1000089');
   // });
-  //
+
+
+  it('Sales Invoice is Completed', function () {
+    expectDocumentStatus(DocumentStatus.Completed);
+  });
+
 
   it('Sales Invoice is not paid', function () {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
@@ -124,9 +130,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
     });
   });
 
-  it('Sales Invoice is Completed', function () {
-    expectDocumentStatus(DocumentStatus.Completed);
-  });
 
   it('Save values needed for the next step', function () {
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
@@ -221,8 +224,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
 //        all the functions/classes below should be public and/or added as `cy.helper`
 //
 //
-
-
 
 
 ///////////////////////////

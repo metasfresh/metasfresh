@@ -9,10 +9,6 @@ export class Builder {
    * - Most tests should use this builder instead of copy pasting everything in the test file.
    *
    * - Only the tests which need customised Price* types should create their own (by copying the contents of this method and modifying as needed).
-   *
-   * @param priceSystemName
-   * @param priceListVersionName
-   * @param priceListName
    */
   static createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName) {
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
@@ -47,12 +43,6 @@ export class Builder {
    * - Most tests should use this builder instead of copy pasting everything in the test file.
    *
    * - Only the tests which need customised Product* types should create their own (by copying the contents of this method and modifying as needed).
-   *
-   * @param productCategoryName
-   * @param productCategoryValue
-   * @param priceListName
-   * @param productName
-   * @param productValue
    */
   static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType) {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
