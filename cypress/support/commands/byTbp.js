@@ -1,7 +1,7 @@
 /*
-@kuba idk where all these should be placed so i just threw all of them in here.
+@kuba idk where all these should be placed so i just threw them here.
 
-Pls either tell me the _organisation_ standards for cypress/js :^).
+Pls tell me the _organisation_ standards for cypress/js :^).
  */
 
 
