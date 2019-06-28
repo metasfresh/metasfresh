@@ -14,7 +14,12 @@ properties([
 			name: 'MF_TARGET_HOST'),
 
 		string(description: '''If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
-See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.''',
+See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.<p>
+Examples:
+<ul>
+<li><code>CYPRESS_SPEC=cypress/integration/currency/**</code> runs all specs in the <code>currency</code> folder</li>
+<li><code>CYPRESS_SPEC=cypress/integration/currency/currency_activate_spec.js</code> runs exactly the <code>currency_activate_spec.js</code> spec</li>
+</ul>''',
 			name: 'MF_CYPRESS_SPEC'),
 
 		// string(defaultValue: 'nexus.metasfresh.com:6001',
