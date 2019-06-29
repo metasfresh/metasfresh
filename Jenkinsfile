@@ -65,7 +65,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 You can run the docker image like this:<br>
 <pre>
 hostname=yourinstance.metasfresh.com<br>
-docker run --rm\\
+docker run --ipc=host --rm\\
  -e "FRONTEND_URL=https://\${hostname}:443"\\
  -e "API_URL=https://\${hostname}:443/rest/api"\\
  -e "WS_URL=https://\${hostname}:443/stomp"\\
@@ -76,7 +76,7 @@ docker run --rm\\
  -e "CYPRESS_BROWSER=chrome"\\
  -e "DEBUG_CYPRESS_OUTPUT=n"\\
  -e "DEBUG_PRINT_BASH_CMDS=n"\\
-  -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
+ -e "DEBUG_SLEEP_AFTER_FAIL=n"\\
  ${publishedE2eDockerImageName}
 </pre>
 <p/>
