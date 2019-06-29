@@ -143,10 +143,11 @@ declare namespace Cypress {
      *
      * @example
      * // create a new business partner document
-     * cy.visitWindow(123, 'NEW', 'myNewDcumentId')
+     * cy.visitWindow(123, 'NEW', 'myNewDocumentId')
      *
      * cy.get('@myNewDcumentId').then((newDocument) => {
      *   cy.log(`going to do things with the document we added just before; newDocument=${JSON.stringify(newDocument)}`)
+     *   cy.log(`documentId=${newDocument.documentId}`)
      * })
      *
      */
