@@ -8,7 +8,7 @@ export class SalesInvoice {
   }
 
   addLine(salesInvoiceLine) {
-    console.log(`SalesInvoice - add InvoiceLine = ${JSON.stringify(salesInvoiceLine)}`);
+    //console.log(`SalesInvoice - add InvoiceLine = ${JSON.stringify(salesInvoiceLine)}`);
     this.lines.push(salesInvoiceLine);
     return this;
   }
@@ -28,6 +28,7 @@ export class SalesInvoice {
     return this;
   }
 
+  /** Creates a new invoice and stores its documentId as alias newInvoiceDocumentId. */
   apply() {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     SalesInvoice.applySalesInvoice(this);
@@ -37,7 +38,7 @@ export class SalesInvoice {
 
   static applySalesInvoice(salesInvoice) {
     describe(`Create new SalesInvoice: ${salesInvoice._toString}`, () => {
-      cy.visitWindow('167', 'NEW');
+      cy.visitWindow('167', 'NEW', 'newInvoiceDocumentId' /*documentIdAliasName*/);
       cy.get('.header-breadcrumb-sitename')
         .should('contain', new Date().getDate())
         .should('contain', new Date().getFullYear());
@@ -84,10 +85,15 @@ export class SalesInvoice {
       cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
     }
     if (salesInvoiceLine.packingItem) {
-      cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', salesInvoiceLine.packingItem, salesInvoiceLine.packingItem, true, true);
+      cy.writeIntoLookupListField(
+        'M_HU_PI_Item_Product_ID',
+        salesInvoiceLine.packingItem,
+        salesInvoiceLine.packingItem,
+        true,
+        true
+      );
     }
     cy.pressDoneButton();
-
   }
 
   /*
@@ -115,7 +121,6 @@ export class SalesInvoice {
 }
 
 export class SalesInvoiceLine {
-
   setProduct(product) {
     this.product = product;
     return this;
@@ -135,5 +140,4 @@ export class SalesInvoiceLine {
     this.tuQuantity = tuQuantity;
     return this;
   }
-
 }
