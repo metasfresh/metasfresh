@@ -91,9 +91,6 @@ run_metasfresh()
 	metasfresh_admin_params=""
  fi
 
- local admin_url="http://${admin_host}:${admin_port}"
- local metasfresh_admin_params="-Dspring.boot.admin.url=${admin_url} -Dmanagement.security.enabled=false -Dspring.boot.admin.client.prefer-ip=true"
-
  local es_params="-Dspring.data.elasticsearch.cluster-nodes=${es_host}:${es_port}"
  
  local rabbitmq_params="-Dspring.rabbitmq.host=${rabbitmq_host}\
