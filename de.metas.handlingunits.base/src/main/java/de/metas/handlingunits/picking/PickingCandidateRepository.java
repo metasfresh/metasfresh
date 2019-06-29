@@ -427,5 +427,24 @@ public class PickingCandidateRepository
 				.match();
 		return isAlreadyPicked;
 	}
+	
+	public List<PickingCandidate> getByShipmentScheduleIds(
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.stream(I_M_Picking_Candidate.class)
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
+
+	}
 
 }
