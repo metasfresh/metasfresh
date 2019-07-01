@@ -114,11 +114,5 @@ describe('Create Sales order', function() {
     )
       .find('input')
       .should('have.value', nextDayAsString + ' 12:00 AM');
-    // cy.visitWindow('500221');
-    // cy.log('Now going to verify that the date was set correctly by filtering after C_BPartner_ID');
-    // toggleNotFrequentFilters();
-    // selectNotFrequentFilterWidget('default');
-    // cy.writeIntoLookupListField('C_BPartner_ID', `${timestamp}`, customer, false, false, null, true);
-    // applyFilters();
   });
 });
