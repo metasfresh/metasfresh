@@ -32,7 +32,11 @@ describe('Create Test: set packing item in product window https://github.com/met
       .selectInListField('M_HU_PI_Item_ID', 'IFCO 6410', true /*modal*/)
       .clearField('Qty', true /*modal*/)
       .writeIntoStringField('Qty', '10', true /*modal*/)
-      .selectDateViaPicker('ValidFrom', 'today', true /*modal*/)
+      .selectDateViaPicker('ValidFrom', 'today', true /*modal*/);
+
+    cy.get('.indicator-pending')
+      .should('not.exist')
+
       .pressDoneButton();
   });
 });
