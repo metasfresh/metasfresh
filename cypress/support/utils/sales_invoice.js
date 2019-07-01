@@ -78,7 +78,16 @@ export class SalesInvoice {
     cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true /*modal*/);
+    cy.writeIntoStringField(
+      'QtyEntered',
+      salesInvoiceLine.quantity,
+      true /*modal*/,
+      null /*rewriteUrl*/,
+      true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */
+    );
+    // instead of waiting for the patch in writeIntoStringField, we wait for the "pending" indicator to go away
+    cy.get('.indicator-pending').should('not.exist');
+
     cy.writeIntoLookupListField(
       'M_Product_ID',
       salesInvoiceLine.product,
