@@ -14,6 +14,8 @@ import org.compiere.model.X_C_OrderLine;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -68,7 +70,7 @@ import lombok.NonNull;
  * #L%
  */
 
-class OrderLinePriceCalculator
+final class OrderLinePriceCalculator
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -111,7 +113,8 @@ class OrderLinePriceCalculator
 
 		//
 		// Apply price limit restrictions
-		if (isApplyPriceLimitRestrictions(pricingResult))
+		final BooleanWithReason applyPriceLimitRestrictions = checkApplyPriceLimitRestrictions(pricingResult);
+		if (applyPriceLimitRestrictions.isTrue())
 		{
 			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 					.pricingContext(pricingCtx)
@@ -121,6 +124,13 @@ class OrderLinePriceCalculator
 					.build());
 
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
+		}
+		else
+		{
+			priceAndDiscount = priceAndDiscount.toBuilder()
+					.priceLimitEnforced(false)
+					.priceLimitNotEnforcedExplanation(applyPriceLimitRestrictions.getReason())
+					.build();
 		}
 
 		//
@@ -137,7 +147,8 @@ class OrderLinePriceCalculator
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
-		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
+		orderLine.setEnforcePriceLimit(pricingResult.getEnforcePriceLimit().isTrue());
+		orderLine.setPriceLimitNote(pricingResult.getEnforcePriceLimit().getReason().translate(Language.getBaseAD_Language()));
 
 		updateOrderLineFromPricingConditionsResult(orderLine, pricingResult.getPricingConditions());
 
@@ -331,16 +342,15 @@ class OrderLinePriceCalculator
 		{
 			return request.getPricingConditionsBreakOverride();
 		}
+		
 		final I_C_OrderLine orderLine = request.getOrderLine();
-
-		final boolean lineHasDiscountSchemaBreak = orderLine.getM_DiscountSchema_ID() > 0 && orderLine.getM_DiscountSchemaBreak_ID() > 0;
+		final PricingConditionsBreakId orderLinePricingConditionsBreakId = PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
 		final boolean discountNeedsRevalidation = isValueChanged(orderLine, PricingConditionsBreakQuery.getRelevantOrderLineColumns());
-		if (lineHasDiscountSchemaBreak && !discountNeedsRevalidation)
+		if (orderLinePricingConditionsBreakId != null && !discountNeedsRevalidation)
 		{
-			final PricingConditionsBreakId pricingConditionsBreakId = PricingConditionsBreakId.of(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
-			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsBreakId.getPricingConditionsId());
+			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(orderLinePricingConditionsBreakId.getPricingConditionsId());
 
-			return pricingConditions.getBreakById(pricingConditionsBreakId);
+			return pricingConditions.getBreakById(orderLinePricingConditionsBreakId);
 		}
 
 		return null;
@@ -372,11 +382,19 @@ class OrderLinePriceCalculator
 		}
 	}
 
-	private boolean isApplyPriceLimitRestrictions(final IPricingResult pricingResult)
+	private BooleanWithReason checkApplyPriceLimitRestrictions(final IPricingResult pricingResult)
 	{
-		return request.isApplyPriceLimitRestrictions()
-				&& request.getOrderLine().getC_Order().isSOTrx() // we enforce price limit only for sales orders
-				&& pricingResult.isEnforcePriceLimit();
+		if (!request.isApplyPriceLimitRestrictions())
+		{
+			return BooleanWithReason.falseBecause("by request");
+		}
+
+		if (!request.getOrderLine().getC_Order().isSOTrx())
+		{
+			return BooleanWithReason.falseBecause("we enforce price limit only for sales orders");
+		}
+
+		return pricingResult.getEnforcePriceLimit();
 	}
 
 	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final SOTrx soTrx)

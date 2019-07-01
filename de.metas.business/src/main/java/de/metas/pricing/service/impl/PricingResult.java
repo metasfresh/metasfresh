@@ -30,9 +30,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
-
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingAttribute;
 import de.metas.pricing.IPricingContext;
@@ -46,6 +45,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.Getter;
@@ -112,9 +112,11 @@ class PricingResult implements IPricingResult
 	@Getter
 	private BigDecimal priceLimit = BigDecimal.ZERO;
 	private Percent discount = Percent.ZERO;
+
 	@Setter
 	@Getter
-	private boolean enforcePriceLimit = false;
+	@NonNull
+	private BooleanWithReason enforcePriceLimit = BooleanWithReason.FALSE;
 
 	@Setter
 	@Getter
@@ -173,7 +175,7 @@ class PricingResult implements IPricingResult
 	@Override
 	public Percent getDiscount()
 	{
-		return Util.coalesce(discount, Percent.ZERO);
+		return CoalesceUtil.coalesce(discount, Percent.ZERO);
 	}
 
 	@Override

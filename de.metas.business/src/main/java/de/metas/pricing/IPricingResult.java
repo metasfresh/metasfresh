@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
@@ -74,9 +75,9 @@ public interface IPricingResult
 
 	void setPriceLimit(BigDecimal priceLimit);
 
-	boolean isEnforcePriceLimit();
+	BooleanWithReason getEnforcePriceLimit();
 
-	void setEnforcePriceLimit(boolean enforcePriceLimit);
+	void setEnforcePriceLimit(BooleanWithReason enforcePriceLimit);
 
 	/**
 	 *

@@ -31,6 +31,8 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -127,9 +129,6 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		BigDecimal m_PriceList = null;
 		BigDecimal m_PriceLimit = null;
 		int m_C_UOM_ID = -1;
-		CurrencyId currencyId = null;
-		boolean m_enforcePriceLimit = false;
-		boolean m_isTaxIncluded = false;
 		//
 		//
 
@@ -151,12 +150,10 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 			priceListVersionId = PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID());
 		}
 
-		// TODO handle bom-prices for products that don't have a price themselves.
-
 		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
-		currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-		m_enforcePriceLimit = priceList.isEnforcePriceLimit();
-		m_isTaxIncluded = priceList.isTaxIncluded();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
+		final BooleanWithReason enforcePriceLimit = extractEnforcePriceLimit(priceList);
+		final boolean isTaxIncluded = priceList.isTaxIncluded();
 
 		result.setPriceStd(m_PriceStd);
 		result.setPriceList(m_PriceList);
@@ -164,8 +161,8 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		result.setCurrencyId(currencyId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(m_enforcePriceLimit);
-		result.setTaxIncluded(m_isTaxIncluded);
+		result.setEnforcePriceLimit(enforcePriceLimit);
+		result.setTaxIncluded(isTaxIncluded);
 		result.setCalculated(true);
 
 		// 06942 : use product price uom all the time
@@ -179,4 +176,14 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		}
 		return result;
 	}
+	
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(msgBL.translatable("M_PriceList_ID"))
+				: BooleanWithReason.falseBecause(msgBL.translatable("M_PriceList_ID"));
+	}
+
 }

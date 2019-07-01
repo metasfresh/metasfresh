@@ -225,7 +225,7 @@ public class MProductPricing
 	public boolean isEnforcePriceLimit()
 	{
 		calculatePrice(false);
-		return result.isEnforcePriceLimit();
+		return result.getEnforcePriceLimit().isTrue();
 	}	// isEnforcePriceLimit
 
 	/**
@@ -273,11 +273,6 @@ public class MProductPricing
 	public void setConvertPriceToContextUOM(boolean convertPriceToContextUOM)
 	{
 		pricingCtx.setConvertPriceToContextUOM(convertPriceToContextUOM);
-	}
-
-	public Object getReferencedObject()
-	{
-		return pricingCtx.getReferencedObject();
 	}
 
 	public void setReferencedObject(Object referencedObject)
