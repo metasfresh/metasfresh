@@ -78,19 +78,25 @@ export class SalesInvoice {
     cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true, null, true);
-    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
+    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true /*modal*/);
+    cy.writeIntoLookupListField(
+      'M_Product_ID',
+      salesInvoiceLine.product,
+      salesInvoiceLine.product,
+      false /*typeList*/,
+      true /*modal*/
+    );
 
     if (salesInvoiceLine.tuQuantity) {
-      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
+      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true /*modal*/);
     }
     if (salesInvoiceLine.packingItem) {
       cy.writeIntoLookupListField(
         'M_HU_PI_Item_Product_ID',
         salesInvoiceLine.packingItem,
         salesInvoiceLine.packingItem,
-        true,
-        true
+        false /*typeList*/,
+        true /*modal*/
       );
     }
     cy.pressDoneButton();
