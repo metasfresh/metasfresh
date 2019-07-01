@@ -9,8 +9,8 @@ describe('Create new BPartner', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: customerName });
 
-      bpartner.apply().then(id => {
-        bpartnerID = id;
+      bpartner.apply().then(bpartner => {
+        bpartnerID = bpartner.id;
       });
     });
   });

@@ -3,9 +3,18 @@
   "isVendor": false,
   "isCustomer": true,
   "bank":"Raiffeisen",
-  "customerPricingSystem": "Testpreisliste Kunden",
-  "customerDiscountSchema": "DiscountSchemaTest",
-  "paymentTerm": "30 days net",
+  "customerPricingSystem": {
+    "key": "2000837",
+    "caption": "Testpreisliste Kunden"
+  },
+  "customerDiscountSchema": {
+    "key": "1000004",
+    "caption": "DiscountSchema 1561534895332"
+  },
+  "paymentTerm": {
+    "key": "1000002",
+    "caption": "30 days net"
+  },
   "de_DE__paymentTerm": "30 Tage netto",
   "bPartnerLocations": [
     {
