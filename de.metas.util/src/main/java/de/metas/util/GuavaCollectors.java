@@ -203,22 +203,9 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static <K, V> Map.Entry<K, V> entry(final K key, final V value)
+	public static <K, V> ImmutableMapEntry<K, V> entry(final K key, final V value)
 	{
-		return new ImmutableMapEntry<>(key, value);
-	}
-
-	@lombok.Value
-	private static final class ImmutableMapEntry<K, V> implements Map.Entry<K, V>
-	{
-		private final K key;
-		private final V value;
-
-		@Override
-		public V setValue(final V value)
-		{
-			throw new UnsupportedOperationException();
-		}
+		return ImmutableMapEntry.of(key, value);
 	}
 
 	public static <K, V> Collector<Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap()

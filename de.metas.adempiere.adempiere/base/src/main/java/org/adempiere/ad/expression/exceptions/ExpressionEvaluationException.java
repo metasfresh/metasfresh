@@ -6,8 +6,8 @@ import java.util.List;
 import org.adempiere.ad.expression.api.IExpression;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 
 /*
@@ -96,10 +96,10 @@ public class ExpressionEvaluationException extends ExpressionException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		final ITranslatableString originalMessage = getOriginalMessage();
-		if (!ImmutableTranslatableString.isBlank(originalMessage))
+		if (!TranslatableStrings.isBlank(originalMessage))
 		{
 			message.append(originalMessage);
 		}

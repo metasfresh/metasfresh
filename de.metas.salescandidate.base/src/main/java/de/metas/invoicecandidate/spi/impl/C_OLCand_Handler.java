@@ -39,7 +39,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
@@ -65,8 +65,10 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -220,7 +222,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olc.getC_TaxCategory_ID()),
 				ProductId.toRepoId(productId),
-				Util.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
+				CoalesceUtil.coalesce(olc.getDatePromised_Override(), olc.getDatePromised(), olc.getDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
 				BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getDropShipLocationEffectiveId(olc)),
@@ -288,7 +290,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final Quantity olCandQuantity = Quantity.of(olc.getQty(), olCandEffectiveValuesBL.getC_UOM_Effective(olc));
 		ic.setQtyEntered(olCandQuantity.getAsBigDecimal());
-		ic.setC_UOM_ID(olCandQuantity.getUOMId());
+		ic.setC_UOM_ID(UomId.toRepoId(olCandQuantity.getUomId()));
 
 		final ProductId productId = olCandEffectiveValuesBL.getM_Product_Effective_ID(olc);
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(olCandQuantity, productId);
@@ -322,10 +324,14 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_OLCand olc = getOLCand(ic);
-		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(olc, null, PricingSystemId.NULL, olc.getDateCandidate());
+		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(
+				olc, 
+				null, 
+				PricingSystemId.NULL, 
+				TimeUtil.asLocalDate(olc.getDateCandidate()));
 
 		return PriceAndTax.builder()
-				.priceUOMId(pricingResult.getPrice_UOM_ID())
+				.priceUOMId(pricingResult.getPriceUomId())
 				.priceActual(pricingResult.getPriceStd())
 				.taxIncluded(pricingResult.isTaxIncluded())
 				.build();

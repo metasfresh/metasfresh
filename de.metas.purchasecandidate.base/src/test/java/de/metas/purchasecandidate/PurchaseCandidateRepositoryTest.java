@@ -139,7 +139,7 @@ public class PurchaseCandidateRepositoryTest
 	{
 		final I_C_OrderLine purchaseOrderLineRecord = newInstance(I_C_OrderLine.class);
 		purchaseOrderLineRecord.setQtyOrdered(ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 

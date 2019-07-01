@@ -32,16 +32,11 @@ import lombok.ToString;
 
 @ToString
 @EqualsAndHashCode
-public class ForwardingTranslatableString implements ITranslatableString
+final class ForwardingTranslatableString implements ITranslatableString
 {
-	public static final ForwardingTranslatableString of(final Supplier<ITranslatableString> delegateSupplier)
-	{
-		return new ForwardingTranslatableString(delegateSupplier);
-	}
-
 	private final Supplier<ITranslatableString> delegateSupplier;
 
-	private ForwardingTranslatableString(@NonNull final Supplier<ITranslatableString> delegateSupplier)
+	ForwardingTranslatableString(@NonNull final Supplier<ITranslatableString> delegateSupplier)
 	{
 		this.delegateSupplier = delegateSupplier;
 	}

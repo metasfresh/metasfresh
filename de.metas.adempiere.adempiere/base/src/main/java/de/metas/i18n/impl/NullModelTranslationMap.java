@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 /*
  * #%L
@@ -61,7 +61,7 @@ public final class NullModelTranslationMap implements IModelTranslationMap
 	@Override
 	public ITranslatableString getColumnTrl(final String columnName, final String defaultValue)
 	{
-		return ImmutableTranslatableString.anyLanguage(defaultValue);
+		return TranslatableStrings.anyLanguage(defaultValue);
 	}
 
 	@Override

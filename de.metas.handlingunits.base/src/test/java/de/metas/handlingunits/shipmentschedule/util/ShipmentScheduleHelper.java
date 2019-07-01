@@ -128,7 +128,7 @@ public class ShipmentScheduleHelper
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setC_UOM(uom);
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(orderLine);
 
 		//

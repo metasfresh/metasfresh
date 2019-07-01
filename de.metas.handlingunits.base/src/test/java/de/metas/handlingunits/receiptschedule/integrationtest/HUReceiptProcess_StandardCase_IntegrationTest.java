@@ -51,19 +51,19 @@ public class HUReceiptProcess_StandardCase_IntegrationTest extends AbstractHURec
 		final BigDecimal qtyTUExpected = new BigDecimal("2"); // 20/10
 
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class, contextGlobal);
-		order.setC_BPartner(bpartner);
-		order.setC_BPartner_Location(bpartnerLocation);
-		order.setM_Warehouse(warehouse);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		order.setAD_Org_ID(warehouse.getAD_Org_ID());
 		InterfaceWrapperHelper.save(order);
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, order);
 		orderLine.setC_Order(order);
 		orderLine.setM_Product_ID(productId.getRepoId());
-		orderLine.setC_UOM(productUOM);
+		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		orderLine.setQtyEntered(qty);
 		orderLine.setQtyOrdered(qty);
-		orderLine.setM_HU_PI_Item_Product(piTU_Item_Product);
+		orderLine.setM_HU_PI_Item_Product_ID(piTU_Item_Product.getM_HU_PI_Item_Product_ID());
 		orderLine.setQtyEnteredTU(qtyTUExpected);
 		InterfaceWrapperHelper.save(orderLine);
 

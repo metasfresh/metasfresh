@@ -18,7 +18,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,6 +42,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
@@ -137,7 +137,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						, term1.getStartDate()
 						, OrgId.ofRepoId(term1.getAD_Org_ID())
 						, (WarehouseId)null
-						, Util.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
+						, CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID())
 						, SOTrx.SALES.toBoolean());
 				minTimes = 0;
 				result = 3;
@@ -195,9 +195,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setAD_Org_ID(product.getAD_Org_ID());
-		orderLine.setC_Order(order);
-		orderLine.setC_Flatrate_Conditions(conditions);
-		orderLine.setM_Product(product);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+		orderLine.setM_Product_ID(product.getM_Product_ID());
 		save(orderLine);
 		return orderLine;
 	}

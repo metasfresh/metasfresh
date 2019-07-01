@@ -27,16 +27,18 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
-import de.metas.location.CountryId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.OptionalBoolean;
 
 public interface IPricingContext extends IContextAware
 {
@@ -62,7 +64,7 @@ public interface IPricingContext extends IContextAware
 	 */
 	LocalDate getPriceDate();
 
-	int getC_UOM_ID();
+	UomId getUomId();
 
 	CurrencyId getCurrencyId();
 
@@ -111,7 +113,7 @@ public interface IPricingContext extends IContextAware
 	 * @return returns the context value or <code>null</code> if unspecified. In this case the pricing engine shall check if the references object&model has a <code>IsManualPrice</code> field to go
 	 *         with.
 	 */
-	Boolean isManualPrice();
+	OptionalBoolean getManualPriceEnabled();
 
 	CountryId getCountryId();
 

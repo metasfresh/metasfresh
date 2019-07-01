@@ -47,6 +47,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.ImmutableTranslatableString.ImmutableTranslatableStringBuilder;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -349,7 +350,7 @@ import lombok.NonNull;
 
 	private static final class GenericZoomInfoDescriptor
 	{
-		private static final Builder builder()
+		private static Builder builder()
 		{
 			return new Builder();
 		}
@@ -463,8 +464,8 @@ import lombok.NonNull;
 
 		private static final class Builder
 		{
-			private ImmutableTranslatableString.Builder soNameTrl = ImmutableTranslatableString.builder();
-			private ImmutableTranslatableString.Builder poNameTrl = ImmutableTranslatableString.builder();
+			private ImmutableTranslatableStringBuilder soNameTrl = ImmutableTranslatableString.builder();
+			private ImmutableTranslatableStringBuilder poNameTrl = ImmutableTranslatableString.builder();
 
 			private String targetTableName;
 			private String targetColumnName;
@@ -503,11 +504,11 @@ import lombok.NonNull;
 			{
 				if (soName != null)
 				{
-					soNameTrl.setDefaultValue(soName);
+					soNameTrl.defaultValue(soName);
 				}
 				if (poName != null)
 				{
-					poNameTrl.setDefaultValue(poName);
+					poNameTrl.defaultValue(poName);
 				}
 				return this;
 			}
@@ -516,11 +517,11 @@ import lombok.NonNull;
 			{
 				if (soName != null)
 				{
-					soNameTrl.put(adLanguage, soName);
+					soNameTrl.trl(adLanguage, soName);
 				}
 				if (poName != null)
 				{
-					poNameTrl.put(adLanguage, poName);
+					poNameTrl.trl(adLanguage, poName);
 				}
 				return this;
 			}

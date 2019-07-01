@@ -1,7 +1,7 @@
 package de.metas.contracts;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
@@ -70,7 +70,7 @@ public class FlatrateTermPricing
 	BigDecimal qty;
 
 	@NonNull
-	Timestamp priceDate;
+	LocalDate priceDate;
 
 	public IPricingResult computeOrThrowEx()
 	{

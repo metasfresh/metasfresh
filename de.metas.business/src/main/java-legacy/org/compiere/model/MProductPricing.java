@@ -19,6 +19,7 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.currency.CurrencyPrecision;
@@ -31,6 +32,7 @@ import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
@@ -153,7 +155,7 @@ public class MProductPricing
 	 */
 	public void setPriceDate(Timestamp priceDate)
 	{
-		pricingCtx.setPriceDate(priceDate);
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceDate));
 		resetResult();
 	}	// setPriceDate
 
@@ -181,7 +183,7 @@ public class MProductPricing
 	public int getC_UOM_ID()
 	{
 		calculatePrice(false);
-		return result.getPrice_UOM_ID();
+		return UomId.toRepoId(result.getPriceUomId());
 	}
 
 	/**
@@ -225,7 +227,7 @@ public class MProductPricing
 	public boolean isEnforcePriceLimit()
 	{
 		calculatePrice(false);
-		return result.isEnforcePriceLimit();
+		return result.getEnforcePriceLimit().isTrue();
 	}	// isEnforcePriceLimit
 
 	/**
@@ -275,11 +277,6 @@ public class MProductPricing
 		pricingCtx.setConvertPriceToContextUOM(convertPriceToContextUOM);
 	}
 
-	public Object getReferencedObject()
-	{
-		return pricingCtx.getReferencedObject();
-	}
-
 	public void setReferencedObject(Object referencedObject)
 	{
 		pricingCtx.setReferencedObject(referencedObject);
@@ -293,12 +290,12 @@ public class MProductPricing
 	
 	public boolean isManualPrice()
 	{
-		return pricingCtx.isManualPrice();
+		return pricingCtx.getManualPriceEnabled().isTrue();
 	}
 
 	public void setManualPrice(boolean manualPrice)
 	{
-		pricingCtx.setManualPrice(manualPrice);
+		pricingCtx.setManualPriceEnabled(manualPrice);
 	}
 	
 	public void throwProductNotOnPriceListException()
