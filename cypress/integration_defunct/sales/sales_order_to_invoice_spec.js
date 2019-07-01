@@ -1,49 +1,53 @@
 import { salesOrders } from '../../page_objects/sales_orders';
-import { Product, ProductCategory } from '../../support/utils/product';
+
 import { BPartner } from '../../support/utils/bpartner';
 import { invoiceCandidates } from '../../page_objects/invoice_candidates';
 import { salesInvoices } from '../../page_objects/sales_invoices';
+import { Builder } from '../../support/utils/builder';
+import { getLanguageSpecific } from '../../support/utils/utils';
 
 describe('New sales order test', function() {
   const timestamp = new Date().getTime();
-  let notificationsNumber = null;
+  //let notificationsNumber = null;
 
-  const poReference = `Sales Order-to-Invoice Test ${timestamp}`;
-  const productName = `Sales Order-to-Invoice Test ${timestamp}`;
-  const customerName = `Sales Order-to-Invoice Test ${timestamp}`;
+  const productValue = `sales_order_test ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${timestamp}`;
+  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
 
-  before(function() {
-    const productValue = `sales_order_to_invoice_test ${timestamp}`;
-    const productCategoryName = `ProductCategoryName ${timestamp}`;
-    const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const priceSystemName = `PriceSystem ${timestamp}`;
+  const priceListName = `PriceList ${timestamp}`;
+  const priceListVersionName = `PriceListVersion ${timestamp}`;
 
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
+  const poReference = `Sales Order-to-Invoice ${timestamp}`;
+  const productName = `Sales Order-to-Invoice ${timestamp}`;
+
+  const customerName = `Sales Order-to-Invoice ${timestamp}`;
+
+  describe('Do test preparations', function() {
+    it('Create product and price', function() {
+      Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+      Builder.createBasicProductEntities(
+        productCategoryName,
+        productCategoryValue,
+        priceListName,
+        productName,
+        productValue
+      );
     });
-    cy.fixture('product/simple_product.json').then(productJson => {
-      Object.assign(new Product(), productJson)
-        .setName(productName)
-        .setValue(productValue)
-        .setProductType('Service')
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .apply();
+    it('Create customer', function() {
+      cy.fixture('sales/simple_customer.json').then(customerJson => {
+        Object.assign(new BPartner(), customerJson)
+          .setName(customerName)
+          .setCustomerPricingSystem(priceSystemName)
+          .setBank(undefined) // we don't need a bank for this test
+          .apply();
+      });
     });
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customerName)
-        .apply();
-    });
-
-    cy.readAllNotifications();
   });
 
   describe('Create a new sales order', function() {
     it('Create new sales order header', function() {
       cy.visitWindow(salesOrders.windowId, 'NEW');
-      // cy.resetNotifications();
 
       cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName);
 
@@ -53,16 +57,16 @@ describe('New sales order test', function() {
       cy.get('.indicator-pending').should('not.exist');
     });
 
-    it('Add new product via Batch Entry', function() {
+    it('Has an add-new button', function() {
       const addNewText = Cypress.messages.window.batchEntry.caption;
-
       cy.get('.tabs-wrapper .form-flex-align .btn')
         .contains(addNewText)
         .should('exist')
         .click();
+    });
 
+    it('Add new product via Batch Entry', function() {
       cy.get('.quick-input-container').should('exist');
-
       cy.writeIntoLookupListField('M_Product_ID', productName, productName);
 
       const aliasName = `addProduct-${timestamp}`;
@@ -78,13 +82,19 @@ describe('New sales order test', function() {
     });
 
     it('Complete sales order', function() {
-      cy.processDocument('Complete', 'Completed');
+      // complete it and verify the status
+      cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+        cy.processDocument(
+          getLanguageSpecific(miscDictionary, 'docActionComplete'),
+          getLanguageSpecific(miscDictionary, 'docStatusCompleted')
+        );
+      });
     });
   });
 
   describe('create an invoice', function() {
     it("Zoom to the sales order's invoice candidate", function() {
-      // TODO: This is erally, really bad ! Unfortunately right now I see no way of fixing this, unless we'll
+      // TODO: This is really, really bad ! Unfortunately right now I see no way of fixing this, unless we'll
       // get a push notification from the server that would update this panel
       cy.wait(10000); // wait a bit for the invoice candidate(s) to be created, just like the user would
       cy.get('body').type('{alt}6'); // open referenced-records-sidelist
@@ -112,6 +122,8 @@ describe('New sales order test', function() {
       cy.clickElementWithClass('.pagination-link.pointer');
       cy.wait(`@${quickActionsAlias}`);
 
+      cy.readAllNotifications();
+
       // and *now* execute the invoicing action
       cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.writeIntoStringField(
@@ -120,34 +132,37 @@ describe('New sales order test', function() {
         true /*modal*/,
         '/rest/api/process' /*rewriteUrl*/
       );
+
       cy.pressStartButton();
     });
 
     it('Zoom to the new invoice', function() {
-      cy.getNotificationModal();
-      cy.getDOMNotificationsNumber().then(number => {
-        expect(number).to.equal(1);
+      cy.getNotificationModal(customerName /*optionalText*/); // wait for the notifcation; the text contains the customer's name :-D
 
-        cy.server();
+      // cy.getDOMNotificationsNumber().then(number => {
+      //   expect(number).to.equal(1);
+      //cy.wait(10000); // TODO use notifactions instead
+      // doubleclick on the first invoice candidate
+      cy.server();
 
-        const invoiceCandidateTab = `tab-${timestamp}`;
-        cy.route('GET', `/rest/api/window/${invoiceCandidates.windowId}/*/AD_Tab*`).as(invoiceCandidateTab);
-        invoiceCandidates
-          .getRows()
-          .eq(0)
-          .find('td')
-          .eq(0)
-          .dblclick();
-        cy.wait(`@${invoiceCandidateTab}`);
+      const invoiceCandidateDetail = `tab-${timestamp}`;
+      cy.route('GET', `/rest/api/window/${invoiceCandidates.windowId}/*/AD_Tab*`).as(invoiceCandidateDetail);
+      invoiceCandidates
+        .getRows()
+        .eq(0)
+        .find('td')
+        .eq(0)
+        .dblclick();
+      cy.wait(`@${invoiceCandidateDetail}`);
 
-        cy.get('body').type('{alt}6'); // open referenced-records-sidelist
+      // zoom to the invoice by using the references side-listc
+      cy.get('body').type('{alt}6'); // open referenced-records-sidelist
 
-        // zoom to the invoice candidate's iinvoice, but also make sure to wait until the data is available
-        const getDataAlias = `data-${timestamp}`;
-        cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
-        cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
-        cy.wait(`@${getDataAlias}`);
-      });
+      // zoom to the invoice candidate's invoice, but also make sure to wait until the data is available
+      const getDataAlias = `data-${timestamp}`;
+      cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
+      cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
+      cy.wait(`@${getDataAlias}`);
     });
   });
 });

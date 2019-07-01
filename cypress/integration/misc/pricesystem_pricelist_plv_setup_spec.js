@@ -10,13 +10,13 @@ describe('Create Pricing Masterdata for Automatic End2End Tests with cypress htt
 
     //Pricelist
     cy.visitWindow('540321', 'NEW');
-    cy.writeIntoStringField('Name', 'TestPriceListName');
+    cy.writeIntoStringField('Name', `TestPriceListName ${timestamp}`);
     cy.selectInListField('M_PricingSystem_ID', `TestPriceSystemName ${timestamp}`);
     cy.selectInListField('C_Currency_ID', 'EUR');
 
     //PLV
     cy.pressAddNewButton();
-    cy.clearField('Name', 'T', true);
+    cy.clearField('Name', true);
     cy.writeIntoStringField('Name', `TestPLV ${timestamp}`, true);
     cy.pressDoneButton();
   });

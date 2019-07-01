@@ -22,5 +22,8 @@ describe('Reproduce issue https://github.com/metasfresh/metasfresh-webui-fronten
     cy.get('.form-field-SeqNo')
       .find('input')
       .should('have.value', '21');
+
+    // deactivate the custom tab, because we don't want other tests to unexpectedly have it among their respective bpartner-tabs
+    cy.clickOnIsActive();
   });
 });
