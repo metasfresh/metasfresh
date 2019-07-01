@@ -1,16 +1,17 @@
+import config from '../../config';
+import { wrapRequest, findByName } from './utils';
+
 export class BPartner {
-  constructor(name) {
+  constructor({ name, ...vals }) {
     cy.log(`BPartner - set name = ${name}`);
     this.name = name;
-    this.isVendor = false;
-    this.vendorPricingSystem = undefined;
-    this.vendorDiscountSchema = undefined;
-    this.customerDiscountSchema = undefined;
-    this.customerDunning = undefined;
-    this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
-    this.bank = undefined;
+
+    for (let [key, val] of Object.entries(vals)) {
+      this[key] = val;
+    }
+    return this;
   }
 
   setName(name) {
@@ -99,132 +100,254 @@ export class BPartner {
 
   apply() {
     cy.log(`BPartner - apply - START (name=${this.name})`);
-    applyBPartner(this);
-    cy.log(`BPartner - apply - END (name=${this.name})`);
-    return this;
+    return BPartner.applyBPartner(this).then(() => {
+      cy.log(`BPartner - apply - END (name=${this.name})`);
+
+      if (this.bPartnerLocations.length || this.contacts.length || this.bank) {
+        cy.visitWindow(123, this.id);
+
+        // @TODO: Temporarily we're adding contacts, bank & location via UI because API...
+        BPartner.applyManual(this);
+      }
+      return cy.wrap(this);
+    });
   }
 
+  static applyBPartner(bPartner) {
+    const basicUri = `${config.API_URL}/window/123`;
 
-  static applyBank(bank) {
-    cy.selectTab('C_BP_BankAccount');
-    cy.pressAddNewButton();
-    cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
-    cy.writeIntoStringField('A_Name', 'Test Account', true);
-    cy.pressDoneButton();
+    return cy
+      .request({
+        url: `${basicUri}/NEW`,
+        method: 'PATCH',
+        body: JSON.stringify([]),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(newResponse => {
+        bPartner.id = newResponse.body[0].id;
+
+        const basicDataObject = [
+          {
+            op: 'replace',
+            path: 'CompanyName',
+            value: bPartner.name,
+          },
+          {
+            op: 'replace',
+            path: 'Name2',
+            value: bPartner.name,
+          },
+        ];
+
+        return cy
+          .request({
+            url: `${basicUri}/${bPartner.id}`,
+            method: 'PATCH',
+            body: JSON.stringify(basicDataObject),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          .then(() => {
+            BPartner.getVendorData(basicUri, bPartner).then(data => {
+              const dataObject = data;
+
+              return cy
+                .request({
+                  url: `${basicUri}/${bPartner.id}?advanced=true`,
+                  method: 'PATCH',
+                  body: JSON.stringify(dataObject),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                })
+                .then(() => bPartner);
+            });
+          });
+      });
   }
-}
 
-export class BPartnerLocation {
-  constructor(name) {
-    cy.log(`BPartnerLocation - set name = ${name}`);
-    this.name = name;
-  }
+  static getVendorData(basicUri, bPartner) {
+    const dataObject = [];
 
-  setCity(city) {
-    cy.log(`BPartnerLocation - set city = ${city}`);
-    this.city = city;
-    return this;
-  }
+    if (
+      bPartner.isVendor ||
+      bPartner.vendorDiscountSchema ||
+      bPartner.vendorPricingSystem ||
+      bPartner.isCustomer ||
+      bPartner.customerPricingSystem ||
+      bPartner.bPartnerLocations
+    ) {
+      const vendorRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setCountry(country) {
-    cy.log(`BPartnerLocation - set country = ${country}`);
-    this.country = country;
-    return this;
-  }
-}
+      const bPartnerRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-export class BPartnerContact {
-  constructor() {
-    this.isDefaultContact = false;
-  }
+      const cDiscountSchemaRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_DiscountSchema_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setFirstName(firstName) {
-    cy.log(`BPartnerContact - set firstName = ${firstName}`);
-    this.firstName = firstName;
-    return this;
-  }
+      const cPricingSystemRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_PricingSystem_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setLastName(lastName) {
-    cy.log(`BPartnerContact - set lastName = ${lastName}`);
-    this.lastName = lastName;
-    return this;
-  }
+      const cPaymentTermRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_PaymentTerm_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setDefaultContact(isDefaultContact) {
-    cy.log(`BPartnerContact - set defaultContact = ${isDefaultContact}`);
-    this.isDefaultContact = isDefaultContact;
-    return this;
-  }
-}
+      return Cypress.Promise.all([
+        vendorRequest,
+        bPartnerRequest,
+        cDiscountSchemaRequest,
+        cPricingSystemRequest,
+        cPaymentTermRequest,
+      ]).then(vals => {
+        const [
+          vendorResponse,
+          bPartnerResponse,
+          discountSchemaResponse,
+          pricingSystemResponse,
+          paymentTermResponse,
+        ] = vals;
+        const isVendorValue = vendorResponse.fieldsByName.IsVendor.value;
 
-function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function() {
-    cy.visitWindow('123', 'NEW');
-    cy.writeIntoStringField('CompanyName', bPartner.name);
-    cy.writeIntoStringField('Name2', bPartner.name);
-
-    if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) {
-      cy.selectTab('Vendor');
-      cy.selectSingleTabRow();
-
-      cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
         if (bPartner.isVendor && !isVendorValue) {
-          cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
+          dataObject.push({
+            op: 'replace',
+            path: 'IsVendor',
+            value: true,
+          });
         }
-      });
-      if (bPartner.vendorPricingSystem) {
-        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, true /*modal*/);
-      }
-      if (bPartner.vendorDiscountSchema) {
-        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, true /*modal*/);
-      }
-      cy.pressDoneButton();
-    }
 
-    if (bPartner.isCustomer || bPartner.customerPricingSystem) {
-      cy.selectTab('Customer');
-      cy.selectSingleTabRow();
+        if (bPartner.vendorPricingSystem) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_PricingSystem_ID',
+            value: bPartner.vendorPricingSystem,
+          });
+        }
 
-      cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
+        if (bPartner.vendorDiscountSchema) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_DiscountSchema_ID',
+            value: bPartner.vendorDiscountSchema,
+          });
+        }
+
+        const isCustomerValue = bPartnerResponse.fieldsByName.IsCustomer.value;
+
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
+          dataObject.push({
+            op: 'replace',
+            path: 'IsCustomer',
+            value: true,
+          });
         }
+        if (bPartner.customerDunning) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_Dunning_ID',
+            value: bPartner.customerDunning,
+          });
+        }
+
+        const discountSchema = findByName(discountSchemaResponse.body.values, bPartner.customerDiscountSchema);
+        if (bPartner.customerDiscountSchema) {
+          dataObject.push({
+            op: 'replace',
+            path: 'M_DiscountSchema_ID',
+            value: {
+              key: discountSchema.key,
+              caption: discountSchema.caption,
+            },
+          });
+        }
+
+        const pricingSystem = findByName(pricingSystemResponse.body.values, bPartner.customerPricingSystem);
+        if (bPartner.customerPricingSystem) {
+          dataObject.push({
+            op: 'replace',
+            path: 'M_PricingSystem_ID',
+            value: {
+              key: pricingSystem.key,
+              caption: pricingSystem.caption,
+            },
+          });
+        }
+
+        const paymentTerm = findByName(paymentTermResponse.body.values, bPartner.paymentTerm);
+        if (bPartner.paymentTerm) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_PaymentTerm_ID',
+            value: {
+              key: paymentTerm.key,
+              caption: paymentTerm.caption,
+            },
+          });
+        }
+
+        return dataObject;
       });
-      if (bPartner.customerDiscountSchema) {
-        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema, true /*modal*/);
-      }
-      if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, true /*modal*/);
-      }
-      if (bPartner.customerDunning) {
-        cy.selectInListField('C_Dunning_ID', bPartner.customerDunning, true /*modal*/);
-      }
-      if (bPartner.paymentTerm) {
-        // cy.selectInListField('C_PaymentTerm_ID', getLanguageSpecific(bPartner, 'paymentTerm'), true); // todo this doesn't work. it breaks the login. WHYYYYYYYYYYYYY????
-        cy.selectInListField('C_PaymentTerm_ID', bPartner.paymentTerm, true);
-      }
-      cy.pressDoneButton();
     }
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+    return cy.wrap(dataObject);
+  }
+
+  static applyManual(bPartner) {
     if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
+      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
       cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function (bPartnerContact) {
+      bPartner.contacts.forEach(function(bPartnerContact) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
+
     if (bPartner.bank) {
-      BPartner.applyBank(bPartner.bank);
+      applyBank(bPartner.bank);
     }
-  });
+  }
 }
 
 function applyLocation(bPartnerLocation) {
@@ -259,5 +382,13 @@ function applyContact(bPartnerContact) {
   if (bPartnerContact.isDefaultContact) {
     cy.clickOnCheckBox('IsDefaultContact', true /*expectedPatchValue*/, true /*modal*/);
   }
+  cy.pressDoneButton();
+}
+
+function applyBank(bank) {
+  cy.selectTab('C_BP_BankAccount');
+  cy.pressAddNewButton();
+  cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+  cy.writeIntoStringField('A_Name', 'Test Account', true);
   cy.pressDoneButton();
 }
