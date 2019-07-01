@@ -3,6 +3,12 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
+import {
+  toggleFrequentFilters,
+  toggleNotFrequentFilters,
+  selectNotFrequentFilterWidget,
+  applyFilters,
+} from '../../support/functions';
 
 describe('Create Sales order', function() {
   const timestamp = new Date().getTime();
@@ -97,5 +103,12 @@ describe('Create Sales order', function() {
     /**Change shipment date */
     cy.selectOffsetDateViaPicker('DeliveryDate_Override', 1);
     cy.selectOffsetDateViaPicker('PreparationDate_Override', 1);
+
+    cy.visitWindow('500221');
+    cy.log('Now going to verify that the date was set correctly by filtering after C_BPartner_ID');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListFieldWithoutPatch('C_BPartner_ID', `${timestamp}`, customer, false);
+    applyFilters();
   });
 });

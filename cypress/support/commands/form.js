@@ -132,7 +132,7 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
     .find('.form-control-label')
     .click();
 });
-/**Selects tomorrow's date in the picker
+/**Selects a date in the picker
  *
  * @param {string} fieldName - name of the field
  * @param {number} dayOffset - the number of days before/after today;
@@ -145,7 +145,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
     .find('.datepicker')
     .click();
   cy.get('.rdtPicker td').then(e => {
-    /**get the get the index of the day to select in the date picker */
+    /**get the index of the day to select in the date picker */
     let dayIndex = e.index(e.filter('.rdtToday')) + dayOffset;
     e.filter(i => dayIndex == i).click();
   });
@@ -265,7 +265,39 @@ Cypress.Commands.add(
     });
   }
 );
+/**
+ * @param {string} fieldName - name of the field
+ * @param {string} partialValue - partial value to put into field
+ * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+ * @param {string} expectedListValue - the expected result
+ */
+Cypress.Commands.add(
+  'writeIntoLookupListFieldWithoutPatch',
+  (fieldName, partialValue, expectedListValue, modal = false) => {
+    describe('Enter value into lookup list field', function() {
+      let path = `#lookup_${fieldName}`;
+      if (modal) {
+        path = `.panel-modal ${path}`;
+      }
 
+      cy.get(path).within(el => {
+        if (el.find('.lookup-widget-wrapper input').length) {
+          return cy
+            .get('input')
+            .type('{selectall}')
+            .type(partialValue);
+        }
+
+        cy.get('.lookup-dropdown').click();
+        return cy.get('.lookup-dropdown').click();
+      });
+
+      cy.get('.input-dropdown-list').should('exist');
+      cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
+      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+    });
+  }
+);
 /**
  * Select the given list value in a static list.
  *
