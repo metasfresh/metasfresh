@@ -1588,6 +1588,13 @@ public class TimeUtil
 		return localDate;
 	}
 
+	public static LocalDate asLocalDate(final Timestamp ts)
+	{
+		return ts != null
+				? ts.toLocalDateTime().toLocalDate()
+				: null;
+	}
+
 	public static LocalDate asLocalDate(final Object obj)
 	{
 		if (obj == null)
