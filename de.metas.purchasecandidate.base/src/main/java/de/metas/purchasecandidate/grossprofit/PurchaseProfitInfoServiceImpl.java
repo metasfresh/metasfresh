@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -166,13 +167,13 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 			@NonNull final BPartnerId vendorId,
 			@NonNull final LocalDate date)
 	{
-		final int countryId = bpartnersRepo.getDefaultShipToLocationCountryId(vendorId);
+		final CountryId countryId = bpartnersRepo.getDefaultShipToLocationCountryIdOrNull(vendorId);
 
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setProductId(productId);
 		pricingCtx.setQty(BigDecimal.ONE);
 		pricingCtx.setBPartnerId(vendorId);
-		pricingCtx.setC_Country_ID(countryId);
+		pricingCtx.setCountryId(countryId);
 		pricingCtx.setSOTrx(SOTrx.PURCHASE);
 		pricingCtx.setPriceDate(TimeUtil.asTimestamp(date));
 

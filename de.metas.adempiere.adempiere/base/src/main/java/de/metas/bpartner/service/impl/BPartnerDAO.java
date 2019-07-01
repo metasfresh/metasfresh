@@ -43,7 +43,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
-import de.metas.user.UserId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -94,6 +93,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -222,6 +222,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return retrieveDefaultContactOrNull(ctx, bpartnerId, trxName, clazz);
 	}
+
 	@Override
 	public Optional<UserId> getDefaultContactId(@NonNull final BPartnerId bpartnerId)
 	{
@@ -381,10 +382,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
+		return bpl != null
+				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
+				: null;
 	}
 
 	@Override
