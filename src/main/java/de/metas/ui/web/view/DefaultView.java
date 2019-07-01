@@ -31,7 +31,7 @@ import com.google.common.collect.Iterables;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
@@ -87,7 +87,7 @@ import lombok.NonNull;
  */
 public final class DefaultView implements IEditableView
 {
-	public static final Builder builder(final IViewDataRepository viewDataRepository)
+	public static Builder builder(final IViewDataRepository viewDataRepository)
 	{
 		return new Builder(viewDataRepository);
 	}
@@ -236,7 +236,7 @@ public final class DefaultView implements IEditableView
 	@Override
 	public ITranslatableString getDescription()
 	{
-		return ImmutableTranslatableString.empty();
+		return TranslatableStrings.empty();
 	}
 
 	@Override
@@ -349,7 +349,7 @@ public final class DefaultView implements IEditableView
 				.collectFullyChanged(this);
 	}
 
-	private final void assertNotClosed()
+	private void assertNotClosed()
 	{
 		if (closed.get())
 		{
@@ -454,14 +454,14 @@ public final class DefaultView implements IEditableView
 		return getOrRetrieveById(rowId);
 	}
 
-	private final IViewRow getOrRetrieveById(final DocumentId rowId)
+	private IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
 		checkChangedRows();
 
 		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
 	}
 
-	private final IViewRow retrieveRowById(final DocumentId rowId)
+	private IViewRow retrieveRowById(final DocumentId rowId)
 	{
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		return viewDataRepository.retrieveById(evalCtx, getViewId(), rowId);
@@ -678,7 +678,7 @@ public final class DefaultView implements IEditableView
 	//
 
 	@FunctionalInterface
-	private static interface ViewRowIdsOrderedSelectionFactory
+	private interface ViewRowIdsOrderedSelectionFactory
 	{
 		ViewRowIdsOrderedSelection create(ViewRowIdsOrderedSelection defaultSelection, List<DocumentQueryOrderBy> orderBys);
 	}

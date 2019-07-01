@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -45,7 +45,7 @@ import lombok.Value;
 @Value
 public final class DocumentFilterParamDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -222,13 +222,13 @@ public final class DocumentFilterParamDescriptor
 
 		public Builder setDisplayName(final ITranslatableString displayName)
 		{
-			this.displayName = ImmutableTranslatableString.copyOf(displayName);
+			this.displayName = TranslatableStrings.copyOf(displayName);
 			return this;
 		}
 
 		public Builder setDisplayName(final String displayName)
 		{
-			this.displayName = ImmutableTranslatableString.constant(displayName);
+			this.displayName = TranslatableStrings.constant(displayName);
 			return this;
 		}
 

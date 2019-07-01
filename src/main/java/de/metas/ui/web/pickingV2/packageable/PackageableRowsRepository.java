@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
 import de.metas.inoutcandidate.api.PackageableQuery;
@@ -183,7 +184,7 @@ final class PackageableRowsRepository
 				.filter(Predicates.notNull())
 				.collect(Money.sumByCurrencyAndStream())
 				.map(moneyService::toTranslatableString)
-				.collect(ITranslatableString.joining(", "));
+				.collect(TranslatableStrings.joining(", "));
 	}
 
 }

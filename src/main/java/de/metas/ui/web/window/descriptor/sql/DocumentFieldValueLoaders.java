@@ -18,7 +18,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -66,7 +66,7 @@ import lombok.Value;
  */
 public final class DocumentFieldValueLoaders
 {
-	public static final DocumentFieldValueLoader toString(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toString(final String sqlColumnName, final boolean encrypted)
 	{
 		if (encrypted)
 		{
@@ -78,7 +78,7 @@ public final class DocumentFieldValueLoaders
 		}
 	}
 
-	public static final DocumentFieldValueLoader toPassword(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toPassword(final String sqlColumnName, final boolean encrypted)
 	{
 		if (encrypted)
 		{
@@ -90,37 +90,37 @@ public final class DocumentFieldValueLoaders
 		}
 	}
 
-	public static final DocumentFieldValueLoader toByteArray(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toByteArray(final String sqlColumnName, final boolean encrypted)
 	{
 		return new ByteArrayDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toBoolean(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toBoolean(final String sqlColumnName, final boolean encrypted)
 	{
 		return new BooleanDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toJULDate(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toJULDate(final String sqlColumnName, final boolean encrypted)
 	{
 		return new JULDateDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toZonedDateTime(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toZonedDateTime(final String sqlColumnName, final boolean encrypted)
 	{
 		return new ZonedDateTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toLocalDateTime(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toLocalDateTime(final String sqlColumnName, final boolean encrypted)
 	{
 		return new LocalDateTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toLocalDate(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toLocalDate(final String sqlColumnName, final boolean encrypted)
 	{
 		return new LocalDateDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toBigDecimal(final String sqlColumnName, final boolean encrypted, final Integer precision)
+	public static DocumentFieldValueLoader toBigDecimal(final String sqlColumnName, final boolean encrypted, final Integer precision)
 	{
 		if (precision != null)
 		{
@@ -132,12 +132,12 @@ public final class DocumentFieldValueLoaders
 		}
 	}
 
-	public static final DocumentFieldValueLoader toInteger(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toInteger(final String sqlColumnName, final boolean encrypted)
 	{
 		return new IntegerDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static final DocumentFieldValueLoader toLookupValue(
+	public static DocumentFieldValueLoader toLookupValue(
 			@NonNull final String sqlColumnName,
 			@NonNull final String sqlDisplayColumnName,
 			// @Nullable final String sqlDescriptionColumnName,
@@ -158,12 +158,12 @@ public final class DocumentFieldValueLoaders
 		}
 	}
 
-	public static final DocumentFieldValueLoader toLabelValues(final String sqlColumnName)
+	public static DocumentFieldValueLoader toLabelValues(final String sqlColumnName)
 	{
 		return new LabelsLookupValueDocumentFieldValueLoader(sqlColumnName);
 	}
 
-	public static final DocumentFieldValueLoader toColor(final String sqlColumnName)
+	public static DocumentFieldValueLoader toColor(final String sqlColumnName)
 	{
 		return new ColorDocumentFieldValueLoader(sqlColumnName);
 	}
@@ -180,7 +180,7 @@ public final class DocumentFieldValueLoaders
 	{
 	}
 
-	private static final Object decrypt(final Object value)
+	private static Object decrypt(final Object value)
 	{
 		if (value == null)
 		{
@@ -507,22 +507,22 @@ public final class DocumentFieldValueLoaders
 		final Array array = rs.getArray(sqlDisplayColumnName);
 		if (array == null)
 		{
-			displayName = ImmutableTranslatableString.empty();
-			description = ImmutableTranslatableString.empty();
+			displayName = TranslatableStrings.empty();
+			description = TranslatableStrings.empty();
 		}
 		else
 		{
 			final String[] nameAndDescription = (String[])array.getArray();
-			displayName = ImmutableTranslatableString.singleLanguage(adLanguage, nameAndDescription[0]);
+			displayName = TranslatableStrings.singleLanguage(adLanguage, nameAndDescription[0]);
 
 			final boolean hasDescription = nameAndDescription.length > 1;
 			if (hasDescription)
 			{
-				description = ImmutableTranslatableString.singleLanguage(adLanguage, nameAndDescription[1]);
+				description = TranslatableStrings.singleLanguage(adLanguage, nameAndDescription[1]);
 			}
 			else
 			{
-				description = ImmutableTranslatableString.empty();
+				description = TranslatableStrings.empty();
 			}
 		}
 		return new DisplayNameAndDescription(displayName, description);

@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -111,11 +111,11 @@ public abstract class LookupValue
 		}
 		if (id instanceof Integer)
 		{
-			return new IntegerLookupValue((int)id, ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
+			return new IntegerLookupValue((int)id, TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
 		}
 		else
 		{
-			return new StringLookupValue(id.toString(), ImmutableTranslatableString.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
+			return new StringLookupValue(id.toString(), TranslatableStrings.constant(displayName), null/* helpText */, null/* attributes */, null/* active */);
 		}
 	}
 
@@ -148,13 +148,13 @@ public abstract class LookupValue
 		final ITranslatableString descriptionTrl;
 		if (adLanguage == null)
 		{
-			displayNameTrl = ImmutableTranslatableString.anyLanguage(namePair.getName());
-			descriptionTrl = ImmutableTranslatableString.anyLanguage(namePair.getDescription());
+			displayNameTrl = TranslatableStrings.anyLanguage(namePair.getName());
+			descriptionTrl = TranslatableStrings.anyLanguage(namePair.getDescription());
 		}
 		else
 		{
-			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getName());
-			descriptionTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getDescription());
+			displayNameTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getName());
+			descriptionTrl = TranslatableStrings.singleLanguage(adLanguage, namePair.getDescription());
 		}
 
 		if (namePair instanceof ValueNamePair)
@@ -189,8 +189,8 @@ public abstract class LookupValue
 			@Nullable final Boolean active)
 	{
 		this.id = id;
-		this.displayName = displayName == null ? ImmutableTranslatableString.empty() : displayName;
-		this.description = description == null ? ImmutableTranslatableString.empty() : description;
+		this.displayName = TranslatableStrings.nullToEmpty(displayName);
+		this.description = TranslatableStrings.nullToEmpty(description);
 		this.additionalAttributes = additionalAttributes != null && !additionalAttributes.isEmpty() ? ImmutableMap.copyOf(additionalAttributes) : null;
 		this.active = active;
 	}
@@ -371,17 +371,17 @@ public abstract class LookupValue
 
 	public static final class StringLookupValue extends LookupValue
 	{
-		public static final StringLookupValue of(final String value, final String displayName)
+		public static StringLookupValue of(final String value, final String displayName)
 		{
 			return new StringLookupValue(
 					value,
-					ImmutableTranslatableString.constant(displayName),
+					TranslatableStrings.constant(displayName),
 					null/* helpText */,
 					null/* attributes */,
 					true/* active */);
 		}
 
-		public static final StringLookupValue of(
+		public static StringLookupValue of(
 				final String id,
 				final ITranslatableString displayName,
 				final ITranslatableString helpText)
@@ -389,11 +389,11 @@ public abstract class LookupValue
 			return new StringLookupValue(id, displayName, helpText, null/* attributes */, null/* active */);
 		}
 
-		public static final StringLookupValue unknown(final String value)
+		public static StringLookupValue unknown(final String value)
 		{
 			return new StringLookupValue(
 					value,
-					ImmutableTranslatableString.constant("<" + value + ">"),
+					TranslatableStrings.constant("<" + value + ">"),
 					null/* description */,
 					null/* attributes */,
 					false/* not active */);
@@ -434,17 +434,17 @@ public abstract class LookupValue
 		 * Create a new value using the given {@code displayName} as a constant string that is valid in any language and thus never needs translation.
 		 * Note: without "anyLanguage", you can run into trouble when combining {@link ProcessParamLookupValuesProvider} and {@link IProcessDefaultParametersProvider} in one {@link JavaProcess} implementation.
 		 */
-		public static final IntegerLookupValue of(final int id, final String displayName)
+		public static IntegerLookupValue of(final int id, final String displayName)
 		{
 			return new IntegerLookupValue(
 					id,
-					ImmutableTranslatableString.anyLanguage(displayName),
+					TranslatableStrings.anyLanguage(displayName),
 					null /* helpText */,
 					null/* attributes */,
 					null/* active */);
 		}
 
-		public static final IntegerLookupValue of(
+		public static IntegerLookupValue of(
 				final int id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString helpText)
@@ -457,7 +457,7 @@ public abstract class LookupValue
 					null/* active */);
 		}
 
-		public static final IntegerLookupValue of(
+		public static IntegerLookupValue of(
 				@NonNull final RepoIdAware id,
 				@Nullable final ITranslatableString displayName,
 				@Nullable final ITranslatableString helpText)
@@ -470,7 +470,7 @@ public abstract class LookupValue
 					null/* active */);
 		}
 
-		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
+		public static IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
 			if (stringLookupValue == null)
 			{
@@ -485,11 +485,11 @@ public abstract class LookupValue
 					stringLookupValue.getActive());
 		}
 
-		public static final IntegerLookupValue unknown(final int id)
+		public static IntegerLookupValue unknown(final int id)
 		{
 			return new IntegerLookupValue(
 					id,
-					ImmutableTranslatableString.constant("<" + id + ">"),
+					TranslatableStrings.constant("<" + id + ">"),
 					null/* description */,
 					null/* attributes */,
 					false/* not active */);

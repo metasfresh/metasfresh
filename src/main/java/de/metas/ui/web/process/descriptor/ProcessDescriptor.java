@@ -3,13 +3,15 @@ package de.metas.ui.web.process.descriptor;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
@@ -23,8 +25,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -340,7 +340,7 @@ public final class ProcessDescriptor implements ETagAware
 		private boolean computeIsStartProcessDirectly()
 		{
 			return (getParametersDescriptor() == null || getParametersDescriptor().getFields().isEmpty())
-					&& ImmutableTranslatableString.isEmpty(getLayout().getDescription());
+					&& TranslatableStrings.isEmpty(getLayout().getDescription());
 		}
 	}
 

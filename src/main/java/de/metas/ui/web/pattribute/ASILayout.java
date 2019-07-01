@@ -7,7 +7,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.util.Check;
@@ -52,8 +52,8 @@ public class ASILayout
 	{
 		super();
 		asiDescriptorId = builder.asiDescriptorId;
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
+		caption = TranslatableStrings.nullToEmpty(builder.caption);
+		description = TranslatableStrings.nullToEmpty(builder.description);
 		elements = ImmutableList.copyOf(builder.buildElements());
 	}
 

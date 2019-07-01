@@ -14,6 +14,7 @@ import de.metas.dataentry.data.DataEntryCreatedUpdatedInfo;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -103,7 +104,7 @@ public class DataEntryWebuiTools
 
 		return createdUpdatedInfo
 				.map(this::extractCreatedUpdatedInfo)
-				.orElse(ITranslatableString.empty());
+				.orElse(TranslatableStrings.empty());
 	}
 
 	private ITranslatableString extractCreatedUpdatedInfo(@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo)

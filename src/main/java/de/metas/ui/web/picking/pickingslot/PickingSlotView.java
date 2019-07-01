@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
@@ -94,7 +95,7 @@ public class PickingSlotView implements IView
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
 		this.parentRowId = parentRowId;
-		this.description = ITranslatableString.nullToEmpty(description);
+		this.description = TranslatableStrings.nullToEmpty(description);
 		this.currentShipmentScheduleId = currentShipmentScheduleId;
 		this.rows = PickingSlotRowsCollection.ofSupplier(rowsSupplier);
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();

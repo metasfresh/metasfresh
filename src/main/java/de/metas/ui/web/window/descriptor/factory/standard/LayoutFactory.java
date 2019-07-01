@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -55,6 +56,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -99,16 +101,16 @@ public class LayoutFactory
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
-			.setDefaultValue("There are no detail rows")
-			.put("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
-			.put("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
+			.defaultValue("There are no detail rows")
+			.trl("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
+			.trl("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
 			.build();
 
 	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
 	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
-			.setDefaultValue("You can create them in this window.")
-			.put("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.put("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
+			.defaultValue("You can create them in this window.")
+			.trl("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
+			.trl("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
 			.build();
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
@@ -134,9 +136,9 @@ public class LayoutFactory
 		Adempiere.autowire(this);
 
 		_adWindowId = gridTabVO.getAD_Window_ID();
-		windowCaption = ImmutableTranslatableString.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
+		windowCaption = TranslatableStrings.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
-		final AdTabId templateTabId = AdTabId.ofRepoId(Util.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID()));
+		final AdTabId templateTabId = AdTabId.ofRepoId(CoalesceUtil.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID()));
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),

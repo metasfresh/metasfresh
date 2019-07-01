@@ -15,11 +15,11 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -160,7 +160,7 @@ public class AvailableToPromiseResultForWebui
 								.getColumnTrl(I_M_AttributeValue.COLUMNNAME_Name, attributeValue.getName());
 						singleStrings.add(attributeValueStr);
 					}
-					result = ITranslatableString.compose(" ", singleStrings);
+					result = TranslatableStrings.joinList(" ", singleStrings);
 
 					break;
 				case OTHER_STORAGE_KEYS:

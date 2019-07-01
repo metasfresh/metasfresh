@@ -24,7 +24,7 @@ import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -37,8 +37,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.CaptionMode;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor.ClosableMode;
@@ -277,12 +277,12 @@ public class DataEntryTabLoader
 
 		final DocumentLayoutElementFieldDescriptor.Builder dataField = DocumentLayoutElementFieldDescriptor
 				.builder(fieldName)
-				.setEmptyText(ITranslatableString.empty());
+				.setEmptyText(TranslatableStrings.empty());
 		element.addField(dataField);
 
 		final DocumentLayoutElementFieldDescriptor.Builder infoField = DocumentLayoutElementFieldDescriptor
 				.builder(createInfoFieldName(field))
-				.setEmptyText(ITranslatableString.empty())
+				.setEmptyText(TranslatableStrings.empty())
 				.setFieldType(DocumentLayoutElementFieldDescriptor.FieldType.Tooltip)
 				.setTooltipIconName(X_AD_UI_ElementField.TOOLTIPICONNAME_Text)
 				.setLookupSourceAsText();

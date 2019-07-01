@@ -23,7 +23,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
@@ -124,10 +124,10 @@ public class ViewLayout implements ETagAware
 		windowId = builder.windowId;
 		detailId = builder.getDetailId();
 		profileId = ViewProfileId.NULL;
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
-		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
-		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
+		caption = TranslatableStrings.nullToEmpty(builder.caption);
+		description = TranslatableStrings.nullToEmpty(builder.description);
+		emptyResultText = TranslatableStrings.copyOfNullable(builder.emptyResultText);
+		emptyResultHint = TranslatableStrings.copyOfNullable(builder.emptyResultHint);
 
 		elements = ImmutableList.copyOf(builder.buildElements());
 
@@ -588,7 +588,7 @@ public class ViewLayout implements ETagAware
 
 		public Builder setCaption(@Nullable final String caption)
 		{
-			setCaption(ImmutableTranslatableString.constant(caption));
+			setCaption(TranslatableStrings.constant(caption));
 			return this;
 		}
 

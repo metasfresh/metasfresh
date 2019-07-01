@@ -7,7 +7,7 @@ import org.adempiere.service.ISysConfigBL;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -89,7 +89,7 @@ public class MaterialCockpitViewFactory
 
 		final MaterialCockpitView view = MaterialCockpitView.builder()
 				.viewId(request.getViewId())
-				.description(ITranslatableString.empty())
+				.description(TranslatableStrings.empty())
 				.filters(filtersToUse)
 				.filterDescriptors(filterDescriptors)
 				.rowsData(materialCockpitRowRepository.createRowsData(filtersToUse))

@@ -11,7 +11,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Util;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 
@@ -33,7 +32,7 @@ import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
@@ -51,6 +50,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -121,7 +121,7 @@ class PPOrderLinesLoader
 
 		final int mainProductBOMLineId = 0;
 		final ListMultimap<Integer, I_PP_Order_Qty> ppOrderQtysByBOMLineId = ppOrderQtyDAO.streamOrderQtys(ppOrderId)
-				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> Util.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), mainProductBOMLineId)));
+				.collect(GuavaCollectors.toImmutableListMultimap(ppOrderQty -> CoalesceUtil.firstGreaterThanZero(ppOrderQty.getPP_Order_BOMLine_ID(), mainProductBOMLineId)));
 
 		final ImmutableList.Builder<PPOrderLineRow> records = ImmutableList.builder();
 
@@ -205,12 +205,12 @@ class PPOrderLinesLoader
 		}
 		else
 		{
-			docTypeStr = ImmutableTranslatableString.empty();
+			docTypeStr = TranslatableStrings.empty();
 		}
 
-		final ITranslatableString documentNoStr = ImmutableTranslatableString.constant(ppOrder.getDocumentNo());
+		final ITranslatableString documentNoStr = TranslatableStrings.constant(ppOrder.getDocumentNo());
 
-		return ITranslatableString.compose(" ", docTypeStr, documentNoStr);
+		return TranslatableStrings.join(" ", docTypeStr, documentNoStr);
 	}
 
 	private PPOrderLineRow createRowForMainProduct(

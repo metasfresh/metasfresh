@@ -19,7 +19,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -28,7 +28,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.util.Services;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -108,25 +107,25 @@ public class DocumentReferencesService
 		if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentSummary))
 		{
 			final String documentSummaryStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentSummary).getValueAs(String.class);
-			documentSummary = ImmutableTranslatableString.constant(documentSummaryStr);
+			documentSummary = TranslatableStrings.constant(documentSummaryStr);
 		}
 		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentNo))
 		{
 			final String documentNoStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentNo).getValueAs(String.class);
-			documentSummary = ImmutableTranslatableString.constant(documentNoStr);
+			documentSummary = TranslatableStrings.constant(documentNoStr);
 		}
 		else if (sourceDocument.hasField(WindowConstants.FIELDNAME_Name))
 		{
 			final String nameStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_Name).getValueAs(String.class);
-			documentSummary = ImmutableTranslatableString.constant(nameStr);
+			documentSummary = TranslatableStrings.constant(nameStr);
 		}
 		else
 		{
-			documentSummary = ImmutableTranslatableString.constant(sourceDocument.getDocumentId().toString());
+			documentSummary = TranslatableStrings.constant(sourceDocument.getDocumentId().toString());
 		}
 
 		// Window caption + document info
-		return ITranslatableString.compose(" ", windowCaption, documentSummary);
+		return TranslatableStrings.join(" ", windowCaption, documentSummary);
 	}
 
 	private static final DocumentReference createDocumentReference(

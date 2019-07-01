@@ -7,7 +7,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.util.Check;
 
@@ -37,7 +37,7 @@ import de.metas.util.Check;
 public final class UserDashboardItem
 {
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -119,7 +119,7 @@ public final class UserDashboardItem
 	public static final class Builder
 	{
 		private Integer id;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
 		private String url;
 		private int seqNo;
 		private DashboardWidgetType widgetType;
@@ -153,7 +153,7 @@ public final class UserDashboardItem
 
 		public Builder setCaption(final String caption)
 		{
-			this.caption = ImmutableTranslatableString.constant(caption);
+			this.caption = TranslatableStrings.constant(caption);
 			return this;
 		}
 

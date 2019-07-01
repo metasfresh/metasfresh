@@ -20,7 +20,6 @@ import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.ForecastLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -105,21 +104,18 @@ public class ForecastLineQuickInputProcessor implements IQuickInputProcessor
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner(forecast.getC_BPartner());
+		huPackingAware.setC_BPartner_ID(forecast.getC_BPartner_ID());
 		huPackingAware.setDateOrdered(forecast.getDatePromised());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
 		final I_M_Product product = load(productAndAttributes.getProductId(), I_M_Product.class);
 		huPackingAware.setM_Product_ID(product.getM_Product_ID());
-
-		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
-
-		huPackingAware.setC_UOM(uom);
+		huPackingAware.setC_UOM_ID(product.getC_UOM_ID());
 		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
 
-		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();
-		huPackingAware.setM_HU_PI_Item_Product(piItemProduct);
+		final int piItemProductId = quickInput.getM_HU_PI_Item_Product_ID();
+		huPackingAware.setM_HU_PI_Item_Product_ID(piItemProductId);
 
 		return huPackingAware;
 	}

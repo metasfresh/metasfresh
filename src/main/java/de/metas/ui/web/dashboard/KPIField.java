@@ -15,7 +15,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -52,7 +52,7 @@ public class KPIField
 	}
 
 	@FunctionalInterface
-	public static interface BucketValueExtractor
+	public interface BucketValueExtractor
 	{
 		Object extractValue(final String containingAggName, final MultiBucketsAggregation.Bucket bucket);
 	}
@@ -375,9 +375,9 @@ public class KPIField
 	{
 		private String fieldName;
 		private boolean groupBy = false;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
-		private ITranslatableString offsetCaption = ImmutableTranslatableString.empty();
-		private ITranslatableString description = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
+		private ITranslatableString offsetCaption = TranslatableStrings.empty();
+		private ITranslatableString description = TranslatableStrings.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
 		private Integer numberPrecision;

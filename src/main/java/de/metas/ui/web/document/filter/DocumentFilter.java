@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
@@ -55,7 +55,7 @@ import lombok.NonNull;
 @Immutable
 public final class DocumentFilter
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -269,7 +269,7 @@ public final class DocumentFilter
 	public static final class Builder
 	{
 		private String filterId;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
 		private List<DocumentFilterParam> parameters;
 		private Set<String> internalParameterNames;
 
@@ -297,7 +297,7 @@ public final class DocumentFilter
 
 		public Builder setCaption(@NonNull final String caption)
 		{
-			return setCaption(ImmutableTranslatableString.constant(caption));
+			return setCaption(TranslatableStrings.constant(caption));
 		}
 
 		public boolean hasParameters()

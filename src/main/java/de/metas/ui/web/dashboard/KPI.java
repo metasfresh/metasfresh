@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 
@@ -207,8 +207,8 @@ public class KPI
 	public static final class Builder
 	{
 		private int id;
-		private ITranslatableString caption = ImmutableTranslatableString.empty();
-		private ITranslatableString description = ImmutableTranslatableString.empty();
+		private ITranslatableString caption = TranslatableStrings.empty();
+		private ITranslatableString description = TranslatableStrings.empty();
 		private KPIChartType chartType;
 		private Duration compareOffset;
 		private List<KPIField> fields;

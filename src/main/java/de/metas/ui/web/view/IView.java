@@ -13,6 +13,7 @@ import org.compiere.util.Evaluatee;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -61,7 +62,7 @@ public interface IView
 
 	default ITranslatableString getDescription()
 	{
-		return ITranslatableString.empty();
+		return TranslatableStrings.empty();
 	}
 
 	default ViewHeaderProperties getHeaderProperties()

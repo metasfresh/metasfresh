@@ -11,7 +11,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.pricing.PriceListVersionId;
@@ -76,7 +76,7 @@ public class ProductsProposalView extends AbstractCustomView<ProductsProposalRow
 	{
 		super(
 				ViewId.random(windowId),
-				ITranslatableString.empty(),
+				TranslatableStrings.empty(),
 				rowsData,
 				NullDocumentFilterDescriptorsProvider.instance);
 

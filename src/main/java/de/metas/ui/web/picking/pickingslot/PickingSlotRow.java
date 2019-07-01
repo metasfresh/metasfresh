@@ -15,6 +15,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -32,7 +33,6 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -267,12 +267,12 @@ public final class PickingSlotRow implements IViewRow
 		this.includedViewId = null;
 	}
 
-	private static final ITranslatableString buildPickingSlotCaption(final String pickingSlotName, final LookupValue pickingSlotBPartner, final LookupValue pickingSlotBPLocation)
+	private static ITranslatableString buildPickingSlotCaption(final String pickingSlotName, final LookupValue pickingSlotBPartner, final LookupValue pickingSlotBPLocation)
 	{
-		return ITranslatableString.compose(" ",
-				ITranslatableString.constant(pickingSlotName),
-				pickingSlotBPartner != null ? pickingSlotBPartner.getDisplayNameTrl() : ITranslatableString.empty(),
-				pickingSlotBPLocation != null ? pickingSlotBPLocation.getDisplayNameTrl() : ITranslatableString.empty());
+		return TranslatableStrings.join(" ",
+				TranslatableStrings.constant(pickingSlotName),
+				pickingSlotBPartner != null ? pickingSlotBPartner.getDisplayNameTrl() : TranslatableStrings.empty(),
+				pickingSlotBPLocation != null ? pickingSlotBPLocation.getDisplayNameTrl() : TranslatableStrings.empty());
 	}
 
 	@Override

@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -90,7 +91,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 			@NonNull final DocumentFilterDescriptorsProvider viewFilterDescriptors)
 	{
 		this.viewId = viewId;
-		this.description = description != null ? description : ITranslatableString.empty();
+		this.description = description != null ? description : TranslatableStrings.empty();
 
 		this.rowsData = rowsData;
 

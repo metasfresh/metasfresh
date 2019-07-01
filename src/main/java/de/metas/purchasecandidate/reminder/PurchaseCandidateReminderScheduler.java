@@ -25,8 +25,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.NotificationGroupName;
@@ -249,9 +249,9 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 		final String vendorName = bpartnersService.getBPartnerValueAndName(vendorBPartnerId);
 		final LocalDateTime notificationTime = reminder.getNotificationTime();
 
-		final ITranslatableString caption = ITranslatableString.compose(" / ",
+		final ITranslatableString caption = TranslatableStrings.join(" / ",
 				vendorName,
-				DateTimeTranslatableString.ofDateTime(notificationTime));
+				TranslatableStrings.dateAndTime(notificationTime));
 
 		return DocumentFilter.builder()
 				.setFilterId("filterByVendorIdAndReminderDate")

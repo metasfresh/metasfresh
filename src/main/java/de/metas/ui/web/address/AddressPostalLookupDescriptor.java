@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -270,7 +271,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			final String township,
 			final ITranslatableString countryName)
 	{
-		final ITranslatableString displayName = ITranslatableString.compose("", postal, " ", city, " ", township, " (", countryName, ")");
+		final ITranslatableString displayName = TranslatableStrings.join("", postal, " ", city, " ", township, " (", countryName, ")");
 		return IntegerLookupValue.of(postalId, displayName, null/* description */);
 	}
 }

@@ -6,14 +6,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import de.metas.lang.SOTrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 
@@ -27,8 +25,9 @@ import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
 import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderLineInputValidatorResults;
@@ -39,8 +38,8 @@ import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -120,7 +119,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		if (!validationErrorMessages.isEmpty())
 		{
-			throw new AdempiereException(ITranslatableString.compose("\n", validationErrorMessages));
+			throw new AdempiereException(TranslatableStrings.joinList("\n", validationErrorMessages));
 		}
 
 	}
@@ -165,18 +164,18 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		final PlainHUPackingAware huPackingAware = new PlainHUPackingAware();
-		huPackingAware.setC_BPartner(order.getC_BPartner());
+		huPackingAware.setC_BPartner_ID(order.getC_BPartner_ID());
 		huPackingAware.setDateOrdered(order.getDateOrdered());
 		huPackingAware.setInDispute(false);
 
 		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(quickInput.getM_Product_ID());
-		final I_C_UOM uom = productBL.getStockingUOM(productAndAttributes.getProductId());
+		final UomId uomId = productBL.getStockingUOMId(productAndAttributes.getProductId());
 		huPackingAware.setM_Product_ID(productAndAttributes.getProductId().getRepoId());
-		huPackingAware.setC_UOM(uom);
+		huPackingAware.setC_UOM_ID(uomId.getRepoId());
 		huPackingAware.setM_AttributeSetInstance_ID(createASI(productAndAttributes));
 
-		final I_M_HU_PI_Item_Product piItemProduct = quickInput.getM_HU_PI_Item_Product();
-		huPackingAware.setM_HU_PI_Item_Product(piItemProduct);
+		final int piItemProductId = quickInput.getM_HU_PI_Item_Product_ID();
+		huPackingAware.setM_HU_PI_Item_Product_ID(piItemProductId);
 
 		return huPackingAware;
 	}

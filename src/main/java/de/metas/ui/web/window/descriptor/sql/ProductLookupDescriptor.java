@@ -30,7 +30,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -40,8 +39,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-import de.metas.i18n.NumberTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
@@ -67,6 +65,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -484,7 +483,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		return IntegerLookupValue.builder()
 				.id(productId)
-				.displayName(ImmutableTranslatableString.anyLanguage(displayName))
+				.displayName(TranslatableStrings.anyLanguage(displayName))
 				.active(active)
 				.build();
 	}
@@ -503,7 +502,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private LocalDate getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> param_PricingDate.getValueAsLocalDate(evalCtx),
 				() -> SystemTime.asLocalDate());
 	}
@@ -682,12 +681,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		// ATP is available:
 		else
 		{
-			final ITranslatableString qtyValueStr = NumberTranslatableString.of(qtyATP.getAsBigDecimal(), DisplayType.Quantity);
+			final ITranslatableString qtyValueStr = TranslatableStrings.number(qtyATP.getAsBigDecimal(), DisplayType.Quantity);
 
 			final ITranslatableString uomSymbolStr = productWithATP.getUomSymbolStr();
 			final ITranslatableString storageAttributeString = productWithATP.getStorageAttributesString();
 
-			return ITranslatableString.compose("",
+			return TranslatableStrings.join("",
 					productDisplayName,
 					": ", qtyValueStr, " ", uomSymbolStr,
 					" (", storageAttributeString, ")");
@@ -753,7 +752,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		private final ImmutableAttributeSet attributes = ImmutableAttributeSet.EMPTY;
 	}
 
-	private static interface I_M_Product_Lookup_V
+	private interface I_M_Product_Lookup_V
 	{
 		String Table_Name = "M_Product_Lookup_V";
 
