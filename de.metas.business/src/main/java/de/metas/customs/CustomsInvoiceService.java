@@ -3,9 +3,10 @@ package de.metas.customs;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Customs_Invoice;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -36,8 +37,10 @@ import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProducer;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -85,20 +88,37 @@ public class CustomsInvoiceService
 
 	public CustomsInvoice generateCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
 	{
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 		CustomsInvoice customsInvoice = createCustomsInvoice(customsInvoiceRequest);
 
-		final I_C_Customs_Invoice customsInvoiceRecord = customsInvoiceRepo.save(customsInvoice);
-
-		if (customsInvoiceRequest.isDoComplete())
-		{
-			documentBL.processEx(customsInvoiceRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-
-			customsInvoice = customsInvoiceRepo.updateDocActionAndStatus(customsInvoice);
-		}
+		customsInvoiceRepo.save(customsInvoice);
 
 		return customsInvoice;
+	}
+
+	public void completeCustomsInvoice(final CustomsInvoice customsInvoice)
+	{
+
+		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+		final CustomsInvoiceId id = customsInvoice.getId();
+
+		final Set<ProductId> productIdsWithNoCustomsTariff = customsInvoiceRepo.retrieveProductIdsWithNoCustomsTariff(id);
+
+		if (!productIdsWithNoCustomsTariff.isEmpty())
+		{
+			ProductWithNoCustomsTariffUserNotificationsProducer.newInstance()
+					.notify(productIdsWithNoCustomsTariff);
+
+		}
+		else
+		{
+
+			documentBL.processEx(customsInvoiceRepo.getByIdInTrx(id), IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+			customsInvoiceRepo.updateDocActionAndStatus(customsInvoice);
+		}
+
 	}
 
 	private CustomsInvoice createCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
@@ -149,10 +169,13 @@ public class CustomsInvoiceService
 			@NonNull final CurrencyId currencyId)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final I_M_Product product = productDAO.getById(productId);
 
-		Quantity qty = Quantity.of(BigDecimal.ZERO, product.getC_UOM());
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		Quantity qty = Quantity.of(BigDecimal.ZERO, uom);
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
 
 		final UomId uomId = UomId.ofRepoId(product.getC_UOM_ID());

@@ -276,7 +276,7 @@ public class FlatrateTermDataFactory
 		product.setValue(value);
 		product.setName(name);
 		product.setM_Product_Category_ID(10);
-		product.setC_UOM(uomRecord);
+		product.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(product);
 		return product;

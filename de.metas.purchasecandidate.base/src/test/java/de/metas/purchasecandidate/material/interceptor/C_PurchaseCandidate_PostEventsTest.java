@@ -64,7 +64,7 @@ public class C_PurchaseCandidate_PostEventsTest
 		save(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(productRecord);
 
 		final I_C_PurchaseCandidate purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);

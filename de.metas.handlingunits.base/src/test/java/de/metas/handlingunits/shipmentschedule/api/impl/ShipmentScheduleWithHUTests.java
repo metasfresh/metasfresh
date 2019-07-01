@@ -90,7 +90,7 @@ public class ShipmentScheduleWithHUTests
 
 		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 
-		ninetyNine = Quantity.of(99, testSupport.helper.pTomato.getC_UOM());
+		ninetyNine = Quantity.of(99, testSupport.helper.uomEach);
 
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 	}

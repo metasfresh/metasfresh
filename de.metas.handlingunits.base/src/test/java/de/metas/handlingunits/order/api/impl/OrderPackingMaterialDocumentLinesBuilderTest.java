@@ -77,7 +77,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		saveRecord(packageProductUom);
 
 		packageProduct = newInstance(I_M_Product.class);
-		packageProduct.setC_UOM(packageProductUom);
+		packageProduct.setC_UOM_ID(packageProductUom.getC_UOM_ID());
 		saveRecord(packageProduct);
 
 		materialProduct = newInstance(I_M_Product.class);

@@ -100,6 +100,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -447,7 +448,7 @@ public class MRPTestHelper
 		final ProductId productId = product != null ? ProductId.ofRepoId(product.getM_Product_ID()) : null;
 		final BigDecimal fromToMultiplier = new BigDecimal(fromToMultiplierStr);
 		final BigDecimal toFromMultiplier = new BigDecimal(toFromMultiplierStr);
-		
+
 		Services.get(IUOMConversionDAO.class).createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(productId)
 				.fromUomId(UomId.ofRepoId(uomFrom.getC_UOM_ID()))
@@ -529,6 +530,8 @@ public class MRPTestHelper
 			final I_M_Warehouse warehouse,
 			final I_C_BPartner bpartner)
 	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final I_PP_MRP mrp = InterfaceWrapperHelper.newInstance(I_PP_MRP.class, contextProvider);
 		mrp.setAD_Org_ID(warehouse.getAD_Org_ID());
 		mrp.setS_Resource(plant);
@@ -546,7 +549,10 @@ public class MRPTestHelper
 		mrp.setIsAvailable(true);
 		//
 		mrp.setM_Product(product);
-		Services.get(IMRPBL.class).setQty(mrp, qty, qty, product.getC_UOM());
+
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
+		Services.get(IMRPBL.class).setQty(mrp, qty, qty, uom);
 		//
 		// mrp.setC_BPartner(C_BPartner);
 

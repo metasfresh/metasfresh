@@ -10,12 +10,12 @@ package de.metas.handlingunits.receiptschedule.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -52,7 +52,7 @@ public class HUReceiptScheduleWeightNetAdjusterTest extends AbstractRSAllocation
 		// Make sure everything is OK configured:
 		// i.e. setting the Product Weight is needed for org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener
 		// NOTE: we need this configuration to catch the issue from http://dewiki908/mediawiki/index.php/08728_HU_Weight_Net_changes_after_Material_Receipt_%28107972107210%29
-		pTomato.setC_UOM(uomKg);
+		pTomato.setC_UOM_ID(uomKg.getC_UOM_ID());
 		pTomato.setWeight(new BigDecimal("1"));
 		InterfaceWrapperHelper.save(pTomato);
 	}

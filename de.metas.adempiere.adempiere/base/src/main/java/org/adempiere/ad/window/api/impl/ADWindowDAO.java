@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.compiere.util.Util.coalesce;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
@@ -49,6 +51,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -62,6 +65,7 @@ import org.slf4j.Logger;
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -1017,4 +1021,25 @@ public class ADWindowDAO implements IADWindowDAO
 				.create()
 				.delete();
 	}
+
+	@Override
+	public AdWindowId getAdWindowId(
+			@NonNull final String tableName,
+			@NonNull final SOTrx soTrx,
+			@NonNull final AdWindowId defaultValue)
+	{
+
+		final I_AD_Table adTableRecord = Services.get(IADTableDAO.class).retrieveTable(tableName);
+
+		switch (soTrx)
+		{
+			case SALES:
+				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getAD_Window_ID()), defaultValue);
+			case PURCHASE:
+				return coalesce(AdWindowId.ofRepoIdOrNull(adTableRecord.getPO_Window_ID()), defaultValue);
+			default:
+				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
+		}
+	}
+
 }

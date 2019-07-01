@@ -106,7 +106,7 @@ public class JsonDataSourceService
 		catch (final IOException e)
 		{
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException(errorMsg, e);
 		}
 	}
 
@@ -137,7 +137,7 @@ public class JsonDataSourceService
 		catch (final MalformedURLException e)
 		{
 			final ITranslatableString errorMsg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_URLnotValid);
-			throw new AdempiereException(errorMsg);
+			throw new AdempiereException(errorMsg, e);
 		}
 
 		return reportURL;

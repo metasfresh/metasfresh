@@ -10,18 +10,17 @@ package org.eevolution.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,9 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_BOM;
 
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 public class ProductBOMBuilder
 {
@@ -105,7 +106,7 @@ public class ProductBOMBuilder
 		// see org.eevolution.process.PP_Product_BOM_Check.doIt()
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
-		
+
 		return productBOM;
 	}
 
@@ -126,16 +127,20 @@ public class ProductBOMBuilder
 		this._uom = uom;
 		return this;
 	}
-	
+
 	private I_C_UOM getC_UOM()
 	{
+
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		if (_uom != null)
 		{
 			return _uom;
 		}
-		
+
 		final I_M_Product product = getM_Product();
-		final I_C_UOM uom = product.getC_UOM();
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
 		Check.assumeNotNull(uom, "uom not null");
 		return uom;
 	}

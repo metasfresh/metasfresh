@@ -62,7 +62,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 		final HUTestHelper huTestHelper = new HUTestHelper();
 
 		productId = huTestHelper.pTomatoProductId;
-		productUOM = huTestHelper.pTomato.getC_UOM();
+		productUOM = huTestHelper.uomEach;
 
 		// 10 CUs fit into one TU
 		final I_M_HU_PI piTU = huTestHelper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);

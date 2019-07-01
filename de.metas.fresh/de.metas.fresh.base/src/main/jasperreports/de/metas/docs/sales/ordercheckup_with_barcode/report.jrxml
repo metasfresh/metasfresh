@@ -30,13 +30,26 @@
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
+	<parameter name="DatePromised" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( $P{RECORD_ID});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( $P{RECORD_ID},$P{C_BPartner_ID}, $P{DatePromised});]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="c_order_id" class="java.lang.Integer"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="c_order_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="c_order_id"/>
+	</field>
+	<field name="c_order_mfgwarehouse_report_id" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.label" value="c_order_mfgwarehouse_report_id"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="true">
@@ -72,7 +85,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
@@ -86,7 +99,7 @@
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
 					<subreportParameterExpression><![CDATA[(new String("o"))]]></subreportParameterExpression>
@@ -119,7 +132,7 @@
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="barcodeURL">
 					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>

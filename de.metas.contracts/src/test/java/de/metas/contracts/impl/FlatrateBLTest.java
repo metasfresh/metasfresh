@@ -194,7 +194,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setM_Product_Category_ID(20);
-		product.setC_UOM(productUOM);
+		product.setC_UOM_ID(productUOM.getC_UOM_ID());
 		save(product);
 
 		final I_C_Period period = newInstance(I_C_Period.class);
