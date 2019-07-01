@@ -56,6 +56,7 @@ import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.api.impl.FreightCostBL;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 
@@ -133,7 +134,8 @@ public class FreightCostValidator implements ModelValidator
 				final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
 				for (final MOrderLine ol : order.getLines())
 				{
-					if (freighCostBL.isFreightCostProduct(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()))
+					final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+					if (productId != null && freighCostBL.isFreightCostProduct(productId))
 					{
 						deletedFreightAmt = deletedFreightAmt.add(ol.getPriceActual());
 						ol.deleteEx(false);
@@ -158,7 +160,8 @@ public class FreightCostValidator implements ModelValidator
 		final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
 		for (final MInOutLine inOutLine : inOut.getLines())
 		{
-			if (freighCostBL.isFreightCostProduct(inOut.getCtx(), inOutLine.getM_Product_ID(), inOut.get_TrxName()))
+			final ProductId productId = ProductId.ofRepoIdOrNull(inOutLine.getM_Product_ID());
+			if (productId != null && freighCostBL.isFreightCostProduct(productId))
 			{
 				return true;
 			}
@@ -169,9 +172,10 @@ public class FreightCostValidator implements ModelValidator
 	private boolean hasFreightCostLine(final MOrder order)
 	{
 		final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
-		for (final MOrderLine inOutLine : order.getLines())
+		for (final MOrderLine orderLine : order.getLines())
 		{
-			if (freighCostBL.isFreightCostProduct(order.getCtx(), inOutLine.getM_Product_ID(), order.get_TrxName()))
+			final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+			if (productId != null && freighCostBL.isFreightCostProduct(productId))
 			{
 				return true;
 			}

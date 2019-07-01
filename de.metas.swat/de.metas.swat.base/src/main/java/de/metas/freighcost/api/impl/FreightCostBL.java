@@ -13,15 +13,14 @@ package de.metas.freighcost.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -34,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.MFreightCostDetail;
 import org.adempiere.model.MFreightCostShipper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.document.IDocTypeBL;
+import de.metas.freighcost.FreightCostRepository;
 import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.interfaces.I_C_BPartner;
@@ -55,6 +56,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderPA;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -208,9 +210,9 @@ public class FreightCostBL implements IFreightCostBL
 				{
 					final MInOutLine iol = (MInOutLine)poLine;
 
-					for(final IFreightCostFreeEvaluator freightCostFreeEvaluator: freighCostFreeEvaluators)
+					for (final IFreightCostFreeEvaluator freightCostFreeEvaluator : freighCostFreeEvaluators)
 					{
-						if(freightCostFreeEvaluator.isFreighCostFree(iol))
+						if (freightCostFreeEvaluator.isFreighCostFree(iol))
 						{
 							logger.debug(poLine + " is free because " + freightCostFreeEvaluator + " sais so");
 							atLeastOneIsFree = true;
@@ -306,11 +308,11 @@ public class FreightCostBL implements IFreightCostBL
 	}
 
 	@Override
-	public boolean isFreightCostProduct(final Properties ctx, final int productId, final String trxName)
+	public boolean isFreightCostProduct(ProductId productId)
 	{
-		return !MFreightCost.retriveFor(ctx, productId, trxName).isEmpty();
+		final FreightCostRepository freightCostRepo = Adempiere.getBean(FreightCostRepository.class);
+		return freightCostRepo.existsByProductId(productId);
 	}
-
 
 	/**
 	 * If there is a freight amt!=0 and if this is a prepay order, then we create an order line for the freight costs.
@@ -325,8 +327,7 @@ public class FreightCostBL implements IFreightCostBL
 	@Override
 	public void evalAddFreightCostLine(final MOrder order)
 	{
-		final boolean isCustomFreightCost =
-				X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule()) || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule());
+		final boolean isCustomFreightCost = X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule()) || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule());
 
 		final BigDecimal freightAmt = order.getFreightAmt();
 		if (freightAmt.signum() != 0)
@@ -339,7 +340,7 @@ public class FreightCostBL implements IFreightCostBL
 					final MOrderLine newOl = new MOrderLine(order);
 					newOl.setM_Product_ID(freightCost.getM_Product_ID());
 
-					final MProductPricing pp = new MProductPricing(freightCost.getM_Product_ID(),order.getBill_Location_ID(), BigDecimal.ONE, order.isSOTrx());
+					final MProductPricing pp = new MProductPricing(freightCost.getM_Product_ID(), order.getBill_Location_ID(), BigDecimal.ONE, order.isSOTrx());
 					pp.setM_PriceList_ID(order.getM_PriceList_ID());
 					final BigDecimal priceList = pp.getPriceList();
 					newOl.setPriceList(priceList);
@@ -367,10 +368,11 @@ public class FreightCostBL implements IFreightCostBL
 
 	private boolean hasFreightCostLine(final MOrder order)
 	{
-		final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
 		for (final MOrderLine ol : order.getLines())
 		{
-			if (freighCostBL.isFreightCostProduct(order.getCtx(), ol.getM_Product_ID(), order.get_TrxName()))
+			final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+
+			if (productId != null && isFreightCostProduct(productId))
 			{
 				return true;
 			}

@@ -13,29 +13,25 @@ package org.adempiere.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Properties;
-
-import org.compiere.model.Query;
 
 /**
  * 
  * @author ts
  * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
  */
-public class MFreightCostShipper extends X_M_FreightCostShipper {
+public class MFreightCostShipper extends X_M_FreightCostShipper
+{
 
 	/**
 	 * 
@@ -43,34 +39,20 @@ public class MFreightCostShipper extends X_M_FreightCostShipper {
 	private static final long serialVersionUID = -828372390456233509L;
 
 	public MFreightCostShipper(Properties ctx, int M_FreightCost_ID,
-			String trxName) {
+			String trxName)
+	{
 		super(ctx, M_FreightCost_ID, trxName);
 	}
 
-	public MFreightCostShipper(Properties ctx, ResultSet rs, String trxName) {
+	public MFreightCostShipper(Properties ctx, ResultSet rs, String trxName)
+	{
 		super(ctx, rs, trxName);
 	}
 
-	public static Collection<MFreightCostShipper> retrieveForLocation(
-			final MFreightCost fc, final int locationId) {
-
-		return Collections.emptyList();
-	}
-
-	public static MFreightCostShipper retrieveForShipper(final MFreightCost fc,
-			final int shipperId) {
-
-		final String whereClause = COLUMNNAME_M_FreightCost_ID + "=? AND "
-				+ COLUMNNAME_M_Shipper_ID + "=?";
-		
-		final Object[] params = { fc.get_ID(), shipperId };
-
-		return new Query(fc.getCtx(), Table_Name, whereClause, fc.get_TrxName())
-				.setOnlyActiveRecords(true).setParameters(params).firstOnly();
-	}
 
 	@Override
-	public String toString() {
+	public String toString()
+	{
 
 		final StringBuffer sb = new StringBuffer("MFreightCost_Shipper[") //
 				.append(get_ID()) //

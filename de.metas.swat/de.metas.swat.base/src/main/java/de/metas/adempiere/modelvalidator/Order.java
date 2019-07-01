@@ -1,7 +1,6 @@
 package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -16,10 +15,12 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -200,11 +201,13 @@ public class Order implements ModelValidator
 			// the prices in the order lines need to be updated.
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_M_PriceList_ID))
 			{
-				MOrder mOrder = (MOrder)po;
-
+				final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
+				
+				final MOrder mOrder = (MOrder)po;
 				for (final MOrderLine ol : mOrder.getLines())
 				{
-					if (!MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())
+					final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+					if (productId != null && freighCostBL.isFreightCostProduct(productId))
 					{
 						// Freight costs are not calculated by Price List.
 						continue;

@@ -27,23 +27,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.Msg;
 import de.metas.order.impl.OrderBL;
-import de.metas.security.permissions.Access;
 
 /**
  * 
@@ -195,20 +189,5 @@ public class MFreightCost extends X_M_FreightCost
 				.append(", (expense-) M_Product_ID=").append(getM_Product_ID()) //
 				.append("]");
 		return sb.toString();
-	}
-
-	@Cached(cacheName = MFreightCost.Table_Name)
-	public static Collection<MFreightCost> retriveFor(
-			final @CacheCtx Properties ctx,
-			final int productId,
-			final @CacheTrx String trxName)
-	{
-		final String wc = COLUMNNAME_M_Product_ID + "=?";
-
-		return new Query(ctx, Table_Name, wc, trxName)
-				.setParameters(productId)
-				.setRequiredAccess(Access.READ)
-				.setOnlyActiveRecords(true)
-				.list(MFreightCost.class);
 	}
 }

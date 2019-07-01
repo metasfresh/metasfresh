@@ -31,6 +31,7 @@ import org.compiere.model.MOrder;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -56,7 +57,7 @@ public interface IFreightCostBL extends ISingletonService
 
 	BigDecimal computeFreightCostForOrder(MOrder order);
 
-	boolean isFreightCostProduct(Properties ctx, int productId, String trxName);
+	boolean isFreightCostProduct(ProductId productId);
 
 	void evalAddFreightCostLine(final MOrder order);
 

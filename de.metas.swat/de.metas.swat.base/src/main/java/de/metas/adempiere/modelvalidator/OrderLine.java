@@ -1,7 +1,6 @@
 package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.ModelValidationEngine;
@@ -10,38 +9,14 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import org.slf4j.Logger;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -53,9 +28,6 @@ import de.metas.util.Services;
 @Deprecated
 public class OrderLine implements ModelValidator
 {
-
-	private static final Logger logger = LogManager.getLogger(OrderLine.class);
-
 	private int ad_Client_ID = -1;
 
 	@Override
@@ -121,9 +93,12 @@ public class OrderLine implements ModelValidator
 			final boolean isCopy = InterfaceWrapperHelper.isCopy(po); // metas: cg: task US215
 			if (!isCopy && (linesAmtChanged || notFixPrice || newOrDelete))
 			{
-				if (MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())
+				final IFreightCostBL freighCostBL = Services.get(IFreightCostBL.class);
+				
+				final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+				if (productId != null && freighCostBL.isFreightCostProduct(productId))
 				{
-					// this ol is not a freight cost order line
+					// this ol is a freight cost order line
 
 					final I_C_Order order = InterfaceWrapperHelper.create(orderPO, I_C_Order.class);
 
