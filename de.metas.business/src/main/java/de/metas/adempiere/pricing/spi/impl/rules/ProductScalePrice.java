@@ -45,6 +45,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -128,16 +129,16 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		BigDecimal m_PriceStd = null;
 		BigDecimal m_PriceList = null;
 		BigDecimal m_PriceLimit = null;
-		int m_C_UOM_ID = -1;
+		UomId uomId;
 		//
 		//
 
 		final I_M_ProductPrice productPrice = scalePrice.getM_ProductPrice();
-		int m_pp_C_UOM_ID = productPrice.getC_UOM_ID();
+		UomId ppUomId = UomId.ofRepoId(productPrice.getC_UOM_ID());
 		m_PriceStd = scalePrice.getPriceStd();
 		m_PriceList = scalePrice.getPriceList();
 		m_PriceLimit = scalePrice.getPriceLimit();
-		m_C_UOM_ID = Services.get(IProductBL.class).getStockingUOMId(productId).getRepoId();
+		uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 
 		if (priceListId == null)
 		{
@@ -166,13 +167,13 @@ public class ProductScalePrice extends AbstractPriceListBasedRule
 		result.setCalculated(true);
 
 		// 06942 : use product price uom all the time
-		if (m_pp_C_UOM_ID <= 0)
+		if (ppUomId == null)
 		{
-			result.setPrice_UOM_ID(m_C_UOM_ID);
+			result.setPriceUomId(uomId);
 		}
 		else
 		{
-			result.setPrice_UOM_ID(m_pp_C_UOM_ID);
+			result.setPriceUomId(ppUomId);
 		}
 		return result;
 	}

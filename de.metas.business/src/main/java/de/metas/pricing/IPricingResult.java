@@ -37,7 +37,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
-import lombok.NonNull;
 
 /**
  * Result of a pricing calculation
@@ -54,14 +53,9 @@ public interface IPricingResult
 		return CurrencyId.toRepoId(getCurrencyId());
 	}
 
-	int getPrice_UOM_ID();
+	void setPriceUomId(final UomId uomId);
 
-	void setPrice_UOM_ID(int uomId);
-
-	default void setPriceUomId(@NonNull final UomId uomId)
-	{
-		setPrice_UOM_ID(uomId.getRepoId());
-	}
+	UomId getPriceUomId();
 
 	BigDecimal getPriceList();
 

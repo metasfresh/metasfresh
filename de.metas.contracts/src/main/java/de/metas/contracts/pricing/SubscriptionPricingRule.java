@@ -138,7 +138,7 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult result)
 	{
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
-		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
+		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 

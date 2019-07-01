@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Set;
 
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +32,6 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -175,7 +173,7 @@ public class PurchaseProfitInfoServiceImpl implements PurchaseProfitInfoService
 		pricingCtx.setBPartnerId(vendorId);
 		pricingCtx.setCountryId(countryId);
 		pricingCtx.setSOTrx(SOTrx.PURCHASE);
-		pricingCtx.setPriceDate(TimeUtil.asTimestamp(date));
+		pricingCtx.setPriceDate(date);
 
 		return pricingCtx;
 	}

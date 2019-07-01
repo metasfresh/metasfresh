@@ -42,6 +42,8 @@ public interface IUOMDAO extends ISingletonService
 
 	UomId getUomIdByX12DE355(String x12de355);
 
+	String getX12DE355ById(UomId uomId);
+
 	/**
 	 * @return uom; never return null
 	 */

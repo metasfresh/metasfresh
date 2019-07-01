@@ -1,7 +1,7 @@
 package de.metas.procurement.base.impl;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -13,11 +13,13 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
@@ -103,7 +105,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		final int bpartnerId = bpartner.getC_BPartner_ID();
 		final I_M_Product product = pricingAware.getM_Product();
 		final I_C_UOM uom = pricingAware.getC_UOM();
-		final Timestamp date = pricingAware.getDate();
+		final LocalDate date = TimeUtil.asLocalDate(pricingAware.getDate());
 
 		// Pricing system
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -123,7 +125,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		{
 			throw new AdempiereException("@Missing@ @" + org.compiere.model.I_C_BPartner_Location.COLUMNNAME_IsShipTo + "@");
 		}
-		final int countryId = shipToLocations.get(0).getC_Location().getC_Country_ID();
+		final CountryId countryId = CountryId.ofRepoId(shipToLocations.get(0).getC_Location().getC_Country_ID());
 
 		//
 		// Fetch price from pricing engine
@@ -132,7 +134,7 @@ public class PMMPricingBL implements IPMMPricingBL
 		final IEditablePricingContext pricingCtx = pricingBL.createInitialContext(product.getM_Product_ID(), bpartnerId, uom.getC_UOM_ID(), qty, soTrx.toBoolean());
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceDate(date);
-		pricingCtx.setC_Country_ID(countryId);
+		pricingCtx.setCountryId(countryId);
 		pricingCtx.setReferencedObject(pricingAware.getWrappedModel()); // important for ASI pricing
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingCtx);

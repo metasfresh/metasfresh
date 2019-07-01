@@ -67,6 +67,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -375,7 +376,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
-				.priceUOMId(orderLine.getPrice_UOM_ID())
+				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
 				.taxIncluded(orderLine.getC_Order().isTaxIncluded());
 
 		//

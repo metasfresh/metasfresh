@@ -216,12 +216,12 @@ public class M_DiscountSchemaBreak
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setConvertPriceToContextUOM(true);
 		pricingCtx.setProductId(productId);
-		pricingCtx.setC_UOM_ID(productBL.getStockingUOMId(productId).getRepoId());
+		pricingCtx.setUomId(productBL.getStockingUOMId(productId));
 		pricingCtx.setSOTrx(context.getSoTrx());
 		pricingCtx.setQty(qty);
 
 		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);
-		pricingCtx.setC_Country_ID(CountryId.toRepoId(context.getCountryId()));
+		pricingCtx.setCountryId(context.getCountryId());
 
 		final CalculatePricingConditionsRequest request = CalculatePricingConditionsRequest.builder()
 				.pricingConditionsId(pricingConditionsBreak.getPricingConditionsIdOrNull())

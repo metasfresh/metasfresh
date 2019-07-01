@@ -233,7 +233,7 @@ import lombok.NonNull;
 		newPricingCtx.setPriceListVersionId(null); // will be recomputed
 		newPricingCtx.setSkipCheckingPriceListSOTrxFlag(true);
 		newPricingCtx.setDisallowDiscount(true);
-		newPricingCtx.setFailIfNotCalculated(true);
+		newPricingCtx.setFailIfNotCalculated();
 
 		return newPricingCtx;
 	}

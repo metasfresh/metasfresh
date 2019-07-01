@@ -33,6 +33,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -141,7 +142,7 @@ public class AttributePricing implements IPricingRule
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
-		result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
 
 		// 08803: store the information about the price relevant attributes
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));

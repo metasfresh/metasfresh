@@ -793,7 +793,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				//
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pricingResult.getPriceStd())
-				.priceUOMId(pricingResult.getPrice_UOM_ID()) // 07090 when we set PriceActual, we shall also set PriceUOM.
+				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.taxIncluded(taxIncluded)
 				//
 				.discount(pricingResult.getDiscount())

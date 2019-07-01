@@ -107,6 +107,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -248,7 +249,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				.termRelatedProduct(Services.get(IProductDAO.class).getById(ol.getM_Product_ID()))
 				.qty(ol.getQtyEntered())
 				.term(newTerm)
-				.priceDate(order.getDateOrdered())
+				.priceDate(TimeUtil.asLocalDate(order.getDateOrdered()))
 				.build()
 				.computeOrThrowEx();
 	}
@@ -452,10 +453,10 @@ public class SubscriptionBL implements ISubscriptionBL
 				olCand,
 				newTerm.getPlannedQtyPerUnit(),
 				PricingSystemId.ofRepoIdOrNull(newTerm.getM_PricingSystem_ID()),
-				olCand.getDateCandidate());
+				TimeUtil.asLocalDate(olCand.getDateCandidate()));
 
 		newTerm.setPriceActual(pricingResult.getPriceStd());
-		newTerm.setC_UOM_ID(pricingResult.getPrice_UOM_ID());
+		newTerm.setC_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 		// task 03805:
 		// Make sure the currency ID for term is the same as the one from olCand

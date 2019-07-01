@@ -23,7 +23,6 @@ package de.metas.pricing.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +37,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
@@ -51,7 +49,9 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.Getter;
@@ -80,7 +80,7 @@ class PricingContext implements IEditablePricingContext
 
 	private CountryId countryId;
 
-	private int C_UOM_ID;
+	private UomId uomId;
 	private CurrencyId currencyId;
 	private BPartnerId bpartnerId;
 	private BigDecimal qty;
@@ -88,7 +88,7 @@ class PricingContext implements IEditablePricingContext
 	private Object referencedObject;
 	private String trxName;
 	private boolean convertPriceToContextUOM;
-	private Boolean isManualPrice = null; // task 08908: can be set by the calling code. Otherwise the engine shall try the referenced object
+	private OptionalBoolean manualPriceEnabled = OptionalBoolean.UNKNOWN; // task 08908: can be set by the calling code. Otherwise the engine shall try the referenced object
 	private boolean failIfNotCalculated = false;
 
 	private boolean disallowDiscount;
@@ -109,7 +109,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew._priceListVersion = _priceListVersion;
 		pricingCtxNew.priceDate = priceDate;
 		pricingCtxNew.priceDateNow = priceDateNow;
-		pricingCtxNew.C_UOM_ID = C_UOM_ID;
+		pricingCtxNew.uomId = uomId;
 		pricingCtxNew.currencyId = currencyId;
 		pricingCtxNew.countryId = countryId;
 		pricingCtxNew.bpartnerId = bpartnerId;
@@ -120,7 +120,7 @@ class PricingContext implements IEditablePricingContext
 		pricingCtxNew.forcePricingConditionsBreak = forcePricingConditionsBreak;
 		pricingCtxNew.trxName = trxName;
 		pricingCtxNew.convertPriceToContextUOM = convertPriceToContextUOM;
-		pricingCtxNew.isManualPrice = isManualPrice;
+		pricingCtxNew.manualPriceEnabled = manualPriceEnabled;
 		pricingCtxNew.failIfNotCalculated = failIfNotCalculated;
 		pricingCtxNew.skipCheckingPriceListSOTrxFlag = skipCheckingPriceListSOTrxFlag;
 		pricingCtxNew.properties.putAll(properties);
@@ -209,12 +209,6 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setPriceDate(final Timestamp priceDate)
-	{
-		return setPriceDate(TimeUtil.asLocalDate(priceDate));
-	}
-
-	@Override
 	public IEditablePricingContext setPriceDate(final LocalDate priceDate)
 	{
 		this.priceDate = priceDate;
@@ -222,15 +216,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public int getC_UOM_ID()
+	public UomId getUomId()
 	{
-		return C_UOM_ID;
+		return uomId;
 	}
 
 	@Override
-	public IEditablePricingContext setC_UOM_ID(final int c_UOM_ID)
+	public IEditablePricingContext setUomId(@Nullable final UomId uomId)
 	{
-		C_UOM_ID = c_UOM_ID;
+		this.uomId = uomId;
 		return this;
 	}
 
@@ -344,7 +338,7 @@ class PricingContext implements IEditablePricingContext
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T getProperty(final String propertyName, final Class<T> clazz)
+	public <T> T getProperty(@NonNull final String propertyName, @NonNull final Class<T> clazz)
 	{
 		final Object object = properties.get(propertyName);
 		Check.assume(clazz.isInstance(object), "The property {}={} is assumed to be an instance of clazz {}", propertyName, object, clazz);
@@ -353,13 +347,13 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public boolean isPropertySet(final String propertyName)
+	public boolean isPropertySet(@NonNull final String propertyName)
 	{
 		return properties.get(propertyName) != null;
 	}
 
 	@Override
-	public IEditablePricingContext setProperty(final String propertyName, final Object value)
+	public IEditablePricingContext setProperty(@NonNull final String propertyName, @Nullable final Object value)
 	{
 		properties.put(propertyName, value);
 		return this;
@@ -378,15 +372,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public Boolean isManualPrice()
+	public OptionalBoolean getManualPriceEnabled()
 	{
-		return isManualPrice;
+		return manualPriceEnabled;
 	}
 
 	@Override
-	public IEditablePricingContext setManualPrice(final boolean isManualPrice)
+	public IEditablePricingContext setManualPriceEnabled(final boolean manualPriceEnabled)
 	{
-		this.isManualPrice = isManualPrice;
+		this.manualPriceEnabled = OptionalBoolean.ofBoolean(manualPriceEnabled);
 		return this;
 	}
 
@@ -404,21 +398,15 @@ class PricingContext implements IEditablePricingContext
 	}
 
 	@Override
-	public IEditablePricingContext setC_Country_ID(final int countryId)
-	{
-		return setCountryId(CountryId.ofRepoIdOrNull(countryId));
-	}
-
-	@Override
 	public boolean isFailIfNotCalculated()
 	{
 		return failIfNotCalculated;
 	}
 
 	@Override
-	public IEditablePricingContext setFailIfNotCalculated(final boolean failIfNotCalculated)
+	public IEditablePricingContext setFailIfNotCalculated()
 	{
-		this.failIfNotCalculated = failIfNotCalculated;
+		this.failIfNotCalculated = true;
 		return this;
 	}
 
