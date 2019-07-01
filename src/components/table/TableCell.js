@@ -1,7 +1,7 @@
-import React, { PureComponent } from 'react';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import numeral from 'numeral';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
@@ -107,8 +107,6 @@ class TableCell extends PureComponent {
 
     this.state = {
       tooltipToggled: false,
-      widgetFocused: false,
-      attributesDropdownShown: false,
     };
   }
 
@@ -127,34 +125,6 @@ class TableCell extends PureComponent {
       updateRow();
     }
   }
-
-  setFocusedWidgetFalse = () => {
-    this.setState({
-      widgetFocused: false,
-    });
-  };
-
-  setFocusedWidgetTrue = callback => {
-    this.setState(
-      {
-        widgetFocused: true,
-      },
-      () => {
-        this.cell.focus();
-
-        callback && callback();
-      }
-    );
-  };
-
-  toggleDropdownShown = val => {
-    let attributesDropdownShown =
-      val != null ? val : !this.state.attributesDropdownShown;
-
-    this.setState({
-      attributesDropdownShown,
-    });
-  };
 
   widgetTooltipToggle = (field, value) => {
     const curVal = this.state.tooltipToggled;
@@ -179,38 +149,6 @@ class TableCell extends PureComponent {
     }
   };
 
-  handlePatch = () => {
-    const { onCellChange, mainTable } = this.props;
-
-    this.setFocusedWidgetTrue(() => {
-      mainTable && onCellChange && onCellChange();
-    });
-  };
-
-  handleKeyDown = e => {
-    const { property, handleKeyDown, widgetData } = this.props;
-    const { key } = e;
-    const { attributesDropdownShown } = this.state;
-
-    if (widgetData[0].widgetType === 'ProductAttributes') {
-      if (key === 'Enter' && !attributesDropdownShown) {
-        this.toggleDropdownShown(true);
-        // return;
-      } else if (key === 'Escape' && attributesDropdownShown) {
-        this.toggleDropdownShown(false);
-      } else if (attributesDropdownShown) {
-        e.stopPropagation();
-        return;
-      }
-    }
-
-    if (['Enter', 'Tab', 'Escape'].includes(key)) {
-      this.setFocusedWidgetTrue();
-    }
-
-    handleKeyDown(e, property, widgetData);
-  };
-
   render() {
     const {
       isEdited,
@@ -220,9 +158,9 @@ class TableCell extends PureComponent {
       item,
       windowId,
       rowId,
-      property,
       tabId,
       handleDoubleClick,
+      handleKeyDown,
       updatedRow,
       tabIndex,
       entity,
@@ -233,15 +171,13 @@ class TableCell extends PureComponent {
       getSizeClass,
       handleRightClick,
       mainTable,
-      onCellFocused,
+      onCellChange,
       viewId,
       modalVisible,
       onClickOutside,
-      showWidget,
-      isEditable,
     } = this.props;
     const docId = `${this.props.docId}`;
-    const { tooltipToggled, widgetFocused } = this.state;
+    const { tooltipToggled } = this.state;
     const tdValue = !isEdited
       ? TableCell.fieldValueToString(
           widgetData[0].value,
@@ -290,14 +226,7 @@ class TableCell extends PureComponent {
         tabIndex={modalVisible ? -1 : tabIndex}
         ref={c => (this.cell = c)}
         onDoubleClick={handleDoubleClick}
-        onKeyDown={this.handleKeyDown}
-        onFocus={e => {
-          if (!widgetFocused) {
-            onCellFocused(e, property, widgetData);
-          } else {
-            this.setFocusedWidgetFalse();
-          }
-        }}
+        onKeyDown={handleKeyDown}
         onContextMenu={handleRightClick}
         className={classnames(
           {
@@ -313,7 +242,7 @@ class TableCell extends PureComponent {
           }
         )}
       >
-        {(isEditable && isEdited) || showWidget ? (
+        {isEdited ? (
           <MasterWidget
             {...item}
             entity={mainTable ? 'window' : entity}
@@ -326,18 +255,13 @@ class TableCell extends PureComponent {
             viewId={viewId}
             tabId={mainTable ? null : tabId}
             noLabel={true}
-            tabIndex={-1}
             gridAlign={item.gridAlign}
             handleBackdropLock={this.handleBackdropLock}
-            onClickOutside={e => {
-              this.toggleDropdownShown(false);
-              onClickOutside(e);
-            }}
+            onClickOutside={onClickOutside}
             listenOnKeys={listenOnKeys}
             listenOnKeysTrue={listenOnKeysTrue}
             listenOnKeysFalse={listenOnKeysFalse}
-            listenOnKeysdoNotOpenOnFocusFalse={listenOnKeysFalse}
-            onChange={this.handlePatch}
+            onChange={mainTable ? onCellChange : null}
             closeTableField={closeTableField}
             isOpenDatePicker={isOpenDatePicker}
             ref={c => {
@@ -381,29 +305,6 @@ TableCell.propTypes = {
   onCellChange: PropTypes.func,
   onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
-  isEditable: PropTypes.bool,
-  showWidget: PropTypes.bool,
-  widgetData: PropTypes.array,
-  property: PropTypes.string,
-  updateRow: PropTypes.func,
-  readonly: PropTypes.string,
-  rowId: PropTypes.string,
-  item: PropTypes.object,
-  mainTable: PropTypes.bool,
-  windowId: PropTypes.string,
-  tabId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  updatedRow: PropTypes.bool,
-  tabIndex: PropTypes.number,
-  entity: PropTypes.string,
-  listenOnKeys: PropTypes.bool,
-  listenOnKeysFalse: PropTypes.func,
-  listenOnKeysTrue: PropTypes.func,
-  closeTableField: PropTypes.func,
-  getSizeClass: PropTypes.func,
-  onCellFocused: PropTypes.func,
-  viewId: PropTypes.string,
-  modalVisible: PropTypes.bool,
-  docId: PropTypes.string,
 };
 
 export default connect(state => ({

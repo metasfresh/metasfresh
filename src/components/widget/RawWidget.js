@@ -94,7 +94,6 @@ export class RawWidget extends Component {
       handleBlur,
       listenOnKeysTrue,
       enableOnClickOutside,
-      onClickOutside,
     } = this.props;
 
     this.setState(
@@ -111,18 +110,15 @@ export class RawWidget extends Component {
         if (widgetField) {
           this.handlePatch(widgetField, value, id);
         }
-
-        onClickOutside && onClickOutside();
       }
     );
   };
 
   handleKeyDown = (e, property, value) => {
-    const key = e.key;
     const { lastFormField } = this.props;
 
-    if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
-      if (key === 'Enter' && !lastFormField) {
+    if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
+      if (e.key === 'Enter' && !lastFormField) {
         e.preventDefault();
       }
       return this.handlePatch(property, value);

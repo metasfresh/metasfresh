@@ -29,8 +29,6 @@ class TableContextMenu extends Component {
       docId,
     } = this.props;
 
-    this.mounted = true;
-
     this.setPosition(
       x,
       y,
@@ -43,10 +41,6 @@ class TableContextMenu extends Component {
     if (docId) {
       this.getReferences();
     }
-  }
-
-  componentWillUnmount() {
-    this.mounted = false;
   }
 
   getPosition = (dir, pos, element) => {
@@ -80,11 +74,9 @@ class TableContextMenu extends Component {
 
     referencesRequest('window', windowId, docId, tabId, selected[0]).then(
       response => {
-        if (this.mounted) {
-          this.setState({
-            references: response.data.references,
-          });
-        }
+        this.setState({
+          references: response.data.references,
+        });
       }
     );
   };

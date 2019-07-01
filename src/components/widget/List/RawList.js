@@ -227,21 +227,13 @@ export class RawList extends PureComponent {
       readonly,
       isToggled,
       onOpenDropdown,
-      entity,
     } = this.props;
 
     if (e.key === 'Tab') {
       if (list.size === 0 && !readonly && !loading) {
         onSelect(null);
       }
-
-      // Product Attribute widget fields are focused programmatically
-      // and since List doesn't have an onBlur event handler attached
-      // we have to blur it manually
-      if (entity === 'pattribute') {
-        this.handleTab(e);
-      }
-    } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
+    } else if (e.key === 'ArrowDown') {
       if (!isToggled) {
         e.preventDefault();
         e.stopPropagation();
@@ -251,16 +243,14 @@ export class RawList extends PureComponent {
   };
 
   handleTab = e => {
-    const { isToggled, isFocused, onCloseDropdown, entity } = this.props;
+    const { isToggled, isFocused, onCloseDropdown } = this.props;
 
     if (e.key === 'Tab' && isFocused) {
-      // to make things easier with Product Attribute inputs always blur
-      // them on Tab key (as AttributesDropdown will focus the next input)
-      if (!isToggled || entity === 'pattribute') {
-        this.handleBlur();
-      } else {
+      if (isToggled) {
         e.preventDefault();
         onCloseDropdown();
+      } else {
+        this.handleBlur();
       }
     }
   };
@@ -371,10 +361,10 @@ export class RawList extends PureComponent {
                     'input-disabled': disabled,
                   }
                 )}
+                readOnly
                 tabIndex={-1}
                 placeholder={placeholder}
                 value={value}
-                onChange={() => undefined}
                 disabled={readonly || disabled}
               />
             </div>
@@ -414,7 +404,6 @@ RawList.propTypes = {
   // Immutable List
   list: PropTypes.object,
   listHash: PropTypes.string,
-  entity: PropTypes.string,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
   selected: PropTypes.any,
