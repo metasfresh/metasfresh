@@ -101,14 +101,24 @@ describe('Create Sales order', function() {
       .eq('0')
       .dblclick();
     /**Change shipment date */
+
     cy.selectOffsetDateViaPicker('DeliveryDate_Override', 1);
     cy.selectOffsetDateViaPicker('PreparationDate_Override', 1);
 
-    cy.visitWindow('500221');
-    cy.log('Now going to verify that the date was set correctly by filtering after C_BPartner_ID');
-    toggleNotFrequentFilters();
-    selectNotFrequentFilterWidget('default');
-    cy.writeIntoLookupListFieldWithoutPatch('C_BPartner_ID', `${timestamp}`, customer, false);
-    applyFilters();
+    var nextDay = new Date();
+    nextDay.setDate(nextDay.getDate() + 1);
+    let nextDayAsString = nextDay.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+    cy.get(
+      '.form-field-DeliveryDate_Effective, .form-field-DeliveryDate_Override, .form-field-PreparationDate_Effective, .form-field-PreparationDate_Override'
+    )
+      .find('input')
+      .should('have.value', nextDayAsString + ' 12:00 AM');
+    // cy.visitWindow('500221');
+    // cy.log('Now going to verify that the date was set correctly by filtering after C_BPartner_ID');
+    // toggleNotFrequentFilters();
+    // selectNotFrequentFilterWidget('default');
+    // cy.writeIntoLookupListField('C_BPartner_ID', `${timestamp}`, customer, false, false, null, true);
+    // applyFilters();
   });
 });

@@ -133,7 +133,7 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
     .click();
 });
 /**Selects a date in the picker
- *
+ * should not be used for offsets larger than a couple of days
  * @param {string} fieldName - name of the field
  * @param {number} dayOffset - the number of days before/after today;
  * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -224,10 +224,19 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
  * @param typeList - use when selecting value from a list not lookup field. Someone thought it's a great idea to return different
  *                   responses for different fields.
+ * @param {boolean} skipPatch - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add(
   'writeIntoLookupListField',
-  (fieldName, partialValue, expectedListValue, typeList = false, modal = false, rewriteUrl = null) => {
+  (
+    fieldName,
+    partialValue,
+    expectedListValue,
+    typeList = false,
+    modal = false,
+    rewriteUrl = null,
+    skipRequest = false
+  ) => {
     describe('Enter value into lookup list field', function() {
       let path = `#lookup_${fieldName}`;
       if (modal) {
@@ -239,9 +248,10 @@ Cypress.Commands.add(
       const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
       // in the default pattern we want to match URLs that do *not* end with "/NEW"
       const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-      cy.server();
-      cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
-
+      if (!skipRequest) {
+        cy.server();
+        cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+      }
       cy.get(path).within(el => {
         if (el.find('.lookup-widget-wrapper input').length) {
           return (
@@ -260,40 +270,9 @@ Cypress.Commands.add(
 
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList);
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
-    });
-  }
-);
-/**
- * @param {string} fieldName - name of the field
- * @param {string} partialValue - partial value to put into field
- * @param {boolean} modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
- * @param {string} expectedListValue - the expected result
- */
-Cypress.Commands.add(
-  'writeIntoLookupListFieldWithoutPatch',
-  (fieldName, partialValue, expectedListValue, modal = false) => {
-    describe('Enter value into lookup list field', function() {
-      let path = `#lookup_${fieldName}`;
-      if (modal) {
-        path = `.panel-modal ${path}`;
+      if (!skipRequest) {
+        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList);
       }
-
-      cy.get(path).within(el => {
-        if (el.find('.lookup-widget-wrapper input').length) {
-          return cy
-            .get('input')
-            .type('{selectall}')
-            .type(partialValue);
-        }
-
-        cy.get('.lookup-dropdown').click();
-        return cy.get('.lookup-dropdown').click();
-      });
-
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
   }
@@ -303,6 +282,7 @@ Cypress.Commands.add(
  *
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
+ * @param {boolean} skipPatch - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
   describe('Select value in list field', function() {
@@ -312,9 +292,10 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
     // here we want to match URLs that don *not* end with "/NEW"
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
-
+    if (!skipRequest) {
+      cy.server();
+      cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
+    }
     const path = createFieldPath(fieldName, modal);
 
     cy.get(path)
