@@ -21,4 +21,7 @@ describe('Create Taxrate for Automatic End2End Tests with cypress https://github
       });
     });
   });
+  it(`TEST TEST ${this.documentId} TEST TEST`, function() {
+    // Test
+  });
 });
