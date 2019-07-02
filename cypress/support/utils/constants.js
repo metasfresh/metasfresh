@@ -9,6 +9,10 @@ export class DocumentStatusKey {
   static _tag_docStatusInProgress = '.tag-default';
 }
 
+export class DocumentActionKey {
+  static Complete = 'docActionComplete';
+}
+
 /**
  * These constants should be used instead of writing strings every time
  */
