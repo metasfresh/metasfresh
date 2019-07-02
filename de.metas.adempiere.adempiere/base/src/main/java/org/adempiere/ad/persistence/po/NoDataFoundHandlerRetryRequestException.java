@@ -2,7 +2,7 @@ package org.adempiere.ad.persistence.po;
 
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 /*
  * #%L
@@ -39,6 +39,6 @@ public class NoDataFoundHandlerRetryRequestException extends AdempiereException
 {
 	public NoDataFoundHandlerRetryRequestException()
 	{
-		super(ImmutableTranslatableString.empty());
+		super(TranslatableStrings.empty());
 	}
 }

@@ -26,12 +26,10 @@ import org.compiere.util.Evaluatee2;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.NumberTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -93,7 +91,7 @@ final class ASIDescriptionBuilderCommand
 			return null;
 		}
 
-		final TranslatableStringBuilder descriptionBuilder = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder descriptionBuilder = TranslatableStrings.builder();
 
 		appendInstanceAttributes(descriptionBuilder);
 		appendSerNo(descriptionBuilder);
@@ -124,7 +122,7 @@ final class ASIDescriptionBuilderCommand
 	private void appendInstanceAttribute(final TranslatableStringBuilder description, final I_M_AttributeInstance ai)
 	{
 		final ITranslatableString aiDescription = buildInstanceAttributeDescription(ai);
-		if (ImmutableTranslatableString.isBlank(aiDescription))
+		if (TranslatableStrings.isBlank(aiDescription))
 		{
 			return;
 		}
@@ -154,7 +152,7 @@ final class ASIDescriptionBuilderCommand
 					.verboseDescription(verboseDescription)
 					.build();
 			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.Preserve);
-			return ImmutableTranslatableString.anyLanguage(description);
+			return TranslatableStrings.anyLanguage(description);
 		}
 	}
 
@@ -229,11 +227,11 @@ final class ASIDescriptionBuilderCommand
 	{
 		if (Check.isEmpty(valueStr, true))
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 		else
 		{
-			return ImmutableTranslatableString.anyLanguage(valueStr.trim());
+			return TranslatableStrings.anyLanguage(valueStr.trim());
 		}
 	}
 
@@ -241,11 +239,11 @@ final class ASIDescriptionBuilderCommand
 	{
 		if (valueBD == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("0");
+			return TranslatableStrings.anyLanguage("0");
 		}
 		else
 		{
-			return NumberTranslatableString.of(valueBD, DisplayType.Number);
+			return TranslatableStrings.number(valueBD, DisplayType.Number);
 		}
 	}
 
@@ -253,11 +251,11 @@ final class ASIDescriptionBuilderCommand
 	{
 		if (valueDate == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("-");
+			return TranslatableStrings.anyLanguage("-");
 		}
 		else
 		{
-			return DateTimeTranslatableString.ofDate(valueDate);
+			return TranslatableStrings.date(valueDate);
 		}
 	}
 

@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import de.metas.user.UserId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -48,6 +47,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
@@ -228,7 +228,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
-	int getDefaultShipToLocationCountryId(BPartnerId bpartnerId);
+	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve default/first bill to location.

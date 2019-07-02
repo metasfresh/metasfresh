@@ -71,7 +71,7 @@ public class OrderLine
 	int line;
 
 	@NonNull
-	PaymentTermId PaymentTermId;
+	PaymentTermId paymentTermId;
 
 	// Note: i think that the following two should go to "Order" once we have it.
 	@NonNull

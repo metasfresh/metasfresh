@@ -1,13 +1,13 @@
 package de.metas.i18n;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
@@ -32,7 +32,7 @@ import com.google.common.collect.ImmutableSet;
  */
 
 @EqualsAndHashCode
-public class CompositeTranslatableString implements ITranslatableString
+final class CompositeTranslatableString implements ITranslatableString
 {
 	private final ImmutableList<ITranslatableString> list;
 	private final String joinString;
@@ -40,20 +40,21 @@ public class CompositeTranslatableString implements ITranslatableString
 	private transient String defaultValue; // lazy
 	private transient ImmutableSet<String> adLanguages; // lazy
 
-	public CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
+	CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
 	{
 		this.list = ImmutableList.copyOf(list);
-		this.joinString = joinString;
+		this.joinString = joinString != null ? joinString : "";
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return list.stream().map(trl -> trl.toString()).collect(Collectors.joining(joinString));
+		return list.stream().map(ITranslatableString::toString).collect(Collectors.joining(joinString));
 	}
 
 	@Override
-	public String translate(String adLanguage)
+	public String translate(final String adLanguage)
 	{
 		return list.stream().map(trl -> trl.translate(adLanguage)).collect(Collectors.joining(joinString));
 	}
@@ -61,9 +62,10 @@ public class CompositeTranslatableString implements ITranslatableString
 	@Override
 	public String getDefaultValue()
 	{
+		String defaultValue = this.defaultValue;
 		if (defaultValue == null)
 		{
-			defaultValue = list.stream().map(trl -> trl.getDefaultValue()).collect(Collectors.joining(joinString));
+			this.defaultValue = defaultValue = list.stream().map(trl -> trl.getDefaultValue()).collect(Collectors.joining(joinString));
 
 		}
 		return defaultValue;
@@ -72,9 +74,10 @@ public class CompositeTranslatableString implements ITranslatableString
 	@Override
 	public Set<String> getAD_Languages()
 	{
+		ImmutableSet<String> adLanguages = this.adLanguages;
 		if (adLanguages == null)
 		{
-			adLanguages = list.stream().flatMap(trl -> trl.getAD_Languages().stream()).collect(ImmutableSet.toImmutableSet());
+			this.adLanguages = adLanguages = list.stream().flatMap(trl -> trl.getAD_Languages().stream()).collect(ImmutableSet.toImmutableSet());
 		}
 		return adLanguages;
 	}

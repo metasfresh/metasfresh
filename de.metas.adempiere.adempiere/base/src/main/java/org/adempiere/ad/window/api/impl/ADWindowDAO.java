@@ -64,7 +64,7 @@ import org.slf4j.Logger;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -98,7 +98,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 		if (window == null)
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 		return InterfaceWrapperHelper.getModelTranslationMap(window).getColumnTrl(I_AD_Window.COLUMNNAME_Name, window.getName());
 	}

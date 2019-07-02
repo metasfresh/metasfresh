@@ -5,13 +5,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 
 import de.metas.order.IOrderLineBL;
 import de.metas.procurement.base.order.model.I_C_OrderLine;
@@ -31,11 +29,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -106,10 +104,7 @@ public class OrderLineAggregation
 
 	private I_C_OrderLine createOrderLine(final PurchaseCandidate candidate)
 	{
-		final I_C_BPartner bpartner = candidate.getC_BPartner();
 		final int flatrateDataEntryId = candidate.getC_Flatrate_DataEntry_ID();
-		final I_M_Product product = candidate.getM_Product();
-		final I_C_UOM uom = candidate.getC_UOM();
 		final int huPIItemProductId = candidate.getM_HU_PI_Item_Product_ID();
 		final Timestamp datePromised = candidate.getDatePromised();
 		final BigDecimal price = candidate.getPrice();
@@ -119,8 +114,8 @@ public class OrderLineAggregation
 
 		//
 		// BPartner/Location/Contact
-		orderLine.setC_BPartner(bpartner);
-		orderLine.setC_BPartner_Location(order.getC_BPartner_Location());
+		orderLine.setC_BPartner_ID(candidate.getC_BPartner_ID());
+		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 		orderLine.setAD_User_ID(order.getAD_User_ID());
 
 		//
@@ -132,8 +127,8 @@ public class OrderLineAggregation
 
 		//
 		// Product/UOM/Handling unit
-		orderLine.setM_Product(product);
-		orderLine.setC_UOM(uom);
+		orderLine.setM_Product_ID(candidate.getM_Product_ID());
+		orderLine.setC_UOM_ID(candidate.getC_UOM_ID());
 		if (huPIItemProductId > 0)
 		{
 			orderLine.setM_HU_PI_Item_Product_ID(huPIItemProductId);
@@ -141,7 +136,10 @@ public class OrderLineAggregation
 
 		//
 		// ASI
-		final I_M_AttributeSetInstance contractASI = candidate.getM_AttributeSetInstance_ID() > 0 ? candidate.getM_AttributeSetInstance() : null;
+		final AttributeSetInstanceId attributeSetInstanceId = candidate.getAttributeSetInstanceId();
+		final I_M_AttributeSetInstance contractASI = attributeSetInstanceId.isRegular()
+				? Services.get(IAttributeDAO.class).getAttributeSetInstanceById(attributeSetInstanceId)
+				: null;
 		final I_M_AttributeSetInstance asi;
 		if (contractASI != null)
 		{

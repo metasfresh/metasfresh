@@ -42,7 +42,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
@@ -63,7 +63,7 @@ public class ZoomInfoFactory
 
 	private static final transient ZoomInfoFactory instance = new ZoomInfoFactory();
 
-	public static interface IZoomSource
+	public interface IZoomSource
 	{
 		Properties getCtx();
 
@@ -117,12 +117,12 @@ public class ZoomInfoFactory
 	 */
 	public static final class POZoomSource implements IZoomSource
 	{
-		public static final POZoomSource of(final PO po, final int adWindowId)
+		public static POZoomSource of(final PO po, final int adWindowId)
 		{
 			return new POZoomSource(po, adWindowId);
 		}
 
-		public static final POZoomSource of(final PO po)
+		public static POZoomSource of(final PO po)
 		{
 			final int adWindowId = 0;
 			return new POZoomSource(po, adWindowId);
@@ -161,12 +161,12 @@ public class ZoomInfoFactory
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 			final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
-			for (int i = 0; i < keyColumnNamesArr.length; i++)
+			for (String element : keyColumnNamesArr)
 			{
-				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), keyColumnNamesArr[i]);
+				final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), element);
 				if (column.isGenericZoomOrigin())
 				{
-					eligibleKeyColumnNames.add(keyColumnNamesArr[i]);
+					eligibleKeyColumnNames.add(element);
 				}
 			}
 
@@ -296,7 +296,7 @@ public class ZoomInfoFactory
 	@SuppressWarnings("serial")
 	public static final class ZoomInfo implements Serializable
 	{
-		public static final ZoomInfo of(
+		public static ZoomInfo of(
 				@NonNull final String zoomInfoId,
 				@NonNull final String internalName,
 				final int windowId,
@@ -352,8 +352,8 @@ public class ZoomInfoFactory
 
 		public ITranslatableString getLabel()
 		{
-			final ITranslatableString postfix = ImmutableTranslatableString.constant(" (#" + getRecordCount() + ")");
-			return ITranslatableString.compose("", _destinationDisplay, postfix);
+			final ITranslatableString postfix = TranslatableStrings.constant(" (#" + getRecordCount() + ")");
+			return TranslatableStrings.join("", _destinationDisplay, postfix);
 		}
 
 		public int getRecordCount()

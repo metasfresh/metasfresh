@@ -3,8 +3,7 @@ package org.compiere.apps.search;
 import org.junit.Ignore;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
-
+import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,7 +39,7 @@ final class PlainUserQueryField implements IUserQueryField
 	{
 		return builder()
 				.columnName(columnName)
-				.displayName(ImmutableTranslatableString.constant(columnName))
+				.displayName(TranslatableStrings.constant(columnName))
 				.build();
 	}
 

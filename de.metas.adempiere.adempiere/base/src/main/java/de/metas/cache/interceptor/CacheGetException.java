@@ -29,8 +29,8 @@ import java.util.Arrays;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown when a value could not be retrieved from cache because of inconsistencies or because some parameters were not valid.
@@ -54,13 +54,13 @@ public class CacheGetException extends AdempiereException
 	public CacheGetException(final String message)
 	{
 		// NOTE: don't try to translate the build message because it's not translatable
-		super(ImmutableTranslatableString.constant(message));
+		super(TranslatableStrings.constant(message));
 	}
 
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append(super.buildMessage());
 
 		if (targetObject != null)

@@ -157,8 +157,8 @@ public class AbstractRSAllocationWithWeightAttributeTest extends AbstractWeightA
 
 			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, receiptSchedule);
 			orderLine.setC_Order(order);
-			orderLine.setM_Product(receiptSchedule.getM_Product());
-			orderLine.setC_UOM(receiptSchedule.getC_UOM());
+			orderLine.setM_Product_ID(receiptSchedule.getM_Product_ID());
+			orderLine.setC_UOM_ID(receiptSchedule.getC_UOM_ID());
 			orderLine.setQtyOrdered(receiptSchedule.getQtyOrdered());
 			orderLine.setPriceActual(rs_PriceActual);
 			InterfaceWrapperHelper.save(orderLine);

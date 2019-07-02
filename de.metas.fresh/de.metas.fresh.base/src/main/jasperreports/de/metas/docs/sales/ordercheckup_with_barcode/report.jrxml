@@ -99,7 +99,7 @@
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id}]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
 					<subreportParameterExpression><![CDATA[(new String("o"))]]></subreportParameterExpression>

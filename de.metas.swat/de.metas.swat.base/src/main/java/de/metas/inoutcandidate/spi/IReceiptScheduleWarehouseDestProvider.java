@@ -3,7 +3,6 @@ package de.metas.inoutcandidate.spi;
 import java.util.Properties;
 
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -39,7 +38,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 public interface IReceiptScheduleWarehouseDestProvider
 {
 	/** Context used for evaluating if the destination warehouse */
-	public static interface IContext
+	public interface IContext
 	{
 		Properties getCtx();
 
@@ -48,8 +47,6 @@ public interface IReceiptScheduleWarehouseDestProvider
 		int getAD_Org_ID();
 
 		int getM_Warehouse_ID();
-
-		I_M_Product getM_Product();
 
 		int getM_Product_ID();
 

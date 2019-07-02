@@ -25,6 +25,7 @@ package de.metas.invoice.impl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -68,6 +69,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -316,7 +318,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final int bPartnerId = invoice.getC_BPartner_ID();
 
-		final Timestamp date = invoice.getDateInvoiced();
+		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced());
 
 		final IEditablePricingContext pricingCtx = Services.get(IPricingBL.class).createInitialContext(
 				productId,
@@ -334,29 +336,28 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// metas: relay on M_PriceList_ID only, don't use M_PriceList_Version_ID
 		// pricingCtx.setM_PriceList_Version_ID(orderLine.getM_PriceList_Version_ID());
 
-		final int countryId = getCountryIdOrZero(invoiceLine);
-		pricingCtx.setC_Country_ID(countryId);
+		final CountryId countryId = getCountryIdOrNull(invoiceLine);
+		pricingCtx.setCountryId(countryId);
 
 		return pricingCtx;
 	}
 
-	private int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		if (invoice.getC_BPartner_Location_ID() <= 0)
 		{
-			return 0;
+			return null;
 		}
 
 		final I_C_BPartner_Location bPartnerLocation = invoice.getC_BPartner_Location();
 		if (bPartnerLocation.getC_Location_ID() <= 0)
 		{
-			return 0;
+			return null;
 		}
 
-		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
-		return countryId;
+		return CountryId.ofRepoId(bPartnerLocation.getC_Location().getC_Country_ID());
 	}
 
 	@Override
@@ -396,9 +397,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final boolean usePriceUOM = InterfaceWrapperHelper.isNew(invoiceLine);
 		pricingCtx.setConvertPriceToContextUOM(!usePriceUOM);
 
-		pricingCtx.setManualPrice(invoiceLine.isManualPrice());
+		pricingCtx.setManualPriceEnabled(invoiceLine.isManualPrice());
 
-		if (pricingCtx.isManualPrice())
+		if (pricingCtx.getManualPriceEnabled().isTrue())
 		{
 			// Task 08908: do not calculate the prices in case the price is manually set
 			return;
@@ -416,7 +417,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPriceList(priceList);
 
 		invoiceLine.setPriceLimit(pricingResult.getPriceLimit());
-		invoiceLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
+		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 		invoiceLine.setPriceEntered(pricingResult.getPriceStd());
 		invoiceLine.setPriceActual(pricingResult.getPriceStd());
@@ -436,7 +437,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// Calculate PriceActual from PriceEntered and Discount
 		calculatePriceActual(invoiceLine, pricingResult.getPrecision());
 
-		invoiceLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); //
+		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
 
 	}
 

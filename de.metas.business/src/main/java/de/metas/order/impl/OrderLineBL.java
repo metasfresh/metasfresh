@@ -33,7 +33,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -71,7 +70,9 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -82,8 +83,10 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -102,10 +105,10 @@ public class OrderLineBL implements IOrderLineBL
 
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_UOM uom = orderLine.getC_UOM();
-		if (uom != null)
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (uomId != null)
 		{
-			return uom;
+			return Services.get(IUOMDAO.class).getById(uomId);
 		}
 
 		// fallback to stocking UOM
@@ -131,11 +134,14 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
-		Check.assumeNotNull(orderLine, "orderLine is not null");
+		return getQtyOrdered(orderLine);
+	}
 
+	@Override
+	public Quantity getQtyOrdered(@NonNull final I_C_OrderLine orderLine)
+	{
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
 		final I_C_UOM uom = getStockingUOM(orderLine);
-
 		return Quantity.of(qtyOrdered, uom);
 	}
 
@@ -193,7 +199,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void setShipper(final I_C_OrderLine ol)
 	{
-		final org.compiere.model.I_C_Order order = ol.getC_Order();
+		final I_C_Order order = ol.getC_Order();
 
 		final int orderShipperId = order.getM_Shipper_ID();
 		if (orderShipperId > 0)
@@ -249,7 +255,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public I_C_OrderLine createOrderLine(@NonNull final org.compiere.model.I_C_Order order)
+	public I_C_OrderLine createOrderLine(@NonNull final I_C_Order order)
 	{
 		final I_C_OrderLine ol = newInstance(I_C_OrderLine.class);
 		ol.setC_Order(order);
@@ -271,7 +277,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final org.compiere.model.I_C_Order order)
+	public void setOrder(final org.compiere.model.I_C_OrderLine ol, final I_C_Order order)
 	{
 		ol.setAD_Org_ID(order.getAD_Org_ID());
 		final boolean isDropShip = order.isDropShip();
@@ -298,7 +304,7 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public <T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, Class<T> orderLineClass)
+	public <T extends I_C_OrderLine> T createOrderLine(I_C_Order order, Class<T> orderLineClass)
 	{
 		final I_C_OrderLine orderLine = createOrderLine(order);
 		return InterfaceWrapperHelper.create(orderLine, orderLineClass);
@@ -363,7 +369,8 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		// make two simple checks that work without loading additional stuff
-		if (orderLine.getM_Product_ID() <= 0)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			logger.debug("Given orderLine {} has M_Product_ID<=0; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
@@ -398,10 +405,10 @@ public class OrderLineBL implements IOrderLineBL
 			return;
 		}
 
-		if (!orderLine.getM_Product().isStocked())
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId, I_M_Product.class);
+		if (!product.isStocked())
 		{
-			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.",
-					new Object[] { orderLine, orderLine.getM_Product() });
+			logger.debug("Given orderLine {} has M_Product {} which is not stocked; setting QtyReserved=0.", orderLine, product);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -471,7 +478,7 @@ public class OrderLineBL implements IOrderLineBL
 	 */
 	static LocalDate getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
-			final org.compiere.model.I_C_Order order)
+			final I_C_Order order)
 	{
 		LocalDate date = TimeUtil.asLocalDate(orderLine.getDatePromised());
 		// if null, then get date promised from order
@@ -506,81 +513,80 @@ public class OrderLineBL implements IOrderLineBL
 
 		final BigDecimal qtyEntered = orderLine.getQtyEntered();
 
-		ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
-		final I_C_UOM uom = orderLine.getC_UOM();
-		if (productId == null || uom == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			return qtyEntered;
 		}
 
+		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		if (uomId == null)
+		{
+			return qtyEntered;
+		}
+
+		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(uomId);
 		final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, uom, qtyEntered);
 		return qtyOrdered;
 	}
 
 	Quantity convertToPriceUOM(@NonNull final Quantity qtyEntered, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_OrderLine orderLineExt = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-		final I_C_UOM priceUOM = orderLineExt.getPrice_UOM();
-		if (priceUOM == null || priceUOM.getC_UOM_ID() <= 0)
+		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		if (priceUOMId == null)
 		{
 			return qtyEntered;
 		}
 
 		final int qtyUOMId = qtyEntered.getUOMId();
-		if (qtyUOMId == priceUOM.getC_UOM_ID())
+		if (qtyUOMId == priceUOMId.getRepoId())
 		{
 			return qtyEntered;
 		}
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
+		final I_C_UOM priceUOM = Services.get(IUOMDAO.class).getById(priceUOMId);
 		return uomConversionBL.convertQuantityTo(qtyEntered, conversionCtx, priceUOM);
 	}
 
 	@Override
-	public boolean isTaxIncluded(final org.compiere.model.I_C_OrderLine orderLine)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
 
-		final I_C_Tax tax = orderLine.getC_Tax();
+		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(orderLine.getC_Tax_ID());
 
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).isTaxIncluded(order, tax);
 	}
 
 	@Override
 	public CurrencyPrecision getPricePrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getPricePrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getAmountPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getAmountPrecision(order);
 	}
 
 	@Override
 	public CurrencyPrecision getTaxPrecision(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+		final I_C_Order order = orderLine.getC_Order();
 		return Services.get(IOrderBL.class).getTaxPrecision(order);
 	}
 
 	@Override
 	public boolean isAllowedCounterLineCopy(final org.compiere.model.I_C_OrderLine fromLine)
 	{
-		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(fromLine, de.metas.interfaces.I_C_OrderLine.class);
-
-		if (ol.isPackagingMaterial())
-		{
-			// DO not copy the line if it's packing material. The packaging lines will be created later
-			return false;
-		}
-
-		return true;
+		// DO not copy the line if it's packing material. The packaging lines will be created later
+		return !fromLine.isPackagingMaterial();
 	}
 
 	@Override
@@ -691,10 +697,12 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public int getC_PaymentTerm_ID(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	public PaymentTermId getPaymentTermId(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		int paymentTermOverrideId = orderLine.getC_PaymentTerm_Override_ID();
-		return paymentTermOverrideId > 0 ? paymentTermOverrideId : orderLine.getC_Order().getC_PaymentTerm_ID();
+		final PaymentTermId paymentTermOverrideId = PaymentTermId.ofRepoIdOrNull(orderLine.getC_PaymentTerm_Override_ID());
+		return paymentTermOverrideId != null
+				? paymentTermOverrideId
+				: PaymentTermId.ofRepoId(orderLine.getC_Order().getC_PaymentTerm_ID());
 	}
 
 	@Override
@@ -742,19 +750,19 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
-		final org.compiere.model.I_M_Product product = orderLine.getM_Product();
-
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			orderLine.setM_Product_DocumentNote(null);
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
 
-		final org.compiere.model.I_C_BPartner partner = order.getC_BPartner();
-
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final org.compiere.model.I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		final String adLanguage = partner.getAD_Language();
 
+		final org.compiere.model.I_M_Product product = Services.get(IProductDAO.class).getById(productId);
 		final org.compiere.model.I_M_Product translatedProduct = translate(product, org.compiere.model.I_M_Product.class, adLanguage);
 
 		orderLine.setM_Product_DocumentNote(translatedProduct.getDocumentNote());

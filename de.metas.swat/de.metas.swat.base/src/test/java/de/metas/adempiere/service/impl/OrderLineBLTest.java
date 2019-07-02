@@ -119,7 +119,7 @@ public class OrderLineBLTest
 
 		orderline.setM_PriceList_Version_ID(plv.getM_PriceList_Version_ID());
 
-		orderline.setM_Product(product);
+		orderline.setM_Product_ID(product.getM_Product_ID());
 
 		orderline.setC_Order(order);
 
@@ -129,9 +129,9 @@ public class OrderLineBLTest
 
 		orderline.setQtyOrdered(BigDecimal.ONE);
 
-		orderline.setPrice_UOM(priceUom);
+		orderline.setPrice_UOM_ID(priceUom.getC_UOM_ID());
 
-		orderline.setC_UOM(uom);
+		orderline.setC_UOM_ID(uom.getC_UOM_ID());
 
 		return orderline;
 	}

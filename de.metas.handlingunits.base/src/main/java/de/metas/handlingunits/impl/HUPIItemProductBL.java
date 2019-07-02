@@ -50,6 +50,12 @@ import lombok.NonNull;
 public class HUPIItemProductBL implements IHUPIItemProductBL
 {
 	@Override
+	public I_M_HU_PI_Item_Product getById(@NonNull final HUPIItemProductId id)
+	{
+		return Services.get(IHUPIItemProductDAO.class).getById(id);
+	}
+
+	@Override
 	public List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(
 			@NonNull final I_M_HU_PI_Version version,
 			@NonNull final I_M_Product product)
