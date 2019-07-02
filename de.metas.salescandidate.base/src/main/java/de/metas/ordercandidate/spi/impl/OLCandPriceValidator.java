@@ -23,14 +23,14 @@ package de.metas.ordercandidate.spi.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.MUOM;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -43,6 +43,8 @@ import de.metas.ordercandidate.spi.IOLCandValidator;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -108,7 +110,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 	
 				// set the internal pricing info for the user's information, if we have it
 				olCand.setPriceInternal(pricingResult.getPriceStd());
-				olCand.setPrice_UOM_Internal_ID(pricingResult.getPrice_UOM_ID());
+				olCand.setPrice_UOM_Internal_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 	
 				// further validation on manual price is not needed
 				return true;
@@ -133,13 +135,14 @@ public class OLCandPriceValidator implements IOLCandValidator
 		}
 
 		final BigDecimal priceInternal = pricingResult.getPriceStd();
-		final int priceUOMInternalId = pricingResult.getPrice_UOM_ID();
+		final UomId priceUOMInternalId = pricingResult.getPriceUomId();
 
 		// FIXME: move this part to handlingUnits !!!
-		if ("TU".equals(MUOM.get(InterfaceWrapperHelper.getCtx(olCand), priceUOMInternalId).getX12DE355()))
+		if (priceUOMInternalId != null
+				&& "TU".equals(Services.get(IUOMDAO.class).getX12DE355ById(priceUOMInternalId)))
 		{
 			// this olCand has a TU/Gebinde price-UOMthat mean that despite the imported UOM may be PCE, we import UOM="TU" into our order line.
-			olCand.setC_UOM_Internal_ID(priceUOMInternalId);
+			olCand.setC_UOM_Internal_ID(priceUOMInternalId.getRepoId());
 		}
 		else
 		{
@@ -151,7 +154,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 
 		// set the internal pricing info for the user's information
 		olCand.setPriceInternal(priceInternal);
-		olCand.setPrice_UOM_Internal_ID(priceUOMInternalId);
+		olCand.setPrice_UOM_Internal_ID(UomId.toRepoId(priceUOMInternalId));
 
 		olCand.setPriceActual(priceInternal);
 		olCand.setC_Currency_ID(pricingResult.getCurrencyRepoId());
@@ -174,7 +177,7 @@ public class OLCandPriceValidator implements IOLCandValidator
 			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 			final BigDecimal qtyOverride = null;
-			final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
+			final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
 			final IPricingResult pricingResult = olCandBL.computePriceActual(olCand, qtyOverride, PricingSystemId.NULL, datePromisedEffective);
 
 			return pricingResult;

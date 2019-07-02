@@ -1,11 +1,11 @@
 package de.metas.contracts.pricing;
 
 import org.adempiere.ad.dao.IQueryBL;
-import de.metas.location.CountryId;
 import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
@@ -138,14 +138,14 @@ public class SubscriptionPricingRule implements IPricingRule
 			@NonNull final IPricingResult result)
 	{
 		result.setCurrencyId(subscriptionPricingResult.getCurrencyId());
-		result.setPrice_UOM_ID(subscriptionPricingResult.getPrice_UOM_ID());
+		result.setPriceUomId(subscriptionPricingResult.getPriceUomId());
 		result.setCalculated(subscriptionPricingResult.isCalculated());
 		result.setDisallowDiscount(subscriptionPricingResult.isDisallowDiscount());
 
 		result.setUsesDiscountSchema(subscriptionPricingResult.isUsesDiscountSchema());
 		result.setPricingConditions(subscriptionPricingResult.getPricingConditions());
 
-		result.setEnforcePriceLimit(subscriptionPricingResult.isEnforcePriceLimit());
+		result.setEnforcePriceLimit(subscriptionPricingResult.getEnforcePriceLimit());
 		result.setPricingSystemId(subscriptionPricingResult.getPricingSystemId());
 		result.setPriceListVersionId(subscriptionPricingResult.getPriceListVersionId());
 		result.setProductCategoryId(subscriptionPricingResult.getProductCategoryId());

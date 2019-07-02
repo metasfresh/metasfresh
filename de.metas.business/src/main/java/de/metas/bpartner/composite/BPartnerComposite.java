@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -126,12 +127,12 @@ public final class BPartnerComposite
 
 		if (orgId == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.orgId"));
+			result.add(TranslatableStrings.constant("Missing BPartnerComposite.orgId"));
 		}
 
 		if (bpartner == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.bpartner"));
+			result.add(TranslatableStrings.constant("Missing BPartnerComposite.bpartner"));
 		}
 		else
 		{
@@ -140,7 +141,7 @@ public final class BPartnerComposite
 					|| !extractLocationGlns().isEmpty();
 			if (!lokupValuesAreOk)
 			{
-				result.add(ITranslatableString.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
+				result.add(TranslatableStrings.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
 			}
 		}
 

@@ -34,9 +34,9 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -129,7 +129,7 @@ public class AdempiereException extends RuntimeException
 			return ex.getMessageBuilt();
 		}
 
-		return ImmutableTranslatableString.constant(extractMessage(throwable));
+		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
 	/**
@@ -251,14 +251,14 @@ public class AdempiereException extends RuntimeException
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = ImmutableTranslatableString.empty();
+		this.messageTrl = TranslatableStrings.empty();
 	}
 
 	public AdempiereException(final String message, final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = ImmutableTranslatableString.constant(message);
+		this.messageTrl = TranslatableStrings.constant(message);
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
@@ -343,7 +343,7 @@ public class AdempiereException extends RuntimeException
 	 */
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append(getOriginalMessage());
 		if (appendParametersToMessage)
 		{
@@ -614,10 +614,10 @@ public class AdempiereException extends RuntimeException
 		final Map<String, Object> parameters = getParameters();
 		if (parameters.isEmpty())
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 		message.append("Additional parameters:");
 		for (final Map.Entry<String, Object> paramName2Value : parameters.entrySet())
 		{
@@ -635,7 +635,7 @@ public class AdempiereException extends RuntimeException
 	protected final void appendParameters(final TranslatableStringBuilder message)
 	{
 		final ITranslatableString parametersStr = buildParametersString();
-		if (ImmutableTranslatableString.isBlank(parametersStr))
+		if (TranslatableStrings.isBlank(parametersStr))
 		{
 			return;
 		}

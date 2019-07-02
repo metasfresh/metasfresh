@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
@@ -145,7 +146,7 @@ public class PricingContextBuilder
 		pricingCtx.setCurrencyId(currencyId);
 		pricingCtx.setPricingSystemId(pricingSytemId);
 		pricingCtx.setPriceListVersionId(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()));
-		pricingCtx.setPriceDate(priceListVersion.getValidFrom()); // just to drive home this point
+		pricingCtx.setPriceDate(TimeUtil.asLocalDate(priceListVersion.getValidFrom())); // just to drive home this point
 	}
 
 }

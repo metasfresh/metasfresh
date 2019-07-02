@@ -15,6 +15,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
@@ -31,6 +33,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -123,7 +126,7 @@ public class AttributePricing implements IPricingRule
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
 		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
 		final I_M_PriceList_Version pricelistVersion = productPrice.getM_PriceList_Version();
-		final I_M_PriceList priceList = InterfaceWrapperHelper.create(pricelistVersion.getM_PriceList(), I_M_PriceList.class);
+		final I_M_PriceList priceList = pricelistVersion.getM_PriceList();
 
 		result.setPriceStd(productPrice.getPriceStd());
 		result.setPriceList(productPrice.getPriceList());
@@ -132,17 +135,26 @@ public class AttributePricing implements IPricingRule
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
 		result.setDiscountEditable(productPrice.isDiscountEditable());
-		result.setEnforcePriceLimit(priceList.isEnforcePriceLimit());
+		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(false);
 		result.setPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 		result.setPriceListVersionId(PriceListVersionId.ofRepoId(productPrice.getM_PriceList_Version_ID()));
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
 		result.setCalculated(true);
 		// 06942 : use product price uom all the time
-		result.setPrice_UOM_ID(productPrice.getC_UOM_ID());
+		result.setPriceUomId(UomId.ofRepoId(productPrice.getC_UOM_ID()));
 
 		// 08803: store the information about the price relevant attributes
 		result.addPricingAttributes(attributePricingBL.extractPricingAttributes(productPrice));
+	}
+
+	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		return priceList.isEnforcePriceLimit()
+				? BooleanWithReason.trueBecause(msgBL.translatable("M_PriceList_ID"))
+				: BooleanWithReason.falseBecause(msgBL.translatable("M_PriceList_ID"));
 	}
 
 	/**

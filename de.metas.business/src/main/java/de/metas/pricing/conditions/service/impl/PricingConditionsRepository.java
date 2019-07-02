@@ -422,7 +422,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		if (request.getPaymentTermId() != null)
 		{
-			final int paymentTermRepoId = PaymentTermId.getRepoId(request.getPaymentTermId().orElse(null));
+			final int paymentTermRepoId = PaymentTermId.toRepoId(request.getPaymentTermId().orElse(null));
 			schemaBreak.setC_PaymentTerm_ID(paymentTermRepoId);
 		}
 		if (request.getPaymentDiscount() != null)

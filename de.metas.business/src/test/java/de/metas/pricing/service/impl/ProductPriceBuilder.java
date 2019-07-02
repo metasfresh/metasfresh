@@ -55,6 +55,7 @@ public class ProductPriceBuilder
 		final I_M_ProductPrice pp = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class, plv);
 		pp.setM_PriceList_Version(plv);
 		pp.setM_Product(product);
+		pp.setC_UOM_ID(product.getC_UOM_ID());
 		pp.setPriceStd(price);
 		pp.setPriceList(price);
 		pp.setPriceLimit(price);

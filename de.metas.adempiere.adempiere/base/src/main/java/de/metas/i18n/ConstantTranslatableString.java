@@ -4,10 +4,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -22,36 +22,44 @@ import lombok.EqualsAndHashCode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @EqualsAndHashCode
-/*package*/final class ConstantTranslatableString implements ITranslatableString
+/* package */final class ConstantTranslatableString implements ITranslatableString
 {
-	static final ConstantTranslatableString of(@Nullable final String value)
+	static ConstantTranslatableString of(@Nullable final String value)
 	{
 		final boolean anyLanguage = false;
 		return of(value, anyLanguage);
 	}
 
-	static final ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
+	static ITranslatableString anyLanguage(final String value)
 	{
-		if(value == null || value.isEmpty())
+		final boolean anyLanguage = true;
+		return of(value, anyLanguage);
+	}
+
+	static ConstantTranslatableString of(@Nullable final String value, final boolean anyLanguage)
+	{
+		if (value == null || value.isEmpty())
 		{
 			return EMPTY;
 		}
-		if(" ".equals(value))
+		else if (" ".equals(value))
 		{
 			return SPACE;
 		}
-
-		return new ConstantTranslatableString(value, anyLanguage);
+		else
+		{
+			return new ConstantTranslatableString(value, anyLanguage);
+		}
 	}
 
 	static final ConstantTranslatableString EMPTY = new ConstantTranslatableString("", true);
@@ -60,20 +68,17 @@ import lombok.EqualsAndHashCode;
 	private final String value;
 	private final boolean anyLanguage;
 
-	private ConstantTranslatableString(final String value, final boolean anyLanguage)
+	private ConstantTranslatableString(@NonNull final String value, final boolean anyLanguage)
 	{
 		this.value = value;
 		this.anyLanguage = anyLanguage;
 	}
 
 	@Override
+	@Deprecated
 	public String toString()
 	{
-		return MoreObjects.toStringHelper("constant")
-				.omitNullValues()
-				.add("value", value)
-				.addValue(anyLanguage ? "anyLanguage" : null)
-				.toString();
+		return value;
 	}
 
 	@Override

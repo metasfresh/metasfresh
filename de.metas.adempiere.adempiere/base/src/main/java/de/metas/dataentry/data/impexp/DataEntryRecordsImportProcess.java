@@ -34,7 +34,7 @@ import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.model.I_DataEntry_Record;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.dataentry.model.X_I_DataEntry_Record;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -252,7 +252,7 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 
 					if (field != null)
 					{
-						throw new AdempiereException(TranslatableStringBuilder.newInstance()
+						throw new AdempiereException(TranslatableStrings.builder()
 								.append("More than one matching field found: ")
 								.append(section.getCaption()).append(" - ").append(line.getSeqNo()).append(" - ").append(field.getCaption())
 								.append(", ")
