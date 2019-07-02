@@ -17,7 +17,7 @@ describe('Create a Credit memo for Sales Invoice', function() {
   let originalPriceList;
   let originalCurrency;
   let originalProduct;
-  let originalQuantity;
+
 
   // data for "before" section
   // priceList
@@ -38,6 +38,8 @@ describe('Create a Credit memo for Sales Invoice', function() {
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
+  let originalQuantity=20;
+
 
   it('Prepare product and baprtner', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
@@ -71,7 +73,7 @@ describe('Create a Credit memo for Sales Invoice', function() {
     cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
         .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(20)
+          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
           // todo @dh: how to add packing item
           // .setPackingItem('IFCO 6410 x 10 Stk')
           // .setTuQuantity(2)
@@ -122,9 +124,6 @@ describe('Create a Credit memo for Sales Invoice', function() {
       originalProduct = product;
     });
 
-    cy.getStringFieldValue('QtyEntered', true).then(qty => {
-      originalQuantity = qty;
-    });
     cy.pressDoneButton();
   });
 
