@@ -271,7 +271,7 @@ Cypress.Commands.add(
       cy.get('.input-dropdown-list').should('exist');
       cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
       if (!skipRequest) {
-        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList);
+        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
       }
       cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
     });
@@ -333,6 +333,30 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
       for (let i = 0; i < options.length; i += 1) {
         if (i === index) {
           cy.get(options[i]).click();
+        }
+      }
+    });
+  });
+});
+
+Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null) => {
+  describe(`Set the Checkbox value ${fieldName} to ${isChecked}`, function() {
+    // the expected value is the same as the checked state
+    // (used only for verification if the checkbox has the correct value)
+    const expectedPatchValue = isChecked;
+
+    cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
+      if (isChecked) {
+        if (theCheckboxValue) {
+          // Nothing to do, already checked
+        } else {
+          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
+        }
+      } else {
+        if (theCheckboxValue) {
+          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
+        } else {
+          // Nothing to do, already unchecked
         }
       }
     });

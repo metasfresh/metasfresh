@@ -21,10 +21,15 @@ describe('Aggregated inventory test', function() {
     cy.visitWindow(inventory.windowId, 'NEW', 'newInventoryRecord');
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'aggregatedHUsInventoryDocTypeName');
-      cy.selectInListField('C_DocType_ID', docTypeName);
+      cy.getStringFieldValue('C_DocType_ID').then(currentDocTypeName => {
+        const docTypeName = getLanguageSpecific(inventoryJson, 'aggregatedHUsInventoryDocTypeName');
+        if (currentDocTypeName !== docTypeName) {
+          cy.log(`Change C_DocType_ID from ${currentDocTypeName} to ${docTypeName}`);
+          cy.selectInListField('C_DocType_ID', docTypeName);
+        }
 
-      cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
+        cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
+      });
     });
 
     cy.selectTab('M_InventoryLine');
@@ -53,7 +58,7 @@ describe('Aggregated inventory test', function() {
       );
     });
 
-	// make sure that the inventory line does not show the HU field, bc the created HUs shall remain under the hood)
+    // make sure that the inventory line does not show the HU field, bc the created HUs shall remain under the hood)
     cy.selectTab('M_InventoryLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();

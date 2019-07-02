@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+import {DocumentStatusKey, RewriteURL} from "./utils/constants";
+
 declare namespace Cypress {
   interface Chainable<Subject> {
 
@@ -54,6 +56,21 @@ declare namespace Cypress {
      */
     getCheckboxValue(fieldName: string, modal?: boolean): Chainable<any>
 
+
+    /**
+     * @param fieldName name of the field is question
+     * @param expectedPatchValue - the expected value of the checkbox
+     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch
+     *
+     * @example
+     * // click on a checkbox in a modal started from action
+     * cy.clickOnCheckBox('CompleteIt', true, true, '/rest/api/process/');
+     *
+     */
+    clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal?: boolean, rewriteUrl ?: string): Chainable<any>
+
+
     /**
      * Open the advanced edit overlay via ALT+E shortcut
      */
@@ -99,11 +116,12 @@ declare namespace Cypress {
      * @param stringValue (sub-)string of the list item to select
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
+     * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
      * @example
      * // select a certain flatrate condition is a process dialog
      * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
      */
-    selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string): Chainable<any>
+    selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, skipRequest ?: boolean): Chainable<any>
 
     /**
      * Select a reference (zoom-to-target) from the reference-sidelist
@@ -118,17 +136,18 @@ declare namespace Cypress {
 
     /**
      * Opens a new single document window
-     * @param windowId the metasfresh AD_Window_ID of the window to visit
-     * @param recordId optional; the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
      *
-     * @param documentIdAliasName optional; default: visitedDocumentId; the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
+     * @param windowId - the metasfresh AD_Window_ID of the window to visit
+     * @param recordId - optional - the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
+     * @param documentIdAliasName - optional, default: visitedDocumentId - the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
      *
      * @example
      * // create a new business partner document
-     * cy.visitWindow(123, 'NEW', 'myNewDcumentId')
+     * cy.visitWindow(123, 'NEW', 'myNewDocumentId')
      *
      * cy.get('@myNewDcumentId').then((newDocument) => {
      *   cy.log(`going to do things with the document we added just before; newDocument=${JSON.stringify(newDocument)}`)
+     *   cy.log(`documentId=${newDocument.documentId}`)
      * })
      *
      */
@@ -183,21 +202,11 @@ declare namespace Cypress {
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
      * cy.writeIntoTextField('Description', 'myname')
      *
+     * @example
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoTextField('Description', 'myname', true)
      */
     writeIntoTextField(fieldName: string, stringValue: string, modal?: boolean): Chainable<any>
-
-
-    // /**
-    //  * Click on a checkbox field
-    //  *
-    //  * @param fieldName
-    //  * @param expectedPatchValue
-    //  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
-    //  * @param rewriteUrl
-    //  */
-    // clickOnCheckBox(fieldName: string, expectedPatchValue: string, modal: boolean, rewriteUrl: string): Chainable<any>
 
 
     /**
@@ -226,5 +235,69 @@ declare namespace Cypress {
      */
     readAllNotifications(): Chainable<any>
 
+
+    /**
+     * @param waitBeforePress optional, default 0 - wait this many milliseconds before pressing the start button
+     */
+    pressStartButton(waitBeforePress ?: number): Chainable<any>
+
+    /**
+     * Get the notification modal from the top-right of the screen
+     * which appears when an error happens, or when a process produces a notification.
+     *
+     * @param containsText optional, default null - look for the given test in the notification element
+     *
+     * @example
+     * // This will regex match the text "Created: Gutschrift, Document No 170256" (observe the "/" at start and end which denotes a regex)
+     * // (regex docs: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)
+     * cy.getNotificationModal(/Created.*Document No/);
+     *
+     * @example
+     * // This will work as String.contains('Tibi'):
+     * cy.getNotificationModal('Tibi');
+     */
+    getNotificationModal(containsText?: string | RegExp)
+
+
+    /**
+     * Change the current value of a checkBox (Yes/No box) to the desired state (checked (true) or not checked (false).
+     *
+     * @param fieldName name of the field is question
+     * @param isChecked if true the checkbox is set to checked state, if false the checkbox is set to unchecked state
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
+     */
+    setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL): Chainable<any>
+
+
+    /**
+     * Unset the value of a list.
+     * Similar to pressing the (x) button of a list.
+     *
+     * @param fieldName name of the field is question
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
+     */
+    resetListValue(fieldName: string, modal?: boolean, rewriteUrl?: RewriteURL): Chainable<any>
+
+
+    /**
+     * Expect specific document status
+     * @param expectedDocumentStatus - the status the document should have
+     *
+     * @example
+     * cy.expectDocumentStatus(DocumentStatusKey.Completed);
+     *
+     * @example
+     * cy.expectDocumentStatus(DocumentStatusKey.InProgress);
+     */
+    expectDocumentStatus(expectedDocumentStatus: DocumentStatusKey): Chainable<any>;
+
+
+    /**
+     * Press the batch entry button
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
   }
 }
