@@ -1,4 +1,4 @@
-import { BPartner } from '../../support/utils/bpartner_api';
+import { BPartner } from '../../support/utils/bpartner';
 
 describe('Create new BPartner', function() {
   const timestamp = new Date().getTime();
