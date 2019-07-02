@@ -113,6 +113,8 @@ describe('Create Sales order', function() {
       '.form-field-DeliveryDate_Effective, .form-field-DeliveryDate_Override, .form-field-PreparationDate_Effective, .form-field-PreparationDate_Override'
     )
       .find('input')
-      .should('have.value', nextDayAsString + ' 12:00 AM');
+      .should(input => {
+        expect(input.val()).to.have.string(nextDayAsString);
+      });
   });
 });
