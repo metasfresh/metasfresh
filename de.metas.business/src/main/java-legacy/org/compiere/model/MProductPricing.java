@@ -71,9 +71,10 @@ public class MProductPricing
 	 * 
 	 * @return true if calculated
 	 */
-	public boolean calculatePrice()
+	public boolean recalculatePrice()
 	{
-		return calculatePrice(true);
+		final boolean recalculate = true;
+		return calculatePrice(recalculate);
 	}	// calculatePrice
 
 	private boolean calculatePrice(boolean recalculate)
