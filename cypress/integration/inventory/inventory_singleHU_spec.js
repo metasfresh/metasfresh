@@ -25,8 +25,13 @@ describe('Aggregated inventory test', function() {
     cy.visitWindow(inventory.windowId, 'NEW', 'newInventoryRecord');
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
-      cy.selectInListField('C_DocType_ID', docTypeName);
+      cy.getStringFieldValue('C_DocType_ID').then(currentDocTypeName => {
+        const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
+        if (currentDocTypeName !== docTypeName) {
+          cy.log(`Change C_DocType_ID from ${currentDocTypeName} to ${docTypeName}`);
+          cy.selectInListField('C_DocType_ID', docTypeName);
+        }
+      });
 
       cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
     });
