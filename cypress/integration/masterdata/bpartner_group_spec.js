@@ -5,6 +5,21 @@ describe('Create new bpartner group, https://github.com/metasfresh/metasfresh-e2
   const GroupTestPartnerName = `GroupTestPartnerName ${timestamp}`;
   const GroupName = `TestGroup ${timestamp}`;
   let groupDocumentId;
+  let bpartnerID = null;
+
+  before(function() {
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      const bpartner = new BPartner({ ...customerJson, name: GroupTestPartnerName })
+        .setCustomer(true)
+        .clearLocations()
+        .clearContacts()
+        .setBank(undefined);
+
+      bpartner.apply().then(bpartner => {
+        bpartnerID = bpartner.id;
+      });
+    });
+  });
 
   //create bpartnergroup
   it('Create bpartnergroup', function() {
@@ -19,7 +34,7 @@ describe('Create new bpartner group, https://github.com/metasfresh/metasfresh-e2
 
   //create bpartner
   it('Create Testpartner', function() {
-    new BPartner().setName(GroupTestPartnerName).apply();
+    cy.visitWindow('123', bpartnerID);
     cy.selectInListField('C_BP_Group_ID', GroupName, false /*modal*/, '/rest/api/window/.*' /*rewriteUrl*/);
   });
 
