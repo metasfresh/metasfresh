@@ -161,14 +161,10 @@ class MasterWidget extends Component {
     } = this.props;
     const dateParse = ['Date', 'DateTime', 'Time'];
     let currRowId = rowId;
-    let value;
-    let checkWidgetType = widgetType === 'CostPrice';
 
-    if (checkWidgetType) {
-      if (/[0-9]+([\.,][0-9]+)?/.test(val)) {
-        value = val.replace(',', '.');
-      }
-    }
+    const isCostPriceWidget = widgetType === 'CostPrice';
+    const isDecimalValue = /[0-9]+([.,][0-9]+)?/.test(val);
+    const requiresCommaFix = isCostPriceWidget && isDecimalValue;
 
     this.setState(
       {
@@ -184,7 +180,7 @@ class MasterWidget extends Component {
         }
         updatePropertyValue(
           property,
-          checkWidgetType ? value : val,
+          requiresCommaFix ? val.replace(',', '.') : val,
           tabId,
           currRowId,
           isModal,

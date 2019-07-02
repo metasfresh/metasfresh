@@ -132,14 +132,11 @@ export class RawWidget extends Component {
     const willPatch = this.willPatch(property, value, valueTo);
     //1
     let fieldData = widgetData.find(widget => widget.field === property);
-    let checkWidgetType = fieldData.widgetType === 'CostPrice';
-    let costPriceValue;
 
-    if (checkWidgetType) {
-      if (/[0-9]+([\.,][0-9]+)?/.test(value)) {
-        costPriceValue = value.replace(',', '.');
-      }
-    }
+    const isCostPriceWidget = fieldData.widgetType === 'CostPrice';
+    const isDecimalValue = /[0-9]+([.,][0-9]+)?/.test(value);
+    const requiresCommaFix = isCostPriceWidget && isDecimalValue;
+
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
     if ((isForce || willPatch) && handlePatch) {
@@ -150,7 +147,7 @@ export class RawWidget extends Component {
 
       return handlePatch(
         property,
-        checkWidgetType ? costPriceValue : value,
+        requiresCommaFix ? value.replace(',', '.') : value,
         id,
         valueTo
       );
