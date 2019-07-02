@@ -227,7 +227,7 @@ public class OrderFreightCostsService
 					0,
 					BigDecimal.ONE,
 					SOTrx.SALES.toBoolean());
-			pricingContext.setFailIfNotCalculated(true);
+			pricingContext.setFailIfNotCalculated();
 			pricingContext.setPricingSystemId(PricingSystemId.ofRepoIdOrNull(salesOrder.getM_PricingSystem_ID()));
 			pricingContext.setPriceListId(PriceListId.ofRepoIdOrNull(salesOrder.getM_PriceList_ID()));
 

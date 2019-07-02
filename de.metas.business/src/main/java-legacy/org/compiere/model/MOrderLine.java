@@ -27,6 +27,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
@@ -39,6 +40,8 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -799,9 +802,7 @@ public class MOrderLine extends X_C_OrderLine
 			setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		}
 		// Product
-		}
 		else
-		// Set/check Product Price
 		{
 			// Set Price if Actual = 0
 			if (getPriceActual().signum() == 0
