@@ -76,11 +76,9 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     // this step should only create the SI.
     // WAT??!!
     cy.get('@newInvoiceDocumentId').then(function ({documentId /* this is destructuring */}) {
-        originalSalesInvoiceID = documentId;
-        cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
-      }
-    )
-    ;
+      originalSalesInvoiceID = documentId;
+      cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
+    });
   });
 
   it('Sales Invoice is Completed', function () {
