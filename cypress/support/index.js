@@ -41,9 +41,4 @@ before(function() {
   Cypress.Cookies.defaults({
     whitelist: ['SESSION', 'isLogged'],
   });
-
-  // This wait is stupid.
-  // It also appears to be a good workaround for the problems in
-  // cypress/support/utils/utils.js:1
-  cy.wait(1000);
 });
