@@ -45,12 +45,13 @@ describe('Aggregated inventory test', function() {
   
     
     //check if snapshots match
-
+  /*
   it('Check snapshots', function() {
     cy.get('@newInventoryRecord').then(newInventoryRecord => {
       inventory.toMatchSnapshots(newInventoryRecord, 'inventory_singleHU');
     });
   });
+  */
 });
 
 
