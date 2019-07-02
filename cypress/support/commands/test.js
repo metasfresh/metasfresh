@@ -154,9 +154,8 @@ Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   describe(`Expect specific document status`, function () {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
 
-      cy.get('.meta-dropdown-toggle').then($toggle => {
-        cy.log(`z ${$toggle.html()}`);
-      });
+      // wait until the dropdown is loaded
+      cy.get('.meta-dropdown-toggle .dropdown-status-item').should('exist');
 
       const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
       const documentTag = DocumentStatusKey[`_tag_${expectedDocumentStatus}`];
