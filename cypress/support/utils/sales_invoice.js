@@ -33,12 +33,12 @@ export class SalesInvoice {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     SalesInvoice.applySalesInvoice(this);
     cy.log(`SalesInvoice - apply STOP (${this._toString})`);
-    return this;
   }
 
   static applySalesInvoice(salesInvoice) {
     describe(`Create new SalesInvoice: ${salesInvoice._toString}`, () => {
       cy.visitWindow('167', 'NEW', 'newInvoiceDocumentId' /*documentIdAliasName*/);
+
       cy.get('.header-breadcrumb-sitename')
         .should('contain', new Date().getDate())
         .should('contain', new Date().getFullYear());
@@ -47,7 +47,9 @@ export class SalesInvoice {
 
       cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
       cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
-      cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+      if (salesInvoice.priceList) {
+        cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+      }
 
       cy.getStringFieldValue('DocumentNo').should('be.empty');
       cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
