@@ -230,7 +230,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
-	int getDefaultShipToLocationCountryId(BPartnerId bpartnerId);
+	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve default/first bill to location.

@@ -26,12 +26,6 @@ package de.metas.adempiere.gui.search;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-
 /**
  * Implementations or adapters of this interface model a record (e.g. C_OrderLine) which supports handling unit packing instructions (e.g. packing item, qty etc).
  *
@@ -57,17 +51,15 @@ public interface IHUPackingAware
 
 	int getM_Product_ID();
 
-	I_M_Product getM_Product();
-
 	void setM_Product_ID(int productId);
 
 	int getM_AttributeSetInstance_ID();
 
 	void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID);
 
-	I_C_UOM getC_UOM();
+	int getC_UOM_ID();
 
-	void setC_UOM(I_C_UOM uom);
+	void setC_UOM_ID(int uomId);
 
 	/** @param qty quantity (aka Qty CU) */
 	void setQty(BigDecimal qtyInHUsUOM);
@@ -77,9 +69,7 @@ public interface IHUPackingAware
 
 	int getM_HU_PI_Item_Product_ID();
 
-	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
-
-	void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product huPiItemProduct);
+	void setM_HU_PI_Item_Product_ID(final int huPiItemProductId);
 
 	/** @return Qty Packs (aka Qty TU). */
 	BigDecimal getQtyTU();
@@ -87,9 +77,9 @@ public interface IHUPackingAware
 	/** @param qtyPacks Qty Packs (aka Qty TU). */
 	void setQtyTU(final BigDecimal qtyPacks);
 
-	void setC_BPartner(I_C_BPartner partner);
+	void setC_BPartner_ID(int bpartnerId);
 
-	I_C_BPartner getC_BPartner();
+	int getC_BPartner_ID();
 
 	void setDateOrdered(Timestamp dateOrdered);
 

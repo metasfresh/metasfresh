@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import lombok.ToString;
  */
 
 @EqualsAndHashCode
-@ToString
 public final class CurrencyPrecision
 {
 	@JsonCreator
@@ -77,6 +75,19 @@ public final class CurrencyPrecision
 		this.precision = precision;
 	}
 
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return String.valueOf(precision);
+	}
+
+	@JsonValue
+	public int toInt()
+	{
+		return precision;
+	}
+
 	public BigDecimal roundIfNeeded(@NonNull final BigDecimal amt)
 	{
 		if (amt.scale() > precision)
@@ -92,12 +103,6 @@ public final class CurrencyPrecision
 	public BigDecimal round(@NonNull final BigDecimal amt)
 	{
 		return amt.setScale(precision, getRoundingMode());
-	}
-
-	@JsonValue
-	public int toInt()
-	{
-		return precision;
 	}
 
 	public RoundingMode getRoundingMode()

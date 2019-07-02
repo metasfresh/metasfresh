@@ -52,12 +52,10 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -80,6 +78,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.order.IOrderLineBL;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -88,7 +87,10 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -167,7 +169,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 		else
 		{
-			final int paymentTermId = extractPaymentTermId(inOutLine);
+			final PaymentTermId paymentTermId = extractPaymentTermIdOrNull(inOutLine);
 			final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLineOrNull(inOutLine, paymentTermId, null);
 			addIfNotNullAndReturnQty(createdInvoiceCandidates, ic);
 		}
@@ -178,15 +180,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_InOutLine> referencingLines = retrieveActiveReferencingInoutLines(inOutLine);
-
-		final Multimap<Integer, I_M_InOutLine> paymentTermId2referencingLines = //
-				Multimaps.filterKeys(
-						Multimaps.index(referencingLines, referencingLine -> extractPaymentTermId(referencingLine)),
-						paymentTermId -> paymentTermId > 0);
+		
+		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
+				referencingLines.stream()
+				.map(referencingLine -> GuavaCollectors.entry(
+						extractPaymentTermIdOrNull(referencingLine), 
+						referencingLine))
+				.filter(ImmutableMapEntry::isKeyNotNull)
+				.collect(GuavaCollectors.toImmutableListMultimap());
 
 		BigDecimal qtyLeftToAllocate = inOutLine.getMovementQty();
 
-		int lastPaymentTermId = 0; // will be used if some qty is left after we iterated all paymentTermIds
+		PaymentTermId lastPaymentTermId = null; // will be used if some qty is left after we iterated all paymentTermIds
 
 		// needed to figure out when we are looking at the last paymentTermId
 		final int numberOfPaymentTermIds = paymentTermId2referencingLines.keySet().size();
@@ -194,7 +199,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> createdInvoiceCandidates = ImmutableList.builder();
 
-		for (final int paymentTermId : paymentTermId2referencingLines.keySet())
+		for (final PaymentTermId paymentTermId : paymentTermId2referencingLines.keySet())
 		{
 			counter++;
 
@@ -255,18 +260,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	enum Mode
 	{
 		CREATE, UPDATE
-	};
+	}
 
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLine,
-			final int paymentTermId,
+			@Nullable final PaymentTermId paymentTermId,
 			@Nullable BigDecimal forcedQtyToAllocate)
 	{
 		final I_M_InOut inOut = create(inOutLine.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, inOutLine);
 
 		// extractQtyDelivered() depends on the C_PaymentTerm to be set
-		ic.setC_PaymentTerm_ID(paymentTermId);
+		ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
 		TableRecordCacheLocal.setReferencedValue(ic, inOutLine);
 		ic.setIsPackagingMaterial(inOutLine.isPackagingMaterial());
@@ -496,7 +501,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
-			final BigDecimal qtyOrdered = Util.coalesceSuppliers(
+			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
 					() -> forcedQtyOrdered,
 					() -> extractQtyDelivered(ic, callerCanCreateAdditionalICs));
 
@@ -538,6 +543,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 			return inOutLine.getMovementQty();
 		}
+		
+		final PaymentTermId icPaymentTermId = PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID());
 
 		BigDecimal qtyDeliveredLeftToAllocateForAnyPaymentTerm = packagingInOutLine.getMovementQty();
 		BigDecimal qtyDeliveredLeftToAllocateForCurentICsPaymentTerm = packagingInOutLine.getMovementQty();
@@ -546,7 +553,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			final BigDecimal qtyOfReferencingInOutLine = referencingInOutLine.getQtyEnteredTU();
 
-			if (inoutLineFitsWithPaymentTermId(referencingInOutLine, ic.getC_PaymentTerm_ID()))
+			if (inoutLineFitsWithPaymentTermId(referencingInOutLine, icPaymentTermId))
 			{
 				final BigDecimal qtyToAddForThisIC = qtyOfReferencingInOutLine.min(qtyDeliveredLeftToAllocateForAnyPaymentTerm);
 				qtyAllocatedViaReferencingInoutLines = qtyAllocatedViaReferencingInoutLines.add(qtyToAddForThisIC);
@@ -592,21 +599,22 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return qtyAllocatedViaReferencingInoutLines.add(qtyDeliveredLeftToAllocateForCurentICsPaymentTerm);
 	}
 
-	private boolean inoutLineFitsWithPaymentTermId(
+	private static boolean inoutLineFitsWithPaymentTermId(
 			@NonNull final I_M_InOutLine inOutLine,
-			final int paymentTermId)
+			@Nullable final PaymentTermId paymentTermId)
 	{
-		final int paymentTermIdOfInOutLine = extractPaymentTermId(inOutLine);
-		return paymentTermIdOfInOutLine <= 0 || paymentTermIdOfInOutLine == paymentTermId;
+		final PaymentTermId paymentTermIdOfInOutLine = extractPaymentTermIdOrNull(inOutLine);
+		return paymentTermIdOfInOutLine == null
+				|| PaymentTermId.equals(paymentTermIdOfInOutLine, paymentTermId);
 	}
 
 	@VisibleForTesting
-	static int extractPaymentTermId(@NonNull final I_M_InOutLine inOutLine)
+	static PaymentTermId extractPaymentTermIdOrNull(@NonNull final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() > 0)
 		{
 			// this won't be the case for the actual iol this handler is dealing with, but maybe for one of its related iols
-			return extractPaymentTermIdViaOrderLine(inOutLine);
+			return extractPaymentTermIdViaOrderLineOrNull(inOutLine);
 		}
 
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -619,8 +627,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.list(I_M_InOutLine.class);
 		for (final I_M_InOutLine refencingLine : referencingLines)
 		{
-			final int paymentTermId = extractPaymentTermIdViaOrderLine(refencingLine);
-			if (paymentTermId > 0)
+			final PaymentTermId paymentTermId = extractPaymentTermIdViaOrderLineOrNull(refencingLine);
+			if (paymentTermId != null)
 			{
 				return paymentTermId;
 			}
@@ -630,8 +638,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final List<I_M_InOutLine> lines = inOutDAO.retrieveLines(inOutLine.getM_InOut(), I_M_InOutLine.class);
 		for (final I_M_InOutLine line : lines)
 		{
-			final int paymentTermId = extractPaymentTermIdViaOrderLine(line);
-			if (paymentTermId > 0)
+			final PaymentTermId paymentTermId = extractPaymentTermIdViaOrderLineOrNull(line);
+			if (paymentTermId != null)
 			{
 				return paymentTermId;
 			}
@@ -640,10 +648,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// last fallback
 		if (inOutLine.getM_InOut().getC_Order_ID() > 0)
 		{
-			return inOutLine.getM_InOut().getC_Order().getC_PaymentTerm_ID();
+			return PaymentTermId.ofRepoId(inOutLine.getM_InOut().getC_Order().getC_PaymentTerm_ID());
 		}
 
-		return -1;
+		return null;
 	}
 
 	/**
@@ -652,15 +660,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @param inOutLine an inout line that is somehow related to the lines which this handler handles.
 	 */
 	@VisibleForTesting
-	static int extractPaymentTermIdViaOrderLine(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	static PaymentTermId extractPaymentTermIdViaOrderLineOrNull(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		if (inOutLine.getC_OrderLine_ID() <= 0)
 		{
-			return -1;
+			return null;
 		}
 
 		final I_C_OrderLine ol = inOutLine.getC_OrderLine(); //
-		return Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(ol);
+		return Services.get(IOrderLineBL.class).getPaymentTermId(ol);
 	}
 
 	/**
@@ -785,7 +793,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				//
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pricingResult.getPriceStd())
-				.priceUOMId(pricingResult.getPrice_UOM_ID()) // 07090 when we set PriceActual, we shall also set PriceUOM.
+				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
 				.taxIncluded(taxIncluded)
 				//
 				.discount(pricingResult.getDiscount())

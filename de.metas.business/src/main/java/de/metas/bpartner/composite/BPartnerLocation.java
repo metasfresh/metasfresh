@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -105,11 +106,11 @@ public class BPartnerLocation
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 		if (isEmpty(countryCode, true))
 		{
-			result.add(ITranslatableString.constant("Missing countryCode"));
+			result.add(TranslatableStrings.constant("Missing countryCode"));
 		}
 		if (!isEmpty(district, true) && isEmpty(postal, true))
 		{
-			result.add(ITranslatableString.constant("Missing post (required if district is set)"));
+			result.add(TranslatableStrings.constant("Missing post (required if district is set)"));
 		}
 		return result.build();
 	}

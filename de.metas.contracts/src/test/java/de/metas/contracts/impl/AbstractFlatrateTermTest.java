@@ -360,7 +360,7 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
 		orderLineRecord.setC_Order(orderRecord);
 		orderLineRecord.setC_Flatrate_Conditions(conditions);
-		orderLineRecord.setM_Product(product);
+		orderLineRecord.setM_Product_ID(product.getM_Product_ID());
 		saveRecord(orderLineRecord);
 
 		return orderLineRecord;

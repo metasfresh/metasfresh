@@ -25,12 +25,12 @@ package de.metas.tax.api;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.location.CountryId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.location.CountryId;
 import de.metas.util.ISingletonService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,6 +41,8 @@ import lombok.Value;
 public interface ITaxDAO extends ISingletonService
 {
 	int C_TAX_ID_NO_TAX_FOUND = 100;
+	
+	I_C_Tax getTaxById(int taxRepoId);
 
 	boolean retrieveIsTaxExempt(Properties ctx, int bPartnerId, Timestamp date, String trxName);
 

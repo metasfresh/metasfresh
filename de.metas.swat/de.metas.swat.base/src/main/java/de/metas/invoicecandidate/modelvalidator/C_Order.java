@@ -43,11 +43,11 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -83,7 +83,7 @@ public class C_Order
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(soCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+			throw new AdempiereException(TranslatableStrings.builder()
 					.appendADElement("BPartnerCreditStop").append(":")
 					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
 					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
@@ -91,7 +91,7 @@ public class C_Order
 		}
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(soCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+			throw new AdempiereException(TranslatableStrings.builder()
 					.appendADElement("BPartnerCreditHold").append(":")
 					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
 					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
@@ -116,7 +116,7 @@ public class C_Order
 
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(calculatedSOCreditStatus))
 		{
-			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+			throw new AdempiereException(TranslatableStrings.builder()
 					.appendADElement("BPartnerOverOCreditHold").append(":")
 					.append(" ").appendADElement("SO_CreditUsed").append("=").append(creditUsed, DisplayType.Amount)
 					.append(", ").appendADElement("GrandTotal").append("=").append(grandTotal, DisplayType.Amount)

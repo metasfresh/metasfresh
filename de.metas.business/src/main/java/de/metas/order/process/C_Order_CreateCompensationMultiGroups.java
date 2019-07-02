@@ -5,9 +5,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -23,7 +21,11 @@ import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -111,12 +113,15 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 
 	private GroupTemplate extractGroupTemplate(final I_C_OrderLine orderLine)
 	{
-		final I_M_Product product = orderLine.getM_Product();
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		if (productId == null)
 		{
 			return null;
 		}
-		final I_M_Product_Category productCategory = InterfaceWrapperHelper.loadOutOfTrx(product.getM_Product_Category_ID(), I_M_Product_Category.class);
+		
+		final IProductDAO productsRepo = Services.get(IProductDAO.class);
+		final ProductCategoryId productCategoryId = productsRepo.retrieveProductCategoryByProductId(productId);
+		final I_M_Product_Category productCategory = productsRepo.getProductCategoryById(productCategoryId, I_M_Product_Category.class);
 		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoIdOrNull(productCategory.getC_CompensationGroup_Schema_ID());
 		if (groupTemplateId == null)
 		{

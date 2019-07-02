@@ -43,7 +43,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -76,8 +75,9 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -857,24 +857,19 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void reopenLine(final org.compiere.model.I_C_OrderLine orderLine)
+	public void reopenLine(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		Check.assumeNotNull(orderLine, "orderLine not null");
-
-		//
-		// Create conversion context
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
-
+		
 		//
 		// Calculate QtyOrdered as QtyEntered converted to stocking UOM
-		final BigDecimal qtyEntered = orderLine.getQtyEntered();
-		final I_C_UOM qtyEnteredUOM = orderLine.getC_UOM();
-		final BigDecimal qtyOrdered = uomConversionBL.convertQtyToProductUOM(uomConversionCtx, qtyEntered, qtyEnteredUOM);
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final Quantity qtyEntered = Services.get(IOrderLineBL.class).getQtyEntered(orderLine);
+		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qtyEntered, productId);
 
 		//
 		// Set QtyOrdered
-		orderLine.setQtyOrdered(qtyOrdered);
+		orderLine.setQtyOrdered(qtyOrdered.getAsBigDecimal());
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//

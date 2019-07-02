@@ -30,14 +30,13 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailDAO;
 import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-
 import lombok.NonNull;
 
 /**
@@ -121,7 +120,7 @@ public class MailBL implements IMailBL
 							+ "AD_MailConfig search parameters: AD_Client_ID={}; AD_Org_ID={}; AD_Process_ID={}; C_DocType={}; CustomType={}",
 					client.getAD_Client_ID(), adOrgId, processID, docType, customType);
 
-			throw new MailboxNotFoundException(ImmutableTranslatableString.constant(messageString));
+			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
 		}
 
 		final Mailbox mailbox = Mailbox.builder()

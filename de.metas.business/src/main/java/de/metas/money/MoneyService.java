@@ -13,7 +13,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -123,7 +123,7 @@ public class MoneyService
 	{
 		final Currency currency = currencyRepository.getById(money.getCurrencyId());
 
-		return TranslatableStringBuilder.newInstance()
+		return TranslatableStrings.builder()
 				.append(money.getValue(), DisplayType.Amount)
 				.append(" ")
 				.append(currency.getThreeLetterCode())

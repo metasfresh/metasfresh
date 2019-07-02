@@ -137,8 +137,6 @@ order by LineNo;]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}
 +"\n"
-+$F{p_value}
-+"\n"
 + ($F{p_description} != null ? $F{p_description}:"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">

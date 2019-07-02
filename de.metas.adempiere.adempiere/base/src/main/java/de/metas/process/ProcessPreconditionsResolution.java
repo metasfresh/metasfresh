@@ -11,7 +11,7 @@ import com.google.common.base.Objects;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -91,7 +91,7 @@ public final class ProcessPreconditionsResolution
 			return REJECTED_UnknownReason;
 		}
 
-		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
+		final ITranslatableString reason = TranslatableStrings.constant(reasonStr);
 		return reject(reason);
 	}
 
@@ -111,7 +111,7 @@ public final class ProcessPreconditionsResolution
 		}
 
 		final boolean accepted = false;
-		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
+		final ITranslatableString reason = TranslatableStrings.constant(reasonStr);
 		final boolean internal = true;
 		final ITranslatableString captionOverride = null;
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionOverride);
@@ -207,10 +207,10 @@ public final class ProcessPreconditionsResolution
 	{
 		if (accepted)
 		{
-			return ImmutableTranslatableString.empty();
+			return TranslatableStrings.empty();
 		}
 
-		return reason != null ? reason : ImmutableTranslatableString.empty();
+		return reason != null ? reason : TranslatableStrings.empty();
 	}
 
 	public boolean isInternal()
@@ -241,7 +241,7 @@ public final class ProcessPreconditionsResolution
 	 */
 	public ProcessPreconditionsResolution deriveWithCaptionOverride(@Nullable final String captionOverride)
 	{
-		final ITranslatableString captionOverrideNew = captionOverride == null ? null : ImmutableTranslatableString.constant(captionOverride);
+		final ITranslatableString captionOverrideNew = captionOverride == null ? null : TranslatableStrings.constant(captionOverride);
 		if (Objects.equal(this.captionOverride, captionOverrideNew))
 		{
 			return this;

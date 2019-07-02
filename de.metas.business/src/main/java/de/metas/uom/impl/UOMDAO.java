@@ -69,6 +69,13 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public String getX12DE355ById(final UomId uomId)
+	{
+		I_C_UOM uom = getById(uomId);
+		return uom.getX12DE355();
+	}
+
+	@Override
 	public I_C_UOM retrieveByX12DE355(final Properties ctx, final String x12de355)
 	{
 		final boolean throwExIfNull = true;

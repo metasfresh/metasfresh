@@ -311,12 +311,15 @@ public class MOrderLine extends X_C_OrderLine
 
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
+		
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
 
 		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
 				OrgId.ofRepoId(getAD_Org_ID()),
-				getC_BPartner_Location(),		// should be bill to
+				bpLocation, // should be bill to
 				getDateOrdered(),
 				taxCategoryId,
 				getParent().isSOTrx(),
@@ -325,9 +328,7 @@ public class MOrderLine extends X_C_OrderLine
 		setC_Tax_ID(taxId);
 
 		final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId, I_C_Tax.class, ITrx.TRXNAME_None);
-
-		final I_C_TaxCategory taxCategory = tax.getC_TaxCategory();
-		setC_TaxCategory(taxCategory);
+		setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 	}	// setTax
 
 	/**
@@ -754,9 +755,8 @@ public class MOrderLine extends X_C_OrderLine
 	 * @return true if it can be saved
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
-
 		final boolean complete = getParent().isComplete();
 		if (newRecord && complete)
 		{
@@ -783,20 +783,21 @@ public class MOrderLine extends X_C_OrderLine
 
 		// R/O Check - Product/Warehouse Change
 		if (!newRecord
-				&& (is_ValueChanged("M_Product_ID") || is_ValueChanged("M_Warehouse_ID")))
+				&& (is_ValueChanged(COLUMNNAME_M_Product_ID) || is_ValueChanged(COLUMNNAME_M_Warehouse_ID)))
 		{
 			canChangeWarehouse(true);
 		}	// Product Changed
 
 		// Charge
-		if (getC_Charge_ID() != 0 && getM_Product_ID() != 0)
+		if (getC_Charge_ID() > 0 && getM_Product_ID() > 0)
 		{
 			setM_Product_ID(0);
 		}
 		// No Product
-		if (getM_Product_ID() == 0)
+		if (getM_Product_ID() <= 0)
 		{
-			setM_AttributeSetInstance_ID(0);
+			setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+		}
 		// Product
 		}
 		else
@@ -811,15 +812,15 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		// metas: Not allowed to save without (Product or Charge) and qty > 0
-		if (getM_Product_ID() == 0 && getC_Charge_ID() == 0 && getQtyEntered().intValue() > 0)
+		if (getM_Product_ID() <= 0 && getC_Charge_ID() <= 0 && getQtyEntered().intValue() > 0)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@/@C_Charge_ID@ (@QtyEntered@>0)");
 		}
 		// UOM
-		if (getC_UOM_ID() == 0
-				&& (getM_Product_ID() != 0
-						|| getPriceEntered().compareTo(BigDecimal.ZERO) != 0
-						|| getC_Charge_ID() != 0))
+		if (getC_UOM_ID() <= 0
+				&& (getM_Product_ID() > 0
+						|| getC_Charge_ID() > 0
+						|| getPriceEntered().signum() != 0))
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
 			if (C_UOM_ID > 0)
@@ -832,17 +833,17 @@ public class MOrderLine extends X_C_OrderLine
 		// note: we do not set the price-UOM, because that would only make sense if we also set the prices themselves.
 
 		// Qty Precision
-		if (newRecord || is_ValueChanged("QtyEntered"))
+		if (newRecord || is_ValueChanged(COLUMNNAME_QtyEntered))
 		{
 			setQtyEntered(getQtyEntered());
 		}
-		if (newRecord || is_ValueChanged("QtyOrdered"))
+		if (newRecord || is_ValueChanged(COLUMNNAME_QtyOrdered))
 		{
 			setQtyOrdered(getQtyOrdered());
 		}
 
 		// FreightAmt Not used
-		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
+		if (getFreightAmt().signum() != 0)
 		{
 			setFreightAmt(BigDecimal.ZERO);
 		}

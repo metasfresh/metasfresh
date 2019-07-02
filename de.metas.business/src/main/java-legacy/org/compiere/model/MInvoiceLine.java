@@ -268,12 +268,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		if (tax == null)
 		{
 			setC_Tax_ID(oLine.getC_Tax_ID());
-			setC_TaxCategory(oLine.getC_TaxCategory());
+			setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
 		}
 
 		else
 		{
-			setC_TaxCategory(tax.getC_TaxCategory());
+			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 		}
 		setLineNetAmt(oLine.getLineNetAmt());
 		//
@@ -370,12 +370,12 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			{
 				InterfaceWrapperHelper.create(this, I_C_InvoiceLine.class).setDiscount(oLine.getDiscount()); // metas cg: task 05052
 				setC_Tax_ID(oLine.getC_Tax_ID());
-				setC_TaxCategory(oLine.getC_TaxCategory());
+				setC_TaxCategory_ID(oLine.getC_TaxCategory_ID());
 			}
 
 			else
 			{
-				setC_TaxCategory(tax.getC_TaxCategory());
+				setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 			}
 			setLineNetAmt(oLine.getLineNetAmt());
 			setC_Project_ID(oLine.getC_Project_ID());

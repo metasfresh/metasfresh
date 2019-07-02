@@ -5,12 +5,14 @@ import static de.metas.util.Check.isEmpty;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
+
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -100,15 +102,15 @@ public class BPartner
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 		if (isEmpty(value, true))
 		{
-			result.add(ITranslatableString.constant("bpartner.value"));
+			result.add(TranslatableStrings.constant("bpartner.value"));
 		}
 		if (isEmpty(name, true))
 		{
-			result.add(ITranslatableString.constant("bpartner.name"));
+			result.add(TranslatableStrings.constant("bpartner.name"));
 		}
 		if (groupId == null)
 		{
-			result.add(ITranslatableString.constant("bpartner.groupId"));
+			result.add(TranslatableStrings.constant("bpartner.groupId"));
 		}
 		return result.build();
 	}

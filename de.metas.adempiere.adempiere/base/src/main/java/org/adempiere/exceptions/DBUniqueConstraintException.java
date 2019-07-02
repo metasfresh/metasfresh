@@ -35,6 +35,7 @@ import org.compiere.util.DB;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -110,7 +111,7 @@ public class DBUniqueConstraintException extends DBException
 	{
 		if (index != null && !isEmpty(index.getErrorMsg(), true))
 		{
-			final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+			final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 			final ITranslatableString indexErrorMsg = index.get_ModelTranslationMap().getColumnTrl(MIndexTable.COLUMNNAME_ErrorMsg, index.getErrorMsg());
 			message.append(indexErrorMsg);

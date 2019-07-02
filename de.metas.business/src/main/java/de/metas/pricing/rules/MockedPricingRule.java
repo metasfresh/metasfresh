@@ -35,6 +35,7 @@ import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.ToString;
 
 /**
@@ -115,7 +116,7 @@ public class MockedPricingRule implements IPricingRule
 		final I_C_UOM priceUOM = productId2priceUOM.get(productId);
 		if (priceUOM != null)
 		{
-			result.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+			result.setPriceUomId(UomId.ofRepoId(priceUOM.getC_UOM_ID()));
 		}
 
 		result.setCalculated(true);

@@ -1,33 +1,6 @@
 package org.adempiere.util.text;
 
-/*
- * #%L
- * de.metas.util
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import java.util.Properties;
-
-import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
-import de.metas.util.Services;
 
 /**
  * Simple {@link StringBuilder} like class which is appending a given separator between each {@link #append(Object)} method calls.
@@ -107,14 +80,6 @@ public class TokenizedStringBuilder
 		lastAppendedIsSeparator = false;
 
 		return this;
-	}
-
-	public TokenizedStringBuilder parseTranslationAndAppend(final Properties ctx, final String str)
-	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final String strTranslated = msgBL.parseTranslation(ctx, str);
-
-		return append(strTranslated);
 	}
 
 	public TokenizedStringBuilder appendSeparatorIfNeeded()

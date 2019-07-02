@@ -23,18 +23,23 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
+import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OLCandHUPackingAware;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -79,10 +84,11 @@ public class OLCandPIIPValidator implements IOLCandValidator
 
 			// 2.
 			// If there is a PIIP, then verify that there is pricing info for the packing material. Otherwise, completing the order will fail later on.
-			if (huPackingWare.getM_HU_PI_Item_Product_ID() > 0)
+			final I_M_HU_PI_Item_Product huPIItemProduct = extractHUPIItemProductOrNull(huPackingWare);
+			if (huPIItemProduct != null)
 			{
 				IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-				final List<I_M_HU_PackingMaterial> packingMaterials = packingMaterialDAO.retrievePackingMaterials(huPackingWare.getM_HU_PI_Item_Product());
+				final List<I_M_HU_PackingMaterial> packingMaterials = packingMaterialDAO.retrievePackingMaterials(huPIItemProduct);
 				for (I_M_HU_PackingMaterial pm : packingMaterials)
 				{
 					final ProductId packingMaterialProductId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
@@ -99,12 +105,22 @@ public class OLCandPIIPValidator implements IOLCandValidator
 		return true;
 	}
 
+	private I_M_HU_PI_Item_Product extractHUPIItemProductOrNull(final IHUPackingAware huPackingAware)
+	{
+		final IHUPIItemProductBL piPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+
+		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
+		return piItemProductId != null
+				? piPIItemProductBL.getById(piItemProductId)
+				: null;
+	}
+
 	private void checkForPrice(final I_C_OLCand olCand, final ProductId packingMaterialProductId)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(olCand.getM_PricingSystem_ID());
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-		final Timestamp datePromisedEffective = olCandEffectiveValuesBL.getDatePromised_Effective(olCand);
+		final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
 		final I_C_BPartner_Location billBPLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
 		final I_M_PriceList pl = Services.get(IPriceListDAO.class).retrievePriceListByPricingSyst(pricingSystemId, billBPLocation, SOTrx.SALES);

@@ -394,9 +394,12 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public int getDefaultShipToLocationCountryId(final BPartnerId bpartnerId)
+	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null ? bpl.getC_Location().getC_Country_ID() : -1;
+		return bpl != null
+				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
+				: null;
 	}
 
 	@Override

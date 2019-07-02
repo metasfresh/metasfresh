@@ -18,9 +18,9 @@ import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.ForwardingTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -114,9 +114,9 @@ public class ADReferenceDAO implements IADReferenceDAO
 		// NOTE: we are wrapping everything in a forwarding translatable string,
 		// because we want this code to be called each time, just in case of a cache reset,
 		// or the translation changes.
-		return ForwardingTranslatableString.of(() -> {
+		return TranslatableStrings.forwardingTo(() -> {
 			final ADRefListItem item = retrieveListItemOrNull(adReferenceId, value);
-			return item != null ? item.getName() : ITranslatableString.constant(value);
+			return item != null ? item.getName() : TranslatableStrings.constant(value);
 		});
 	}
 }

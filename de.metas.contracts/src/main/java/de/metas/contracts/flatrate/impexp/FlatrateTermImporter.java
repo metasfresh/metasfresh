@@ -13,6 +13,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.contracts.FlatrateTermPricing;
@@ -239,7 +240,7 @@ import lombok.NonNull;
 				.termRelatedProduct(newTerm.getM_Product())
 				.qty(newTerm.getPlannedQtyPerUnit())
 				.term(newTerm)
-				.priceDate(newTerm.getStartDate())
+				.priceDate(TimeUtil.asLocalDate(newTerm.getStartDate()))
 				.build()
 				.computeOrThrowEx();
 	}
