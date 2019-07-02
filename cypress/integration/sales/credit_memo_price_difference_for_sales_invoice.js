@@ -24,16 +24,10 @@
 
 import {getLanguageSpecific} from '../../support/utils/utils';
 import {salesInvoices} from '../../page_objects/sales_invoices';
-import {Builder} from '../../support/utils/builder';
-import {DiscountSchema} from '../../support/utils/discountschema';
-import {Bank} from '../../support/utils/bank';
-import {BPartner} from '../../support/utils/bpartner';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
-import {getCurrentRecordId} from "../../support/commands/general";
 
 describe('Create a Credit memo price difference for Sales Invoice', function () {
-  const timestamp = new Date().getTime();
 
   const creditMemoPriceDiff = 'Credit Memo - Price diff';
   let originalSalesInvoiceNumber;
@@ -43,98 +37,25 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-
   const newProductPrice = '0.123456'; // must be lower than the original price
-
-  // data for "before" section
-  // priceList
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
-
-  // product
-  const productCategoryName = `ProductCategory ${timestamp}`;
-  const productCategoryValue = productCategoryName;
-  const productName = `Product ${timestamp}`;
-  const productValue = productName;
-  const productType = 'Item';
-
-  // BPartner
-  const discountSchemaName = `DiscountSchema ${timestamp}`;
-  const bPartnerName = `bPartner ${timestamp}`;
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-  // it('Prepare product and baprtner', function() {
-  //   Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
-  //
-  //   Builder.createBasicProductEntities(
-  //     productCategoryName,
-  //     productCategoryValue,
-  //     priceListName,
-  //     productName,
-  //     productValue,
-  //     productType
-  //   );
-  //
-  //   cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-  //     Object.assign(new DiscountSchema(), discountSchemaJson)
-  //       .setName(discountSchemaName)
-  //       .apply();
-  //   });
-  //   cy.fixture('finance/bank.json').then(productJson => {
-  //     Object.assign(new Bank(), productJson).apply();
-  //   });
-  //   cy.fixture('sales/simple_customer.json').then(customerJson => {
-  //     Object.assign(new BPartner(), customerJson)
-  //       .setName(bPartnerName)
-  //       .setCustomerDiscountSchema(discountSchemaName)
-  //       .apply();
-  //   });
-  // });
-
-  // it('Prepare sales invoice', function() {
-  //   cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-  //     new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-  //       .addLine(
-  //         new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-  //         // todo @dh: how to add packing item
-  //         // .setPackingItem('IFCO 6410 x 10 Stk')
-  //         // .setTuQuantity(2)
-  //       )
-  //       // .addLine(
-  //       // todo @dh: how to add this line which depends on the packing item?
-  //       //   new SalesInvoiceLine()
-  //       //     .setProduct('IFCO 6410_P001512')
-  //       //     .setQuantity(2)
-  //       // )
-  //       .setPriceList(priceListName)
-  //       .setDocumentAction(getLanguageSpecific(salesInvoiceJson, 'docActionComplete'))
-  //       .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, 'Completed'))
-  //       .apply();
-  //   });
-  //
-  //   cy.readAllNotifications();
-  // });
-
-
-  // it('visit sales invoice', function () {
-  //
-  //   cy.visitWindow('167', '1000110');
-  //
-  // });
-
+  before(function () {
+    // This wait is stupid.
+    // It also appears to be a good workaround for the problems in
+    // cypress/support/utils/utils.js:1
+    cy.wait(5000);
+  });
 
   it('Prepare sales invoice', function () {
-    cy.visitWindow('123');
-
     cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
       new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
         .addLine(
           new SalesInvoiceLine().setProduct('Convenience Salat 250g').setQuantity(originalQuantity)
-          // todo @dh: how to add packing item
+          // todo @dh: how to add a "per test" packing item
           // .setPackingItem('IFCO 6410 x 10 Stk')
           // .setTuQuantity(2)
         )
@@ -149,17 +70,18 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
     });
+
+    // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
+    // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
+    // this step should only create the SI.
+    // WAT??!!
+    cy.get('@newInvoiceDocumentId').then(function ({documentId /* this is destructuring */}) {
+        originalSalesInvoiceID = documentId;
+        cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
+      }
+    )
+    ;
   });
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   it('Sales Invoice is Completed', function () {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
@@ -176,20 +98,6 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       originalSalesInvoiceNumber = documentNumber;
     });
-
-
-
-
-    /////////////////////////////////////////////////////////////////////////////
-    originalSalesInvoiceID = getCurrentRecordId();
-    cy.get('@newInvoiceDocumentId').then(salesInvoiceID => {
-      originalSalesInvoiceID = salesInvoiceID;
-      // originalSalesInvoiceID = salesInvoice.documentId;
-      cy.log(` zzzzzzzzzzzzzzz salesInvoiceID is ${originalSalesInvoiceID}`);
-    });
-    /////////////////////////////////////////////////////////////////////////////
-
-
 
     cy.getStringFieldValue('M_PriceList_ID').then(priceList => {
       originalPriceList = priceList;
@@ -316,9 +224,8 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.visitWindow('167', originalSalesInvoiceID);
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, true);
+      assert.equal(checkBoxValue, false);
     });
   });
-
 
 });
