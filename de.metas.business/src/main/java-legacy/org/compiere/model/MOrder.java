@@ -28,8 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import de.metas.currency.CurrencyPrecision;
-import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -46,10 +44,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -57,8 +58,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -67,6 +70,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -119,12 +123,12 @@ public class MOrder extends X_C_Order implements IDocument
 			setDocAction(DOCACTION_Prepare);
 			//
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
-			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
+			setFreightCostRule(FreightCostRule.FreightIncluded.getCode());
 			// metas: we *never* use InvoiceRule 'Immediate', so don't use it as default.
 			setInvoiceRule(INVOICERULE_AfterDelivery);
 			setPaymentRule(PAYMENTRULE_OnCredit);
 			setPriorityRule(PRIORITYRULE_Medium);
-			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
+			setDeliveryViaRule(DeliveryViaRule.Pickup.getCode());
 			//
 			setIsDiscountPrinted(false);
 			setIsSelected(false);
@@ -223,7 +227,7 @@ public class MOrder extends X_C_Order implements IDocument
 	}	// MOrder
 
 	/** Order Lines */
-	private MOrderLine[] m_lines = null;
+	private ImmutableList<MOrderLine> _lines = null;
 	/** Tax Lines */
 	private MOrderTax[] m_taxes = null;
 	/** Force Creation of order */
@@ -496,15 +500,15 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			return 0;
 		}
-		final MOrderLine[] fromLines = otherOrder.getLines(false, null);
+		final List<MOrderLine> fromLines = otherOrder.getLines();
 		int count = 0;
 		for (final MOrderLine fromLine : fromLines)
 		{
 			count = count + copyLineFrom(counter, copyASI, fromLine);
 		}
-		if (fromLines.length != count)
+		if (fromLines.size() != count)
 		{
-			log.error("Line difference - From=" + fromLines.length + " <> Saved=" + count);
+			log.error("Line difference - From=" + fromLines.size() + " <> Saved=" + count);
 		}
 		return count;
 	} // copyLinesFrom
@@ -685,26 +689,24 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param orderClause order clause
 	 * @return lines
 	 */
-	public MOrderLine[] getLines(final String whereClause, final String orderClause)
+	private ImmutableList<MOrderLine> retrieveLines(final String orderClause)
 	{
 		// red1 - using new Query class from Teo / Victor's MDDOrder.java implementation
 		final StringBuilder whereClauseFinal = new StringBuilder("(" + MOrderLine.COLUMNNAME_C_Order_ID + "=? AND " + MOrderLine.COLUMNNAME_IsActive + "='Y' )");
-		if (!Check.isEmpty(whereClause, true))
-		{
-			whereClauseFinal.append(whereClause);
-		}
 
 		final String orderBy = orderClause.length() == 0 ? MOrderLine.COLUMNNAME_Line : orderClause;
 
 		//
-		final List<MOrderLine> list = new Query(getCtx(), MOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
+		return new Query(getCtx(), MOrderLine.Table_Name, whereClauseFinal.toString(), get_TrxName())
 				.setParameters(new Object[] { get_ID() })
 				.setOrderBy(orderBy)
-				.list(MOrderLine.class);
-
-		//
-		return list.toArray(new MOrderLine[list.size()]);
-	}	// getLines
+				.listImmutable(MOrderLine.class);
+	}
+	
+	public void invalidateLines()
+	{
+		_lines = null;
+	}
 
 	/**
 	 * Get <b>active</b> Lines of Order
@@ -713,12 +715,13 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param orderBy optional order by column
 	 * @return lines
 	 */
-	public MOrderLine[] getLines(final boolean requery, final String orderBy)
+	private List<MOrderLine> getLines(final boolean requery, final String orderBy)
 	{
-		if (m_lines != null && !requery)
+		ImmutableList<MOrderLine> lines = _lines;
+		if (lines != null && !requery)
 		{
-			set_TrxName(m_lines, get_TrxName());
-			return m_lines;
+			InterfaceWrapperHelper.setThreadInheritedTrxName(lines);
+			return lines;
 		}
 		//
 		String orderClause = "";
@@ -730,8 +733,8 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			orderClause += "Line";
 		}
-		m_lines = getLines(null, orderClause);
-		return m_lines;
+		lines = _lines = retrieveLines(orderClause);
+		return lines;
 	}	// getLines
 
 	/**
@@ -740,10 +743,22 @@ public class MOrder extends X_C_Order implements IDocument
 	 *
 	 * @return lines
 	 */
-	public MOrderLine[] getLines()
+	public List<MOrderLine> getLines()
 	{
 		return getLines(false, null);
 	}	// getLines
+	
+	private List<MOrderLine> getLinesRequeryOrderedByProduct()
+	{
+		return getLines(true, I_C_OrderLine.COLUMNNAME_M_Product_ID);
+	}
+	
+	public List<MOrderLine> getLinesRequery()
+	{
+		return getLines(true, null);
+	}
+
+
 
 	/**
 	 * Renumber Lines
@@ -753,37 +768,15 @@ public class MOrder extends X_C_Order implements IDocument
 	public void renumberLines(final int step)
 	{
 		int number = step;
-		final MOrderLine[] lines = getLines(true, null);	// Line is default
+		final List<MOrderLine> lines = getLinesRequery();	// Line is default
 		for (final MOrderLine line : lines)
 		{
 			line.setLine(number);
 			line.save(get_TrxName());
 			number += step;
 		}
-		m_lines = null;
+		invalidateLines();
 	}	// renumberLines
-
-	/**
-	 * Does the Order Line belong to this Order
-	 *
-	 * @param C_OrderLine_ID line
-	 * @return true if part of the order
-	 */
-	public boolean isOrderLine(final int C_OrderLine_ID)
-	{
-		if (m_lines == null)
-		{
-			getLines();
-		}
-		for (final MOrderLine m_line : m_lines)
-		{
-			if (m_line.getC_OrderLine_ID() == C_OrderLine_ID)
-			{
-				return true;
-			}
-		}
-		return false;
-	}	// isOrderLine
 
 	/**
 	 * Get Taxes of Order
@@ -904,7 +897,7 @@ public class MOrder extends X_C_Order implements IDocument
 				+ "' WHERE C_Order_ID=" + getC_Order_ID();
 		final int noLine = DB.executeUpdateEx("UPDATE C_OrderLine " + set, get_TrxName());
 		final int noTax = DB.executeUpdateEx("UPDATE C_OrderTax " + set, get_TrxName());
-		m_lines = null;
+		invalidateLines();
 		m_taxes = null;
 		log.debug("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
 	}	// setProcessed
@@ -953,10 +946,9 @@ public class MOrder extends X_C_Order implements IDocument
 		// Reservations in Warehouse
 		if (!newRecord && is_ValueChanged("M_Warehouse_ID"))
 		{
-			final MOrderLine[] lines = getLines(false, null);
-			for (int i = 0; i < lines.length; i++)
+			for (MOrderLine line : getLines())
 			{
-				if (!lines[i].canChangeWarehouse(true))
+				if (!line.canChangeWarehouse(true))
 				{
 					return false;
 				}
@@ -1082,8 +1074,7 @@ public class MOrder extends X_C_Order implements IDocument
 				|| is_ValueChanged(MOrder.COLUMNNAME_M_Shipper_ID)
 				|| is_ValueChanged(MOrder.COLUMNNAME_C_Currency_ID))
 		{
-			final MOrderLine[] lines = getLines();
-			for (final MOrderLine line : lines)
+			for (final MOrderLine line : getLines())
 			{
 				if (is_ValueChanged("AD_Org_ID"))
 				{
@@ -1212,8 +1203,8 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		// Lines
-		final MOrderLine[] lines = getLines(true, MOrderLine.COLUMNNAME_M_Product_ID);
-		if (lines.length == 0)
+		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
+		if (lines.isEmpty())
 		{
 			m_processMsg = "@NoLines@";
 			return IDocument.STATUS_Invalid;
@@ -1435,9 +1426,11 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	// metas: make reserveStock visible from MOrderLine to allow un-reservation
 	// of stocks before delete.
-	public boolean reserveStock(final I_C_DocType docType, final MOrderLine[] lines)
+	public boolean reserveStock(final I_C_DocType docType, final List<MOrderLine> lines)
 	{
-		final I_C_DocType dt = docType == null ? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID()) : docType;
+		final I_C_DocType dt = docType == null
+				? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID())
+				: docType;
 
 		// Binding
 		boolean binding = dt != null && !Services.get(IDocTypeBL.class).isSalesProposal(dt);
@@ -1600,8 +1593,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Lines
 		BigDecimal totalLines = BigDecimal.ZERO;
 		final Set<Integer> taxIds = new HashSet<>();
-		final MOrderLine[] lines = getLines();
-		for (final MOrderLine line : lines)
+		for (final MOrderLine line : getLines())
 		{
 			final int taxId = line.getC_Tax_ID();
 			if (!taxIds.contains(taxId))
@@ -1729,7 +1721,7 @@ public class MOrder extends X_C_Order implements IDocument
 			// Binding
 			if (MDocType.DOCSUBTYPE_Quotation.equals(DocSubType))
 			{
-				reserveStock(dt, getLines(true, MOrderLine.COLUMNNAME_M_Product_ID));
+				reserveStock(dt, getLinesRequeryOrderedByProduct());
 			}
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 			if (m_processMsg != null)
@@ -1776,7 +1768,7 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			approveIt();
 		}
-		getLines(true, null);
+		invalidateLines();
 		log.debug("Completed: {}", this);
 		final StringBuilder info = new StringBuilder();
 
@@ -1889,8 +1881,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return null;
 		}
 		//
-		final MOrderLine[] oLines = getLines(true, null);
-		for (final MOrderLine oLine : oLines)
+		for (final MOrderLine oLine : getLinesRequery())
 		{
 			final I_C_OrderLine line = InterfaceWrapperHelper.create(oLine, I_C_OrderLine.class);
 			final MInOutLine ioLine = new MInOutLine(shipment);
@@ -2002,8 +1993,7 @@ public class MOrder extends X_C_Order implements IDocument
 				setInvoiceRule(INVOICERULE_Immediate);
 			}
 			//
-			final MOrderLine[] oLines = getLines();
-			for (final MOrderLine oLine : oLines)
+			for (final MOrderLine oLine : getLines())
 			{
 				//
 				final MInvoiceLine iLine = new MInvoiceLine(invoice);
@@ -2055,7 +2045,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return false;
 		}
 
-		final MOrderLine[] lines = getLines(true, MOrderLine.COLUMNNAME_M_Product_ID);
+		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		for (final MOrderLine line : lines)
 		{
 			final BigDecimal old = line.getQtyOrdered();
@@ -2221,7 +2211,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		// Close Not delivered Qty - SO/PO
-		final MOrderLine[] lines = getLines(true, MOrderLine.COLUMNNAME_M_Product_ID);
+		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		for (final MOrderLine line : lines)
 		{
 			final BigDecimal old = line.getQtyOrdered();
@@ -2265,7 +2255,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 
 		//
-		final MOrderLine[] lines = getLines(true, MOrderLine.COLUMNNAME_M_Product_ID);
+		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		for (final MOrderLine line2 : lines)
 		{
 			final MOrderLine line = line2;
@@ -2459,10 +2449,13 @@ public class MOrder extends X_C_Order implements IDocument
 		sb.append(getDocumentNo());
 		// : Grand Total = 123.00 (#1)
 		sb.append(": ").append(Services.get(IMsgBL.class).translate(getCtx(), "GrandTotal")).append("=").append(getGrandTotal());
-		if (m_lines != null)
+		
+		final List<MOrderLine> lines = _lines;
+		if (lines != null)
 		{
-			sb.append(" (#").append(m_lines.length).append(")");
+			sb.append(" (#").append(lines.size()).append(")");
 		}
+		
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
 		{

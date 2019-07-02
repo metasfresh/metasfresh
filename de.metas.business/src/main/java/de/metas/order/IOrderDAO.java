@@ -48,7 +48,7 @@ import lombok.NonNull;
 public interface IOrderDAO extends ISingletonService
 {
 	I_C_Order getById(final OrderId orderId);
-	
+
 	/**
 	 * Similar to {@link #getById(OrderId)}, but allows to specify which {@link I_C_Order} sub-type the result shall be in.
 	 * 
@@ -148,8 +148,8 @@ public interface IOrderDAO extends ISingletonService
 	List<I_C_Order> retrievePurchaseOrdersForPickup(I_C_BPartner_Location bpLoc, Date deliveryDateTime, Date deliveryDateTimeMax);
 
 	Set<UserId> retriveOrderCreatedByUserIds(Collection<Integer> orderIds);
-	
-	<T extends I_C_Order>  List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
+
+	<T extends I_C_Order> List<T> getByIds(Collection<OrderId> orderIds, Class<T> clazz);
 
 	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
 
@@ -161,4 +161,6 @@ public interface IOrderDAO extends ISingletonService
 	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
+
+	void delete(org.compiere.model.I_C_OrderLine orderLine);
 }

@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -34,9 +35,8 @@ import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -47,6 +47,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -61,7 +63,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
-import de.metas.freighcost.api.IFreightCostBL;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
@@ -70,7 +71,6 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
-import de.metas.order.IOrderPA;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -85,51 +85,8 @@ import lombok.NonNull;
 
 public class OrderBL implements IOrderBL
 {
-	public static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
 
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
-
-	@Override
-	public void checkFreightCost(final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			logger.debug("{} is no SO", order);
-			return;
-		}
-
-		final int bPartnerId = order.getC_BPartner_ID();
-		final int bPartnerLocationId = order.getC_BPartner_Location_ID();
-		final int shipperId = order.getM_Shipper_ID();
-
-		if (bPartnerId <= 0 || bPartnerLocationId <= 0 || shipperId <= 0)
-		{
-			logger.debug("Can't check cause freight cost info is not yet complete for {}", order);
-			return;
-		}
-
-		final IFreightCostBL freightCostBL = Services.get(IFreightCostBL.class);
-		final de.metas.adempiere.model.I_C_Order o = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
-		if (freightCostBL.checkIfFree(o))
-		{
-			logger.debug("No freight cost for {}", order);
-			return;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
-		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final MFreightCost freightCost = MFreightCost.retrieveFor(ctx,
-				bPartnerId,
-				bPartnerLocationId,
-				shipperId,
-				order.getAD_Org_ID(),
-				order.getDateOrdered(),
-				trxName);
-		if (freightCost == null)
-		{
-			throw new AdempiereException("@" + MSG_NO_FREIGHT_COST_DETAIL + "@");
-		}
-	}
 
 	@Override
 	public void setM_PricingSystem_ID(final I_C_Order order, final boolean overridePricingSystemAndDontThrowExIfNotFound)
@@ -287,22 +244,7 @@ public class OrderBL implements IOrderBL
 		int Bill_BPartner_ID;
 		int Ship_BPartner_Location_ID;
 	}
-
-	@Override
-	public boolean updateFreightAmt(final Properties ctx, final I_C_Order order, final String trxName)
-	{
-		final IFreightCostBL freightCostBL = Services.get(IFreightCostBL.class);
-		final de.metas.adempiere.model.I_C_Order o = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
-		final BigDecimal freightCostAmt = freightCostBL.computeFreightCostForOrder(ctx, o, trxName);
-
-		if (order.getFreightAmt().compareTo(freightCostAmt) != 0)
-		{
-			order.setFreightAmt(freightCostAmt);
-			return true;
-		}
-		return false;
-	}
-
+	
 	@Override
 	public boolean setBill_User_ID(final org.compiere.model.I_C_Order order)
 	{
@@ -857,7 +799,7 @@ public class OrderBL implements IOrderBL
 				? Services.get(IPriceListBL.class).getPricePrecision(priceListId)
 				: CurrencyPrecision.TWO;
 	}
-	
+
 	@Override
 	public CurrencyPrecision getAmountPrecision(final I_C_Order order)
 	{
@@ -890,6 +832,14 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void reserveStock(@NonNull final I_C_Order order, final org.compiere.model.I_C_OrderLine... orderLines)
+	{
+		final MOrder orderPO = InterfaceWrapperHelper.getPO(order);
+		List<MOrderLine> orderLinePOs = LegacyAdapters.convertToPOList(Arrays.asList(orderLines));
+		orderPO.reserveStock(null, orderLinePOs); // docType=null (i.e. fetch it from order)
+	}
+
+	@Override
 	public void closeLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
@@ -903,7 +853,7 @@ public class OrderBL implements IOrderBL
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		final I_C_Order order = orderLine.getC_Order();
-		Services.get(IOrderPA.class).reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
+		reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
 	}
 
 	@Override
@@ -930,8 +880,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Update qty reservation
 		final I_C_Order order = orderLine.getC_Order();
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
-		orderPA.reserveStock(order, orderLine);
+		reserveStock(order, orderLine);
 
 	}
 

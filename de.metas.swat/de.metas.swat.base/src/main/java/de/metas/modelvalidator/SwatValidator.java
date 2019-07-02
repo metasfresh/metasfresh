@@ -87,7 +87,6 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
-import de.metas.freighcost.modelvalidator.FreightCostValidator;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -164,7 +163,6 @@ public class SwatValidator implements ModelValidator
 
 		// registering child validators
 		engine.addModelValidator(new ApplicationDictionary(), client);
-		engine.addModelValidator(new FreightCostValidator(), client);
 
 		engine.addModelValidator(new Order(), client);
 		engine.addModelValidator(new OrderLine(), client);

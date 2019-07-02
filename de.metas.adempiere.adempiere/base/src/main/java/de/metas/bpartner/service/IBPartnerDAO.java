@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import de.metas.user.UserId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -48,6 +47,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
@@ -103,6 +103,8 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(I_C_BPartner bpartner);
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
+
+	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending

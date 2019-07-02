@@ -48,11 +48,13 @@ import com.google.common.base.Strings;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.user.User;
@@ -571,5 +573,30 @@ public class BPartnerBL implements IBPartnerBL
 		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
 
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
+	}
+
+	@Override
+	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+	}
+
+	@Override
+	public int getFreightCostIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		int freightCostId = bpartner.getM_FreightCost_ID();
+		if (freightCostId > 0)
+		{
+			return freightCostId;
+		}
+
+		final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
+		final I_C_BP_Group bpGroup = bpGroupsRepo.getByBPartnerId(bpartnerId);
+		freightCostId = bpGroup.getM_FreightCost_ID();
+		return freightCostId;
 	}
 }

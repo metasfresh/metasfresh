@@ -1,6 +1,19 @@
 package de.metas.freighcost;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Optional;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.location.CountryId;
+import de.metas.shipping.ShipperId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -16,18 +29,62 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @Value
-@Builder
 public class FreightCostShipper
 {
+	FreightCostShipperId id;
+	ShipperId shipperId;
+	LocalDate validFrom;
+	@Getter(AccessLevel.NONE)
+	ImmutableList<FreightCostBreak> breaks;
 
+	@Builder
+	private FreightCostShipper(
+			@NonNull final FreightCostShipperId id,
+			@NonNull final ShipperId shipperId,
+			@NonNull final LocalDate validFrom,
+			@NonNull final Collection<FreightCostBreak> breaks)
+	{
+		this.id = id;
+		this.shipperId = shipperId;
+		this.validFrom = validFrom;
+		this.breaks = breaks.stream()
+				.sorted(Comparator.comparing(FreightCostBreak::getShipmentValueAmtMax))
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	boolean isMatching(@NonNull final ShipperId shipperId, @NonNull final LocalDate date)
+	{
+		return this.shipperId.equals(shipperId)
+				&& this.validFrom.compareTo(date) <= 0;
+	}
+
+	public boolean isShipToCountry(@NonNull final CountryId countryId)
+	{
+		return breaks.stream().anyMatch(freightCostBreak -> countryId.equals(freightCostBreak.getCountryId()));
+	}
+
+	Optional<FreightCostBreak> getBreak(@NonNull final CountryId countryId, @NonNull final BigDecimal freightBaseAmount)
+	{
+		// assumes that the breaks are ordered by getShipmentValueAmt ascending
+		for (final FreightCostBreak freightCostBreak : breaks)
+		{
+			if (freightCostBreak.isMatching(countryId, freightBaseAmount))
+			{
+				return Optional.of(freightCostBreak);
+			}
+		}
+
+		return Optional.empty();
+	}
 }

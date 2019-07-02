@@ -40,6 +40,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -50,11 +51,11 @@ import lombok.Value;
 
 public interface IBPartnerBL extends ISingletonService
 {
-	public String getBPartnerValue(final BPartnerId bpartnerId);
+	String getBPartnerValue(final BPartnerId bpartnerId);
 
-	public String getBPartnerName(final BPartnerId bpartnerId);
+	String getBPartnerName(final BPartnerId bpartnerId);
 
-	public String getBPartnerValueAndName(final BPartnerId bpartnerId);
+	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
 	/**
 	 * make full address
@@ -202,4 +203,8 @@ public interface IBPartnerBL extends ISingletonService
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
 	}
+
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+
+	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
 }

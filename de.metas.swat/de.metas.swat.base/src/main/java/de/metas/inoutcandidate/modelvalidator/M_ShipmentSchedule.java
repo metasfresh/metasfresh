@@ -324,7 +324,7 @@ public class M_ShipmentSchedule
 		final MOrder orderPO = LegacyAdapters.convertToPO(order);
 		final MOrderLine orderLinePO = LegacyAdapters.convertToPO(orderLine);
 
-		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), new MOrderLine[] { orderLinePO });
+		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), ImmutableList.of(orderLinePO));
 
 		InterfaceWrapperHelper.save(orderLine);
 	}

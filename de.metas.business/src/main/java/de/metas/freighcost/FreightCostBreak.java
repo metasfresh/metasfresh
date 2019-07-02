@@ -1,10 +1,17 @@
-package de.metas.freighcost.spi;
+package de.metas.freighcost;
+
+import java.math.BigDecimal;
+
+import de.metas.location.CountryId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,13 +29,25 @@ package de.metas.freighcost.spi;
  * #L%
  */
 
-import org.compiere.model.I_M_InOutLine;
-
-/**
- * Other functional modules can implement this interface to make sure that shipments with certain inout lines are free
- * of shipment costs.
- */
-public interface IFreightCostFreeEvaluator
+@Value
+@Builder
+public class FreightCostBreak
 {
-	boolean isFreightCostFree(I_M_InOutLine inOutLine);
+	@NonNull
+	FreightCostShipperId freightCostShipperId;
+
+	@NonNull
+	CountryId countryId;
+
+	@NonNull
+	BigDecimal shipmentValueAmtMax;
+
+	@NonNull
+	BigDecimal freightAmt;
+
+	boolean isMatching(@NonNull final CountryId countryId, @NonNull final BigDecimal freightBaseAmount)
+	{
+		return getShipmentValueAmtMax().compareTo(freightBaseAmount) >= 0
+				&& CountryId.equals(countryId, getCountryId());
+	}
 }

@@ -1,10 +1,22 @@
-package de.metas.freighcost.spi;
+package de.metas.freighcost;
+
+import java.time.LocalDate;
+
+import org.adempiere.service.OrgId;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.location.CountryId;
+import de.metas.order.DeliveryViaRule;
+import de.metas.shipping.ShipperId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,13 +34,24 @@ package de.metas.freighcost.spi;
  * #L%
  */
 
-import org.compiere.model.I_M_InOutLine;
-
-/**
- * Other functional modules can implement this interface to make sure that shipments with certain inout lines are free
- * of shipment costs.
- */
-public interface IFreightCostFreeEvaluator
+@Value
+@Builder
+public class FreightCostContext
 {
-	boolean isFreightCostFree(I_M_InOutLine inOutLine);
+	@NonNull
+	OrgId shipFromOrgId;
+
+	BPartnerId shipToBPartnerId;
+	CountryId shipToCountryId;
+
+	ShipperId shipperId;
+
+	@NonNull
+	LocalDate date;
+
+	@NonNull
+	FreightCostRule freightCostRule;
+
+	@NonNull
+	DeliveryViaRule deliveryViaRule;
 }

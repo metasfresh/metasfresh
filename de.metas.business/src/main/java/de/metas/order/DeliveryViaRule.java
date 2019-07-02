@@ -16,7 +16,7 @@ import lombok.NonNull;
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +24,7 @@ import lombok.NonNull;
  * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY), without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
@@ -34,39 +34,46 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum DeliveryRule implements ReferenceListAwareEnum
+public enum DeliveryViaRule implements ReferenceListAwareEnum
 {
-	AFTER_RECEIPT(X_C_Order.DELIVERYRULE_AfterReceipt), //
-	AVAILABILITY(X_C_Order.DELIVERYRULE_Availability), //
-	COMPLETE_LINE(X_C_Order.DELIVERYRULE_CompleteLine), //
-	COMPLETE_ORDER(X_C_Order.DELIVERYRULE_CompleteOrder), //
-	FORCE(X_C_Order.DELIVERYRULE_Force), //
-	MANUAL(X_C_Order.DELIVERYRULE_Manual), //
-	WITH_NEXT_SUBSCRIPTION_DELIVERY("S") // see de.metas.inoutcandidate.model.X_M_ShipmentSchedule.DELIVERYRULE_MitNaechsterAbolieferung
+	Pickup(X_C_Order.DELIVERYVIARULE_Pickup), //
+	Delivery(X_C_Order.DELIVERYVIARULE_Delivery), //
+	Shipper(X_C_Order.DELIVERYVIARULE_Shipper) //
 	;
 
 	@Getter
 	private final String code;
 
-	DeliveryRule(final String code)
+	DeliveryViaRule(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
-	public static DeliveryRule ofNullableCode(final String code)
+	public static DeliveryViaRule ofNullableCode(final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		final DeliveryViaRule defaultWhenNull = null;
+		return ofNullableCodeOr(code, defaultWhenNull);
 	}
 
-	public static DeliveryRule ofCode(@NonNull final String code)
+	public static DeliveryViaRule ofNullableCodeOr(final String code, final DeliveryViaRule defaultWhenNull)
 	{
-		DeliveryRule type = typesByCode.get(code);
+		return code != null ? ofCode(code) : defaultWhenNull;
+	}
+
+	public static DeliveryViaRule ofCode(@NonNull final String code)
+	{
+		final DeliveryViaRule type = typesByCode.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + DeliveryRule.class + " found for code: " + code);
+			throw new AdempiereException("No " + DeliveryViaRule.class + " found for code: " + code);
 		}
 		return type;
 	}
 
-	private static final ImmutableMap<String, DeliveryRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DeliveryRule::getCode);
+	private static final ImmutableMap<String, DeliveryViaRule> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), DeliveryViaRule::getCode);
+
+	public boolean isShipper()
+	{
+		return this == Shipper;
+	}
 }

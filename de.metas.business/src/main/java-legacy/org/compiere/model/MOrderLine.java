@@ -23,12 +23,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import de.metas.currency.CurrencyPrecision;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
@@ -39,6 +37,10 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.currency.CurrencyPrecision;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -104,7 +106,9 @@ public class MOrderLine extends X_C_OrderLine
 				+ " AND ol.QtyOrdered-ol.QtyDelivered-ol.QtyReserved<>0"
 				+ " AND ol.C_OrderLine_ID<>?";
 		if (M_AttributeSetInstance_ID != 0)
+		{
 			sql += " AND ol.M_AttributeSetInstance_ID=?";
+		}
 
 		PreparedStatement pstmt = null;
 		try
@@ -114,10 +118,14 @@ public class MOrderLine extends X_C_OrderLine
 			pstmt.setInt(2, M_Product_ID);
 			pstmt.setInt(3, excludeC_OrderLine_ID);
 			if (M_AttributeSetInstance_ID != 0)
+			{
 				pstmt.setInt(4, M_AttributeSetInstance_ID);
+			}
 			ResultSet rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getBigDecimal(1);
+			}
 			rs.close();
 			pstmt.close();
 			pstmt = null;
@@ -129,7 +137,9 @@ public class MOrderLine extends X_C_OrderLine
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -137,9 +147,13 @@ public class MOrderLine extends X_C_OrderLine
 			pstmt = null;
 		}
 		if (retValue == null)
+		{
 			s_log.debug("-");
+		}
 		else
+		{
 			s_log.debug(retValue.toString());
+		}
 		return retValue;
 	}	// getNotReserved
 
@@ -268,7 +282,9 @@ public class MOrderLine extends X_C_OrderLine
 	public void setPriceActual(BigDecimal PriceActual)
 	{
 		if (PriceActual == null)
+		{
 			throw new IllegalArgumentException("PriceActual is mandatory");
+		}
 		set_ValueNoCheck("PriceActual", PriceActual);
 	}	// setPriceActual
 
@@ -377,7 +393,9 @@ public class MOrderLine extends X_C_OrderLine
 		}
 
 		if (bd.scale() > taxPrecision.toInt())
+		{
 			bd = bd.setScale(taxPrecision.toInt(), BigDecimal.ROUND_HALF_UP);
+		}
 		super.setLineNetAmt(bd);
 	}	// setLineNetAmt
 
@@ -389,7 +407,9 @@ public class MOrderLine extends X_C_OrderLine
 	public MCharge getCharge()
 	{
 		if (m_charge == null && getC_Charge_ID() != 0)
+		{
 			m_charge = MCharge.get(getCtx(), getC_Charge_ID());
+		}
 		return m_charge;
 	}
 
@@ -401,7 +421,9 @@ public class MOrderLine extends X_C_OrderLine
 	protected MTax getTax()
 	{
 		if (m_tax == null)
+		{
 			m_tax = MTax.get(getCtx(), getC_Tax_ID());
+		}
 		return m_tax;
 	}	// getTax
 
@@ -421,7 +443,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		super.setM_Product_ID(M_Product_ID);
 		if (C_UOM_ID != 0)
+		{
 			super.setC_UOM_ID(C_UOM_ID);
+		}
 		setM_AttributeSetInstance_ID(0);
 	}	// setM_Product_ID
 
@@ -433,7 +457,9 @@ public class MOrderLine extends X_C_OrderLine
 	public MProduct getProduct()
 	{
 		if (m_product == null && getM_Product_ID() != 0)
+		{
 			m_product = MProduct.get(getCtx(), getM_Product_ID());
+		}
 		return m_product;
 	}	// getProduct
 
@@ -445,10 +471,14 @@ public class MOrderLine extends X_C_OrderLine
 	@Override
 	public void setM_AttributeSetInstance_ID(int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID == 0)		// 0 is valid ID
+		if (M_AttributeSetInstance_ID == 0)
+		{
 			set_Value("M_AttributeSetInstance_ID", new Integer(0));
+		}
 		else
+		{
 			super.setM_AttributeSetInstance_ID(M_AttributeSetInstance_ID);
+		}
 	}	// setM_AttributeSetInstance_ID
 
 	/**
@@ -504,7 +534,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getC_Project_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Project_ID();
+		}
 		return ii;
 	}	// getC_Project_ID
 
@@ -518,7 +550,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getC_Activity_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Activity_ID();
+		}
 		return ii;
 	}	// getC_Activity_ID
 
@@ -532,7 +566,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getC_Campaign_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Campaign_ID();
+		}
 		return ii;
 	}	// getC_Campaign_ID
 
@@ -546,7 +582,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getUser1_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser1_ID();
+		}
 		return ii;
 	}	// getUser1_ID
 
@@ -560,7 +598,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getUser2_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser2_ID();
+		}
 		return ii;
 	}	// getUser2_ID
 
@@ -574,7 +614,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		int ii = super.getAD_OrgTrx_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getAD_OrgTrx_ID();
+		}
 		return ii;
 	}	// getAD_OrgTrx_ID
 
@@ -607,9 +649,13 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	// addDescription
 
 	/**
@@ -631,7 +677,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		getProduct();
 		if (m_product != null)
+		{
 			return m_product.getName();
+		}
 		if (getC_Charge_ID() != 0)
 		{
 			MCharge charge = MCharge.get(getCtx(), getC_Charge_ID());
@@ -650,7 +698,9 @@ public class MOrderLine extends X_C_OrderLine
 	{
 		super.setC_Charge_ID(C_Charge_ID);
 		if (C_Charge_ID > 0)
+		{
 			set_ValueNoCheck("C_UOM_ID", null);
+		}
 	}	// setC_Charge_ID
 
 	/**
@@ -740,11 +790,15 @@ public class MOrderLine extends X_C_OrderLine
 
 		// Charge
 		if (getC_Charge_ID() != 0 && getM_Product_ID() != 0)
+		{
 			setM_Product_ID(0);
+		}
 		// No Product
 		if (getM_Product_ID() == 0)
+		{
 			setM_AttributeSetInstance_ID(0);
 		// Product
+		}
 		else
 		// Set/check Product Price
 		{
@@ -769,7 +823,9 @@ public class MOrderLine extends X_C_OrderLine
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
 			if (C_UOM_ID > 0)
+			{
 				setC_UOM_ID(C_UOM_ID);
+			}
 		}
 
 		// Price_UOM task 06942
@@ -777,13 +833,19 @@ public class MOrderLine extends X_C_OrderLine
 
 		// Qty Precision
 		if (newRecord || is_ValueChanged("QtyEntered"))
+		{
 			setQtyEntered(getQtyEntered());
+		}
 		if (newRecord || is_ValueChanged("QtyOrdered"))
+		{
 			setQtyOrdered(getQtyOrdered());
+		}
 
 		// FreightAmt Not used
 		if (BigDecimal.ZERO.compareTo(getFreightAmt()) != 0)
+		{
 			setFreightAmt(BigDecimal.ZERO);
+		}
 
 		// metas: Steuer muss immer ermittelt werden, da durch eine Anschriftenaenderung im Kopf auch Steueraenderungen in Positionen auftreten.
 		setTax();
@@ -829,7 +891,7 @@ public class MOrderLine extends X_C_OrderLine
 				saveEx(get_TrxName());
 			}
 
-			if (!getParent().reserveStock(null, new MOrderLine[] { this }))
+			if (!getParent().reserveStock(null, ImmutableList.of(this)))
 			{
 				throw new AdempiereException("@DeleteError@ @QtyReserved@=" + getQtyReserved());
 			}
@@ -853,13 +915,19 @@ public class MOrderLine extends X_C_OrderLine
 	protected boolean afterSave(boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		if (!newRecord && is_ValueChanged("C_Tax_ID"))
 		{
 			// Recalculate Tax for old Tax
 			if (!getParent().isProcessed())
+			{
 				if (!updateOrderTax(true))
+				{
 					return false;
+				}
+			}
 		}
 		return updateHeaderTax();
 	}	// afterSave
@@ -874,7 +942,9 @@ public class MOrderLine extends X_C_OrderLine
 	protected boolean afterDelete(boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		if (getS_ResourceAssignment_ID() != 0)
 		{
 			MResourceAssignment ra = new MResourceAssignment(getCtx(), getS_ResourceAssignment_ID(), get_TrxName());

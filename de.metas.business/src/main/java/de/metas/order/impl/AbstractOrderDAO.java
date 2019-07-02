@@ -249,4 +249,10 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.listIds(OrderId::ofRepoId)
 				.stream();
 	}
+	
+	@Override
+	public void delete(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		InterfaceWrapperHelper.delete(orderLine);
+	}
 }

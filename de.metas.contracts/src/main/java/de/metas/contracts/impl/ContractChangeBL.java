@@ -64,6 +64,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderPA;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
@@ -406,8 +407,8 @@ public class ContractChangeBL implements IContractChangeBL
 		{
 			logger.info("Adjusting QtyOrdered of order " + oldOrder.getDocumentNo() + ", line " + oldOl.getLine());
 			oldOl.setQtyOrdered(oldOl.getQtyOrdered().subtract(surplusQty));
-			final IOrderPA orderPA = Services.get(IOrderPA.class);
-			orderPA.reserveStock(oldOrder, oldOl);
+			final IOrderBL orderBL = Services.get(IOrderBL.class);
+			orderBL.reserveStock(oldOrder, oldOl);
 		}
 	}
 

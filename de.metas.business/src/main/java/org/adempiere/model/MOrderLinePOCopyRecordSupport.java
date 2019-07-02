@@ -7,14 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.freighcost.api.IFreightCostBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.util.collections.CompositePredicate;
 
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
@@ -32,16 +31,16 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 
 		//
 		// Exclude freight cost products
-		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
-		if (productId != null && Services.get(IFreightCostBL.class).isFreightCostProduct(productId))
+		final OrderFreightCostsService ordersFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+		if (ordersFreightCostService.isFreightCostOrderLine(orderLine))
 		{
-			return ;
+			return;
 		}
 
 		// Check if we shall skip this record
 		if (!isCopyRecord(orderLine))
 		{
-			return ;
+			return;
 		}
 
 		// delegate to super

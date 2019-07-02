@@ -43,7 +43,6 @@ import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Stream;
 
-import de.metas.user.UserId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -94,6 +93,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -222,6 +222,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return retrieveDefaultContactOrNull(ctx, bpartnerId, trxName, clazz);
 	}
+
 	@Override
 	public Optional<UserId> getDefaultContactId(@NonNull final BPartnerId bpartnerId)
 	{
@@ -378,6 +379,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.map(I_C_Location::getC_Country_ID)
 				.map(CountryId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		final I_C_Location location = locationRepos.getById(locationId);
+		return CountryId.ofRepoId(location.getC_Country_ID());
 	}
 
 	@Override
