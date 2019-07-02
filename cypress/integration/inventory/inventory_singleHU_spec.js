@@ -43,25 +43,6 @@ describe('Aggregated inventory test', function() {
     });
   });
   
-  it('Check HU', function() {             
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-          getLanguageSpecific(miscDictionary, 'docActionComplete'),
-          getLanguageSpecific(miscDictionary, 'docStatusCompleted')
-      );
-      });
-
-    // make sure that the inventory line has an HU (created on completion)
-
-    cy.selectTab('M_InventoryLine');
-    cy.selectSingleTabRow();
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_HU_ID', true /*modal*/) /// <<====
-      .then(huValue => {
-        expect(huValue).to.be.not.null;
-      });
-    cy.pressDoneButton();
-  });
     
     //check if snapshots match
 
