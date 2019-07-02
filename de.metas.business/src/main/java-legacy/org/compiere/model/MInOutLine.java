@@ -34,6 +34,7 @@ import org.compiere.util.Env;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -130,8 +131,8 @@ public class MInOutLine extends X_M_InOutLine
 		setC_OrderLine_ID(oLine.getC_OrderLine_ID());
 		setLine(oLine.getLine());
 		setC_UOM_ID(oLine.getC_UOM_ID());
-		MProduct product = (MProduct)oLine.getM_Product();
-		if (product == null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(oLine.getM_Product_ID());
+		if (productId == null)
 		{
 			set_ValueNoCheck("M_Product_ID", null);
 			set_ValueNoCheck("M_AttributeSetInstance_ID", null);
@@ -139,7 +140,7 @@ public class MInOutLine extends X_M_InOutLine
 		}
 		else
 		{
-			setM_Product_ID(oLine.getM_Product_ID());
+			setM_Product_ID(productId.getRepoId());
 
 			// 08811
 			// avoid direct copy of ASI ID!
@@ -152,16 +153,23 @@ public class MInOutLine extends X_M_InOutLine
 			{
 				setM_AttributeSetInstance_ID(oLine.getM_AttributeSetInstance_ID());
 			}
+			
 			//
-			if (Services.get(IProductBL.class).isItem(product))
+			if (Services.get(IProductBL.class).isItem(productId))
 			{
-				if (M_Locator_ID == 0)
+				if (M_Locator_ID <= 0)
+				{
 					setM_Locator_ID(Qty);	// requires warehouse, product, asi
+				}
 				else
+				{
 					setM_Locator_ID(M_Locator_ID);
+				}
 			}
 			else
+			{
 				set_ValueNoCheck("M_Locator_ID", null);
+			}
 		}
 		setC_Charge_ID(oLine.getC_Charge_ID());
 		setDescription(oLine.getDescription());
@@ -202,9 +210,13 @@ public class MInOutLine extends X_M_InOutLine
 			setM_Product_ID(M_Product_ID);
 			setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 			if (M_Locator_ID == 0)
+			{
 				setM_Locator_ID(Qty);	// requires warehouse, product, asi
+			}
 			else
+			{
 				setM_Locator_ID(M_Locator_ID);
+			}
 		}
 		setC_Charge_ID(iLine.getC_Charge_ID());
 		setDescription(iLine.getDescription());
@@ -228,7 +240,9 @@ public class MInOutLine extends X_M_InOutLine
 	public int getM_Warehouse_ID()
 	{
 		if (m_M_Warehouse_ID == 0)
+		{
 			m_M_Warehouse_ID = getParent().getM_Warehouse_ID();
+		}
 		return m_M_Warehouse_ID;
 	}	// getM_Warehouse_ID
 
@@ -251,7 +265,9 @@ public class MInOutLine extends X_M_InOutLine
 	public void setM_Locator_ID(int M_Locator_ID)
 	{
 		if (M_Locator_ID < 0)
+		{
 			throw new IllegalArgumentException("M_Locator_ID is mandatory.");
+		}
 		// set to 0 explicitly to reset
 		set_Value(COLUMNNAME_M_Locator_ID, new Integer(M_Locator_ID));
 	}	// setM_Locator_ID
@@ -266,7 +282,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		// Locator established
 		if (getM_Locator_ID() != 0)
+		{
 			return;
+		}
 		// No Product
 		if (getM_Product_ID() == 0)
 		{
@@ -338,7 +356,9 @@ public class MInOutLine extends X_M_InOutLine
 	public MProduct getProduct()
 	{
 		if (m_product == null && getM_Product_ID() != 0)
+		{
 			m_product = MProduct.get(getCtx(), getM_Product_ID());
+		}
 		return m_product;
 	}	// getProduct
 
@@ -372,9 +392,13 @@ public class MInOutLine extends X_M_InOutLine
 	public void setM_Product_ID(int M_Product_ID, boolean setUOM)
 	{
 		if (setUOM)
+		{
 			setProduct(MProduct.get(getCtx(), M_Product_ID));
+		}
 		else
+		{
 			super.setM_Product_ID(M_Product_ID);
+		}
 		setM_AttributeSetInstance_ID(0);
 	}	// setM_Product_ID
 
@@ -387,7 +411,9 @@ public class MInOutLine extends X_M_InOutLine
 	public void setM_Product_ID(int M_Product_ID, int C_UOM_ID)
 	{
 		if (M_Product_ID != 0)
+		{
 			super.setM_Product_ID(M_Product_ID);
+		}
 		super.setC_UOM_ID(C_UOM_ID);
 		setM_AttributeSetInstance_ID(0);
 		m_product = null;
@@ -402,9 +428,13 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	// addDescription
 
 	/**
@@ -417,7 +447,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getC_Project_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Project_ID();
+		}
 		return ii;
 	}	// getC_Project_ID
 
@@ -431,7 +463,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getC_Activity_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Activity_ID();
+		}
 		return ii;
 	}	// getC_Activity_ID
 
@@ -445,7 +479,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getC_Campaign_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getC_Campaign_ID();
+		}
 		return ii;
 	}	// getC_Campaign_ID
 
@@ -459,7 +495,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getUser1_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser1_ID();
+		}
 		return ii;
 	}	// getUser1_ID
 
@@ -473,7 +511,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getUser2_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getUser2_ID();
+		}
 		return ii;
 	}	// getUser2_ID
 
@@ -487,7 +527,9 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		int ii = super.getAD_OrgTrx_ID();
 		if (ii == 0)
+		{
 			ii = getParent().getAD_OrgTrx_ID();
+		}
 		return ii;
 	}	// getAD_OrgTrx_ID
 
@@ -535,17 +577,24 @@ public class MInOutLine extends X_M_InOutLine
 		}
 		// UOM
 		if (getC_UOM_ID() == 0)
+		{
 			setC_UOM_ID(Env.getContextAsInt(getCtx(), "#C_UOM_ID"));
+		}
 		if (getC_UOM_ID() == 0)
 		{
 			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
 			if (C_UOM_ID > 0)
+			{
 				setC_UOM_ID(C_UOM_ID);
+			}
 		}
 		// Qty Precision
 		if (newRecord || is_ValueChanged("QtyEntered"))
+		{
 			setQtyEntered(getQtyEntered());
+		}
 		if (newRecord || is_ValueChanged("MovementQty"))
+		 {
 			setMovementQty(getMovementQty());
 		//
 		// // Order/RMA Line
@@ -557,6 +606,7 @@ public class MInOutLine extends X_M_InOutLine
 		// return false;
 		// }
 		// }
+		}
 
 		// Validate Locator/Warehouse - teo_sarca, BF [ 2784194 ]
 		if (getM_Locator_ID() > 0)
@@ -661,9 +711,13 @@ public class MInOutLine extends X_M_InOutLine
 			return m_il.getLineNetAmt();
 		}
 		else if (MLandedCost.LANDEDCOSTDISTRIBUTION_Line.equals(CostDistribution))
+		{
 			return Env.ONE;
+		}
 		else if (MLandedCost.LANDEDCOSTDISTRIBUTION_Quantity.equals(CostDistribution))
+		{
 			return getMovementQty();
+		}
 		else if (MLandedCost.LANDEDCOSTDISTRIBUTION_Volume.equals(CostDistribution))
 		{
 			MProduct product = getProduct();
@@ -692,12 +746,16 @@ public class MInOutLine extends X_M_InOutLine
 	public boolean sameOrderLineUOM()
 	{
 		if (getC_OrderLine_ID() <= 0)
+		{
 			return false;
+		}
 
 		final I_C_OrderLine oLine = getC_OrderLine();
 
 		if (oLine.getC_UOM_ID() != getC_UOM_ID())
+		{
 			return false;
+		}
 
 		// inout has orderline and both has the same UOM
 		return true;

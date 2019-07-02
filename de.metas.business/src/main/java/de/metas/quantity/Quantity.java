@@ -314,6 +314,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return quantity's C_UOM_ID
 	 */
+	@Deprecated
 	public int getUOMId()
 	{
 		return uom.getC_UOM_ID();

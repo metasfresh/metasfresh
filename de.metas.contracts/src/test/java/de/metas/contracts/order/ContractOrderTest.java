@@ -57,7 +57,7 @@ import de.metas.util.time.SystemTime;
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
 		ContractLibraryConfiguration.class
-		})
+})
 public class ContractOrderTest extends AbstractFlatrateTermTest
 {
 	final private IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
@@ -78,17 +78,17 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term contract = prepareContractForTest(X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendOne, startDate);
 		createInitialContractOrder(contract);
-		
+
 		// simulate extending order
 		final I_C_Flatrate_Term newContract = simulateExtendingContractOrder(contract);
-		
+
 		final I_C_Order initialOrder = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 		assertThat(initialOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
-		final I_C_Order order = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
+		// final I_C_Order order =
+		InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
 	}
 
-	
 	@Test
 	public void cancel_a_ContractOrder()
 	{
@@ -129,7 +129,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		//
 		InterfaceWrapperHelper.refresh(order);
 		final I_C_Order extendedOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		
+
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 		assertThat(extendedOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
@@ -173,7 +173,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 		InterfaceWrapperHelper.refresh(order);
 		final I_C_Order extendedtOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		
+
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 		assertThat(extendedtOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Cancelled);
 	}
@@ -192,7 +192,6 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		InterfaceWrapperHelper.refresh(order);
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 
-
 		// extend the contract
 		//
 		final ContractExtendingRequest context = ContractExtendingRequest.builder()
@@ -205,7 +204,6 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		Services.get(IFlatrateBL.class).extendContractAndNotifyUser(context);
 		final I_C_Flatrate_Term extendedContract = newContract.getC_FlatrateTerm_Next();
 		assertThat(extendedContract).isNotNull();
-
 
 		// void the contract
 		//
@@ -221,7 +219,7 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 		InterfaceWrapperHelper.refresh(order);
 		final I_C_Order extendedOrder = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		
+
 		assertThat(order.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Extended);
 		assertThat(extendedOrder.getContractStatus()).isEqualTo(I_C_Order.CONTRACTSTATUS_Active);
 	}
@@ -232,23 +230,23 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 		final I_C_OrderLine orderLine = createOrderAndOrderLine(contract.getC_Flatrate_Conditions(), contract.getM_Product());
 		contractOrder.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
 		InterfaceWrapperHelper.save(contractOrder);
-		
+
 		contract.setC_OrderLine_Term(orderLine);
 		InterfaceWrapperHelper.save(contract);
-		
+
 		return orderLine;
 	}
-	
+
 	private I_C_Flatrate_Term simulateExtendingContractOrder(final I_C_Flatrate_Term contract)
 	{
-		final I_C_Flatrate_Term newContract = createFlatrateTerm(contract.getC_Flatrate_Conditions(), contract.getM_Product(), TimeUtil.addDays(contract.getEndDate(),1));
+		final I_C_Flatrate_Term newContract = createFlatrateTerm(contract.getC_Flatrate_Conditions(), contract.getM_Product(), TimeUtil.addDays(contract.getEndDate(), 1));
 		contract.setC_FlatrateTerm_Next(newContract);
 		InterfaceWrapperHelper.save(contract);
-		
+
 		final I_C_OrderLine orderLineExtended = InterfaceWrapperHelper.create(newContract.getC_OrderLine_Term(), I_C_OrderLine.class);
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term(), I_C_OrderLine.class);
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
-		
+
 		contractOrder.setRef_FollowupOrder_ID(orderLineExtended.getC_Order_ID());
 		contractOrder.setContractStatus(I_C_Order.CONTRACTSTATUS_Extended);
 		InterfaceWrapperHelper.save(contractOrder);

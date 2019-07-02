@@ -23,6 +23,7 @@ import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.WebuiURLs;
@@ -306,7 +307,7 @@ public class UserBL implements IUserBL
 	{
 		if (Check.isEmpty(email, true))
 		{
-			return ITranslatableString.constant("no email");
+			return TranslatableStrings.constant("no email");
 		}
 		try
 		{
@@ -315,7 +316,7 @@ public class UserBL implements IUserBL
 
 			if (ia.getAddress() == null)
 			{
-				return ITranslatableString.constant("invalid email");
+				return TranslatableStrings.constant("invalid email");
 			}
 
 			return null; // OK
@@ -323,7 +324,7 @@ public class UserBL implements IUserBL
 		catch (AddressException ex)
 		{
 			logger.warn("Invalid email address: {}", email, ex);
-			return ITranslatableString.constant(ex.getLocalizedMessage());
+			return TranslatableStrings.constant(ex.getLocalizedMessage());
 		}
 	}
 
@@ -346,14 +347,14 @@ public class UserBL implements IUserBL
 			final String emailUser = user.getEMailUser();
 			if (Check.isEmpty(emailUser, true))
 			{
-				return ITranslatableString.constant("no STMP user configured");
+				return TranslatableStrings.constant("no STMP user configured");
 			}
 
 			// SMTP password
 			final String emailPassword = user.getEMailUserPW();
 			if (Check.isEmpty(emailPassword, false))
 			{
-				return ITranslatableString.constant("STMP authorization is required but no STMP password configured");
+				return TranslatableStrings.constant("STMP authorization is required but no STMP password configured");
 			}
 		}
 

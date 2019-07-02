@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.pricing.IPricingContext;
@@ -61,7 +62,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 			final int documentLineNo,
 			final ProductId productId)
 	{
-		final TranslatableStringBuilder sb = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder sb = TranslatableStrings.builder();
 
 		if (documentLineNo > 0)
 		{

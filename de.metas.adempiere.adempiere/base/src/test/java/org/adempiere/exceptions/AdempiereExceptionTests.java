@@ -36,7 +36,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 public class AdempiereExceptionTests
 {
@@ -45,7 +45,7 @@ public class AdempiereExceptionTests
 
 	private AdempiereException newAdempiereException()
 	{
-		return new AdempiereException(ImmutableTranslatableString.empty());
+		return new AdempiereException(TranslatableStrings.empty());
 	}
 
 	@Test

@@ -49,6 +49,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
@@ -135,9 +137,12 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 	private void doIt0()
 	{
 		final I_M_Material_Tracking materialTracking = InterfaceWrapperHelper.create(getCtx(), p_Material_Tracking_ID, I_M_Material_Tracking.class, getTrxName());
-		if (materialTracking.getM_Product_ID() != orderLine.getM_Product_ID())
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		if (materialTracking.getM_Product_ID() != productId.getRepoId())
 		{
-			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + orderLine.getM_Product().getValue() + ") "
+			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+
+			final String msg = "@C_OrderLine_ID@ @M_Product_ID@ (" + productName + ") "
 					+ "<> "
 					+ "@M_Material_Tracking@ @M_Product_ID@ (" + materialTracking.getM_Product().getValue() + ")";
 			final String msgTrl = msgBL.parseTranslation(getCtx(), msg);

@@ -33,6 +33,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -80,10 +83,19 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 
 		final I_C_Order o = InterfaceWrapperHelper.create(ol.getC_Order(), I_C_Order.class);
+		
+		final ProductId productId = ProductId.ofRepoId(ol.getM_Product_ID());
+		final ProductCategoryId productCategoryId = Services.get(IProductDAO.class).retrieveProductCategoryByProductId(productId);
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final List<I_C_Flatrate_Term> termsForOl =
-				flatrateDB.retrieveTerms(ctx, o.getBill_BPartner_ID(), o.getDateOrdered(), ol.getM_Product().getM_Product_Category_ID(), ol.getM_Product_ID(), ol.getC_Charge_ID(), trxName);
+		final List<I_C_Flatrate_Term> termsForOl = flatrateDB.retrieveTerms(
+				ctx, 
+				o.getBill_BPartner_ID(), 
+				o.getDateOrdered(), 
+				productCategoryId.getRepoId(), 
+				productId.getRepoId(), 
+				ol.getC_Charge_ID(), 
+				trxName);
 
 		// if there are terms for 'ol', then we ask the handler not to create a shipment schedule for 'ol'
 		final boolean atLeastOneFlatrateContract = !termsForOl.isEmpty();

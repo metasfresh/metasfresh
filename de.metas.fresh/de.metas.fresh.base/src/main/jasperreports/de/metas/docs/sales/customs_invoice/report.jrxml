@@ -71,7 +71,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="135" width="595" height="153" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
+				<reportElement key="subreport-8" x="0" y="142" width="595" height="145" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
@@ -84,7 +84,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/sales/customs_invoice/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="65" y="101" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
+				<reportElement key="subreport-7" x="65" y="116" width="255" height="127" uuid="36681144-0231-421b-baec-8e7f45c39773">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -103,7 +103,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="330" y="103" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
+				<reportElement key="subreport-8" x="330" y="114" width="210" height="127" uuid="c5d77fa4-7184-4f47-a49b-955bd96be83c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>

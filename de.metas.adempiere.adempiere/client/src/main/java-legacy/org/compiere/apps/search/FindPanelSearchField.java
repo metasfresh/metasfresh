@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -42,7 +42,7 @@ import de.metas.util.Services;
  */
 public final class FindPanelSearchField implements IUserQueryField
 {
-	public static final Map<String, FindPanelSearchField> createMapIndexedByColumnName(final GridField[] gridFields)
+	public static Map<String, FindPanelSearchField> createMapIndexedByColumnName(final GridField[] gridFields)
 	{
 		final Map<String, FindPanelSearchField> searchFields = new HashMap<>();
 		for (final GridField gridField : gridFields)
@@ -73,12 +73,12 @@ public final class FindPanelSearchField implements IUserQueryField
 		return searchFields;
 	}
 	
-	public static final FindPanelSearchField castToFindPanelSearchField(final Object field)
+	public static FindPanelSearchField castToFindPanelSearchField(final Object field)
 	{
 		return (FindPanelSearchField)field;
 	}
 	
-	public static final boolean isSelectionColumn(final IUserQueryField field)
+	public static boolean isSelectionColumn(final IUserQueryField field)
 	{
 		if(field instanceof FindPanelSearchField)
 		{
@@ -188,7 +188,7 @@ public final class FindPanelSearchField implements IUserQueryField
 				header += " (ID)";
 			}
 
-			_displayName = ImmutableTranslatableString.constant(header);
+			_displayName = TranslatableStrings.constant(header);
 		}
 
 		return _displayName;
@@ -351,7 +351,7 @@ public final class FindPanelSearchField implements IUserQueryField
 	}
 
 	@Override
-	public final String getValueDisplay(final Object value)
+	public String getValueDisplay(final Object value)
 	{
 		String infoDisplay = value == null ? "" : value.toString();
 		if (isLookup())

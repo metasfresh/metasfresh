@@ -66,8 +66,4 @@ Please process the rejection {0}.
 Kind regards',Updated=TO_TIMESTAMP('2019-06-06 16:07:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544926
 ;
 
--- 2019-06-06T16:32:53.163
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_SysConfig SET Value='http://localhost:3000',Updated=TO_TIMESTAMP('2019-06-06 16:32:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541202
-;
 
