@@ -51,7 +51,7 @@ const getLanguageSpecific = (data, key) => {
 const wrapRequest = req => {
   return new Promise(resolve => {
     req.then(response => {
-      resolve(response.body[0]);
+      resolve(response.body.length ? response.body[0] : response.body.values);
     });
   });
 };

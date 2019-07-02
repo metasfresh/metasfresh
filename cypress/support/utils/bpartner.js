@@ -287,7 +287,7 @@ export class BPartner {
           });
         }
 
-        const discountSchema = findByName(discountSchemaResponse.body.values, bPartner.customerDiscountSchema);
+        const discountSchema = findByName(discountSchemaResponse, bPartner.customerDiscountSchema);
         if (bPartner.customerDiscountSchema) {
           dataObject.push({
             op: 'replace',
@@ -299,7 +299,7 @@ export class BPartner {
           });
         }
 
-        const pricingSystem = findByName(pricingSystemResponse.body.values, bPartner.customerPricingSystem);
+        const pricingSystem = findByName(pricingSystemResponse, bPartner.customerPricingSystem);
         if (bPartner.customerPricingSystem) {
           dataObject.push({
             op: 'replace',
@@ -311,7 +311,7 @@ export class BPartner {
           });
         }
 
-        const paymentTerm = findByName(paymentTermResponse.body.values, bPartner.paymentTerm);
+        const paymentTerm = findByName(paymentTermResponse, bPartner.paymentTerm);
         if (bPartner.paymentTerm) {
           dataObject.push({
             op: 'replace',
