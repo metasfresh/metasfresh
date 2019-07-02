@@ -25,11 +25,9 @@ describe('Aggregated inventory test', function() {
     cy.visitWindow(inventory.windowId, 'NEW', 'newInventoryRecord');
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
-      cy.getStringFieldValue('C_DocType_ID').then(docTypeName => {
-        expect(docTypeName).to.eq(getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName')); /// <<====
-      });
+      const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
+      cy.selectInListField('C_DocType_ID', docTypeName);
 
-      // set warehouse by its language-specific name
       cy.selectInListField('M_Warehouse_ID', inventoryJson.warehouseName);
     });
 
