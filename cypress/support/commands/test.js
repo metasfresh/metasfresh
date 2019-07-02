@@ -155,7 +155,7 @@ Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
 
       cy.get('.meta-dropdown-toggle').then($toggle => {
-        cy.log(`zzzzzzzzzzz ${$toggle.html()}`);
+        cy.log(`z ${$toggle.html()}`);
       });
 
       const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
