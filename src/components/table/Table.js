@@ -1036,8 +1036,8 @@ class Table extends Component {
             supportFieldEdit
           )
         }
-        changeListenOnTrue={() => this.changeListen(true)}
-        changeListenOnFalse={() => this.changeListen(false)}
+          changeListenOnTrue={() => this.changeListen(true)}
+          changeListenOnFalse={() => this.changeListen(false)}
         newRow={i === rows.length - 1 ? newRow : false}
         isSelected={
           selected &&
