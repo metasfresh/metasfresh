@@ -162,13 +162,6 @@ class MasterWidget extends Component {
     const dateParse = ['Date', 'DateTime', 'Time'];
     let currRowId = rowId;
 
-    //the same as in RawWidget in terms of functionality, but here in masterWidget
-    //handleChange method is called when you write in input, is the part where user see the result and we
-    //want that the visible result to be the same with unseen one by client.
-    const isCostPriceWidget = widgetType === 'CostPrice';
-    const isDecimalValue = /[0-9]+([.,][0-9]+)?/.test(val);
-    const requiresCommaFix = isCostPriceWidget && isDecimalValue;
-
     this.setState(
       {
         edited: true,
@@ -181,14 +174,7 @@ class MasterWidget extends Component {
         if (rowId === 'NEW') {
           currRowId = relativeDocId;
         }
-        updatePropertyValue(
-          property,
-          requiresCommaFix ? val.replace(',', '.') : val,
-          tabId,
-          currRowId,
-          isModal,
-          entity
-        );
+        updatePropertyValue(property, val, tabId, currRowId, isModal, entity);
       }
     );
   };

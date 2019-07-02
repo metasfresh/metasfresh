@@ -116,6 +116,7 @@ export class RawWidget extends Component {
 
   handleKeyDown = (e, property, value) => {
     const { lastFormField } = this.props;
+
     if ((e.key === 'Enter' || e.key === 'Tab') && !e.shiftKey) {
       if (e.key === 'Enter' && !lastFormField) {
         e.preventDefault();
@@ -128,18 +129,8 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch, widgetData } = this.props;
+    const { handlePatch } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
-    //1
-    let fieldData = widgetData.find(widget => widget.field === property);
-
-    //for using comma in Price Fields, input needs to be text
-    //because we want that text to contain only numbers, comma and dot, we use regex for checking that
-    //when patching to redux we look for widget type and most important thing to be number if
-    //widget is CostPrice
-    const isCostPriceWidget = fieldData.widgetType === 'CostPrice';
-    const isDecimalValue = /[0-9]+([.,][0-9]+)?/.test(value);
-    const requiresCommaFix = isCostPriceWidget && isDecimalValue;
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -149,12 +140,7 @@ export class RawWidget extends Component {
         clearedFieldWarning: false,
       });
 
-      return handlePatch(
-        property,
-        requiresCommaFix ? value.replace(',', '.') : value,
-        id,
-        valueTo
-      );
+      return handlePatch(property, value, id, valueTo);
     }
 
     return Promise.resolve(null);
@@ -194,6 +180,7 @@ export class RawWidget extends Component {
     if (!fieldData) {
       fieldData = widgetData[0];
     }
+
     let allowPatching =
       (isValue &&
         (JSON.stringify(fieldData.value) != JSON.stringify(value) ||
@@ -270,6 +257,7 @@ export class RawWidget extends Component {
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
+
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
       ? fields[0].parameterName
@@ -661,7 +649,7 @@ export class RawWidget extends Component {
               'input-focused': isEdited,
             })}
           >
-            <input {...widgetProperties} type="text" />
+            <input {...widgetProperties} type="number" />
           </div>
         );
       case 'YesNo':
