@@ -221,7 +221,10 @@ class MasterWindow extends Component {
   };
 
   initEventListeners = () => {
-    window.addEventListener('beforeunload', this.confirm);
+    if (!navigator.userAgent.includes('Cypress')) {
+      // try workaround https://github.com/cypress-io/cypress/issues/1235#issuecomment-411839157 for our "hanging" problem
+      window.addEventListener('beforeunload', this.confirm);
+    }
   };
 
   removeEventListeners = () => {
