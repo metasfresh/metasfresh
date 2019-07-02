@@ -201,17 +201,9 @@ public class Order implements ModelValidator
 			// the prices in the order lines need to be updated.
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_M_PriceList_ID))
 			{
-				final OrderFreightCostsService orderFreightCostsService = Adempiere.getBean(OrderFreightCostsService.class);
-				
 				final MOrder mOrder = (MOrder)po;
 				for (final MOrderLine ol : mOrder.getLines())
 				{
-					// Freight costs are not calculated by Price List.
-					if (orderFreightCostsService.isFreightCostOrderLine(ol))
-					{
-						continue;
-					}
-					
 					ol.setPrice();
 					ol.saveEx();
 				}
@@ -219,9 +211,6 @@ public class Order implements ModelValidator
 			
 			//
 			// checking if all is okay with this order
-			final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
-			orderFreightCostService.checkFreightCost(order);
-			
 			orderBL.checkForPriceList(order);
 		}
 		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)

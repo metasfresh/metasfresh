@@ -1,8 +1,7 @@
 package de.metas.freighcost;
 
-import java.math.BigDecimal;
-
 import de.metas.location.CountryId;
+import de.metas.money.Money;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,14 +39,14 @@ public class FreightCostBreak
 	CountryId countryId;
 
 	@NonNull
-	BigDecimal shipmentValueAmtMax;
+	Money shipmentValueAmtMax;
 
 	@NonNull
-	BigDecimal freightAmt;
+	Money freightRate;
 
-	boolean isMatching(@NonNull final CountryId countryId, @NonNull final BigDecimal freightBaseAmount)
+	boolean isMatching(@NonNull final CountryId countryId, @NonNull final Money shipmentValueAmt)
 	{
-		return getShipmentValueAmtMax().compareTo(freightBaseAmount) >= 0
-				&& CountryId.equals(countryId, getCountryId());
+		return CountryId.equals(countryId, getCountryId())
+				&& shipmentValueAmt.isLessThanOrEqualTo(getShipmentValueAmtMax());
 	}
 }

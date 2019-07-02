@@ -25,6 +25,8 @@ import de.metas.freighcost.FreightCostService;
 import de.metas.freighcost.spi.IFreightCostFreeEvaluator;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -111,34 +113,35 @@ public class InOutFreightCostsService
 		return false;
 	}
 
-	public BigDecimal computeFreightCostForInOut(@NonNull final InOutId inoutId)
+	public Optional<Money> computeFreightRate(@NonNull final InOutId inoutId)
 	{
 		final I_M_InOut inOut = inoutsRepo.getById(inoutId);
 		final FreightCostContext freightCostContext = extractFreightCostContext(inOut);
 
 		if (freightCostService.checkIfFree(freightCostContext))
 		{
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 
-		final BigDecimal freightBaseAmount = computeFreightBaseAmount(inOut).orElse(null);
-		if (freightBaseAmount == null)
+		final Money shipmentValueAmt = computeShipmentValueAmount(inOut).orElse(null);
+		if (shipmentValueAmt == null)
 		{
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 
 		final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
-		return freightCost.getFreightAmt(
+		final Money freightRate = freightCost.getFreightRate(
 				freightCostContext.getShipperId(),
 				freightCostContext.getShipToCountryId(),
 				freightCostContext.getDate(),
-				freightBaseAmount);
+				shipmentValueAmt);
+		return Optional.of(freightRate);
 	}
 
-	private Optional<BigDecimal> computeFreightBaseAmount(@NonNull final I_M_InOut inout)
+	private Optional<Money> computeShipmentValueAmount(@NonNull final I_M_InOut inout)
 	{
 		boolean atLeastOneIsFree = false;
-		BigDecimal shipmentValue = BigDecimal.ZERO;
+		Money shipmentValueAmt = null;
 		for (final I_M_InOutLine inoutLine : inoutsRepo.retrieveLines(inout))
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inoutLine.getC_OrderLine_ID());
@@ -160,7 +163,7 @@ public class InOutFreightCostsService
 				atLeastOneIsFree = true;
 				break;
 			}
-			else if (FreightCostRule.Versandkostenpauschale.equals(freightCostRule))
+			else if (FreightCostRule.FlatShippingFee.equals(freightCostRule))
 			{
 				if (isFreightCostFree(inoutLine))
 				{
@@ -168,8 +171,13 @@ public class InOutFreightCostsService
 					break;
 				}
 
+				final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+				final BigDecimal priceActual = orderLine.getPriceActual();
 				final BigDecimal qty = inoutLine.getMovementQty();
-				shipmentValue = shipmentValue.add(orderLine.getPriceActual().multiply(qty));
+				final Money lineValueAmt = Money.of(priceActual.multiply(qty), currencyId);
+				shipmentValueAmt = shipmentValueAmt != null
+						? shipmentValueAmt.add(lineValueAmt)
+						: lineValueAmt;
 			}
 		}
 
@@ -180,7 +188,7 @@ public class InOutFreightCostsService
 		}
 		else
 		{
-			return Optional.of(shipmentValue);
+			return Optional.ofNullable(shipmentValueAmt);
 		}
 
 	}

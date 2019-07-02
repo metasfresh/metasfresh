@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -82,7 +83,7 @@ public class C_Order_CreateCompensationMultiGroups extends OrderCompensationGrou
 				.map(e -> createGroup(e.getKey(), e.getValue()))
 				.collect(ImmutableList.toImmutableList());
 
-		final int orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroups(groups);
 		groupsRepo.renumberOrderLinesForOrderId(orderId);
 
 		return MSG_OK;

@@ -25,7 +25,10 @@ import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -58,6 +61,8 @@ import lombok.ToString;
 public class FreightCostRepository
 {
 	private static final Logger logger = LogManager.getLogger(FreightCostRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 
 	private final CCache<Integer, IndexedFreightCosts> freightCostsCache = CCache.<Integer, IndexedFreightCosts> builder()
 			.additionalTableNameToResetFor(I_M_FreightCost.Table_Name)
@@ -87,7 +92,7 @@ public class FreightCostRepository
 
 	private IndexedFreightCosts retrieveIndexedFreightCosts()
 	{
-		final List<I_M_FreightCost> records = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_FreightCost.class)
+		final List<I_M_FreightCost> records = queryBL.createQueryBuilderOutOfTrx(I_M_FreightCost.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
@@ -129,8 +134,7 @@ public class FreightCostRepository
 			return ImmutableListMultimap.of();
 		}
 
-		final List<I_M_FreightCostShipper> shipperRecords = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_M_FreightCostShipper.class)
+		final List<I_M_FreightCostShipper> shipperRecords = queryBL.createQueryBuilderOutOfTrx(I_M_FreightCostShipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_FreightCostShipper.COLUMNNAME_M_FreightCost_ID, freightCostIds)
 				.create()
@@ -173,7 +177,7 @@ public class FreightCostRepository
 			return ImmutableListMultimap.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_FreightCostDetail.class)
 				.addInArrayFilter(I_M_FreightCostDetail.COLUMNNAME_M_FreightCostShipper_ID, freightCostShipperIds)
 				.addOnlyActiveRecordsFilter()
@@ -185,13 +189,19 @@ public class FreightCostRepository
 				);
 	}
 
-	private static FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)
+	private FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)
 	{
+		final CountryId countryId = CountryId.ofRepoId(record.getC_Country_ID());
+
+		// TODO: Introduce M_FreightCostDetail.C_Currency_ID. In UI, by default, it can be set from country
+		final CurrencyId currencyId = countriesRepo.getCountryCurrencyId(countryId)
+				.orElseThrow(() -> new AdempiereException("No currency defined for " + countryId));
+
 		return FreightCostBreak.builder()
 				.freightCostShipperId(FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()))
-				.countryId(CountryId.ofRepoId(record.getC_Country_ID()))
-				.shipmentValueAmtMax(record.getShipmentValueAmt())
-				.freightAmt(record.getFreightAmt())
+				.countryId(countryId)
+				.shipmentValueAmtMax(Money.of(record.getShipmentValueAmt(), currencyId))
+				.freightRate(Money.of(record.getFreightAmt(), currencyId))
 				.build();
 	}
 

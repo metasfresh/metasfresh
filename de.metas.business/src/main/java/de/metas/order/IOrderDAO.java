@@ -103,7 +103,7 @@ public interface IOrderDAO extends ISingletonService
 	 */
 	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
 
-	List<I_C_OrderLine> retrieveOrderLines(int orderId);
+	List<I_C_OrderLine> retrieveOrderLines(OrderId orderId);
 
 	/** @return all C_OrderLine_IDs for given order, including the inactive ones */
 	List<Integer> retrieveAllOrderLineIds(I_C_Order order);
@@ -163,4 +163,6 @@ public interface IOrderDAO extends ISingletonService
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
 
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
+
+	void save(org.compiere.model.I_C_OrderLine orderLine);
 }

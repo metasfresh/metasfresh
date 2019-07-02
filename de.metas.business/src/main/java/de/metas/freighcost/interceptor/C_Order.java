@@ -2,16 +2,15 @@ package de.metas.freighcost.interceptor;
 
 import java.math.BigDecimal;
 
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.engine.DocStatus;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
@@ -52,10 +51,18 @@ public class C_Order
 		this.orderFreightCostService = orderFreightCostService;
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void beforeComplete(final I_C_Order order)
+	@Init
+	public void init()
 	{
-		orderFreightCostService.evalAddFreightCostLine(order);
+		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programaticCalloutProvider.registerAnnotatedCallout(new de.metas.freighcost.callout.C_Order(orderFreightCostService));
+	}
+
+	// NOTE: adding the freight rate line before prepare to cover the case when the order goes to WaitingPayment status (not yet completed)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
+	public void beforePrepare(final I_C_Order order)
+	{
+		orderFreightCostService.addFreightRateLineIfNeeded(order);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
@@ -78,17 +85,6 @@ public class C_Order
 		{
 			// reinsert the freight amount value in the field
 			order.setFreightAmt(deletedFreightAmt);
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void beforeChange(final I_C_Order order)
-	{
-		// find out if we have a prepay order that enters the status "waiting payment"
-		if (InterfaceWrapperHelper.isValueChanged(order, I_C_Order.COLUMNNAME_DocStatus)
-				&& DocStatus.WaitingPayment.equals(DocStatus.ofCode(order.getDocStatus())))
-		{
-			orderFreightCostService.evalAddFreightCostLine(order);
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.freighcost;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
@@ -12,6 +11,7 @@ import org.adempiere.service.OrgId;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.location.CountryId;
+import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import lombok.AccessLevel;
@@ -75,23 +75,22 @@ public class FreightCost
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public BigDecimal getFreightAmt(
+	public Money getFreightRate(
 			@NonNull final ShipperId shipperId,
 			@NonNull final CountryId countryId,
 			@NonNull final LocalDate date,
-			@NonNull final BigDecimal freightBaseAmount)
+			@NonNull final Money shipmentValueAmt)
 	{
-		final FreightCostBreak freightCostBreak = getBreak(shipperId, countryId, date, freightBaseAmount).orElse(null);
-		return freightCostBreak != null
-				? freightCostBreak.getFreightAmt()
-				: BigDecimal.ZERO;
+		return getBreak(shipperId, countryId, date, shipmentValueAmt)
+				.map(FreightCostBreak::getFreightRate)
+				.orElseGet(shipmentValueAmt::toZero);
 	}
 
 	public Optional<FreightCostBreak> getBreak(
 			@NonNull final ShipperId shipperId,
 			@NonNull final CountryId countryId,
 			@NonNull final LocalDate date,
-			@NonNull final BigDecimal freightBaseAmount)
+			@NonNull final Money shipmentValueAmt)
 	{
 		final FreightCostShipper shipper = getShipperIfExists(shipperId, date).orElse(null);
 		if (shipper == null)
@@ -99,7 +98,7 @@ public class FreightCost
 			return Optional.empty();
 		}
 
-		return shipper.getBreak(countryId, freightBaseAmount);
+		return shipper.getBreak(countryId, shipmentValueAmt);
 	}
 
 	public FreightCostShipper getShipper(@NonNull final ShipperId shipperId, @NonNull final LocalDate date)

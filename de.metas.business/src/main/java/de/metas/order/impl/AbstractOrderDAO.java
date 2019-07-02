@@ -118,7 +118,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final int orderId = order.getC_Order_ID();
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final List<T> orderLines = retrieveOrderLines(ctx, orderId, trxName, clazz);
 
 		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
@@ -126,7 +126,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final int orderId)
+	public List<I_C_OrderLine> retrieveOrderLines(final OrderId orderId)
 	{
 		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
 	}
@@ -135,7 +135,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
 			@CacheCtx final Properties ctx,
-			final int orderId,
+			@NonNull final OrderId orderId,
 			@CacheTrx final String trxName,
 			@NonNull final Class<T> clazz)
 	{
@@ -251,8 +251,14 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 	
 	@Override
-	public void delete(final org.compiere.model.I_C_OrderLine orderLine)
+	public void delete(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		InterfaceWrapperHelper.delete(orderLine);
+	}
+	
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		InterfaceWrapperHelper.save(orderLine);
 	}
 }

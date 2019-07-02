@@ -40,7 +40,7 @@ public enum FreightCostRule implements ReferenceListAwareEnum
 	FixPrice(X_C_Order.FREIGHTCOSTRULE_FixPrice), //
 	Calculated(X_C_Order.FREIGHTCOSTRULE_Calculated), //
 	Line(X_C_Order.FREIGHTCOSTRULE_Line), //
-	Versandkostenpauschale(X_C_Order.FREIGHTCOSTRULE_Versandkostenpauschale) //
+	FlatShippingFee(X_C_Order.FREIGHTCOSTRULE_Versandkostenpauschale) //
 	;
 
 	@Getter

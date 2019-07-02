@@ -946,7 +946,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Reservations in Warehouse
 		if (!newRecord && is_ValueChanged("M_Warehouse_ID"))
 		{
-			for (MOrderLine line : getLines())
+			for (MOrderLine line : getLinesRequery())
 			{
 				if (!line.canChangeWarehouse(true))
 				{
@@ -1127,7 +1127,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return false;
 		}
 
-		for (final MOrderLine line : getLines())
+		for (final MOrderLine line : getLinesRequery())
 		{
 			line.deleteEx(true);
 		}
@@ -1311,110 +1311,6 @@ public class MOrder extends X_C_Order implements IDocument
 		// setDocAction(DOCACTION_Complete);
 		return IDocument.STATUS_InProgress;
 	}	// prepareIt
-
-	// @formatter:off
-//	/**
-//	 * Explode non stocked BOM.
-//	 * task 09030: we don't really want to explode the BOM, least of all this way
-//	 *
-//	 * @return true if bom exploded
-//	 */
-//	private boolean explodeBOM()
-//	{
-//		boolean retValue = false;
-//		String where = "AND IsActive='Y' AND EXISTS "
-//				+ "(SELECT * FROM M_Product p WHERE C_OrderLine.M_Product_ID=p.M_Product_ID"
-//				+ " AND	p.IsBOM='Y' AND p.IsVerified='Y' AND p.IsStocked='N')";
-//		//
-//		String sql = "SELECT COUNT(*) FROM C_OrderLine "
-//				+ "WHERE C_Order_ID=? " + where;
-//		int count = DB.getSQLValue(get_TrxName(), sql, getC_Order_ID());
-//		while (count != 0)
-//		{
-//			retValue = true;
-//			renumberLines(1000);		// max 999 bom items
-//
-//			// Order Lines with non-stocked BOMs
-//			MOrderLine[] lines = getLines(where, MOrderLine.COLUMNNAME_Line);
-//			for (int i = 0; i < lines.length; i++)
-//			{
-//				MOrderLine line = lines[i];
-//				MProduct product = MProduct.get(getCtx(), line.getM_Product_ID());
-//				log.debug(product.getName());
-//				// New Lines
-//				int lineNo = line.getLine();
-//				// find default BOM with valid dates and to this product
-//				MPPProductBOM bom = MPPProductBOM.get(product, getAD_Org_ID(), getDatePromised(), get_TrxName());
-//				if (bom != null)
-//				{
-//					MPPProductBOMLine[] bomlines = bom.getLines(getDatePromised());
-//					for (int j = 0; j < bomlines.length; j++)
-//					{
-//						final I_PP_Product_BOMLine bomline = bomlines[j];
-//						MOrderLine newLine = new MOrderLine(this);
-//						newLine.setLine(++lineNo);
-//						newLine.setM_Product_ID(bomline.getM_Product_ID());
-//						newLine.setC_UOM_ID(bomline.getC_UOM_ID());
-//						newLine.setQty(line.getQtyOrdered().multiply(
-//								bomline.getQtyBOM()));
-//						if (bomline.getDescription() != null)
-//							newLine.setDescription(bomline.getDescription());
-//						//
-//						newLine.setPrice();
-//						newLine.save(get_TrxName());
-//					}
-//				}
-//
-//				/*
-//				 * MProductBOM[] boms = MProductBOM.getBOMLines (product);
-//				 * for (int j = 0; j < boms.length; j++)
-//				 * {
-//				 * //MProductBOM bom = boms[j];
-//				 * MPPProductBOMLine bom = boms[j];
-//				 * MOrderLine newLine = new MOrderLine (this);
-//				 * newLine.setLine (++lineNo);
-//				 * //newLine.setM_Product_ID (bom.getProduct ()
-//				 * // .getM_Product_ID ());
-//				 * newLine.setM_Product_ID (bom.getM_Product_ID ());
-//				 * //newLine.setC_UOM_ID (bom.getProduct ().getC_UOM_ID ());
-//				 * newLine.setC_UOM_ID (bom.getC_UOM_ID ());
-//				 * //newLine.setQty (line.getQtyOrdered ().multiply (
-//				 * // bom.getBOMQty ()));
-//				 * newLine.setQty (line.getQtyOrdered ().multiply (
-//				 * bom.getQtyBOM()));
-//				 * if (bom.getDescription () != null)
-//				 * newLine.setDescription (bom.getDescription ());
-//				 * //
-//				 * newLine.setPrice ();
-//				 * newLine.save (get_TrxName());
-//				 * }
-//				 */
-//
-//				// Convert into Comment Line
-//				line.setM_Product_ID(0);
-//				line.setM_AttributeSetInstance_ID(0);
-//				line.setPrice(BigDecimal.ZERO);
-//				line.setPriceLimit(BigDecimal.ZERO);
-//				line.setPriceList(BigDecimal.ZERO);
-//				line.setLineNetAmt(BigDecimal.ZERO);
-//				line.setFreightAmt(BigDecimal.ZERO);
-//				//
-//				String description = product.getName();
-//				if (product.getDescription() != null)
-//					description += " " + product.getDescription();
-//				if (line.getDescription() != null)
-//					description += " " + line.getDescription();
-//				line.setDescription(description);
-//				line.save(get_TrxName());
-//			}	// for all lines with BOM
-//
-//			m_lines = null;		// force requery
-//			count = DB.getSQLValue(get_TrxName(), sql, getC_Invoice_ID());
-//			renumberLines(10);
-//		}	// while count != 0
-//		return retValue;
-//	}	// explodeBOM
-	// @formatter:on
 
 	/**
 	 * Reserve Inventory.
@@ -1705,15 +1601,18 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
 		final String DocSubType = dt.getDocSubType();
 
+		//
 		// Just prepare
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
 			return IDocument.STATUS_InProgress;
 		}
+		
+		//
 		// Offers
 		if (MDocType.DOCSUBTYPE_Proposal.equals(DocSubType)
 				|| MDocType.DOCSUBTYPE_Quotation.equals(DocSubType))
@@ -1738,6 +1637,8 @@ public class MOrder extends X_C_Order implements IDocument
 			setProcessed(true);
 			return IDocument.STATUS_Completed;
 		}
+		
+		//
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
 				&& X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
@@ -1870,7 +1771,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param movementDate optional movement date (default today)
 	 * @return shipment or null
 	 */
-	private MInOut createShipment(final MDocType dt, final Timestamp movementDate)
+	private MInOut createShipment(final I_C_DocType dt, final Timestamp movementDate)
 	{
 		log.debug("For " + dt);
 		final MInOut shipment = new MInOut(this, dt.getC_DocTypeShipment_ID(), movementDate);
@@ -1938,7 +1839,7 @@ public class MOrder extends X_C_Order implements IDocument
 	 * @param invoiceDate invoice date
 	 * @return invoice or null
 	 */
-	private MInvoice createInvoice(final MDocType dt, final MInOut shipment, final Timestamp invoiceDate)
+	private MInvoice createInvoice(final I_C_DocType dt, final MInOut shipment, final Timestamp invoiceDate)
 	{
 		log.debug("docType={}", dt);
 		final MInvoice invoice = new MInvoice(this, dt.getC_DocTypeInvoice_ID(), invoiceDate);

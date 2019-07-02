@@ -57,19 +57,19 @@ public class FreightCostService
 	{
 		if (!context.getDeliveryViaRule().isShipper())
 		{
-			logger.debug("No freightcost because DeliveryViaRule is not shipper: ", context);
+			logger.debug("No freight cost because DeliveryViaRule is not shipper: ", context);
 			return true;
 		}
 
 		if (context.getShipToBPartnerId() == null)
 		{
-			logger.debug("No freigtcost because ShipToBPartner is not set: {}", context);
+			logger.debug("No freight cost because ShipToBPartner is not set: {}", context);
 			return true;
 		}
 
 		if (context.getFreightCostRule() == FreightCostRule.FreightIncluded)
 		{
-			logger.debug("No freightcost because the freight is included: {}", context);
+			logger.debug("No freight cost because the freight is included: {}", context);
 			return true;
 		}
 

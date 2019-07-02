@@ -1,6 +1,5 @@
 package de.metas.freighcost;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
@@ -9,6 +8,7 @@ import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.location.CountryId;
+import de.metas.money.Money;
 import de.metas.shipping.ShipperId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -58,7 +58,7 @@ public class FreightCostShipper
 		this.shipperId = shipperId;
 		this.validFrom = validFrom;
 		this.breaks = breaks.stream()
-				.sorted(Comparator.comparing(FreightCostBreak::getShipmentValueAmtMax))
+				.sorted(Comparator.comparing(freightCostBreak -> freightCostBreak.getShipmentValueAmtMax().getAsBigDecimal()))
 				.collect(ImmutableList.toImmutableList());
 
 	}
@@ -74,12 +74,12 @@ public class FreightCostShipper
 		return breaks.stream().anyMatch(freightCostBreak -> countryId.equals(freightCostBreak.getCountryId()));
 	}
 
-	Optional<FreightCostBreak> getBreak(@NonNull final CountryId countryId, @NonNull final BigDecimal freightBaseAmount)
+	Optional<FreightCostBreak> getBreak(@NonNull final CountryId countryId, @NonNull final Money shipmentValueAmt)
 	{
 		// assumes that the breaks are ordered by getShipmentValueAmt ascending
 		for (final FreightCostBreak freightCostBreak : breaks)
 		{
-			if (freightCostBreak.isMatching(countryId, freightBaseAmount))
+			if (freightCostBreak.isMatching(countryId, shipmentValueAmt))
 			{
 				return Optional.of(freightCostBreak);
 			}

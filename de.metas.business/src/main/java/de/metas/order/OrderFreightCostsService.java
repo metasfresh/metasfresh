@@ -1,30 +1,32 @@
 package de.metas.order;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.MProductPricing;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
 import de.metas.freighcost.FreightCost;
 import de.metas.freighcost.FreightCostContext;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.freighcost.FreightCostService;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
@@ -59,7 +61,9 @@ public class OrderFreightCostsService
 
 	private static final Logger logger = LogManager.getLogger(OrderFreightCostsService.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final FreightCostService freightCostService;
 
 	public OrderFreightCostsService(
@@ -68,60 +72,56 @@ public class OrderFreightCostsService
 		this.freightCostService = freightCostService;
 	}
 
-	public void evalAddFreightCostLine(final I_C_Order order)
+	public void addFreightRateLineIfNeeded(final I_C_Order order)
 	{
-		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
-		final boolean isCustomFreightCost = FreightCostRule.FixPrice.equals(freightCostRule)
-				|| FreightCostRule.FreightIncluded.equals(freightCostRule);
-
 		final BigDecimal freightAmt = order.getFreightAmt();
-		if (freightAmt.signum() != 0)
+		if (freightAmt.signum() == 0)
 		{
-			if (isPrepayOrder(order) || isCustomFreightCost)
-			{
-				if (!hasFreightCostLine(order))
-				{
-					final FreightCostContext freightCostContext = extractFreightCostContext(order);
-					final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
-					final MOrderLine newOl = new MOrderLine(order);
-					newOl.setM_Product_ID(freightCost.getFreightCostProductId().getRepoId());
-
-					final MProductPricing pp = new MProductPricing(
-							freightCost.getFreightCostProductId().getRepoId(),
-							order.getBill_Location_ID(),
-							BigDecimal.ONE,
-							order.isSOTrx());
-					pp.setM_PriceList_ID(order.getM_PriceList_ID());
-					final BigDecimal priceList = pp.getPriceList();
-					newOl.setPriceList(priceList);
-					InterfaceWrapperHelper.create(newOl, I_C_OrderLine.class).setPriceStd(pp.getPriceStd());
-
-					newOl.setQty(BigDecimal.ONE);
-					newOl.setPrice(freightAmt);
-					newOl.setProcessed(true);
-					newOl.saveEx();
-
-					// reload order lines. otherwise the cached lines (without the new one) might be used
-					order.getLines(true, null);
-					order.reserveStock(null, ImmutableList.of(newOl));
-					order.calculateTaxTotal();
-				}
-			}
+			return;
 		}
+
+		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
+		final boolean isCustomFreightCost = freightCostRule.isFixPrice()
+				|| FreightCostRule.FreightIncluded.equals(freightCostRule);
+		if (!isCustomFreightCost)
+		{
+			return;
+		}
+
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		if (hasFreightCostLine(orderId))
+		{
+			return;
+		}
+
+		final FreightCostContext freightCostContext = extractFreightCostContext(order);
+		final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
+
+		final I_C_OrderLine freightRateOrderLine = orderLineBL.createOrderLine(order);
+		orderLineBL.setProductId(
+				freightRateOrderLine,
+				freightCost.getFreightCostProductId(),
+				true);  // setUomFromProduct
+
+		freightRateOrderLine.setQtyEntered(BigDecimal.ONE);
+		freightRateOrderLine.setQtyOrdered(BigDecimal.ONE);
+
+		freightRateOrderLine.setIsManualPrice(true);
+		freightRateOrderLine.setIsPriceEditable(false);
+		freightRateOrderLine.setPriceEntered(freightAmt);
+		freightRateOrderLine.setPriceActual(freightAmt);
+
+		freightRateOrderLine.setIsManualDiscount(true);
+		freightRateOrderLine.setDiscount(BigDecimal.ZERO);
+
+		ordersRepo.save(freightRateOrderLine);
 	}
 
-	private boolean isPrepayOrder(final I_C_Order order)
+	public boolean hasFreightCostLine(@NonNull final OrderId orderId)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
-		return Services.get(IDocTypeBL.class).isPrepay(docTypeId);
-	}
-
-	public boolean hasFreightCostLine(final I_C_Order order)
-	{
-		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(order))
+		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(orderId))
 		{
 			final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
-
 			if (productId != null && freightCostService.isFreightCostProduct(productId))
 			{
 				return true;
@@ -151,7 +151,7 @@ public class OrderFreightCostsService
 				.build();
 	}
 
-	public void checkFreightCost(final I_C_Order order)
+	private void checkFreightCost(final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{
@@ -179,63 +179,86 @@ public class OrderFreightCostsService
 
 	public void updateFreightAmt(@NonNull final I_C_Order order)
 	{
-		final BigDecimal freightCostAmt = computeFreightCostForOrder(order);
-		order.setFreightAmt(freightCostAmt);
+		final Money freightRate = computeFreightRate(order).orElse(null);
+		order.setFreightAmt(freightRate != null ? freightRate.getAsBigDecimal() : BigDecimal.ZERO);
 	}
 
-	private BigDecimal computeFreightCostForOrder(final I_C_Order order)
+	private Optional<Money> computeFreightRate(final I_C_Order salesOrder)
 	{
-		final FreightCostContext freightCostContext = extractFreightCostContext(order);
+		if (!salesOrder.isSOTrx())
+		{
+			return Optional.empty();
+		}
+
+		final FreightCostContext freightCostContext = extractFreightCostContext(salesOrder);
 		if (freightCostService.checkIfFree(freightCostContext))
 		{
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 
 		final FreightCostRule freightCostRule = freightCostContext.getFreightCostRule();
-		if (freightCostRule == FreightCostRule.Versandkostenpauschale)
+		if (freightCostRule == FreightCostRule.FlatShippingFee)
 		{
-			// sum up the order's value and return the appropriate freight cost
-			final BigDecimal freightCostBase = computeFreightCostBase(order);
+			final OrderId orderId = OrderId.ofRepoIdOrNull(salesOrder.getC_Order_ID());
+			final Money shipmentValueAmt = orderId != null
+					? computeShipmentValueAmt(orderId).orElse(null)
+					: null;
+			if (shipmentValueAmt == null)
+			{
+				return Optional.empty();
+			}
 
 			final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
-			return freightCost.getFreightAmt(
+			final Money freightRate = freightCost.getFreightRate(
 					freightCostContext.getShipperId(),
 					freightCostContext.getShipToCountryId(),
 					freightCostContext.getDate(),
-					freightCostBase);
+					shipmentValueAmt);
+			return Optional.of(freightRate);
 		}
 		else if (freightCostRule == FreightCostRule.FixPrice)
 		{
 			// get the 'freightcost' product and return its price
 			final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
 
-			final MProductPricing pp = new MProductPricing(
+			final IEditablePricingContext pricingContext = pricingBL.createInitialContext(
 					freightCost.getFreightCostProductId().getRepoId(),
-					order.getC_BPartner_ID(),
+					freightCostContext.getShipToBPartnerId().getRepoId(),
+					0,
 					BigDecimal.ONE,
-					order.isSOTrx());
-			pp.setM_PriceList_ID(order.getM_PriceList_ID());
+					SOTrx.SALES.toBoolean());
+			pricingContext.setFailIfNotCalculated(true);
+			pricingContext.setPricingSystemId(PricingSystemId.ofRepoIdOrNull(salesOrder.getM_PricingSystem_ID()));
+			pricingContext.setPriceListId(PriceListId.ofRepoIdOrNull(salesOrder.getM_PriceList_ID()));
 
-			return pp.getPriceList();
+			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+			final Money freightRate = Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId());
+			return Optional.of(freightRate);
 		}
 		else
 		{
 			logger.debug("Freigt cost is not computed because of FreightCostRule={}", freightCostRule);
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 	}
 
-	private BigDecimal computeFreightCostBase(final I_C_Order order)
+	private Optional<Money> computeShipmentValueAmt(@NonNull final OrderId orderId)
 	{
-		BigDecimal orderValue = BigDecimal.ZERO;
-		for (final I_C_OrderLine poLine : ordersRepo.retrieveOrderLines(order))
+		Money shipmentValueAmt = null;
+		for (final I_C_OrderLine orderLine : ordersRepo.retrieveOrderLines(orderId))
 		{
-			final I_C_OrderLine ol = poLine;
+			final BigDecimal qty = orderLine.getQtyOrdered();
+			final BigDecimal priceActual = orderLine.getPriceActual();
+			final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 
-			final BigDecimal qty = poLine.getQtyOrdered();
-			orderValue = orderValue.add(ol.getPriceActual().multiply(qty));
+			final Money lineValueAmt = Money.of(priceActual.multiply(qty), currencyId);
+
+			shipmentValueAmt = shipmentValueAmt != null
+					? shipmentValueAmt.add(lineValueAmt)
+					: lineValueAmt;
 		}
-		return orderValue;
+
+		return Optional.ofNullable(shipmentValueAmt);
 	}
 
 	public boolean isFreightCostOrderLine(@NonNull final I_C_OrderLine orderLine)

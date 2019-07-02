@@ -9,7 +9,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.MInvoiceLine;
@@ -23,10 +22,15 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutFreightCostsService;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -89,12 +93,14 @@ public class C_InvoiceLine
 			return;
 		}
 
-		if (line.getC_OrderLine_ID() > 0)
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(line.getC_OrderLine_ID());
+		if (orderLineId != null)
 		{
-			final I_C_Order order = line.getC_OrderLine().getC_Order();
-			if (orderFreightCostsService.hasFreightCostLine(order))
+			final I_C_OrderLine orderLine = Services.get(IOrderDAO.class).getOrderLineById(orderLineId);
+			final OrderId orderId = OrderId.ofRepoId(orderLine.getC_Order_ID());
+			if (orderFreightCostsService.hasFreightCostLine(orderId))
 			{
-				logger.debug("{}, which we are invoicing here, has an explicit freight cost line. Returning.", order);
+				logger.debug("{}, which we are invoicing here, has an explicit freight cost line. Returning.", orderId);
 				return;
 			}
 		}
@@ -121,17 +127,17 @@ public class C_InvoiceLine
 			return;
 		}
 
-		final BigDecimal freightCostAmt = shipmentFreightCostsService.computeFreightCostForInOut(inoutId);
-		if (freightCostAmt.signum() <= 0)
+		final Money freightRate = shipmentFreightCostsService.computeFreightRate(inoutId).orElse(null);
+		if (freightRate == null || freightRate.signum() <= 0)
 		{
-			logger.debug("Freight cost for M_InOut_ID={} is {}. Returning", inoutId, freightCostAmt);
+			logger.debug("Freight cost for M_InOut_ID={} is {}. Returning", inoutId, freightRate);
 			return;
 		}
 
 		final MInvoiceLine freightCostLine = new MInvoiceLine(invoice);
-		freightCostLine.setPriceEntered(freightCostAmt);
-		freightCostLine.setPriceActual(freightCostAmt);
-		freightCostLine.setPriceList(freightCostAmt);
+		freightCostLine.setPriceEntered(freightRate.getAsBigDecimal());
+		freightCostLine.setPriceActual(freightRate.getAsBigDecimal());
+		freightCostLine.setPriceList(freightRate.getAsBigDecimal());
 
 		// set the iol-ID so this new freightCostLine can be grouped with the respective shipment's invoice lines.
 		freightCostLine.setM_InOutLine_ID(inoutLineId.getRepoId());
@@ -147,7 +153,7 @@ public class C_InvoiceLine
 
 		InterfaceWrapperHelper.save(freightCostLine);
 
-		logger.debug("Created new freight cost invoice line with price {} for M_InOut_ID {} and invoice {}", freightCostAmt, inoutId, invoice);
+		logger.debug("Created new freight cost invoice line with price {} for M_InOut_ID {} and invoice {}", freightRate, inoutId, invoice);
 	}
 
 }
