@@ -118,6 +118,17 @@ public class Money
 		this.currencyId = currencyId;
 	}
 
+	@Deprecated
+	public BigDecimal getValue()
+	{
+		return value;
+	}
+
+	public BigDecimal getAsBigDecimal()
+	{
+		return value;
+	}
+
 	public int signum()
 	{
 		return value.signum();
@@ -238,6 +249,12 @@ public class Money
 	{
 		assertCurrencyIdMatching(other);
 		return this.value.compareTo(other.value) >= 0 ? this : other;
+	}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) <= 0;
 	}
 
 	private final void assertCurrencyIdMatching(
