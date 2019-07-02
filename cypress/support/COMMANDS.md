@@ -6,7 +6,8 @@
 - tab: emulates tab
 - active: query for active element
 - waitForHeader: wait for breadcrumb in header
-- visitWindow: visit metasfresh and wait for layout
+- visitWindow: visit metasfresh document/details and wait for layout and data; or visit window and display rows
+- performDocumentViewAction: execute a given function and wait for document/detail window layout and data
 - readAllNotifications: mark all notifications as read on the backend
 - resetNotifications: clear notifications inbox and unread count
 - addNotification: adds a new notification to the list
@@ -44,7 +45,7 @@
 
 - clickHeaderNav
 - executeHeaderAction
-- executeHeaderActionWithDialog
+- executeHeaderActionWithDialog: execute a process/action and wait for the process-dialog
 - executeQuickAction
 
 ** Test specific (test.js)

@@ -23,7 +23,12 @@ Cypress.Commands.add('executeHeaderAction', actionName => {
 
 Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   describe('Fire header action with a certain name and expect a modal dialog to pop up within 10 secs', function() {
+    cy.server();
+    cy.route('GET', 'rest/api/process/*/layout').as('dialogLayout');
+
     executeHeaderAction(actionName);
+
+    cy.wait('@dialogLayout');
 
     return cy
       .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
