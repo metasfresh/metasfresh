@@ -49,7 +49,7 @@ context('Reusable "login" custom command using API', function() {
 
     Cypress.log({
       name: 'loginViaAPI',
-      message: user + ' | ' + pass,
+      message: user + ' | ' + '****' /*pass*/,
     });
 
     const handleSuccess = function() {
