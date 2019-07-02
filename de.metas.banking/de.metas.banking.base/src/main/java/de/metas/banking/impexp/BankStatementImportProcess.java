@@ -23,6 +23,7 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -231,8 +232,8 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 		bankStatementLine.setC_BankStatement_ID(bankStatementId);
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
-		bankStatementLine.setStatementLineDate(importRecord.getStatementLineDate());
-		bankStatementLine.setDateAcct(importRecord.getDateAcct());
+		bankStatementLine.setStatementLineDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(),  importRecord.getStatementDate()));
+		bankStatementLine.setDateAcct(CoalesceUtil.coalesce(importRecord.getDateAcct(),importRecord.getStatementDate()));
 		bankStatementLine.setValutaDate(importRecord.getValutaDate());
 		bankStatementLine.setIsReversal(importRecord.isReversal());
 		bankStatementLine.setC_Currency_ID(importRecord.getC_Currency_ID());

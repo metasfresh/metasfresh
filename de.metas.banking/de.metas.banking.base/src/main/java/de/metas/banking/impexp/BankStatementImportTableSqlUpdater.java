@@ -49,8 +49,29 @@ public class BankStatementImportTableSqlUpdater
 		checkInvoiceBPartnerCombination(whereClause);
 		checkInvoiceBPartnerPaymentBPartnerCombination(whereClause);
 
-		// TODO what's this?
+		updateBankStatement(whereClause);
+
 		detectDuplicates(whereClause);
+
+	}
+
+	private void updateBankStatement(final String whereClause)
+	{
+
+		final StringBuilder sql = new StringBuilder("UPDATE ")
+				.append(" I_BankStatement i ")
+				.append(" SET C_BankStatement_ID=(SELECT C_BankStatement_ID FROM C_BankStatement s")
+				.append(" WHERE i.")
+				.append(" C_BP_BankAccount_ID =s.C_BP_BankAccount_ID ")
+				.append(" AND i.AD_Client_ID=s.AD_Client_ID) ")
+				.append(" WHERE M_Product_ID IS NULL ")
+				.append(" COALESCE(i.name, current_date) = s.Name ")
+				.append(" AND COALESCE(i.EftStatementReference, '') = COALESCE(s.EftStatementReference, '') ")
+				.append(" AND i.StatementDate = s.StatementDate )")
+				.append(" WHERE C_BankStatement_ID IS NULL")
+				.append(" AND i.I_IsImported<>'Y' ").append(whereClause);
+		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.info("Product Existing Value={}", no);
 
 	}
 
@@ -67,8 +88,8 @@ public class BankStatementImportTableSqlUpdater
 				+ " AND a.AD_Client_ID=i.AD_Client_ID "
 				+ " AND a.C_Bank_ID=b.C_Bank_ID "
 				+ " AND a.AccountNo=i.BankAccountNo "
-				+ " AND b.RoutingNo=i.RoutingNo "
-				+ " OR b.SwiftCode=i.RoutingNo "
+				+ " AND (b.RoutingNo=i.RoutingNo "
+				+ " OR b.SwiftCode=i.RoutingNo) "
 				+ ") "
 				+ "WHERE i.C_BP_BankAccount_ID IS NULL "
 				+ "AND i.I_IsImported<>'Y' "
@@ -165,7 +186,7 @@ public class BankStatementImportTableSqlUpdater
 
 		sql = new StringBuilder("UPDATE I_BankStatement "
 				+ "SET TrxAmt=StmtAmt - InterestAmt - ChargeAmt "
-				+ "WHERE TrxAmt IS NULL "
+				+ "WHERE (TrxAmt IS NULL OR TrxAmt = 0) "
 				+ "AND I_IsImported<>'Y'").append(whereClause);
 
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);

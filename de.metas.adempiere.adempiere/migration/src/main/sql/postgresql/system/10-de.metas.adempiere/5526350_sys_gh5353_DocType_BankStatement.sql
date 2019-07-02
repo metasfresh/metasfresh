@@ -94,3 +94,35 @@ UPDATE AD_Field SET IsReadOnly='N',Updated=TO_TIMESTAMP('2019-06-25 18:53:42','Y
 
 
 
+-- 2019-07-02T16:20:48.332
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAutoApplyValidationRule='Y',Updated=TO_TIMESTAMP('2019-07-02 16:20:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=568323
+;
+
+-- 2019-07-02T16:43:31.647
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2019-07-02 16:43:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=541645
+;
+
+-- 2019-07-02T16:43:32.626
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bankstatement','DocumentNo','VARCHAR(60)',null,null)
+;
+
+-- 2019-07-02T16:43:32.631
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bankstatement','DocumentNo',null,'NOT NULL',null)
+;
+
+
+
+
+-- 2019-07-02T16:47:48.933
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET DocNoSequence_ID=545352,Updated=TO_TIMESTAMP('2019-07-02 16:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=1000020
+;
+
+
+
+
+
