@@ -31,7 +31,8 @@ describe('New sales order test', function() {
         productCategoryValue,
         priceListName,
         productName,
-        productValue
+        productValue,
+        'Service' /* we want hassle-free invoicing without having done a shipment */
       );
     });
     it('Create customer', function() {

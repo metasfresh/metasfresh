@@ -33,12 +33,12 @@ export class SalesInvoice {
     cy.log(`SalesInvoice - apply START (${this._toString})`);
     SalesInvoice.applySalesInvoice(this);
     cy.log(`SalesInvoice - apply STOP (${this._toString})`);
-    return this;
   }
 
   static applySalesInvoice(salesInvoice) {
     describe(`Create new SalesInvoice: ${salesInvoice._toString}`, () => {
       cy.visitWindow('167', 'NEW', 'newInvoiceDocumentId' /*documentIdAliasName*/);
+
       cy.get('.header-breadcrumb-sitename')
         .should('contain', new Date().getDate())
         .should('contain', new Date().getFullYear());
@@ -47,7 +47,9 @@ export class SalesInvoice {
 
       cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
       cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');
-      cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+      if (salesInvoice.priceList) {
+        cy.selectInListField('M_PriceList_ID', salesInvoice.priceList);
+      }
 
       cy.getStringFieldValue('DocumentNo').should('be.empty');
       cy.selectInListField('C_DocTypeTarget_ID', salesInvoice.targetDocumentType);
@@ -78,19 +80,34 @@ export class SalesInvoice {
     cy.selectTab('C_InvoiceLine');
     cy.pressAddNewButton();
 
-    cy.writeIntoStringField('QtyEntered', salesInvoiceLine.quantity, true, null, true);
-    cy.writeIntoLookupListField('M_Product_ID', salesInvoiceLine.product, salesInvoiceLine.product);
+    cy.writeIntoStringField(
+      'QtyEntered',
+      salesInvoiceLine.quantity,
+      true /*modal*/,
+      null /*rewriteUrl*/,
+      true /*noRequest, bc the patch response is e.g. 20 and we would be waiting for e.g. '20' */
+    );
+    // instead of waiting for the patch in writeIntoStringField, we wait for the "pending" indicator to go away
+    cy.get('.indicator-pending').should('not.exist');
+
+    cy.writeIntoLookupListField(
+      'M_Product_ID',
+      salesInvoiceLine.product,
+      salesInvoiceLine.product,
+      false /*typeList*/,
+      true /*modal*/
+    );
 
     if (salesInvoiceLine.tuQuantity) {
-      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true, null, true);
+      cy.writeIntoStringField('QtyEnteredTU', salesInvoiceLine.tuQuantity, true /*modal*/);
     }
     if (salesInvoiceLine.packingItem) {
       cy.writeIntoLookupListField(
         'M_HU_PI_Item_Product_ID',
         salesInvoiceLine.packingItem,
         salesInvoiceLine.packingItem,
-        true,
-        true
+        false /*typeList*/,
+        true /*modal*/
       );
     }
     cy.pressDoneButton();

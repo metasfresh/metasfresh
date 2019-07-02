@@ -1,5 +1,5 @@
-import {getLanguageSpecific} from "../utils/utils";
-import {DocumentStatusKey} from "../utils/constants";
+import {getLanguageSpecific} from '../utils/utils';
+import {DocumentStatusKey} from '../utils/constants';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function () {
@@ -88,6 +88,9 @@ Cypress.Commands.add('pressDoneButton', waitBeforePress => {
       cy.wait(waitBeforePress);
     }
 
+    // make sure that frontend & API did their things regarding possible preceeding field inputs
+    cy.get('.indicator-pending').should('not.exist');
+
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
     cy.on('window:confirm', str => {
@@ -147,10 +150,13 @@ Cypress.Commands.add('pressBatchEntryButton', waitBeforePress => {
   });
 });
 
-
-Cypress.Commands.add('expectDocumentStatus', (expectedDocumentStatus) => {
+Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   describe(`Expect specific document status`, function () {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
+
+      // wait until the dropdown is loaded
+      cy.get('.meta-dropdown-toggle .dropdown-status-item').should('exist');
+
       const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
       const documentTag = DocumentStatusKey[`_tag_${expectedDocumentStatus}`];
       cy.get(`.meta-dropdown-toggle ${documentTag}`).contains(expectedTrl);

@@ -19,15 +19,8 @@ describe('Create new bpartner group, https://github.com/metasfresh/metasfresh-e2
 
   //create bpartner
   it('Create Testpartner', function() {
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(GroupTestPartnerName)
-        .clearContacts() // we don't care about contract, location or bank, so let's save some time..
-        .clearLocations()
-        .setBank(undefined)
-        .apply();
-      cy.selectInListField('C_BP_Group_ID', GroupName, false /*modal*/, '/rest/api/window/.*' /*rewriteUrl*/);
-    });
+    new BPartner().setName(GroupTestPartnerName).apply();
+    cy.selectInListField('C_BP_Group_ID', GroupName, false /*modal*/, '/rest/api/window/.*' /*rewriteUrl*/);
   });
 
   //check bpartnergroup
