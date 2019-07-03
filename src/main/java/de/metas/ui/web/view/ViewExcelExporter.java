@@ -59,7 +59,6 @@ import lombok.NonNull;
 {
 	private final RowsSupplier rows;
 	private final ViewLayout layout;
-	private final String adLanguage;
 
 	@Builder
 	private ViewExcelExporter(
