@@ -60,10 +60,12 @@ public final class JsonRequestComposite
 
 	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("locations")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
 	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("contacts")
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
