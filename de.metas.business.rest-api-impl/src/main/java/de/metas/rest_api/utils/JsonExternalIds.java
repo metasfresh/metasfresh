@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.rest_api.JsonExternalId;
 import de.metas.util.rest.ExternalId;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -38,5 +39,10 @@ public class JsonExternalIds
 			return null;
 		}
 		return ExternalId.of(jsonExternalId.getValue());
+	}
+
+	public JsonExternalId of(@NonNull final ExternalId externalId)
+	{
+		return JsonExternalId.of(externalId.getValue());
 	}
 }
