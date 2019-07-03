@@ -1,6 +1,8 @@
 package de.metas.dataentry.layout;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.google.common.collect.ImmutableList;
 
@@ -70,4 +72,10 @@ public class DataEntryField
 		this.listValues = ImmutableList.copyOf(listValues);
 	}
 
+	public Optional<DataEntryListValue> getFirstListValueMatching(@NonNull final Predicate<DataEntryListValue> predicate)
+	{
+		return listValues.stream()
+				.filter(predicate)
+				.findFirst();
+	}
 }
