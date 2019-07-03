@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -124,19 +124,19 @@ public class PlainMsgBL implements IMsgBL
 	@Override
 	public ITranslatableString translatable(final String text)
 	{
-		return ImmutableTranslatableString.constant(text);
+		return TranslatableStrings.constant(text);
 	}
 
 	@Override
 	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
 	{
-		return ImmutableTranslatableString.constant(adMessage);
+		return TranslatableStrings.constant(adMessage);
 	}
 
 	@Override
 	public ITranslatableString parseTranslatableString(final String text)
 	{
-		return ImmutableTranslatableString.constant(text);
+		return TranslatableStrings.constant(text);
 	}
 
 	@Override

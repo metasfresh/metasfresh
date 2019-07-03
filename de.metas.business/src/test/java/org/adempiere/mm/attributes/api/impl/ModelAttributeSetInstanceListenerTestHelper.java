@@ -147,8 +147,8 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		InterfaceWrapperHelper.save(order);
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class, order);
-		orderLine.setC_Order(order);
-		orderLine.setM_Product(product);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(orderLine);
 		return orderLine;
 	}

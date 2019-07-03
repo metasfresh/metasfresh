@@ -26,13 +26,15 @@ package org.compiere.apps.search.dao.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.util.Services;
 
 /**
  * Contains aggregated information of ordered product quantities and their dates
@@ -81,10 +83,10 @@ public class OrderLineHistoryVO
 				.append(" ").append(order.getDocumentNo())
 				.toString();
 
-		final I_M_Warehouse warehouse = orderLine.getM_Warehouse();
-		if (warehouse != null)
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID());
+		if (warehouseId != null)
 		{
-			warehouseName = warehouse.getName();
+			warehouseName = Services.get(IWarehouseDAO.class).getWarehouseName(warehouseId);
 		}
 		else
 		{

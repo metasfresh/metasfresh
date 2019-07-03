@@ -128,9 +128,9 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setPriceActual(priceAndTax.getPriceActual());
 		}
-		if (priceAndTax.getPriceUOMId() > 0)
+		if (priceAndTax.getPriceUOMId() != null)
 		{
-			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId());
+			ic.setPrice_UOM_ID(priceAndTax.getPriceUOMId().getRepoId());
 		}
 		if (priceAndTax.getDiscount() != null)
 		{

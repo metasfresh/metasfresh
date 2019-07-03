@@ -28,6 +28,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 public class BankingException extends AdempiereException
 {
@@ -68,7 +69,7 @@ public class BankingException extends AdempiereException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder sb = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder sb = TranslatableStrings.builder();
 		
 		sb.appendADMessage("Error");
 		sb.append(" ");

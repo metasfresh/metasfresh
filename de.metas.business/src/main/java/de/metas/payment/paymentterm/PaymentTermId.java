@@ -1,5 +1,7 @@
 package de.metas.payment.paymentterm;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -43,16 +45,11 @@ public class PaymentTermId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int getRepoId(final PaymentTermId paymentTermId)
-	{
-		return paymentTermId != null ? paymentTermId.getRepoId() : -1;
-	}
-
 	int repoId;
 
 	private PaymentTermId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_PaymentTerm_ID");
 	}
 
 	@Override
@@ -60,5 +57,15 @@ public class PaymentTermId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static int toRepoId(final PaymentTermId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(final PaymentTermId id1, final PaymentTermId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

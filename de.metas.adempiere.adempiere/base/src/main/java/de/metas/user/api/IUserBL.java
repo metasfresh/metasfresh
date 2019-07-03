@@ -5,7 +5,7 @@ import org.compiere.model.I_AD_User;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
@@ -53,7 +53,7 @@ public interface IUserBL extends ISingletonService
 		final ITranslatableString errmsg = checkCanSendEMail(adUserId.getRepoId());
 		if (errmsg != null)
 		{
-			throw new AdempiereException(TranslatableStringBuilder.newInstance()
+			throw new AdempiereException(TranslatableStrings.builder()
 					.append("User cannot send emails: ")
 					.append(errmsg)
 					.build());

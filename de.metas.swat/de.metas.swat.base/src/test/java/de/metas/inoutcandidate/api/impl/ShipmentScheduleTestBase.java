@@ -115,8 +115,8 @@ public class ShipmentScheduleTestBase
 			final I_C_Order orderRecord = assumeNotNull(value2order.get(orderLine.getOrder()), "");
 
 			final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
-			orderLineRecord.setC_Order(orderRecord);
-			orderLineRecord.setM_Product(productRecord);
+			orderLineRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+			orderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			orderLineRecord.setQtyOrdered(orderLine.getQtyOrdered()); // <==
 			orderLineRecord.setDatePromised(TimeUtil.parseTimestamp("2018-10-20"));
 			saveRecord(orderLineRecord);
@@ -148,14 +148,14 @@ public class ShipmentScheduleTestBase
 
 			final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 			shipmentScheduleRecord.setIsClosed(false);
-			shipmentScheduleRecord.setC_BPartner(bPartnerRecord);
+			shipmentScheduleRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 			shipmentScheduleRecord.setQtyDelivered(BigDecimal.ONE);
 			shipmentScheduleRecord.setQtyOrdered_Override(new BigDecimal("23"));
 			shipmentScheduleRecord.setQtyOrdered_Calculated(new BigDecimal("24"));
 			shipmentScheduleRecord.setM_Warehouse_ID(WAREHOUSE_ID);
-			shipmentScheduleRecord.setC_Order(orderRecord);
-			shipmentScheduleRecord.setC_OrderLine(orderLineRecord);
-			shipmentScheduleRecord.setM_Product(productRecord);
+			shipmentScheduleRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+			shipmentScheduleRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
+			shipmentScheduleRecord.setM_Product_ID(productRecord.getM_Product_ID());
 			shipmentScheduleRecord.setBPartnerAddress_Override("BPartnerAddress_Override"); // not flagged as mandatory in AD, but always set
 			shipmentScheduleRecord.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 			shipmentScheduleRecord.setRecord_ID(orderLineRecord.getC_OrderLine_ID());

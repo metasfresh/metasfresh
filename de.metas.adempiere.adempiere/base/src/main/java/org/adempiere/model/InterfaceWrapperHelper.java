@@ -960,8 +960,12 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(final Class<?> modelClass)
+	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
+		if (modelClass == null)
+		{
+			return false;
+		}
 		final IModelClassInfo modelClassInfo = getModelClassInfoOrNull(modelClass);
 		if (modelClassInfo == null)
 		{

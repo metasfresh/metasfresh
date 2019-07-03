@@ -10,6 +10,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.111
+
+## Features
+* metasfresh
+  * [#5350](https://github.com/metasfresh/metasfresh/issues/5350) Show Referenced Invoice in sales invoice advanced dialog
+  * [#5343](https://github.com/metasfresh/metasfresh/issues/5343) New Customer Layout for Produktionskontrolle
+  * [#5345](https://github.com/metasfresh/metasfresh/issues/5345) Comma does not work in Attribute value
+
+* metasfresh-webui-api
+  * [#1219](https://github.com/metasfresh/metasfresh-webui-api/issues/1219) Make internal names cypress friendly
+
+* metasfresh-e2e
+  * [#26](https://github.com/metasfresh/metasfresh-e2e/issues/26) Create Test: set packing item in product window
+  * [#77](https://github.com/metasfresh/metasfresh-e2e/issues/77) Create new Packing Material
+  * [#111](https://github.com/metasfresh/metasfresh-e2e/issues/111) Create a manual payment
+  * [#137](https://github.com/metasfresh/metasfresh-e2e/issues/137) Sales order to shipment to invoice
+
+## Fixes
+* metasfresh
+  * [#5351](https://github.com/metasfresh/metasfresh/issues/5351) Can't save Print Format properly
+
 # metasfresh 5.110
 
 ## Features

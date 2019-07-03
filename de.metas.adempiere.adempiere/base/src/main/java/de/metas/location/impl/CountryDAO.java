@@ -38,6 +38,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
@@ -290,7 +291,7 @@ public class CountryDAO implements ICountryDAO
 		final I_C_Country country = getIndexedCountries().getByIdOrNull(countryId);
 		if (country == null)
 		{
-			return ITranslatableString.constant("<" + countryId + ">");
+			return TranslatableStrings.constant("<" + countryId + ">");
 		}
 
 		return InterfaceWrapperHelper.getModelTranslationMap(country)

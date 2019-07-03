@@ -501,8 +501,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class, helper.getContextProvider());
 		orderLine.setC_Order(order);
-		orderLine.setM_Product(product);
-		orderLine.setC_UOM(productUOM);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(productUOM.getC_UOM_ID());
 		orderLine.setQtyOrdered(qtyOrdered);
 		save(orderLine);
 

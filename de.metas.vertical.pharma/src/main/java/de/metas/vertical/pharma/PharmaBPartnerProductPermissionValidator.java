@@ -2,24 +2,24 @@ package de.metas.vertical.pharma;
 
 import java.util.Collections;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.lang.SOTrx;
+import javax.annotation.Nonnull;
+
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.OrderLineInputValidatorResults.OrderLineInputValidatorResultsBuilder;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
-
-import javax.annotation.Nonnull;
 
 /*
  * #%L
@@ -163,7 +163,7 @@ public class PharmaBPartnerProductPermissionValidator implements IOrderLineInput
 				MSG_NoPrescriptionPermission_Sales,
 				product.getValue(),
 				bPartner.getName(),
-				Util.coalesce(bPartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
+				CoalesceUtil.coalesce(bPartner.getShipmentPermission(), noPermissionReason.translate(Env.getAD_Language())));
 
 		return resultBuilder.isValid(false).errorMessage(noPermissionMessage).build();
 

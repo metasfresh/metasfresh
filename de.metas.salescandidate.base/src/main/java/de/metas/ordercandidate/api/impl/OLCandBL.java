@@ -23,7 +23,7 @@ package de.metas.ordercandidate.api.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -37,7 +37,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -48,6 +47,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -71,6 +71,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -156,7 +157,7 @@ public class OLCandBL implements IOLCandBL
 			final I_C_OLCand olCand,
 			final BigDecimal qtyOverride,
 			final PricingSystemId pricingSystemIdOverride,
-			final Timestamp date)
+			final LocalDate date)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
@@ -172,11 +173,11 @@ public class OLCandBL implements IOLCandBL
 
 		final I_C_BPartner_Location dropShipLocation = effectiveValuesBL.getDropShip_Location_Effective(olCand);
 
-		pricingCtx.setC_Country_ID(dropShipLocation.getC_Location().getC_Country_ID());
+		pricingCtx.setCountryId(CountryId.ofRepoId(dropShipLocation.getC_Location().getC_Country_ID()));
 
 		final BigDecimal qty = qtyOverride != null ? qtyOverride : olCand.getQty();
 
-		final PricingSystemId pricingSystemId = Util.coalesceSuppliers(
+		final PricingSystemId pricingSystemId = CoalesceUtil.coalesceSuppliers(
 				() -> pricingSystemIdOverride,
 				() -> getPricingSystemId(olCand, OLCandOrderDefaults.NULL));
 

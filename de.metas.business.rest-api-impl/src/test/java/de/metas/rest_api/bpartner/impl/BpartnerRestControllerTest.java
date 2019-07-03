@@ -69,6 +69,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.user.UserId;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
@@ -200,6 +201,36 @@ class BpartnerRestControllerTest
 	}
 
 	@Test
+	void createOrUpdateBPartner_create_tmp()
+	{
+
+		final JsonRequestComposite bpartnerComposite = JsonRequestComposite.builder().build();
+
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner()
+				.toBuilder()
+				.code("87606")
+				.companyName("beyou.media Test MF")
+				.name("beyou.media Test MF")
+				.group("D-Kunde")
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.build();
+
+		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
+				.bpartnerIdentifier("ext-" + "2058366328")
+				.bpartnerComposite(bpartnerComposite.toBuilder()
+						.bpartner(bpartner)
+						.build())
+				.build();
+
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(requestItem)
+				.build();
+
+		JSONObjectMapper.forClass(Object.class).writeValueAsString(bpartnerUpsertRequest);
+	}
+
+	@Test
 	void createOrUpdateBPartner_create()
 	{
 		final int initialBPartnerRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner.class).size();
@@ -236,11 +267,11 @@ class BpartnerRestControllerTest
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 
-		//JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
+		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		final MetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" +externalId);
+		final MetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
 		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);

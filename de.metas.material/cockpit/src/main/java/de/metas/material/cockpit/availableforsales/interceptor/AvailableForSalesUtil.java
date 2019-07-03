@@ -52,6 +52,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -114,12 +115,14 @@ public class AvailableForSalesUtil
 		{
 			return false;
 		}
-		if (orderLineRecord.getM_Product_ID() <= 0)
+		
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLineRecord.getM_Product_ID());
+		if (productId == null)
 		{
 			return false;
 		}
 
-		final I_M_Product productRecord = orderLineRecord.getM_Product();
+		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
 		if (!productRecord.isStocked())
 		{
 			return false;
