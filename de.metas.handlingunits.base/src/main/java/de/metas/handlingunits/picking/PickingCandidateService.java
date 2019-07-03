@@ -248,4 +248,9 @@ public class PickingCandidateService
 				.perform();
 
 	}
+	
+	public List<PickingCandidate> getPickingCandidatesForShipmentSchedules(final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return pickingCandidateRepository.getByShipmentScheduleIds(shipmentScheduleIds);
+	}
 }
