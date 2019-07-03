@@ -36,14 +36,13 @@ import lombok.NonNull;
 
 public enum PaymentRule implements ReferenceListAwareEnum
 {
-	Cash(X_C_Order.PAYMENTRULE_Cash), //
-	CreditCard(X_C_Order.PAYMENTRULE_CreditCard), //
-	DirectDeposit(X_C_Order.PAYMENTRULE_DirectDeposit), //
-	Check(X_C_Order.PAYMENTRULE_Check), //
-	OnCredit(X_C_Order.PAYMENTRULE_OnCredit), //
+	Cash(X_C_Order.PAYMENTRULE_Cash), // B
+	CreditCard(X_C_Order.PAYMENTRULE_CreditCard), // K
+	DirectDeposit(X_C_Order.PAYMENTRULE_DirectDeposit), // T
+	Check(X_C_Order.PAYMENTRULE_Check), // S
+	OnCredit(X_C_Order.PAYMENTRULE_OnCredit), // P
 	DirectDebit(X_C_Order.PAYMENTRULE_DirectDebit), //
-	Mixed(X_C_Order.PAYMENTRULE_Mixed) //
-
+	Mixed(X_C_Order.PAYMENTRULE_Mixed) // M
 	;
 
 	@Getter
