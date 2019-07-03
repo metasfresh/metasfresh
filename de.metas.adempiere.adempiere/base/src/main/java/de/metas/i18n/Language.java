@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import lombok.Builder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
@@ -432,7 +433,11 @@ public final class Language implements Serializable
 		return getBaseLanguage();
 	}   // getLocale
 
-	public static final Language findLanguageByLocale(final Locale locale)
+	public static void addNewLanguage(Language language) {
+		s_languages.add(language);
+	}
+
+	public static Language findLanguageByLocale(final Locale locale)
 	{
 		final String search_lang = locale.getLanguage();
 		final String search_country = locale.getCountry();
@@ -529,6 +534,7 @@ public final class Language implements Serializable
 	 * @param javaDatePattern Java date pattern as not all locales are defined - if null, derived from Locale
 	 * @param mediaSize default media size
 	 */
+	@Builder(toBuilder = true)
 	private Language(final String name, final String AD_Language, final Locale locale,
 			final Boolean decimalPoint, final String javaDatePattern, final MediaSize mediaSize)
 	{
@@ -591,26 +597,6 @@ public final class Language implements Serializable
 	public String getAD_Language()
 	{
 		return m_AD_Language;
-	}   // getAD_Language
-
-	/**
-	 * Set Application Dictionary Language (system supported).
-	 *
-	 * @param AD_Language e.g. en-US
-	 */
-	public void setAD_Language(final String AD_Language)
-	{
-		if (AD_Language != null)
-		{
-			final String adLanguageOld = m_AD_Language;
-			m_AD_Language = AD_Language;
-
-			log.info("Changed AD_Language {}->{} for {}", adLanguageOld, m_AD_Language, this);
-		}
-		else
-		{
-			log.warn("Skip setting AD_Language for {} because we got null parameter", this);
-		}
 	}   // getAD_Language
 
 	/**
