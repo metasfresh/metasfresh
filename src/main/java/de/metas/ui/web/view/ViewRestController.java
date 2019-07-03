@@ -445,7 +445,7 @@ public class ViewRestController
 					.view(viewsRepo.getView(viewId))
 					.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
 					.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid, ViewProfileId.NULL))
-					.adLanguage(userSession.getAD_Language())
+					.language(userSession.getLanguage())
 					.build()
 					.export(out);
 		}

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.Language;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.cache.CacheBuilder;
@@ -67,11 +68,11 @@ import lombok.NonNull;
 			@NonNull final IView view,
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final ViewLayout layout,
-			@NonNull final String adLanguage)
+			@NonNull final Language language)
 	{
 		super(excelFormat, constants);
 		this.layout = layout;
-		this.adLanguage = adLanguage;
+		setLanguage(language);
 
 		if (rowIds.isAll())
 		{
@@ -134,7 +135,7 @@ import lombok.NonNull;
 	@Override
 	public String getHeaderName(final int col)
 	{
-		return layout.getElements().get(col).getCaption(adLanguage);
+		return layout.getElements().get(col).getCaption(getLanguage().getAD_Language());
 	}
 
 	@Override
