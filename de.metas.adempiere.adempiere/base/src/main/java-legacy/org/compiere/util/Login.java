@@ -241,7 +241,7 @@ public class Login
 		if (!Check.isEmpty(user.getAD_Language()))
 		{
 			Language language = Language.getLanguage(user.getAD_Language());
-			language = Env.verifyLanguageCreateIfNotSupported(language);
+			language = Env.verifyLanguageFallbackToBase(language);
 			ctx.setAD_Language(language.getAD_Language());
 		}
 
