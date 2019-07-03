@@ -29,8 +29,8 @@ import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Import Bank Statement from I_BankStatement
@@ -38,7 +38,7 @@ import de.metas.process.JavaProcess;
  *	author Eldir Tomassen
  *	@version $Id: ImportBankStatement.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
  */
-public class ImportBankStatement extends JavaProcess
+public class ImportBankStatementOLD extends JavaProcess
 {
 	/**	Client to be imported to		*/
 	private int				p_AD_Client_ID = 0;
@@ -48,7 +48,7 @@ public class ImportBankStatement extends JavaProcess
 	private int				p_C_BP_BankAccount_ID = 0;
 	/**	Delete old Imported				*/
 	private boolean			p_deleteOldImported = false;
-	
+
 	/** Properties						*/
 	private Properties 		m_ctx;
 
@@ -126,7 +126,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Org=" + no);
-			
+
 		//	Set Bank Account
 		sql = new StringBuffer("UPDATE I_BankStatement i "
 			+ "SET C_BP_BankAccount_ID="
@@ -147,13 +147,13 @@ public class ImportBankStatement extends JavaProcess
 		if (no != 0)
 			log.info("Bank Account (With Routing No)=" + no);
 		//
-		sql = new StringBuffer("UPDATE I_BankStatement i " 
+		sql = new StringBuffer("UPDATE I_BankStatement i "
 		 	+ "SET C_BP_BankAccount_ID="
 			+ "( "
 			+ " SELECT C_BP_BankAccount_ID "
 			+ " FROM C_BP_BankAccount a, C_Bank b "
 			+ " WHERE b.IsOwnBank='Y' "
-			+ " AND a.C_Bank_ID=b.C_Bank_ID " 
+			+ " AND a.C_Bank_ID=b.C_Bank_ID "
 			+ " AND a.AccountNo=i.BankAccountNo "
 			+ " AND a.AD_Client_ID=i.AD_Client_ID "
 			+ ") "
@@ -174,7 +174,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Bank Account=" + no);
-		//	
+		//
 		sql = new StringBuffer("UPDATE I_BankStatement "
 			+ "SET I_isImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Bank Account, ' "
 			+ "WHERE C_BP_BankAccount_ID IS NULL "
@@ -183,7 +183,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Bank Account=" + no);
-		 
+
 		//	Set Currency
 		sql = new StringBuffer ("UPDATE I_BankStatement i "
 			+ "SET C_Currency_ID=(SELECT C_Currency_ID FROM C_Currency c"
@@ -210,8 +210,8 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Currency=" + no);
-		
-		 
+
+
 		//	Set Amount
 		 sql = new StringBuffer("UPDATE I_BankStatement "
 		 	+ "SET ChargeAmt=0 "
@@ -244,7 +244,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Invaid Amount=" + no);
-		 
+
 		 //	Set Valuta Date
 		sql = new StringBuffer("UPDATE I_BankStatement "
 		 	+ "SET ValutaDate=StatementLineDate "
@@ -253,7 +253,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Valuta Date=" + no);
-			
+
 		//	Check Payment<->Invoice combination
 		sql = new StringBuffer("UPDATE I_BankStatement "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Payment<->Invoice, ' "
@@ -268,7 +268,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Payment<->Invoice Mismatch=" + no);
-			
+
 		//	Check Payment<->BPartner combination
 		sql = new StringBuffer("UPDATE I_BankStatement "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Payment<->BPartner, ' "
@@ -283,7 +283,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Payment<->BPartner Mismatch=" + no);
-			
+
 		//	Check Invoice<->BPartner combination
 		sql = new StringBuffer("UPDATE I_BankStatement "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Invoice<->BPartner, ' "
@@ -298,7 +298,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Invoice<->BPartner Mismatch=" + no);
-			
+
 		//	Check Invoice.BPartner<->Payment.BPartner combination
 		sql = new StringBuffer("UPDATE I_BankStatement "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Invalid Invoice.BPartner<->Payment.BPartner, ' "
@@ -313,7 +313,7 @@ public class ImportBankStatement extends JavaProcess
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.info("Invoice.BPartner<->Payment.BPartner Mismatch=" + no);
-			
+
 		//	Detect Duplicates
 		 sql = new StringBuffer("SELECT i.I_BankStatement_ID, l.C_BankStatementLine_ID, i.EftTrxID "
 			+ "FROM I_BankStatement i, C_BankStatement s, C_BankStatementLine l "
@@ -326,12 +326,12 @@ public class ImportBankStatement extends JavaProcess
 			+ "= "
 			+ "(i.EftTrxID||i.EftAmt||i.EftStatementLineDate||i.EftValutaDate||i.EftTrxType||i.EftCurrency||i.EftReference||i.EftStatementReference "
 			+ "||i.EftCheckNo||i.EftMemo||i.EftPayee||i.EftPayeeAccount) ");
-		
+
 		StringBuffer updateSql = new StringBuffer("UPDATE I_Bankstatement "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Err=Duplicate['||?||']' "
 				+ "WHERE I_BankStatement_ID=?").append(clientCheck);
 		PreparedStatement pupdt = DB.prepareStatement(updateSql.toString(), get_TrxName());
-		
+
 		PreparedStatement pstmtDuplicates = null;
 		no = 0;
 		try
@@ -342,7 +342,7 @@ public class ImportBankStatement extends JavaProcess
 			{
 				String info = "Line_ID=" + rs.getInt(2)		//	l.C_BankStatementLine_ID
 				 + ",EDTTrxID=" + rs.getString(3);			//	i.EftTrxID
-				pupdt.setString(1, info);	
+				pupdt.setString(1, info);
 				pupdt.setInt(2, rs.getInt(1));	//	i.I_BankStatement_ID
 				pupdt.executeUpdate();
 				no++;
@@ -350,7 +350,7 @@ public class ImportBankStatement extends JavaProcess
 			rs.close();
 			pstmtDuplicates.close();
 			pupdt.close();
-			
+
 			rs = null;
 			pstmtDuplicates = null;
 			pupdt = null;
@@ -361,14 +361,14 @@ public class ImportBankStatement extends JavaProcess
 		}
 		if (no != 0)
 			log.info("Duplicates=" + no);
-		
+
 		commitEx();
-		
+
 		//Import Bank Statement
 		sql = new StringBuffer("SELECT * FROM I_BankStatement"
 			+ " WHERE I_IsImported='N'"
 			+ " ORDER BY C_BP_BankAccount_ID, Name, EftStatementDate, EftStatementReference");
-			
+
 		MBankStatement statement = null;
 		I_C_BP_BankAccount account = null;
 		PreparedStatement pstmt = null;
@@ -379,9 +379,9 @@ public class ImportBankStatement extends JavaProcess
 		{
 			pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
 			ResultSet rs = pstmt.executeQuery();
-				
+
 			while (rs.next())
-			{ 
+			{
 				X_I_BankStatement imp = new X_I_BankStatement(m_ctx, rs, get_TrxName());
 				//	Get the bank account for the first statement
 				if (account == null)
@@ -424,13 +424,13 @@ public class ImportBankStatement extends JavaProcess
 						log.info("New Statement, Statement Date=" + imp.getStatementDate());
 					}
 				}
-				
+
 				//	New Statement
 				if (statement == null)
 				{
 					statement = new MBankStatement(account);
 					statement.setEndingBalance(Env.ZERO);
-					
+
 					//	Copy statement data
 					if (imp.getName() != null)
 					{
@@ -449,10 +449,10 @@ public class ImportBankStatement extends JavaProcess
 					}
 					lineNo = 10;
 				}
-				
+
 				//	New StatementLine
 				MBankStatementLine line = new MBankStatementLine(statement, lineNo);
-				
+
 				//	Copy statement line data
 				//line.setC_BPartner_ID(imp.getC_BPartner_ID());
 				//line.setC_Invoice_ID(imp.getC_Invoice_ID());
@@ -476,7 +476,7 @@ public class ImportBankStatement extends JavaProcess
 				{
 					line.setC_Payment_ID(imp.getC_Payment_ID());
 				}
-				
+
 				//	Copy statement line reference data
 				line.setEftTrxID(imp.getEftTrxID());
 				line.setEftTrxType(imp.getEftTrxType());
@@ -489,7 +489,7 @@ public class ImportBankStatement extends JavaProcess
 				line.setEftValutaDate(imp.getEftValutaDate());
 				line.setEftCurrency(imp.getEftCurrency());
 				line.setEftAmt(imp.getEftAmt());
-				
+
 				//	Save statement line
 				if (line.save())
 				{
@@ -499,12 +499,12 @@ public class ImportBankStatement extends JavaProcess
 					imp.setProcessed(true);
 					imp.save();
 					noInsertLine++;
-					lineNo += 10;	
+					lineNo += 10;
 				}
 				line = null;
-				
+
 			}
-			
+
 			//	Close database connection
 			rs.close();
 			pstmt.close();
@@ -516,7 +516,7 @@ public class ImportBankStatement extends JavaProcess
 		{
 			log.error(sql.toString(), e);
 		}
-		
+
 		//	Set Error to indicator to not imported
 		sql = new StringBuffer ("UPDATE I_BankStatement "
 			+ "SET I_IsImported='N', Updated=now() "
