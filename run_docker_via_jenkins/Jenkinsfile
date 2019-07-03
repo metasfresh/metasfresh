@@ -8,6 +8,10 @@ import de.metas.jenkins.Misc
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
+	// Two parallel run_e2e_tests runs hung at discountschema_with_breaks_spec.js idk why.
+    // But I noticed yesterday that running >1 in parallel doesn't end well. not sure why..the runs themseves are isolated from each other..
+    // So for now, i'm going to allow just one run_e2e_tests in parallel..
+	disableConcurrentBuilds(), 
 	parameters([
 		string(defaultValue: 'INSTANCE.metasfresh.com',
 			description: 'Host name of the metasfresh instance to run the tests against',
