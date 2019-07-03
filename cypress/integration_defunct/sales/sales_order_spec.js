@@ -20,58 +20,29 @@ describe('New sales order test', function() {
   const priceListName = `PriceList ${timestamp}`;
   const priceListVersionName = `PriceListVersion ${timestamp}`;
 
-  describe('Do test preparations', function() {
-    it('Create product and price', function() {
-      Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
-      Builder.createBasicProductEntities(
-        productCategoryName,
-        productCategoryValue,
-        priceListName,
-        productName,
-        productValue
-      );
-    });
-    it('Create customer', function() {
-      cy.fixture('sales/simple_customer.json').then(customerJson => {
-        Object.assign(new BPartner(), customerJson)
-          .setName(customerName)
-          .setCustomerPricingSystem(priceSystemName)
-          .setBank(undefined) // we don't need a bank for this test
-          .apply();
-      });
+  before(function() {
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicProductEntities(
+      productCategoryName,
+      productCategoryValue,
+      priceListName,
+      productName,
+      productValue
+    );
+
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      new BPartner({ ...customerJson, name: customerName })
+        .setName(customerName)
+        .setCustomerPricingSystem(priceSystemName)
+        .setBank(undefined)
+        .apply()
+        .then(() => {
+          cy.visitWindow(salesOrders.windowId, 'NEW');
+        });
     });
   });
 
   describe('Sales order tests', function() {
-    it('Create a new sales order', function() {
-      // getBreadcrumbs(windowId, '1000011-new').then(({ option, caption }) => {
-      //   menuOption = option;
-      //   headerCaption = caption;
-      // });
-      cy.visitWindow(salesOrders.windowId, 'NEW');
-
-      // cy.get('.header-breadcrumb').contains('.header-item', headerCaption, { timeout: 10000 });
-
-      // const option = ~~(Math.random() * (2 - 0)) + 0;
-
-      // if (option === 0) {
-      //   cy.get('.header-breadcrumb')
-      //     .contains('.header-item', headerCaption)
-      //     .click();
-
-      //   cy.get('.header-breadcrumb')
-      //     .find('.menu-overlay')
-      //     .should('exist')
-      //     .find('.menu-overlay-link')
-      //     .contains(menuOption)
-      //     .click();
-      // } else {
-      //cy.clickHeaderNav(Cypress.messages.window.new);
-      // }
-
-      //cy.get('.header-breadcrumb-sitename').should('contain', '<');
-    });
-
     it('Fill Business Partner', function() {
       cy.writeIntoLookupListField('C_BPartner_ID', `${timestamp}`, customerName);
 

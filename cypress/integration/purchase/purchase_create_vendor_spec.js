@@ -1,19 +1,21 @@
 /// <reference types="Cypress" />
 
-import { BPartner, BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner';
+import { BPartner } from '../../support/utils/bpartner';
+import { BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import config from '../../config';
 
 describe('purchase - vendor spec', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
   const vendorName = `Vendor ${timestamp}`;
-
   const discountSchemaName = `DiscountSchema ${timestamp}`;
 
-  it('Create a vendor with two contacts', function() {
+  before(function() {
     new DiscountSchema(discountSchemaName).setValidFrom('01/01/2019{enter}').apply();
 
-    new BPartner(vendorName)
+    new BPartner({ name: vendorName })
+      .setCustomer(false)
+      .setBank(undefined)
       .setVendor(true)
       .setVendorPricingSystem('Testpreisliste Lieferanten')
       .setVendorDiscountSchema(discountSchemaName)
@@ -26,7 +28,9 @@ describe('purchase - vendor spec', function() {
       )
       .addContact(new BPartnerContact().setFirstName('Secondary').setLastName('Contact'))
       .apply();
+  });
 
+  it('Create a vendor with two contacts', function() {
     cy.log('Now going to verify all fields were set correctly');
     cy.location().then(location => {
       const apiUrl = `${config.API_URL}${location.pathname}`;
