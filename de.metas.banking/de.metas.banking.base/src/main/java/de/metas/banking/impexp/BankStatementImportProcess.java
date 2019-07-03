@@ -51,6 +51,14 @@ import lombok.NonNull;
 public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankStatement>
 {
 
+	private int p_C_BP_BankAccount_ID = 0;
+
+	private void getBankStatementImportProcessParameter()
+	{
+
+		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt("C_BP_BankAccount_ID", -1);
+	}
+
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
 	{
@@ -74,6 +82,9 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 	{
 
 		final String whereClause = getWhereClause();
+
+		getBankStatementImportProcessParameter();
+		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, whereClause);
 		BankStatementImportTableSqlUpdater.updateBankStatemebtImportTable(whereClause);
 	}
 
@@ -230,10 +241,11 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 		final int bankStatementId = importRecord.getC_BankStatement_ID();
 
 		bankStatementLine.setC_BankStatement_ID(bankStatementId);
+		bankStatementLine.setC_BP_BankAccountTo_ID(importRecord.getC_BP_BankAccountTo_ID());
 		bankStatementLine.setReferenceNo(importRecord.getReferenceNo());
 		bankStatementLine.setDescription(importRecord.getLineDescription());
-		bankStatementLine.setStatementLineDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(),  importRecord.getStatementDate()));
-		bankStatementLine.setDateAcct(CoalesceUtil.coalesce(importRecord.getDateAcct(),importRecord.getStatementDate()));
+		bankStatementLine.setStatementLineDate(CoalesceUtil.coalesce(importRecord.getStatementLineDate(), importRecord.getStatementDate()));
+		bankStatementLine.setDateAcct(CoalesceUtil.coalesce(importRecord.getDateAcct(), importRecord.getStatementDate()));
 		bankStatementLine.setValutaDate(importRecord.getValutaDate());
 		bankStatementLine.setIsReversal(importRecord.isReversal());
 		bankStatementLine.setC_Currency_ID(importRecord.getC_Currency_ID());

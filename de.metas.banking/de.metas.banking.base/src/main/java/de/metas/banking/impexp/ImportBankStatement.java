@@ -1,7 +1,12 @@
 package de.metas.banking.impexp;
 
+import org.adempiere.impexp.IImportProcess;
+import org.adempiere.impexp.IImportProcessFactory;
 import org.compiere.model.I_I_BankStatement;
-import org.compiere.process.AbstractImportJavaProcess;
+
+import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -25,10 +30,26 @@ import org.compiere.process.AbstractImportJavaProcess;
  * #L%
  */
 
-public class ImportBankStatement extends AbstractImportJavaProcess<I_I_BankStatement>
+public class ImportBankStatement extends JavaProcess
 {
-	public ImportBankStatement()
+	private IImportProcess<I_I_BankStatement> importProcess;
+
+	@Override
+	protected void prepare()
 	{
-		super(I_I_BankStatement.class);
+		importProcess = Services.get(IImportProcessFactory.class).newImportProcess(I_I_BankStatement.class);
+		importProcess.setCtx(getCtx());
+		importProcess.setParameters(getParameterAsIParams());
+		importProcess.setLoggable(this);
 	}
+
+	@Override
+	@RunOutOfTrx
+	protected String doIt() throws Exception
+	{
+		importProcess.run();
+		return MSG_OK;
+	}
+
+
 }
