@@ -525,27 +525,27 @@ public final class Language implements Serializable
 	/**************************************************************************
 	 * Define Language
 	 *
-	 * @param name - displayed value, e.g. English
-	 * @param AD_Language - the code of system supported language, e.g. en_US
+	 * @param m_name - displayed value, e.g. English
+	 * @param m_AD_Language - the code of system supported language, e.g. en_US
 	 *            (might be different than Locale - i.e. if the system does not support the language)
-	 * @param locale - the Locale, e.g. Locale.US
-	 * @param decimalPoint true if Decimal Point - if null, derived from Locale
-	 * @param javaDatePattern Java date pattern as not all locales are defined - if null, derived from Locale
-	 * @param mediaSize default media size
+	 * @param m_locale - the Locale, e.g. Locale.US
+	 * @param _decimalPoint true if Decimal Point - if null, derived from Locale
+	 * @param _dateFormatPattern Java date pattern as not all locales are defined - if null, derived from Locale
+	 * @param _mediaSize default media size
 	 */
 	@Builder(toBuilder = true)
-	private Language(final String name, final String AD_Language, final Locale locale,
-			final Boolean decimalPoint, final String javaDatePattern, final MediaSize mediaSize)
+	private Language(final String m_name, final String m_AD_Language, final Locale m_locale,
+			final Boolean _decimalPoint, final String _dateFormatPattern, final MediaSize _mediaSize)
 	{
 		super();
 
-		m_name = Preconditions.checkNotNull(name, "name");
-		m_AD_Language = Preconditions.checkNotNull(AD_Language, "AD_Language");
-		m_locale = Preconditions.checkNotNull(locale, "locale");
+		this.m_name = Preconditions.checkNotNull(m_name, "m_name");
+		this.m_AD_Language = Preconditions.checkNotNull(m_AD_Language, "m_AD_Language");
+		this.m_locale = Preconditions.checkNotNull(m_locale, "m_locale");
 		//
-		_decimalPoint = decimalPoint;
-		_dateFormatPattern = javaDatePattern;
-		_mediaSize = mediaSize == null ? MediaSize.ISO.A4 : mediaSize;
+		this._decimalPoint = _decimalPoint;
+		this._dateFormatPattern = _dateFormatPattern;
+		this._mediaSize = _mediaSize == null ? MediaSize.ISO.A4 : _mediaSize;
 	}   // Language
 
 	/**
