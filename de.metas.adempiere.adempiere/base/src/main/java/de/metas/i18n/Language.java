@@ -358,7 +358,6 @@ public final class Language implements Serializable
 
 	/**
 	 * @return true if the base language configured
-	 * @see #setBaseLanguage(Language)
 	 */
 	public static final boolean isBaseLanguageSet()
 	{
@@ -434,7 +433,7 @@ public final class Language implements Serializable
 	}   // getLocale
 
 	public static void addNewLanguage(Language language) {
-		s_languages.add(language);
+		s_languages.addIfAbsent(language);
 	}
 
 	public static Language findLanguageByLocale(final Locale locale)
@@ -565,7 +564,7 @@ public final class Language implements Serializable
 	/** Name */
 	private final String m_name;
 	/** Language (key) */
-	private String m_AD_Language;
+	private final String m_AD_Language;
 	/** Locale */
 	private final Locale m_locale;
 	//

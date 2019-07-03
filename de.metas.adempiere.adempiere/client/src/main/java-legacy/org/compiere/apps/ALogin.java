@@ -662,7 +662,7 @@ public final class ALogin extends CDialog
 					setLanguageComboVisible(true);
 					new AdempiereException("@NotFound@ @AD_Language@").throwIfDeveloperModeOrLogWarningElse(log);
 				}
-				language = Env.verifyLanguageFallbackToBase(language);
+				language = Env.verifyLanguageCreateIfNotSupported(language);
 				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
 				Services.get(IMsgBL.class).getMsg(ctx, "0"); // trigger messages cache loading
 
