@@ -88,6 +88,29 @@ public interface I_I_BankStatement
     public static final String COLUMNNAME_BankAccountNo = "BankAccountNo";
 
 	/**
+	 * Set Name Rechnungspartner.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_BPartner_Name (java.lang.String Bill_BPartner_Name);
+
+	/**
+	 * Get Name Rechnungspartner.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBill_BPartner_Name();
+
+    /** Column definition for Bill_BPartner_Name */
+    public static final org.adempiere.model.ModelColumn<I_I_BankStatement, Object> COLUMN_Bill_BPartner_Name = new org.adempiere.model.ModelColumn<I_I_BankStatement, Object>(I_I_BankStatement.class, "Bill_BPartner_Name", null);
+    /** Column name Bill_BPartner_Name */
+    public static final String COLUMNNAME_Bill_BPartner_Name = "Bill_BPartner_Name";
+
+	/**
 	 * Set Geschäftspartner-Schlüssel.
 	 * Key of the Business Partner
 	 *

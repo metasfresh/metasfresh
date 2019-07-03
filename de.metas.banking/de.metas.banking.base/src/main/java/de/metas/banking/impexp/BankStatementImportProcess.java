@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.impexp.IImportInterceptor;
@@ -85,7 +86,7 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 
 		getBankStatementImportProcessParameter();
 		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, whereClause);
-		BankStatementImportTableSqlUpdater.updateBankStatemebtImportTable(whereClause);
+		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(whereClause);
 	}
 
 	@Override
@@ -101,14 +102,17 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(IMutable<Object> state, I_I_BankStatement importRecord, boolean isInsertOnly) throws Exception
+	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_BankStatement importRecord, final boolean isInsertOnly) throws Exception
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
 		final int importBankStatementId = importRecord.getI_BankStatement_ID();
-		int bankStatementRecordId = importRecord.getC_BankStatement_ID();
-		final boolean isNewBankStatement = bankStatementRecordId <= 0;
-		log.debug("I_BankStatement_ID=" + importBankStatementId + ", C_BankStatement_ID=" + bankStatementRecordId);
+
+
+		final int existingBankStatementId = retrieveExistingBankStatementId(importRecord);
+
+		final boolean isNewBankStatement = existingBankStatementId <= 0;
+		log.debug("I_BankStatement_ID=" + importBankStatementId + ", C_BankStatement_ID=" + existingBankStatementId);
 
 		if (!isNewBankStatement && isInsertOnly)
 		{
@@ -121,7 +125,8 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 			final I_C_BankStatement bankStatement = createBankStatement(importRecord);
 
 			save(bankStatement);
-			bankStatementRecordId = bankStatement.getC_BankStatement_ID();
+
+			final int bankStatementRecordId = bankStatement.getC_BankStatement_ID();
 			importRecord.setC_BankStatement_ID(bankStatementRecordId);
 			save(importRecord);
 
@@ -129,86 +134,54 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 		}
 		else
 		{
+			importRecord.setC_BankStatement_ID(existingBankStatementId);
+			save(importRecord);
 
-			I_C_BankStatement bankStatement = bankStatementDAO.getById(bankStatementRecordId);
+			final I_C_BankStatement bankStatement = bankStatementDAO.getById(existingBankStatementId);
 
 			if (bankStatement.getC_BP_BankAccount_ID() <= 0)
 			{
 				bankStatement.setC_BP_BankAccount_ID(importRecord.getC_BP_BankAccount_ID());
 			}
-			//
-			// X_I_BankStatement imp = new X_I_BankStatement(m_ctx, rs, get_TrxName());
-			// // Get the bank account for the first statement
-			// if (account == null)
-			// {
-			// account = InterfaceWrapperHelper.create(m_ctx, imp.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, getTrxName());
-			// statement = null;
-			// log.info("New Statement, Account=" + account.getAccountNo());
-			// }
-			// // Create a new Bank Statement for every account
-			// else if (account.getC_BP_BankAccount_ID() != imp.getC_BP_BankAccount_ID())
-			// {
-			// account = InterfaceWrapperHelper.create(m_ctx, imp.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, getTrxName());
-			// statement = null;
-			// log.info("New Statement, Account=" + account.getAccountNo());
-			// }
-			// Create a new Bank Statement for every statement name
 
 			if (Check.isEmpty(bankStatement.getName()))
 			{
 				bankStatement.setName(importRecord.getName());
 			}
-			// else if ((statement.getName() != null) && (imp.getName() != null))
-			// {
-			// if (!statement.getName().equals(imp.getName()))
-			// {
-			// statement = null;
-			// log.info("New Statement, Statement Name=" + imp.getName());
-			// }
-			// }
-			// Create a new Bank Statement for every statement reference
 
 			if (Check.isEmpty(bankStatement.getEftStatementReference()))
 			{
 				bankStatement.setEftStatementReference(importRecord.getEftStatementReference());
 			}
 
-			// else if ((statement.getEftStatementReference() != null) && (imp.getEftStatementReference() != null))
-			// {
-			// if (!statement.getEftStatementReference().equals(imp.getEftStatementReference()))
-			// {
-			// statement = null;
-			// log.info("New Statement, Statement Reference=" + imp.getEftStatementReference());
-			// }
-			// }
-
-			// Create a new Bank Statement for every statement date
-
 			if (Check.isEmpty(bankStatement.getEftStatementDate()))
 			{
 				bankStatement.setEftStatementDate(importRecord.getEftStatementDate());
 			}
 
-			// else if ((statement.getStatementDate() != null) && (imp.getStatementDate() != null))
-			// {
-			// if (!statement.getStatementDate().equals(imp.getStatementDate()))
-			// {
-			// statement = null;
-			// log.info("New Statement, Statement Date=" + imp.getStatementDate());
-			// }
-			// }
 			save(bankStatement);
 		}
 
-		//
-		// Bank Statement Line
 		createUpdateBankStatementLine(importRecord);
+
+		save(importRecord);
 
 		ModelValidationEngine.get().fireImportValidate(this, importRecord, importRecord.getC_BankStatement(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
-		// #3404 Create default product planning
-
 		return isNewBankStatement ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+	}
+
+	private int retrieveExistingBankStatementId(I_I_BankStatement importRecord)
+	{
+		final int existingBankStatementId = Services.get(IQueryBL.class).createQueryBuilder(I_C_BankStatement.class)
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, importRecord.getName())
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, importRecord.getStatementDate())
+				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, importRecord.getC_BP_BankAccount_ID())
+				.create()
+				.firstId();
+
+		return existingBankStatementId;
+
 	}
 
 	private void createUpdateBankStatementLine(final I_I_BankStatement importRecord)
@@ -233,10 +206,6 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 	private void updateBankStatementLine(final I_C_BankStatementLine bankStatementLine, final I_I_BankStatement importRecord)
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
-		// Copy statement line data
-		// line.setC_BPartner_ID(imp.getC_BPartner_ID());
-		// line.setC_Invoice_ID(imp.getC_Invoice_ID());
 
 		final int bankStatementId = importRecord.getC_BankStatement_ID();
 

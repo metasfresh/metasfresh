@@ -15,7 +15,7 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 631635698L;
+	private static final long serialVersionUID = -1871926945L;
 
     /** Standard Constructor */
     public X_I_BankStatement (Properties ctx, int I_BankStatement_ID, String trxName)
@@ -60,6 +60,22 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public java.lang.String getBankAccountNo () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_BankAccountNo);
+	}
+
+	/** Set Name Rechnungspartner.
+		@param Bill_BPartner_Name Name Rechnungspartner	  */
+	@Override
+	public void setBill_BPartner_Name (java.lang.String Bill_BPartner_Name)
+	{
+		set_Value (COLUMNNAME_Bill_BPartner_Name, Bill_BPartner_Name);
+	}
+
+	/** Get Name Rechnungspartner.
+		@return Name Rechnungspartner	  */
+	@Override
+	public java.lang.String getBill_BPartner_Name () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Bill_BPartner_Name);
 	}
 
 	/** Set Geschäftspartner-Schlüssel.
