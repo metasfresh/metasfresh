@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +19,9 @@ import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -57,9 +60,11 @@ public final class JsonRequestComposite
 
 	@ApiModelProperty(required = false, value = "The location's GLN can be used to lookup the whole bpartner; if multiple locations with GLN are provided, then only the first one is used")
 	@JsonInclude(Include.NON_EMPTY)
+	@Getter(AccessLevel.PRIVATE)
 	JsonRequestLocationUpsert locations;
 
 	@JsonInclude(Include.NON_EMPTY)
+	@Getter(AccessLevel.PRIVATE)
 	JsonRequestContactUpsert contacts;
 
 	@ApiModelProperty(required = false, value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
@@ -78,8 +83,8 @@ public final class JsonRequestComposite
 	{
 		this.orgCode = orgCode;
 		this.bpartner = bpartner;
-		this.locations = coalesce(locations, JsonRequestLocationUpsert.builder().build());
-		this.contacts = coalesce(contacts, JsonRequestContactUpsert.builder().build());
+		this.locations = locations;
+		this.contacts = contacts;
 		this.syncAdvise = syncAdvise;
 	}
 
@@ -101,5 +106,17 @@ public final class JsonRequestComposite
 		return toBuilder()
 				.bpartner(bpartner.toBuilder().externalId(externalId).build())
 				.build();
+	}
+
+	@JsonIgnore
+	public JsonRequestLocationUpsert getLocationsNotNull()
+	{
+		return coalesce(locations, JsonRequestLocationUpsert.builder().build());
+	}
+
+	@JsonIgnore
+	public JsonRequestContactUpsert getContactsNotNull()
+	{
+		return coalesce(contacts, JsonRequestContactUpsert.builder().build());
 	}
 }
