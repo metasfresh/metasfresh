@@ -78,7 +78,7 @@ public class BPartnerCompositeCache
 		{
 			result.add(cache.getOrElseThrow(
 					key,
-					() -> new AdempiereException("Missind record for key=" + key)));
+					() -> new AdempiereException("Missing record for key=" + key)));
 		}
 
 		return result.build();

@@ -113,7 +113,8 @@ class JsonRetrieverServiceTest
 		final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKey2 = ImmutableList.of(BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)));
 		final Optional<BPartnerComposite> result2 = jsonRetrieverService.retrieveBPartnerCompositeAssertCacheHit(bpartnerLookupKey2);
 
-		assertThat(result2).isEqualTo(result); // not sameAs, because the composite is multable and the retriever shall give us own own instance each time.
+		assertThat(result2).isNotSameAs(result); // not sameAs, because the composite is mutable and the retriever shall give us own own instance each time.
+		assertThat(result2).isEqualTo(result);
 	}
 
 }
