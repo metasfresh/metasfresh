@@ -94,7 +94,7 @@ public final class Env
 	/**
 	 * This field is volatile because i encountered occasional NPEs in {@link #getCtx()} during adempiere startup and i suspect it'S related to multiple parts of adempiere starting concurrently. To
 	 * see why I hope that 'volatile' will help, you could start with this link: http://stackoverflow.com/questions/4934913/are-static-variables-shared-between-threads
-	 *
+	 * <p>
 	 * NOTE: we need to set it to a default value because else all other helpers like GenerateModels will fail or they need to be changes to setup a context provider.
 	 */
 	// private static volatile ContextProvider contextProvider = new DefaultContextProvider();
@@ -255,7 +255,7 @@ public final class Env
 
 	/**
 	 * Comma separated list of AD_Org_IDs of which current User/Role has any access (ro/rw)
-	 *
+	 * <p>
 	 * NOTE: this is deprecated but we are keeping it for those application dictionary logics which require this information from context.
 	 */
 	public static final String CTXNAME_User_Org = "#User_Org";
@@ -426,7 +426,7 @@ public final class Env
 
 	/**
 	 * Temporary replace current context with the given one.
-	 *
+	 * <p>
 	 * This method will return an {@link IAutoCloseable} to be used in try-with-resources and which will restore the context back.
 	 * <p>
 	 * <b>IMPORTANT:</b> do not use this method with a ctx that was created via {@link #deriveCtx(Properties)}, to avoid a {@link StackOverflowError}.<br>
@@ -1497,11 +1497,12 @@ public final class Env
 	}	// getLanguage
 
 	/**
-	 * Verify Language. Check that language is supported by the system
+	 * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
 	 *
 	 * @param language language
+	 * @return language: the received language if it is supported, the base language otherwise.
 	 */
-	public static void verifyLanguage(final Language language)
+	public static Language verifyLanguageFallbackToBase(final Language language)
 	{
 		Check.assumeNotNull(language, "Parameter language is not null");
 		final String searchAD_Language = language.getAD_Language();
@@ -1516,7 +1517,7 @@ public final class Env
 		// Check if we have a perfect match
 		if (AD_Languages.contains(searchAD_Language))
 		{
-			return;
+			return language;
 		}
 
 		//
@@ -1529,15 +1530,14 @@ public final class Env
 			{
 				s_log.debug("Found similar Language {} for {}", AD_Language, language);
 				language.setAD_Language(AD_Language);
-				return;
+				// todo cri: we should get rid if the setter and create a NEW language.
+				return language;
 			}
 		}
 
-		// No Language - set to Base Language
-		final String baseAD_Language = Language.getBaseAD_Language();
-		s_log.warn("Not System/Base Language={} - Set to Base Language: {}", language, baseAD_Language);
-		language.setAD_Language(baseAD_Language);
-	}   // verifyLanguage
+		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall return the system base language.
+		return Language.getBaseLanguage();
+	}
 
 	/**************************************************************************
 	 * Get Context as String array with format: key == value
@@ -1564,7 +1564,7 @@ public final class Env
 
 	/**
 	 * Get Header info (connection, org, user).
-	 *
+	 * <p>
 	 * Uses {@link #CTXNAME_WindowName} from context to fetch the window name.
 	 *
 	 * @param ctx context
@@ -1907,7 +1907,7 @@ public final class Env
 	/* package */static final int CTXVALUE_NoValueInt = 0;
 	/**
 	 * Marker used to flag a NULL String
-	 *
+	 * <p>
 	 * NOTE: this is the value returned by getContext methods when no value found
 	 */
 	// NOTE: before changing this to some other value, please evaluate where the result of getContext variables is compared with hardcoded ""
@@ -1933,7 +1933,6 @@ public final class Env
 	}
 
 	/**
-	 *
 	 * @param ctx
 	 * @param WindowNo
 	 * @param TabNo
@@ -2289,7 +2288,6 @@ public final class Env
 	}
 
 	/**
-	 *
 	 * @param propertyName
 	 * @return true if given propertyName is for a numeric value (i.e. if it ends with "_ID")
 	 */
@@ -2318,7 +2316,7 @@ public final class Env
 
 	/**
 	 * Checks if given contexts are about same session.
-	 *
+	 * <p>
 	 * Being the same means that they have the same AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID and AD_Session_ID.
 	 *
 	 * @param ctx1
@@ -2340,7 +2338,6 @@ public final class Env
 	}
 
 	/**
-	 *
 	 * @param ctx1
 	 * @param ctx2
 	 * @return true if given contexts are exactly the same (compared by reference)
@@ -2404,10 +2401,10 @@ public final class Env
 
 	/**
 	 * Gets the value identified by <code>propertyName</code> from given <code>ctx</code>.
-	 *
+	 * <p>
 	 * If the value is <code>null</code> (or not present) and a value initializer is provided
 	 * than that value initializer will be used to initialize the value.
-	 *
+	 * <p>
 	 * This method is thread safe.
 	 *
 	 * @param ctx
@@ -2424,12 +2421,12 @@ public final class Env
 
 	/**
 	 * Gets the value identified by <code>propertyName</code> from given <code>ctx</code>.
-	 *
+	 * <p>
 	 * If an validator is provided then it will be used to check if the cached value (if any) is still valid.
-	 *
+	 * <p>
 	 * If the value is <code>null</code> (or not present, or not valid) and a value initializer is provided
 	 * than that value initializer will be used to initialize the value.
-	 *
+	 * <p>
 	 * This method is thread safe.
 	 *
 	 * @param ctx
@@ -2482,7 +2479,7 @@ public final class Env
 
 	/**
 	 * Checks if given key is contained in context.
-	 *
+	 * <p>
 	 * WARNING: this method is NOT checking the key exists in underlying "defaults". Before changing this please check the API which depends on this logic
 	 *
 	 * @param ctx

@@ -202,7 +202,7 @@ public class MClient extends X_AD_Client
 		if (m_language == null)
 		{
 			m_language = Language.getLanguage(getAD_Language());
-			Env.verifyLanguage(m_language);
+			m_language = Env.verifyLanguageFallbackToBase(m_language);
 		}
 		return m_language;
 	}	//	getLanguage

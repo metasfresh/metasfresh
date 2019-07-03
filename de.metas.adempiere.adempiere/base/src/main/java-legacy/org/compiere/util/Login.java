@@ -240,8 +240,8 @@ public class Login
 		// Use user's AD_Language, if any
 		if (!Check.isEmpty(user.getAD_Language()))
 		{
-			final Language language = Language.getLanguage(user.getAD_Language());
-			Env.verifyLanguage(language);
+			Language language = Language.getLanguage(user.getAD_Language());
+			language = Env.verifyLanguageFallbackToBase(language);
 			ctx.setAD_Language(language.getAD_Language());
 		}
 
@@ -450,7 +450,7 @@ public class Login
 		}
 
 		return null;
-	}	// validateLogin
+	}    // validateLogin
 
 	/**
 	 * Load Preferences into Context for selected client.
@@ -571,7 +571,7 @@ public class Login
 		ModelValidationEngine.get().afterLoadPreferences(ctx.getSessionContext());
 
 		return retValue;
-	}	// loadPreferences
+	}    // loadPreferences
 
 	/**
 	 * Loads accounting info
@@ -609,11 +609,10 @@ public class Login
 	}
 
 	/**
-	 *
 	 * Set System Status Message.
-	 *
+	 * <p>
 	 * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system.
-	 *
+	 * <p>
 	 * NOTE: we are retrieving from database and we are storing in context because this String is used in low level UI components and in some cases there is no database connection at all
 	 */
 	private void loadUIWindowHeaderNotice()
@@ -643,7 +642,7 @@ public class Login
 	public String getRemoteAddr()
 	{
 		return getCtx().getRemoteAddr();
-	}	// RemoteAddr
+	}    // RemoteAddr
 
 	public void setRemoteHost(final String remoteHost)
 	{
@@ -653,7 +652,7 @@ public class Login
 	public String getRemoteHost()
 	{
 		return getCtx().getRemoteHost();
-	}	// RemoteHost
+	}    // RemoteHost
 
 	public void setWebSession(final String webSession)
 	{
@@ -663,10 +662,10 @@ public class Login
 	public String getWebSession()
 	{
 		return getCtx().getWebSession();
-	}	// WebSession
+	}    // WebSession
 
 	public boolean isAllowLoginDateOverride()
 	{
 		return getCtx().isAllowLoginDateOverride();
 	}
-}	// Login
+}    // Login
