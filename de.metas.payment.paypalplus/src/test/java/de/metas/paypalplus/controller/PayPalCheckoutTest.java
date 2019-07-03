@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import com.braintreepayments.http.HttpResponse;
 import com.braintreepayments.http.serializer.Json;
+import com.google.common.collect.ImmutableList;
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.orders.AddressPortable;
@@ -177,26 +178,22 @@ public class PayPalCheckoutTest
 								.handling(new Money().currencyCode("USD").value("10.00"))
 								.taxTotal(new Money().currencyCode("USD").value("20.00"))
 								.shippingDiscount(new Money().currencyCode("USD").value("10.00"))))
-				.items(new ArrayList<Item>()
-				{
-					{
-						add(new Item()
+				.items(ImmutableList.of(
+						new Item()
 								.name("T-shirt")
 								.description("Green XL")
 								.sku("sku01")
 								.unitAmount(new Money().currencyCode("USD").value("90.00"))
 								.tax(new Money().currencyCode("USD").value("10.00"))
 								.quantity("1")
-								.category("PHYSICAL_GOODS"));
-						add(new Item().name("Shoes")
+								.category("PHYSICAL_GOODS"),
+						new Item().name("Shoes")
 								.description("Running, Size 10.5")
 								.sku("sku02")
 								.unitAmount(new Money().currencyCode("USD").value("45.00"))
 								.tax(new Money().currencyCode("USD").value("5.00"))
 								.quantity("2")
-								.category("PHYSICAL_GOODS"));
-					}
-				})
+								.category("PHYSICAL_GOODS")))
 				.shipping(new ShippingDetails()
 						.name(new Name().fullName("John Doe"))
 						.addressPortable(new AddressPortable()
