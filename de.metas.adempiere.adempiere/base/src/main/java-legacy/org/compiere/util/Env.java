@@ -1497,11 +1497,11 @@ public final class Env
 	}	// getLanguage
 
 	/**
-	 * Check that testLang is supported by the system.
+     * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
 	 *
-	 * Returns a new language derived from testLang with `ad_language` changed to base language, in case the language received is not supported.
+	 * @return the received language if it is supported, the base language otherwise.
 	 */
-	public static Language verifyLanguageCreateIfNotSupported(final Language testLang)
+	public static Language verifyLanguageFallbackToBase(final Language testLang)
 	{
 		Check.assumeNotNull(testLang, "Parameter testLang is not null");
 		final String searchAD_Language = testLang.getAD_Language();
@@ -1537,11 +1537,8 @@ public final class Env
 			}
 		}
 
-		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall create it.
-		return testLang
-				.toBuilder()
-				.m_AD_Language(Language.getBaseAD_Language())
-				.build();
+		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall return the system base language.
+		return Language.getBaseLanguage();
 	}
 
 	/**************************************************************************
