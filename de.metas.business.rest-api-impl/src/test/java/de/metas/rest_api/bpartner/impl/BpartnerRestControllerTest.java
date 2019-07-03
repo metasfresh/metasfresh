@@ -15,6 +15,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.InputStream;
 import java.util.Optional;
@@ -69,6 +70,7 @@ import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
+import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.UIDStringUtil;
@@ -319,7 +321,7 @@ class BpartnerRestControllerTest
 	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
 	 */
 	@Test
-	void createOrUpdateBPartner_update_C_BPartner_Value()
+	void createOrUpdateBPartner_update_C_BPartner_Value_OK()
 	{
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Value.json");
 
@@ -341,6 +343,25 @@ class BpartnerRestControllerTest
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
+	}
+
+	@Test
+	void createOrUpdateBPartner_update_C_BPartner_Value_NoSuchPartner()
+	{
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Value.json");
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345nosuchvalue");
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		// invoke the method under test
+		assertThatThrownBy(() -> bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest))
+				.isInstanceOf(MissingResourceException.class)
+				.hasMessageContaining("bpartner");
 	}
 
 	private JsonRequestBPartnerUpsert loadUpsertRequest(final String jsonFileName)
@@ -390,7 +411,6 @@ class BpartnerRestControllerTest
 
 		assertThat(jsonResponseUpsertItem.getIdentifier()).isEqualTo("ext-1234567");
 		assertThat(jsonResponseUpsertItem.getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
-
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
