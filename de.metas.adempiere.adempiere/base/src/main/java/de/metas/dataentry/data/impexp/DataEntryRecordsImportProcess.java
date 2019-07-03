@@ -18,7 +18,6 @@ import org.compiere.util.Env;
 
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.FieldType;
 import de.metas.dataentry.data.DataEntryRecord;
 import de.metas.dataentry.data.DataEntryRecordField;
 import de.metas.dataentry.data.DataEntryRecordId;
@@ -342,10 +341,9 @@ public class DataEntryRecordsImportProcess extends AbstractImportProcess<I_I_Dat
 		private Object convertValueToFieldType(final Object value, @NonNull final DataEntryFieldId fieldId)
 		{
 			final DataEntryField field = subTab.getFieldById(fieldId);
-			final FieldType type = field.getType();
 			try
 			{
-				return DataEntryRecordField.convertValueToFieldType(value, type);
+				return DataEntryRecordField.convertValueToFieldType(value, field);
 			}
 			catch (Exception ex)
 			{

@@ -352,20 +352,14 @@ public class DataEntryLayoutRepository
 
 	private static DataEntryListValue ofRecord(@NonNull final I_DataEntry_ListValue listValueRecord)
 	{
-		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(listValueRecord);
-
 		final DataEntryListValueId id = DataEntryListValueId.ofRepoId(listValueRecord.getDataEntry_ListValue_ID());
-		final DataEntryFieldId fieldId = DataEntryFieldId.ofRepoId(listValueRecord.getDataEntry_Field_ID());
-
-		final ITranslatableString nameTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Name, listValueRecord.getName());
-
-		final ITranslatableString descriptionTrl = modelTranslationMap
-				.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
+		
+		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(listValueRecord);
+		final ITranslatableString nameTrl = trls.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Name, listValueRecord.getName());
+		final ITranslatableString descriptionTrl = trls.getColumnTrl(I_DataEntry_ListValue.COLUMNNAME_Description, listValueRecord.getDescription());
 
 		return DataEntryListValue.builder()
 				.id(id)
-				.fieldId(fieldId)
 				.name(nameTrl)
 				.description(descriptionTrl)
 				.build();
