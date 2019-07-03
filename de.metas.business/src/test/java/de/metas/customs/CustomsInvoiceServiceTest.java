@@ -535,7 +535,7 @@ public class CustomsInvoiceServiceTest
 		order.setC_BPartner_ID(bpartnerAndLocation.getBpartnerId().getRepoId());
 		order.setC_BPartner_Location_ID(bpartnerAndLocation.getRepoId());
 
-		order.setDocStatus(IDocument.STATUS_Completed);
+		order.setDocStatus(DocStatus.Completed.getCode());
 
 		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
