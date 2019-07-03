@@ -24,17 +24,12 @@
 
 import {getLanguageSpecific} from '../../support/utils/utils';
 import {salesInvoices} from '../../page_objects/sales_invoices';
-import {Builder} from '../../support/utils/builder';
-import {DiscountSchema} from '../../support/utils/discountschema';
-import {Bank} from '../../support/utils/bank';
-import {BPartner} from '../../support/utils/bpartner';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
 
-describe('Create a Credit memo for Sales Invoice', function () {
-  const timestamp = new Date().getTime();
+describe('Create a Credit memo price difference for Sales Invoice', function () {
 
-  const creditMemo = 'Credit Memo';
+  const creditMemoPriceDiff = 'Credit Memo - Price diff';
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -42,62 +37,25 @@ describe('Create a Credit memo for Sales Invoice', function () {
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  // data for "before" section
-  // priceList
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
-
-  // product
-  const productCategoryName = `ProductCategory ${timestamp}`;
-  const productCategoryValue = productCategoryName;
-  const productName = `Product ${timestamp}`;
-  const productValue = productName;
-  const productType = 'Item';
-
-  // BPartner
-  const discountSchemaName = `DiscountSchema ${timestamp}`;
-  const bPartnerName = `bPartner ${timestamp}`;
+  const newProductPrice = '0.123456'; // must be lower than the original price
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-
-  it('Prepare product and baprtner', function () {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
-
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName,
-      productValue,
-      productType
-    );
-
-    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-      Object.assign(new DiscountSchema(), discountSchemaJson)
-        .setName(discountSchemaName)
-        .apply();
-    });
-    cy.fixture('finance/bank.json').then(productJson => {
-      Object.assign(new Bank(), productJson).apply();
-    });
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(bPartnerName)
-        .setCustomerDiscountSchema(discountSchemaName)
-        .apply();
-    });
+  before(function () {
+    // This wait is stupid.
+    // It also appears to be a good workaround for the problems in
+    // cypress/support/utils/utils.js:1
+    cy.wait(5000);
   });
 
   it('Prepare sales invoice', function () {
-    cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
-      new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
+    cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
+      new SalesInvoice('Test Lieferant 1', salesInvoiceTargetDocumentType)
         .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-          // todo @dh: how to add packing item
+          new SalesInvoiceLine().setProduct('Convenience Salat 250g').setQuantity(originalQuantity)
+          // todo @dh: how to add a "per test" packing item
           // .setPackingItem('IFCO 6410 x 10 Stk')
           // .setTuQuantity(2)
         )
@@ -107,7 +65,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
         //     .setProduct('IFCO 6410_P001512')
         //     .setQuantity(2)
         // )
-        .setPriceList(priceListName)
+        // .setPriceList(priceListName)
         .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
@@ -121,7 +79,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
       originalSalesInvoiceID = documentId;
       cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
     });
-    cy.readAllNotifications();
   });
 
   it('Sales Invoice is Completed', function () {
@@ -155,6 +112,10 @@ describe('Create a Credit memo for Sales Invoice', function () {
       originalProduct = product;
     });
 
+    cy.getStringFieldValue('QtyEntered', true).then(qty => {
+      originalQuantity = qty;
+    });
+
     cy.get('.header-breadcrumb-sitename').then(si => {
       originalSalesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
     });
@@ -164,7 +125,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
   it('Create the Credit Memo', function () {
     cy.executeHeaderActionWithDialog('C_Invoice_Create_CreditMemo');
 
-    cy.selectInListField('C_DocType_ID', creditMemo, true, null, true);
+    cy.selectInListField('C_DocType_ID', creditMemoPriceDiff, true, null, true);
 
     // ensure all the checkboxes are ok
     cy.setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
@@ -192,9 +153,9 @@ describe('Create a Credit memo for Sales Invoice', function () {
       .dblclick();
   });
 
-  it('The Sales Invoice is a Credit Memo', function () {
+  it('The Sales Invoice is a Credit Memo - Price diff', function () {
     cy.expectDocumentStatus(DocumentStatusKey.InProgress);
-    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemo);
+    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemoPriceDiff);
   });
 
   it('Has the same properties and reference to the original', function () {
@@ -214,9 +175,26 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_Product_ID', true).should('be.equal', originalProduct);
-    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity.toString(10));
+    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity);
     cy.pressDoneButton();
   });
+
+  it('Set a different price for that product (Price rectification)', function () {
+    cy.selectTab('C_InvoiceLine');
+    cy.selectSingleTabRow();
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('PriceEntered', newProductPrice, true, null, true);
+    cy.pressDoneButton(200);
+  });
+
+
+  let newTotalAmount = 0;
+  it('Save the new total amount', function () {
+    cy.get('.header-breadcrumb-sitename').then(function (si) {
+      newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+    });
+  });
+
 
   it('Complete the Credit Memo SI', function () {
     // complete it and verify the status
@@ -229,13 +207,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
   });
 
   it('Total amount should be lower than the original SI', function () {
-    let newTotalAmount = 0;
-    it('Save the new total amount', function () {
-      cy.get('.header-breadcrumb-sitename').then(function (si) {
-        newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-      });
-    });
-
     expect(newTotalAmount).lessThan(originalSalesInvoiceTotalAmount);
   });
 
@@ -247,11 +218,11 @@ describe('Create a Credit memo for Sales Invoice', function () {
   });
 
 
-  it('Original Sales Invoice is paid', function () {
+  it('Original Sales Invoice is not paid', function () {
     cy.visitWindow('167', originalSalesInvoiceID);
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, true);
+      assert.equal(checkBoxValue, false);
     });
   });
 

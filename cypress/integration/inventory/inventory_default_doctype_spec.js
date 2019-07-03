@@ -5,22 +5,18 @@ import { getLanguageSpecific } from '../../support/utils/utils';
 
 describe('Verify that the default inventory doctype is used on new inventory docs', function() {
   it('Make aggregated-HUs inventory doc-type the default', function() {
-    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is *not* default`);
+    cy.log(`Make sure that disposal with C_DocType_ID=${inventory.docTypeDisposal} is *not* default`);
+    doctypes.visit(inventory.docTypeDisposal);
+    cy.setCheckBoxValue('IsDefault', false);
+
+    cy.log(`Make sure that single-HU C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is *not* default`);
     doctypes.visit(inventory.docTypeInventoryWithSingleHU);
-    cy.getCheckboxValue('IsDefault').then(isDefaultValue => {
-      cy.log(`isDefaultValue=${isDefaultValue}`);
-      if (isDefaultValue) {
-        cy.clickOnCheckBox('IsDefault');
-      }
-    });
-    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is default`);
+    cy.setCheckBoxValue('IsDefault', false);
+
+    cy.log(`Make sure that aggregated-HU C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is default`);
     doctypes.visit(inventory.docTypeInventoryWithMultipleHUs);
-    cy.getCheckboxValue('IsDefault').then(isDefaultValue => {
-      cy.log(`isDefaultValue=${isDefaultValue}`);
-      if (!isDefaultValue) {
-        cy.clickOnCheckBox('IsDefault');
-      }
-    });
+    cy.setCheckBoxValue('IsDefault', true);
+
     cy.screenshot();
   });
 
@@ -36,22 +32,18 @@ describe('Verify that the default inventory doctype is used on new inventory doc
   });
 
   it('Make single-HU inventory doc-type the default', function() {
-    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is default`);
+    cy.log(`Make sure that disposal with C_DocType_ID=${inventory.docTypeDisposal} is *not* default`);
+    doctypes.visit(inventory.docTypeDisposal);
+    cy.setCheckBoxValue('IsDefault', false);
+
+    cy.log(`Make sure that single-HU with C_DocType_ID=${inventory.docTypeInventoryWithSingleHU} is default`);
     doctypes.visit(inventory.docTypeInventoryWithSingleHU);
-    cy.getCheckboxValue('IsDefault').then(isDefaultValue => {
-      cy.log(`isDefaultValue=${isDefaultValue}`);
-      if (!isDefaultValue) {
-        cy.clickOnCheckBox('IsDefault');
-      }
-    });
-    cy.log(`Make sure that C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is *not* default`);
+    cy.setCheckBoxValue('IsDefault', true);
+
+    cy.log(`Make sure that aggregated-HU C_DocType_ID=${inventory.docTypeInventoryWithMultipleHUs} is *not* default`);
     doctypes.visit(inventory.docTypeInventoryWithMultipleHUs);
-    cy.getCheckboxValue('IsDefault').then(isDefaultValue => {
-      cy.log(`isDefaultValue=${isDefaultValue}`);
-      if (isDefaultValue) {
-        cy.clickOnCheckBox('IsDefault');
-      }
-    });
+    cy.setCheckBoxValue('IsDefault', false);
+
     cy.screenshot();
   });
 

@@ -26,12 +26,6 @@ Examples:
 </ul>''',
 			name: 'MF_CYPRESS_SPEC'),
 
-		// string(defaultValue: 'nexus.metasfresh.com:6001',
-		// 	description: 'Registry of the metasfresh-e2e docker image to run. Only used if <code>MF_DOCKER_IMAGE_FULL_NAME</code> is empty;',
-		// 	name: 'MF_DOCKER_REGISTRY'),
-		// string(defaultValue: 'metasfresh/metasfresh-e2e:master_LATEST',
-		// 	description: 'Name of the metasfresh-e2e docker image to run. Only used if <code>MF_DOCKER_IMAGE_FULL_NAME</code> is empty; Example: <code>metasfresh/metasfresh-e2e:master_5.86.1_7_master</code>',
-		// 	name: 'MF_DOCKER_IMAGE'),
 		string(defaultValue: 'metasfresh/metasfresh-e2e:master_LATEST',
 			description: '\"Full\" name of the metasfresh-e2e docker image to run. Example: <code>nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:master_5.86.1_7_master</code>',
 			name: 'MF_DOCKER_IMAGE_FULL_NAME'),
@@ -47,8 +41,8 @@ Examples:
 		booleanParam(defaultValue: false,
 			description: 'Prepend <code>DEBUG=cypress:*</code>; See https://docs.cypress.io/guides/guides/command-line.html#Debugging-commands',
 			name: 'MF_CYPRESS_DEBUG'),
-		booleanParam(defaultValue: true,
-			description: 'Run the cypress tests in chrome as opposed to electron; note that video is only supported with electron; but currently, electron "hangs"',
+		booleanParam(defaultValue: false,
+			description: 'Run the cypress tests in chrome as opposed to electron; note that video is only supported with electron.',
 			name: 'MF_CYPRESS_CHROME'),
 
 		// see https://github.com/metasfresh/metasfresh-scripts/issues/2
@@ -113,8 +107,12 @@ timestamps
 				final String dockerRegImageAndTag = params.MF_DOCKER_IMAGE_FULL_NAME ?: "${params.MF_DOCKER_REGISTRY}/${params.MF_DOCKER_IMAGE}"
 
 				final String dockerUrlToUse = retrieveDockerUrlToUse(dockerRegImageAndTag)
-				
-				final String dockerRunCommand = """docker run --rm\\
+
+				// see https://github.com/cypress-io/cypress/issues/350
+				final String chromiumRendererCrashWorkaround='--ipc=host'
+
+				final String dockerRunCommand = """docker run ${chromiumRendererCrashWorkaround}\\
+ --rm\\
  -e \"FRONTEND_URL=https://${params.MF_TARGET_HOST}:443\"\\
  -e \"API_URL=https://${params.MF_TARGET_HOST}:443/rest/api\"\\
  -e \"WS_URL=https://${params.MF_TARGET_HOST}:443/stomp\"\\

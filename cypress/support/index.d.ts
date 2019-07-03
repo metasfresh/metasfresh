@@ -136,17 +136,18 @@ declare namespace Cypress {
 
     /**
      * Opens a new single document window
-     * @param windowId the metasfresh AD_Window_ID of the window to visit
-     * @param recordId optional; the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
      *
-     * @param documentIdAliasName optional; default: visitedDocumentId; the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
+     * @param windowId - the metasfresh AD_Window_ID of the window to visit
+     * @param recordId - optional - the record ID of the record to open within the window, or NEW if a new record shall be created. If set the detail layout is shown and cypress waits for the layout into fo be send by the API; otherwise, the "table/grid" layout is shown.
+     * @param documentIdAliasName - optional, default: visitedDocumentId - the name of the alias in which the command will store the actual record; example " { documentId: 1000001 }"; usefull if recordId=NEW;
      *
      * @example
      * // create a new business partner document
-     * cy.visitWindow(123, 'NEW', 'myNewDcumentId')
+     * cy.visitWindow(123, 'NEW', 'myNewDocumentId')
      *
      * cy.get('@myNewDcumentId').then((newDocument) => {
      *   cy.log(`going to do things with the document we added just before; newDocument=${JSON.stringify(newDocument)}`)
+     *   cy.log(`documentId=${newDocument.documentId}`)
      * })
      *
      */
@@ -257,12 +258,6 @@ declare namespace Cypress {
      */
     getNotificationModal(containsText?: string | RegExp)
 
-    /**
-     * Select the current record ID from the URL.
-     * The URL looks like `/window/123/123456789` and the value returned is `123456789`.
-     */
-    getCurrentRecordId(): Chainable<any>
-
 
     /**
      * Change the current value of a checkBox (Yes/No box) to the desired state (checked (true) or not checked (false).
@@ -298,5 +293,11 @@ declare namespace Cypress {
      */
     expectDocumentStatus(expectedDocumentStatus: DocumentStatusKey): Chainable<any>;
 
+
+    /**
+     * Press the batch entry button
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
   }
 }
