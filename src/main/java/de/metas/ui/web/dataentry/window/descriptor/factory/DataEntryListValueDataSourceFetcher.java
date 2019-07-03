@@ -11,7 +11,6 @@ import org.compiere.util.CtxNames;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
@@ -22,8 +21,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.util.collections.CollectionUtils;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -59,13 +56,8 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 
 	private final ImmutableBiMap<DataEntryListValueId, IntegerLookupValue> id2LookupValue;
 
-	@Getter
-	private final DataEntryFieldId dataEntryFieldId;
-
 	public DataEntryListValueDataSourceFetcher(@NonNull final List<DataEntryListValue> listValues)
 	{
-		this.dataEntryFieldId = CollectionUtils.extractSingleElement(listValues, DataEntryListValue::getFieldId);
-
 		final ImmutableBiMap.Builder<DataEntryListValueId, IntegerLookupValue> id2LookupValue = ImmutableBiMap.builder();
 
 		for (final DataEntryListValue listValue : listValues)
