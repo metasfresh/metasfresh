@@ -60,3 +60,49 @@ UPDATE AD_Process SET Classname='de.metas.banking.impexp.BankStatementImportProc
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process SET Classname='de.metas.banking.impexp.ImportBankStatement',Updated=TO_TIMESTAMP('2019-07-02 14:01:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=221
 ;
+
+
+
+
+
+
+
+-- 2019-07-03T12:00:33.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsActive='Y',Updated=TO_TIMESTAMP('2019-07-03 12:00:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=335
+;
+
+-- 2019-07-03T12:00:34.173
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsActive='Y',Updated=TO_TIMESTAMP('2019-07-03 12:00:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=334
+;
+
+-- 2019-07-03T12:00:35.617
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsActive='Y',Updated=TO_TIMESTAMP('2019-07-03 12:00:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=333
+;
+
+
+
+
+-- 2019-07-03T15:04:09.181
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2019-07-03 15:04:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=333
+;
+
+-- 2019-07-03T15:04:10.011
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2019-07-03 15:04:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=334
+;
+
+-- 2019-07-03T15:04:11.112
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2019-07-03 15:04:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=336
+;
+
+
+
+
+
+
+
