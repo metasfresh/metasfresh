@@ -787,7 +787,7 @@ public class JsonPersisterService
 
 		final SyncAdvise compositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
-		final List<JsonRequestContactUpsertItem> requestItems = jsonBPartnerComposite.getContacts().getRequestItems();
+		final List<JsonRequestContactUpsertItem> requestItems = jsonBPartnerComposite.getContactsNotNull().getRequestItems();
 		for (final JsonRequestContactUpsertItem requestItem : requestItems)
 		{
 			syncJsonContact(requestItem, compositeSyncAdvise, shortTermIndex);
@@ -920,7 +920,7 @@ public class JsonPersisterService
 
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
-		final List<JsonRequestLocationUpsertItem> requestItems = jsonBPartnerComposite.getLocations().getRequestItems();
+		final List<JsonRequestLocationUpsertItem> requestItems = jsonBPartnerComposite.getLocationsNotNull().getRequestItems();
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
 		{
 			syncJsonLocation(requestItem, syncAdvise, shortTermIndex);
