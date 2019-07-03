@@ -84,6 +84,7 @@ public class MockedDataUtil
 				break;
 			default:
 				fail("bpartnerIdentifier is not supported by this mockup method; bpartnerIdentifier={}", bpartnerIdentifier);
+				break;
 		}
 
 		result.bpartner(bPartner.build());

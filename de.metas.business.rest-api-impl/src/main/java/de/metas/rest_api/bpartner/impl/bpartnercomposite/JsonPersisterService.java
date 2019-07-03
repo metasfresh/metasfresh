@@ -289,21 +289,6 @@ public class JsonPersisterService
 		return contactQuery.build();
 	}
 
-	// private BPartnerContactQuery createContactQuery(@NonNull final JsonRequestContact contact)
-	// {
-	// final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
-	//
-	// if (contact.getMetasfreshId() != null)
-	// {
-	// final UserId userId = UserId.ofRepoIdOrNull(contact.getMetasfreshId().getValue());
-	// contactQuery.userId(userId);
-	// }
-	// contactQuery.externalId(JsonConverters.fromJsonOrNull(contact.getExternalId()));
-	// contactQuery.value(contact.getCode());
-	//
-	// return contactQuery.build();
-	// }
-
 	public BPartnerComposite persist(
 			@NonNull final String bpartnerIdentifierStr,
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,

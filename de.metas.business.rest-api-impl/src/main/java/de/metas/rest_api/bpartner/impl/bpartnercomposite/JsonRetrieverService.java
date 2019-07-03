@@ -343,7 +343,7 @@ public class JsonRetrieverService
 		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
 	}
 
-	/** Used to verify that changing actually works the was we expect it to (=> performance) */
+	/** Used to verify that changing actually works the way we expect it to (=> performance) */
 	@VisibleForTesting
 	Optional<BPartnerComposite> retrieveBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
