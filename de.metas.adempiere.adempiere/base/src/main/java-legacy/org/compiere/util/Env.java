@@ -1529,9 +1529,11 @@ public final class Env
 			if (lang.equals(searchLangPart))
 			{
 				s_log.debug("Found similar Language {} for {}", AD_Language, language);
-				language.setAD_Language(AD_Language);
-				// todo cri: we should get rid if the setter and create a NEW language.
-				return language;
+				final Language similarLanguage = language.toBuilder()
+						.AD_Language(AD_Language)
+						.build();
+				Language.addNewLanguage(similarLanguage);
+				return similarLanguage;
 			}
 		}
 
