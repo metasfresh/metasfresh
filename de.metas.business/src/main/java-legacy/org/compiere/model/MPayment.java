@@ -54,6 +54,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentTrxType;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -141,9 +143,9 @@ public final class MPayment extends X_C_Payment
 		{
 			setDocAction(DOCACTION_Complete);
 			setDocStatus(DOCSTATUS_Drafted);
-			setTrxType(TRXTYPE_Sales);
+			setTrxType(PaymentTrxType.Sales.getCode());
 			//
-			setR_AvsAddr(R_AVSZIP_Unavailable);
+			setR_AvsAddr(R_AVSADDR_Unavailable);
 			setR_AvsZip(R_AVSZIP_Unavailable);
 			//
 			setIsReceipt(true);
@@ -167,7 +169,7 @@ public final class MPayment extends X_C_Payment
 			//
 			setDateTrx(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(getDateTrx());
-			setTenderType(TENDERTYPE_Check);
+			setTenderType(TenderType.Check.getCode());
 		}
 	}   // MPayment
 
@@ -184,12 +186,12 @@ public final class MPayment extends X_C_Payment
 	}	// MPayment
 
 	/** Logger */
-	private static Logger s_log = LogManager.getLogger(MPayment.class);
-	/** Error Message */
-	private String m_errorMessage = null;
+	private static final Logger s_log = LogManager.getLogger(MPayment.class);
+//	/** Error Message */
+//	private String m_errorMessage = null;
 
 	/** Reversal Indicator */
-	public static String REVERSE_INDICATOR = "^";
+	private static final String REVERSE_INDICATOR = "^";
 
 	/**
 	 * Is Cashbook Transfer Trx
@@ -201,224 +203,235 @@ public final class MPayment extends X_C_Payment
 		return Services.get(IPaymentBL.class).isCashTrx(this);
 	}	// isCashTrx
 
-	/**************************************************************************
-	 * Set Credit Card. Need to set PatmentProcessor after Amount/Currency Set
-	 *
-	 * @param TrxType Transaction Type see TRX_
-	 * @param creditCardType CC type
-	 * @param creditCardNumber CC number
-	 * @param creditCardVV CC verification
-	 * @param creditCardExpMM CC Exp MM
-	 * @param creditCardExpYY CC Exp YY
-	 * @return true if valid
-	 */
-	public boolean setCreditCard(final String TrxType, final String creditCardType, final String creditCardNumber,
-			final String creditCardVV, final int creditCardExpMM, final int creditCardExpYY)
-	{
-		setTenderType(TENDERTYPE_CreditCard);
-		setTrxType(TrxType);
-		//
-		setCreditCardType(creditCardType);
-		setCreditCardNumber(creditCardNumber);
-		setCreditCardVV(creditCardVV);
-		setCreditCardExpMM(creditCardExpMM);
-		setCreditCardExpYY(creditCardExpYY);
-		//
-		int check = MPaymentValidate.validateCreditCardNumber(creditCardNumber, creditCardType).length()
-				+ MPaymentValidate.validateCreditCardExp(creditCardExpMM, creditCardExpYY).length();
-		if (creditCardVV.length() > 0)
-		{
-			check += MPaymentValidate.validateCreditCardVV(creditCardVV, creditCardType).length();
-		}
-		return check == 0;
-	}   // setCreditCard
+//	/**************************************************************************
+//	 * Set Credit Card. Need to set PatmentProcessor after Amount/Currency Set
+//	 *
+//	 * @param TrxType Transaction Type see TRX_
+//	 * @param creditCardType CC type
+//	 * @param creditCardNumber CC number
+//	 * @param creditCardVV CC verification
+//	 * @param creditCardExpMM CC Exp MM
+//	 * @param creditCardExpYY CC Exp YY
+//	 * @return true if valid
+//	 */
+//	public boolean setCreditCard(
+//			final String TrxType, 
+//			final String creditCardType, 
+//			final String creditCardNumber,
+//			final String creditCardVV, 
+//			final int creditCardExpMM, 
+//			final int creditCardExpYY)
+//	{
+//		setTenderType(TenderType.CreditCard.getCode());
+//		setTrxType(TrxType);
+//		//
+//		setCreditCardType(creditCardType);
+//		setCreditCardNumber(creditCardNumber);
+//		setCreditCardVV(creditCardVV);
+//		setCreditCardExpMM(creditCardExpMM);
+//		setCreditCardExpYY(creditCardExpYY);
+//		//
+//		int check = MPaymentValidate.validateCreditCardNumber(creditCardNumber, creditCardType).length()
+//				+ MPaymentValidate.validateCreditCardExp(creditCardExpMM, creditCardExpYY).length();
+//		if (creditCardVV.length() > 0)
+//		{
+//			check += MPaymentValidate.validateCreditCardVV(creditCardVV, creditCardType).length();
+//		}
+//		return check == 0;
+//	}   // setCreditCard
+//
+//	/**
+//	 * Set Credit Card - Exp. Need to set PatmentProcessor after Amount/Currency Set
+//	 *
+//	 * @param TrxType Transaction Type see TRX_
+//	 * @param creditCardType CC type
+//	 * @param creditCardNumber CC number
+//	 * @param creditCardVV CC verification
+//	 * @param creditCardExp CC Exp
+//	 * @return true if valid
+//	 */
+//	public boolean setCreditCard(
+//			final String TrxType, 
+//			final String creditCardType, 
+//			final String creditCardNumber,
+//			final String creditCardVV, 
+//			final String creditCardExp)
+//	{
+//		return setCreditCard(TrxType, creditCardType, creditCardNumber,
+//				creditCardVV, MPaymentValidate.getCreditCardExpMM(creditCardExp),
+//				MPaymentValidate.getCreditCardExpYY(creditCardExp));
+//	}   // setCreditCard
+//
+//
+//	/**
+//	 * Set ACH BankAccount Info
+//	 *
+//	 * @param C_BP_BankAccount_ID bank account
+//	 * @param isReceipt true if receipt
+//	 * @param tenderType - Direct Debit or Direct Deposit
+//	 * @param routingNo routing
+//	 * @param accountNo account
+//	 * @return true if valid
+//	 */
+//	public boolean setBankACH(
+//			final int C_BP_BankAccount_ID, 
+//			final boolean isReceipt,
+//			final TenderType tenderType,
+//			final String routingNo,
+//			final String accountNo)
+//	{
+//		setTenderType(tenderType);
+//		setIsReceipt(isReceipt);
+//		//
+//		if (C_BP_BankAccount_ID > 0
+//				&& (routingNo == null || routingNo.length() == 0 || accountNo == null || accountNo.length() == 0))
+//		{
+//			setBankAccountDetails(C_BP_BankAccount_ID);
+//		}
+//		else
+//		{
+//			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
+//			setRoutingNo(routingNo);
+//			setAccountNo(accountNo);
+//		}
+//		setCheckNo("");
+//		//
+//		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
+//				+ MPaymentValidate.validateAccountNo(accountNo).length();
+//		return check == 0;
+//	}   // setBankACH
+//
+//	/**
+//	 * Set Cash BankAccount Info
+//	 *
+//	 * @param C_BP_BankAccount_ID bank account
+//	 * @param isReceipt true if receipt
+//	 * @param tenderType - Cash (Payment)
+//	 * @return true if valid
+//	 */
+//	public boolean setBankCash(final int C_BP_BankAccount_ID, final boolean isReceipt, final String tenderType)
+//	{
+//		setTenderType(tenderType);
+//		setIsReceipt(isReceipt);
+//		//
+//		if (C_BP_BankAccount_ID > 0)
+//		{
+//			setBankAccountDetails(C_BP_BankAccount_ID);
+//		}
+//		else
+//		{
+//			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
+//		}
+//		//
+//		return true;
+//	}   // setBankCash
+//
+//	/**
+//	 * Set Check BankAccount Info
+//	 *
+//	 * @param C_BP_BankAccount_ID bank account
+//	 * @param isReceipt true if receipt
+//	 * @param checkNo check no
+//	 * @return true if valid
+//	 */
+//	public boolean setBankCheck(final int C_BP_BankAccount_ID, final boolean isReceipt, final String checkNo)
+//	{
+//		return setBankCheck(C_BP_BankAccount_ID, isReceipt, null, null, checkNo);
+//	}	// setBankCheck
+//
+//	/**
+//	 * Set Check BankAccount Info
+//	 *
+//	 * @param C_BP_BankAccount_ID bank account
+//	 * @param isReceipt true if receipt
+//	 * @param routingNo routing no
+//	 * @param accountNo account no
+//	 * @param checkNo chack no
+//	 * @return true if valid
+//	 */
+//	public boolean setBankCheck(
+//			final int C_BP_BankAccount_ID, 
+//			final boolean isReceipt,
+//			final String routingNo, 
+//			final String accountNo, 
+//			final String checkNo)
+//	{
+//		setTenderType(TenderType.Check.getCode());
+//		setIsReceipt(isReceipt);
+//		//
+//		if (C_BP_BankAccount_ID > 0
+//				&& (routingNo == null || routingNo.length() == 0
+//						|| accountNo == null || accountNo.length() == 0))
+//		{
+//			setBankAccountDetails(C_BP_BankAccount_ID);
+//		}
+//		else
+//		{
+//			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
+//			setRoutingNo(routingNo);
+//			setAccountNo(accountNo);
+//		}
+//		setCheckNo(checkNo);
+//		//
+//		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
+//				+ MPaymentValidate.validateAccountNo(accountNo).length()
+//				+ MPaymentValidate.validateCheckNo(checkNo).length();
+//		return check == 0;       // no error message
+//	}   // setBankCheck
+//
+//	/**
+//	 * Set Bank Account Details. Look up Routing No & Bank Acct No
+//	 *
+//	 * @param C_BP_BankAccount_ID bank account
+//	 */
+//	public void setBankAccountDetails(final int C_BP_BankAccount_ID)
+//	{
+//		if (C_BP_BankAccount_ID == 0)
+//		{
+//			return;
+//		}
+//		setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
+//		//
+//		final String sql = "SELECT b.RoutingNo, ba.AccountNo "
+//				+ "FROM C_BP_BankAccount ba"
+//				+ " INNER JOIN C_Bank b ON (ba.C_Bank_ID=b.C_Bank_ID) "
+//				+ "WHERE C_BP_BankAccount_ID=?";
+//		PreparedStatement pstmt = null;
+//		ResultSet rs = null;
+//		try
+//		{
+//			pstmt = DB.prepareStatement(sql, get_TrxName());
+//			pstmt.setInt(1, C_BP_BankAccount_ID);
+//			rs = pstmt.executeQuery();
+//			if (rs.next())
+//			{
+//				setRoutingNo(rs.getString(1));
+//				setAccountNo(rs.getString(2));
+//			}
+//		}
+//		catch (final SQLException e)
+//		{
+//			log.error(sql, e);
+//		}
+//		finally
+//		{
+//			DB.close(rs, pstmt);
+//			rs = null;
+//			pstmt = null;
+//		}
+//	}	// setBankAccountDetails
+//
+//	private void setAccountAddress(final String name, final String street,
+//			final String city, final String state, final String zip, final String country)
+//	{
+//		setA_Name(name);
+//		setA_Street(street);
+//		setA_City(city);
+//		setA_State(state);
+//		setA_Zip(zip);
+//		setA_Country(country);
+//	}   // setAccountAddress
 
-	/**
-	 * Set Credit Card - Exp. Need to set PatmentProcessor after Amount/Currency Set
-	 *
-	 * @param TrxType Transaction Type see TRX_
-	 * @param creditCardType CC type
-	 * @param creditCardNumber CC number
-	 * @param creditCardVV CC verification
-	 * @param creditCardExp CC Exp
-	 * @return true if valid
-	 */
-	public boolean setCreditCard(final String TrxType, final String creditCardType, final String creditCardNumber,
-			final String creditCardVV, final String creditCardExp)
-	{
-		return setCreditCard(TrxType, creditCardType, creditCardNumber,
-				creditCardVV, MPaymentValidate.getCreditCardExpMM(creditCardExp),
-				MPaymentValidate.getCreditCardExpYY(creditCardExp));
-	}   // setCreditCard
-
-
-	/**
-	 * Set ACH BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param tenderType - Direct Debit or Direct Deposit
-	 * @param routingNo routing
-	 * @param accountNo account
-	 * @return true if valid
-	 */
-	public boolean setBankACH(final int C_BP_BankAccount_ID, final boolean isReceipt, final String tenderType,
-			final String routingNo, final String accountNo)
-	{
-		setTenderType(tenderType);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0
-				&& (routingNo == null || routingNo.length() == 0 || accountNo == null || accountNo.length() == 0))
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-			setRoutingNo(routingNo);
-			setAccountNo(accountNo);
-		}
-		setCheckNo("");
-		//
-		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
-				+ MPaymentValidate.validateAccountNo(accountNo).length();
-		return check == 0;
-	}   // setBankACH
-
-	/**
-	 * Set Cash BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param tenderType - Cash (Payment)
-	 * @return true if valid
-	 */
-	public boolean setBankCash(final int C_BP_BankAccount_ID, final boolean isReceipt, final String tenderType)
-	{
-		setTenderType(tenderType);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0)
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-		}
-		//
-		return true;
-	}   // setBankCash
-
-	/**
-	 * Set Check BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param checkNo check no
-	 * @return true if valid
-	 */
-	public boolean setBankCheck(final int C_BP_BankAccount_ID, final boolean isReceipt, final String checkNo)
-	{
-		return setBankCheck(C_BP_BankAccount_ID, isReceipt, null, null, checkNo);
-	}	// setBankCheck
-
-	/**
-	 * Set Check BankAccount Info
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 * @param isReceipt true if receipt
-	 * @param routingNo routing no
-	 * @param accountNo account no
-	 * @param checkNo chack no
-	 * @return true if valid
-	 */
-	public boolean setBankCheck(final int C_BP_BankAccount_ID, final boolean isReceipt,
-			final String routingNo, final String accountNo, final String checkNo)
-	{
-		setTenderType(TENDERTYPE_Check);
-		setIsReceipt(isReceipt);
-		//
-		if (C_BP_BankAccount_ID > 0
-				&& (routingNo == null || routingNo.length() == 0
-						|| accountNo == null || accountNo.length() == 0))
-		{
-			setBankAccountDetails(C_BP_BankAccount_ID);
-		}
-		else
-		{
-			setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-			setRoutingNo(routingNo);
-			setAccountNo(accountNo);
-		}
-		setCheckNo(checkNo);
-		//
-		final int check = MPaymentValidate.validateRoutingNo(routingNo).length()
-				+ MPaymentValidate.validateAccountNo(accountNo).length()
-				+ MPaymentValidate.validateCheckNo(checkNo).length();
-		return check == 0;       // no error message
-	}   // setBankCheck
-
-	/**
-	 * Set Bank Account Details. Look up Routing No & Bank Acct No
-	 *
-	 * @param C_BP_BankAccount_ID bank account
-	 */
-	public void setBankAccountDetails(final int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID == 0)
-		{
-			return;
-		}
-		setC_BP_BankAccount_ID(C_BP_BankAccount_ID);
-		//
-		final String sql = "SELECT b.RoutingNo, ba.AccountNo "
-				+ "FROM C_BP_BankAccount ba"
-				+ " INNER JOIN C_Bank b ON (ba.C_Bank_ID=b.C_Bank_ID) "
-				+ "WHERE C_BP_BankAccount_ID=?";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			pstmt.setInt(1, C_BP_BankAccount_ID);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				setRoutingNo(rs.getString(1));
-				setAccountNo(rs.getString(2));
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-	}	// setBankAccountDetails
-
-	public void setAccountAddress(final String name, final String street,
-			final String city, final String state, final String zip, final String country)
-	{
-		setA_Name(name);
-		setA_Street(street);
-		setA_City(city);
-		setA_State(state);
-		setA_Zip(zip);
-		setA_Country(country);
-	}   // setAccountAddress
-
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return save
-	 */
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
@@ -429,7 +442,7 @@ public final class MPayment extends X_C_Payment
 			final MBank bank = MBank.get(getCtx(), ba.getC_Bank_ID());
 			if (bank.isCashBank())
 			{
-				setTenderType(TENDERTYPE_Cash);
+				setTenderType(TenderType.Cash.getCode());
 			}
 		}
 		// metas: tsa: us025b: end
@@ -465,11 +478,11 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				;
+				
 			}
 			else if (getC_Order_ID() != 0)
 			{
-				;
+				
 			}
 			else
 			{
@@ -614,25 +627,25 @@ public final class MPayment extends X_C_Payment
 		s_log.info("#" + counter);
 	}	// setIsAllocated
 
-	/**************************************************************************
-	 * Set Error Message
-	 *
-	 * @param errorMessage error message
-	 */
-	public void setErrorMessage(final String errorMessage)
-	{
-		m_errorMessage = errorMessage;
-	}	// setErrorMessage
-
-	/**
-	 * Get Error Message
-	 *
-	 * @return error message
-	 */
-	public String getErrorMessage()
-	{
-		return m_errorMessage;
-	}	// getErrorMessage
+//	/**************************************************************************
+//	 * Set Error Message
+//	 *
+//	 * @param errorMessage error message
+//	 */
+//	public void setErrorMessage(final String errorMessage)
+//	{
+//		m_errorMessage = errorMessage;
+//	}	// setErrorMessage
+//
+//	/**
+//	 * Get Error Message
+//	 *
+//	 * @return error message
+//	 */
+//	public String getErrorMessage()
+//	{
+//		return m_errorMessage;
+//	}	// getErrorMessage
 
 	/**************************************************************************
 	 * Credit Card Number
@@ -676,7 +689,7 @@ public final class MPayment extends X_C_Payment
 	{
 		if (CreditCardExpMM < 1 || CreditCardExpMM > 12)
 		{
-			;
+			
 		}
 		else
 		{
@@ -803,10 +816,12 @@ public final class MPayment extends X_C_Payment
 	private void setDocumentNo()
 	{
 		// Cash Transfer
-		if ("X".equals(getTenderType()))
+		final TenderType tenderType = TenderType.ofCode(getTenderType());
+		if (tenderType.isCash())
 		{
 			return;
 		}
+		
 		// Current Document No
 		String documentNo = getDocumentNo();
 		// Existing reversal
@@ -829,7 +844,7 @@ public final class MPayment extends X_C_Payment
 		documentNo = "";
 		// globalqss - read configuration to assign credit card or check number number for Payments
 		// Credit Card
-		if (TENDERTYPE_CreditCard.equals(getTenderType()))
+		if (tenderType.isCreditCard())
 		{
 			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CREDIT_CARD", true, getAD_Client_ID()))
 			{
@@ -840,7 +855,7 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 		// Own Check No
-		else if (TENDERTYPE_Check.equals(getTenderType())
+		else if (tenderType.isCheck()
 				&& !isReceipt()
 				&& getCheckNo() != null && getCheckNo().length() > 0)
 		{
@@ -850,7 +865,7 @@ public final class MPayment extends X_C_Payment
 			}
 		}
 		// Customer Check: Routing: Account #Check
-		else if (TENDERTYPE_Check.equals(getTenderType())
+		else if (tenderType.isCheck()
 				&& isReceipt())
 		{
 			if ( Services.get(ISysConfigBL.class).getBooleanValue("PAYMENT_OVERWRITE_DOCUMENTNO_WITH_CHECK_ON_RECEIPT", true, getAD_Client_ID()))
@@ -984,100 +999,100 @@ public final class MPayment extends X_C_Payment
 		super.setTaxAmt(TaxAmt == null ? BigDecimal.ZERO : TaxAmt);
 	}	// setTaxAmt
 
-	/**
-	 * Set Info from BP Bank Account
-	 *
-	 * @param ba BP bank account
-	 */
-	public void setBP_BankAccount(final MBPBankAccount ba)
-	{
-		log.debug("" + ba);
-		if (ba == null)
-		{
-			return;
-		}
-		setC_BPartner_ID(ba.getC_BPartner_ID());
-		setAccountAddress(ba.getA_Name(), ba.getA_Street(), ba.getA_City(),
-				ba.getA_State(), ba.getA_Zip(), ba.getA_Country());
-		setA_EMail(ba.getA_EMail());
-		setA_Ident_DL(ba.getA_Ident_DL());
-		setA_Ident_SSN(ba.getA_Ident_SSN());
-		// CC
-		if (ba.getCreditCardType() != null)
-		{
-			setCreditCardType(ba.getCreditCardType());
-		}
-		if (ba.getCreditCardNumber() != null)
-		{
-			setCreditCardNumber(ba.getCreditCardNumber());
-		}
-		if (ba.getCreditCardExpMM() != 0)
-		{
-			setCreditCardExpMM(ba.getCreditCardExpMM());
-		}
-		if (ba.getCreditCardExpYY() != 0)
-		{
-			setCreditCardExpYY(ba.getCreditCardExpYY());
-		}
-		if (ba.getCreditCardVV() != null)
-		{
-			setCreditCardVV(ba.getCreditCardVV());
-		}
-		// Bank
-		if (ba.getAccountNo() != null)
-		{
-			setAccountNo(ba.getAccountNo());
-		}
-		if (ba.getRoutingNo() != null)
-		{
-			setRoutingNo(ba.getRoutingNo());
-		}
-	}	// setBP_BankAccount
-
-	/**
-	 * Save Info from BP Bank Account
-	 *
-	 * @param ba BP bank account
-	 * @return true if saved
-	 */
-	public boolean saveToBP_BankAccount(final MBPBankAccount ba)
-	{
-		if (ba == null)
-		{
-			return false;
-		}
-		ba.setA_Name(getA_Name());
-		ba.setA_Street(getA_Street());
-		ba.setA_City(getA_City());
-		ba.setA_State(getA_State());
-		ba.setA_Zip(getA_Zip());
-		ba.setA_Country(getA_Country());
-		ba.setA_EMail(getA_EMail());
-		ba.setA_Ident_DL(getA_Ident_DL());
-		ba.setA_Ident_SSN(getA_Ident_SSN());
-		// CC
-		ba.setCreditCardType(getCreditCardType());
-		ba.setCreditCardNumber(getCreditCardNumber());
-		ba.setCreditCardExpMM(getCreditCardExpMM());
-		ba.setCreditCardExpYY(getCreditCardExpYY());
-		ba.setCreditCardVV(getCreditCardVV());
-		// Bank
-		if (getAccountNo() != null)
-		{
-			ba.setAccountNo(getAccountNo());
-		}
-		if (getRoutingNo() != null)
-		{
-			ba.setRoutingNo(getRoutingNo());
-		}
-		// Trx
-		ba.setR_AvsAddr(getR_AvsAddr());
-		ba.setR_AvsZip(getR_AvsZip());
-		//
-		final boolean ok = ba.save(get_TrxName());
-		log.debug("saveToBP_BankAccount - " + ba);
-		return ok;
-	}	// setBP_BankAccount
+//	/**
+//	 * Set Info from BP Bank Account
+//	 *
+//	 * @param ba BP bank account
+//	 */
+//	private void setBP_BankAccount(final MBPBankAccount ba)
+//	{
+//		log.debug("{}", ba);
+//		if (ba == null)
+//		{
+//			return;
+//		}
+//		setC_BPartner_ID(ba.getC_BPartner_ID());
+//		setAccountAddress(ba.getA_Name(), ba.getA_Street(), ba.getA_City(),
+//				ba.getA_State(), ba.getA_Zip(), ba.getA_Country());
+//		setA_EMail(ba.getA_EMail());
+//		setA_Ident_DL(ba.getA_Ident_DL());
+//		setA_Ident_SSN(ba.getA_Ident_SSN());
+//		// CC
+//		if (ba.getCreditCardType() != null)
+//		{
+//			setCreditCardType(ba.getCreditCardType());
+//		}
+//		if (ba.getCreditCardNumber() != null)
+//		{
+//			setCreditCardNumber(ba.getCreditCardNumber());
+//		}
+//		if (ba.getCreditCardExpMM() != 0)
+//		{
+//			setCreditCardExpMM(ba.getCreditCardExpMM());
+//		}
+//		if (ba.getCreditCardExpYY() != 0)
+//		{
+//			setCreditCardExpYY(ba.getCreditCardExpYY());
+//		}
+//		if (ba.getCreditCardVV() != null)
+//		{
+//			setCreditCardVV(ba.getCreditCardVV());
+//		}
+//		// Bank
+//		if (ba.getAccountNo() != null)
+//		{
+//			setAccountNo(ba.getAccountNo());
+//		}
+//		if (ba.getRoutingNo() != null)
+//		{
+//			setRoutingNo(ba.getRoutingNo());
+//		}
+//	}	// setBP_BankAccount
+//
+//	/**
+//	 * Save Info from BP Bank Account
+//	 *
+//	 * @param ba BP bank account
+//	 * @return true if saved
+//	 */
+//	private boolean saveToBP_BankAccount(final MBPBankAccount ba)
+//	{
+//		if (ba == null)
+//		{
+//			return false;
+//		}
+//		ba.setA_Name(getA_Name());
+//		ba.setA_Street(getA_Street());
+//		ba.setA_City(getA_City());
+//		ba.setA_State(getA_State());
+//		ba.setA_Zip(getA_Zip());
+//		ba.setA_Country(getA_Country());
+//		ba.setA_EMail(getA_EMail());
+//		ba.setA_Ident_DL(getA_Ident_DL());
+//		ba.setA_Ident_SSN(getA_Ident_SSN());
+//		// CC
+//		ba.setCreditCardType(getCreditCardType());
+//		ba.setCreditCardNumber(getCreditCardNumber());
+//		ba.setCreditCardExpMM(getCreditCardExpMM());
+//		ba.setCreditCardExpYY(getCreditCardExpYY());
+//		ba.setCreditCardVV(getCreditCardVV());
+//		// Bank
+//		if (getAccountNo() != null)
+//		{
+//			ba.setAccountNo(getAccountNo());
+//		}
+//		if (getRoutingNo() != null)
+//		{
+//			ba.setRoutingNo(getRoutingNo());
+//		}
+//		// Trx
+//		ba.setR_AvsAddr(getR_AvsAddr());
+//		ba.setR_AvsZip(getR_AvsZip());
+//		//
+//		final boolean ok = ba.save(get_TrxName());
+//		log.debug("saveToBP_BankAccount - " + ba);
+//		return ok;
+//	}	// setBP_BankAccount
 
 	/**
 	 * Set Doc Type bases on IsReceipt
@@ -2180,9 +2195,9 @@ public final class MPayment extends X_C_Payment
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
 				getC_Payment_ID(), get_TrxName());
 		log.debug("#" + allocations.length);
-		for (int i = 0; i < allocations.length; i++)
+		for (MAllocationHdr allocation : allocations)
 		{
-			final String docStatus = allocations[i].getDocStatus();
+			final String docStatus = allocation.getDocStatus();
 
 			// 07570: Skip allocations which were already Reversed or Voided
 			if (IDocument.STATUS_Reversed.equals(docStatus)
@@ -2191,13 +2206,13 @@ public final class MPayment extends X_C_Payment
 				continue;
 			}
 
-			allocations[i].set_TrxName(get_TrxName());
-			allocations[i].setDocAction(IDocument.ACTION_Reverse_Correct);
-			if (!allocations[i].processIt(IDocument.ACTION_Reverse_Correct))
+			allocation.set_TrxName(get_TrxName());
+			allocation.setDocAction(IDocument.ACTION_Reverse_Correct);
+			if (!allocation.processIt(IDocument.ACTION_Reverse_Correct))
 			{
-				throw new AdempiereException(allocations[i].getProcessMsg());
+				throw new AdempiereException(allocation.getProcessMsg());
 			}
-			allocations[i].saveEx();
+			allocation.saveEx();
 		}
 
 		// Unlink (in case allocation did not get it)

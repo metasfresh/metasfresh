@@ -63,6 +63,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
@@ -447,7 +448,8 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public boolean isCashTrx(I_C_Payment payment)
 	{
-		return X_C_Payment.TENDERTYPE_Cash.equals(payment.getTenderType());
+		final TenderType tenderType = TenderType.ofCode(payment.getTenderType());
+		return tenderType.isCash();
 	}
 
 	@Override

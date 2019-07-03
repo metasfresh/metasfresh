@@ -51,6 +51,7 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
+import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -80,7 +81,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		//
 		BigDecimal multiplier = BigDecimal.ONE;
 		if (!payment.isReceipt())
+		{
 			multiplier = multiplier.negate();
+		}
 
 		final BigDecimal payAmt = payment.getPayAmt().multiply(multiplier);
 
@@ -113,7 +116,9 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			I_C_BankStatementLine bsl = (I_C_BankStatementLine)lineOrRef;
 			bsl.setTrxAmt(payAmt);
 			if (updateStatementAmt || bsl.getStmtAmt().signum() == 0)
+			{
 				bsl.setStmtAmt(payAmt);
+			}
 		}
 		else if (lineOrRef instanceof I_C_BankStatementLine_Ref)
 		{
@@ -431,10 +436,12 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 			final String trxName)
 	{
 		if (logger.isDebugEnabled())
+		{
 			logger.debug(C_Invoice_ID + " - " + C_BPartner_ID + " - " + C_Currency_ID
 					+ " - " + StmtAmt + " - " + TrxAmt + " - " + discountAmt
 					+ " - " + overUnderAmt + " - " + writeOffAmt + " - " + C_BP_BankAccount_ID
 					+ " - " + DateTrx + " - " + DateAcct + " - " + Description + " - " + AD_Org_ID);
+		}
 
 		// Trx Amount = Payment overwrites Statement Amount if defined
 		BigDecimal PayAmt = TrxAmt;
@@ -458,11 +465,11 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 		// FIXME this is a weak workaround
 		if (C_BP_BankAccount_ID > 0)
 		{
-			payment.setTenderType(X_C_Payment.TENDERTYPE_DirectDeposit);
+			payment.setTenderType(TenderType.DirectDeposit.getCode());
 		}
 		else
 		{
-			payment.setTenderType(X_C_Payment.TENDERTYPE_Cash);
+			payment.setTenderType(TenderType.Cash.getCode());
 		}
 
 		if (DateTrx != null)

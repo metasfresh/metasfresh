@@ -65,7 +65,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
-import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
@@ -426,14 +426,9 @@ public class ESRImportBL implements IESRImportBL
 	public int process(final I_ESR_Import esrImport)
 	{
 		final IMutable<Integer> processedLinesCount = new Mutable<>();
-		lockAndProcess(esrImport, new Runnable()
-		{
-			@Override
-			public void run()
-			{
-				final int count = process0(esrImport);
-				processedLinesCount.setValue(count);
-			}
+		lockAndProcess(esrImport, () -> {
+			final int count = process0(esrImport);
+			processedLinesCount.setValue(count);
 		});
 
 		return processedLinesCount.getValue();
@@ -667,7 +662,7 @@ public class ESRImportBL implements IESRImportBL
 				.setDateAcct(line.getAccountingDate())
 				.setDateTrx(line.getPaymentDate())
 				.setC_BPartner_ID(line.getC_BPartner_ID())
-				.setTenderType(TenderType.ACH)
+				.setTenderType(TenderType.DirectDeposit)
 				.setPayAmt(payAmt)
 				.createNoSave();
 	}
@@ -841,20 +836,15 @@ public class ESRImportBL implements IESRImportBL
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(final String trxName) throws Exception
-			{
-				// must assure that the invoice has transaction
-				refresh(invoice, trxName);
+		trxManager.run(trxName, (TrxRunnable)trxName1 -> {
+			// must assure that the invoice has transaction
+			refresh(invoice, trxName1);
 
-				final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
-				Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
-						create(payment, de.metas.banking.model.I_C_Payment.class),
-						ignoreIsAutoAllocateAvailableAmt);
-				save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
-			}
+			final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
+			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
+					create(payment, de.metas.banking.model.I_C_Payment.class),
+					ignoreIsAutoAllocateAvailableAmt);
+			save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 		});
 
 	}
