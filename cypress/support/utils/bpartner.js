@@ -74,6 +74,18 @@ export class BPartner {
     return this;
   }
 
+  setDunning(dunning) {
+    cy.log(`BPartner - set Dunning = ${dunning}`);
+    this.dunning = dunning;
+    return this;
+  }
+
+  addContact(contact) {
+    cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
+    this.contacts.push(contact);
+    return this;
+  }
+
   addLocation(bPartnerLocation) {
     cy.log(`BPartner - add location = ${JSON.stringify(bPartnerLocation)}`);
     this.bPartnerLocations.push(bPartnerLocation);
@@ -83,12 +95,6 @@ export class BPartner {
   clearLocations() {
     cy.log(`BPartner - clear locations`);
     this.bPartnerLocations = [];
-    return this;
-  }
-
-  addContact(contact) {
-    cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
-    this.contacts.push(contact);
     return this;
   }
 
@@ -178,11 +184,32 @@ export class BPartner {
       bPartner.vendorPricingSystem ||
       bPartner.isCustomer ||
       bPartner.customerPricingSystem ||
-      bPartner.bPartnerLocations
+      bPartner.bPartnerLocations ||
+      bPartner.dunning
     ) {
       const vendorRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const vendorDiscountSchemaRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_DiscountSchema_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const vendorPricingSystemRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_PricingSystem_ID/dropdown`,
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -230,22 +257,38 @@ export class BPartner {
         })
       );
 
+      const cDunningRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_Dunning_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
       return Cypress.Promise.all([
         vendorRequest,
+        vendorDiscountSchemaRequest,
+        vendorPricingSystemRequest,
         bPartnerRequest,
         cDiscountSchemaRequest,
         cPricingSystemRequest,
         cPaymentTermRequest,
+        cDunningRequest,
       ]).then(vals => {
         const [
           vendorResponse,
+          vendorDiscountSchemaResponse,
+          vendorPricingSystemResponse,
           bPartnerResponse,
           discountSchemaResponse,
           pricingSystemResponse,
           paymentTermResponse,
+          dunningResponse,
         ] = vals;
-        const isVendorValue = vendorResponse.fieldsByName.IsVendor.value;
 
+        const isVendorValue = vendorResponse.fieldsByName.IsVendor.value;
         if (bPartner.isVendor && !isVendorValue) {
           dataObject.push({
             op: 'replace',
@@ -254,24 +297,31 @@ export class BPartner {
           });
         }
 
-        if (bPartner.vendorPricingSystem) {
-          dataObject.push({
-            op: 'replace',
-            path: 'PO_PricingSystem_ID',
-            value: bPartner.vendorPricingSystem,
-          });
-        }
-
-        if (bPartner.vendorDiscountSchema) {
+        const vendorDiscountSchema = findByName(vendorDiscountSchemaResponse, bPartner.vendorDiscountSchema);
+        if (bPartner.vendorDiscountSchema && vendorDiscountSchema) {
           dataObject.push({
             op: 'replace',
             path: 'PO_DiscountSchema_ID',
-            value: bPartner.vendorDiscountSchema,
+            value: {
+              key: vendorDiscountSchema.key,
+              caption: vendorDiscountSchema.caption,
+            },
+          });
+        }
+
+        const vendorPricingSystem = findByName(vendorPricingSystemResponse, bPartner.vendorPricingSystem);
+        if (bPartner.vendorPricingSystem && vendorPricingSystem) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_PricingSystem_ID',
+            value: {
+              key: vendorPricingSystem.key,
+              caption: vendorPricingSystem.caption,
+            },
           });
         }
 
         const isCustomerValue = bPartnerResponse.fieldsByName.IsCustomer.value;
-
         if (bPartner.isCustomer && !isCustomerValue) {
           dataObject.push({
             op: 'replace',
@@ -288,7 +338,7 @@ export class BPartner {
         }
 
         const discountSchema = findByName(discountSchemaResponse, bPartner.customerDiscountSchema);
-        if (bPartner.customerDiscountSchema) {
+        if (bPartner.customerDiscountSchema && discountSchema) {
           dataObject.push({
             op: 'replace',
             path: 'M_DiscountSchema_ID',
@@ -300,7 +350,7 @@ export class BPartner {
         }
 
         const pricingSystem = findByName(pricingSystemResponse, bPartner.customerPricingSystem);
-        if (bPartner.customerPricingSystem) {
+        if (bPartner.customerPricingSystem && pricingSystem) {
           dataObject.push({
             op: 'replace',
             path: 'M_PricingSystem_ID',
@@ -312,13 +362,25 @@ export class BPartner {
         }
 
         const paymentTerm = findByName(paymentTermResponse, bPartner.paymentTerm);
-        if (bPartner.paymentTerm) {
+        if (bPartner.paymentTerm && paymentTerm) {
           dataObject.push({
             op: 'replace',
             path: 'C_PaymentTerm_ID',
             value: {
               key: paymentTerm.key,
               caption: paymentTerm.caption,
+            },
+          });
+        }
+
+        const dunning = findByName(dunningResponse, bPartner.dunning);
+        if (bPartner.dunning && dunning) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_Dunning_ID',
+            value: {
+              key: dunning.key,
+              caption: dunning.caption,
             },
           });
         }
