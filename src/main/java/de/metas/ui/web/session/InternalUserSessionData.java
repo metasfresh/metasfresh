@@ -251,7 +251,7 @@ import de.metas.user.UserId;
 
 		//
 		// Check the language (and update it if needed)
-		final Language validLang = Env.verifyLanguageFallbackToBase(lang);
+		final Language validLang = Env.verifyLanguageCreateIfNotSupported(lang);
 
 		//
 		// Actual update
