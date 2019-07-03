@@ -1554,15 +1554,14 @@ public final class Env
 	}    // getLanguage
 
 	/**
-	 * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
+	 * Check that testLang is supported by the system.
 	 *
-	 * @param language language
-	 * @return language: the received language if it is supported, the base language otherwise.
+	 * Returns a new language derived from testLang with `ad_language` changed to base language, in case the language received is not supported.
 	 */
-	public static Language verifyLanguageFallbackToBase(final Language language)
+	public static Language verifyLanguageCreateIfNotSupported(final Language testLang)
 	{
-		Check.assumeNotNull(language, "Parameter language is not null");
-		final String searchAD_Language = language.getAD_Language();
+		Check.assumeNotNull(testLang, "Parameter testLang is not null");
+		final String searchAD_Language = testLang.getAD_Language();
 
 		//
 		// Get available languages, having BaseLanguage first and then System Language
@@ -1574,7 +1573,7 @@ public final class Env
 		// Check if we have a perfect match
 		if (AD_Languages.contains(searchAD_Language))
 		{
-			return language;
+			return testLang;
 		}
 
 		//
@@ -1585,8 +1584,9 @@ public final class Env
 			final String lang = AD_Language.substring(0, 2); // en
 			if (lang.equals(searchLangPart))
 			{
-				s_log.debug("Found similar Language {} for {}", AD_Language, language);
-				final Language similarLanguage = language.toBuilder()
+				s_log.debug("Found similar Language {} for {}", AD_Language, testLang);
+				final Language similarLanguage = testLang
+						.toBuilder()
 						.AD_Language(AD_Language)
 						.build();
 				Language.addNewLanguage(similarLanguage);
@@ -1594,8 +1594,11 @@ public final class Env
 			}
 		}
 
-		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall return the system base language.
-		return Language.getBaseLanguage();
+		// If the desired language (eg. en_US requested by the browser) is unavailable, we shall create it.
+		return testLang
+				.toBuilder()
+				.AD_Language(Language.getBaseAD_Language())
+				.build();
 	}
 
 	/**************************************************************************
