@@ -63,7 +63,6 @@ describe('Create a Credit memo for Sales Invoice', function () {
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-
   it('Prepare product and baprtner', function () {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
@@ -81,14 +80,13 @@ describe('Create a Credit memo for Sales Invoice', function () {
         .setName(discountSchemaName)
         .apply();
     });
+
     cy.fixture('finance/bank.json').then(productJson => {
       Object.assign(new Bank(), productJson).apply();
     });
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(bPartnerName)
-        .setCustomerDiscountSchema(discountSchemaName)
-        .apply();
+      new BPartner({ ...customerJson, name: bPartnerName }).setCustomerDiscountSchema(discountSchemaName).apply();
     });
   });
 
@@ -117,25 +115,25 @@ describe('Create a Credit memo for Sales Invoice', function () {
     // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
     // this step should only create the SI.
     // WAT??!!
-    cy.get('@newInvoiceDocumentId').then(function ({documentId /* this is destructuring */}) {
+    cy.get('@newInvoiceDocumentId').then(function({ documentId /* this is destructuring */ }) {
       originalSalesInvoiceID = documentId;
       cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
     });
     cy.readAllNotifications();
   });
 
-  it('Sales Invoice is Completed', function () {
+  it('Sales Invoice is Completed', function() {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
 
-  it('Sales Invoice is not paid', function () {
+  it('Sales Invoice is not paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, false);
     });
   });
 
-  it('Save values needed for the next step', function () {
+  it('Save values needed for the next step', function() {
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       originalSalesInvoiceNumber = documentNumber;
     });
@@ -161,7 +159,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.pressDoneButton();
   });
 
-  it('Create the Credit Memo', function () {
+  it('Create the Credit Memo', function() {
     cy.executeHeaderActionWithDialog('C_Invoice_Create_CreditMemo');
 
     cy.selectInListField('C_DocType_ID', creditMemo, true, null, true);
@@ -176,13 +174,13 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.getNotificationModal(/Created.*Document No/);
   });
 
-  it('Open the Referenced Sales Invoice documents', function () {
+  it('Open the Referenced Sales Invoice documents', function() {
     cy.wait(5000); // give the system some breathing space
     cy.get('body').type('{alt}6'); // open referenced-records-sidelist
     cy.selectReference('AD_RelationType_ID-540184').click();
   });
 
-  it('Ensure there is only 1 Sales Invoice row and open it', function () {
+  it('Ensure there is only 1 Sales Invoice row and open it', function() {
     salesInvoices.getRows().should('have.length', 1);
 
     // select the first Table Row and click it (open it)
@@ -192,24 +190,24 @@ describe('Create a Credit memo for Sales Invoice', function () {
       .dblclick();
   });
 
-  it('The Sales Invoice is a Credit Memo', function () {
+  it('The Sales Invoice is a Credit Memo', function() {
     cy.expectDocumentStatus(DocumentStatusKey.InProgress);
     cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemo);
   });
 
-  it('Has the same properties and reference to the original', function () {
+  it('Has the same properties and reference to the original', function() {
     cy.getStringFieldValue('DocumentNo').should('not.be.equal', originalSalesInvoiceNumber);
     cy.getStringFieldValue('M_PriceList_ID').should('be.equal', originalPriceList);
     cy.getStringFieldValue('C_Currency_ID').should('be.equal', originalCurrency);
   });
 
-  it('Has the same properties and reference to the original -- Advanced edit', function () {
+  it('Has the same properties and reference to the original -- Advanced edit', function() {
     cy.openAdvancedEdit();
     cy.getStringFieldValue('Ref_Invoice_ID', true).should('be.equal', originalSalesInvoiceNumber);
     cy.pressDoneButton();
   });
 
-  it('Has the same properties and reference to the original -- Line advanced edit', function () {
+  it('Has the same properties and reference to the original -- Line advanced edit', function() {
     cy.selectTab('C_InvoiceLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
@@ -218,7 +216,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
     cy.pressDoneButton();
   });
 
-  it('Complete the Credit Memo SI', function () {
+  it('Complete the Credit Memo SI', function() {
     // complete it and verify the status
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
@@ -228,10 +226,10 @@ describe('Create a Credit memo for Sales Invoice', function () {
     });
   });
 
-  it('Total amount should be lower than the original SI', function () {
+  it('Total amount should be lower than the original SI', function() {
     let newTotalAmount = 0;
-    it('Save the new total amount', function () {
-      cy.get('.header-breadcrumb-sitename').then(function (si) {
+    it('Save the new total amount', function() {
+      cy.get('.header-breadcrumb-sitename').then(function(si) {
         newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
       });
     });
@@ -239,20 +237,18 @@ describe('Create a Credit memo for Sales Invoice', function () {
     expect(newTotalAmount).lessThan(originalSalesInvoiceTotalAmount);
   });
 
-  it('Credit Memo SI is paid', function () {
-    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, true);
-    })
-  });
-
-
-  it('Original Sales Invoice is paid', function () {
-    cy.visitWindow('167', originalSalesInvoiceID);
+  it('Credit Memo SI is paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, true);
     });
   });
 
+  it('Original Sales Invoice is paid', function() {
+    cy.visitWindow('167', originalSalesInvoiceID);
+    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
+      cy.log(`IsPaid = ${checkBoxValue}`);
+      assert.equal(checkBoxValue, true);
+    });
+  });
 });
