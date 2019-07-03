@@ -82,7 +82,7 @@ public final class NumberUtils
 	 * @param bd
 	 * @param minScale
 	 */
-	public static final BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
+	public static BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
 	{
 		BigDecimal result = bd;
 		if (result.scale() < minScale)
@@ -114,7 +114,7 @@ public final class NumberUtils
 	 * @param scale
 	 * @return error mergin (absolute value)
 	 */
-	public static final BigDecimal getErrorMarginForScale(final int scale)
+	public static BigDecimal getErrorMarginForScale(final int scale)
 	{
 		if (scale == 0)
 		{
@@ -134,7 +134,7 @@ public final class NumberUtils
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
 	 *         </ul>
 	 */
-	public static final BigDecimal asBigDecimal(final Object value, final BigDecimal defaultValue)
+	public static BigDecimal asBigDecimal(final Object value, final BigDecimal defaultValue)
 	{
 		if (value == null)
 		{
@@ -169,7 +169,7 @@ public final class NumberUtils
 		}
 	}
 
-	public static final int asIntOrZero(final Object value)
+	public static int asIntOrZero(final Object value)
 	{
 		return asInt(value, 0);
 	}
@@ -185,17 +185,17 @@ public final class NumberUtils
 	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
 	 *         </ul>
 	 */
-	public static final int asInt(final Object value, final int defaultValue)
+	public static int asInt(final Object value, final int defaultValue)
 	{
 		return asInteger(value, defaultValue);
 	}
 
-	public static final Integer asIntegerOrNull(final Object value)
+	public static Integer asIntegerOrNull(final Object value)
 	{
 		return asInteger(value, null);
 	}
 
-	public static final Integer asInteger(final Object value, final Integer defaultValue)
+	public static Integer asInteger(final Object value, final Integer defaultValue)
 	{
 		if (value == null)
 		{
@@ -218,8 +218,8 @@ public final class NumberUtils
 			}
 			catch (final NumberFormatException e)
 			{
-				System.err.println("Cannot convert " + value + " to integer.");
-				e.printStackTrace();
+				// System.err.println("Cannot convert " + value + " to integer.");
+				// e.printStackTrace();
 
 				return defaultValue;
 			}

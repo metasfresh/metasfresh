@@ -117,11 +117,11 @@ import lombok.NonNull;
 		this.querySelectionUUID = uuidSelection.getUuid();
 
 		//
-		// If model class is null (which it currently is allowed to be!), then find our class to use from the table name
+		// If model class is null (which it currently is allowed to be!) or e.g. just "Object", then find our class to use from the table name
 		final Class<ET> clazzToUse;
-		if (clazz == null)
+		if (!InterfaceWrapperHelper.isModelInterface(clazz))
 		{
-			Check.errorIf(Check.isEmpty(tableName, true), "If, class is null, then at least the tableName has to be != null in this={}", this);
+			Check.errorIf(Check.isEmpty(tableName, true), "If, class is null or not a model interface, then at least the tableName has to be != null in this={}", this);
 			@SuppressWarnings("unchecked")
 			final Class<ET> clazzForTableName = (Class<ET>)TableModelClassLoader.instance.getClass(tableName);
 			clazzToUse = clazzForTableName;
