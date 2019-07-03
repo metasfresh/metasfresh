@@ -3,8 +3,10 @@ package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 import static de.metas.util.Check.isEmpty;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -15,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -50,7 +53,9 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
+
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.rest.ExternalId;
 import lombok.Getter;
@@ -327,31 +332,52 @@ public class JsonRetrieverService
 				bpartnerLookupKeys,
 				this::lookupBPartnerByKeys0);
 
-		final BPartnerComposite result = CollectionUtils.singleElementOrNull(allOrLoad); // we made sure there's not more than one in lookupBPartnerByKeys0
+		return extractResult(allOrLoad);
+	}
+
+	private Optional<BPartnerComposite> extractResult(@NonNull final Collection<BPartnerComposite> allOrLoad)
+	{
+		final ImmutableList<BPartnerComposite> distinctComposites = CollectionUtils.extractDistinctElements(allOrLoad, Function.identity());
+
+		final BPartnerComposite result = CollectionUtils.singleElementOrNull(distinctComposites); // we made sure there's not more than one in lookupBPartnerByKeys0
 		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
 	}
 
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> lookupBPartnerByKeys0(
-			@NonNull final Collection<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	/** Used to verify that changing actually works the way we expect it to (=> performance) */
+	@VisibleForTesting
+	Optional<BPartnerComposite> retrieveBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
-		final BPartnerCompositeQuery query = createBPartnerQuery(bpartnerLookupKeys);
+		final Collection<BPartnerComposite> allOrLoad = cache.getAssertAllCached(bpartnerLookupKeys);
+
+		return extractResult(allOrLoad);
+	}
+
+	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> lookupBPartnerByKeys0(
+			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	{
+		final BPartnerCompositeQuery query = createBPartnerQuery(queryLookupKeys);
 
 		final List<BPartnerComposite> byQuery = bpartnerCompositeRepository.getByQuery(query);
 		if (byQuery.size() > 1)
 		{
 			throw new AdempiereException("The given lookup keys needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
-					.setParameter("BPartnerIdLookupKeys", bpartnerLookupKeys);
+					.setParameter("BPartnerIdLookupKeys", queryLookupKeys);
 		}
 		if (byQuery.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
 
+		final BPartnerComposite singleElement = CollectionUtils.singleElement(byQuery);
+
+		final HashSet<BPartnerCompositeLookupKey> allLookupKeys = new HashSet<>(queryLookupKeys);
+		allLookupKeys.addAll(extractBPartnerLookupKeys(singleElement));
+
 		final ImmutableMap.Builder<BPartnerCompositeLookupKey, BPartnerComposite> result = ImmutableMap.builder();
-		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)
+		for (final BPartnerCompositeLookupKey bpartnerLookupKey : allLookupKeys)
 		{
-			result.put(bpartnerLookupKey, CollectionUtils.singleElement(byQuery));
+			result.put(bpartnerLookupKey, singleElement);
 		}
 		return result.build();
 	}
@@ -389,6 +415,38 @@ public class JsonRetrieverService
 			}
 		}
 		return query.build();
+	}
+
+	private final Collection<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
+	{
+		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
+
+		final BPartner bpartner = bPartnerComposite.getBpartner();
+		if (bpartner != null)
+		{
+			if (bpartner.getId() != null)
+			{
+				result.add(BPartnerCompositeLookupKey.ofMetasfreshId(MetasfreshId.of(bpartner.getId())));
+			}
+			if (bpartner.getExternalId() != null)
+			{
+				result.add(BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalIds.of(bpartner.getExternalId())));
+			}
+			if (!isEmpty(bpartner.getValue(), true))
+			{
+				result.add(BPartnerCompositeLookupKey.ofCode(bpartner.getValue().trim()));
+			}
+		}
+
+		for (BPartnerLocation location : bPartnerComposite.getLocations())
+		{
+			if (isEmpty(location.getGln(), true))
+			{
+				result.add(BPartnerCompositeLookupKey.ofGln(location.getGln().trim()));
+			}
+		}
+
+		return result.build();
 	}
 
 	public Optional<JsonResponseContact> retrieveContact(@NonNull final String contactIdentifierStr)

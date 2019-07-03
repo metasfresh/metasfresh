@@ -31,7 +31,7 @@ import lombok.Value;
  * #L%
  */
 
-/** Identifies a metasfresh recourse (e.g. business partner) */
+/** Identifies a metasfresh resourse (e.g. business partner) */
 @Value
 public class IdentifierString
 {
@@ -57,13 +57,13 @@ public class IdentifierString
 		}
 		else if (value.toLowerCase().startsWith("val-"))
 		{
-			final String externalId = value.substring(4);
-			return new IdentifierString(Type.VALUE, externalId);
+			final String valueString = value.substring(4);
+			return new IdentifierString(Type.VALUE, valueString);
 		}
 		else if (value.toLowerCase().startsWith("gln-"))
 		{
-			final String externalId = value.substring(4);
-			return new IdentifierString(Type.GLN, externalId);
+			final String glnString = value.substring(4);
+			return new IdentifierString(Type.GLN, glnString);
 		}
 		else
 		{

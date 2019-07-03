@@ -3,10 +3,9 @@ package de.metas.rest_api.bpartner;
 import org.springframework.http.ResponseEntity;
 
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
@@ -52,11 +51,11 @@ public interface BPartnerRestEndpoint
 
 	ResponseEntity<JsonResponseUpsert> createOrUpdateBPartner(JsonRequestBPartnerUpsert bpartners);
 
-	ResponseEntity<JsonResponseUpsertItem> createOrUpdateLocation(
+	ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 			String bpartnerIdentifier,
-			JsonRequestLocation location);
+			JsonRequestLocationUpsert locations);
 
-	ResponseEntity<JsonResponseUpsertItem> createOrUpdateContact(
+	ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 			String bpartnerIdentifier,
-			JsonRequestContact contact);
+			JsonRequestContactUpsert contacts);
 }

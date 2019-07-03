@@ -1,10 +1,10 @@
 package de.metas.rest_api.bpartner.request;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_IDENTIFIER_DOC;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -39,28 +39,23 @@ import lombok.Value;
 public class JsonRequestBPartnerUpsertItem
 {
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the business partner to upsert.", //
-			dataType = "java.lang.String")
+			position = 10,
+			value = BPARTER_IDENTIFIER_DOC) //
 	@NonNull
-	JsonExternalId externalId;
+	final String bpartnerIdentifier;
 
 	@ApiModelProperty(allowEmptyValue = false, //
+			position = 20,
 			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
 
 	@JsonCreator
 	public JsonRequestBPartnerUpsertItem(
-			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
+			@NonNull @JsonProperty("bpartnerIdentifier") String bpartnerIdentifier,
 			@NonNull @JsonProperty("bpartnerComposite") JsonRequestComposite bpartnerComposite)
 	{
-		this.externalId = externalId;
+		this.bpartnerIdentifier = bpartnerIdentifier;
 		this.bpartnerComposite = bpartnerComposite;
-	}
-
-	@JsonIgnore
-	public JsonRequestComposite getEffectiveBPartnerComposite()
-	{
-		return getBpartnerComposite().withExternalId(getExternalId());
 	}
 }
