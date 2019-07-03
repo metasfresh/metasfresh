@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -57,7 +56,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -77,6 +75,7 @@ import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -101,6 +100,7 @@ import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.location.CountryId;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -577,7 +577,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected void completeInOut(final I_M_InOut inOut)
 	{
 		inOut.setProcessed(true);
-		inOut.setDocStatus(X_C_Order.DOCSTATUS_Completed); // fake complete
+		inOut.setDocStatus(DocStatus.Completed.getCode()); // fake complete
 		InterfaceWrapperHelper.save(inOut);
 	}
 

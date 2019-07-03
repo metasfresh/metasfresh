@@ -15,7 +15,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
@@ -31,6 +30,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
@@ -190,7 +190,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setAD_Org_ID(product.getAD_Org_ID());
-		order.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		order.setDocStatus(DocStatus.Completed.getCode());
 		save(order);
 
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);

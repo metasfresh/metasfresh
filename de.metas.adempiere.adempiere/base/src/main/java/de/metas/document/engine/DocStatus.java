@@ -1,6 +1,7 @@
 package de.metas.document.engine;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Order;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -47,6 +48,8 @@ public enum DocStatus implements ReferenceListAwareEnum
 	WaitingConfirmation(IDocument.STATUS_WaitingConfirmation) //
 	;
 
+	public static final int AD_REFERENCE_ID = X_C_Order.DOCSTATUS_AD_Reference_ID;
+
 	@Getter
 	private final String code;
 
@@ -69,12 +72,37 @@ public enum DocStatus implements ReferenceListAwareEnum
 
 	public boolean isReversedOrVoided()
 	{
-		return this == DocStatus.Reversed || this == DocStatus.Voided;
+		return this == DocStatus.Reversed
+				|| this == DocStatus.Voided;
+	}
+
+	public boolean isCompleted()
+	{
+		return this == DocStatus.Completed;
+	}
+
+	public boolean isClosed()
+	{
+		return this == DocStatus.Closed;
+	}
+
+	public boolean isCompletedOrClosed()
+	{
+		return this == DocStatus.Completed
+				|| this == DocStatus.Closed;
 	}
 
 	public boolean isCompletedOrClosedOrReversed()
 	{
-		return this == DocStatus.Completed || this == DocStatus.Reversed || this == DocStatus.Voided;
+		return this == DocStatus.Completed
+				|| this == DocStatus.Closed
+				|| this == DocStatus.Reversed
+				|| this == DocStatus.Voided;
+	}
+
+	public boolean isWaitingForPayment()
+	{
+		return this == WaitingPayment;
 	}
 
 }

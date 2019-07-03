@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.IProductPlanningDAO;
@@ -417,7 +418,7 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 				.setFrom(fromQuotation)
 				.setSkipCalculatedColumns(true)
 				.copyToNew(I_C_Order.class);
-		newSalesOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		newSalesOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newSalesOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 
 		newSalesOrder.setDateOrdered(TimeUtil.asTimestamp(salesOrderDateOrdered));

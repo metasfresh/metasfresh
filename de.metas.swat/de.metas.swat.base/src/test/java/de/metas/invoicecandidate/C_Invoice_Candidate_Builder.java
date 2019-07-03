@@ -34,10 +34,10 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -194,7 +194,7 @@ public class C_Invoice_Candidate_Builder
 			InterfaceWrapperHelper.save(orderLine);
 
 			order.setProcessed(true);
-			order.setDocStatus(X_C_Order.DOCSTATUS_Completed); // fake complete
+			order.setDocStatus(DocStatus.Completed.getCode()); // fake complete
 			InterfaceWrapperHelper.save(order);
 
 			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());

@@ -51,6 +51,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBL;
@@ -116,7 +117,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// New
 		if (is_new())
 		{
-			setDocStatus(DOCSTATUS_Drafted);
+			setDocStatus(DocStatus.Drafted.getCode());
 			setDocAction(DOCACTION_Prepare);
 			//
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
@@ -1257,10 +1258,11 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 
 			// New or in Progress/Invalid
-			if (DOCSTATUS_Drafted.equals(getDocStatus())
-					|| DOCSTATUS_InProgress.equals(getDocStatus())
-					|| DOCSTATUS_Invalid.equals(getDocStatus())
-					|| getC_DocType_ID() == 0)
+			final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+			if (DocStatus.Drafted.equals(docStatus)
+					|| DocStatus.InProgress.equals(docStatus)
+					|| DocStatus.Invalid.equals(docStatus)
+					|| getC_DocType_ID() <= 0)
 			{
 				setC_DocType_ID(getC_DocTypeTarget_ID());
 			}
@@ -1929,10 +1931,10 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		// metas: end
 		// Manually Process Shipment
-		final String status = shipment.completeIt();
-		shipment.setDocStatus(status);
+		final DocStatus shipmentDocStatus = DocStatus.ofCode(shipment.completeIt());
+		shipment.setDocStatus(shipmentDocStatus.getCode());
 		shipment.save(get_TrxName());
-		if (!DOCSTATUS_Completed.equals(status))
+		if (!shipmentDocStatus.isCompleted())
 		{
 			m_processMsg = "@M_InOut_ID@: " + shipment.getProcessMsg();
 			return null;
@@ -2028,11 +2030,11 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 		}
 		// Manually Process Invoice
-		final String status = invoice.completeIt();
-		invoice.setDocStatus(status);
+		final DocStatus invoiceDocStatus = DocStatus.ofCode(invoice.completeIt());
+		invoice.setDocStatus(invoiceDocStatus.getCode());
 		invoice.save(get_TrxName());
 		setC_CashLine_ID(invoice.getC_CashLine_ID());
-		if (!DOCSTATUS_Completed.equals(status))
+		if (!invoiceDocStatus.isCompleted())
 		{
 			m_processMsg = "@C_Invoice_ID@: " + invoice.getProcessMsg();
 			return null;
@@ -2260,7 +2262,8 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public String reopenIt()
 	{
-		if (!MOrder.DOCSTATUS_Closed.equals(getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if (!docStatus.isClosed())
 		{
 			return "Not closed - can't reopen";
 		}
@@ -2303,7 +2306,7 @@ public class MOrder extends X_C_Order implements IDocument
 			return "Failed to update reservations";
 		}
 
-		setDocStatus(MOrder.DOCSTATUS_Completed);
+		setDocStatus(DocStatus.Completed.getCode());
 		setDocAction(DOCACTION_Close);
 		if (!this.save(get_TrxName()))
 		{
@@ -2518,10 +2521,8 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public boolean isComplete()
 	{
-		final String ds = getDocStatus();
-		return DOCSTATUS_Completed.equals(ds)
-				|| DOCSTATUS_Closed.equals(ds)
-				|| DOCSTATUS_Reversed.equals(ds);
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}	// isComplete
 
 	// metas: begin

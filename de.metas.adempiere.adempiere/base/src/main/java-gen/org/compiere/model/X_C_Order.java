@@ -1416,30 +1416,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	 * Reference name: _Document Status
 	 */
 	public static final int DOCSTATUS_AD_Reference_ID=131;
-	/** Drafted = DR */
-	public static final String DOCSTATUS_Drafted = "DR";
-	/** Completed = CO */
-	public static final String DOCSTATUS_Completed = "CO";
-	/** Approved = AP */
-	public static final String DOCSTATUS_Approved = "AP";
-	/** NotApproved = NA */
-	public static final String DOCSTATUS_NotApproved = "NA";
-	/** Voided = VO */
-	public static final String DOCSTATUS_Voided = "VO";
-	/** Invalid = IN */
-	public static final String DOCSTATUS_Invalid = "IN";
-	/** Reversed = RE */
-	public static final String DOCSTATUS_Reversed = "RE";
-	/** Closed = CL */
-	public static final String DOCSTATUS_Closed = "CL";
-	/** Unknown = ?? */
-	public static final String DOCSTATUS_Unknown = "??";
-	/** InProgress = IP */
-	public static final String DOCSTATUS_InProgress = "IP";
-	/** WaitingPayment = WP */
-	public static final String DOCSTATUS_WaitingPayment = "WP";
-	/** WaitingConfirmation = WC */
-	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+//	/** Drafted = DR */
+//	public static final String DOCSTATUS_Drafted = "DR";
+//	/** Completed = CO */
+//	public static final String DOCSTATUS_Completed = "CO";
+//	/** Approved = AP */
+//	public static final String DOCSTATUS_Approved = "AP";
+//	/** NotApproved = NA */
+//	public static final String DOCSTATUS_NotApproved = "NA";
+//	/** Voided = VO */
+//	public static final String DOCSTATUS_Voided = "VO";
+//	/** Invalid = IN */
+//	public static final String DOCSTATUS_Invalid = "IN";
+//	/** Reversed = RE */
+//	public static final String DOCSTATUS_Reversed = "RE";
+//	/** Closed = CL */
+//	public static final String DOCSTATUS_Closed = "CL";
+//	/** Unknown = ?? */
+//	public static final String DOCSTATUS_Unknown = "??";
+//	/** InProgress = IP */
+//	public static final String DOCSTATUS_InProgress = "IP";
+//	/** WaitingPayment = WP */
+//	public static final String DOCSTATUS_WaitingPayment = "WP";
+//	/** WaitingConfirmation = WC */
+//	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
 		@param DocStatus 
 		The current status of the document

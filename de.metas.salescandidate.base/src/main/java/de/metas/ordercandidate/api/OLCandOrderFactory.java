@@ -36,6 +36,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
@@ -131,7 +132,7 @@ class OLCandOrderFactory
 	private I_C_Order newOrder(final OLCand candidateOfGroup)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(X_C_Order.DOCACTION_Complete);
 
 		// use the values from 'processor
@@ -212,7 +213,7 @@ class OLCandOrderFactory
 		{
 			try
 			{
-				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, X_C_Order.DOCSTATUS_Completed);
+				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
 				save(order);
 
 				loggable.addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());

@@ -73,7 +73,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -91,6 +90,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -443,7 +443,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						msgBL.getMsg(ctx,
 								InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
 								new Object[] {
-										adReferenceDAO.retrieveListNameTrl(X_C_Order.DOCSTATUS_AD_Reference_ID,
+										adReferenceDAO.retrieveListNameTrl(
+												DocStatus.AD_REFERENCE_ID,
 												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 								}));
 
@@ -1872,7 +1873,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ic.getC_Order(), I_C_Order.class);
 
-		if (null != order && !(X_C_Order.DOCSTATUS_Completed.equals(order.getDocStatus()) || X_C_Order.DOCSTATUS_Closed.equals(order.getDocStatus())))
+		if (null != order
+				&& !DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
 		{
 			newQtyToInvoice = ZERO;
 		}
