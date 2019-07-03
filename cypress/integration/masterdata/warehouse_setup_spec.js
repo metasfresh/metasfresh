@@ -10,18 +10,29 @@ describe('Create test: warehouse, https://github.com/metasfresh/metasfresh-e2e/i
       .writeIntoStringField('Value', warehouseValue);
     cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
     //create locator
-   cy.get(`#tab_M_Locator`).click();
+    cy.get(`#tab_M_Locator`).click();
     cy.pressAddNewButton()
-    .writeIntoStringField('X', '0')
-    .writeIntoStringField('X1', '0')
-    .writeIntoStringField('Z', '0')
-    .writeIntoStringField('Y', '0')
-    .pressDoneButton();
-     //create warehouse routing
+      .writeIntoStringField('X', '0')
+      .writeIntoStringField('X1', '0')
+      .writeIntoStringField('Z', '0')
+      .writeIntoStringField('Y', '0')
+      .pressDoneButton();
+    //create warehouse routing
     cy.get(`#tab_M_Warehouse_Routing`).click();
     cy.pressAddNewButton()
       .selectInListField('DocBaseType', 'Distribution Order', true)
+      .pressDoneButton();
+    cy.pressAddNewButton()
       .selectInListField('DocBaseType', 'Sales Order', true)
+      .pressDoneButton();
+    cy.pressAddNewButton()
+      .selectInListField('DocBaseType', 'Purchase Order', true)
+      .pressDoneButton();
+    cy.pressAddNewButton()
+      .selectInListField('DocBaseType', 'Manufacturing Order', true)
+      .pressDoneButton();
+    cy.pressAddNewButton()
+      .selectInListField('DocBaseType', 'Material Receipt', true)
       .pressDoneButton();
   });
 });
