@@ -773,7 +773,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 			pricingResult.setPriceStd(pricingResult.getPriceStd().negate());
 			pricingResult.setPriceLimit(pricingResult.getPriceLimit().negate());
 			// NOTE: we need to set the Price UOM to same UOM as Qty to avoid conversion errors like (cannot convert from Kg to Stuck)
-			pricingResult.setPrice_UOM_ID(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID());
+			pricingResult.setPriceUomId(UomId.ofRepoId(producedTotalWithoutByProductsLine.getC_UOM().getC_UOM_ID()));
 			invoiceableLine.setPrice(pricingResult);
 		}
 
@@ -1145,7 +1145,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 
 		pricingContext.setProductId(line.getProductId());
 		pricingContext.setQty(line.getQty().getAsBigDecimal());
-		pricingContext.setC_UOM_ID(line.getQty().getUOMId());
+		pricingContext.setUomId(line.getQty().getUomId());
 
 		return pricingContext;
 	}
@@ -1168,7 +1168,7 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		pricingResult.setPriceStd(priceToSet);
 		pricingResult.setPriceLimit(priceToSet);
 		pricingResult.setPriceList(priceToSet);
-		pricingResult.setPrice_UOM_ID(priceUOM.getC_UOM_ID());
+		pricingResult.setPriceUomId(UomId.ofRepoId(priceUOM.getC_UOM_ID()));
 		pricingResult.setDiscount(Percent.ZERO);
 		pricingResult.setCalculated(true);
 
@@ -1196,14 +1196,14 @@ public class QualityInvoiceLineGroupsBuilder implements IQualityInvoiceLineGroup
 		Check.assume(pricingResult.isCalculated(), "Price is calculated for {}", line);
 
 		final BigDecimal price = pricingResult.getPriceStd();
-		final int priceUomId = pricingResult.getPrice_UOM_ID();
+		final UomId priceUomId = pricingResult.getPriceUomId();
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final Quantity qtyInPricingUom = uomConversionBL.convertQuantityTo(
 				line.getQty(),
 				UOMConversionContext.of(line.getProductId()),
-				UomId.ofRepoId(priceUomId));
+				priceUomId);
 
 		final CurrencyPrecision pricePrecision = pricingResult.getPrecision();
 

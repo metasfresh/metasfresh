@@ -50,7 +50,7 @@ public class OrderLinePriceUpdateRequest
 				.resultUOM(ResultUOM.PRICE_UOM_IF_ORDERLINE_IS_NEW);
 	}
 
-	public static enum ResultUOM
+	public enum ResultUOM
 	{
 		CONTEXT_UOM, PRICE_UOM, PRICE_UOM_IF_ORDERLINE_IS_NEW
 	}

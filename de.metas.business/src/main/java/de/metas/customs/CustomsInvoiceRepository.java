@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.OrgId;
@@ -18,6 +19,8 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,6 +35,7 @@ import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,6 +64,10 @@ import lombok.NonNull;
 @Repository
 public class CustomsInvoiceRepository
 {
+	I_C_Customs_Invoice getByIdInTrx(final CustomsInvoiceId id)
+	{
+		return load(id, I_C_Customs_Invoice.class);
+	}
 
 	public DocTypeId retrieveCustomsInvoiceDocTypeId()
 	{
@@ -226,6 +234,23 @@ public class CustomsInvoiceRepository
 
 		saveRecord(shipmentLineRecord);
 
+	}
+
+	public Set<ProductId> retrieveProductIdsWithNoCustomsTariff(final CustomsInvoiceId customsInvoiceId)
+	{
+		final List<I_C_Customs_Invoice_Line> lineRecords = retrieveLineRecords(customsInvoiceId);
+
+		return lineRecords.stream()
+				.filter(this::hasNoCustomsTariff)
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private boolean hasNoCustomsTariff(final I_C_Customs_Invoice_Line line)
+	{
+		final String customsTariff = line.getM_Product().getCustomsTariff();
+
+		return Check.isEmpty(customsTariff);
 	}
 
 }

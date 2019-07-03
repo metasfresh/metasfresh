@@ -72,6 +72,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -419,7 +420,7 @@ public class InvoiceCandidateWriter
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setQtyEntered(qty.getAsBigDecimal());
-		ic.setC_UOM_ID(qty.getUOMId());
+		ic.setC_UOM_ID(UomId.toRepoId(qty.getUomId()));
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
@@ -433,7 +434,7 @@ public class InvoiceCandidateWriter
 		// Pricing
 		ic.setM_PricingSystem_ID(PricingSystemId.getRepoId(pricingResult.getPricingSystemId()));
 		ic.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(pricingResult.getPriceListVersionId()));
-		ic.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID());
+		ic.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 		ic.setPriceEntered(pricingResult.getPriceStd());
 		ic.setPriceActual(pricingResult.getPriceStd());
 		ic.setIsTaxIncluded(pricingResult.isTaxIncluded()); // 08457: Configure new IC from pricing result

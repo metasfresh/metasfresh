@@ -2,7 +2,9 @@ package org.adempiere.mm.attributes.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.DateFormat;
+import java.util.Date;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -24,6 +26,10 @@ import org.compiere.util.Evaluatee2;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -54,10 +60,12 @@ import lombok.NonNull;
 final class ASIDescriptionBuilderCommand
 {
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	private static final String SEPARATOR = "_";
 
 	private final I_M_AttributeSetInstance asi;
+	private final String adLanguage;
 	private final boolean verboseDescription;
 
 	//
@@ -67,6 +75,7 @@ final class ASIDescriptionBuilderCommand
 	public ASIDescriptionBuilderCommand(@NonNull final I_M_AttributeSetInstance asi, final boolean verboseDescription)
 	{
 		this.asi = asi;
+		this.adLanguage = Language.getBaseAD_Language();
 		this.verboseDescription = verboseDescription;
 
 		attributeSetId = AttributeSetId.ofRepoIdOrNone(asi.getM_AttributeSet_ID());
@@ -82,13 +91,13 @@ final class ASIDescriptionBuilderCommand
 			return null;
 		}
 
-		final StringBuilder description = new StringBuilder();
+		final TranslatableStringBuilder descriptionBuilder = TranslatableStrings.builder();
 
-		appendInstanceAttributes(description);
-		appendSerNo(description);
-		appendLot(description);
-		appendGuaranteeDate(description);
-		appendProductAttributes(description);
+		appendInstanceAttributes(descriptionBuilder);
+		appendSerNo(descriptionBuilder);
+		appendLot(descriptionBuilder);
+		appendGuaranteeDate(descriptionBuilder);
+		appendProductAttributes(descriptionBuilder);
 
 		// NOTE: mk: if there is nothing to show then don't show ASI ID because that number will confuse the user.
 		// // In case there is no other description, at least show the ID
@@ -97,10 +106,12 @@ final class ASIDescriptionBuilderCommand
 		// sb.append(asi.getM_AttributeSetInstance_ID());
 		// }
 
-		return description.toString();
+		return descriptionBuilder
+				.build()
+				.translate(adLanguage);
 	}
 
-	private void appendInstanceAttributes(final StringBuilder description)
+	private void appendInstanceAttributes(final TranslatableStringBuilder description)
 	{
 		for (final I_M_AttributeInstance instance : attributesRepo.retrieveAttributeInstances(asi))
 		{
@@ -108,10 +119,10 @@ final class ASIDescriptionBuilderCommand
 		}
 	}
 
-	private void appendInstanceAttribute(final StringBuilder description, final I_M_AttributeInstance ai)
+	private void appendInstanceAttribute(final TranslatableStringBuilder description, final I_M_AttributeInstance ai)
 	{
-		final String aiDescription = buildInstanceAttributeDescription(ai);
-		if (Check.isEmpty(aiDescription, true))
+		final ITranslatableString aiDescription = buildInstanceAttributeDescription(ai);
+		if (TranslatableStrings.isBlank(aiDescription))
 		{
 			return;
 		}
@@ -120,9 +131,7 @@ final class ASIDescriptionBuilderCommand
 		description.append(aiDescription);
 	}
 
-	// @Label@ @Value@ @UOM@
-
-	private String buildInstanceAttributeDescription(@NonNull final I_M_AttributeInstance ai)
+	private ITranslatableString buildInstanceAttributeDescription(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
@@ -132,14 +141,19 @@ final class ASIDescriptionBuilderCommand
 		{
 			return getInstanceAttributeValueAsString(ai);
 		}
-
-		final AttributeInstanceEvaluatee ctx = AttributeInstanceEvaluatee.builder()
-				.attributesRepo(attributesRepo)
-				.attribute(attribute)
-				.attributeInstance(ai)
-				.verboseDescription(verboseDescription)
-				.build();
-		return descriptionPattern.evaluate(ctx, OnVariableNotFound.Preserve);
+		else
+		{
+			final AttributeInstanceEvaluatee ctx = AttributeInstanceEvaluatee.builder()
+					.attributesRepo(attributesRepo)
+					.uomsRepo(uomsRepo)
+					.attribute(attribute)
+					.attributeInstance(ai)
+					.adLanguage(adLanguage)
+					.verboseDescription(verboseDescription)
+					.build();
+			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.Preserve);
+			return TranslatableStrings.anyLanguage(description);
+		}
 	}
 
 	private IStringExpression extractDescriptionPattern(final I_M_Attribute attribute)
@@ -153,7 +167,7 @@ final class ASIDescriptionBuilderCommand
 		return StringExpressionCompiler.instance.compileOrDefault(descriptionPatternStr, null);
 	}
 
-	private String getInstanceAttributeValueAsString(@NonNull final I_M_AttributeInstance ai)
+	private ITranslatableString getInstanceAttributeValueAsString(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
@@ -161,30 +175,33 @@ final class ASIDescriptionBuilderCommand
 		final String attributeValueType = attribute.getAttributeValueType();
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
-			return ai.getValue();
+			final String valueStr = ai.getValue();
+			return formatStringValue(valueStr);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
 			final BigDecimal valueBD = isNull ? null : ai.getValueNumber();
-
-			if (valueBD == null)
+			if (valueBD == null && !verboseDescription)
 			{
-				return verboseDescription ? "0" : null;
+				return null;
 			}
 			else
 			{
-				return valueBD.toString();
+				return formatNumber(valueBD);
 			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			if (ai.getValueDate() == null)
+			final Date valueDate = ai.getValueDate();
+			if (valueDate == null && !verboseDescription)
 			{
-				return verboseDescription ? "-" : null;
+				return null;
 			}
-			final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
-			return dateFormat.format(ai.getValueDate());
+			else
+			{
+				return formatDateValue(valueDate);
+			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
@@ -192,23 +209,59 @@ final class ASIDescriptionBuilderCommand
 			final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 			if (attributeValue != null)
 			{
-				return attributeValue.getName();
+				return formatStringValue(attributeValue.getName());
 			}
 			else
 			{
-				return ai.getValue();
+				return formatStringValue(ai.getValue());
 			}
 		}
 		else
 		{
 			// Unknown attributeValueType
-			return ai.getValue();
+			return formatStringValue(ai.getValue());
 		}
 	}
 
-	private void appendSeparator(final StringBuilder description)
+	private static ITranslatableString formatStringValue(@Nullable final String valueStr)
 	{
-		if (description.length() <= 0)
+		if (Check.isEmpty(valueStr, true))
+		{
+			return TranslatableStrings.empty();
+		}
+		else
+		{
+			return TranslatableStrings.anyLanguage(valueStr.trim());
+		}
+	}
+
+	private static ITranslatableString formatNumber(@Nullable final BigDecimal valueBD)
+	{
+		if (valueBD == null)
+		{
+			return TranslatableStrings.anyLanguage("0");
+		}
+		else
+		{
+			return TranslatableStrings.number(valueBD, DisplayType.Number);
+		}
+	}
+
+	private static ITranslatableString formatDateValue(@Nullable final java.util.Date valueDate)
+	{
+		if (valueDate == null)
+		{
+			return TranslatableStrings.anyLanguage("-");
+		}
+		else
+		{
+			return TranslatableStrings.date(valueDate);
+		}
+	}
+
+	private void appendSeparator(final TranslatableStringBuilder description)
+	{
+		if (description.isEmpty())
 		{
 			return;
 		}
@@ -216,7 +269,7 @@ final class ASIDescriptionBuilderCommand
 		description.append(SEPARATOR);
 	}
 
-	private void appendSerNo(final StringBuilder description)
+	private void appendSerNo(final TranslatableStringBuilder description)
 	{
 		final I_M_AttributeSet attributeSet = getAttributeSet();
 		if (!attributeSet.isSerNo())
@@ -240,7 +293,7 @@ final class ASIDescriptionBuilderCommand
 		description.append(prefix).append(serNo).append(suffix);
 	}
 
-	private void appendLot(final StringBuilder description)
+	private void appendLot(final TranslatableStringBuilder description)
 	{
 		final I_M_AttributeSet attributeSet = getAttributeSet();
 		if (!attributeSet.isLot())
@@ -264,7 +317,7 @@ final class ASIDescriptionBuilderCommand
 		description.append(prefix).append(lot).append(suffix);
 	}
 
-	private void appendGuaranteeDate(final StringBuilder description)
+	private void appendGuaranteeDate(final TranslatableStringBuilder description)
 	{
 		// NOTE: we are not checking if "as.isGuaranteeDate()" because it could be that GuaranteeDate was set even though in attribute set did not mention it (task #09363).
 		final Timestamp guaranteeDate = asi.getGuaranteeDate();
@@ -274,10 +327,10 @@ final class ASIDescriptionBuilderCommand
 		}
 
 		appendSeparator(description);
-		description.append(DisplayType.getDateFormat(DisplayType.Date).format(guaranteeDate));
+		description.append(formatDateValue(guaranteeDate));
 	}
 
-	private void appendProductAttributes(final StringBuilder description)
+	private void appendProductAttributes(final TranslatableStringBuilder description)
 	{
 		final boolean isInstanceAttribute = false;
 		for (final I_M_Attribute attribute : attributesRepo.retrieveAttributes(attributeSetId, isInstanceAttribute))
@@ -308,21 +361,29 @@ final class ASIDescriptionBuilderCommand
 				VAR_UOM);
 
 		private final IAttributeDAO attributesRepo;
+		private final IUOMDAO uomsRepo;
 
 		private final I_M_Attribute attribute;
 		private final I_M_AttributeInstance attributeInstance;
+		private final String adLanguage;
 		private final boolean verboseDescription;
 
 		@lombok.Builder
 		private AttributeInstanceEvaluatee(
 				@NonNull final IAttributeDAO attributesRepo,
+				@NonNull final IUOMDAO uomsRepo,
+				//
 				@NonNull final I_M_Attribute attribute,
 				@NonNull final I_M_AttributeInstance attributeInstance,
+				@NonNull final String adLanguage,
 				final boolean verboseDescription)
 		{
 			this.attributesRepo = attributesRepo;
+			this.uomsRepo = uomsRepo;
+			//
 			this.attribute = attribute;
 			this.attributeInstance = attributeInstance;
+			this.adLanguage = adLanguage;
 			this.verboseDescription = verboseDescription;
 		}
 
@@ -335,7 +396,8 @@ final class ASIDescriptionBuilderCommand
 			}
 			else if (VAR_Value.equals(variableName))
 			{
-				return getAttributeInstanceValue();
+				final ITranslatableString valueTrl = getAttributeInstanceValue();
+				return valueTrl != null ? valueTrl.translate(adLanguage) : null;
 			}
 			else if (VAR_UOM.equals(variableName))
 			{
@@ -372,7 +434,6 @@ final class ASIDescriptionBuilderCommand
 				return null;
 			}
 
-			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 			final I_C_UOM uom = uomsRepo.getById(uomId);
 			if (uom == null)
 			{
@@ -382,31 +443,37 @@ final class ASIDescriptionBuilderCommand
 			return uom.getUOMSymbol();
 		}
 
-		private String getAttributeInstanceValue()
+		private ITranslatableString getAttributeInstanceValue()
 		{
 			final String attributeValueType = attribute.getAttributeValueType();
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 			{
-				return attributeInstance.getValue();
+				return formatStringValue(attributeInstance.getValue());
 			}
 			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 			{
 				final boolean isNull = InterfaceWrapperHelper.isNull(attributeInstance, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
 				final BigDecimal valueBD = isNull ? null : attributeInstance.getValueNumber();
-
-				if (valueBD == null)
+				if (valueBD == null && !verboseDescription)
 				{
-					return verboseDescription ? "0" : null;
+					return null;
 				}
 				else
 				{
-					return valueBD.toString();
+					return formatNumber(valueBD);
 				}
 			}
 			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 			{
-				final DateFormat dateFormat = DisplayType.getDateFormat(DisplayType.Date);
-				return dateFormat.format(attributeInstance.getValueDate());
+				final Date valueDate = attributeInstance.getValueDate();
+				if (valueDate == null && !verboseDescription)
+				{
+					return null;
+				}
+				else
+				{
+					return formatDateValue(valueDate);
+				}
 			}
 			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 			{
@@ -414,17 +481,17 @@ final class ASIDescriptionBuilderCommand
 				final I_M_AttributeValue attributeValue = attributeValueId != null ? attributesRepo.retrieveAttributeValueOrNull(attribute, attributeValueId) : null;
 				if (attributeValue != null)
 				{
-					return attributeValue.getName();
+					return formatStringValue(attributeValue.getName());
 				}
 				else
 				{
-					return attributeInstance.getValue();
+					return formatStringValue(attributeInstance.getValue());
 				}
 			}
 			else
 			{
 				// Unknown attributeValueType
-				return attributeInstance.getValue();
+				return formatStringValue(attributeInstance.getValue());
 			}
 		}
 

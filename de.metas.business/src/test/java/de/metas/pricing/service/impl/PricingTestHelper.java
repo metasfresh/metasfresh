@@ -152,7 +152,7 @@ public class PricingTestHelper
 		product.setValue(name);
 		product.setName(name);
 		product.setM_Product_Category_ID(20);
-		product.setC_UOM(uom);
+		product.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(product);
 		return product;
 	}

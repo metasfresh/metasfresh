@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when are too many documents assigned on vendor side
@@ -53,7 +54,7 @@ public class MultipleVendorDocumentsException extends PaymentAllocationException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		if (payments != null && !payments.isEmpty())
 		{

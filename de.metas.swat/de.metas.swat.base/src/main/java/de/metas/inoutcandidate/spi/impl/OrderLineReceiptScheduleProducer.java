@@ -44,10 +44,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.util.Util;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -67,6 +65,7 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /**
  *
@@ -138,12 +137,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		// Dates
 		{
 
-			final Timestamp dateOrdered = Util.coalesceSuppliers(
+			final Timestamp dateOrdered = CoalesceUtil.coalesceSuppliers(
 					() -> line.getDateOrdered(),
 					() -> line.getC_Order().getDateOrdered());
 			receiptSchedule.setDateOrdered(dateOrdered);
 
-			final Timestamp datePromised = Util.coalesceSuppliers(
+			final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
 					() -> line.getDatePromised(),
 					() -> line.getC_Order().getDatePromised());
 			receiptSchedule.setMovementDate(datePromised);
@@ -443,7 +442,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */
 	private static final class OrderLineWarehouseDestProviderContext implements IReceiptScheduleWarehouseDestProvider.IContext
 	{
-		public static final OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
+		public static OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)
 		{
 			return new OrderLineWarehouseDestProviderContext(ctx, orderLine);
 		}
@@ -480,12 +479,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		public int getAD_Org_ID()
 		{
 			return orderLine.getAD_Org_ID();
-		}
-
-		@Override
-		public I_M_Product getM_Product()
-		{
-			return orderLine.getM_Product();
 		}
 
 		@Override

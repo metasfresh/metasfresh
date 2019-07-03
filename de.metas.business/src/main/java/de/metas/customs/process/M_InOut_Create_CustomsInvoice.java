@@ -120,7 +120,6 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 
 		final String documentNo = customsInvoiceService.reserveDocumentNo(docTypeId);
 
-
 		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
 				.bpartnerId(p_BPartnerId)
 				.bpartnerLocationId(bpartnerAndLocationId)
@@ -138,7 +137,6 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)
 				.invoiceDate(invoiceDate)
-				.doComplete(p_IsComplete)
 				.documentNo(documentNo)
 				.docTypeId(docTypeId)
 				.build();
@@ -147,6 +145,11 @@ public class M_InOut_Create_CustomsInvoice extends JavaProcess implements IProce
 
 		CustomsInvoiceUserNotificationsProducer.newInstance()
 				.notifyGenerated(customsInvoice);
+
+		if (p_IsComplete)
+		{
+			customsInvoiceService.completeCustomsInvoice(customsInvoice);
+		}
 
 		final ImmutableSet<InOutId> exportedShippmentIds = linesToExport.stream()
 				.map(InOutAndLineId::getInOutId)

@@ -126,7 +126,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
 		salesOrderLineRecord.setC_OrderLine_ID(10);
-		salesOrderLineRecord.setC_Currency(currencyRecord);
+		salesOrderLineRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		salesOrderLineRecord.setProfitPriceActual(TWENTY);
 		saveRecord(salesOrderLineRecord);
 
@@ -137,7 +137,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
 		productRecord.setName("product.Name");
-		productRecord.setC_UOM(uomRecord);
+		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		productRecord.setM_Product_Category(productCategory);
 		saveRecord(productRecord);
 
@@ -178,7 +178,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final I_C_OrderLine purchaseOrderLineRecord = salesOrderLineRecord;
 		purchaseOrderLineRecord.setQtyOrdered(PO_QTY_ORDERED_ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 

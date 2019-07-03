@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.pricing.PriceListId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -32,6 +31,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -51,14 +51,17 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UOMConversionContext;
-import de.metas.util.Check;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -173,7 +176,7 @@ public class CalloutOrder extends CalloutEngine
 				|| MOrder.DocSubType_Prepay.equals(docSubType))  // not
 		{
 			// for POS/PrePay
-			;
+
 		}
 		else
 		{
@@ -831,9 +834,8 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		// UOMs: reset them to avoid UOM conversion errors between previous UOM and current product's UOMs (see FRESH-936 #69)
-		final I_M_Product product = orderLine.getM_Product();
-		orderLine.setC_UOM(Services.get(IProductBL.class).getStockingUOM(product));
-		orderLine.setPrice_UOM(null); // reset; will be set when we update pricing
+		orderLine.setC_UOM_ID(Services.get(IProductBL.class).getStockingUOMId(orderLine.getM_Product_ID()).getRepoId());
+		orderLine.setPrice_UOM_ID(-1); // reset; will be set when we update pricing
 
 		// Set Attribute
 		if (calloutField.getTabInfoContextAsInt("M_Product_ID") == M_Product_ID
@@ -896,7 +898,7 @@ public class CalloutOrder extends CalloutEngine
 				orderLine.setPriceStd(BigDecimal.ZERO); // metas
 
 				// metas: also displaying PLV-ID
-				orderLine.setM_PriceList_Version(null);
+				orderLine.setM_PriceList_Version_ID(-1);
 				// metas: end
 			}
 		}
@@ -1023,23 +1025,18 @@ public class CalloutOrder extends CalloutEngine
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
-		final Properties ctx = calloutField.getCtx();
 		final String changedColumnName = calloutField.getColumnName();
 		final I_C_OrderLine orderLine = calloutField.getModel(I_C_OrderLine.class);
 		final I_C_Order order = orderLine.getC_Order();
 
-		final int priceUOMId = orderLine.getPrice_UOM_ID();
-		final int productId = orderLine.getM_Product_ID();
 		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(order.getM_PriceList_ID()));
 
 		//
 		PriceAndDiscount priceAndDiscount;
 
-		// Qty changed - recalc price
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
-			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.ofOrderLine(orderLine)
-					.toBuilder()
+			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
 					.applyPriceLimitRestrictions(false)
 					.build());
 
@@ -1048,11 +1045,7 @@ public class CalloutOrder extends CalloutEngine
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
 			final BigDecimal priceActual = orderLine.getPriceActual();
-			BigDecimal priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productId, priceUOMId, priceActual);
-			if (priceEntered == null)
-			{
-				priceEntered = priceActual;
-			}
+			final BigDecimal priceEntered = calculatePriceEnteredFromPriceActual(orderLine);
 
 			priceAndDiscount = PriceAndDiscount.builder()
 					.precision(pricePrecision)
@@ -1078,11 +1071,13 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		//
-		// Check PriceActual and enforce PriceLimit.
-		// Also, update Discount or PriceEntered if needed.
+		// Enforce PriceLimit agaist PriceEntered and PriceActual.
+		// Also updates Discount if needed.
 		if (isEnforcePriceLimit(orderLine, order.isSOTrx()))
 		{
+			// Make sure order line is up2date before computing the limit price.
 			priceAndDiscount.applyTo(orderLine);
+			
 			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
 		}
@@ -1093,14 +1088,30 @@ public class CalloutOrder extends CalloutEngine
 		orderLineBL.updateLineNetAmt(orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
 
-		if (!Check.isEmpty(priceAndDiscount.getPriceLimitEnforceExplanation(), true))
+		//
+		// Warn user if the price limit was enforced
+		if (priceAndDiscount.isPriceLimitEnforced())
 		{
-			calloutField.fireDataStatusEEvent(MSG_UnderLimitPrice, priceAndDiscount.getPriceLimitEnforceExplanation(), /* isError */false);
+			calloutField.fireDataStatusEEvent(
+					MSG_UnderLimitPrice,
+					priceAndDiscount.getPriceLimitEnforcedExplanation().translate(Env.getAD_Language()),
+					/* isError */false);
 		}
 
 		//
 		return NO_ERROR;
 	} // amt
+	
+	private BigDecimal calculatePriceEnteredFromPriceActual(final I_C_OrderLine orderLine)
+	{
+		final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+		
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final BigDecimal priceActual = orderLine.getPriceActual();
+		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		final BigDecimal priceEntered = uomConversionService.convertToProductUOM(productId, priceActual, priceUOMId);
+		return priceEntered != null ? priceEntered : priceActual;
+	}
 
 	/**
 	 * Order Line - Quantity. - called from C_UOM_ID, QtyEntered, QtyOrdered - enforces qty UOM relationship
@@ -1126,9 +1137,11 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
+			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+			
 			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
-			final I_C_UOM uomFrom = orderLineOld.getC_UOM();
-			final I_C_UOM uomTo = orderLine.getC_UOM();
+			final I_C_UOM uomFrom = uomsRepo.getById(orderLineOld.getC_UOM_ID());
+			final I_C_UOM uomTo = uomsRepo.getById(orderLine.getC_UOM_ID());
 			BigDecimal QtyEntered = orderLine.getQtyEntered();
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(orderLine.getM_Product_ID());
@@ -1315,7 +1328,7 @@ public class CalloutOrder extends CalloutEngine
 			return;
 		}
 
-		final I_M_Product product = ol.getM_Product();
+		final I_M_Product product = Services.get(IProductDAO.class).getById(ol.getM_Product_ID());
 		ol.setProductDescription(product.getDescription());
 
 		return;
@@ -1326,9 +1339,11 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull final String creditStatus;
+		@NonNull
+		final String creditStatus;
 		final boolean evalCreditstatus;
-		@NonNull final Timestamp evaluationDate;
+		@NonNull
+		final Timestamp evaluationDate;
 	}
 
 	/**
@@ -1360,17 +1375,17 @@ public class CalloutOrder extends CalloutEngine
 		return !dontCheck;
 	}
 
-	private static interface DropShipPartnerAware
+	private interface DropShipPartnerAware
 	{
-		public int getDropShip_BPartner_ID();
+		int getDropShip_BPartner_ID();
 
-		public void setDropShip_Location_ID(int DropShip_Location_ID);
+		void setDropShip_Location_ID(int DropShip_Location_ID);
 
-		public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
+		void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location);
 
-		public void setDropShip_User_ID(int DropShip_User_ID);
+		void setDropShip_User_ID(int DropShip_User_ID);
 
-		public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
+		void setDropShip_User(org.compiere.model.I_AD_User DropShip_User);
 	}
 
 	public String deliveryToBPartnerID(final ICalloutField calloutField)

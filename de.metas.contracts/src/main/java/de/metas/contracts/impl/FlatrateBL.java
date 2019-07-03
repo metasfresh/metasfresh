@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,7 +64,6 @@ import org.compiere.model.Lookup;
 import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -105,11 +105,13 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -435,7 +437,7 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
-		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
@@ -513,7 +515,7 @@ public class FlatrateBL implements IFlatrateBL
 			priceActual = FlatrateTermPricing.builder()
 					.term(term)
 					.termRelatedProduct(product)
-					.priceDate(dataEntry.getC_Period().getStartDate())
+					.priceDate(getPeriodStartDate(dataEntry))
 					.qty(qtyToInvoice)
 					.build().computeOrThrowEx().getPriceStd();
 		}
@@ -566,7 +568,7 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
-		final int shipToLocationId = Util.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
 				term,
@@ -583,6 +585,11 @@ public class FlatrateBL implements IFlatrateBL
 		setILCandHandler(ctx, newCand);
 
 		return newCand;
+	}
+
+	private static LocalDate getPeriodStartDate(final I_C_Flatrate_DataEntry dataEntry)
+	{
+		return TimeUtil.asLocalDate(dataEntry.getC_Period().getStartDate());
 	}
 
 	/**
@@ -614,7 +621,7 @@ public class FlatrateBL implements IFlatrateBL
 		return FlatrateTermPricing.builder()
 				.term(flatrateTerm)
 				.termRelatedProduct(flatrateProduct)
-				.priceDate(dataEntry.getC_Period().getStartDate())
+				.priceDate(getPeriodStartDate(dataEntry))
 				.qty(qty)
 				.build().computeOrThrowEx().getPriceStd();
 	}
@@ -624,7 +631,7 @@ public class FlatrateBL implements IFlatrateBL
 	{
 		final I_C_Flatrate_Conditions fc = term.getC_Flatrate_Conditions();
 
-		final Timestamp date = SystemTime.asTimestamp();
+		final LocalDate date = SystemTime.asLocalDate();
 
 		final I_M_Product flatrateProduct = fc.getM_Product_Flatrate();
 		validatePricingForProduct(term, flatrateProduct, date);
@@ -646,7 +653,7 @@ public class FlatrateBL implements IFlatrateBL
 	private void validatePricingForProduct(
 			@NonNull final I_C_Flatrate_Term term,
 			@NonNull final I_M_Product product,
-			@NonNull final Timestamp date)
+			@NonNull final LocalDate date)
 	{
 		FlatrateTermPricing.builder()
 				.term(term)
@@ -756,6 +763,7 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -769,7 +777,8 @@ public class FlatrateBL implements IFlatrateBL
 		{
 			for (final I_M_Product product : products)
 			{
-				final I_C_UOM uom = product.getC_UOM();
+				final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
+
 				final I_C_Flatrate_DataEntry existingEntry = flatrateDB.retrieveDataEntryOrNull(flatrateTerm, period, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
 				if (existingEntry != null)
 				{
@@ -1202,11 +1211,11 @@ public class FlatrateBL implements IFlatrateBL
 		final FlatrateUserNotificationsProducer flatrateGeneratedEventBus = FlatrateUserNotificationsProducer.newInstance();
 
 		final UserId recipientUserId = currentTerm.getAD_User_InCharge_ID() > 0 ? UserId.ofRepoId(currentTerm.getAD_User_InCharge_ID()) : null;
-		if(recipientUserId == null)
+		if (recipientUserId == null)
 		{
 			return;
 		}
-		
+
 		flatrateGeneratedEventBus.notifyUser(currentTerm, recipientUserId, msgValue);
 	}
 

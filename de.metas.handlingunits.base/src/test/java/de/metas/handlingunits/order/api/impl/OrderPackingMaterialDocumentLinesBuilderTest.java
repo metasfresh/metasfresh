@@ -77,10 +77,14 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		saveRecord(packageProductUom);
 
 		packageProduct = newInstance(I_M_Product.class);
-		packageProduct.setC_UOM(packageProductUom);
+		packageProduct.setC_UOM_ID(packageProductUom.getC_UOM_ID());
 		saveRecord(packageProduct);
 
+		final I_C_UOM materialProductUOM = newInstance(I_C_UOM.class);
+		saveRecord(materialProductUOM);
+
 		materialProduct = newInstance(I_M_Product.class);
+		materialProduct.setC_UOM_ID(materialProductUOM.getC_UOM_ID());
 		saveRecord(materialProduct);
 
 		final I_M_HU_PI_Item miHuPiItem = newInstance(I_M_HU_PI_Item.class);
@@ -120,7 +124,7 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		olRecord1.setM_HU_PI_Item_Product(huPiItemProduct);
 		olRecord1.setQtyItemCapacity(TEN);
 		olRecord1.setQtyOrdered(TWENTY);
-		olRecord1.setM_Product(materialProduct);
+		olRecord1.setM_Product_ID(materialProduct.getM_Product_ID());
 		saveRecord(olRecord1);
 
 		final OrderPackingMaterialDocumentLinesBuilder orderPackingMaterialDocumentLinesBuilder = new OrderPackingMaterialDocumentLinesBuilder(orderRecord);
@@ -155,7 +159,8 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		olRecord1.setM_HU_PI_Item_Product(huPiItemProduct);
 		olRecord1.setQtyItemCapacity(TEN);
 		olRecord1.setQtyOrdered(TWENTY);
-		olRecord1.setM_Product(materialProduct);
+		olRecord1.setM_Product_ID(materialProduct.getM_Product_ID());
+		olRecord1.setC_UOM_ID(materialProduct.getC_UOM_ID());
 		saveRecord(olRecord1);
 
 		final I_C_OrderLine olRecord2 = newInstance(I_C_OrderLine.class);
@@ -164,11 +169,11 @@ public class OrderPackingMaterialDocumentLinesBuilderTest
 		olRecord2.setC_Order(orderRecord);
 		olRecord2.setIsPackagingMaterial(true);
 		olRecord2.setM_HU_PI_Item_Product_ID(101);
-		olRecord2.setM_Product(packageProduct);
+		olRecord2.setM_Product_ID(packageProduct.getM_Product_ID());
+		olRecord2.setC_UOM_ID(materialProduct.getC_UOM_ID());
 		olRecord2.setDatePromised(TimeUtil.parseTimestamp("2018-10-21")); // has outdated values
 		olRecord2.setDateOrdered(TimeUtil.parseTimestamp("2018-10-20"));
 		saveRecord(olRecord2);
-
 
 		final OrderPackingMaterialDocumentLinesBuilder orderPackingMaterialDocumentLinesBuilder = new OrderPackingMaterialDocumentLinesBuilder(orderRecord);
 

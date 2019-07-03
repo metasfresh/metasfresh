@@ -1,5 +1,9 @@
 package de.metas.uom;
 
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -60,5 +64,10 @@ public class UomId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final UomId id1, @Nullable final UomId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

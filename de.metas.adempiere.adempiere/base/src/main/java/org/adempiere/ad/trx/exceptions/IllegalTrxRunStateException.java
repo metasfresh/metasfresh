@@ -26,8 +26,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 
 /**
  * Exception thrown when {@link ITrxManager#run(String, ITrxRunConfig, org.compiere.util.TrxRunnable)} methods are encounting an invalid state.
@@ -63,10 +63,10 @@ public class IllegalTrxRunStateException extends TrxException
 	@Override
 	protected ITranslatableString buildMessage()
 	{
-		final TranslatableStringBuilder message = TranslatableStringBuilder.newInstance();
+		final TranslatableStringBuilder message = TranslatableStrings.builder();
 
 		final ITranslatableString originalMessage = super.buildMessage();
-		if (ImmutableTranslatableString.isBlank(originalMessage))
+		if (TranslatableStrings.isBlank(originalMessage))
 		{
 			message.append("Illegal transaction run state");
 		}

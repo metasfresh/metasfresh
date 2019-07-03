@@ -68,7 +68,8 @@ public class ASIAwareAttributeStorageFactory extends AbstractModelAttributeStora
 			// We are dealing with an ASI Aware model, but there is no ASI
 			// Return a Null ASI marker which will be handled later.
 			// NOTE: this particular case is handled by isNullModel() method which will return true
-			final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class, modelObj);
+
+			final I_M_AttributeSetInstance asiNew = InterfaceWrapperHelper.newInstance(I_M_AttributeSetInstance.class);
 			InterfaceWrapperHelper.setSaveDeleteDisabled(asiNew, true);
 			return asiNew;
 		}

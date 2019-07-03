@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -276,7 +277,7 @@ public class FlatrateTermDataFactory
 		product.setValue(value);
 		product.setName(name);
 		product.setM_Product_Category_ID(10);
-		product.setC_UOM(uomRecord);
+		product.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		product.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		save(product);
 		return product;
@@ -321,10 +322,20 @@ public class FlatrateTermDataFactory
 	}
 
 	@Builder(builderMethodName = "productPriceNew")
-	public static I_M_ProductPrice createProductPrice(@NonNull final I_M_Product product, @NonNull final I_C_TaxCategory taxCategory, @NonNull final I_M_PriceList_Version priceListVersion)
+	public static I_M_ProductPrice createProductPrice(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_TaxCategory taxCategory,
+			@NonNull final I_M_PriceList_Version priceListVersion)
 	{
+		final int uomId = product.getC_UOM_ID();
+		if (uomId <= 0)
+		{
+			throw new AdempiereException("Expected to have the UOM set for product, else the test will fail some time later: " + product);
+		}
+
 		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
 		productPrice.setM_Product(product);
+		productPrice.setC_UOM_ID(uomId);
 		productPrice.setC_TaxCategory(taxCategory);
 		productPrice.setM_PriceList_Version(priceListVersion);
 		productPrice.setPriceLimit(BigDecimal.valueOf(2));

@@ -85,7 +85,7 @@ public class PurchaseCandidateRepositoryTest
 
 		productRecord = newInstance(I_M_Product.class);
 		productRecord.setValue("product.Value");
-		productRecord.setC_UOM(uom);
+		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(productRecord);
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
@@ -139,7 +139,7 @@ public class PurchaseCandidateRepositoryTest
 	{
 		final I_C_OrderLine purchaseOrderLineRecord = newInstance(I_C_OrderLine.class);
 		purchaseOrderLineRecord.setQtyOrdered(ONE);
-		purchaseOrderLineRecord.setM_Product(productRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseOrderLineRecord.setC_Order_ID(40);
 		saveRecord(purchaseOrderLineRecord);
 

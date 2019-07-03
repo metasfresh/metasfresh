@@ -41,6 +41,7 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -283,7 +284,7 @@ public interface IInvoiceCandidateHandler
 
 		BigDecimal priceEntered;
 		BigDecimal priceActual;
-		int priceUOMId;
+		UomId priceUOMId;
 
 		Percent discount;
 

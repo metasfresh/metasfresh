@@ -160,11 +160,11 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 			piTU_Item_Product_Tomato = helper.assignProduct(piTU_Item,
 					mrpMasterData.pTomatoId,
 					new BigDecimal("10"),
-					mrpMasterData.pTomato.getC_UOM()); // 10 x Tomato Per TU
+					mrpMasterData.uomKg); // 10 x Tomato Per TU
 			piTU_Item_Product_Onion = helper.assignProduct(piTU_Item,
 					mrpMasterData.pOnionId,
 					new BigDecimal("20"),
-					mrpMasterData.pOnion.getC_UOM()); // 20 x Onion Per TU
+					mrpMasterData.uomKg); // 20 x Onion Per TU
 
 			piTU_Item_PackingMaterial = helper.createHU_PI_Item_PackingMaterial(piTU, pmIFCO);
 		}
