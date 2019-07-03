@@ -12,7 +12,6 @@ import org.compiere.model.ModelValidator;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.interfaces.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BP_BankAccount;
-import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.util.Services;
@@ -30,7 +29,7 @@ public class C_PaySelectionLine
 	}
 
 	/**
-	 * Updates given pay selection line from invoice's {@link I_C_Payment_Request}.
+	 * Updates given pay selection line from invoice's payment request.
 	 *
 	 * @param paySelectionLine
 	 */

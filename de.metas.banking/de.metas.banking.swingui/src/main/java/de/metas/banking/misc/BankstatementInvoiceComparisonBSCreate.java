@@ -351,9 +351,9 @@ public class BankstatementInvoiceComparisonBSCreate extends JFrame implements
 					payment.setDateTrx(new Timestamp(mt940Line
 							.getBuchungsdatum().getTime()));
 					if (invoiceExtendedList.get(0).isSOTrx()) {
-						payment.setC_DocType_ID(true);
+						payment.setIsReceiptAndUpdateDocType(true);
 					} else {
-						payment.setC_DocType_ID(false);
+						payment.setIsReceiptAndUpdateDocType(false);
 					}
 					payment.setTenderType(TenderType.DirectDeposit.getCode());
 					payment.setC_BPartner_ID(invoiceExtendedList.get(0)

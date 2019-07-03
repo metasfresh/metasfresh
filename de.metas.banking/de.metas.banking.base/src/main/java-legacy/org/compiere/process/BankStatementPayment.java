@@ -29,6 +29,7 @@ import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 
+import de.metas.banking.payment.process.C_Payment_CreateFrom_BankStatement;
 import de.metas.payment.TenderType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -38,7 +39,10 @@ import de.metas.process.ProcessInfoParameter;
  *	
  *  @author Jorg Janke
  *  @version $Id: BankStatementPayment.java,v 1.3 2006/07/30 00:51:01 jjanke Exp $
+ *  @deprecated replaced by {@link C_Payment_CreateFrom_BankStatement}
  */
+// TODO DELETE IT
+@Deprecated
 public class BankStatementPayment extends JavaProcess
 {
 
@@ -229,10 +233,10 @@ public class BankStatementPayment extends JavaProcess
 		}
 		payment.setDescription(Description);
 		//
-		if (C_Invoice_ID != 0)
+		if (C_Invoice_ID > 0)
 		{
 			MInvoice invoice = new MInvoice (getCtx(), C_Invoice_ID, null);
-			payment.setC_DocType_ID(invoice.isSOTrx());		//	Receipt
+			payment.setIsReceiptAndUpdateDocType(invoice.isSOTrx());
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			payment.setC_BPartner_ID (invoice.getC_BPartner_ID());
 			if (PayAmt.signum() != 0)	//	explicit Amount
@@ -254,19 +258,19 @@ public class BankStatementPayment extends JavaProcess
 				payment.setPayAmt(invoice.getGrandTotal(true));
 			}
 		}
-		else if (C_BPartner_ID != 0)
+		else if (C_BPartner_ID > 0)
 		{
 			payment.setC_BPartner_ID(C_BPartner_ID);
 			payment.setC_Currency_ID(C_Currency_ID);
 			if (PayAmt.signum() < 0)	//	Payment
 			{
 				payment.setPayAmt(PayAmt.abs());
-				payment.setC_DocType_ID(false);
+				payment.setIsReceiptAndUpdateDocType(false);
 			}
 			else	//	Receipt
 			{
 				payment.setPayAmt(PayAmt);
-				payment.setC_DocType_ID(true);
+				payment.setIsReceiptAndUpdateDocType(true);
 			}
 		}
 		else

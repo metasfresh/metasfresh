@@ -207,7 +207,7 @@ public class BankTransfer extends JavaProcess
 		}	
 		paymentBankFrom.setPayAmt(p_Amount);
 		paymentBankFrom.setOverUnderAmt(BigDecimal.ZERO);
-		paymentBankFrom.setC_DocType_ID(false);
+		paymentBankFrom.setIsReceiptAndUpdateDocType(false);
 		paymentBankFrom.setC_Charge_ID(p_C_Charge_ID);
 		paymentBankFrom.save();
 		paymentBankFrom.processIt(MPayment.DOCACTION_Complete);
@@ -228,7 +228,7 @@ public class BankTransfer extends JavaProcess
 		}	
 		paymentBankTo.setPayAmt(p_Amount);
 		paymentBankTo.setOverUnderAmt(BigDecimal.ZERO);
-		paymentBankTo.setC_DocType_ID(true);
+		paymentBankTo.setIsReceiptAndUpdateDocType(true);
 		paymentBankTo.setC_Charge_ID(p_C_Charge_ID);
 		paymentBankTo.save();
 		paymentBankTo.processIt(MPayment.DOCACTION_Complete);
