@@ -1,4 +1,6 @@
 {
+    "comment_1": "The fixture's  is more of a dictionary with inventory related terms",
+
     "singleHUInventoryDocTypeName": "Inventory",
     "de_DE__singleHUInventoryDocTypeName": "Inventur",
 
@@ -11,3 +13,4 @@
     "warehouseName_comment": "Note that there is no trl for warehouse names",
     "warehouseName": "Hauptlager"
 }
+
