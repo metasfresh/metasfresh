@@ -33,10 +33,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.model.X_C_Order;
+import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 
 import de.metas.adempiere.model.I_C_Order;
@@ -49,6 +48,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -141,14 +141,15 @@ public class C_Order
 
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(order.getC_DocTypeTarget_ID());
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		if (MDocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
-				&& X_C_Order.PAYMENTRULE_Cash.equals(order.getPaymentRule())
+		final PaymentRule paymentRule = PaymentRule.ofCode(order.getPaymentRule());
+		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType())
+				&& paymentRule.isCash()
 				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_CASH_POS_ORDER", true, order.getAD_Client_ID(), order.getAD_Org_ID()))
 		{
 			// ignore -- don't validate for Cash POS Orders depending on sysconfig parameter
 			return false;
 		}
-		else if (MDocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
+		else if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(dt.getDocSubType())
 				&& !sysConfigBL.getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, order.getAD_Client_ID(), order.getAD_Org_ID()))
 		{
 			// ignore -- don't validate Prepay Orders depending on sysconfig parameter

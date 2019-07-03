@@ -28,8 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import de.metas.currency.CurrencyPrecision;
-import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -50,6 +48,7 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -62,11 +61,13 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -122,7 +123,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
 			// metas: we *never* use InvoiceRule 'Immediate', so don't use it as default.
 			setInvoiceRule(INVOICERULE_AfterDelivery);
-			setPaymentRule(PAYMENTRULE_OnCredit);
+			setPaymentRule(PaymentRule.OnCredit.getCode());
 			setPriorityRule(PRIORITYRULE_Medium);
 			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
 			//
@@ -954,9 +955,9 @@ public class MOrder extends X_C_Order implements IDocument
 		if (!newRecord && is_ValueChanged("M_Warehouse_ID"))
 		{
 			final MOrderLine[] lines = getLines(false, null);
-			for (int i = 0; i < lines.length; i++)
+			for (MOrderLine line : lines)
 			{
-				if (!lines[i].canChangeWarehouse(true))
+				if (!line.canChangeWarehouse(true))
 				{
 					return false;
 				}

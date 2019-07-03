@@ -32,6 +32,8 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.time.SystemTime;
 
 
@@ -119,24 +121,24 @@ public class CalloutInvoiceBatch extends CalloutEngine
 			if (rs.next())
 			{
 				//	PaymentRule
-				String s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
-				if (s != null && s.length() != 0)
+				PaymentRule paymentRule_NOTUSED = PaymentRule.ofNullableCode(rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO"));
+				if (paymentRule_NOTUSED != null)
 				{
-					if (Env.getContext(ctx, WindowNo, "DocBaseType").endsWith("C"))
+					if (Env.getContext(ctx, WindowNo, "DocBaseType").endsWith("C")) // credit memo
 					{
-						s = "P";
+						paymentRule_NOTUSED = PaymentRule.OnCredit;
 					}
-					else if (IsSOTrx && (s.equals("S") || s.equals("U")))
+					else if (IsSOTrx && paymentRule_NOTUSED.isCheck())
 					 {
-						s = "P";											//  Payment Term
-			//		mTab.setValue("PaymentRule", s);
+						paymentRule_NOTUSED = PaymentRule.OnCredit;
 					}
 				}
+				
 				//  Payment Term
-				final Integer ii = new Integer(rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
-				if (!rs.wasNull())
+				final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
+				if (paymentTermId != null)
 				{
-					mTab.setValue("C_PaymentTerm_ID", ii);
+					mTab.setValue("C_PaymentTerm_ID", paymentTermId.getRepoId());
 				}
 
 				//	Location

@@ -18,15 +18,14 @@ import static java.math.BigDecimal.ZERO;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
@@ -56,16 +55,20 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -73,8 +76,7 @@ import de.metas.util.Services;
  */
 public class PaymentBL implements IPaymentBL
 {
-
-	Logger log = LogManager.getLogger(getClass());
+	private static final Logger log = LogManager.getLogger(PaymentBL.class);
 
 	private final transient IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
@@ -261,8 +263,7 @@ public class PaymentBL implements IPaymentBL
 		BigDecimal CurrencyRate = BigDecimal.ONE;
 		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
 		{
-			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}"
-					, new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, conversionTypeId });
+			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}", new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, conversionTypeId });
 
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 			CurrencyRate = currencyBL.getRate(
@@ -367,23 +368,18 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public String getPaymentRuleForBPartner(final I_C_BPartner bPartner)
+	public PaymentRule getPaymentRuleForBPartner(@NonNull final I_C_BPartner bpartner)
 	{
-		Check.assumeNotNull(bPartner, "BPartner is not null");
-
-		if (!Check.isEmpty(bPartner.getPaymentRule()))
+		final PaymentRule bpartnerPaymentRule = PaymentRule.ofNullableCode(bpartner.getPaymentRule());
+		if (bpartnerPaymentRule != null)
 		{
-			return bPartner.getPaymentRule();
+			return bpartnerPaymentRule;
 		}
 		//
 		// No payment rule in BP. Fallback to group.
-		final I_C_BP_Group bpGroup = bPartner.getC_BP_Group();
-		if (null != bpGroup)
-		{
-			return bpGroup.getPaymentRule();
-		}
-
-		return null;
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
+		final I_C_BP_Group bpGroup = Services.get(IBPGroupDAO.class).getById(bpGroupId);
+		return PaymentRule.ofNullableCode(bpGroup.getPaymentRule());
 	}
 
 	@Override
@@ -447,6 +443,7 @@ public class PaymentBL implements IPaymentBL
 				+ " (" + alloc + "=" + total + ")");
 		return change;
 	}	// testAllocation
+
 	@Override
 	public boolean isCashTrx(I_C_Payment payment)
 	{

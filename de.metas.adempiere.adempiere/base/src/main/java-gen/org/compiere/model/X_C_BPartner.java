@@ -79,7 +79,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AcqusitionCost);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -145,10 +147,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setAD_OrgBP_ID (int AD_OrgBP_ID)
 	{
-		if (AD_OrgBP_ID < 1) 
+		if (AD_OrgBP_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_OrgBP_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_OrgBP_ID, Integer.valueOf(AD_OrgBP_ID));
+		}
 	}
 
 	/** Get Linked Organization.
@@ -159,7 +165,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgBP_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -179,8 +187,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_AllowConsolidateInOut);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -205,10 +215,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setBPartner_Parent_ID (int BPartner_Parent_ID)
 	{
-		if (BPartner_Parent_ID < 1) 
+		if (BPartner_Parent_ID < 1)
+		{
 			set_Value (COLUMNNAME_BPartner_Parent_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_BPartner_Parent_ID, Integer.valueOf(BPartner_Parent_ID));
+		}
 	}
 
 	/** Get Partner Parent.
@@ -219,7 +233,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_BPartner_Parent_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -230,10 +246,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		}
 	}
 
 	/** Get Geschäftspartner.
@@ -244,7 +264,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -267,10 +289,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_BP_Group_ID (int C_BP_Group_ID)
 	{
-		if (C_BP_Group_ID < 1) 
+		if (C_BP_Group_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_BP_Group_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_BP_Group_ID, Integer.valueOf(C_BP_Group_ID));
+		}
 	}
 
 	/** Get Geschäftspartnergruppe.
@@ -281,7 +307,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -304,10 +332,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_Dunning_ID (int C_Dunning_ID)
 	{
-		if (C_Dunning_ID < 1) 
+		if (C_Dunning_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Dunning_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Dunning_ID, Integer.valueOf(C_Dunning_ID));
+		}
 	}
 
 	/** Get Mahnung.
@@ -318,7 +350,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Dunning_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -338,8 +372,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_CertificateOfRegistrationCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -361,8 +397,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_CertificateOfRegistrationVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -387,10 +425,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_Greeting_ID (int C_Greeting_ID)
 	{
-		if (C_Greeting_ID < 1) 
+		if (C_Greeting_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Greeting_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Greeting_ID, Integer.valueOf(C_Greeting_ID));
+		}
 	}
 
 	/** Get Anrede (ID).
@@ -401,7 +443,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Greeting_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -424,10 +468,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID)
 	{
-		if (C_InvoiceSchedule_ID < 1) 
+		if (C_InvoiceSchedule_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_InvoiceSchedule_ID, Integer.valueOf(C_InvoiceSchedule_ID));
+		}
 	}
 
 	/** Get Terminplan Rechnung.
@@ -438,7 +486,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceSchedule_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -492,8 +542,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_ContactStatusInfoCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -515,8 +567,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_ContactStatusInfoVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -541,10 +595,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
+		if (C_PaymentTerm_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+		}
 	}
 
 	/** Get Zahlungsbedingung.
@@ -555,7 +613,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -608,7 +668,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditorId);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -629,10 +691,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setC_TaxGroup_ID (int C_TaxGroup_ID)
 	{
-		if (C_TaxGroup_ID < 1) 
+		if (C_TaxGroup_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_TaxGroup_ID, Integer.valueOf(C_TaxGroup_ID));
+		}
 	}
 
 	/** Get Tax Group.
@@ -642,7 +708,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxGroup_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -677,7 +745,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DebtorId);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -785,7 +855,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DocumentCopies);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -914,7 +986,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatDiscount);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -969,8 +1043,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_GDPCertificateCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -992,8 +1068,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_GDPCertificateVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1034,10 +1112,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setInvoice_PrintFormat_ID (int Invoice_PrintFormat_ID)
 	{
-		if (Invoice_PrintFormat_ID < 1) 
+		if (Invoice_PrintFormat_ID < 1)
+		{
 			set_Value (COLUMNNAME_Invoice_PrintFormat_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Invoice_PrintFormat_ID, Integer.valueOf(Invoice_PrintFormat_ID));
+		}
 	}
 
 	/** Get Druckformat Rechnung.
@@ -1048,7 +1130,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Invoice_PrintFormat_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1101,8 +1185,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsAggregatePO);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1124,8 +1210,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsCompany);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1150,8 +1238,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsCreateDefaultPOReference);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1176,8 +1266,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1202,8 +1294,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsDiscountPrinted);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1228,8 +1322,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsEmployee);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1251,8 +1347,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsManufacturer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1274,8 +1372,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsOneTime);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1300,8 +1400,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsPOTaxExempt);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1326,8 +1428,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsProspect);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1352,8 +1456,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsSalesRep);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1375,8 +1481,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsSEPASigned);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1398,8 +1506,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsShippingNotificationEmail);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1424,8 +1534,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsSummary);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1450,8 +1562,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsTaxExempt);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1476,8 +1590,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_IsVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1564,10 +1680,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setLogo_ID (int Logo_ID)
 	{
-		if (Logo_ID < 1) 
+		if (Logo_ID < 1)
+		{
 			set_Value (COLUMNNAME_Logo_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Logo_ID, Integer.valueOf(Logo_ID));
+		}
 	}
 
 	/** Get Logo.
@@ -1577,7 +1697,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Logo_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1600,10 +1722,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
 	{
-		if (M_DiscountSchema_ID < 1) 
+		if (M_DiscountSchema_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
+		}
 	}
 
 	/** Get Rabatt Schema.
@@ -1614,7 +1740,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1680,10 +1808,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_FreightCost_ID (int M_FreightCost_ID)
 	{
-		if (M_FreightCost_ID < 1) 
+		if (M_FreightCost_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_FreightCost_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_FreightCost_ID, Integer.valueOf(M_FreightCost_ID));
+		}
 	}
 
 	/** Get Frachtkostenpauschale.
@@ -1693,7 +1825,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_FreightCost_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1716,10 +1850,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_PriceList_ID (int M_PriceList_ID)
 	{
-		if (M_PriceList_ID < 1) 
+		if (M_PriceList_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PriceList_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PriceList_ID, Integer.valueOf(M_PriceList_ID));
+		}
 	}
 
 	/** Get Preisliste.
@@ -1730,7 +1868,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PriceList_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1753,10 +1893,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
+		if (M_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+		}
 	}
 
 	/** Get Preissystem.
@@ -1767,7 +1911,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1816,10 +1962,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_Shipper_ID (int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
+		if (M_Shipper_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+		}
 	}
 
 	/** Get Lieferweg.
@@ -1830,7 +1980,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1853,10 +2005,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
-		if (M_Warehouse_ID < 1) 
+		if (M_Warehouse_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+		}
 	}
 
 	/** Get Lager.
@@ -1867,7 +2023,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1962,29 +2120,31 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_NumberEmployees);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
-	/** 
-	 * PaymentRule AD_Reference_ID=195
-	 * Reference name: _Payment Rule
-	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** 
+//	 * PaymentRule AD_Reference_ID=195
+//	 * Reference name: _Payment Rule
+//	 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** CreditCard = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** DirectDeposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** OnCredit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** DirectDebit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		How you pay the invoice
@@ -2113,10 +2273,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setPO_DiscountSchema_ID (int PO_DiscountSchema_ID)
 	{
-		if (PO_DiscountSchema_ID < 1) 
+		if (PO_DiscountSchema_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_DiscountSchema_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_DiscountSchema_ID, Integer.valueOf(PO_DiscountSchema_ID));
+		}
 	}
 
 	/** Get Einkauf Rabatt Schema.
@@ -2127,7 +2291,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_DiscountSchema_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2150,10 +2316,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID)
 	{
-		if (PO_PaymentTerm_ID < 1) 
+		if (PO_PaymentTerm_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_PaymentTerm_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_PaymentTerm_ID, Integer.valueOf(PO_PaymentTerm_ID));
+		}
 	}
 
 	/** Get Zahlungskondition.
@@ -2164,7 +2334,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PaymentTerm_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2187,10 +2359,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setPO_PriceList_ID (int PO_PriceList_ID)
 	{
-		if (PO_PriceList_ID < 1) 
+		if (PO_PriceList_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_PriceList_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_PriceList_ID, Integer.valueOf(PO_PriceList_ID));
+		}
 	}
 
 	/** Get Einkaufspreisliste.
@@ -2201,7 +2377,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PriceList_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2222,10 +2400,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setPO_PricingSystem_ID (int PO_PricingSystem_ID)
 	{
-		if (PO_PricingSystem_ID < 1) 
+		if (PO_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_PO_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_PO_PricingSystem_ID, Integer.valueOf(PO_PricingSystem_ID));
+		}
 	}
 
 	/** Get Einkaufspreissystem.
@@ -2235,7 +2417,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PO_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2313,7 +2497,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PotentialLifeTimeValue);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -2333,8 +2519,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_QMSCertificateCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2356,8 +2544,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_QMSCertificateVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2494,10 +2684,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
-		if (SalesRep_ID < 1) 
+		if (SalesRep_ID < 1)
+		{
 			set_Value (COLUMNNAME_SalesRep_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+		}
 	}
 
 	/** Get Aussendienst.
@@ -2507,7 +2701,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2530,10 +2726,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setSalesRepIntern_ID (int SalesRepIntern_ID)
 	{
-		if (SalesRepIntern_ID < 1) 
+		if (SalesRepIntern_ID < 1)
+		{
 			set_Value (COLUMNNAME_SalesRepIntern_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_SalesRepIntern_ID, Integer.valueOf(SalesRepIntern_ID));
+		}
 	}
 
 	/** Get Sales Responsible.
@@ -2544,7 +2744,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRepIntern_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2566,7 +2768,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesVolume);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2586,8 +2790,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_SelfDisclosureCustomer);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2609,8 +2815,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_SelfDisclosureVendor);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2635,8 +2843,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		Object oo = get_Value(COLUMNNAME_SendEMail);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -2660,7 +2870,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_ShareOfCustomer);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2682,7 +2894,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_ShelfLifeMinPct);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -2740,10 +2954,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setSO_DocTypeTarget_ID (int SO_DocTypeTarget_ID)
 	{
-		if (SO_DocTypeTarget_ID < 1) 
+		if (SO_DocTypeTarget_ID < 1)
+		{
 			set_Value (COLUMNNAME_SO_DocTypeTarget_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_SO_DocTypeTarget_ID, Integer.valueOf(SO_DocTypeTarget_ID));
+		}
 	}
 
 	/** Get Zielbelegart.
@@ -2754,7 +2972,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SO_DocTypeTarget_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 

@@ -1,5 +1,6 @@
 package de.metas.banking.service.impl;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -11,12 +12,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Constants;
-import org.adempiere.util.MiscUtils;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
 import org.compiere.model.MRecurrentPaymentLine;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.banking.model.I_C_RecurrentPayment;
@@ -24,6 +23,7 @@ import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -132,8 +132,8 @@ public class BankingBL implements IBankingBL
 		invoice.setIsSOTrx(false); // always vendor invoice
 		
 		// FRESH-488: Set the payment rule 
-		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
-		invoice.setPaymentRule(paymentRuleToUse);
+		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		invoice.setPaymentRule(paymentRule.getCode());
 
 		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, Constants.DOCBASETYPE_AVIinvoice);
 		invoice.saveEx();
@@ -141,7 +141,7 @@ public class BankingBL implements IBankingBL
 		final MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
 		invoiceLine.setC_Charge_ID(line.getC_Charge_ID());
 		invoiceLine.setDescription(line.getDescription());
-		invoiceLine.setQty(Env.ONE);
+		invoiceLine.setQty(BigDecimal.ONE);
 		invoiceLine.setPrice(line.getPayAmt());
 		invoiceLine.setTax();
 		invoiceLine.saveEx();
@@ -154,9 +154,7 @@ public class BankingBL implements IBankingBL
 		}
 		else
 		{
-			throw new AdempiereException("Unable to complete invoice "
-					+ invoice.getDocumentNo() + "; Logger: "
-					+ MiscUtils.loggerMsgs());
+			throw new AdempiereException("Unable to complete invoice " + invoice.getDocumentNo());
 		}
 
 		// create history entry

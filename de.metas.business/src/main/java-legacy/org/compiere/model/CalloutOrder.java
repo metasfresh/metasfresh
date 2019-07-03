@@ -35,9 +35,11 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.CurrencyPrecision;
@@ -51,6 +53,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
@@ -62,6 +66,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -151,11 +156,11 @@ public class CalloutOrder extends CalloutEngine
 		// Payment Rule - POS Order
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
-			order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+			order.setPaymentRule(PaymentRule.Cash.getCode());
 		}
 		else
 		{
-			order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+			order.setPaymentRule(PaymentRule.OnCredit.getCode());
 		}
 
 		// Set Context:
@@ -180,40 +185,38 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			final I_C_BPartner bpartner = order.getC_BPartner();
-			if (bpartner != null && bpartner.getC_BPartner_ID() > 0)
+			final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+			if (bpartnerId != null)
 			{
-				final boolean IsSOTrx = documentNoInfo.isSOTrx();
+				final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+				final boolean isSOTrx = documentNoInfo.isSOTrx();
 
 				// PaymentRule
 				{
-					String paymentRule = IsSOTrx ? bpartner.getPaymentRule() : bpartner.getPaymentRulePO();
-					if (paymentRule != null && paymentRule.length() != 0)
+					PaymentRule paymentRule = isSOTrx
+							? PaymentRule.ofCode(bpartner.getPaymentRule())
+							: PaymentRule.ofCode(bpartner.getPaymentRulePO());
+					if (paymentRule != null)
 					{
-						if (IsSOTrx
-								// No Cash/Check/Transfer:
-								&& (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)
-										|| X_C_Order.PAYMENTRULE_Check.equals(paymentRule)
-										|| "U".equals(paymentRule) // FIXME: we no longer have this PaymentRule... so drop it from here
-								))
+						if (isSOTrx && paymentRule.isCashOrCheck()) // No Cash/Check/Transfer:
 						{
 							// for SO_Trx
-							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
+							paymentRule = PaymentRule.OnCredit; // Payment Term
 						}
-						if (!IsSOTrx && (X_C_Order.PAYMENTRULE_Cash.equals(paymentRule)))  // No Cash for PO_Trx
+						if (!isSOTrx && paymentRule.isCash())  // No Cash for PO_Trx
 						{
-							paymentRule = X_C_Order.PAYMENTRULE_OnCredit; // Payment Term
+							paymentRule = PaymentRule.OnCredit; // Payment Term
 						}
-						order.setPaymentRule(paymentRule);
+						order.setPaymentRule(paymentRule.getCode());
 					}
 				}
 
 				// Payment Term
 				{
-					final int paymentTermId = IsSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID();
-					if (paymentTermId > 0)
+					final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(isSOTrx ? bpartner.getC_PaymentTerm_ID() : bpartner.getPO_PaymentTerm_ID());
+					if (paymentTermId != null)
 					{
-						order.setC_PaymentTerm_ID(paymentTermId);
+						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 					}
 				}
 
@@ -228,10 +231,10 @@ public class CalloutOrder extends CalloutEngine
 
 				// DeliveryRule
 				{
-					final String deliveryRule = bpartner.getDeliveryRule();
-					if (deliveryRule != null && deliveryRule.length() != 0)
+					final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(bpartner.getDeliveryRule());
+					if (deliveryRule != null)
 					{
-						order.setDeliveryRule(deliveryRule);
+						order.setDeliveryRule(deliveryRule.getCode());
 					}
 				}
 
@@ -448,10 +451,10 @@ public class CalloutOrder extends CalloutEngine
 				}
 
 				// PO Reference
-				String s = rs.getString("POReference");
-				if (s != null && s.length() != 0)
+				final String poReference = rs.getString("POReference");
+				if (!Check.isEmpty(poReference, true))
 				{
-					order.setPOReference(s);
+					order.setPOReference(poReference);
 					// should not be reset to null if we entered already value!
 					// VHARCQ, accepted YS makes sense that way
 					// TODO: should get checked and removed if no longer needed!
@@ -461,20 +464,21 @@ public class CalloutOrder extends CalloutEngine
 				}
 
 				// SO Description
-				s = rs.getString("SO_Description");
-				if (s != null && s.trim().length() != 0)
+				final String soDescription = rs.getString("SO_Description");
+				if (!Check.isEmpty(soDescription, true))
 				{
-					order.setDescription(s);
+					order.setDescription(soDescription);
 				}
+				
 				// IsDiscountPrinted
-				s = rs.getString("IsDiscountPrinted");
-				order.setIsDiscountPrinted(DisplayType.toBoolean(s));
+				final boolean isDiscountPrinted = DisplayType.toBoolean(rs.getString("IsDiscountPrinted"));
+				order.setIsDiscountPrinted(isDiscountPrinted);
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
 				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
-				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
 					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
@@ -482,55 +486,60 @@ public class CalloutOrder extends CalloutEngine
 				}
 				else if (MOrder.DocSubType_POS.equals(OrderType))  // for POS
 				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
 				else
 				{
 					// PaymentRule
-					s = rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO");
-					if (s != null && s.length() != 0)
+					PaymentRule paymentRule = PaymentRule.ofNullableCode(rs.getString(IsSOTrx ? "PaymentRule" : "PaymentRulePO"));
+					if (paymentRule != null)
 					{
-						if ("B".equals(s))
+						if (paymentRule.isCash())
 						{
-							s = "P";
+							paymentRule = PaymentRule.OnCredit;
 						}
-						if (IsSOTrx && ("S".equals(s) || "U".equals(s)))
+						if (IsSOTrx && paymentRule.isCheck())
 						{
-							s = "P"; // Payment Term
+							paymentRule = PaymentRule.OnCredit;
 						}
-						order.setPaymentRule(s);
+						
+						order.setPaymentRule(paymentRule.getCode());
 					}
+					
 					// Payment Term
-					final Integer ii = rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
-					if (!rs.wasNull())
+					final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
+					if (paymentTermId != null)
 					{
-						order.setC_PaymentTerm_ID(ii);
+						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 					}
+					
 					// InvoiceRule
-					s = rs.getString("InvoiceRule");
-					if (s != null && s.length() != 0)
+					final String invoiceRule = rs.getString("InvoiceRule");
+					if (!Check.isEmpty(invoiceRule, true))
 					{
-						order.setInvoiceRule(s);
+						order.setInvoiceRule(invoiceRule);
 					}
+					
 					// DeliveryRule
-					s = rs.getString("DeliveryRule");
-					if (s != null && s.length() != 0)
+					final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(rs.getString("DeliveryRule"));
+					if (deliveryRule != null)
 					{
-						order.setDeliveryRule(s);
+						order.setDeliveryRule(deliveryRule.getCode());
 					}
 					// FreightCostRule
-					s = rs.getString("FreightCostRule");
-					if (s != null && s.length() != 0)
+					final String freightCostRule = rs.getString("FreightCostRule");
+					if (!Check.isEmpty(freightCostRule, true))
 					{
-						order.setFreightCostRule(s);
+						order.setFreightCostRule(freightCostRule);
 					}
+					
 					// DeliveryViaRule
-					s = rs.getString("DeliveryViaRule");
-					if (s != null && s.length() != 0)
+					final String deliveryViaRule = rs.getString("DeliveryViaRule");
+					if (!Check.isEmpty(deliveryViaRule, true))
 					{
 						if (IsSOTrx)  // task: 06914: for purchase orders, we use another C_BPartner column
 						{
-							order.setDeliveryViaRule(s);
+							order.setDeliveryViaRule(deliveryViaRule);
 						}
 					}
 
@@ -745,14 +754,14 @@ public class CalloutOrder extends CalloutEngine
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
 				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
-				order.setPaymentRule(X_C_Order.PAYMENTRULE_OnCredit);
+				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
 					order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
 				}
 				else if (MOrder.DocSubType_POS.equals(OrderType))
 				{
-					order.setPaymentRule(X_C_Order.PAYMENTRULE_Cash);
+					order.setPaymentRule(PaymentRule.Cash.getCode());
 				}
 				else
 				{
