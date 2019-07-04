@@ -27,9 +27,9 @@ import {salesInvoices} from '../../page_objects/sales_invoices';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
 
-describe('Create a Credit memo price difference for Sales Invoice', function () {
+describe('Create a Credit memo deliver difference for Sales Invoice', function () {
 
-  const creditMemoPriceDiff = 'Credit Memo - Price diff';
+  const creditMemoDeliverDiff = 'Credit Memo - Deliver Diff';
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -37,7 +37,7 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
   let originalSalesInvoiceTotalAmount;
   let originalSalesInvoiceID;
 
-  const newProductPrice = '0.123456'; // must be lower than the original price
+  const newQuantity = 5; // must be lower than the original amount
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
@@ -118,10 +118,10 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.pressDoneButton();
   });
 
-  it('Create the Credit Memo', function () {
+  it('Create the Credit Memo Deliver Diff', function () {
     cy.executeHeaderActionWithDialog('C_Invoice_Create_CreditMemo');
 
-    cy.selectInListField('C_DocType_ID', creditMemoPriceDiff, true, null, true);
+    cy.selectInListField('C_DocType_ID', creditMemoDeliverDiff, true, null, true);
 
     // ensure all the checkboxes are ok
     cy.setCheckBoxValue('CompleteIt', false, true, RewriteURL.PROCESS);
@@ -149,9 +149,9 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
       .dblclick();
   });
 
-  it('The Sales Invoice is a Credit Memo - Price diff', function () {
+  it('The Sales Invoice is a Credit Memo - Deliver diff', function () {
     cy.expectDocumentStatus(DocumentStatusKey.InProgress);
-    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemoPriceDiff);
+    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', creditMemoDeliverDiff);
   });
 
   it('Has the same properties and reference to the original', function () {
@@ -179,7 +179,7 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.selectTab('C_InvoiceLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
-    cy.writeIntoStringField('PriceEntered', newProductPrice, true, null, true);
+    cy.writeIntoStringField('QtyEntered', newQuantity, true, null, true);
     cy.pressDoneButton(200);
   });
 
