@@ -1,12 +1,9 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +13,6 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -44,9 +40,6 @@ import lombok.Value;
 @Value
 public class JsonRequestContact
 {
-	@ApiModelProperty(dataType = "java.lang.Long")
-	MetasfreshId metasfreshId;
-
 	@ApiModelProperty(dataType = "java.lang.String")
 	JsonExternalId externalId;
 
@@ -72,14 +65,13 @@ public class JsonRequestContact
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonRequestContact(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("code") @Nullable final String code,
@@ -90,7 +82,6 @@ public class JsonRequestContact
 			@JsonProperty("phone") final String phone,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
-		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.code = code;
@@ -102,16 +93,4 @@ public class JsonRequestContact
 
 		this.syncAdvise = syncAdvise;
 	}
-
-	public JsonRequestContact withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		return toBuilder().externalId(externalId).build();
-	}
-
-	@JsonIgnore
-	public SyncAdvise getSyncAdvise()
-	{
-		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
-	}
-
 }

@@ -1,6 +1,6 @@
 package de.metas.rest_api.ordercandidates;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
@@ -54,7 +54,7 @@ public final class JsonBPartnerInfo
 	@JsonInclude(Include.NON_NULL)
 	JsonRequestContact contact;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)

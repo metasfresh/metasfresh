@@ -12,8 +12,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,14 +52,7 @@ public class JsonRequestBPartnerUpsertTest
 		expect(result).toMatchSnapshot();
 	}
 
-	@Test
-	public void deserialize_2() throws IOException
-	{
-		final JsonRequestBPartnerUpsert result = deserialize("/de/metas/rest_api/bpartner/JsonBPartnerUpsertRequest_2.json");
-		expect(result).toMatchSnapshot();
-	}
-
-	private JsonRequestBPartnerUpsert deserialize(final String jsonResourceName) throws IOException
+	private JsonRequestBPartnerUpsert deserialize(@NonNull final String jsonResourceName) throws IOException
 	{
 		final JsonRequestBPartnerUpsert request = readInstanceFromFile(jsonResourceName);
 
@@ -71,7 +64,7 @@ public class JsonRequestBPartnerUpsertTest
 		return result;
 	}
 
-	private JsonRequestBPartnerUpsert readInstanceFromFile(final String jsonResourceName) throws IOException
+	private JsonRequestBPartnerUpsert readInstanceFromFile(@NonNull final String jsonResourceName) throws IOException
 	{
 
 		final InputStream stream = JsonRequestBPartnerUpsertTest.class.getResourceAsStream(jsonResourceName);

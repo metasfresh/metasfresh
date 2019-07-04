@@ -1,9 +1,8 @@
 de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItemTest.serializeDeserialize=[
   {
-    "externalId": "12345",
+    "bpartnerIdentifier": "ext-12345",
     "bpartnerComposite": {
       "bpartner": {
-        "metasfreshId": 123,
         "code": "code"
       }
     }

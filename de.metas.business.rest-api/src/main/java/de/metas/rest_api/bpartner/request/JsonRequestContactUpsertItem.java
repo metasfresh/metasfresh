@@ -1,9 +1,10 @@
 package de.metas.rest_api.bpartner.request;
 
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -38,27 +39,22 @@ import lombok.Value;
 public class JsonRequestContactUpsertItem
 {
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "External system's ID of the contact to upsert.", //
-			dataType = "java.lang.String")
+			position = 10, value = CONTACT_IDENTIFIER_DOC + "\n"//
+					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.") //
 	@NonNull
-	JsonExternalId externalId;
+	final String contactIdentifier;
 
 	@ApiModelProperty(allowEmptyValue = false, //
-			value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
+			position = 20, value = "The contact to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestContact contact;
 
 	@JsonCreator
 	public JsonRequestContactUpsertItem(
-			@NonNull @JsonProperty("externalId") JsonExternalId externalId,
+			@NonNull @JsonProperty("contactIdentifier") String contactIdentifier,
 			@NonNull @JsonProperty("contact") JsonRequestContact contact)
 	{
-		this.externalId = externalId;
+		this.contactIdentifier = contactIdentifier;
 		this.contact = contact;
-	}
-
-	public JsonRequestContact getEffectiveContact()
-	{
-		return getContact().withExternalId(getExternalId());
 	}
 }
