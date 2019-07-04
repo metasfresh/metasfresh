@@ -1,4 +1,4 @@
-de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner=[
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_create=[
   {
     "bpartner": {
       "id": 100006,
@@ -212,7 +212,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
 ]
 
 
-de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact=[
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact_create=[
   {
     "bpartner": {
       "id": 20,
@@ -367,7 +367,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
 ]
 
 
-de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation=[
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation_create=[
   {
     "bpartner": {
       "id": 20,

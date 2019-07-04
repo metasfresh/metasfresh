@@ -1,18 +1,14 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -43,10 +39,6 @@ import lombok.Value;
 @Value
 public class JsonRequestLocation
 {
-	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(dataType = "java.lang.Integer")
-	private MetasfreshId metasfreshId;
-
 	@ApiModelProperty(allowEmptyValue = true, //
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
@@ -77,14 +69,13 @@ public class JsonRequestLocation
 			value = "This translates to `C_BPartner_Location.GLN`.")
 	private String gln;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = "Sync advise about this location's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonRequestLocation(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("address1") @Nullable final String address1,
 			@JsonProperty("address2") @Nullable final String address2,
@@ -97,7 +88,6 @@ public class JsonRequestLocation
 			@JsonProperty("gln") @Nullable final String gln,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
-		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
 
@@ -111,11 +101,5 @@ public class JsonRequestLocation
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
 
 		this.syncAdvise = syncAdvise;
-	}
-
-	@JsonIgnore
-	public SyncAdvise getSyncAdvise()
-	{
-		return coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }
