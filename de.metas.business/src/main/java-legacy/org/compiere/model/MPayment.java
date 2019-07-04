@@ -146,7 +146,7 @@ public final class MPayment extends X_C_Payment
 		if (C_Payment_ID == 0)
 		{
 			setDocAction(DOCACTION_Complete);
-			setDocStatus(DOCSTATUS_Drafted);
+			setDocStatus(DocStatus.Drafted.getCode());
 			setTrxType(PaymentTrxType.Sales.getCode());
 			//
 			setR_AvsAddr(R_AVSADDR_Unavailable);
@@ -2129,14 +2129,10 @@ public final class MPayment extends X_C_Payment
 
 		//
 		// Make sure not already closed
-		final String docStatus = getDocStatus();
-		if (DOCSTATUS_Closed.equals(docStatus)
-				|| DOCSTATUS_Reversed.equals(docStatus)
-				|| DOCSTATUS_Voided.equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if(docStatus.isClosedReversedOrVoided())
 		{
-			m_processMsg = "Document Closed: " + docStatus;
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 
 		//
@@ -2148,11 +2144,7 @@ public final class MPayment extends X_C_Payment
 
 		//
 		// Not Processed
-		if (DOCSTATUS_Drafted.equals(docStatus)
-				|| DOCSTATUS_Invalid.equals(docStatus)
-				|| DOCSTATUS_InProgress.equals(docStatus)
-				|| DOCSTATUS_Approved.equals(docStatus)
-				|| DOCSTATUS_NotApproved.equals(docStatus))
+		if (docStatus.isNotProcessed())
 		{
 			addDescription(Services.get(IMsgBL.class).getMsg(getCtx(), "Voided") + " (" + getPayAmt() + ")");
 			setPayAmt(BigDecimal.ZERO);
@@ -2244,7 +2236,7 @@ public final class MPayment extends X_C_Payment
 		reversal.setDateAcct(dateAcct);
 		//
 		reversal.setDocumentNo(getDocumentNo() + REVERSE_INDICATOR);	// indicate reversals
-		reversal.setDocStatus(DOCSTATUS_Drafted);
+		reversal.setDocStatus(DocStatus.Drafted.getCode());
 		reversal.setDocAction(DOCACTION_Complete);
 		//
 		reversal.setPayAmt(getPayAmt().negate());
@@ -2277,7 +2269,7 @@ public final class MPayment extends X_C_Payment
 			return false;
 		}
 		reversal.closeIt();
-		reversal.setDocStatus(DOCSTATUS_Reversed);
+		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
 		reversal.save(get_TrxName());
 
@@ -2287,7 +2279,7 @@ public final class MPayment extends X_C_Payment
 		setIsAllocated(true);	// the allocation below is overwritten
 		// Set Status
 		addDescription("(" + reversal.getDocumentNo() + "<-)");
-		setDocStatus(DOCSTATUS_Reversed);
+		setDocStatus(DocStatus.Reversed.getCode());
 		setDocAction(DOCACTION_None);
 		setProcessed(true);
 		// FR [ 1948157 ]

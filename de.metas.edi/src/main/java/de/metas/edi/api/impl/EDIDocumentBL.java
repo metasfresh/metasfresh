@@ -41,13 +41,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -87,7 +87,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		// task 05721: Set isEDIEnabled to false and disable the button for reversals
-		if (X_C_Invoice.DOCSTATUS_Reversed.equals(document.getDocStatus()) || document.getReversal_ID() > 0)
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
+		if (docStatus.isReversed() || document.getReversal_ID() > 0)
 		{
 			document.setIsEdiEnabled(false);
 			return document.isEdiEnabled();

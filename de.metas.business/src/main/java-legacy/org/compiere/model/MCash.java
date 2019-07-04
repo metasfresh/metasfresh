@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
@@ -500,11 +501,8 @@ public class MCash extends X_C_Cash implements IDocument
 			{
 				// Check if the invoice is completed - teo_sarca BF [ 1894524 ]
 				MInvoice invoice = line.getInvoice();
-				if (   !MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus())
-					&& !MInvoice.DOCSTATUS_Closed.equals(invoice.getDocStatus())
-					&& !MInvoice.DOCSTATUS_Reversed.equals(invoice.getDocStatus())
-					&& !MInvoice.DOCSTATUS_Voided.equals(invoice.getDocStatus())
-					)
+				final DocStatus invoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+				if(!invoiceDocStatus.isCompletedOrClosedReversedOrVoided())
 				{
 					m_processMsg = "@Line@ "+line.getLine()+": @InvoiceCreateDocNotCompleted@";
 					return IDocument.STATUS_Invalid;
@@ -562,7 +560,7 @@ public class MCash extends X_C_Cash implements IDocument
 				pay.setDateAcct(getDateAcct());
 				pay.setAmount(line.getC_Currency_ID(), line.getAmount().negate());	//	Transfer
 				pay.setDescription(line.getDescription());
-				pay.setDocStatus(MPayment.DOCSTATUS_Closed);
+				pay.setDocStatus(DocStatus.Closed.getCode());
 				pay.setDocAction(MPayment.DOCACTION_None);
 				pay.setPosted(true);
 				pay.setIsAllocated(true);	//	Has No Allocation!

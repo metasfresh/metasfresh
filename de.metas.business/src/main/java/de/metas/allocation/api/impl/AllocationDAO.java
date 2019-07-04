@@ -47,7 +47,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.DB;
 
 import de.metas.allocation.api.IAllocationDAO;
@@ -163,7 +162,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addColumn(I_C_Payment.COLUMN_C_Payment_ID);
 
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID());
-		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, X_C_Payment.DOCSTATUS_Completed);
+		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed);
 		queryBuilder.addEqualsFilter(I_C_Payment.COLUMN_Processed, true);
 
 		// Matching DocType

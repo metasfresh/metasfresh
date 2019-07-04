@@ -49,7 +49,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
@@ -60,6 +59,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.payment.PaymentRule;
@@ -168,6 +168,7 @@ public class PaymentBL implements IPaymentBL
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 		final int C_Order_ID = payment.getC_Order_ID();
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 
 		// New Payment
 		if (payment.getC_Payment_ID() <= 0 && payment.getC_BPartner_ID() <= 0 && C_Invoice_ID <= 0)
@@ -207,7 +208,7 @@ public class PaymentBL implements IPaymentBL
 			onPayAmtChange(payment, true);
 		}
 		// calculate PayAmt
-		else if (X_C_Payment.DOCSTATUS_Drafted.equals(payment.getDocStatus()))
+		else if (docStatus.isDrafted())
 		{
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
@@ -224,8 +225,9 @@ public class PaymentBL implements IPaymentBL
 	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted)
 	{
 		payment.setOverUnderAmt(ZERO);
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 
-		if (X_C_Payment.DOCSTATUS_Drafted.equals(payment.getDocStatus()))
+		if (docStatus.isDrafted())
 		{
 			final BigDecimal InvoiceOpenAmt = fetchOpenAmount(payment, creditMemoAdjusted);
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
@@ -326,7 +328,8 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted)
 	{
-		if (X_C_Payment.DOCSTATUS_Drafted.equals(payment.getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
+		if (docStatus.isDrafted())
 		{
 			final BigDecimal DiscountAmt = payment.getDiscountAmt();
 			final BigDecimal PayAmt = payment.getPayAmt();

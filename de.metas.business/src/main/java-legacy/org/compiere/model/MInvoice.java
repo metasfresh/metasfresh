@@ -62,6 +62,7 @@ import de.metas.cache.CCache;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -213,9 +214,9 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public MInvoice(final Properties ctx, final int C_Invoice_ID, final String trxName)
 	{
 		super(ctx, C_Invoice_ID, trxName);
-		if (C_Invoice_ID == 0)
+		if (is_new())
 		{
-			setDocStatus(DOCSTATUS_Drafted);		// Draft
+			setDocStatus(DocStatus.Drafted.getCode());
 			setDocAction(DOCACTION_Complete);
 			//
 			// FRESH-488: Get the default payment rule form the system configuration
@@ -2022,21 +2023,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 
-		if (DOCSTATUS_Closed.equals(getDocStatus())
-				|| DOCSTATUS_Reversed.equals(getDocStatus())
-				|| DOCSTATUS_Voided.equals(getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if(docStatus.isClosedReversedOrVoided())
 		{
-			m_processMsg = "Document Closed: " + getDocStatus();
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 
 		// Not Processed
-		if (DOCSTATUS_Drafted.equals(getDocStatus())
-				|| DOCSTATUS_Invalid.equals(getDocStatus())
-				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Approved.equals(getDocStatus())
-				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
+		if(docStatus.isNotProcessed())
 		{
 			// Set lines to 0
 			final MInvoiceLine[] lines = getLines(false);
@@ -2215,7 +2209,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		reversal.setIsPaid(true);
 		reversal.closeIt();
 		reversal.setProcessing(false);
-		reversal.setDocStatus(DOCSTATUS_Reversed);
+		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reversal);
 
@@ -2250,7 +2244,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setProcessed(true);
 		// FR1948157
 		setReversal_ID(reversal.getC_Invoice_ID());
-		setDocStatus(DOCSTATUS_Reversed);	// may come from void
+		setDocStatus(DocStatus.Reversed.getCode());	// may come from void
 		setDocAction(DOCACTION_None);
 		setC_Payment_ID(0);
 		setIsPaid(true);

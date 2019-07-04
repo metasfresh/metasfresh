@@ -45,6 +45,7 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -200,7 +201,7 @@ public class PaymentBLTest
 		payment.setDiscountAmt(BigDecimal.ZERO);
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
+		payment.setDocStatus(DocStatus.Drafted.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
 		db.save(payment);
 
@@ -254,7 +255,7 @@ public class PaymentBLTest
 
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, false);
 
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment.setDocStatus(DocStatus.Completed.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Close);
 		db.save(payment);
 
@@ -274,7 +275,7 @@ public class PaymentBLTest
 		payment.setDiscountAmt(BigDecimal.ZERO);
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
+		payment.setDocStatus(DocStatus.Drafted.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
 		invoice.setC_Currency_ID(currencyCHF.getC_Currency_ID());
 

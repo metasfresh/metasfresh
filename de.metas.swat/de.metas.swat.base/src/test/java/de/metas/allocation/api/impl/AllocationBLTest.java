@@ -45,7 +45,6 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Payment;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
@@ -58,6 +57,7 @@ import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
@@ -191,7 +191,7 @@ public class AllocationBLTest
 		payment1.setProcessed(true);
 		payment1.setIsAllocated(false);
 		payment1.setIsAutoAllocateAvailableAmt(true);
-		payment1.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment1.setDocStatus(DocStatus.Completed.getCode());
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -251,7 +251,7 @@ public class AllocationBLTest
 		payment1.setProcessed(true);
 		payment1.setIsAllocated(false);
 		payment1.setIsAutoAllocateAvailableAmt(true);
-		payment1.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment1.setDocStatus(DocStatus.Completed.getCode());
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -264,7 +264,7 @@ public class AllocationBLTest
 		payment2.setProcessed(true);
 		payment2.setIsAllocated(false);
 		payment2.setIsAutoAllocateAvailableAmt(true);
-		payment2.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment2.setDocStatus(DocStatus.Completed.getCode());
 		payment2.setIsActive(true);
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -277,7 +277,7 @@ public class AllocationBLTest
 		payment3.setProcessed(true);
 		payment3.setIsAllocated(false);
 		payment3.setIsAutoAllocateAvailableAmt(true);
-		payment3.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment3.setDocStatus(DocStatus.Completed.getCode());
 		payment3.setIsActive(true);
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -343,7 +343,7 @@ public class AllocationBLTest
 		payment1.setProcessed(true);
 		payment1.setIsAllocated(false);
 		payment1.setIsAutoAllocateAvailableAmt(true);
-		payment1.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment1.setDocStatus(DocStatus.Completed.getCode());
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -356,7 +356,7 @@ public class AllocationBLTest
 		payment2.setProcessed(true);
 		payment2.setIsAllocated(false);
 		payment2.setIsAutoAllocateAvailableAmt(true);
-		payment2.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment2.setDocStatus(DocStatus.Completed.getCode());
 		payment2.setIsActive(true);
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -369,7 +369,7 @@ public class AllocationBLTest
 		payment3.setProcessed(true);
 		payment3.setIsAllocated(false);
 		payment3.setIsAutoAllocateAvailableAmt(true);
-		payment3.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment3.setDocStatus(DocStatus.Completed.getCode());
 		payment3.setIsActive(true);
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
