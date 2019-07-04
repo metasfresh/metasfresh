@@ -45,17 +45,16 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite;
 import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
+import de.metas.rest_api.bpartner.response.JsonResponseContact;
+import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.changelog.JsonChangeInfo;
 import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.rest_api.changelog.JsonChangeLogItem;
 import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
-
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.rest.ExternalId;
 import lombok.Getter;
@@ -147,7 +146,7 @@ public class JsonRetrieverService
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
 
-		this.cache = new BPartnerCompositeCache(identifier);
+		cache = new BPartnerCompositeCache(identifier);
 	}
 
 	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
@@ -438,9 +437,9 @@ public class JsonRetrieverService
 			}
 		}
 
-		for (BPartnerLocation location : bPartnerComposite.getLocations())
+		for (final BPartnerLocation location : bPartnerComposite.getLocations())
 		{
-			if (isEmpty(location.getGln(), true))
+			if (!isEmpty(location.getGln(), true))
 			{
 				result.add(BPartnerCompositeLookupKey.ofGln(location.getGln().trim()));
 			}
