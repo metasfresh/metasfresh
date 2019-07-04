@@ -118,6 +118,7 @@ public class JsonResponseBPartner
 	String group;
 
 	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@JsonCreator

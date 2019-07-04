@@ -86,6 +86,7 @@ public class JsonResponseLocation
 	private String gln;
 
 	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)

@@ -79,6 +79,7 @@ public class JsonResponseContact
 	String phone;
 
 	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
