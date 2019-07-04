@@ -189,7 +189,7 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoStringField('Description', 'myname', true)
      */
-    writeIntoStringField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, noRequest?: boolean): Chainable<any>
+    writeIntoStringField(fieldName: string, stringValue: string | number, modal?: boolean, rewriteUrl?: string, noRequest?: boolean): Chainable<any>
 
     /**
      * Write a string into a text area
