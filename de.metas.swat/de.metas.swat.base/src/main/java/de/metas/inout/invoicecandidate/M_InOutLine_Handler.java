@@ -61,7 +61,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -497,8 +497,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
+		if(docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(

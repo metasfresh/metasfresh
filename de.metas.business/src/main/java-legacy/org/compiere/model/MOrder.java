@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -62,6 +63,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -73,6 +75,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /**
  * Order Model.
@@ -812,14 +815,15 @@ public class MOrder extends X_C_Order implements IDocument
 	 *
 	 * @return invoices
 	 */
-	public MInvoice[] getInvoices()
+	@Deprecated
+	public static MInvoice[] getInvoices(@NonNull final OrderId orderId)
 	{
 		final String whereClause = "EXISTS (SELECT 1 FROM C_InvoiceLine il, C_OrderLine ol"
 				+ " WHERE il.C_Invoice_ID=C_Invoice.C_Invoice_ID"
 				+ " AND il.C_OrderLine_ID=ol.C_OrderLine_ID"
 				+ " AND ol.C_Order_ID=?)";
-		final List<MInvoice> list = new Query(getCtx(), MInvoice.Table_Name, whereClause, get_TrxName())
-				.setParameters(new Object[] { get_ID() })
+		final List<MInvoice> list = new Query(Env.getCtx(), MInvoice.Table_Name, whereClause, ITrx.TRXNAME_ThreadInherited)
+				.setParameters(new Object[] { orderId })
 				.setOrderBy("C_Invoice_ID DESC")
 				.list(MInvoice.class);
 		return list.toArray(new MInvoice[list.size()]);
@@ -853,16 +857,6 @@ public class MOrder extends X_C_Order implements IDocument
 		return LegacyAdapters.convertToPOArray(inOuts, MInOut.class);
 	}	// getShipments
 
-
-	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return MRefList.getListName(getCtx(), 131, getDocStatus());
-	}	// getDocStatusName
 
 	/**
 	 * Set DocAction
@@ -1201,7 +1195,7 @@ public class MOrder extends X_C_Order implements IDocument
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
@@ -1210,7 +1204,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Lines
@@ -1218,7 +1212,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (lines.length == 0)
 		{
 			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Bug 1564431
@@ -1230,7 +1224,7 @@ public class MOrder extends X_C_Order implements IDocument
 				if (product != null && product.isExcludeAutoDelivery())
 				{
 					m_processMsg = "@M_Product_ID@ " + product.getValue() + " @IsExcludeAutoDelivery@";
-					return IDocument.STATUS_Invalid;
+					return DocStatus.Invalid.getCode();
 				}
 			}
 		}
@@ -1251,7 +1245,7 @@ public class MOrder extends X_C_Order implements IDocument
 						{
 							log.warn("different Warehouse " + line);
 							m_processMsg = "@CannotChangeDocType@";
-							return IDocument.STATUS_Invalid;
+							return DocStatus.Invalid.getCode();
 						}
 					}
 				}
@@ -1259,10 +1253,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 			// New or in Progress/Invalid
 			final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
-			if (DocStatus.Drafted.equals(docStatus)
-					|| DocStatus.InProgress.equals(docStatus)
-					|| DocStatus.Invalid.equals(docStatus)
-					|| getC_DocType_ID() <= 0)
+			if (docStatus.isDraftedInProgressOrInvalid() || getC_DocType_ID() <= 0)
 			{
 				setC_DocType_ID(getC_DocTypeTarget_ID());
 			}
@@ -1276,7 +1267,7 @@ public class MOrder extends X_C_Order implements IDocument
 				else
 				{
 					m_processMsg = "@CannotChangeDocType@";
-					return IDocument.STATUS_Invalid;
+					return DocStatus.Invalid.getCode();
 				}
 			}
 		}  	// convert DocType
@@ -1294,7 +1285,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (no != 0)
 		{
 			m_processMsg = "@LinesWithoutProductAttribute@ (" + no + ")";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Lines
@@ -1304,24 +1295,24 @@ public class MOrder extends X_C_Order implements IDocument
 		if (!reserveStock(dt, lines))
 		{
 			m_processMsg = "Cannot reserve Stock";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 		if (!calculateTaxTotal())
 		{
 			m_processMsg = "Error calculating tax";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		m_justPrepared = true;
 		// if (!DOCACTION_Complete.equals(getDocAction())) don't set for just prepare
 		// setDocAction(DOCACTION_Complete);
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress.getCode();
 	}	// prepareIt
 
 	// @formatter:off
@@ -1723,7 +1714,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
-			return IDocument.STATUS_InProgress;
+			return DocStatus.InProgress.getCode();
 		}
 		// Offers
 		if (MDocType.DOCSUBTYPE_Proposal.equals(DocSubType)
@@ -1737,41 +1728,42 @@ public class MOrder extends X_C_Order implements IDocument
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 			if (m_processMsg != null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 			if (m_processMsg != null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			// Set the definite document number after completed (if needed)
 			setDefiniteDocumentNo();
 			setProcessed(true);
-			return IDocument.STATUS_Completed;
+			return DocStatus.Completed.getCode();
 		}
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
 				&& X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
-				&& getC_Payment_ID() == 0 && getC_CashLine_ID() == 0)
+				&& getC_Payment_ID() <= 0
+				&& getC_CashLine_ID() <= 0)
 		{
 			setProcessed(true);
-			return IDocument.STATUS_WaitingPayment;
+			return DocStatus.WaitingPayment.getCode();
 		}
 
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			final String status = prepareIt();
-			if (!IDocument.STATUS_InProgress.equals(status))
+			final DocStatus docStatus = DocStatus.ofCode(prepareIt());
+			if(!docStatus.isInProgress())
 			{
-				return status;
+				return docStatus.getCode();
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Implicit Approval
@@ -1799,7 +1791,7 @@ public class MOrder extends X_C_Order implements IDocument
 			shipment = createShipment(dt, realTimePOS ? null : getDateOrdered());
 			if (shipment == null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			info.append("@M_InOut_ID@: ").append(shipment.getDocumentNo());
 			final String msg = shipment.getProcessMsg();
@@ -1816,7 +1808,7 @@ public class MOrder extends X_C_Order implements IDocument
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			info.append(" - @C_Invoice_ID@: ").append(invoice.getDocumentNo());
 			final String msg = invoice.getProcessMsg();
@@ -1836,7 +1828,7 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 			info.append(valid);
 			m_processMsg = info.toString();
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1846,7 +1838,7 @@ public class MOrder extends X_C_Order implements IDocument
 		m_processMsg = info.toString();
 		//
 		setDocAction(DOCACTION_Re_Activate); // issue #347
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed.getCode();
 	}	// completeIt
 
 	/**
@@ -2168,30 +2160,27 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Reverse All *Invoices*
 		info.append(" - @C_Invoice_ID@:");
-		final MInvoice[] invoices = getInvoices();
-		for (final MInvoice invoice2 : invoices)
+		for (final MInvoice invoice : getInvoices(OrderId.ofRepoId(getC_Order_ID())))
 		{
-			final MInvoice invoice = invoice2;
 			// if closed - ignore
-			if (MInvoice.DOCSTATUS_Closed.equals(invoice.getDocStatus())
-					|| MInvoice.DOCSTATUS_Reversed.equals(invoice.getDocStatus())
-					|| MInvoice.DOCSTATUS_Voided.equals(invoice.getDocStatus()))
+			final DocStatus invoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+			if(invoiceDocStatus.isClosedReversedOrVoided())
 			{
 				continue;
 			}
 			invoice.set_TrxName(get_TrxName());
 
 			// If not completed - void - otherwise reverse it
-			if (!MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus()))
+			if (!invoiceDocStatus.isCompleted())
 			{
 				if (invoice.voidIt())
 				{
-					invoice.setDocStatus(MInvoice.DOCSTATUS_Voided);
+					invoice.setDocStatus(DocStatus.Voided.getCode());
 				}
 			}
 			else if (invoice.reverseCorrectIt())  	// completed invoice
 			{
-				invoice.setDocStatus(MInvoice.DOCSTATUS_Reversed);
+				invoice.setDocStatus(DocStatus.Reversed.getCode());
 				info.append(" ").append(invoice.getDocumentNo());
 			}
 			else
@@ -2199,7 +2188,7 @@ public class MOrder extends X_C_Order implements IDocument
 				m_processMsg = "Could not reverse Invoice " + invoice;
 				return false;
 			}
-			invoice.setDocAction(MInvoice.DOCACTION_None);
+			invoice.setDocAction(IDocument.ACTION_None);
 			invoice.save(get_TrxName());
 		}  	// for all shipments
 
@@ -2522,7 +2511,7 @@ public class MOrder extends X_C_Order implements IDocument
 	public boolean isComplete()
 	{
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
-		return docStatus.isCompletedOrClosedOrReversed();
+		return docStatus.isCompletedOrClosedReversedOrVoided();
 	}	// isComplete
 
 	// metas: begin

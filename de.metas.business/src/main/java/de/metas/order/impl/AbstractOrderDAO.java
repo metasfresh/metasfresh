@@ -2,6 +2,7 @@ package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 
@@ -248,5 +249,11 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.create()
 				.listIds(OrderId::ofRepoId)
 				.stream();
+	}
+
+	@Override
+	public void save(@NonNull final I_C_Order order)
+	{
+		saveRecord(order);
 	}
 }

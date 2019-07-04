@@ -73,7 +73,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -188,7 +188,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Services
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		//
@@ -265,8 +264,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (olAndSched.hasSalesOrderLine())
 			{
-				final String orderDocStatus = olAndSched.getOrderDocStatus();
-				if (!docActionBL.isStatusCompletedOrClosedOrReversed(orderDocStatus) // task 07355: thread closed orders like completed orders
+				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
+				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
 						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
 						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)

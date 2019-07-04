@@ -118,7 +118,6 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.order.IOrderDAO;
@@ -1219,7 +1218,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
 			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
-			creditedInvoiceIsReversed = Services.get(IDocumentBL.class).isDocumentStatusOneOf(originalInvoice, IDocument.STATUS_Reversed);
+			final DocStatus originalInvoiceDocStatus = DocStatus.ofCode(originalInvoice.getDocStatus());
+			creditedInvoiceIsReversed = originalInvoiceDocStatus.isReversed();
 		}
 		else
 		{
@@ -1481,8 +1481,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			int nonReversedIlas = 0;
 			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
-				if (!docActionBL.isStatusStrOneOf(ila.getDocStatus(),
-						X_C_Invoice_Line_Alloc.DOCSTATUS_Reversed))
+				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ila.getDocStatus());
+				if(!docStatus.isReversed())
 				{
 					nonReversedIlas++;
 				}

@@ -77,6 +77,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
@@ -1225,8 +1226,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isComplete(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final String docStatus = invoice.getDocStatus();
-		return Services.get(IDocumentBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
+		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}
 
 	@Override

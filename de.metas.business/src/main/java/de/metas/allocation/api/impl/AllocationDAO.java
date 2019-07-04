@@ -53,7 +53,7 @@ import org.compiere.util.DB;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -345,7 +345,7 @@ public class AllocationDAO implements IAllocationDAO
 		return allocationHdrQuery
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_AllocationHdr.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_GL_Journal.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addNotInSubQueryFilter(I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery) // has no accounting
 				.create()
 				.list(I_C_AllocationHdr.class);
@@ -371,7 +371,7 @@ public class AllocationDAO implements IAllocationDAO
 		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID())
-				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
 				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, invoice.isSOTrx())
 				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, true)

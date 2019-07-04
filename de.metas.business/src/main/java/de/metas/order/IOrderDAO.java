@@ -161,4 +161,6 @@ public interface IOrderDAO extends ISingletonService
 	BigDecimal getNotInvoicedAmt(BPartnerId bpartnerId);
 
 	Stream<OrderId> streamOrderIdsByBPartnerId(BPartnerId bpartnerId);
+
+	void save(I_C_Order order);
 }

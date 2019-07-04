@@ -28,6 +28,7 @@ import org.compiere.util.DB;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.Msg;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 
 /**
@@ -169,7 +170,7 @@ public class MCashLine extends X_C_CashLine
 			order.processIt(MOrder.ACTION_WaitComplete);
 			order.saveEx(trxName);
 			//	Set Invoice
-			MInvoice[] invoices = order.getInvoices();
+			MInvoice[] invoices = MOrder.getInvoices(OrderId.ofRepoId(order.getC_Order_ID()));
 			int length = invoices.length;
 			if (length > 0)		//	get last invoice
 			{

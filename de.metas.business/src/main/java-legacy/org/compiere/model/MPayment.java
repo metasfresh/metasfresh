@@ -48,6 +48,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -55,6 +56,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
@@ -1460,7 +1463,7 @@ public final class MPayment extends X_C_Payment
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Std Period open?
@@ -1468,7 +1471,7 @@ public final class MPayment extends X_C_Payment
 				isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Unsuccessful Online Payment
@@ -1482,28 +1485,29 @@ public final class MPayment extends X_C_Payment
 			{
 				m_processMsg = "@PaymentNotProcessed@";
 			}
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
+		//
 		// Waiting Payment - Need to create Invoice & Shipment
-		if (getC_Order_ID() != 0 && getC_Invoice_ID() == 0)
-		{	// see WebOrder.process
-			final MOrder order = new MOrder(getCtx(), getC_Order_ID(), get_TrxName());
-			if (DOCSTATUS_WaitingPayment.equals(order.getDocStatus()))
+		final OrderId orderId = OrderId.ofRepoIdOrNull(getC_Order_ID());
+		if (orderId != null && getC_Invoice_ID() <= 0)
+		{
+			final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+			
+			final I_C_Order order = ordersRepo.getById(orderId);
+			final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
+			if(orderDocStatus.isWaitingForPayment())
 			{
 				order.setC_Payment_ID(getC_Payment_ID());
-				order.setDocAction(X_C_Order.DOCACTION_WaitComplete);
-				order.set_TrxName(get_TrxName());
-				// metas: Prepayment Order shall receive their DateAcct from
-				// Payment, because the Order Dateacct could be far back
-				order.setDateAcct(getDateAcct());
-				// metas end
-				// boolean ok =
-				order.processIt(X_C_Order.DOCACTION_WaitComplete);
-				m_processMsg = order.getProcessMsg();
-				order.saveEx(get_TrxName());
+				order.setDocAction(IDocument.ACTION_WaitComplete);
+				order.setDateAcct(getDateAcct()); // Prepayment Order shall receive their DateAcct from Payment, because the Order Dateacct could be far back
+				
+				Services.get(IDocumentBL.class).processEx(orderDocStatus, IDocument.ACTION_WaitComplete);
+				ordersRepo.save(order);
+				
 				// Set Invoice
-				final MInvoice[] invoices = order.getInvoices();
+				final MInvoice[] invoices = MOrder.getInvoices(orderId);
 				final int length = invoices.length;
 				if (length > 0)
 				{
@@ -1526,21 +1530,21 @@ public final class MPayment extends X_C_Payment
 		if (!verifyDocType(pAllocs))
 		{
 			m_processMsg = "@PaymentDocTypeInvoiceInconsistent@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Payment Allocate is ignored if charge/invoice/order exists in header
 		if (!verifyPaymentAllocateVsHeader(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateIgnored@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Payment Amount must be equal to sum of Allocate amounts
 		if (!verifyPaymentAllocateSum(pAllocs))
 		{
 			m_processMsg = "@PaymentAllocateSumInconsistent@";
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Do not pay when Credit Stop/Hold
@@ -1549,7 +1553,7 @@ public final class MPayment extends X_C_Payment
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_PREPARE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		m_justPrepared = true;
@@ -1557,7 +1561,7 @@ public final class MPayment extends X_C_Payment
 		{
 			setDocAction(DOCACTION_Complete);
 		}
-		return IDocument.STATUS_InProgress;
+		return DocStatus.InProgress.getCode();
 	}	// prepareIt
 
 	private void checkCreditLimit()
@@ -1615,17 +1619,17 @@ public final class MPayment extends X_C_Payment
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			final String status = prepareIt();
-			if (!IDocument.STATUS_InProgress.equals(status))
+			final DocStatus docStatus = DocStatus.ofCode(prepareIt());
+			if (!docStatus.isInProgress())
 			{
-				return status;
+				return docStatus.getCode();
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Implicit Approval
@@ -1683,7 +1687,7 @@ public final class MPayment extends X_C_Payment
 			if (cash == null || cash.get_ID() == 0)
 			{
 				m_processMsg = "@NoCashBook@";
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 			final MCashLine cl = new MCashLine(cash);
 			cl.setCashType(X_C_CashLine.CASHTYPE_GeneralReceipts);
@@ -1709,7 +1713,7 @@ public final class MPayment extends X_C_Payment
 			if (!cl.save(get_TrxName()))
 			{
 				m_processMsg = "Could not save Cash Journal Line";
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid.getCode();
 			}
 		}
 		// End Trifon - CashPayments
@@ -1722,7 +1726,7 @@ public final class MPayment extends X_C_Payment
 		if (valid != null)
 		{
 			m_processMsg = valid;
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid.getCode();
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1731,7 +1735,7 @@ public final class MPayment extends X_C_Payment
 		//
 		setProcessed(true);
 		setDocAction(DOCACTION_Reverse_Correct); // issue #347
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed.getCode();
 	}	// completeIt
 
 	/**
@@ -2061,11 +2065,10 @@ public final class MPayment extends X_C_Payment
 				getC_Payment_ID(), get_TrxName());
 		for (MAllocationHdr allocation : allocations)
 		{
-			final String docStatus = allocation.getDocStatus();
+			final DocStatus allocDocStatus = DocStatus.ofCode(allocation.getDocStatus());
 
 			// 07570: Skip allocations which were already Reversed or Voided
-			if (IDocument.STATUS_Reversed.equals(docStatus)
-					|| IDocument.STATUS_Voided.equals(docStatus))
+			if(allocDocStatus.isReversedOrVoided())
 			{
 				continue;
 			}

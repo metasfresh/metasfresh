@@ -5,7 +5,7 @@ import org.compiere.model.I_C_PaySelection;
 
 import de.metas.banking.model.I_C_BankStatement;
 import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -28,13 +28,13 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess i
 	{
 		final ProcessInfoParameter[] para = getParametersAsArray();
 
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			final String name = para[i].getParameterName();
+			final String name = element.getParameterName();
 
 			if (name.equals(I_C_PaySelection.COLUMNNAME_C_PaySelection_ID))
 			{
-				p_C_PaySelection_ID = para[i].getParameterAsInt();
+				p_C_PaySelection_ID = element.getParameterAsInt();
 			}
 		}
 	}
@@ -61,9 +61,12 @@ public class C_BankStatementLine_CreateFrom_C_PaySelection extends JavaProcess i
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
-					IDocument.STATUS_Drafted, IDocument.STATUS_InProgress));
+			final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
+			return ProcessPreconditionsResolution.acceptIf(docStatus.isDraftedOrInProgress());
 		}
-		return ProcessPreconditionsResolution.reject();
+		else
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
 	}
 }

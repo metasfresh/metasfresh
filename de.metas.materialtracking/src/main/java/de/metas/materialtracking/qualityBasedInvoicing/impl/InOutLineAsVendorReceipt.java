@@ -27,12 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IHandlingUnitsInfo;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -189,10 +189,11 @@ import de.metas.util.Services;
 			}
 
 			// task 09117: we only may count iol that are not reversed, in progress of otherwise "not relevant"
-			final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-			if (!docActionBL.isDocumentStatusOneOf(inoutLine.getM_InOut(), IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+			final I_M_InOut inout = inoutLine.getM_InOut();
+			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
+			if(!inoutDocStatus.isCompletedOrClosed())
 			{
-				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutLine.getM_InOut().getDocStatus() });
+				logger.debug("Not counting {} because its M_InOut has docstatus {}", new Object[] { inoutLine, inoutDocStatus });
 				continue;
 			}
 

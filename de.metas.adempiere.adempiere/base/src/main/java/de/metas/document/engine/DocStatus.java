@@ -1,9 +1,14 @@
 package de.metas.document.engine;
 
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_C_Order;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -50,12 +55,24 @@ public enum DocStatus implements ReferenceListAwareEnum
 
 	public static final int AD_REFERENCE_ID = X_C_Order.DOCSTATUS_AD_Reference_ID;
 
+	private static final ImmutableSet<DocStatus> COMPLETED_OR_CLOSED_STATUSES = ImmutableSet.of(Completed, Closed);
+
 	@Getter
 	private final String code;
 
 	DocStatus(final String code)
 	{
 		this.code = code;
+	}
+
+	public static DocStatus ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
+
+	public static DocStatus ofNullableCodeOrUnknown(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : Unknown;
 	}
 
 	public static DocStatus ofCode(@NonNull final String code)
@@ -70,34 +87,68 @@ public enum DocStatus implements ReferenceListAwareEnum
 
 	private static final ImmutableMap<String, DocStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
+	public boolean isDrafted()
+	{
+		return this == Drafted;
+	}
+
+	public boolean isDraftedOrInProgress()
+	{
+		return this == Drafted
+				|| this == InProgress;
+	}
+
+	public boolean isReversed()
+	{
+		return this == Reversed;
+	}
+
 	public boolean isReversedOrVoided()
 	{
-		return this == DocStatus.Reversed
-				|| this == DocStatus.Voided;
+		return this == Reversed
+				|| this == Voided;
+	}
+
+	public boolean isClosedReversedOrVoided()
+	{
+		return this == Closed
+				|| this == Reversed
+				|| this == Voided;
 	}
 
 	public boolean isCompleted()
 	{
-		return this == DocStatus.Completed;
+		return this == Completed;
 	}
 
 	public boolean isClosed()
 	{
-		return this == DocStatus.Closed;
+		return this == Closed;
 	}
 
 	public boolean isCompletedOrClosed()
 	{
-		return this == DocStatus.Completed
-				|| this == DocStatus.Closed;
+		return COMPLETED_OR_CLOSED_STATUSES.contains(this);
+	}
+
+	public static Set<DocStatus> completedOrClosedStatuses()
+	{
+		return COMPLETED_OR_CLOSED_STATUSES;
 	}
 
 	public boolean isCompletedOrClosedOrReversed()
 	{
-		return this == DocStatus.Completed
-				|| this == DocStatus.Closed
-				|| this == DocStatus.Reversed
-				|| this == DocStatus.Voided;
+		return this == Completed
+				|| this == Closed
+				|| this == Reversed;
+	}
+
+	public boolean isCompletedOrClosedReversedOrVoided()
+	{
+		return this == Completed
+				|| this == Closed
+				|| this == Reversed
+				|| this == Voided;
 	}
 
 	public boolean isWaitingForPayment()
@@ -105,4 +156,22 @@ public enum DocStatus implements ReferenceListAwareEnum
 		return this == WaitingPayment;
 	}
 
+	public boolean isInProgress()
+	{
+		return this == InProgress;
+	}
+
+	public boolean isInProgressCompletedOrClosed()
+	{
+		return this == InProgress
+				|| this == Completed
+				|| this == Closed;
+	}
+
+	public boolean isDraftedInProgressOrInvalid()
+	{
+		return this == Drafted
+				|| this == InProgress
+				|| this == Invalid;
+	}
 }

@@ -190,24 +190,18 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			documents.put(documentId, document);
 		}
 
-		trxManager.run(new TrxRunnable()
-		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
+		trxManager.run((TrxRunnable)localTrxName -> {
+			for (final T document : documents.values())
 			{
-				for (final T document : documents.values())
+				final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);
+				try
 				{
-					final String trxNameOld = InterfaceWrapperHelper.getTrxName(document);
-					try
-					{
-						InterfaceWrapperHelper.setTrxName(document, localTrxName);
-						processEx(document, docAction, expectedDocStatus);
-					}
-					finally
-					{
-						InterfaceWrapperHelper.setTrxName(document, trxNameOld);
-					}
+					InterfaceWrapperHelper.setTrxName(document, localTrxName);
+					processEx(document, docAction, expectedDocStatus);
+				}
+				finally
+				{
+					InterfaceWrapperHelper.setTrxName(document, trxNameOld);
 				}
 			}
 		});
@@ -272,49 +266,29 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public boolean issDocumentDraftedOrInProgress(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Drafted,
-				IDocument.STATUS_InProgress);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isDraftedOrInProgress();
 	}
 
 	@Override
 	public boolean isDocumentCompleted(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Completed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isCompleted();
 	}
 
 	@Override
 	public boolean isDocumentClosed(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Closed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isClosed();
 	}
 
 	@Override
 	public boolean isDocumentCompletedOrClosed(final Object document)
 	{
-		return isDocumentStatusOneOf(document,
-				IDocument.STATUS_Completed,
-				IDocument.STATUS_Closed);
-	}
-
-	@Override
-	public boolean issDocumentCompletedOrClosedOrReversed(final Object document)
-	{
-		final IDocument doc = getDocument(document);
-		final String docStatus = doc.getDocStatus();
-
-		return isStatusCompletedOrClosedOrReversed(docStatus);
-	}
-
-	@Override
-	public boolean isStatusCompletedOrClosedOrReversed(final String docStatus)
-	{
-		return isStatusStrOneOf(docStatus,
-				IDocument.STATUS_Completed,
-				IDocument.STATUS_Closed,
-				IDocument.STATUS_Reversed);
+		final DocStatus docStatus = getDocStatusOrNull(document);
+		return docStatus != null && docStatus.isCompletedOrClosed();
 	}
 
 	@Override
@@ -334,6 +308,13 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	public String getDocStatusOrNull(final Properties ctx_NOTUSED, final int adTableId, final int recordId)
 	{
 		return retrieveString(adTableId, recordId, DocumentTableFields.COLUMNNAME_DocStatus);
+	}
+
+	private DocStatus getDocStatusOrNull(final Object document)
+	{
+		final IDocument doc = getDocument(document);
+		final DocStatus docStatus = DocStatus.ofNullableCode(doc.getDocStatus());
+		return docStatus;
 	}
 
 	@Override
@@ -416,27 +397,6 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
 		return InterfaceWrapperHelper.create(ctx, docTypeId, I_C_DocType.class, trxName);
-	}
-
-	@Override
-	public boolean isDocumentStatusOneOf(@NonNull final Object document, @NonNull final String... docStatusesToCheckFor)
-	{
-		final IDocument doc = getDocument(document);
-		final String docStatus = doc.getDocStatus();
-		return isStatusStrOneOf(docStatus, docStatusesToCheckFor);
-	}
-
-	@Override
-	public boolean isStatusStrOneOf(final String docStatus, final String... docStatusesToCheckFor)
-	{
-		for (final String currentDocStatus : docStatusesToCheckFor)
-		{
-			if (currentDocStatus.equals(docStatus))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	protected final LocalDate getDocumentDate(final Object model)
