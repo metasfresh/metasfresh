@@ -1,5 +1,7 @@
 package de.metas.rest_api.bpartner.impl;
 
+import static org.assertj.core.api.Assertions.fail;
+
 import java.util.UUID;
 
 import de.metas.rest_api.JsonExternalId;
@@ -8,8 +10,15 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner.JsonRequestBPartnerBuilder;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite.JsonRequestCompositeBuilder;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert.JsonRequestContactUpsertBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
+import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -47,7 +56,7 @@ public class MockedDataUtil
 		return MetasfreshId.of(metasfreshIdCounter++);
 	}
 
-	public JsonRequestComposite createMockBPartner(@NonNull final String bpartnerIdentifier)
+	public JsonRequestComposite createMockBPartner(@NonNull final String bpartnerIdentifierStr)
 	{
 		final JsonRequestCompositeBuilder result = JsonRequestComposite.builder();
 
@@ -61,71 +70,73 @@ public class MockedDataUtil
 				.phone("bPartner.phone")
 				.url("bPartner.url");
 
-		if (bpartnerIdentifier.startsWith("ext"))
+		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+
+		switch (bpartnerIdentifier.getType())
 		{
-			bPartner.code("code");
-			bPartner.externalId(JsonExternalId.of(bpartnerIdentifier));
-			bPartner.metasfreshId(nextMetasFreshId());
-		}
-		else if (bpartnerIdentifier.startsWith("val"))
-		{
-			bPartner.code(bpartnerIdentifier);
-			bPartner.externalId(JsonExternalId.of("externalId"));
-			bPartner.metasfreshId(nextMetasFreshId());
-		}
-		else
-		{
-			final int repoId = Integer.parseInt(bpartnerIdentifier);
-			bPartner.metasfreshId(MetasfreshId.of(repoId));
-			bPartner.code("code");
-			bPartner.externalId(JsonExternalId.of("externalId"));
+			case EXTERNAL_ID:
+				bPartner.code("code");
+				bPartner.externalId(bpartnerIdentifier.asJsonExternalId());
+				break;
+			case VALUE:
+				bPartner.code(bpartnerIdentifier.getValue());
+				bPartner.externalId(JsonExternalId.of("externalId"));
+				break;
+			default:
+				fail("bpartnerIdentifier is not supported by this mockup method; bpartnerIdentifier={}", bpartnerIdentifier);
+				break;
 		}
 
 		result.bpartner(bPartner.build());
 
-		final JsonRequestLocation location1 = createMockLocation("l1", "CH");
-		result.location(location1);
+		final JsonRequestLocationUpsertBuilder locationUpsert = JsonRequestLocationUpsert.builder()
+				.requestItem(createMockLocation("l1", "CH"))
+				.requestItem(createMockLocation("l2", "DE"));
 
-		final JsonRequestLocation location2 = createMockLocation("l2", "DE");
-		result.location(location2);
+		result.locations(locationUpsert.build());
 
-		final JsonRequestContact contact1 = createMockContact("c1");
-		result.contact(contact1);
+		final JsonRequestContactUpsertBuilder contactUpsert = JsonRequestContactUpsert.builder()
+				.requestItem(createMockContact("c1"))
+				.requestItem(createMockContact("c2"));
 
-		final JsonRequestContact contact2 = createMockContact("c2");
-		result.contact(contact2);
+		result.contacts(contactUpsert.build());
 
 		return result.build();
 	}
 
-	public JsonRequestLocation createMockLocation(
+	public JsonRequestLocationUpsertItem createMockLocation(
 			@NonNull final String prefix,
 			@NonNull final String countryCode)
 	{
-		return JsonRequestLocation.builder()
-				.metasfreshId(nextMetasFreshId())
-				.address1(prefix + "_address1")
-				.address2(prefix + "_address2")
-				.poBox(prefix + "_poBox")
-				.district(prefix + "_district")
-				.region(prefix + "_region")
-				.city(prefix + "_city")
-				.countryCode(countryCode)
-				.externalId(JsonExternalId.of(prefix + "_externalId"))
-				.gln(prefix + "_gln")
-				.postal(prefix + "_postal")
+		final String externalId = prefix + "_externalId";
+		return JsonRequestLocationUpsertItem.builder()
+				.locationIdentifier("ext-" + externalId)
+				.location(JsonRequestLocation.builder()
+						.address1(prefix + "_address1")
+						.address2(prefix + "_address2")
+						.poBox(prefix + "_poBox")
+						.district(prefix + "_district")
+						.region(prefix + "_region")
+						.city(prefix + "_city")
+						.countryCode(countryCode)
+						.externalId(JsonExternalId.of(externalId))
+						.gln(prefix + "_gln")
+						.postal(prefix + "_postal")
+						.build())
 				.build();
 	}
 
-	public JsonRequestContact createMockContact(@NonNull final String prefix)
+	public JsonRequestContactUpsertItem createMockContact(@NonNull final String prefix)
 	{
-		final JsonRequestContact contact = JsonRequestContact.builder()
-				.metasfreshId(nextMetasFreshId())
-				.email(prefix + "_email@email.net")
-				.externalId(JsonExternalId.of(prefix + "_externalId"))
-				.name(prefix + "_name")
-				.phone(prefix + "_phone")
+		final String externalId = prefix + "_externalId";
+		return JsonRequestContactUpsertItem.builder()
+				.contactIdentifier("ext-" + externalId)
+				.contact(JsonRequestContact.builder()
+						.email(prefix + "_email@email.net")
+						.externalId(JsonExternalId.of(externalId))
+						.name(prefix + "_name")
+						.phone(prefix + "_phone")
+						.build())
 				.build();
-		return contact;
 	}
 }

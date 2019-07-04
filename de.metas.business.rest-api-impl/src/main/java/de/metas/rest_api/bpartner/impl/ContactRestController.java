@@ -144,20 +144,22 @@ public class ContactRestController implements ContactRestEndpoint
 			@RequestBody @NonNull final JsonRequestContactUpsert contacts)
 	{
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
+		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build();
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final BPartnerContact bpartnerContact = persister.persist(
-					requestItem.getEffectiveContact(),
-					SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
+					requestItem.getContactIdentifier(),
+					requestItem.getContact(),
+					syncAdvise);
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
 
 			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem
 					.builder()
-					.externalId(requestItem.getExternalId())
+					.identifier(requestItem.getContactIdentifier())
 					.metasfreshId(metasfreshId)
 					.build();
 			response.responseItem(responseItem);

@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -44,27 +45,14 @@ public class JsonRequestBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to <code>C_BPartner.C_BPartner_ID</code>. If set, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If the lookup does not succeed, it will fail.")
-	@JsonInclude(Include.NON_NULL)
-	MetasfreshId metasfreshId;
-
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			dataType = "java.lang.String", //
-			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
+			value = "This translates to <code>C_BPartner.ExternalId</code>.")
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to <code>C_BPartner.Value</code>. If set and <code>externalId<code> is empty, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
+			value = "This translates to <code>C_BPartner.Value</code>.")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
@@ -107,7 +95,7 @@ public class JsonRequestBPartner
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -115,9 +103,7 @@ public class JsonRequestBPartner
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonRequestBPartner(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-
 			@JsonProperty("code") @Nullable final String code,
 			@JsonProperty("name") @Nullable final String name,
 			@JsonProperty("companyName") @Nullable final String companyName,
@@ -128,7 +114,6 @@ public class JsonRequestBPartner
 			@JsonProperty("group") @Nullable final String group,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
-		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.code = code;
 

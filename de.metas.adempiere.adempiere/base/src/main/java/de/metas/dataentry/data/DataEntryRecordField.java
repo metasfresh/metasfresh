@@ -16,6 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
+import de.metas.dataentry.layout.DataEntryField;
+import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
@@ -114,14 +116,14 @@ public abstract class DataEntryRecordField<T>
 
 	public static Object convertValueToFieldType(
 			@Nullable final Object value,
-			@NonNull final FieldType type)
+			@NonNull final DataEntryField field)
 	{
 		if (value == null)
 		{
 			return null;
 		}
 
-		final Class<?> typeClass = type.getClazz();
+		final Class<?> typeClass = field.getType().getClazz();
 		if (typeClass.isInstance(value))
 		{
 			return value;
@@ -130,6 +132,7 @@ public abstract class DataEntryRecordField<T>
 		{
 			final Integer valueConv = NumberUtils.asInteger(value, null);
 			if (valueConv == null)
+
 			{
 				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + Integer.class);
 			}
@@ -163,16 +166,59 @@ public abstract class DataEntryRecordField<T>
 		}
 		else if (DataEntryListValueId.class.equals(typeClass))
 		{
-			final Integer repoId = NumberUtils.asInteger(value, null);
-			if (repoId == null)
-			{
-				throw new AdempiereException("Failed converting `" + value + "` " + value.getClass() + " to " + Integer.class);
-			}
-			return DataEntryListValueId.ofRepoId(repoId);
+			return convertValueToListValueId(value, field);
 		}
 		else
 		{
 			throw new AdempiereException("Cannot convert `" + value + "` from " + value.getClass() + " to " + typeClass);
 		}
+	}
+
+	private static DataEntryListValueId convertValueToListValueId(
+			@Nullable final Object value,
+			@NonNull final DataEntryField field)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		//
+		// Match by ID
+		final Integer valueInt = NumberUtils.asIntegerOrNull(value);
+		if (valueInt != null)
+		{
+			final DataEntryListValueId id = DataEntryListValueId.ofRepoIdOrNull(valueInt);
+			if (id != null)
+			{
+				final DataEntryListValue matchedListValue = field.getFirstListValueMatching(listValue -> id.equals(listValue.getId()))
+						.orElse(null);
+				if (matchedListValue != null)
+				{
+					return matchedListValue.getId();
+				}
+			}
+		}
+
+		//
+		// Match by Name
+		{
+			final String captionStr = value.toString().trim();
+			if (captionStr.isEmpty())
+			{
+				return null;
+			}
+
+			final DataEntryListValue matchedListValue = field.getFirstListValueMatching(listValue -> listValue.isNameMatching(captionStr))
+					.orElse(null);
+			if (matchedListValue != null)
+			{
+				return matchedListValue.getId();
+			}
+		}
+
+		//
+		// Fail
+		throw new AdempiereException("No list value found for `" + value + "`");
 	}
 }

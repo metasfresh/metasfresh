@@ -8,7 +8,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsertItem;
 import de.metas.util.JSONObjectMapper;
@@ -48,7 +47,7 @@ public class JsonResponseBPartnerUpsertItemTest
 	public void serializeTest()
 	{
 		final JsonResponseUpsertItem item = JsonResponseUpsertItem.builder()
-				.externalId(JsonExternalId.of("12345"))
+				.identifier("val-12345")
 				.metasfreshId(MetasfreshId.of(23))
 				.build();
 		final JSONObjectMapper<JsonResponseUpsertItem> m = JSONObjectMapper.forClass(JsonResponseUpsertItem.class);
