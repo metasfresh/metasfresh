@@ -1,3 +1,8 @@
+
+
+DELETE FROM AD_ImpFormat WHERE Name = 'NEW BANK FORMAT' and AD_ImpFormat_ID = 1000001;
+;
+
 INSERT INTO public.ad_impformat (ad_impformat_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name,
  description, ad_table_id, formattype, processing, ismultiline, ismanualimport) VALUES (540040, 1000000, 1000000, 
  'Y', '2019-07-03 12:18:03.000000', 2188223, '2019-07-03 12:18:03.000000', 2188223, 'Bank Statement Import Format', null, 600, 'T', 'N', 'N', 'N');
