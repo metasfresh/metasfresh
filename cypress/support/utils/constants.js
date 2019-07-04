@@ -7,6 +7,10 @@ export class DocumentStatusKey {
   static InProgress = 'docStatusInProgress';
   // noinspection JSUnusedGlobalSymbols
   static _tag_docStatusInProgress = '.tag-default';
+
+  static Drafted = 'docStatusDrafted';
+  // noinspection JSUnusedGlobalSymbols
+  static _tag_docStatusDrafted = '.tag-primary';
 }
 
 export class DocumentActionKey {
