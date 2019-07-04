@@ -58,8 +58,8 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53510
 DELETE FROM AD_Column WHERE AD_Column_ID=53510
 ;
 
-alter table PP_Order_Node drop column if exists XPosition;
-alter table PP_Order_Node drop column if exists YPosition;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists XPosition');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists YPosition');
 
 -- 2018-11-27T13:44:00.182
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -86,7 +86,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53478
 DELETE FROM AD_Column WHERE AD_Column_ID=53478
 ;
 
-alter table PP_Order_Node drop column if exists IsCentrallyMaintained;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists IsCentrallyMaintained');
 
 -- 2018-11-27T13:44:33.233
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -113,7 +113,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53474
 DELETE FROM AD_Column WHERE AD_Column_ID=53474
 ;
 
-alter table PP_Order_Node drop column if exists EntityType;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists EntityType');
 
 
 
@@ -671,28 +671,28 @@ DELETE FROM AD_Column WHERE AD_Column_ID=53505
 drop view if exists PP_Order_Node_v;
 drop view if exists PP_Order_Node_vt;
 
-alter table PP_Order_Node drop column if exists Action;
-alter table PP_Order_Node drop column if exists AD_Form_ID;
-alter table PP_Order_Node drop column if exists AD_Task_ID;
-alter table PP_Order_Node drop column if exists AD_WF_Block_ID;
-alter table PP_Order_Node drop column if exists AD_Process_ID;
-alter table PP_Order_Node drop column if exists AD_Column_ID;
-alter table PP_Order_Node drop column if exists AD_Window_ID;
-alter table PP_Order_Node drop column if exists AttributeName;
-alter table PP_Order_Node drop column if exists AttributeValue;
-alter table PP_Order_Node drop column if exists AD_Image_ID;
-alter table PP_Order_Node drop column if exists DocAction;
-alter table PP_Order_Node drop column if exists DurationLimit;
-alter table PP_Order_Node drop column if exists JoinElement;
-alter table PP_Order_Node drop column if exists SplitElement;
-alter table PP_Order_Node drop column if exists SubflowExecution;
-alter table PP_Order_Node drop column if exists Workflow_ID;
-alter table PP_Order_Node drop column if exists Priority;
-alter table PP_Order_Node drop column if exists StartMode;
-alter table PP_Order_Node drop column if exists FinishMode;
-alter table PP_Order_Node drop column if exists UnitsCycles;
-alter table PP_Order_Node drop column if exists ValidFrom;
-alter table PP_Order_Node drop column if exists ValidTo;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Action');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Form_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Task_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_WF_Block_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Process_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Column_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Window_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AttributeName');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AttributeValue');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists AD_Image_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists DocAction');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists DurationLimit');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists JoinElement');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists SplitElement');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists SubflowExecution');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Workflow_ID');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Priority');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists StartMode');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists FinishMode');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists UnitsCycles');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists ValidFrom');
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists ValidTo');
 
 
 
@@ -761,7 +761,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53509
 DELETE FROM AD_Column WHERE AD_Column_ID=53509
 ;
 
-alter table PP_Order_Node drop column if exists WorkingTime;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists WorkingTime');
 
 
 
@@ -797,7 +797,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53461
 DELETE FROM AD_Column WHERE AD_Column_ID=53461
 ;
 
-alter table PP_Order_Node drop column if exists Cost;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Cost');
 
 -- 2018-11-27T14:09:04.749
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -839,7 +839,7 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=53476
 DELETE FROM AD_Column WHERE AD_Column_ID=53476
 ;
 
-alter table PP_Order_Node drop column if exists Help;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Help');
 alter table PP_Order_Node_Trl drop column if exists Help;
 
 -- 2018-11-27T14:12:09.587
@@ -859,7 +859,7 @@ DELETE FROM AD_Column WHERE AD_Column_ID=53445
 
 drop view if exists rv_pp_order_workflow;
 
-alter table PP_Order_Node drop column if exists Name;
+SELECT db_alter_table('PP_Order_Node', 'alter table PP_Order_Node drop column if exists Name');
 alter table PP_Order_Node_Trl drop column if exists Name;
 
 -- 2018-11-27T14:14:55.057
