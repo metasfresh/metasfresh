@@ -108,7 +108,6 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 
 		final int importBankStatementId = importRecord.getI_BankStatement_ID();
 
-
 		final int existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 
 		final boolean isNewBankStatement = existingBankStatementId <= 0;
@@ -119,8 +118,8 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 			// #4994 do not update
 			return ImportRecordResult.Nothing;
 		}
-		// Bank Statement
-		if (isNewBankStatement)			// Insert new Bank Statement
+
+		if (isNewBankStatement)
 		{
 			final I_C_BankStatement bankStatement = createBankStatement(importRecord);
 
@@ -232,7 +231,6 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 			bankStatementLine.setC_Payment_ID(importRecord.getC_Payment_ID());
 		}
 
-		// Copy statement line reference data
 		bankStatementLine.setEftTrxID(importRecord.getEftTrxID());
 		bankStatementLine.setEftTrxType(importRecord.getEftTrxType());
 		bankStatementLine.setEftCheckNo(importRecord.getEftCheckNo());
@@ -280,177 +278,5 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 
 		return bankStatement;
 	}
-
-	//
-
-	// //Import Bank Statement
-	// sql = new StringBuffer("SELECT * FROM I_BankStatement"
-	// + " WHERE I_IsImported='N'"
-	// + " ORDER BY C_BP_BankAccount_ID, Name, EftStatementDate, EftStatementReference");
-	//
-	// MBankStatement statement = null;
-	// I_C_BP_BankAccount account = null;
-	// PreparedStatement pstmt = null;
-	// int lineNo = 10;
-	// int noInsert = 0;
-	// int noInsertLine = 0;
-	// try
-	// {
-	// pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
-	// ResultSet rs = pstmt.executeQuery();
-	//
-	// while (rs.next())
-	// {
-	// X_I_BankStatement imp = new X_I_BankStatement(m_ctx, rs, get_TrxName());
-	// // Get the bank account for the first statement
-	// if (account == null)
-	// {
-	// account = InterfaceWrapperHelper.create(m_ctx, imp.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, getTrxName());
-	// statement = null;
-	// log.info("New Statement, Account=" + account.getAccountNo());
-	// }
-	// // Create a new Bank Statement for every account
-	// else if (account.getC_BP_BankAccount_ID() != imp.getC_BP_BankAccount_ID())
-	// {
-	// account = InterfaceWrapperHelper.create(m_ctx, imp.getC_BP_BankAccount_ID(), I_C_BP_BankAccount.class, getTrxName());
-	// statement = null;
-	// log.info("New Statement, Account=" + account.getAccountNo());
-	// }
-	// // Create a new Bank Statement for every statement name
-	// else if ((statement.getName() != null) && (imp.getName() != null))
-	// {
-	// if (!statement.getName().equals(imp.getName()))
-	// {
-	// statement = null;
-	// log.info("New Statement, Statement Name=" + imp.getName());
-	// }
-	// }
-	// // Create a new Bank Statement for every statement reference
-	// else if ((statement.getEftStatementReference() != null) && (imp.getEftStatementReference() != null))
-	// {
-	// if (!statement.getEftStatementReference().equals(imp.getEftStatementReference()))
-	// {
-	// statement = null;
-	// log.info("New Statement, Statement Reference=" + imp.getEftStatementReference());
-	// }
-	// }
-	// // Create a new Bank Statement for every statement date
-	// else if ((statement.getStatementDate() != null) && (imp.getStatementDate() != null))
-	// {
-	// if (!statement.getStatementDate().equals(imp.getStatementDate()))
-	// {
-	// statement = null;
-	// log.info("New Statement, Statement Date=" + imp.getStatementDate());
-	// }
-	// }
-	//
-	// // New Statement
-	// if (statement == null)
-	// {
-	// statement = new MBankStatement(account);
-	// statement.setEndingBalance(Env.ZERO);
-	//
-	// // Copy statement data
-	// if (imp.getName() != null)
-	// {
-	// statement.setName(imp.getName());
-	// }
-	// if (imp.getStatementDate() != null)
-	// {
-	// statement.setStatementDate(imp.getStatementDate());
-	// }
-	// statement.setDescription(imp.getDescription());
-	// statement.setEftStatementReference(imp.getEftStatementReference());
-	// statement.setEftStatementDate(imp.getEftStatementDate());
-	// if (statement.save())
-	// {
-	// noInsert++;
-	// }
-	// lineNo = 10;
-	// }
-	//
-	// // New StatementLine
-	// MBankStatementLine line = new MBankStatementLine(statement, lineNo);
-	//
-	// // Copy statement line data
-	// //line.setC_BPartner_ID(imp.getC_BPartner_ID());
-	// //line.setC_Invoice_ID(imp.getC_Invoice_ID());
-	// line.setReferenceNo(imp.getReferenceNo());
-	// line.setDescription(imp.getLineDescription());
-	// line.setStatementLineDate(imp.getStatementLineDate());
-	// line.setDateAcct(imp.getStatementLineDate());
-	// line.setValutaDate(imp.getValutaDate());
-	// line.setIsReversal(imp.isReversal());
-	// line.setC_Currency_ID(imp.getC_Currency_ID());
-	// line.setTrxAmt(imp.getTrxAmt());
-	// line.setStmtAmt(imp.getStmtAmt());
-	// if (imp.getC_Charge_ID() != 0)
-	// {
-	// line.setC_Charge_ID(imp.getC_Charge_ID());
-	// }
-	// line.setInterestAmt(imp.getInterestAmt());
-	// line.setChargeAmt(imp.getChargeAmt());
-	// line.setMemo(imp.getMemo());
-	// if (imp.getC_Payment_ID() != 0)
-	// {
-	// line.setC_Payment_ID(imp.getC_Payment_ID());
-	// }
-	//
-	// // Copy statement line reference data
-	// line.setEftTrxID(imp.getEftTrxID());
-	// line.setEftTrxType(imp.getEftTrxType());
-	// line.setEftCheckNo(imp.getEftCheckNo());
-	// line.setEftReference(imp.getEftReference());
-	// line.setEftMemo(imp.getEftMemo());
-	// line.setEftPayee(imp.getEftPayee());
-	// line.setEftPayeeAccount(imp.getEftPayeeAccount());
-	// line.setEftStatementLineDate(imp.getEftStatementLineDate());
-	// line.setEftValutaDate(imp.getEftValutaDate());
-	// line.setEftCurrency(imp.getEftCurrency());
-	// line.setEftAmt(imp.getEftAmt());
-	//
-	// // Save statement line
-	// if (line.save())
-	// {
-	// imp.setC_BankStatement_ID(statement.getC_BankStatement_ID());
-	// imp.setC_BankStatementLine_ID(line.getC_BankStatementLine_ID());
-	// imp.setI_IsImported(true);
-	// imp.setProcessed(true);
-	// imp.save();
-	// noInsertLine++;
-	// lineNo += 10;
-	// }
-	// line = null;
-	//
-	// }
-	//
-	// // Close database connection
-	// rs.close();
-	// pstmt.close();
-	// rs = null;
-	// pstmt = null;
-	//
-	// }
-	// catch(Exception e)
-	// {
-	// log.error(sql.toString(), e);
-	// }
-	//
-	// // Set Error to indicator to not imported
-	// sql = new StringBuffer ("UPDATE I_BankStatement "
-	// + "SET I_IsImported='N', Updated=now() "
-	// + "WHERE I_IsImported<>'Y'").append(clientCheck);
-	// no = DB.executeUpdate(sql.toString(), get_TrxName());
-	// addLog (0, null, new BigDecimal (no), "@Errors@");
-	// //
-	// addLog (0, null, new BigDecimal (noInsert), "@C_BankStatement_ID@: @Inserted@");
-	// addLog (0, null, new BigDecimal (noInsertLine), "@C_BankStatementLine_ID@: @Inserted@");
-	// return "";
-	//
-	// } // doIt
-	//
-	// }
-	//
-	// }
 
 }

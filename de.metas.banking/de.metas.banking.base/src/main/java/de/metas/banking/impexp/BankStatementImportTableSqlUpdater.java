@@ -37,7 +37,6 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 @UtilityClass
-
 public class BankStatementImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BankStatementImportTableSqlUpdater.class);
@@ -47,8 +46,6 @@ public class BankStatementImportTableSqlUpdater
 		updateBankAccount(bankAccountId, whereClause);
 
 	}
-
-
 
 	public void updateBankStatementImportTable(@NonNull final String whereClause)
 	{
@@ -83,7 +80,6 @@ public class BankStatementImportTableSqlUpdater
 		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.info("Name", no);
 	}
-
 
 	private void updateStatementDate(final String whereClause)
 	{
