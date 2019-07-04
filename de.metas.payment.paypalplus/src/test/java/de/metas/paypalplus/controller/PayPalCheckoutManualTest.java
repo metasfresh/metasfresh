@@ -55,12 +55,16 @@ import com.paypal.payments.RefundRequest;
  * #L%
  */
 
-public class PayPalCheckoutTest
+public class PayPalCheckoutManualTest
 {
-	public static void main(final String[] args)
+	public static void main(final String[] args) throws Exception
 	{
-		new PayPalCheckoutTest().run();
+		new PayPalCheckoutManualTest().run();
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println("Done");
 	}
+
+	private final boolean debug = true;
 
 	/**
 	 * Setting up PayPal SDK environment with PayPal Access credentials. For demo
@@ -75,73 +79,76 @@ public class PayPalCheckoutTest
 
 	private final PayPalHttpClient client = new PayPalHttpClient(environment);
 
-	private void run()
+	private void run() throws IOException
 	{
-		try
+		//
+		// Creating an order
+		System.out.println("Creating Order...");
+		HttpResponse<Order> orderResponse = createOrder();
+		String orderId = "";
+		if (orderResponse.statusCode() == 201)
 		{
-			// Creating an order
-			HttpResponse<Order> orderResponse = createOrder(false);
-			String orderId = "";
-			System.out.println("Creating Order...");
-			if (orderResponse.statusCode() == 201)
+			orderId = orderResponse.result().id();
+			System.out.println("Order ID: " + orderId);
+			System.out.println("Links:");
+			for (final LinkDescription link : orderResponse.result().links())
 			{
-				orderId = orderResponse.result().id();
-				System.out.println("Order ID: " + orderId);
-				System.out.println("Links:");
-				for (final LinkDescription link : orderResponse.result().links())
-				{
-					System.out.println("\t" + link.rel() + ": " + link.href());
-				}
+				System.out.println("\t" + link.rel() + ": " + link.href());
 			}
-			System.out.println("Created Successfully\n");
-			System.out.println("Copy approve link and paste it in browser. Login with buyer account and follow the instructions.\nOnce approved hit enter...");
-			System.in.read();
-
-			// Authorizing created order
-			System.out.println("Authorizing Order...");
-			orderResponse = authorizeOrder(orderId, false);
-			String authId = "";
-			if (orderResponse.statusCode() == 201)
-			{
-				System.out.println("Authorized Successfully\n");
-				authId = orderResponse.result().purchaseUnits().get(0).payments().authorizations().get(0).id();
-			}
-
-			// Capturing authorized order
-			System.out.println("Capturing Order...");
-			final HttpResponse<Capture> captureOrderResponse = captureOrder(authId, false);
-			if (orderResponse.statusCode() == 201)
-			{
-				System.out.println("Captured Successfully");
-				System.out.println("Status Code: " + captureOrderResponse.statusCode());
-				System.out.println("Status: " + captureOrderResponse.result().status());
-				System.out.println("Capture ID: " + captureOrderResponse.result().id());
-				System.out.println("Links: ");
-				for (final com.paypal.payments.LinkDescription link : captureOrderResponse.result().links())
-				{
-					System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
-				}
-			}
-			System.out.println();
-			System.out.println("Refunding Order...");
-			final HttpResponse<Refund> refundHttpResponse = refundOrder(captureOrderResponse.result().id(), false);
-			if (refundHttpResponse.statusCode() == 201)
-			{
-				System.out.println("Refunded Successfully");
-				System.out.println("Status Code: " + refundHttpResponse.statusCode());
-				System.out.println("Status: " + refundHttpResponse.result().status());
-				System.out.println("Order ID: " + refundHttpResponse.result().id());
-				System.out.println("Links: ");
-				for (final com.paypal.payments.LinkDescription link : refundHttpResponse.result().links())
-				{
-					System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
-				}
-			}
-
 		}
-		catch (final Exception e)
+		System.out.println("Created Successfully\n");
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println("Copy approve link and paste it in browser. Login with buyer account and follow the instructions.\nOnce approved hit enter...");
+		System.out.println("-------------------------------------------------------------------------");
+		System.in.read();
+
+		//
+		// Authorizing created order
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println("Authorizing Order...");
+		orderResponse = authorizeOrder(orderId);
+		String authId = "";
+		if (orderResponse.statusCode() == 201)
 		{
-			e.printStackTrace();
+			System.out.println("Authorized Successfully\n");
+			authId = orderResponse.result().purchaseUnits().get(0).payments().authorizations().get(0).id();
+		}
+
+		//
+		// Capturing authorized order
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println("Capturing Order...");
+		final HttpResponse<Capture> captureOrderResponse = captureOrder(authId);
+		if (orderResponse.statusCode() == 201)
+		{
+			System.out.println("Captured Successfully");
+			System.out.println("Status Code: " + captureOrderResponse.statusCode());
+			System.out.println("Status: " + captureOrderResponse.result().status());
+			System.out.println("Capture ID: " + captureOrderResponse.result().id());
+			System.out.println("Links: ");
+			for (final com.paypal.payments.LinkDescription link : captureOrderResponse.result().links())
+			{
+				System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
+			}
+		}
+
+		//
+		// Refunding the order
+		System.out.println();
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println("Refunding Order...");
+		final HttpResponse<Refund> refundHttpResponse = refundOrder(captureOrderResponse.result().id(), false);
+		if (refundHttpResponse.statusCode() == 201)
+		{
+			System.out.println("Refunded Successfully");
+			System.out.println("Status Code: " + refundHttpResponse.statusCode());
+			System.out.println("Status: " + refundHttpResponse.result().status());
+			System.out.println("Order ID: " + refundHttpResponse.result().id());
+			System.out.println("Links: ");
+			for (final com.paypal.payments.LinkDescription link : refundHttpResponse.result().links())
+			{
+				System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
+			}
 		}
 	}
 
@@ -220,7 +227,8 @@ public class PayPalCheckoutTest
 		final OrderRequest orderRequest = new OrderRequest();
 		orderRequest.intent("AUTHORIZE");
 		final ApplicationContext applicationContext = new ApplicationContext()
-				.cancelUrl("https://www.example.com").returnUrl("https://www.example.com");
+				.cancelUrl("https://www.example.com")
+				.returnUrl("https://www.example.com");
 		orderRequest.applicationContext(applicationContext);
 		final List<PurchaseUnitRequest> purchaseUnitRequests = new ArrayList<>();
 		final PurchaseUnitRequest purchaseUnitRequest = new PurchaseUnitRequest()
@@ -237,32 +245,42 @@ public class PayPalCheckoutTest
 	 * @return HttpResponse<Order> response received from API
 	 * @throws IOException Exceptions from API if any
 	 */
-	private HttpResponse<Order> createOrder(final boolean debug) throws IOException
+	private HttpResponse<Order> createOrder() throws IOException
 	{
 		final OrdersCreateRequest request = new OrdersCreateRequest();
 		request.header("prefer", "return=representation");
-		request.requestBody(buildCompleteRequestBody());
+		final OrderRequest requestBody = buildCompleteRequestBody();
+		request.requestBody(requestBody);
+
+		//
 		final HttpResponse<Order> response = client.execute(request);
-		if (debug)
+		final int reponseStatusCode = response.statusCode();
+		final boolean isReponseCodeOK = reponseStatusCode == 201;
+		System.out.println("Order Create response: ");
+		System.out.println("Status Code: " + reponseStatusCode + " " + (isReponseCodeOK ? "OK" : "ERROR"));
+
+		//
+		final Order responseOrder = response.result();
+		if (responseOrder != null)
 		{
-			if (response.statusCode() == 201)
+			System.out.println("Status: " + responseOrder.status());
+			System.out.println("Order ID: " + responseOrder.id());
+			System.out.println("Intent: " + responseOrder.intent());
+			System.out.println("Links: ");
+			for (final LinkDescription link : responseOrder.links())
 			{
-				System.out.println("Order with Complete Payload: ");
-				System.out.println("Status Code: " + response.statusCode());
-				System.out.println("Status: " + response.result().status());
-				System.out.println("Order ID: " + response.result().id());
-				System.out.println("Intent: " + response.result().intent());
-				System.out.println("Links: ");
-				for (final LinkDescription link : response.result().links())
-				{
-					System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
-				}
-				System.out.println("Total Amount: " + response.result().purchaseUnits().get(0).amount().currencyCode()
-						+ " " + response.result().purchaseUnits().get(0).amount().value());
-				System.out.println("Full response body:");
-				System.out.println(toJsonString(response.result()));
+				System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
 			}
+			System.out.println("Total Amount: " + responseOrder.purchaseUnits().get(0).amount().currencyCode()
+					+ " " + responseOrder.purchaseUnits().get(0).amount().value());
+			System.out.println("Full response body:");
+			System.out.println(toJsonString(responseOrder));
 		}
+		else
+		{
+			System.out.println("NO RESPONSE ORDER");
+		}
+
 		return response;
 	}
 
@@ -273,7 +291,7 @@ public class PayPalCheckoutTest
 	 * @return HttpResponse<Order> response received from API
 	 * @throws IOException Exceptions from API if any
 	 */
-	private HttpResponse<Order> createOrderWithMinimumPayload(final boolean debug) throws IOException
+	private HttpResponse<Order> createOrderWithMinimumPayload() throws IOException
 	{
 		final OrdersCreateRequest request = new OrdersCreateRequest();
 		request.header("prefer", "return=representation");
@@ -283,20 +301,23 @@ public class PayPalCheckoutTest
 		{
 			if (response.statusCode() == 201)
 			{
+				final Order responseOrder = response.result();
+
 				System.out.println("Order with Minimum Payload: ");
 				System.out.println("Status Code: " + response.statusCode());
-				System.out.println("Status: " + response.result().status());
-				System.out.println("Order ID: " + response.result().id());
-				System.out.println("Intent: " + response.result().intent());
+				System.out.println("Status: " + responseOrder.status());
+				System.out.println("Order ID: " + responseOrder.id());
+				System.out.println("Intent: " + responseOrder.intent());
 				System.out.println("Links: ");
-				for (final LinkDescription link : response.result().links())
+				for (final LinkDescription link : responseOrder.links())
 				{
 					System.out.println("\t" + link.rel() + ": " + link.href() + "\tCall Type: " + link.method());
 				}
-				System.out.println("Total Amount: " + response.result().purchaseUnits().get(0).amount().currencyCode()
-						+ " " + response.result().purchaseUnits().get(0).amount().value());
+				System.out.println("Total Amount:"
+						+ " " + responseOrder.purchaseUnits().get(0).amount().currencyCode()
+						+ " " + responseOrder.purchaseUnits().get(0).amount().value());
 				System.out.println("Full response body:");
-				System.out.println(toJsonString(response.result()));
+				System.out.println(toJsonString(responseOrder));
 			}
 		}
 		return response;
@@ -310,7 +331,7 @@ public class PayPalCheckoutTest
 	 * @return HttpResponse<Order> response received from API
 	 * @throws IOException Exceptions from API if any
 	 */
-	private HttpResponse<Order> authorizeOrder(final String orderId, final boolean debug) throws IOException
+	private HttpResponse<Order> authorizeOrder(final String orderId) throws IOException
 	{
 		final OrdersAuthorizeRequest request = new OrdersAuthorizeRequest(orderId);
 		request.requestBody(new OrderActionRequest());
@@ -351,7 +372,7 @@ public class PayPalCheckoutTest
 	 * @return HttpResponse<Capture> response received from API
 	 * @throws IOException Exceptions from API if any
 	 */
-	private HttpResponse<Capture> captureOrder(final String authId, final boolean debug) throws IOException
+	private HttpResponse<Capture> captureOrder(final String authId) throws IOException
 	{
 		final AuthorizationsCaptureRequest request = new AuthorizationsCaptureRequest(authId);
 		request.requestBody(new OrderRequest());
