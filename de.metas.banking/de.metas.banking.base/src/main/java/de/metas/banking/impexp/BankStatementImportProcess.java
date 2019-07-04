@@ -54,12 +54,6 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 
 	private int p_C_BP_BankAccount_ID = 0;
 
-	private void getBankStatementImportProcessParameter()
-	{
-
-		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt("C_BP_BankAccount_ID", -1);
-	}
-
 	@Override
 	public Class<I_I_BankStatement> getImportModelClass()
 	{
@@ -84,7 +78,7 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 
 		final String whereClause = getWhereClause();
 
-		getBankStatementImportProcessParameter();
+		p_C_BP_BankAccount_ID = getParameters().getParameterAsInt("C_BP_BankAccount_ID", -1);
 		BankStatementImportTableSqlUpdater.updateBPBankAccount(p_C_BP_BankAccount_ID, whereClause);
 		BankStatementImportTableSqlUpdater.updateBankStatementImportTable(whereClause);
 	}
@@ -106,12 +100,9 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 	{
 		final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 
-		final int importBankStatementId = importRecord.getI_BankStatement_ID();
-
 		final int existingBankStatementId = retrieveExistingBankStatementId(importRecord);
 
 		final boolean isNewBankStatement = existingBankStatementId <= 0;
-		log.debug("I_BankStatement_ID=" + importBankStatementId + ", C_BankStatement_ID=" + existingBankStatementId);
 
 		if (!isNewBankStatement && isInsertOnly)
 		{
@@ -129,7 +120,6 @@ public class BankStatementImportProcess extends AbstractImportProcess<I_I_BankSt
 			importRecord.setC_BankStatement_ID(bankStatementRecordId);
 			save(importRecord);
 
-			log.trace("Insert Bank Statement");
 		}
 		else
 		{
