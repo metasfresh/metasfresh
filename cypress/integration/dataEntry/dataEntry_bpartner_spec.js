@@ -47,7 +47,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
       .apply();
   });
 
-  it('Create dataentry fileds', function() {
+  it('Create dataentry fields', function() {
     const section1FieldBuilder = new DataEntryField(
       'Tab1-Section1-Line1-Field1',
       `${dataEntrySection1Name}_${dataEntryTabName}_${dataEntrySubTab1Name}_11`
