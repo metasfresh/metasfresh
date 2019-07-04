@@ -25,7 +25,7 @@
 import {getLanguageSpecific} from '../../support/utils/utils';
 import {salesInvoices} from '../../page_objects/sales_invoices';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
-import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
+import {DocumentActionKey, DocumentStatusKey} from '../../support/utils/constants';
 
 describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferenz) for Sales Invoice', function () {
 
