@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.*;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.util.List;
@@ -44,9 +44,10 @@ import lombok.Value;
 @ApiModel
 public class JsonRequestContactUpsert
 {
+	@ApiModelProperty(position = 10)
 	List<JsonRequestContactUpsertItem> requestItems;
 
-	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Sync-advise for individual items.\n" + CREATE_OR_MERGE_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator
@@ -56,6 +57,6 @@ public class JsonRequestContactUpsert
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.requestItems = coalesce(requestItems, ImmutableList.of());
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.CREATE_OR_MERGE);
 	}
 }

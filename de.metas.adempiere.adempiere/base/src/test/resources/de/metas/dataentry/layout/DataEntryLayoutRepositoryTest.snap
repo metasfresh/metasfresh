@@ -71,7 +71,6 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                       "listValues": [
                         {
                           "id": 100015,
-                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_2_name",
                             "anyLanguage": true
@@ -83,7 +82,6 @@ de.metas.dataentry.layout.DataEntryLayoutRepositoryTest.getByWindowId=[
                         },
                         {
                           "id": 100014,
-                          "fieldId": 100013,
                           "name": {
                             "value": "listValueRecord1_2_1_1_2_1_name",
                             "anyLanguage": true

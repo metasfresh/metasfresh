@@ -157,6 +157,7 @@ public class BPartnerCompositeRepository
 		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addInArrayFilter(I_AD_User.COLUMN_AD_Org_ID, Env.getOrgId(), OrgId.ANY);
 
 		if (contactQuery.getBPartnerId() != null)
@@ -382,6 +383,7 @@ public class BPartnerCompositeRepository
 			page = queryBL
 					.createQueryBuilder(I_AD_User.class)
 					.addOnlyActiveRecordsFilter()
+					.addOnlyContextClient()
 					.addCompareFilter(I_AD_User.COLUMN_Updated, Operator.GREATER_OR_EQUAL, timestamp)
 					.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null)
 					.create()
@@ -417,6 +419,7 @@ public class BPartnerCompositeRepository
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter();
 
 		if (!query.getOnlyOrgIds().isEmpty())
@@ -485,6 +488,7 @@ public class BPartnerCompositeRepository
 	{
 		final IQuery<I_C_BPartner> bpartnerRecordQuery = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create();
@@ -533,6 +537,7 @@ public class BPartnerCompositeRepository
 		final List<I_AD_User> contactRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
 				.list();
@@ -542,6 +547,7 @@ public class BPartnerCompositeRepository
 		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
 				.list();
@@ -552,6 +558,7 @@ public class BPartnerCompositeRepository
 		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Location.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addInArrayFilter(I_C_Location.COLUMNNAME_C_Location_ID, locationIds)
 				.create()
 				.list();
@@ -798,6 +805,7 @@ public class BPartnerCompositeRepository
 		queryBL
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
 				.addEqualsFilter(I_C_BPartner_Location.COLUMN_C_BPartner_ID, bpartnerId)
 				.addNotInArrayFilter(I_C_BPartner_Location.COLUMN_C_BPartner_Location_ID, savedBPartnerLocationIds)
 				.create()
@@ -835,6 +843,7 @@ public class BPartnerCompositeRepository
 			final IQueryBuilder<I_C_Postal> postalQueryBuilder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Postal.class)
 					.addOnlyActiveRecordsFilter()
+					.addOnlyContextClient()
 					.addEqualsFilter(I_C_Postal.COLUMN_C_Country_ID, locationRecord.getC_Country_ID())
 					.filter(PostalQueryFilter.of(bpartnerLocation.getPostal().trim()));
 			if (!isEmpty(bpartnerLocation.getDistrict(), true))

@@ -8,8 +8,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.metas.rest_api.JsonExternalId;
-import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
@@ -50,11 +48,10 @@ public class JsonRequestBPartnerUpsertItemTest
 	public void serializeDeserialize()
 	{
 		final JsonRequestBPartnerUpsertItem item = JsonRequestBPartnerUpsertItem.builder()
-				.externalId(JsonExternalId.of("12345"))
+				.bpartnerIdentifier("ext-12345")
 				.bpartnerComposite(JsonRequestComposite.builder()
 						.bpartner(JsonRequestBPartner.builder()
 								.code("code")
-								.metasfreshId(MetasfreshId.of(123))
 								.build())
 						.build())
 				.build();
