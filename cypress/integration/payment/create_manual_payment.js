@@ -34,7 +34,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   // BPartner
   const discountSchemaName = `DiscountSchema ${timestamp}`;
-  const bPartnerName = `bPartner ${timestamp}`;
+  const bPartnerName = `BPartner ${timestamp}`;
 
   it('Prepare product and pricing', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
@@ -59,11 +59,9 @@ describe('Create a manual Payment for a Sales Invoice', function() {
     cy.fixture('finance/bank.json').then(productJson => {
       Object.assign(new Bank(), productJson).apply();
     });
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(bPartnerName)
-        .setCustomerDiscountSchema(discountSchemaName)
-        .apply();
+      new BPartner({ ...customerJson, name: bPartnerName }).setCustomerDiscountSchema(discountSchemaName).apply();
     });
     cy.readAllNotifications();
   });

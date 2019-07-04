@@ -3,12 +3,6 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import {
-  toggleFrequentFilters,
-  toggleNotFrequentFilters,
-  selectNotFrequentFilterWidget,
-  applyFilters,
-} from '../../support/functions';
 
 describe('Create Sales order', function() {
   const timestamp = new Date().getTime();
@@ -33,19 +27,19 @@ describe('Create Sales order', function() {
       productValue,
       productType
     );
+
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
         .apply();
     });
+
     cy.fixture('finance/bank.json').then(productJson => {
       Object.assign(new Bank(), productJson).apply();
     });
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customer)
-        .setCustomerDiscountSchema(discountSchemaName)
-        .apply();
+      new BPartner({ ...customerJson, name: customer }).setCustomerDiscountSchema(discountSchemaName).apply();
     });
 
     cy.readAllNotifications();

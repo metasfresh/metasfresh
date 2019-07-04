@@ -1,4 +1,4 @@
-import { BPartner } from '../../support/utils/bpartner';
+import { BPartner } from '../../support/utils/bpartner_ui';
 
 describe('Create test: bpartner relation, https://github.com/metasfresh/metasfresh-e2e/issues/42', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
