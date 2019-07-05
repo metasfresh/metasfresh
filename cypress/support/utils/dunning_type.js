@@ -1,7 +1,7 @@
 export class DunningType {
-  constructor(name, checkDefault) {
+  constructor(name, isDefault) {
     this.name = name;
-    this.checkDefault = checkDefault;
+    this.isDefault = isDefault;
     this.entryLine = [];
   }
 
@@ -11,9 +11,9 @@ export class DunningType {
     return this;
   }
 
-  setCheckDefault(checkDefault) {
-    cy.log(`DunningType - check default = ${checkDefault}`);
-    this.checkDefault = checkDefault;
+  setIsDefault(isDefault) {
+    cy.log(`DunningType - check default = ${isDefault}`);
+    this.isDefault = isDefault;
     return this;
   }
 
@@ -72,35 +72,30 @@ export class DunningTypeEntryLine {
 }
 
 function applyDunningType(dunningType) {
-  const timestamp = new Date().getTime();
 
-  describe(`Create new Dunning Type ${dunningType.name}`, function() {
-    cy.visit('/window/159');
-    cy.waitForHeader('Finance', 'Settings');
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
+  describe(`Create new Dunning Type ${dunningType.name}`, function () {
+    cy.visitWindow('159', 'NEW');
 
     cy.writeIntoStringField('Name', `${dunningType.name}`);
-    if (dunningType.checkDefault) {
-      cy.clickOnCheckBox(`${dunningType.checkDefault}`);
-    }
+    cy.setCheckBoxValue('IsDefault', dunningType.isDefault);
 
     if (dunningType.entryLine.length > 0) {
-      dunningType.entryLine.forEach(function(dunningEntryLine) {
-        applyDunningTypeEntryLine(dunningEntryLine, timestamp);
+      dunningType.entryLine.forEach(function (dunningEntryLine) {
+        applyDunningTypeEntryLine(dunningEntryLine);
       });
       cy.get('table tbody tr').should('have.length', dunningType.entryLine.length);
     }
   });
 }
 
-const applyDunningTypeEntryLine = (dunningEntry, timestamp) => {
+const applyDunningTypeEntryLine = (dunningEntry) => {
   cy.pressAddNewButton();
 
-  cy.writeIntoStringField('Name', dunningEntry.name + timestamp, true);
-  cy.writeIntoStringField('PrintName', dunningEntry.printName + timestamp, true);
+  cy.writeIntoStringField('Name', dunningEntry.name, true);
+  cy.writeIntoStringField('PrintName', dunningEntry.printName, true);
   cy.writeIntoStringField('DaysBetweenDunning', dunningEntry.days, true);
-  cy.writeIntoTextField('NoteHeader', dunningEntry.header + timestamp, true);
-  cy.writeIntoTextField('Note', dunningEntry.note + timestamp, true);
+  cy.writeIntoTextField('NoteHeader', dunningEntry.header, true);
+  cy.writeIntoTextField('Note', dunningEntry.note, true);
 
   cy.pressDoneButton();
 };

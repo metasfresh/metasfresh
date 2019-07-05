@@ -1,6 +1,6 @@
 {
     "name": "test dunning",
-    "default": "IsDefault",
+    "isDefault": false,
     "entryLine": [
         {
             "name": "Level 1",
