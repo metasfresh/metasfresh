@@ -185,7 +185,10 @@ public class AD_Column
 		{
 			updateAmountColumn(column);
 		}
-
+		else if (columnName.indexOf("Amount") != -1)
+		{
+			updateAmountColumn(column);
+		}
 		else if (columnName.toUpperCase().indexOf("QTY") != -1)
 		{
 			updateQtyColumn(column);
