@@ -15,7 +15,9 @@ import org.compiere.model.X_C_OrderLine;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -149,7 +151,7 @@ final class OrderLinePriceCalculator
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
 		orderLine.setEnforcePriceLimit(pricingResult.getEnforcePriceLimit().isTrue());
-		orderLine.setPriceLimitNote(pricingResult.getEnforcePriceLimit().getReason().translate(Language.getBaseAD_Language()));
+		orderLine.setPriceLimitNote(buildPriceLimitNote(pricingResult.getEnforcePriceLimit()));
 
 		updateOrderLineFromPricingConditionsResult(orderLine, pricingResult.getPricingConditions());
 
@@ -166,6 +168,29 @@ final class OrderLinePriceCalculator
 				orderLineBL.updateLineNetAmt(orderLine, orderLineBL.getQtyEntered(orderLine));
 			}
 		}
+	}
+
+	private String buildPriceLimitNote(final BooleanWithReason enforcePriceLimit)
+	{
+		final ITranslatableString msg;
+		if (enforcePriceLimit.isTrue())
+		{
+			msg = TranslatableStrings.builder()
+					.appendADMessage("Enforced")
+					.append(": ")
+					.append(enforcePriceLimit.getReason())
+					.build();
+		}
+		else
+		{
+			msg = TranslatableStrings.builder()
+					.appendADMessage("NotEnforced")
+					.append(": ")
+					.append(enforcePriceLimit.getReason())
+					.build();
+		}
+
+		return msg.translate(Language.getBaseAD_Language());
 	}
 
 	private void updateOrderLineFromPricingConditionsResult(
@@ -343,7 +368,7 @@ final class OrderLinePriceCalculator
 		{
 			return request.getPricingConditionsBreakOverride();
 		}
-		
+
 		final I_C_OrderLine orderLine = request.getOrderLine();
 		final PricingConditionsBreakId orderLinePricingConditionsBreakId = PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
 		final boolean discountNeedsRevalidation = isValueChanged(orderLine, PricingConditionsBreakQuery.getRelevantOrderLineColumns());
