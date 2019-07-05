@@ -50,6 +50,7 @@ public class TestPayPalConfigProvider implements PayPalConfigProvider
 		return PayPalConfig.builder()
 				.clientId(clientId)
 				.clientSecret(clientSecret)
+				.orderApproveCallbackUrl("https://www.example.com")
 				.sandbox(true)
 				.build();
 	}

@@ -15,6 +15,9 @@ public class PayPalConfig
 	@NonNull
 	String clientSecret;
 
+	@NonNull
+	String orderApproveCallbackUrl;
+
 	boolean sandbox;
 	String baseUrl;
 	String webUrl;
