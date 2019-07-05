@@ -23,12 +23,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * S * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,8 +39,10 @@ import lombok.NonNull;
 public class FreightCostService
 {
 	private static final Logger logger = LogManager.getLogger(FreightCostService.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 	private final FreightCostRepository freightCostRepo;
+
+
 
 	public FreightCostService(
 			@NonNull final FreightCostRepository freightCostRepo)
@@ -90,7 +92,7 @@ public class FreightCostService
 	 * <li>Freight cost attached to the bParter's bPartnerGroup</li>
 	 * <li>Default freight cost</li>
 	 * </ul>
-	 * 
+	 *
 	 * @throws AdempiereException
 	 *             if there is no freight cost record for the given inOut
 	 */
@@ -130,6 +132,8 @@ public class FreightCostService
 
 	public FreightCost getFreightCostByBPartnerId(final BPartnerId bpartnerId)
 	{
+		 final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 		final FreightCostId bpFreightCostId = FreightCostId.ofRepoIdOrNull(bpartnerBL.getFreightCostIdByBPartnerId(bpartnerId));
 		if (bpFreightCostId != null)
 		{

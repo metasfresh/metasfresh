@@ -60,7 +60,7 @@ public class OrderFreightCostsService
 	private static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
 
 	private static final Logger logger = LogManager.getLogger(OrderFreightCostsService.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -133,6 +133,8 @@ public class OrderFreightCostsService
 
 	private FreightCostContext extractFreightCostContext(final I_C_Order order)
 	{
+		 final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 
 		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, order.getC_BPartner_Location_ID());

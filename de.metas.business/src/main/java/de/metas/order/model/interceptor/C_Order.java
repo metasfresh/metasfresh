@@ -140,7 +140,7 @@ public class C_Order
 	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_AFTER_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_DocType_ID,
 					I_C_Order.COLUMNNAME_DocStatus })

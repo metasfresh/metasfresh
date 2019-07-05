@@ -46,12 +46,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -64,7 +64,7 @@ public class InOutFreightCostsService
 	private static final Logger logger = LogManager.getLogger(InOutFreightCostsService.class);
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 	private final FreightCostService freightCostService;
 	private final ImmutableList<IFreightCostFreeEvaluator> freightCostFreeEvaluators;
 
@@ -80,6 +80,8 @@ public class InOutFreightCostsService
 
 	private FreightCostContext extractFreightCostContext(final I_M_InOut shipment)
 	{
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(shipment.getC_BPartner_ID());
 
 		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, shipment.getC_BPartner_Location_ID());

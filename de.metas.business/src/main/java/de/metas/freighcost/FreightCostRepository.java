@@ -12,6 +12,7 @@ import org.adempiere.model.I_M_FreightCost;
 import org.adempiere.model.I_M_FreightCostDetail;
 import org.adempiere.model.I_M_FreightCostShipper;
 import org.adempiere.service.OrgId;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -30,6 +31,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -165,6 +167,8 @@ public class FreightCostRepository
 	{
 		return FreightCostShipper.builder()
 				.id(FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()))
+				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
+				.validFrom(TimeUtil.asLocalDate(record.getValidFrom()))
 				.breaks(breaks)
 				.build();
 	}
