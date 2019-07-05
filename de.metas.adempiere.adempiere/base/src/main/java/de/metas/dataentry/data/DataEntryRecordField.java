@@ -1,7 +1,6 @@
 package de.metas.dataentry.data;
 
 import static de.metas.util.Check.assume;
-import static de.metas.util.Check.fail;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -65,13 +64,14 @@ public abstract class DataEntryRecordField<T>
 		this.createdUpdatedInfo = createdUpdatedInfo;
 	}
 
+	@Nullable
 	public abstract T getValue();
 
 	@SuppressWarnings("unchecked")
 	public static <T> DataEntryRecordField<T> createDataEntryRecordField(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
 			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
-			@Nullable final T value)
+			@NonNull final T value)
 	{
 		final DataEntryRecordField<T> result;
 
@@ -107,8 +107,7 @@ public abstract class DataEntryRecordField<T>
 		}
 		else
 		{
-			fail("Unexpected value type={}; dataEntryFieldId={}", value.getClass(), dataEntryFieldId);
-			result = null;
+			throw new AdempiereException("Unexpected value `" + value + "` (" + value.getClass() + ") for " + dataEntryFieldId);
 		}
 
 		return result;
