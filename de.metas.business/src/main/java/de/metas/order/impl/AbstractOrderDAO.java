@@ -42,6 +42,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -116,11 +117,15 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@NonNull final I_C_Order order,
 			@NonNull final Class<T> clazz)
 	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
+		if(orderId == null)
+		{
+			return ImmutableList.of();
+		}
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final List<T> orderLines = retrieveOrderLines(ctx, orderId, trxName, clazz);
-
 		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
 		return orderLines;
 	}
@@ -249,13 +254,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.listIds(OrderId::ofRepoId)
 				.stream();
 	}
-	
+
 	@Override
 	public void delete(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		InterfaceWrapperHelper.delete(orderLine);
 	}
-	
+
 	@Override
 	public void save(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
