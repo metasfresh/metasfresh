@@ -56,6 +56,32 @@ declare namespace Cypress {
      */
     getCheckboxValue(fieldName: string, modal?: boolean): Chainable<any>
 
+    /**
+     * Select the current record ID from the URL.
+     * The URL looks like `/window/123/123456789` and the value returned is `123456789`.
+     *
+     * @example
+     * cy.getCurrentWindowRecordId().then(recordId => {
+     *     // recordId has value 123456789
+     *     theRecordId = recordId;
+     * });
+     */
+    getCurrentWindowRecordId(): Chainable<any>
+
+
+    /**
+     * Select the total amount from Sales Invoice's header
+     *
+     * The header format is "DOCUMENT_NO MM/DD/YYYY totalAmount"
+     * @example
+     * let newTotalAmount = 0;
+     * it('Save the new total amount', function () {
+     *   cy.getSalesInvoiceTotalAmount().then(totalAmount => {
+     *     newTotalAmount = totalAmount;
+     *   });
+     * });
+     */
+    getSalesInvoiceTotalAmount():Chainable<any>
 
     /**
      * @param fieldName name of the field is question
