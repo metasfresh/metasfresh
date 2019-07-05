@@ -11,9 +11,11 @@ import lombok.Value;
 public class PayPalConfig
 {
 	@NonNull
-	private final String clientId;
+	String clientId;
 	@NonNull
-	private final String clientSecret;
-	@NonNull
-	private final String executionMode;
+	String clientSecret;
+
+	boolean sandbox;
+	String baseUrl;
+	String webUrl;
 }
