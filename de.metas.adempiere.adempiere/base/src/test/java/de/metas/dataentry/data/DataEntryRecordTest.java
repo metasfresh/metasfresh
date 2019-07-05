@@ -88,6 +88,30 @@ public class DataEntryRecordTest
 	}
 
 	@Test
+	public void changeRecordFieldValueToNull()
+	{
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(10);
+
+		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
+				.dataEntrySubTabId(dataEntrySubTabId)
+				.mainRecord(TableRecordReference.of(I_M_Product.Table_Name, 41))
+				.build();
+
+		final DataEntryFieldId fieldId1 = DataEntryFieldId.ofRepoId(1);
+
+		assertThat(dataEntryRecord.getFieldValue(fieldId1).orElse(null)).isNull();
+
+		// IMPORTANT: first we are setting it to something not null and then to null.
+		// If we would set it directly to null, there would be no change...
+
+		dataEntryRecord.setRecordField(fieldId1, UserId.ofRepoId(20), "text");
+		assertThat(dataEntryRecord.getFieldValue(fieldId1).orElse(null)).isEqualTo("text");
+
+		dataEntryRecord.setRecordField(fieldId1, UserId.ofRepoId(20), null);
+		assertThat(dataEntryRecord.getFieldValue(fieldId1).orElse(null)).isNull();
+	}
+
+	@Test
 	public void testImmutable()
 	{
 		final DataEntryRecord dataEntryRecord = DataEntryRecord.builder()
