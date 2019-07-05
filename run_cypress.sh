@@ -1,13 +1,16 @@
 #!/bin/bash
 
+# this script is intended to be the entry point for the docker startup script
+
 frontend_url=${FRONTEND_URL:-http://localhost:3000}
 api_url=${API_URL:-http://localhost:8080/rest/api}
 plugin_api_url=${PLUGIN_API_URL:-http://localhost:9192/}
 ws_url=${WS_URL:-http://localhost:8080/stomp}
 username=${USERNAME:-metasfresh}
 password=${PASSWORD:-metasfresh}
-cypress_record_key=${RECORD_KEY:-NOT_SET}
-cypress_browser=${BROWSER:-electron}
+cypress_spec=${CYPRESS_SPEC:-NOT_SET}
+cypress_record_key=${CYPRESS_RECORD_KEY:-NOT_SET}
+cypress_browser=${CYPRESS_BROWSER:-electron}
 debug_cypress_output=${DEBUG_CYPRESS_OUTPUT:-n}
 debug_print_bash_cmds=${DEBUG_PRINT_BASH_CMDS:-n}
 debug_sleep_after_fail=${DEBUG_SLEEP_AFTER_FAIL:-n}
@@ -16,7 +19,8 @@ echo "*************************************************************"
 echo "Display the variable values we run with"
 echo "*************************************************************"
 echo ""
-echo "BROWSER=$cypress_browser"
+echo "CYPRESS_BROWSER=$cypress_browser"
+echo "CYPRESS_SPEC=$cypress_spec"
 echo "FRONTEND_URL=$frontend_url"
 echo "API_URL=$api_url"
 echo "PLUGIN_API_URL=$plugin_api_url"
@@ -31,6 +35,14 @@ then
 else
     echo "RECORD_KEY=***"
     record_param="--record --key $cypress_record_key"
+fi
+
+if [ "$cypress_spec" = "NOT_SET" ]
+then
+    echo "CYPRESS_SPEC is not set; running all specs"
+    spec_param=""
+else
+    spec_param="--spec $cypress_spec"
 fi
 
 echo "DEBUG_SLEEP_AFTER_FAIL=$debug_sleep_after_fail"
@@ -69,7 +81,7 @@ reporter_param="--reporter mocha-multi-reporters --reporter-options configFile=r
 # note: run with chrome after running with electron hung on jenkins; Probably related to https://github.com/cypress-io/cypress/issues/1912
 # ofc this assumes that the docker image contains chrome..
 # also note, that unless running with electron, we can't record videos
-node_modules/.bin/cypress run $reporter_param $record_param $noexit_param --browser $cypress_browser
+node_modules/.bin/cypress run $reporter_param $record_param $spec_param $noexit_param --browser $cypress_browser
 
 cypress_exit_status=$?
 echo "cypress_exit_status=$cypress_exit_status"

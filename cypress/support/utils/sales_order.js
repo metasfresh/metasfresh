@@ -1,6 +1,8 @@
 export class SalesOrder {
   constructor(reference) {
     this.reference = reference;
+    this.bPartner = undefined;
+    this.bPartnerLocation = undefined;
   }
 
   setBPartner(bPartner) {
@@ -31,17 +33,18 @@ export class SalesOrder {
 
 function applySalesOrder(salesOrder) {
   describe(`Create new salesOrder`, function() {
-    cy.visit('/window/143/NEW');
+    cy.visitWindow('143', 'NEW');
     cy.get('.header-breadcrumb-sitename').should('contain', '<');
 
     cy.writeIntoLookupListField('C_BPartner_ID', salesOrder.bPartner, salesOrder.bPartner);
-    cy.writeIntoLookupListField(
-      'C_BPartner_Location_ID',
-      salesOrder.bPartnerLocation,
-      salesOrder.bPartnerLocation,
-      true /*typeList*/
-    );
-
+    if (salesOrder.bPartnerLocation) {
+      cy.writeIntoLookupListField(
+        'C_BPartner_Location_ID',
+        salesOrder.bPartnerLocation,
+        salesOrder.bPartnerLocation,
+        true /*typeList*/
+      );
+    }
     cy.get('.header-breadcrumb-sitename').should('not.contain', '<');
 
     cy.writeIntoStringField('POReference', salesOrder.reference);

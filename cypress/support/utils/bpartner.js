@@ -1,15 +1,17 @@
+import config from '../../config';
+import { wrapRequest, findByName } from './utils';
+
 export class BPartner {
-  constructor(name) {
+  constructor({ name, ...vals }) {
     cy.log(`BPartner - set name = ${name}`);
     this.name = name;
-    this.isVendor = false;
-    this.vendorPricingSystem = undefined;
-    this.vendorDiscountSchema = undefined;
-    this.customerDiscountSchema = undefined;
-    this.isCustomer = false;
     this.bPartnerLocations = [];
     this.contacts = [];
-    this.bank = undefined;
+
+    for (let [key, val] of Object.entries(vals)) {
+      this[key] = val;
+    }
+    return this;
   }
 
   setName(name) {
@@ -36,9 +38,21 @@ export class BPartner {
     return this;
   }
 
+  setCustomerDunning(customerDunning) {
+    cy.log(`BPartner - set customerDunning = ${customerDunning}`);
+    this.customerDunning = customerDunning;
+    return this;
+  }
+
   setCustomer(isCustomer) {
     cy.log(`BPartner - set isCustomer = ${isCustomer}`);
     this.isCustomer = isCustomer;
+    return this;
+  }
+
+  setPaymentTerm(paymentTerm) {
+    cy.log(`BPartner - set paymentTerm = ${paymentTerm}`);
+    this.paymentTerm = paymentTerm;
     return this;
   }
 
@@ -60,6 +74,18 @@ export class BPartner {
     return this;
   }
 
+  setDunning(dunning) {
+    cy.log(`BPartner - set Dunning = ${dunning}`);
+    this.dunning = dunning;
+    return this;
+  }
+
+  addContact(contact) {
+    cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
+    this.contacts.push(contact);
+    return this;
+  }
+
   addLocation(bPartnerLocation) {
     cy.log(`BPartner - add location = ${JSON.stringify(bPartnerLocation)}`);
     this.bPartnerLocations.push(bPartnerLocation);
@@ -72,12 +98,6 @@ export class BPartner {
     return this;
   }
 
-  addContact(contact) {
-    cy.log(`BPartner - add contact = ${JSON.stringify(contact)}`);
-    this.contacts.push(contact);
-    return this;
-  }
-
   clearContacts() {
     cy.log(`BPartner - clear contacts`);
     this.contacts = [];
@@ -86,100 +106,293 @@ export class BPartner {
 
   apply() {
     cy.log(`BPartner - apply - START (name=${this.name})`);
-    applyBPartner(this);
-    cy.log(`BPartner - apply - END (name=${this.name})`);
-    return this;
-  }
-}
+    return BPartner.applyBPartner(this).then(() => {
+      cy.log(`BPartner - apply - END (name=${this.name})`);
 
-export class BPartnerLocation {
-  constructor(name) {
-    cy.log(`BPartnerLocation - set name = ${name}`);
-    this.name = name;
-  }
+      if (this.bPartnerLocations.length || this.contacts.length || this.bank) {
+        cy.visitWindow(123, this.id);
 
-  setCity(city) {
-    cy.log(`BPartnerLocation - set city = ${city}`);
-    this.city = city;
-    return this;
+        // @TODO: Temporarily we're adding contacts, bank & location via UI because API...
+        BPartner.applyManual(this);
+      }
+      return cy.wrap(this);
+    });
   }
 
-  setCountry(country) {
-    cy.log(`BPartnerLocation - set country = ${country}`);
-    this.country = country;
-    return this;
+  static applyBPartner(bPartner) {
+    const basicUri = `${config.API_URL}/window/123`;
+
+    return cy
+      .request({
+        url: `${basicUri}/NEW`,
+        method: 'PATCH',
+        body: JSON.stringify([]),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      .then(newResponse => {
+        bPartner.id = newResponse.body[0].id;
+
+        const basicDataObject = [
+          {
+            op: 'replace',
+            path: 'CompanyName',
+            value: bPartner.name,
+          },
+          {
+            op: 'replace',
+            path: 'Name2',
+            value: bPartner.name,
+          },
+        ];
+
+        return cy
+          .request({
+            url: `${basicUri}/${bPartner.id}`,
+            method: 'PATCH',
+            body: JSON.stringify(basicDataObject),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+          .then(() => {
+            BPartner.getVendorData(basicUri, bPartner).then(data => {
+              const dataObject = data;
+
+              return cy
+                .request({
+                  url: `${basicUri}/${bPartner.id}?advanced=true`,
+                  method: 'PATCH',
+                  body: JSON.stringify(dataObject),
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                })
+                .then(() => bPartner);
+            });
+          });
+      });
   }
-}
 
-export class BPartnerContact {
-  constructor() {
-    this.isDefaultContact = false;
-  }
+  static getVendorData(basicUri, bPartner) {
+    const dataObject = [];
 
-  setFirstName(firstName) {
-    cy.log(`BPartnerContact - set firstName = ${firstName}`);
-    this.firstName = firstName;
-    return this;
-  }
+    if (
+      bPartner.isVendor ||
+      bPartner.vendorDiscountSchema ||
+      bPartner.vendorPricingSystem ||
+      bPartner.isCustomer ||
+      bPartner.customerPricingSystem ||
+      bPartner.bPartnerLocations ||
+      bPartner.dunning
+    ) {
+      const vendorRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setLastName(lastName) {
-    cy.log(`BPartnerContact - set lastName = ${lastName}`);
-    this.lastName = lastName;
-    return this;
-  }
+      const vendorDiscountSchemaRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_DiscountSchema_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-  setDefaultContact(isDefaultContact) {
-    cy.log(`BPartnerContact - set defaultContact = ${isDefaultContact}`);
-    this.isDefaultContact = isDefaultContact;
-    return this;
-  }
-}
+      const vendorPricingSystemRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_PricingSystem_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function() {
-    cy.visitWindow('123', 'NEW');
-    cy.writeIntoStringField('CompanyName', bPartner.name);
-    cy.writeIntoStringField('Name2', bPartner.name);
+      const bPartnerRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-    if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem) {
-      cy.selectTab('Vendor');
-      cy.selectSingleTabRow();
+      const cDiscountSchemaRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_DiscountSchema_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
 
-      cy.openAdvancedEdit();
-      cy.isChecked('IsVendor').then(isVendorValue => {
+      const cPricingSystemRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/M_PricingSystem_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const cPaymentTermRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_PaymentTerm_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const cDunningRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-223/${bPartner.id}/field/C_Dunning_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      return Cypress.Promise.all([
+        vendorRequest,
+        vendorDiscountSchemaRequest,
+        vendorPricingSystemRequest,
+        bPartnerRequest,
+        cDiscountSchemaRequest,
+        cPricingSystemRequest,
+        cPaymentTermRequest,
+        cDunningRequest,
+      ]).then(vals => {
+        const [
+          vendorResponse,
+          vendorDiscountSchemaResponse,
+          vendorPricingSystemResponse,
+          bPartnerResponse,
+          discountSchemaResponse,
+          pricingSystemResponse,
+          paymentTermResponse,
+          dunningResponse,
+        ] = vals;
+
+        const isVendorValue = vendorResponse.fieldsByName.IsVendor.value;
         if (bPartner.isVendor && !isVendorValue) {
-          cy.clickOnCheckBox('IsVendor');
+          dataObject.push({
+            op: 'replace',
+            path: 'IsVendor',
+            value: true,
+          });
         }
-      });
-      if (bPartner.vendorPricingSystem) {
-        cy.selectInListField('PO_PricingSystem_ID', bPartner.vendorPricingSystem, bPartner.vendorPricingSystem);
-      }
-      if (bPartner.vendorDiscountSchema) {
-        cy.selectInListField('PO_DiscountSchema_ID', bPartner.vendorDiscountSchema, bPartner.vendorDiscountSchema);
-      }
-      cy.pressDoneButton();
-    }
 
-    if (bPartner.isCustomer || bPartner.customerPricingSystem) {
-      cy.selectTab('Customer');
-      cy.selectSingleTabRow();
+        const vendorDiscountSchema = findByName(vendorDiscountSchemaResponse, bPartner.vendorDiscountSchema);
+        if (bPartner.vendorDiscountSchema && vendorDiscountSchema) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_DiscountSchema_ID',
+            value: {
+              key: vendorDiscountSchema.key,
+              caption: vendorDiscountSchema.caption,
+            },
+          });
+        }
 
-      cy.openAdvancedEdit();
-      cy.isChecked('IsCustomer').then(isCustomerValue => {
+        const vendorPricingSystem = findByName(vendorPricingSystemResponse, bPartner.vendorPricingSystem);
+        if (bPartner.vendorPricingSystem && vendorPricingSystem) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_PricingSystem_ID',
+            value: {
+              key: vendorPricingSystem.key,
+              caption: vendorPricingSystem.caption,
+            },
+          });
+        }
+
+        const isCustomerValue = bPartnerResponse.fieldsByName.IsCustomer.value;
         if (bPartner.isCustomer && !isCustomerValue) {
-          cy.clickOnCheckBox('IsCustomer');
+          dataObject.push({
+            op: 'replace',
+            path: 'IsCustomer',
+            value: true,
+          });
         }
+        if (bPartner.customerDunning) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_Dunning_ID',
+            value: bPartner.customerDunning,
+          });
+        }
+
+        const discountSchema = findByName(discountSchemaResponse, bPartner.customerDiscountSchema);
+        if (bPartner.customerDiscountSchema && discountSchema) {
+          dataObject.push({
+            op: 'replace',
+            path: 'M_DiscountSchema_ID',
+            value: {
+              key: discountSchema.key,
+              caption: discountSchema.caption,
+            },
+          });
+        }
+
+        const pricingSystem = findByName(pricingSystemResponse, bPartner.customerPricingSystem);
+        if (bPartner.customerPricingSystem && pricingSystem) {
+          dataObject.push({
+            op: 'replace',
+            path: 'M_PricingSystem_ID',
+            value: {
+              key: pricingSystem.key,
+              caption: pricingSystem.caption,
+            },
+          });
+        }
+
+        const paymentTerm = findByName(paymentTermResponse, bPartner.paymentTerm);
+        if (bPartner.paymentTerm && paymentTerm) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_PaymentTerm_ID',
+            value: {
+              key: paymentTerm.key,
+              caption: paymentTerm.caption,
+            },
+          });
+        }
+
+        const dunning = findByName(dunningResponse, bPartner.dunning);
+        if (bPartner.dunning && dunning) {
+          dataObject.push({
+            op: 'replace',
+            path: 'C_Dunning_ID',
+            value: {
+              key: dunning.key,
+              caption: dunning.caption,
+            },
+          });
+        }
+
+        return dataObject;
       });
-      if (bPartner.customerDiscountSchema) {
-        cy.selectInListField('M_DiscountSchema_ID', bPartner.customerDiscountSchema);
-      }
-      if (bPartner.customerPricingSystem) {
-        cy.selectInListField('M_PricingSystem_ID', bPartner.customerPricingSystem, bPartner.customerPricingSystem);
-      }
-      cy.pressDoneButton();
     }
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
+    return cy.wrap(dataObject);
+  }
+
+  static applyManual(bPartner) {
     if (bPartner.bPartnerLocations.length > 0) {
       bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
         applyLocation(bPartnerLocation);
@@ -192,31 +405,29 @@ function applyBPartner(bPartner) {
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
     }
+
     if (bPartner.bank) {
-      cy.selectTab('C_BP_BankAccount');
-      cy.pressAddNewButton();
-      cy.get('#lookup_C_Bank_ID input').type(bPartner.bank);
-      cy.contains('.input-dropdown-list-option', bPartner.bank).click();
-      cy.writeIntoStringField('A_Name', 'Test Account');
-      cy.pressDoneButton();
+      applyBank(bPartner.bank);
     }
-  });
+  }
 }
 
 function applyLocation(bPartnerLocation) {
   cy.selectTab('C_BPartner_Location');
   cy.pressAddNewButton();
-  //cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
-  cy.writeIntoStringField('Name', `{selectall}{backspace}${bPartnerLocation.name}`);
+  cy.log(`applyLocation - bPartnerLocation.name = ${bPartnerLocation.name}`);
+  cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
+  cy.get('.panel-modal-header-title').click();
 
   cy.editAddress('C_Location_ID', function(url) {
+    cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
     cy.writeIntoLookupListField(
       'C_Country_ID',
       bPartnerLocation.country,
       bPartnerLocation.country,
       false /*typeList */,
-      false /*modal */,
+      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
       url
     );
   });
@@ -227,11 +438,19 @@ function applyLocation(bPartnerLocation) {
 function applyContact(bPartnerContact) {
   cy.selectTab('AD_User');
   cy.pressAddNewButton();
-  cy.writeIntoStringField('Firstname', bPartnerContact.firstName);
-  cy.writeIntoStringField('Lastname', bPartnerContact.lastName);
+  cy.writeIntoStringField('Firstname', bPartnerContact.firstName, true /*modal*/);
+  cy.writeIntoStringField('Lastname', bPartnerContact.lastName, true /*modal*/);
 
   if (bPartnerContact.isDefaultContact) {
-    cy.clickOnCheckBox('IsDefaultContact');
+    cy.clickOnCheckBox('IsDefaultContact', true /*expectedPatchValue*/, true /*modal*/);
   }
+  cy.pressDoneButton();
+}
+
+function applyBank(bank) {
+  cy.selectTab('C_BP_BankAccount');
+  cy.pressAddNewButton();
+  cy.writeIntoLookupListField('C_Bank_ID', bank, bank, false, true);
+  cy.writeIntoStringField('A_Name', 'Test Account', true);
   cy.pressDoneButton();
 }

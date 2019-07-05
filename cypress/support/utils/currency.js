@@ -20,7 +20,7 @@ export class Currency {
   apply() {
     cy.log(`Currency - apply - START (isoCode=${this.isoCode})`);
     cy.visitWindow('115', `${this.c_currency_ID}`);
-    cy.isChecked('IsActive').then(isActive => {
+    cy.getCheckboxValue('IsActive').then(isActive => {
       if (!isActive) {
         cy.clickOnIsActive();
       }

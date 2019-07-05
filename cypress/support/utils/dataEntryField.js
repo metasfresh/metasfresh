@@ -109,7 +109,7 @@ function applyDataEntryField(dataEntryField) {
     cy.writeIntoLookupListField('DataEntry_Line_ID', dataEntryField.dataEntryLine, dataEntryField.dataEntryLine);
 
     if (dataEntryField.seqNo) {
-      cy.getFieldValue('SeqNo').then(currentValue => {
+      cy.getStringFieldValue('SeqNo').then(currentValue => {
         if (currentValue !== dataEntryField.seqNo) {
           cy.log(`applyDataEntryField - dataEntryGroup.seqNo=${dataEntryField.seqNo}; currentValue=${currentValue}`);
           cy.clearField('SeqNo');
@@ -130,7 +130,7 @@ function applyDataEntryField(dataEntryField) {
       cy.selectInListField('PersonalDataCategory', dataEntryField.personalDataCategory);
     }
     if (dataEntryField.dataEntryRecordType) {
-      cy.getFieldValue('DataEntry_RecordType').then(currentValue => {
+      cy.getStringFieldValue('DataEntry_RecordType').then(currentValue => {
         if (currentValue !== dataEntryField.dataEntryRecordType) {
           cy.log(
             `applyDataEntryField - dataEntryField.dataEntryRecordType=${
@@ -159,7 +159,7 @@ function applyDataEntryListValue(dataEntryListValue) {
 
   cy.writeIntoStringField('Name', dataEntryListValue.name, true /*modal*/);
   if (dataEntryListValue.seqNo) {
-    cy.getFieldValue('SeqNo', true /*modal*/).then(currentValue => {
+    cy.getStringFieldValue('SeqNo', true /*modal*/).then(currentValue => {
       cy.log(
         `applyDataEntryListValue - dataEntryGroup.seqNo=${dataEntryListValue.seqNo}; currentValue=${currentValue}`
       );

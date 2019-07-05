@@ -80,8 +80,19 @@ function applyDiscountBreak(discountBreak) {
   cy.selectTab('M_DiscountSchemaBreak');
   cy.pressAddNewButton();
 
-  cy.writeIntoStringField('BreakValue', discountBreak.breakValue);
-  cy.writeIntoStringField('BreakDiscount', discountBreak.breakDiscount);
-  cy.selectInListField('PriceBase', 'F');
+  // we want neither a fixed nor a pricelist based price
+  cy.resetListValue('PriceBase', true);
+
+  cy.getStringFieldValue('BreakValue', true /*modal*/).then(breakValueFieldValue => {
+    if (discountBreak.breakValue && breakValueFieldValue != discountBreak.breakValue) {
+      cy.writeIntoStringField('BreakValue', discountBreak.breakValue, true /*modal*/);
+    }
+  });
+  cy.getStringFieldValue('BreakDiscount', true /*modal*/).then(breakDiscountFieldValue => {
+    if (discountBreak.breakDiscount && breakDiscountFieldValue != discountBreak.breakDiscount) {
+      cy.writeIntoStringField('BreakDiscount', discountBreak.breakDiscount);
+    }
+  });
+
   cy.pressDoneButton();
 }

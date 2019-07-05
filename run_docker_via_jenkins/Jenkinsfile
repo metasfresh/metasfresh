@@ -1,0 +1,223 @@
+#!/usr/bin/env groovy
+// the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
+// thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
+
+// note that we set a default version for this library in jenkins, so we don't have to specify it here
+@Library('misc')
+import de.metas.jenkins.Misc
+
+// thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
+properties([
+	// Two parallel run_e2e_tests runs hung at discountschema_with_breaks_spec.js idk why.
+    // But I noticed yesterday that running >1 in parallel doesn't end well. not sure why..the runs themseves are isolated from each other..
+    // So for now, i'm going to allow just one run_e2e_tests in parallel..
+	disableConcurrentBuilds(), 
+	parameters([
+		string(defaultValue: 'INSTANCE.metasfresh.com',
+			description: 'Host name of the metasfresh instance to run the tests against',
+			name: 'MF_TARGET_HOST'),
+
+		string(description: '''If is set, then cypress is run with the <code>--spec</code> command line parameter.<br>
+See the documentation <a href="https://docs.cypress.io/guides/guides/command-line.html#cypress-run-spec-lt-spec-gt">here</a>.<p>
+Examples:
+<ul>
+<li><code>cypress/integration/currency/**</code> runs all specs in the <code>currency</code> folder</li>
+<li><code>cypress/integration/currency/currency_activate_spec.js</code> runs exactly the <code>currency_activate_spec.js</code> spec</li>
+</ul>''',
+			name: 'MF_CYPRESS_SPEC'),
+
+		string(defaultValue: 'metasfresh/metasfresh-e2e:master_LATEST',
+			description: '\"Full\" name of the metasfresh-e2e docker image to run. Example: <code>nexus.metasfresh.com:6001/metasfresh/metasfresh-e2e:master_5.86.1_7_master</code>',
+			name: 'MF_DOCKER_IMAGE_FULL_NAME'),
+		string(defaultValue: 'dev',
+			description: 'Username to use when logging in to the target host\'s metasfresh instance',
+			name: 'MF_TARGET_USER'),
+		password(defaultValue: 'demo1234',
+			description: 'Password to use when logging in to the target host\'s metasfresh instance',
+			name: 'MF_TARGET_PASSWORD'),
+		booleanParam(defaultValue: true,
+			description: 'Upload the test results to <a href="https://dashboard.cypress.io">https://dashboard.cypress.io</a>. The secret key is provided by jenkins.',
+			name: 'MF_CYPRESS_DASHBOARD'),
+		booleanParam(defaultValue: false,
+			description: 'Prepend <code>DEBUG=cypress:*</code>; See https://docs.cypress.io/guides/guides/command-line.html#Debugging-commands',
+			name: 'MF_CYPRESS_DEBUG'),
+		booleanParam(defaultValue: false,
+			description: 'Run the cypress tests in chrome as opposed to electron; note that video is only supported with electron.',
+			name: 'MF_CYPRESS_CHROME'),
+
+		// see https://github.com/metasfresh/metasfresh-scripts/issues/2
+		// note: I tried to use https://wiki.jenkins-ci.org/display/JENKINS/Readonly+Parameter+Plugin
+		// but the parameter was editable none the less
+		// [$class: 'WReadonlyStringParameterDefinition',
+		string(
+			defaultValue: '',
+			description: 'URL of the build this deploy was triggered from (if any).',
+			name: 'MF_UPSTREAM_BUILD_URL')//]
+	])
+	//, buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: "100"))
+]);
+
+if(!params.MF_DOCKER_REGISTRY && !params.MF_DOCKER_IMAGE_FULL_NAME)
+{
+	error 'Missing MF_DOCKER_REGISTRY or MF_DOCKER_IMAGE_FULL_NAME parameter';
+}
+if(!params.MF_DOCKER_IMAGE && !params.MF_DOCKER_IMAGE_FULL_NAME)
+{
+	error 'Missing MF_DOCKER_IMAGE or MF_DOCKER_IMAGE_FULL_NAME parameter';
+}
+if(!params.MF_TARGET_HOST)
+{
+	error 'Missing MF_TARGET_HOST parameter';
+}
+
+final String upstreamBuildURL = params.MF_UPSTREAM_BUILD_URL ?: "(none provided)";
+
+timestamps
+{
+	final String shortUpstreamJobName
+	if(params.MF_UPSTREAM_BUILD_URL)
+	{
+		// remove the jenkins-job-URL's prefix
+		final def reg = ~/^https:\/\/jenkins.metasfresh.com\/job\//
+		shortUpstreamJobName = params.MF_UPSTREAM_BUILD_URL - reg
+	}
+	else 
+	{
+		shortUpstreamJobName = ''
+	}
+	currentBuild.displayName = "${currentBuild.displayName} RUN ${shortUpstreamJobName} ON ${params.MF_TARGET_HOST}";
+
+	stage("Perform e2e")
+	{
+		node('agent && linux') // shall only run on a jenkins agent with linux
+		{
+			withCredentials([string(credentialsId: 'cypress-dashboard-metasfresh-record-key', variable: 'secretCypressRecorcdKey')])
+			{
+				final String recordKey = params.MF_CYPRESS_DASHBOARD ? secretCypressRecorcdKey : 'NOT_SET'
+				final String debugOutput = params.MF_CYPRESS_DEBUG ? 'y' : 'n'
+				final String browser = params.MF_CYPRESS_CHROME ? 'chrome' : 'electron'
+				final String spec = params.MF_CYPRESS_SPEC ?: 'NOT_SET'
+
+				// create a local results folder and mount it into the docker container
+				// the patch wiwthing the docker container needs to be in sync with reporter-config.json
+				sh 'mkdir -p \"$(pwd)\"/testreports'
+				final String mount_param='--mount type=bind,source=\"$(pwd)\"/testreports,target=/e2e/cypress/results'
+				final String junitFile='testreports/results-junit-*.xml'
+
+				final String dockerRegImageAndTag = params.MF_DOCKER_IMAGE_FULL_NAME ?: "${params.MF_DOCKER_REGISTRY}/${params.MF_DOCKER_IMAGE}"
+
+				final String dockerUrlToUse = retrieveDockerUrlToUse(dockerRegImageAndTag)
+
+				// see https://github.com/cypress-io/cypress/issues/350
+				final String chromiumRendererCrashWorkaround='--ipc=host'
+
+				final String dockerRunCommand = """docker run ${chromiumRendererCrashWorkaround}\\
+ --rm\\
+ -e \"FRONTEND_URL=https://${params.MF_TARGET_HOST}:443\"\\
+ -e \"API_URL=https://${params.MF_TARGET_HOST}:443/rest/api\"\\
+ -e \"WS_URL=https://${params.MF_TARGET_HOST}:443/stomp\"\\
+ -e \"USERNAME=${params.MF_TARGET_USER}\"\\
+ -e \"PASSWORD=${params.MF_TARGET_PASSWORD}\"\\
+ -e \"CYPRESS_SPEC=${spec}\"\\
+ -e \"CYPRESS_RECORD_KEY=${recordKey}\"\\
+ -e \"CYPRESS_BROWSER=${browser}\"\\
+ -e \"DEBUG_CYPRESS_OUTPUT=${debugOutput}\"\\
+ ${mount_param} ${dockerUrlToUse}"""
+
+				sh label: 'pull-and-run-image', script: dockerRunCommand
+
+				// collect and archive test results
+				junit junitFile
+
+				// cleanup
+				cleanWs cleanWhenAborted: false, cleanWhenFailure: false, cleanWhenNotBuilt: false, cleanWhenUnstable: false, notFailBuild: true
+			}
+		}
+	}
+}
+
+/**
+ * If the docker-image's URL ends with LATEST, then invoke the nexus REST API to find the docker image's sha256.
+ * Without this, e.g. in the case of a "master_LATEST" image tag, we won't get the lastest image version
+ */
+String retrieveDockerUrlToUse(final String dockerRegImageAndTag)
+{
+	// echo 'BEGIN retrieveDockerUrlToUse'
+	final String dockerUrlToUse
+	if(dockerRegImageAndTag.endsWith('LATEST'))
+	{
+		final String[] dockerUrlParts = splitDockerUrl(dockerRegImageAndTag)
+
+		final String dockerRegistry =dockerUrlParts[0]
+		// echo "dockerRegistry=${dockerRegistry}"
+		final String dockerImage = dockerUrlParts[1]
+		// echo "dockerImage=${dockerImage}"
+		final String dockerTag = dockerUrlParts[2]
+		// echo "dockerTag=${dockerTag}"
+
+		final String dockerSha256 = invokeSearchAPI(dockerImage, dockerTag)
+		if(dockerSha256)
+		{
+			dockerUrlToUse = "${dockerRegistry}/${dockerImage}:${dockerTag}@sha256:${dockerSha256}"
+			echo "Found sha256 for tag=${dockerTag}"
+		}
+		else
+		{
+			final String fallbackDockerTag = 'master_LATEST'
+			final String fallbackDockerSha256 = invokeSearchAPI(dockerImage, fallbackDockerTag)
+			if(fallbackDockerSha256)
+			{
+				dockerUrlToUse = "${dockerRegistry}/${dockerImage}:${fallbackDockerTag}@sha256:${fallbackDockerSha256}"
+				echo "Found sha256 for fallback-tag=${fallbackDockerTag}"
+			}
+			else
+			{
+				error "Found no sha256 to tag=${dockerTag} or fallback-tag=${fallbackDockerTag}"
+			}
+		}
+	}
+	else
+	{
+		dockerUrlToUse = dockerRegImageAndTag
+	}
+	echo "dockerUrlToUse=${dockerUrlToUse}"
+	// echo 'END retrieveDockerUrlToUse'
+	return dockerUrlToUse;
+}
+
+@NonCPS
+String[] splitDockerUrl(final String dockerRegImageAndTag)
+{
+	// echo 'BEGIN splitDockerUrl'
+	def dockerUrlRegExp = /^(?<registryWithPort>[^\:]*\:?[0-9]*)\/(?<image>[^\:]*):(?<tag>.*)$/
+	// echo "dockerRegImageAndTag=${dockerRegImageAndTag}; dockerUrlRegExp=${dockerUrlRegExp}"
+	def urlComponents = (dockerRegImageAndTag =~ /$dockerUrlRegExp/)[0]
+	// echo "urlComponents.size()=${urlComponents.size()}; urlComponents=${urlComponents}"
+
+	def dockerRegistry = urlComponents[1]
+	echo "dockerRegistry=${dockerRegistry}"
+	def dockerImage = urlComponents[2]
+	echo "dockerImage=${dockerImage}"
+	def dockerTag = urlComponents[3]
+	echo "dockerTag=${dockerTag}"
+
+	def result = [dockerRegistry, dockerImage, dockerTag]
+	// echo "END splitDockerUrl; result=${result}"
+	return result
+}
+
+String invokeSearchAPI(String dockerImage, String dockerTag)
+{
+	// echo 'BEGIN invokeSearchAPI'
+	final def misc = new de.metas.jenkins.Misc();
+
+	// thx to https://chadmayfield.com/2018/09/01/pulling-artifacts-from-nexus-in-less-than-25-lines-of-bash/
+	final String nexusQueryUrl = "https://nexus.metasfresh.com/service/rest/v1/search/assets?docker.imageName=${misc.urlEncode(dockerImage)}&docker.imageTag=${misc.urlEncode(dockerTag)}"
+	final String curlCommand = "curl -s -X GET \"${nexusQueryUrl}\" -H \"accept: application/json\" | grep -Po '\"sha256\" *: .*' | awk -F '\"' '{print \$4}'"
+
+	final String dockerSha256 = sh label: 'Retrieve docker-image sha256', returnStdout: true, script: curlCommand
+	echo "dockerSha256=${dockerSha256}"
+
+	// echo 'END invokeSearchAPI'
+	return dockerSha256
+}

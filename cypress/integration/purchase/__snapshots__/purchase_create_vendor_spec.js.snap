@@ -56,6 +56,21 @@ exports[`purchase - vendor spec > Create a vendor with two contacts #0`] =
         "viewEditorRenderMode": "always",
         "widgetType": "List"
       },
+      "BPartner_Parent_ID": {
+        "displayed": true,
+        "field": "BPartner_Parent_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "BPartner_Parent_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "Lookup"
+      },
       "C_BP_Group_ID": {
         "displayed": true,
         "field": "C_BP_Group_ID",

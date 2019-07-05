@@ -42,7 +42,7 @@ Cypress.Commands.add('selectSingleTabRow', () => {
     cy.get('.table-flex-wrapper')
       .find('tbody tr')
       .should('exist')
-      .click();
+      .click({ force: true });
   });
 });
 
