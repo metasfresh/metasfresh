@@ -201,7 +201,8 @@ public class AD_Column
 
 		else if (columnName.toUpperCase().startsWith("IS")
 				|| Pattern.matches("(Allow)[A-Z].*", columnName)
-				|| Pattern.matches("(Has)[A-Z].*", columnName))
+				|| Pattern.matches("(Has)[A-Z].*", columnName)
+				|| columnName.equals("Processed"))
 		{
 			column.setAD_Reference_ID(DisplayType.YesNo);
 
