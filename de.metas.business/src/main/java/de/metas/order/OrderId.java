@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -42,9 +44,9 @@ public class OrderId implements RepoIdAware
 		return repoId > 0 ? new OrderId(repoId) : null;
 	}
 
-	public static int getRepoIdOr(final OrderId orderId, final int defaultValue)
+	public static int toRepoId(@Nullable final OrderId orderId)
 	{
-		return orderId != null ? orderId.getRepoId() : defaultValue;
+		return orderId != null ? orderId.getRepoId() : -1;
 	}
 
 	int repoId;
