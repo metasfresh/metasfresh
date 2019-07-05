@@ -27,10 +27,9 @@ import {salesInvoices} from '../../page_objects/sales_invoices';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DocumentActionKey, DocumentStatusKey} from '../../support/utils/constants';
 
-describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferenz) for Sales Invoice', function () {
+describe('Create Adjustment Charge quantity difference (Nachbelastung Mengendifferenz) for Sales Invoice', function () {
 
-
-  const adjustmentChargePriceDifference = 'Nachbelastung - Preisdifferenz';
+  const adjustmentChargeQuantityDifference = 'Nachbelastung - Mengendifferenz';
   let originalSalesInvoiceNumber;
   let originalPriceList;
   let originalCurrency;
@@ -40,7 +39,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   let originalSalesInvoiceTotalAmount;
   let newTotalAmount;
 
-  const newProductPrice = '0.123456'; // must be lower than the original price
+  const newProductQuantity = 50; // must be lower than the original quantity
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
@@ -115,7 +114,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_Product_ID', true).then(product => {
-    // this needs to be saved again because the UI may show more text than the one from `productName`
+      // this needs to be saved again because the UI may show more text than the one from `productName`
       originalProduct = product;
     });
 
@@ -132,7 +131,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   it('Create the Adjustment Charge', function () {
     cy.executeHeaderActionWithDialog('C_Invoice_Create_AdjustmentCharge');
 
-    cy.selectInListField('C_DocType_ID', adjustmentChargePriceDifference, true, null, true);
+    cy.selectInListField('C_DocType_ID', adjustmentChargeQuantityDifference, true, null, true);
 
     cy.pressStartButton(100);
   });
@@ -155,7 +154,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
 
   it('The Sales Invoice is an Adjustment Charge price difference ', function () {
     cy.expectDocumentStatus(DocumentStatusKey.Drafted);
-    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', adjustmentChargePriceDifference);
+    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', adjustmentChargeQuantityDifference);
   });
 
   it('Has the same properties and reference to the original', function () {
@@ -183,7 +182,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
     cy.selectTab('C_InvoiceLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
-    cy.writeIntoStringField('PriceEntered', newProductPrice, true, null, true);
+    cy.writeIntoStringField('QtyEntered', newProductQuantity, true, null, true);
     cy.pressDoneButton(200);
   });
 
