@@ -57,10 +57,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Util;
 
 import de.metas.cache.CCache;
 import de.metas.util.Check;
@@ -82,8 +82,8 @@ public class MEXPFormat extends X_EXP_Format {
 	 */
 	private static final long serialVersionUID = -5011042965945626099L;
 
-	private static CCache<String,MEXPFormat> s_cache = new CCache<String,MEXPFormat>(MEXPFormat.Table_Name, 50 );
-	private static CCache<Integer,MEXPFormat> exp_format_by_id_cache = new CCache<Integer,MEXPFormat>(MEXPFormat.Table_Name, 50);
+	private static CCache<String,MEXPFormat> s_cache = new CCache<>(MEXPFormat.Table_Name, 50 );
+	private static CCache<Integer,MEXPFormat> exp_format_by_id_cache = new CCache<>(MEXPFormat.Table_Name, 50);
 
 	private List<I_EXP_FormatLine> m_lines_unique = null;
 
@@ -109,7 +109,7 @@ public class MEXPFormat extends X_EXP_Format {
 	}
 	public List<I_EXP_FormatLine> getFormatLinesOrderedBy(boolean requery, String orderBy)
 	{
-		if(!requery && _lines != null && Util.equals(_lines_orderByClause, orderBy))
+		if(!requery && _lines != null && Objects.equals(_lines_orderByClause, orderBy))
 		{
 			return _lines;
 		}
@@ -126,7 +126,9 @@ public class MEXPFormat extends X_EXP_Format {
 	public List<I_EXP_FormatLine> getUniqueColumns()
 	{
 		if (m_lines_unique != null)
+		{
 			return m_lines_unique;
+		}
 
 		final String clauseWhere = X_EXP_FormatLine.COLUMNNAME_EXP_Format_ID+"= ?"
 								 + " AND " + X_EXP_FormatLine.COLUMNNAME_IsPartUniqueIndex +"= ?";
@@ -142,7 +144,9 @@ public class MEXPFormat extends X_EXP_Format {
 	{
 		MEXPFormat exp_format = exp_format_by_id_cache.get(EXP_Format_ID);
 		if(exp_format != null)
+		{
 			return exp_format;
+		}
 		exp_format = new MEXPFormat(ctx, EXP_Format_ID , trxName);
 		if(exp_format!=null)
 		{
@@ -204,12 +208,16 @@ public class MEXPFormat extends X_EXP_Format {
 		String key = new String(MTable.getTableName(ctx, AD_Table_ID)+version);
 		MEXPFormat retValue=null;
 
-		if(trxName == null) // metas: tsa: cache only if trxName==null
-		retValue = s_cache.get(key);
+		if(trxName == null)
+		{
+			retValue = s_cache.get(key);
+		}
 		if(retValue!=null)
+		{
 			return retValue;
+		}
 
-		List<Object> params = new ArrayList<Object>();
+		List<Object> params = new ArrayList<>();
 		StringBuffer whereClause = new StringBuffer(" AD_Client_ID = ? ")
 			.append("  AND ").append(X_EXP_Format.COLUMNNAME_AD_Table_ID).append(" = ? ");
 		params.add(AD_Client_ID);
