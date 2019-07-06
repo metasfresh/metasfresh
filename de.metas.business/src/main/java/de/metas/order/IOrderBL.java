@@ -245,4 +245,6 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if the order is a quotation, i.e. C_Order's (target-)docType's DocBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
 	 */
 	boolean isQuotation(I_C_Order order);
+
+	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 }

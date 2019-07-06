@@ -34,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
 import org.adempiere.model.MFreightCostDetail;
 import org.adempiere.model.MFreightCostShipper;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
@@ -45,6 +46,8 @@ import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.document.IDocTypeBL;
@@ -302,7 +305,7 @@ public class FreightCostBL implements IFreightCostBL
 			return ((MInOut)po).getLines();
 		}
 
-		return ((MOrder)po).getLines();
+		return LegacyAdapters.convertToPOArray(((MOrder)po).getLines(), PO.class);
 	}
 
 	@Override
@@ -351,8 +354,8 @@ public class FreightCostBL implements IFreightCostBL
 					newOl.saveEx();
 
 					// reload order lines. otherwise the cached lines (without the new one) might be used
-					order.getLines(true, null);
-					order.reserveStock(MDocType.get(order.getCtx(), order.getC_DocType_ID()), new MOrderLine[] { newOl });
+					order.invalidateLines();
+					order.reserveStock(MDocType.get(order.getCtx(), order.getC_DocType_ID()), ImmutableList.of(newOl));
 					order.calculateTaxTotal();
 				}
 			}

@@ -33,6 +33,7 @@ public class PromotionValidator implements ModelValidator {
 
 	private int m_AD_Client_ID;
 
+	@Override
 	public String docValidate(PO po, int timing) {
 		if (po instanceof MOrder ) {
 			MOrder order = (MOrder) po;
@@ -40,15 +41,19 @@ public class PromotionValidator implements ModelValidator {
 			if (timing == TIMING_BEFORE_PREPARE && !order.isProcessed()) {
 				try {
 					PromotionRule.applyPromotions(order);
-					order.getLines(true, null);
+					order.invalidateLines();
 					order.calculateTaxTotal();
 					order.saveEx();
 					increasePromotionCounter(order);
 				} catch (Exception e) {
 					if (e instanceof RuntimeException)
+					{
 						throw (RuntimeException)e;
+					}
 					else
+					{
 						throw new AdempiereException(e.getLocalizedMessage(), e);
+					}
 				}
 			} else if (timing == TIMING_AFTER_VOID) {
 				decreasePromotionCounter(order);
@@ -58,9 +63,9 @@ public class PromotionValidator implements ModelValidator {
 	}
 
 	private void increasePromotionCounter(MOrder order) {
-		MOrderLine[] lines = order.getLines(false, null);
 		String promotionCode = (String)order.get_Value("PromotionCode");
-		for (MOrderLine ol : lines) {
+		for (MOrderLine ol : order.getLines())
+		{
 			if (ol.getC_Charge_ID() > 0) {
 				Integer promotionID = (Integer) ol.get_Value("M_Promotion_ID");
 				if (promotionID != null && promotionID.intValue() > 0) {
@@ -77,9 +82,9 @@ public class PromotionValidator implements ModelValidator {
 	}
 
 	private void decreasePromotionCounter(MOrder order) {
-		MOrderLine[] lines = order.getLines(false, null);
 		String promotionCode = (String)order.get_Value("PromotionCode");
-		for (MOrderLine ol : lines) {
+		for (MOrderLine ol : order.getLines())
+		{
 			if (ol.getC_Charge_ID() > 0) {
 				Integer promotionID = (Integer) ol.get_Value("M_Promotion_ID");
 				if (promotionID != null && promotionID.intValue() > 0) {
@@ -135,22 +140,28 @@ public class PromotionValidator implements ModelValidator {
 		return M_PromotionPreCondition_ID;
 	}
 
+	@Override
 	public int getAD_Client_ID() {
 		return m_AD_Client_ID;
 	}
 
+	@Override
 	public void initialize(ModelValidationEngine engine, MClient client) {
 		if (client != null)
+		{
 			m_AD_Client_ID = client.getAD_Client_ID();
+		}
 		engine.addDocValidate(I_C_Order.Table_Name, this);
 		engine.addModelChange(I_C_OrderLine.Table_Name, this);
 		
 	}
 
+	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID) {
 		return null;
 	}
 
+	@Override
 	public String modelChange(PO po, int type) throws Exception {
 		if (po instanceof MOrderLine) {
 			if (type == TYPE_AFTER_DELETE) {

@@ -27,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,6 +38,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.MFreightCost;
+import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
@@ -46,6 +48,8 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -70,7 +74,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.IOrderPA;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -891,6 +894,14 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void reserveStock(@NonNull final I_C_Order order, final org.compiere.model.I_C_OrderLine... orderLines)
+	{
+		final MOrder orderPO = InterfaceWrapperHelper.getPO(order);
+		List<MOrderLine> orderLinePOs = LegacyAdapters.convertToPOList(Arrays.asList(orderLines));
+		orderPO.reserveStock(null, orderLinePOs); // docType=null (i.e. fetch it from order)
+	}
+
+	@Override
 	public void closeLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
@@ -904,7 +915,7 @@ public class OrderBL implements IOrderBL
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		final I_C_Order order = orderLine.getC_Order();
-		Services.get(IOrderPA.class).reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
+		reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
 	}
 
 	@Override
@@ -926,8 +937,8 @@ public class OrderBL implements IOrderBL
 		//
 		// Update qty reservation
 		final I_C_Order order = orderLine.getC_Order();
-		final IOrderPA orderPA = Services.get(IOrderPA.class);
-		orderPA.reserveStock(order, orderLine);
+		reserveStock(order, orderLine);
+
 	}
 
 	@Override

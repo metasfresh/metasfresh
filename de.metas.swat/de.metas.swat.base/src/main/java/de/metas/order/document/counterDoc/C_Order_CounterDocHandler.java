@@ -1,5 +1,7 @@
 package de.metas.order.document.counterDoc;
 
+import java.util.List;
+
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -120,11 +122,9 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		counterOrderPO.copyLinesFrom(orderPO, counter, copyASI);
 
 		// Update copied lines
-		final boolean requery = true;
-		final MOrderLine[] counterLines = counterOrderPO.getLines(requery, null);
-		for (int i = 0; i < counterLines.length; i++)
+		final List<MOrderLine> counterLines = counterOrderPO.getLinesRequery();
+		for (final MOrderLine counterLine : counterLines)
 		{
-			final MOrderLine counterLine = counterLines[i];
 			Services.get(IOrderLineBL.class).setOrder(counterLine, counterOrderPO); // copies header values (BP, etc.)
 			counterLine.setPrice();
 			counterLine.setTax();
