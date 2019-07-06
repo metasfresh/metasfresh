@@ -300,7 +300,7 @@ public class AbstractTestSupport
 			order = db.newInstance(Env.getCtx(), I_C_Order.class);
 			order.setDocumentNo(orderDocNo);
 			final I_C_DocType orderDocType = createSalesOrderDocType();
-			order.setC_DocType(orderDocType);
+			order.setC_DocType_ID(orderDocType.getC_DocType_ID());
 			InterfaceWrapperHelper.save(order);
 		}
 

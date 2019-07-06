@@ -1725,22 +1725,24 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		final I_C_DocType dt = getC_DocType();
-		if (dt.isOverwriteDateOnComplete())
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+		
+		if (docType.isOverwriteDateOnComplete())
 		{
 			setDateOrdered(SystemTime.asTimestamp());
 		}
-		if (dt.isOverwriteSeqOnComplete())
+		
+		if (docType.isOverwriteSeqOnComplete())
 		{
 			final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-			final String value = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
+			final String documentNo = documentNoFactory.forDocType(getC_DocType_ID(), true) // useDefiniteSequence=true
 					.setDocumentModel(this)
 					.setFailOnError(false)
 					.build();
-			if (value != null && value != IDocumentNoBuilder.NO_DOCUMENTNO)
+			if (documentNo != null && documentNo != IDocumentNoBuilder.NO_DOCUMENTNO)
 			{
-				setDocumentNo(value);
-				Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, value); // task 09776
+				setDocumentNo(documentNo);
+				Services.get(IDocumentNoBL.class).fireDocumentNoChange(this, documentNo); // task 09776
 			}
 		}
 	}
