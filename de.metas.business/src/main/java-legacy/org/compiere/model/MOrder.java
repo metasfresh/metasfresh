@@ -101,11 +101,9 @@ import lombok.NonNull;
  */
 public class MOrder extends X_C_Order implements IDocument
 {
-
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -1575104995897726572L;
+
+	private static final String NO_DELIVARABLE_LINES_FOUND = "NoDeliverableLinesFound";
 
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 
@@ -233,8 +231,6 @@ public class MOrder extends X_C_Order implements IDocument
 	private ImmutableList<MOrderLine> _lines = null;
 	/** Tax Lines */
 	private MOrderTax[] m_taxes = null;
-	/** Force Creation of order */
-	private boolean m_forceCreation = false;
 
 	/**
 	 * Overwrite Client/Org if required
@@ -853,31 +849,8 @@ public class MOrder extends X_C_Order implements IDocument
 	 */
 	public String getDocStatusName()
 	{
-		return MRefList.getListName(getCtx(), 131, getDocStatus());
+		return MRefList.getListName(getCtx(), DocStatus.AD_REFERENCE_ID, getDocStatus());
 	}	// getDocStatusName
-
-	/**
-	 * Set DocAction
-	 *
-	 * @param DocAction doc action
-	 */
-	@Override
-	public void setDocAction(final String DocAction)
-	{
-		setDocAction(DocAction, false);
-	}	// setDocAction
-
-	/**
-	 * Set DocAction
-	 *
-	 * @param DocAction doc action
-	 * @param forceCreation force creation
-	 */
-	public void setDocAction(final String DocAction, final boolean forceCreation)
-	{
-		super.setDocAction(DocAction);
-		m_forceCreation = forceCreation;
-	}	// setDocAction
 
 	/**
 	 * Set Processed.
@@ -1601,6 +1574,12 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
+		final DocStatus docStatus = completeIt0();
+		return docStatus.getCode();
+	}
+	
+	private DocStatus completeIt0()
+	{
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
 		final String DocSubType = dt.getDocSubType();
 
@@ -1609,7 +1588,7 @@ public class MOrder extends X_C_Order implements IDocument
 		if (DOCACTION_Prepare.equals(getDocAction()))
 		{
 			setProcessed(false);
-			return IDocument.STATUS_InProgress;
+			return DocStatus.InProgress;
 		}
 		
 		//
@@ -1625,43 +1604,43 @@ public class MOrder extends X_C_Order implements IDocument
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 			if (m_processMsg != null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid;
 			}
 			m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 			if (m_processMsg != null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid;
 			}
 			// Set the definite document number after completed (if needed)
 			setDefiniteDocumentNo();
 			setProcessed(true);
-			return IDocument.STATUS_Completed;
+			return DocStatus.Completed;
 		}
 		
 		//
 		// Waiting Payment - until we have a payment
-		if (!m_forceCreation
-				&& X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
-				&& getC_Payment_ID() == 0 && getC_CashLine_ID() == 0)
+		if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType)
+				&& getC_Payment_ID() <= 0 
+				&& getC_CashLine_ID() <= 0)
 		{
 			setProcessed(true);
-			return IDocument.STATUS_WaitingPayment;
+			return DocStatus.WaitingPayment;
 		}
 
 		// Re-Check
 		if (!m_justPrepared)
 		{
-			final String status = prepareIt();
-			if (!IDocument.STATUS_InProgress.equals(status))
+			final DocStatus docStatus = DocStatus.ofCode(prepareIt());
+			if (!docStatus.isInProgress())
 			{
-				return status;
+				return docStatus;
 			}
 		}
 
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 		{
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid;
 		}
 
 		// Implicit Approval
@@ -1669,10 +1648,12 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			approveIt();
 		}
+		
 		invalidateLines();
+		
 		log.debug("Completed: {}", this);
+		
 		final StringBuilder info = new StringBuilder();
-
 		final boolean realTimePOS = false;
 
 		// Create SO Shipment - Force Shipment
@@ -1689,7 +1670,7 @@ public class MOrder extends X_C_Order implements IDocument
 			shipment = createShipment(dt, realTimePOS ? null : getDateOrdered());
 			if (shipment == null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid;
 			}
 			info.append("@M_InOut_ID@: ").append(shipment.getDocumentNo());
 			final String msg = shipment.getProcessMsg();
@@ -1706,7 +1687,7 @@ public class MOrder extends X_C_Order implements IDocument
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
 			{
-				return IDocument.STATUS_Invalid;
+				return DocStatus.Invalid;
 			}
 			info.append(" - @C_Invoice_ID@: ").append(invoice.getDocumentNo());
 			final String msg = invoice.getProcessMsg();
@@ -1726,7 +1707,7 @@ public class MOrder extends X_C_Order implements IDocument
 			}
 			info.append(valid);
 			m_processMsg = info.toString();
-			return IDocument.STATUS_Invalid;
+			return DocStatus.Invalid;
 		}
 
 		// Set the definite document number after completed (if needed)
@@ -1736,7 +1717,7 @@ public class MOrder extends X_C_Order implements IDocument
 		m_processMsg = info.toString();
 		//
 		setDocAction(DOCACTION_Re_Activate); // issue #347
-		return IDocument.STATUS_Completed;
+		return DocStatus.Completed;
 	}	// completeIt
 
 	/**
@@ -2412,19 +2393,4 @@ public class MOrder extends X_C_Order implements IDocument
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
 		return docStatus.isCompletedOrClosedOrReversed();
 	}	// isComplete
-
-	// metas: begin
-	public static final String NO_DELIVARABLE_LINES_FOUND = "NoDeliverableLinesFound";
-
-	/**
-	 * Is Force Creation of this order enabled
-	 *
-	 * @return
-	 * @see #setDocAction(String, boolean)
-	 */
-	public boolean is_ForceCreation()
-	{
-		return m_forceCreation;
-	}
-	// metas: end
 } // MOrder

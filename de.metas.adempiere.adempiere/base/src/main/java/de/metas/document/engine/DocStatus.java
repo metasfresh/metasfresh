@@ -53,7 +53,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 	WaitingConfirmation(IDocument.STATUS_WaitingConfirmation) //
 	;
 
-	public static final int AD_REFERENCE_ID = X_C_Order.DOCSTATUS_AD_Reference_ID;
+	public static final int AD_REFERENCE_ID = X_C_Order.DOCSTATUS_AD_Reference_ID; // 131
 
 	private static final ImmutableSet<DocStatus> COMPLETED_OR_CLOSED_STATUSES = ImmutableSet.of(Completed, Closed);
 
