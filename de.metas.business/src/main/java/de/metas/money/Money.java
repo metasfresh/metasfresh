@@ -62,24 +62,24 @@ import lombok.Value;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class Money
+public final class Money
 {
-	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
 		return of(new BigDecimal(value), currencyId);
 	}
 
-	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
+	public static Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
 		return of(BigDecimal.valueOf(value), currencyId);
 	}
 
-	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
+	public static Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
 		return new Money(value, currencyId);
 	}
 
-	public static final Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
+	public static Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
 	{
 		if (value == null || currencyId == null)
 		{
@@ -88,7 +88,7 @@ public class Money
 		return new Money(value, currencyId);
 	}
 
-	public static final Money toZeroOrNull(@Nullable final Money money)
+	public static Money toZeroOrNull(@Nullable final Money money)
 	{
 		if (money == null)
 		{
@@ -97,7 +97,7 @@ public class Money
 		return money.toZero();
 	}
 
-	public static final Money zero(@NonNull final CurrencyId currencyId)
+	public static Money zero(@NonNull final CurrencyId currencyId)
 	{
 		return new Money(ZERO, currencyId);
 	}
@@ -116,6 +116,20 @@ public class Money
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value); // stripping trailing zeros to make sure that 4 EUR equal 4.00 EUR
 		this.currencyId = currencyId;
+	}
+
+	/**
+	 * @deprecated please use {@link #getAsBigDecimal()}
+	 */
+	@Deprecated
+	public BigDecimal getValue()
+	{
+		return value;
+	}
+
+	public BigDecimal getAsBigDecimal()
+	{
+		return value;
 	}
 
 	public int signum()
@@ -240,7 +254,7 @@ public class Money
 		return this.value.compareTo(other.value) >= 0 ? this : other;
 	}
 
-	private final void assertCurrencyIdMatching(
+	private void assertCurrencyIdMatching(
 			@NonNull final Money amt)
 	{
 		if (!Objects.equals(currencyId, amt.currencyId))
