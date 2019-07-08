@@ -1,6 +1,6 @@
 -- Function: report.tax_accounting_report(numeric, numeric, numeric, numeric, character varying, character varying)
 
--- DROP FUNCTION report.tax_accounting_report(numeric, numeric, numeric, numeric, character varying, character varying);
+DROP FUNCTION report.tax_accounting_report(numeric, numeric, numeric, numeric, character varying, character varying);
 
 CREATE OR REPLACE FUNCTION report.tax_accounting_report(
     IN c_period_id numeric,
