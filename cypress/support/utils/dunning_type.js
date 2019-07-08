@@ -69,6 +69,12 @@ export class DunningTypeEntryLine {
     this.note = note;
     return this;
   }
+
+  setCurrency(currency) {
+    cy.log(`DunningType - set currency = ${currency}`);
+    this.currency = currency;
+    return this;
+  }
 }
 
 function applyDunningType(dunningType) {
@@ -78,6 +84,10 @@ function applyDunningType(dunningType) {
 
     cy.writeIntoStringField('Name', `${dunningType.name}`);
     cy.setCheckBoxValue('IsDefault', dunningType.isDefault);
+
+    cy.openAdvancedEdit();
+    cy.selectInListField('C_Currency_ID', dunningType.currency, true);
+    cy.pressDoneButton();
 
     if (dunningType.entryLine.length > 0) {
       dunningType.entryLine.forEach(function (dunningEntryLine) {
