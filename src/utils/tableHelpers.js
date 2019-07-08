@@ -58,6 +58,10 @@ export function getSizeClass(col) {
         return 'td-md';
       case 'L':
         return 'td-lg';
+      case 'XL':
+        return 'td-xl';
+      case 'XXL':
+        return 'td-xxl';
     }
   } else {
     if (lg.indexOf(widgetType) > -1) {
