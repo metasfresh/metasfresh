@@ -1,8 +1,11 @@
 package de.metas.paypalplus.controller;
 
+import java.util.Optional;
+
 import org.adempiere.test.AdempiereTestHelper;
 
 import de.metas.money.CurrencyRepository;
+import de.metas.paypalplus.logs.PayPalLogRepository;
 import de.metas.paypalplus.processor.PayPalPaymentProcessor;
 
 /*
@@ -44,6 +47,7 @@ public class PayPalCheckoutManualTest2
 	{
 		processor = new PayPalPaymentProcessor(
 				new TestPayPalConfigProvider(),
+				new PayPalLogRepository(Optional.empty()),
 				new CurrencyRepository());
 	}
 
