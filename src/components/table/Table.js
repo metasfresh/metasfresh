@@ -1259,6 +1259,10 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
+              handleChangePage={pages => {
+                this.deselectAllProducts();
+                handleChangePage(pages);
+              }}
               selected={selected || [undefined]}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
