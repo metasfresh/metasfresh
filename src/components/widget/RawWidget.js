@@ -633,7 +633,7 @@ export class RawWidget extends Component {
               <NumericInput
                 {...widgetProperties}
                 min={0}
-                precision={1}
+                precision={widgetField === 'CableLength' ? 2 : 1}
                 step={subentity === 'quickInput' ? 0.1 : 1}
               />
             ) : (
