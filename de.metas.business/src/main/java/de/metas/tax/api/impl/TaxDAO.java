@@ -46,15 +46,23 @@ import org.compiere.util.TimeUtil;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
 public class TaxDAO implements ITaxDAO
 {
+	@Override
+	public I_C_Tax getTaxById(final int taxRepoId)
+	{
+		Check.assumeGreaterThanZero(taxRepoId, "taxRepoId");
+		return loadOutOfTrx(taxRepoId, I_C_Tax.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_VAT_SmallBusiness.Table_Name + "#By#C_BPartner_ID#Date")
 	public boolean retrieveIsTaxExempt(
@@ -165,13 +173,13 @@ public class TaxDAO implements ITaxDAO
 	{
 		if (id == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("?");
+			return TranslatableStrings.anyLanguage("?");
 		}
 
 		final I_C_TaxCategory taxCategory = getTaxCategoryById(id);
 		if (taxCategory == null)
 		{
-			return ImmutableTranslatableString.anyLanguage("<" + id.getRepoId() + ">");
+			return TranslatableStrings.anyLanguage("<" + id.getRepoId() + ">");
 		}
 
 		return InterfaceWrapperHelper.getModelTranslationMap(taxCategory)

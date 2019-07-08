@@ -113,7 +113,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 		return PriceAndTax.builder()
 				.priceActual(term.getPriceActual())
-				.priceUOMId(term.getC_UOM_ID()) // 07090: when setting a priceActual, we also need to specify a PriceUOM
+				.priceUOMId(UomId.ofRepoId(term.getC_UOM_ID())) // 07090: when setting a priceActual, we also need to specify a PriceUOM
 				.build();
 	}
 

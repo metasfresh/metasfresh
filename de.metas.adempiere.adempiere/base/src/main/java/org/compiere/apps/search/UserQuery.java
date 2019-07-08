@@ -5,7 +5,7 @@ import java.util.List;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.TranslatableStrings;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 
 /*package*/final class UserQuery implements IUserQuery
 {
-	public static final UserQuery of(final int id, final String caption, final int adUserId, final List<IUserQueryRestriction> segments)
+	public static UserQuery of(final int id, final String caption, final int adUserId, final List<IUserQueryRestriction> segments)
 	{
 		return new UserQuery(id, caption, adUserId, segments);
 	}
@@ -46,7 +46,7 @@ import de.metas.i18n.ImmutableTranslatableString;
 		super();
 		this.id = id;
 		this.adUserId = adUserId;
-		this.caption = ImmutableTranslatableString.constant(caption);
+		this.caption = TranslatableStrings.constant(caption);
 		this.restrictions = restrictions;
 	}
 

@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -197,13 +196,13 @@ class ContactRestControllerTest
 				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
 				.build();
 
-		final JsonExternalId upsertExternalId = JsonExternalId.of("externalId-1");
+		final String contactIdentifier = "ext-externalId-1";
 
 		final JsonRequestContactUpsert upsertRequest = JsonRequestContactUpsert.builder()
 				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())
 				.requestItem(JsonRequestContactUpsertItem
 						.builder()
-						.externalId(upsertExternalId)
+						.contactIdentifier(contactIdentifier)
 						.contact(jsonContact)
 						.build())
 				.build();
@@ -216,7 +215,7 @@ class ContactRestControllerTest
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
-		assertThat(resultBody.getResponseItems().get(0).getExternalId()).isEqualTo(upsertExternalId);
+		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
 
 		final MetasfreshId insertedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
 

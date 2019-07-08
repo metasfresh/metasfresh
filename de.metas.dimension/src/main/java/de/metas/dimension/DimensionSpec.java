@@ -35,6 +35,7 @@ import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
 import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -386,7 +387,7 @@ public class DimensionSpec
 		for (final Entry<IPair<String, AttributeId>, Collection<Integer>> entry : entrySet)
 		{
 			final String groupName = entry.getKey().getLeft();
-			final ITranslatableString groupNameTrl = ITranslatableString.constant(groupName);
+			final ITranslatableString groupNameTrl = TranslatableStrings.constant(groupName);
 			final Optional<AttributeId> groupAttributeId = Optional.ofNullable(entry.getKey().getRight());
 			final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(entry.getValue());
 

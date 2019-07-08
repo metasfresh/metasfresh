@@ -1,0 +1,119 @@
+de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
+  {
+    "bpartner": {
+      "id": 20,
+      "externalId": {
+        "value": "fghij"
+      },
+      "value": "bpartnerRecord.value",
+      "name": "bpartnerRecord.name",
+      "groupId": 15,
+      "changeLog": {
+        "tableName": "C_BPartner",
+        "recordId": {
+          "keyColumnNames": [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName": {
+            "C_BPartner_ID": 20
+          },
+          "singleKey": true
+        },
+        "createdByUserId": 30,
+        "createdTimestamp": {
+          "seconds": 1561133,
+          "nanos": 544000000
+        },
+        "lastChangedByUserId": 30,
+        "lastChangedTimestamp": {
+          "seconds": 1561133,
+          "nanos": 544000000
+        },
+        "entries": [ ]
+      }
+    },
+    "locations": [
+      {
+        "id": {
+          "repoId": 40,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "bpartnerLocation.externalId"
+        },
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "poBox": "locationRecord.poBox",
+        "postal": "locationRecord.postal",
+        "city": "locationRecord.city",
+        "district": "postalRecord.district",
+        "region": "locationRecord.regionName",
+        "countryCode": "countryRecord.countryCode",
+        "gln": "bpartnerLocationRecord.gln",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 40
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
+      }
+    ],
+    "contacts": [
+      {
+        "id": {
+          "repoId": 30,
+          "bpartnerId": 20
+        },
+        "externalId": {
+          "value": "abcde"
+        },
+        "name": "bpartnerRecord.name",
+        "lastName": "bpartnerRecord.lastName",
+        "firstName": "bpartnerRecord.firstName",
+        "email": "bpartnerRecord.email",
+        "phone": "bpartnerRecord.phone",
+        "changeLog": {
+          "tableName": "AD_User",
+          "recordId": {
+            "keyColumnNames": [
+              "AD_User_ID"
+            ],
+            "keysByColumnName": {
+              "AD_User_ID": 30
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "entries": [ ]
+        }
+      }
+    ],
+    "orgId": 10
+  }
+]

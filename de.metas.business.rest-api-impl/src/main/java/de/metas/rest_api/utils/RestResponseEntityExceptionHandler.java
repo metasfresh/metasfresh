@@ -60,6 +60,16 @@ public class RestResponseEntityExceptionHandler
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 
+	@ExceptionHandler(InvalidIdentifierException.class)
+	public ResponseEntity<String> InvalidIdentifierException(@NonNull final InvalidIdentifierException e)
+	{
+		if (e.getMessage().startsWith("tea"))
+		{
+			return new ResponseEntity<>("Invalid identifier: " + e.getMessage(), HttpStatus.I_AM_A_TEAPOT); // whohoo, finally!
+		}
+		return new ResponseEntity<>("Invalid identifier: " + e.getMessage(), HttpStatus.NOT_FOUND);
+	}
+
 	@ExceptionHandler(DBUniqueConstraintException.class)
 	public ResponseEntity<String> handleDBUniqueConstraintException(@NonNull final DBUniqueConstraintException e)
 	{

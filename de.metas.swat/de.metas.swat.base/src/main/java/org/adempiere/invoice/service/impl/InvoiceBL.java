@@ -67,11 +67,11 @@ public final class InvoiceBL extends AbstractInvoiceBL
 				final I_C_Tax tax = il.getC_Tax();
 				if (tax != null)
 				{
-					il.setC_TaxCategory(tax.getC_TaxCategory());
+					il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 				}
 				else
 				{
-					il.setC_TaxCategory(orderLine.getC_TaxCategory());
+					il.setC_TaxCategory_ID(orderLine.getC_TaxCategory_ID());
 				}
 				InterfaceWrapperHelper.save(il);
 			}
@@ -124,7 +124,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 		final MInvoiceLine[] fromLines = fromInvoicePO.getLines(false);
 		int count = 0;
 
-		for (int i = 0; i < fromLines.length; i++)
+		for (final MInvoiceLine fromLine : fromLines)
 		{
 			final I_C_InvoiceLine toLine;
 			if (counter)
@@ -135,8 +135,6 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			{
 				toLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class, fromInvoice);
 			}
-
-			final MInvoiceLine fromLine = fromLines[i];
 
 			// copy original values using the specified handler algorithm
 			if (additionalDocLineHandler != null)

@@ -12,8 +12,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_OrderLine;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
@@ -38,6 +45,7 @@ import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -65,7 +73,7 @@ import lombok.NonNull;
  * #L%
  */
 
-class OrderLinePriceCalculator
+final class OrderLinePriceCalculator
 {
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -108,16 +116,24 @@ class OrderLinePriceCalculator
 
 		//
 		// Apply price limit restrictions
-		if (isApplyPriceLimitRestrictions(pricingResult))
+		final BooleanWithReason applyPriceLimitRestrictions = checkApplyPriceLimitRestrictions(pricingResult);
+		if (applyPriceLimitRestrictions.isTrue())
 		{
 			final PriceLimitRuleResult priceLimitResult = pricingBL.computePriceLimit(PriceLimitRuleContext.builder()
 					.pricingContext(pricingCtx)
 					.priceLimit(priceAndDiscount.getPriceLimit())
 					.priceActual(priceAndDiscount.getPriceActual())
-					.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
+					.paymentTermId(orderLineBL.getPaymentTermId(orderLine))
 					.build());
 
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
+		}
+		else
+		{
+			priceAndDiscount = priceAndDiscount.toBuilder()
+					.priceLimitEnforced(false)
+					.priceLimitNotEnforcedExplanation(applyPriceLimitRestrictions.getReason())
+					.build();
 		}
 
 		//
@@ -125,7 +141,7 @@ class OrderLinePriceCalculator
 		priceAndDiscount.applyTo(orderLine);
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
-		orderLine.setPrice_UOM_ID(pricingResult.getPrice_UOM_ID()); // 07090: when setting a priceActual, we also need to specify a PriceUOM
+		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
@@ -134,7 +150,8 @@ class OrderLinePriceCalculator
 
 		orderLine.setIsPriceEditable(pricingResult.isPriceEditable());
 		orderLine.setIsDiscountEditable(pricingResult.isDiscountEditable());
-		orderLine.setEnforcePriceLimit(pricingResult.isEnforcePriceLimit());
+		orderLine.setEnforcePriceLimit(pricingResult.getEnforcePriceLimit().isTrue());
+		orderLine.setPriceLimitNote(buildPriceLimitNote(pricingResult.getEnforcePriceLimit()));
 
 		updateOrderLineFromPricingConditionsResult(orderLine, pricingResult.getPricingConditions());
 
@@ -151,6 +168,29 @@ class OrderLinePriceCalculator
 				orderLineBL.updateLineNetAmt(orderLine, orderLineBL.getQtyEntered(orderLine));
 			}
 		}
+	}
+
+	private String buildPriceLimitNote(final BooleanWithReason enforcePriceLimit)
+	{
+		final ITranslatableString msg;
+		if (enforcePriceLimit.isTrue())
+		{
+			msg = TranslatableStrings.builder()
+					.appendADMessage("Enforced")
+					.append(": ")
+					.append(enforcePriceLimit.getReason())
+					.build();
+		}
+		else
+		{
+			msg = TranslatableStrings.builder()
+					.appendADMessage("NotEnforced")
+					.append(": ")
+					.append(enforcePriceLimit.getReason())
+					.build();
+		}
+
+		return msg.translate(Language.getBaseAD_Language());
 	}
 
 	private void updateOrderLineFromPricingConditionsResult(
@@ -205,7 +245,7 @@ class OrderLinePriceCalculator
 
 		if (!orderLine.isManualPaymentTerm())
 		{
-			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.getRepoId(paymentTermId));
+			orderLine.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(paymentTermId));
 			orderLine.setPaymentDiscount(paymentDiscount);
 		}
 
@@ -287,11 +327,11 @@ class OrderLinePriceCalculator
 		{
 			final PricingSystemId pricingSystemId = request.getPricingSystemIdOverride() != null ? request.getPricingSystemIdOverride() : pricingCtx.getPricingSystemId();
 			final PriceListId priceListId = request.getPriceListIdOverride() != null ? request.getPriceListIdOverride() : orderBL.retrievePriceListId(order, pricingSystemId);
-			final int countryId = getCountryIdOrZero(orderLine);
+			final CountryId countryId = getCountryIdOrNull(orderLine);
 			pricingCtx.setPricingSystemId(pricingSystemId);
 			pricingCtx.setPriceListId(priceListId);
 			pricingCtx.setPriceListVersionId(null);
-			pricingCtx.setC_Country_ID(countryId);
+			pricingCtx.setCountryId(countryId);
 			pricingCtx.setCurrencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 		}
 
@@ -310,21 +350,16 @@ class OrderLinePriceCalculator
 		return pricingCtx;
 	}
 
-	private static int getCountryIdOrZero(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	private static CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		if (orderLine.getC_BPartner_Location_ID() <= 0)
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(orderLine.getC_BPartner_ID(), orderLine.getC_BPartner_Location_ID());
+		if (bpLocationId == null)
 		{
-			return 0;
+			return null;
 		}
 
-		final I_C_BPartner_Location bPartnerLocation = orderLine.getC_BPartner_Location();
-		if (bPartnerLocation.getC_Location_ID() <= 0)
-		{
-			return 0;
-		}
-
-		final int countryId = bPartnerLocation.getC_Location().getC_Country_ID();
-		return countryId;
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()
@@ -333,16 +368,15 @@ class OrderLinePriceCalculator
 		{
 			return request.getPricingConditionsBreakOverride();
 		}
+
 		final I_C_OrderLine orderLine = request.getOrderLine();
-
-		final boolean lineHasDiscountSchemaBreak = orderLine.getM_DiscountSchema_ID() > 0 && orderLine.getM_DiscountSchemaBreak_ID() > 0;
+		final PricingConditionsBreakId orderLinePricingConditionsBreakId = PricingConditionsBreakId.ofOrNull(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
 		final boolean discountNeedsRevalidation = isValueChanged(orderLine, PricingConditionsBreakQuery.getRelevantOrderLineColumns());
-		if (lineHasDiscountSchemaBreak && !discountNeedsRevalidation)
+		if (orderLinePricingConditionsBreakId != null && !discountNeedsRevalidation)
 		{
-			final PricingConditionsBreakId pricingConditionsBreakId = PricingConditionsBreakId.of(orderLine.getM_DiscountSchema_ID(), orderLine.getM_DiscountSchemaBreak_ID());
-			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsBreakId.getPricingConditionsId());
+			final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(orderLinePricingConditionsBreakId.getPricingConditionsId());
 
-			return pricingConditions.getBreakById(pricingConditionsBreakId);
+			return pricingConditions.getBreakById(orderLinePricingConditionsBreakId);
 		}
 
 		return null;
@@ -374,11 +408,19 @@ class OrderLinePriceCalculator
 		}
 	}
 
-	private boolean isApplyPriceLimitRestrictions(final IPricingResult pricingResult)
+	private BooleanWithReason checkApplyPriceLimitRestrictions(final IPricingResult pricingResult)
 	{
-		return request.isApplyPriceLimitRestrictions()
-				&& request.getOrderLine().getC_Order().isSOTrx() // we enforce price limit only for sales orders
-				&& pricingResult.isEnforcePriceLimit();
+		if (!request.isApplyPriceLimitRestrictions())
+		{
+			return BooleanWithReason.falseBecause("by request");
+		}
+
+		if (!request.getOrderLine().getC_Order().isSOTrx())
+		{
+			return BooleanWithReason.falseBecause("we enforce price limit only for sales orders");
+		}
+
+		return pricingResult.getEnforcePriceLimit();
 	}
 
 	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final SOTrx soTrx)
@@ -483,7 +525,7 @@ class OrderLinePriceCalculator
 				.pricingContext(createPricingContext())
 				.priceLimit(orderLine.getPriceLimit())
 				.priceActual(orderLine.getPriceActual())
-				.paymentTermId(orderLineBL.getC_PaymentTerm_ID(orderLine))
+				.paymentTermId(orderLineBL.getPaymentTermId(orderLine))
 				.build());
 	}
 }

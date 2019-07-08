@@ -3,7 +3,6 @@ package de.metas.rest_api.bpartner.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -37,21 +36,22 @@ import lombok.Value;
 public class JsonResponseUpsertItem
 {
 	@ApiModelProperty(//
-			value = "The external id from the respective update request",//
-			dataType = "java.lang.String")
+			value = "The bpartnerIdentifier or contactIndentifier from the respective update request.",
+			position = 10)
 	@NonNull
-	JsonExternalId externalId;
+	String identifier;
 
 	@ApiModelProperty(value = "The metasfresh-ID of the upserted record",//
+			position = 20,
 			dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
 	@JsonCreator
 	private JsonResponseUpsertItem(
-			@JsonProperty("externalId") @NonNull JsonExternalId externalId,
+			@JsonProperty("identifier") @NonNull String identifier,
 			@JsonProperty("metasfreshId") @NonNull MetasfreshId metasfreshId)
 	{
-		this.externalId = externalId;
+		this.identifier = identifier;
 		this.metasfreshId = metasfreshId;
 	}
 }

@@ -21,8 +21,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.ITranslatableString;
-import de.metas.util.rest.ExternalId;
+import de.metas.i18n.TranslatableStrings;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -126,12 +127,12 @@ public final class BPartnerComposite
 
 		if (orgId == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.orgId"));
+			result.add(TranslatableStrings.constant("Missing BPartnerComposite.orgId"));
 		}
 
 		if (bpartner == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.bpartner"));
+			result.add(TranslatableStrings.constant("Missing BPartnerComposite.bpartner"));
 		}
 		else
 		{
@@ -140,7 +141,7 @@ public final class BPartnerComposite
 					|| !extractLocationGlns().isEmpty();
 			if (!lokupValuesAreOk)
 			{
-				result.add(ITranslatableString.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
+				result.add(TranslatableStrings.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
 			}
 		}
 
@@ -157,19 +158,11 @@ public final class BPartnerComposite
 				.findAny();
 	}
 
-	public Optional<BPartnerLocation> extractLocation(@NonNull final ExternalId externalId)
+	public Optional<BPartnerLocation> extractLocation(@NonNull final BPartnerLocationId bPartnerLocationId)
 	{
 		return getLocations()
 				.stream()
-				.filter(l -> externalId.equals(l.getExternalId()))
-				.findAny();
-	}
-
-	public Optional<BPartnerContact> extractContact(@NonNull final ExternalId externalId)
-	{
-		return getContacts()
-				.stream()
-				.filter(c -> externalId.equals(c.getExternalId()))
+				.filter(l -> bPartnerLocationId.equals(l.getId()))
 				.findAny();
 	}
 

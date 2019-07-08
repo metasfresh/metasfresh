@@ -40,7 +40,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
@@ -63,12 +62,15 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -93,7 +95,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	public boolean isCreateMissingCandidatesAutomatically(Object model)
 	{
 		return false;
-	};
+	}
 
 	/**
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
@@ -208,7 +210,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				Util.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
 		ic.setC_Tax_ID(taxId);
 
@@ -314,8 +316,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			return;
 		}
 
-		final int paymentTermId = Services.get(IOrderLineBL.class).getC_PaymentTerm_ID(orderLine);
-		ic.setC_PaymentTerm_ID(paymentTermId);
+		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLine);
+		ic.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 	}
 
 	/**
@@ -374,7 +376,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
-				.priceUOMId(orderLine.getPrice_UOM_ID())
+				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
 				.taxIncluded(orderLine.getC_Order().isTaxIncluded());
 
 		//

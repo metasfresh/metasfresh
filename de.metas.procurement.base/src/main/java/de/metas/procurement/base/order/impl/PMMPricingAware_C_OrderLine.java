@@ -1,8 +1,5 @@
 package de.metas.procurement.base.order.impl;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
@@ -13,8 +10,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -25,8 +22,13 @@ import de.metas.procurement.base.IPMMPricingAware;
 import de.metas.procurement.base.IPMMProductBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_Product;
+import de.metas.product.IProductDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.Getter;
+import lombok.Setter;
 
 /*
  * #%L
@@ -90,7 +92,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return orderLine.getC_BPartner();
+		return Services.get(IBPartnerDAO.class).getById(orderLine.getC_BPartner_ID());
 	}
 
 	@Override
@@ -107,7 +109,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_M_Product getM_Product()
 	{
-		return orderLine.getM_Product();
+		return Services.get(IProductDAO.class).getById(getProductId());
 	}
 
 	@Override
@@ -119,7 +121,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public I_C_UOM getC_UOM()
 	{
-		return orderLine.getC_UOM();
+		return Services.get(IUOMDAO.class).getById(orderLine.getC_UOM_ID());
 	}
 
 	@Override
@@ -180,10 +182,9 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 	@Override
 	public Timestamp getDate()
 	{
-		final Timestamp date = Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> orderLine.getDatePromised(),
 				() -> orderLine.getC_Order().getDatePromised());
-		return date;
 	}
 
 	@Override

@@ -41,6 +41,7 @@ import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.gljournal.IGLJournalLineGroup;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -239,7 +240,6 @@ public class GLJournalLineBL implements IGLJournalLineBL
 	{
 		Check.assumeNotNull(glJournalLine, "glJournalLine not null");
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournalLine);
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
 		final I_GL_JournalBatch glJournalBatch = glJournal == null ? null : glJournal.getGL_JournalBatch();
 
@@ -254,7 +254,10 @@ public class GLJournalLineBL implements IGLJournalLineBL
 		{
 			summary.append(glJournal.getDocumentNo());
 		}
-		summary.parseTranslationAndAppend(ctx, "@Line@ " + glJournalLine.getLine());
+		
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournalLine);
+		summary.append(msgBL.parseTranslation(ctx, "@Line@ " + glJournalLine.getLine()));
 
 		return summary.toString();
 	}

@@ -38,6 +38,8 @@ import de.metas.util.Services;
 
 public interface IHUPIItemProductBL extends ISingletonService
 {
+	I_M_HU_PI_Item_Product getById(HUPIItemProductId id);
+
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
 
 	/**

@@ -34,6 +34,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -99,7 +102,12 @@ public class HUOrderBL implements IHUOrderBL
 			if (isProductChanged(olPO, columnName) || isBPartnerChanged(olPO, columnName))
 			{
 				final boolean allowInfiniteCapacity = true;
-				pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, olPO.getC_BPartner(), olPO.getDateOrdered(), huUnitType, allowInfiniteCapacity);
+				pip = hupiItemProductDAO.retrieveMaterialItemProduct(
+						productId, 
+						extractBPartnerOrNull(olPO), 
+						olPO.getDateOrdered(), 
+						huUnitType, 
+						allowInfiniteCapacity);
 			}
 			// use the existing pip
 			else if (ol.getM_HU_PI_Item_Product_ID() > 0 && (isQtyChanged(olPO, columnName) || isM_HU_PI_Item_ProductChanged(olPO, columnName)))
@@ -165,6 +173,14 @@ public class HUOrderBL implements IHUOrderBL
 					.updateLineNetAmt(true)
 					.build());
 		}
+	}
+	
+	private I_C_BPartner extractBPartnerOrNull(@NonNull final I_C_OrderLine orderLine)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(orderLine.getC_BPartner_ID());
+		return bpartnerId != null
+				? Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class)
+				: null;
 	}
 
 	private I_M_HU_PI_Item_Product getOrderLinePIIPForNewOrderLine(
@@ -245,7 +261,7 @@ public class HUOrderBL implements IHUOrderBL
 			{
 				newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
 						ProductId.ofRepoId(ol.getM_Product_ID()),
-						ol.getC_BPartner(),
+						extractBPartnerOrNull(ol),
 						ol.getDateOrdered(),
 						huUnitType,
 						allowInfiniteCapacity,
@@ -272,7 +288,7 @@ public class HUOrderBL implements IHUOrderBL
 		{
 			newPIIP = hupiItemProductDAO.retrieveMaterialItemProduct(
 					ProductId.ofRepoIdOrNull(ol.getM_Product_ID()),
-					ol.getC_BPartner(),
+					extractBPartnerOrNull(ol),
 					ol.getDateOrdered(),
 					huUnitType,
 					allowInfiniteCapacity);
