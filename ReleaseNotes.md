@@ -10,6 +10,33 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.112
+
+## Features
+* metasfresh
+  * [#5257](https://github.com/metasfresh/metasfresh/issues/5257) Data Migration for Data Entry 
+  * [#5353](https://github.com/metasfresh/metasfresh/issues/5353) Enable "Bank" import
+
+* metasfresh-e2e
+  * [#85](https://github.com/metasfresh/metasfresh-e2e/issues/85) Create new Packing Instruction / Packing Instruction Version
+  * [#134](https://github.com/metasfresh/metasfresh-e2e/issues/134) Create credit memo price difference for sales invoice
+  * [#135](https://github.com/metasfresh/metasfresh-e2e/issues/135) Create credit memo deliver difference for sales invoice
+  * [#152](https://github.com/metasfresh/metasfresh-e2e/issues/152) Change shipment date and date ready in shipment schedule
+  * [#188](https://github.com/metasfresh/metasfresh-e2e/pull/188) move defunct specs into dedicated folder
+  * [#189](https://github.com/metasfresh/metasfresh-e2e/issues/189) Create Nachbelastung Mengendifferenz for sales invoice
+  * [#190](https://github.com/metasfresh/metasfresh-e2e/issues/190) Create Adjustment Charge (Nachbelastung Preisdifferenz) for sales invoice
+
+* metasfresh-webui-frontend
+  * [#1740](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1740) email Editor Adress Lookup behavior
+
+## Fixes
+* metasfresh
+  * [#5346](https://github.com/metasfresh/metasfresh/issues/5346) Pricing Condition fixes
+
+* metasfresh-webui-frontend
+  * [#2292](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2292) Doubleclick does not work on mobile (iOS)
+  * [#2308](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2308) Dev cypress run hangs
+
 # metasfresh 5.111
 
 ## Features
