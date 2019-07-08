@@ -133,7 +133,7 @@ public class OrderFreightCostsService
 
 	private FreightCostContext extractFreightCostContext(final I_C_Order order)
 	{
-		 final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 		final BPartnerId shipToBPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 
@@ -150,6 +150,7 @@ public class OrderFreightCostsService
 				.date(TimeUtil.asLocalDate(order.getDateOrdered()))
 				.freightCostRule(FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded))
 				.deliveryViaRule(DeliveryViaRule.ofNullableCodeOr(order.getDeliveryViaRule(), DeliveryViaRule.Pickup))
+				.freightAmt(Money.of(order.getFreightAmt(), CurrencyId.ofRepoId(order.getC_Currency_ID())))
 				.build();
 	}
 
@@ -222,6 +223,13 @@ public class OrderFreightCostsService
 		{
 			// get the 'freightcost' product and return its price
 			final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
+
+			final Money freightAmt = freightCostContext.getFreightAmt();
+
+			if (freightAmt != null)
+			{
+				return Optional.of(freightAmt);
+			}
 
 			final IEditablePricingContext pricingContext = pricingBL.createInitialContext(
 					freightCost.getFreightCostProductId().getRepoId(),
