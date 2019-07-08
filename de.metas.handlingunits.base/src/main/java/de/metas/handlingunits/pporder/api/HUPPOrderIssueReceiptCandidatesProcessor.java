@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -59,6 +61,7 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
@@ -326,9 +329,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 	}
 
-	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
+	public HUPPOrderIssueReceiptCandidatesProcessor setCandidatesToProcess(
+			@NonNull final Supplier<List<I_PP_Order_Qty>> candidatesToProcessSupplier)
 	{
-		Preconditions.checkNotNull(candidatesToProcessSupplier, "candidatesToProcessSupplier");
 		this.candidatesToProcessSupplier = candidatesToProcessSupplier;
 		return this;
 	}
@@ -394,8 +397,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private final transient IHUPPOrderMaterialTrackingBL huPPOrderMaterialTrackingBL = Services.get(IHUPPOrderMaterialTrackingBL.class);
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
+		private final transient IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
-		//
 		// Parameters
 		private Date movementDate = null;
 
@@ -458,9 +461,12 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			// Add Qty To Issue
 			issueCandidate.addQtyToIssue(product, qtyToIssue, huTopLevel);
 
-			//
-			// Collect the material tracking if any
-			issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
+			final boolean isQualityInspection = materialTrackingPPOrderBL.isQualityInspection(ppOrderBOMLine.getPP_Order_ID());
+			if (isQualityInspection)
+			{
+				// Collect the material tracking if any
+				issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
+			}
 		}
 
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
@@ -552,9 +558,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Link this manufacturing order to material tracking, if any
-			I_M_Material_Tracking materialTracking = candidate.getMaterialTracking();
+			final I_M_Material_Tracking materialTracking = candidate.getMaterialTracking();
 			if (materialTracking != null)
 			{
+				// we assume that the candidate *does not* have a material tracking, unless the PP_Order is a quality inspection
 				huPPOrderMaterialTrackingBL.linkPPOrderToMaterialTracking(ppOrderBOMLine, materialTracking);
 			}
 
@@ -606,17 +613,15 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		@Setter(AccessLevel.NONE)
 		private BigDecimal qtyToIssue = BigDecimal.ZERO;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
+
+		/** Only set if the PP_Order in question is a quality inspection. */
 		@Setter(AccessLevel.NONE)
 		private I_M_Material_Tracking materialTracking;
 
-		public IssueCandidate(final I_PP_Order_BOMLine ppOrderBOMLine)
+		private IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 		{
-			super();
-
-			Check.assumeNotNull(ppOrderBOMLine, "ppOrderBOMLine not null");
 			this.orderBOMLine = ppOrderBOMLine;
-
-			uom = ppOrderBOMLine.getC_UOM();
+			this.uom = ppOrderBOMLine.getC_UOM();
 		}
 
 		/**
@@ -642,7 +647,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			husToAssign.add(huToAssign);
 		}
 
-		public void addMaterialTracking(I_M_Material_Tracking materialTracking)
+		private void addMaterialTracking(@Nullable final I_M_Material_Tracking materialTracking)
 		{
 			if (materialTracking == null)
 			{
@@ -651,7 +656,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			if (this.materialTracking != null && this.materialTracking.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID())
 			{
-				throw new HUException("An material issue cannot have more then one material tracking"
+				throw new HUException("An material issue cannot have more than one material tracking"
 						+ "\nPrevious: " + this.materialTracking
 						+ "\nRequested to add: " + materialTracking);
 			}

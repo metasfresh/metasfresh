@@ -55,6 +55,7 @@ import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_QualityInsp_LagerKonf_Version;
 import de.metas.materialtracking.model.IMaterialTrackingAware;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import lombok.NonNull;
 
 public class MaterialTrackingDAO implements IMaterialTrackingDAO
 {
@@ -170,10 +171,8 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public <T> List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingForModels(final IQueryBuilder<T> modelsQuery)
+	public <T> List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingForModels(@NonNull final IQueryBuilder<T> modelsQuery)
 	{
-		Check.assumeNotNull(modelsQuery, "modelsQuery not null");
-
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(modelsQuery.getCtx());
 
