@@ -42,12 +42,14 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Currency;
+import de.metas.money.CurrencyCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -156,7 +158,8 @@ public class RefundTestTools
 
 		currency = Currency.builder()
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
-				.precision(currencyRecord.getStdPrecision())
+				.precision(CurrencyPrecision.ofInt(currencyRecord.getStdPrecision()))
+				.currencyCode(CurrencyCode.EUR)
 				.build();
 
 		uomRecord = newInstance(I_C_UOM.class);
@@ -289,7 +292,7 @@ public class RefundTestTools
 				.bpartnerId(BPARTNER_ID)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.money(money)
-				.precision(currency.getPrecision())
+				.precision(currency.getPrecision().toInt())
 				.invoiceableFrom(ASSIGNABLE_CANDIDATE_INVOICE_DATE)
 				.quantity(Quantity.of(quantityAsBigDecimal, uomRecord))
 				.build();

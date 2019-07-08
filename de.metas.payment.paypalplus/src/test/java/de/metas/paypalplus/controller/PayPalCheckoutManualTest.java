@@ -239,7 +239,7 @@ public class PayPalCheckoutManualTest
 		final PurchaseUnitRequest purchaseUnitRequest = new PurchaseUnitRequest()
 				.referenceId("orderReferenceId")
 				.description("order descriptions")
-				.customId("customerId")
+				.customId("customId")
 				.softDescriptor("SoftDescription")
 				.amount(new AmountWithBreakdown()
 						.currencyCode("EUR")

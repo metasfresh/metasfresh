@@ -1,8 +1,7 @@
 package de.metas.payment.processor;
 
-import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.reservation.PaymentReservationId;
+import de.metas.payment.reservation.PaymentReservation;
 
 /*
  * #%L
@@ -28,13 +27,11 @@ import de.metas.payment.reservation.PaymentReservationId;
 
 public interface PaymentProcessor
 {
-	PaymentProcessorType getType();
-
 	PaymentRule getPaymentRule();
 
-	boolean canReserveMoney(OrderId orderId);
+	boolean canReserveMoney();
 
-	void reserveMoney(PaymentReservationId reservationId);
+	void processReservation(PaymentReservation reservation);
 
 	void captureMoney();
 }

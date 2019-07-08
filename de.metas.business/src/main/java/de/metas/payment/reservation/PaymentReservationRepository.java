@@ -1,8 +1,14 @@
 package de.metas.payment.reservation;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.Optional;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Payment_Reservation;
 import org.compiere.util.TimeUtil;
@@ -11,7 +17,8 @@ import org.springframework.stereotype.Repository;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.processor.PaymentProcessorType;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -39,22 +46,49 @@ import lombok.NonNull;
 @Repository
 public class PaymentReservationRepository
 {
-	public PaymentReservation saveNew(@NonNull final PaymentReservationCreateRequest request)
+	public Optional<PaymentReservation> getBySalesOrderId(final OrderId salesOrderId)
 	{
-		final I_C_Payment_Reservation record = newInstance(I_C_Payment_Reservation.class);
-		record.setAD_Org_ID(request.getOrgId().getRepoId());
-		record.setAmount(request.getAmount().getAsBigDecimal());
-		record.setC_Currency_ID(request.getAmount().getCurrencyId().getRepoId());
-		record.setC_Order_ID(request.getOrderId().getRepoId());
-		record.setDateTrx(TimeUtil.asTimestamp(request.getDateTrx()));
-		record.setPaymentProcessorType(request.getProcessorType().getCode());
+		final I_C_Payment_Reservation record = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment_Reservation.class)
+				.addEqualsFilter(I_C_Payment_Reservation.COLUMN_C_Order_ID, salesOrderId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_C_Payment_Reservation.class);
 
-		saveRecord(record);
-
-		return toPaymentReservation(record);
+		return toOptionalPaymentReservation(record);
 	}
 
-	private static PaymentReservation toPaymentReservation(final I_C_Payment_Reservation record)
+	public void save(@NonNull final PaymentReservation paymentReservation)
+	{
+		final I_C_Payment_Reservation record;
+		if (paymentReservation.getId() == null)
+		{
+			record = newInstance(I_C_Payment_Reservation.class);
+		}
+		else
+		{
+			record = load(paymentReservation.getId(), I_C_Payment_Reservation.class);
+		}
+
+		record.setAD_Org_ID(paymentReservation.getOrgId().getRepoId());
+		record.setAmount(paymentReservation.getAmount().getAsBigDecimal());
+		record.setC_Currency_ID(paymentReservation.getAmount().getCurrencyId().getRepoId());
+		record.setC_Order_ID(paymentReservation.getSalesOrderId().getRepoId());
+		record.setDateTrx(TimeUtil.asTimestamp(paymentReservation.getDateTrx()));
+		record.setPaymentRule(paymentReservation.getPaymentRule().getCode());
+
+		saveRecord(record);
+		paymentReservation.setId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()));
+	}
+
+	private static Optional<PaymentReservation> toOptionalPaymentReservation(@Nullable final I_C_Payment_Reservation record)
+	{
+		return record != null
+				? Optional.of(toPaymentReservation(record))
+				: Optional.empty();
+	}
+
+	private static PaymentReservation toPaymentReservation(@NonNull final I_C_Payment_Reservation record)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
@@ -62,9 +96,9 @@ public class PaymentReservationRepository
 				.id(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.amount(Money.of(record.getAmount(), currencyId))
-				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
-				.processorType(PaymentProcessorType.ofCode(record.getPaymentProcessorType()))
+				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))
 				.build();
 	}
 }

@@ -270,27 +270,29 @@ public interface I_C_Payment_Reservation
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Payment Processor.
+	 * Set Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPaymentProcessorType (java.lang.String PaymentProcessorType);
+	public void setPaymentRule (java.lang.String PaymentRule);
 
 	/**
-	 * Get Payment Processor.
+	 * Get Zahlungsweise.
+	 * Wie die Rechnung bezahlt wird
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPaymentProcessorType();
+	public java.lang.String getPaymentRule();
 
-    /** Column definition for PaymentProcessorType */
-    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object> COLUMN_PaymentProcessorType = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object>(I_C_Payment_Reservation.class, "PaymentProcessorType", null);
-    /** Column name PaymentProcessorType */
-    public static final String COLUMNNAME_PaymentProcessorType = "PaymentProcessorType";
+    /** Column definition for PaymentRule */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object> COLUMN_PaymentRule = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object>(I_C_Payment_Reservation.class, "PaymentRule", null);
+    /** Column name PaymentRule */
+    public static final String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
 	 * Set Verarbeitet.

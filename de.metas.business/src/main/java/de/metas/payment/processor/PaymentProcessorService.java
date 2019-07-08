@@ -3,11 +3,13 @@ package de.metas.payment.processor;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.logging.LogManager;
 import de.metas.payment.PaymentRule;
 import lombok.NonNull;
 
@@ -36,20 +38,19 @@ import lombok.NonNull;
 @Service
 public class PaymentProcessorService
 {
-	private final ImmutableMap<PaymentProcessorType, PaymentProcessor> processorsByType;
+	private static final Logger logger = LogManager.getLogger(PaymentProcessorService.class);
+
 	private final ImmutableMap<PaymentRule, PaymentProcessor> processorsByPaymentRule;
 
 	public PaymentProcessorService(
 			@NonNull final Optional<List<PaymentProcessor>> processors)
 	{
-		processorsByType = processors.isPresent()
-				? Maps.uniqueIndex(processors.get(), PaymentProcessor::getType)
-				: ImmutableMap.of();
+		processorsByPaymentRule = Maps.uniqueIndex(processors.get(), PaymentProcessor::getPaymentRule);
 
-		processorsByPaymentRule = Maps.uniqueIndex(processorsByType.values(), PaymentProcessor::getPaymentRule);
+		logger.info("Registered processors: {}", processorsByPaymentRule);
 	}
 
-	public Optional<PaymentProcessor> getByPaymentRule(final PaymentRule paymentRule)
+	public Optional<PaymentProcessor> getByPaymentRule(@NonNull final PaymentRule paymentRule)
 	{
 		final PaymentProcessor processor = processorsByPaymentRule.get(paymentRule);
 		return Optional.ofNullable(processor);

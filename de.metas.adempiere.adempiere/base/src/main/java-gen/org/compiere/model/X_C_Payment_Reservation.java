@@ -15,7 +15,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1727817528L;
+	private static final long serialVersionUID = -1007520855L;
 
     /** Standard Constructor */
     public X_C_Payment_Reservation (Properties ctx, int C_Payment_Reservation_ID, String trxName)
@@ -28,7 +28,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 			setC_Order_ID (0);
 			setC_Payment_Reservation_ID (0);
 			setDateTrx (new Timestamp( System.currentTimeMillis() ));
-			setPaymentProcessorType (null);
+			setPaymentRule (null);
 			setProcessed (false); // N
         } */
     }
@@ -193,25 +193,42 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	}
 
 	/** 
-	 * PaymentProcessorType AD_Reference_ID=541009
-	 * Reference name: C_Payment_Reservation_Processor
+	 * PaymentRule AD_Reference_ID=195
+	 * Reference name: _Payment Rule
 	 */
-	public static final int PAYMENTPROCESSORTYPE_AD_Reference_ID=541009;
-	/** Set Payment Processor.
-		@param PaymentProcessorType Payment Processor	  */
+	public static final int PAYMENTRULE_AD_Reference_ID=195;
+	/** Cash = B */
+	public static final String PAYMENTRULE_Cash = "B";
+	/** CreditCard = K */
+	public static final String PAYMENTRULE_CreditCard = "K";
+	/** DirectDeposit = T */
+	public static final String PAYMENTRULE_DirectDeposit = "T";
+	/** Check = S */
+	public static final String PAYMENTRULE_Check = "S";
+	/** OnCredit = P */
+	public static final String PAYMENTRULE_OnCredit = "P";
+	/** DirectDebit = D */
+	public static final String PAYMENTRULE_DirectDebit = "D";
+	/** Mixed = M */
+	public static final String PAYMENTRULE_Mixed = "M";
+	/** Set Zahlungsweise.
+		@param PaymentRule 
+		Wie die Rechnung bezahlt wird
+	  */
 	@Override
-	public void setPaymentProcessorType (java.lang.String PaymentProcessorType)
+	public void setPaymentRule (java.lang.String PaymentRule)
 	{
 
-		set_Value (COLUMNNAME_PaymentProcessorType, PaymentProcessorType);
+		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
 	}
 
-	/** Get Payment Processor.
-		@return Payment Processor	  */
+	/** Get Zahlungsweise.
+		@return Wie die Rechnung bezahlt wird
+	  */
 	@Override
-	public java.lang.String getPaymentProcessorType () 
+	public java.lang.String getPaymentRule () 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PaymentProcessorType);
+		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
 	}
 
 	/** Set Verarbeitet.

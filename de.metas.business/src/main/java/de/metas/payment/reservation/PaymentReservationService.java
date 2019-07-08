@@ -1,7 +1,14 @@
 package de.metas.payment.reservation;
 
+import java.util.Optional;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import de.metas.order.OrderId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.processor.PaymentProcessor;
+import de.metas.payment.processor.PaymentProcessorService;
 import lombok.NonNull;
 
 /*
@@ -29,17 +36,57 @@ import lombok.NonNull;
 @Service
 public class PaymentReservationService
 {
-	private final PaymentReservationRepository paymentReservationRepo;
+	private final PaymentReservationRepository reservationsRepo;
+	private final PaymentProcessorService paymentProcessors;
 
 	public PaymentReservationService(
-			@NonNull final PaymentReservationRepository paymentReservationRepo)
+			@NonNull final PaymentReservationRepository reservationsRepo,
+			@NonNull final PaymentProcessorService paymentProcessors)
 	{
-		this.paymentReservationRepo = paymentReservationRepo;
+		this.reservationsRepo = reservationsRepo;
+		this.paymentProcessors = paymentProcessors;
 	}
 
-	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest request)
+	public boolean isPaymentReservationRequired(@NonNull final PaymentRule paymentRule)
 	{
-		final PaymentReservation paymentReservation = paymentReservationRepo.saveNew(request);
+		return getPaymentProcessorIfExists(paymentRule)
+				.map(PaymentProcessor::canReserveMoney)
+				.orElse(Boolean.FALSE);
+	}
+
+	public Optional<PaymentReservation> getSalesOrderReservation(@NonNull final OrderId salesOrderId)
+	{
+		return reservationsRepo.getBySalesOrderId(salesOrderId);
+	}
+
+	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)
+	{
+		final PaymentReservation paymentReservation = PaymentReservation.builder()
+				.orgId(createRequest.getOrgId())
+				.amount(createRequest.getAmount())
+				.salesOrderId(createRequest.getSalesOrderId())
+				.dateTrx(createRequest.getDateTrx())
+				.paymentRule(createRequest.getPaymentRule())
+				.build();
+		reservationsRepo.save(paymentReservation);
+
+		//
+		// Process
+		final PaymentProcessor paymentProcessor = getPaymentProcessor(paymentReservation.getPaymentRule());
+		paymentProcessor.processReservation(paymentReservation);
+		reservationsRepo.save(paymentReservation);
+
 		return paymentReservation;
+	}
+
+	private PaymentProcessor getPaymentProcessor(final PaymentRule paymentRule)
+	{
+		return getPaymentProcessorIfExists(paymentRule)
+				.orElseThrow(() -> new AdempiereException("No payment processor found for payment rule: " + paymentRule));
+	}
+
+	private Optional<PaymentProcessor> getPaymentProcessorIfExists(final PaymentRule paymentRule)
+	{
+		return paymentProcessors.getByPaymentRule(paymentRule);
 	}
 }

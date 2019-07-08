@@ -1,6 +1,8 @@
 package de.metas.money;
 
+import de.metas.currency.CurrencyPrecision;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -29,9 +31,12 @@ import lombok.Value;
 @Builder
 public class Currency
 {
+	@NonNull
 	CurrencyId id;
-	int precision;
 
-	/** Three letter ISO 4217 Code of the Currency **/
-	String threeLetterCode;
+	@NonNull
+	CurrencyPrecision precision;
+
+	@NonNull
+	CurrencyCode currencyCode;
 }

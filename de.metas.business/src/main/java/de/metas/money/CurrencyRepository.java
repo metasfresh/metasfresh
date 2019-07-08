@@ -1,9 +1,9 @@
 package de.metas.money;
 
 import org.compiere.model.I_C_Currency;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,25 +36,26 @@ public class CurrencyRepository
 	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-		final I_C_Currency currencyRecord = currencyDAO.retrieveCurrency(Env.getCtx(), currencyId.getRepoId());
-
-		return ofRecord(currencyRecord);
+		final I_C_Currency currencyRecord = currencyDAO.getById(currencyId);
+		return toCurrency(currencyRecord);
 	}
 
 	public Currency getById(final int currencyId)
 	{
-		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-		final I_C_Currency currencyRecord = currencyDAO.retrieveCurrency(Env.getCtx(), currencyId);
-
-		return ofRecord(currencyRecord);
+		return getById(CurrencyId.ofRepoId(currencyId));
 	}
 
-	private static Currency ofRecord(@NonNull final I_C_Currency currencyRecord)
+	public CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
+	{
+		return getById(currencyId).getCurrencyCode();
+	}
+
+	private static Currency toCurrency(@NonNull final I_C_Currency currencyRecord)
 	{
 		return Currency.builder()
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
-				.precision(currencyRecord.getStdPrecision())
-				.threeLetterCode(currencyRecord.getISO_Code())
+				.precision(CurrencyPrecision.ofInt(currencyRecord.getStdPrecision()))
+				.currencyCode(CurrencyCode.ofThreeLetterCode(currencyRecord.getISO_Code()))
 				.build();
 	}
 }

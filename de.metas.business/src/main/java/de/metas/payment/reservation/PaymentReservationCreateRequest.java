@@ -6,7 +6,7 @@ import org.adempiere.service.OrgId;
 
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.processor.PaymentProcessorType;
+import de.metas.payment.PaymentRule;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,11 +44,11 @@ public class PaymentReservationCreateRequest
 	Money amount;
 
 	@NonNull
-	OrderId orderId;
+	OrderId salesOrderId;
 
 	@NonNull
 	LocalDate dateTrx;
 
 	@NonNull
-	PaymentProcessorType processorType;
+	PaymentRule paymentRule;
 }

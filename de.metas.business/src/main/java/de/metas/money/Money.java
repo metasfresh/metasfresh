@@ -293,11 +293,12 @@ public final class Money
 		{
 			return ZERO;
 		}
-		return money.getValue();
+		return money.getAsBigDecimal();
 	}
 
-	public Amount toAmount(@NonNull final Function<CurrencyId, String> currencyCodeMapper)
+	public Amount toAmount(@NonNull final Function<CurrencyId, CurrencyCode> currencyCodeMapper)
 	{
-		return Amount.of(getValue(), currencyCodeMapper.apply(getCurrencyId()));
+		return Amount.of(getAsBigDecimal(), currencyCodeMapper.apply(getCurrencyId()).toThreeLetterCode());
 	}
+
 }

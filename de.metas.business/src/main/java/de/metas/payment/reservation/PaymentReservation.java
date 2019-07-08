@@ -2,14 +2,19 @@ package de.metas.payment.reservation;
 
 import java.time.LocalDate;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.service.OrgId;
 
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.processor.PaymentProcessorType;
+import de.metas.payment.PaymentRule;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -38,20 +43,28 @@ import lombok.Value;
 public class PaymentReservation
 {
 	@NonNull
-	PaymentReservationId id;
-
-	@NonNull
 	OrgId orgId;
 
 	@NonNull
 	Money amount;
 
 	@NonNull
-	OrderId orderId;
+	OrderId salesOrderId;
 
 	@NonNull
 	LocalDate dateTrx;
 
 	@NonNull
-	PaymentProcessorType processorType;
+	PaymentRule paymentRule;
+
+	@Nullable
+	@NonFinal
+	@Setter(AccessLevel.PACKAGE)
+	PaymentReservationId id;
+
+	public boolean isApprovedByPayer()
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

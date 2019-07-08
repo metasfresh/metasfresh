@@ -74,7 +74,7 @@ public class MoneyService
 
 		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
-				money.getValue(),
+				money.getAsBigDecimal(),
 				money.getCurrencyId().getRepoId(),
 				targetCurrencyId.getRepoId());
 
@@ -96,7 +96,7 @@ public class MoneyService
 		final Currency currency = currencyRepository.getById(input.getCurrencyId());
 
 		final BigDecimal newValue = percent
-				.multiply(input.getValue(), currency.getPrecision());
+				.multiply(input.getAsBigDecimal(), currency.getPrecision().toInt());
 
 		return Money.of(newValue, input.getCurrencyId());
 	}
@@ -115,7 +115,7 @@ public class MoneyService
 
 		final Currency currency = currencyRepository.getById(input.getCurrencyId());
 
-		final BigDecimal newValue = percent.subtractFromBase(input.getValue(), currency.getPrecision());
+		final BigDecimal newValue = percent.subtractFromBase(input.getAsBigDecimal(), currency.getPrecision().toInt());
 		return Money.of(newValue, input.getCurrencyId());
 	}
 
@@ -124,14 +124,14 @@ public class MoneyService
 		final Currency currency = currencyRepository.getById(money.getCurrencyId());
 
 		return TranslatableStrings.builder()
-				.append(money.getValue(), DisplayType.Amount)
+				.append(money.getAsBigDecimal(), DisplayType.Amount)
 				.append(" ")
-				.append(currency.getThreeLetterCode())
+				.append(currency.getCurrencyCode().toThreeLetterCode())
 				.build();
 	}
 
 	public Amount toAmount(@NonNull final Money money)
 	{
-		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getThreeLetterCode());
+		return money.toAmount(currencyId -> currencyRepository.getById(currencyId).getCurrencyCode());
 	}
 }
