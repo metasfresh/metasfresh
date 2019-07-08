@@ -1,0 +1,15 @@
+{
+	"baseName": "test-calendar",
+	"timestamp": 1562580989141,
+	"years": [
+		{
+			"baseName": "2019"
+		},
+		{
+			"baseName": "2020"
+		},
+		{
+			"baseName": "2021"
+		}
+	]
+}

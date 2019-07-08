@@ -3,7 +3,6 @@ export class DocumentStatusKey {
   // noinspection JSUnusedGlobalSymbols
   static _tag_docStatusCompleted = '.tag-success';
 
-
   static InProgress = 'docStatusInProgress';
   // noinspection JSUnusedGlobalSymbols
   static _tag_docStatusInProgress = '.tag-default';

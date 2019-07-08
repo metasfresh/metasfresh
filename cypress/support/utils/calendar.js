@@ -1,13 +1,21 @@
 export class Calendar {
-  constructor(name) {
-    cy.log(`Calendar - set name = ${name};`);
-    this.name = name;
+  constructor(baseName) {
+    cy.log(`Calendar - set baseName = ${baseName};`);
+    this.baseName = baseName;
+    this.timestamp = new Date().getTime();
+
     this.years = [];
   }
 
-  setName(name) {
-    cy.log(`Calendar - set name = ${name}`);
-    this.name = name;
+  setName(baseName) {
+    cy.log(`Calendar - set baseName = ${baseName}`);
+    this.baseName = baseName;
+    return this;
+  }
+
+  setTimestamp(timestamp) {
+    cy.log(`Calendar - set timestamp = ${timestamp}`);
+    this.timestamp = timestamp;
     return this;
   }
 
@@ -26,37 +34,52 @@ export class Calendar {
 }
 
 export class Year {
-  constructor(name) {
-    cy.log(`Year - set name = ${name}`);
-    this.name = name;
+  constructor(baseName) {
+    cy.log(`Year - set baseName = ${baseName}`);
+    this.baseName = baseName;
   }
 
-  setName(name) {
-    cy.log(`Year - set name = ${name}`);
-    this.name = name;
+  setName(baseName) {
+    cy.log(`Year - set baseName = ${baseName}`);
+    this.baseName = baseName;
     return this;
   }
 }
 
 function applyCalendar(calendar) {
-  describe(`Create new calendar ${calendar.name}`, function() {
+  describe(`Create new calendar ${calendar.baseName}`, function() {
     cy.visitWindow('117', 'NEW');
-    cy.writeIntoStringField('Name', calendar.name);
+    cy.writeIntoStringField('Name', `${calendar.baseName} ${calendar.timestamp}`);
 
     // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
     if (calendar.years.length > 0) {
       cy.selectTab('C_Year');
       calendar.years.forEach(function(year) {
-        applyYear(year);
+        applyYear(year, calendar);
       });
 
       cy.get('table tbody tr').should('have.length', calendar.years.length);
     }
+
+    //cy.log(JSON.stringify(calendar)); // uncomment if you want to get a fixture
   });
 }
 
-function applyYear(year) {
+function applyYear(year, calendar) {
+  const yearName = `${year.baseName} ${calendar.timestamp}`;
+
   cy.pressAddNewButton();
-  cy.writeIntoStringField('FiscalYear', year.name, true /*modal*/);
+  cy.writeIntoStringField('FiscalYear', yearName, true /*modal*/);
   cy.pressDoneButton();
+
+  cy.get('.table-flex-wrapper')
+    .find('tbody tr')
+    .first()
+    .find('td')
+    .first()
+    .should('exist')
+    .click({ force: true });
+
+  cy.executeHeaderActionWithDialog('C_Year_Create_Periods');
+  cy.pressStartButton();
 }

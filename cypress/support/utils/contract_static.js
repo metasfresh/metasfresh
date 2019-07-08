@@ -49,7 +49,7 @@ export function createAndCompleteRefundPercentConditions(conditionsName, transit
   describe(`Create and complete conditions record ${conditionsName}`, function() {
     const conditionsType = 'Rückvergütung';
 
-    cy.visit('/window/540113/NEW');
+    cy.visitWindow('540113', 'NEW');
     cy.writeIntoStringField('Name', conditionsName);
     cy.selectInListField('Type_Conditions', conditionsType);
     cy.selectInListField('C_Flatrate_Transition_ID', transitionName);
