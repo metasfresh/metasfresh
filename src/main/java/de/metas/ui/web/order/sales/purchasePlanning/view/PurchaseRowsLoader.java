@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,6 +28,7 @@ import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.vendor.gateway.api.availability.TrackingId;
 import lombok.Builder;
 import lombok.Getter;
@@ -193,7 +193,7 @@ class PurchaseRowsLoader
 		}
 		if (error != null)
 		{
-			handleResultForAsyncAvailabilityCheck_Error(rows, Util.coalesce(error.getCause(), error));
+			handleResultForAsyncAvailabilityCheck_Error(rows, CoalesceUtil.coalesce(error.getCause(), error));
 		}
 	}
 

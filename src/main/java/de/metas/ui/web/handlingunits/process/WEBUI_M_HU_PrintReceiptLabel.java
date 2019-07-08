@@ -10,6 +10,7 @@ import de.metas.Profiles;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.process.AdProcessId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -55,8 +56,8 @@ public class WEBUI_M_HU_PrintReceiptLabel
 
 		final HUReportService huReportService = HUReportService.get();
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
-		if (adProcessId <= 0)
+		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
+		if (adProcessId == null)
 		{
 			return ProcessPreconditionsResolution.reject("Receipt label process not configured via sysconfig " + HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 		}
@@ -86,7 +87,7 @@ public class WEBUI_M_HU_PrintReceiptLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId();
+		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
 		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)

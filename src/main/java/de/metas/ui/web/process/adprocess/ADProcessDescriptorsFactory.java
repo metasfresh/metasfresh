@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -20,7 +22,6 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.X_AD_Process;
-import org.compiere.util.Util;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
@@ -57,10 +58,9 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -227,7 +227,7 @@ import javax.annotation.Nullable;
 			final String showHelpParam,
 			final boolean hasProcessParameters)
 	{
-		final String showHelp = Util.coalesce(showHelpParam, X_AD_Process.SHOWHELP_DonTShowHelp);
+		final String showHelp = CoalesceUtil.coalesce(showHelpParam, X_AD_Process.SHOWHELP_DonTShowHelp);
 
 		if (X_AD_Process.SHOWHELP_ShowHelp.equals(showHelp))
 		{

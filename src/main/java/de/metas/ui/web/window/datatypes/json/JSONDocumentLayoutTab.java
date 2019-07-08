@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Util;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -22,6 +20,7 @@ import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.util.lang.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.NonNull;
@@ -74,7 +73,7 @@ public final class JSONDocumentLayoutTab
 
 	private static boolean isTabEmpty(@NonNull final JSONDocumentLayoutTab tab)
 	{
-		final boolean singleRowDetailLayout = Util.coalesce(tab.singleRowDetailLayout, false);
+		final boolean singleRowDetailLayout = CoalesceUtil.coalesce(tab.singleRowDetailLayout, false);
 		if (singleRowDetailLayout)
 		{
 			return tab.sections.isEmpty();

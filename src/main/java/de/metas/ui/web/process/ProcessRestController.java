@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -54,6 +53,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -287,7 +287,7 @@ public class ProcessRestController
 		final String reportContentType = action.getContentType();
 		final byte[] reportData = action.getReportData();
 
-		final String reportFilenameEffective = Util.coalesce(filename, reportFilename, "");
+		final String reportFilenameEffective = CoalesceUtil.coalesce(filename, reportFilename, "");
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(reportContentType));

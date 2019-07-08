@@ -2,14 +2,6 @@ package de.metas.ui.web.material.cockpit;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.ToString;
-
-import javax.annotation.Nullable;
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -18,11 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
@@ -54,6 +47,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.collections.ListUtils;
+import de.metas.util.lang.CoalesceUtil;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.ToString;
 
 /*
  * #%L
@@ -264,7 +263,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
-		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
+		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 
 		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
@@ -359,7 +358,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
-		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
+		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);
@@ -431,7 +430,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
 
-		final int uomRepoId = Util.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
+		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)
 				.findById(uomRepoId);

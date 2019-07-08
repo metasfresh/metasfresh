@@ -2,9 +2,8 @@ package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
 
-import org.compiere.util.Util;
-
 import de.metas.printing.esb.base.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Value;
@@ -90,8 +89,8 @@ public class KPITimeRangeDefaults
 	public KPITimeRangeDefaults compose(final KPITimeRangeDefaults fallback)
 	{
 		return builder()
-				.defaultTimeRange(Util.coalesce(getDefaultTimeRange(), fallback.getDefaultTimeRange()))
-				.defaultTimeRangeEndOffset(Util.coalesce(getDefaultTimeRangeEndOffset(), fallback.getDefaultTimeRangeEndOffset()))
+				.defaultTimeRange(CoalesceUtil.coalesce(getDefaultTimeRange(), fallback.getDefaultTimeRange()))
+				.defaultTimeRangeEndOffset(CoalesceUtil.coalesce(getDefaultTimeRangeEndOffset(), fallback.getDefaultTimeRangeEndOffset()))
 				.build();
 	}
 
