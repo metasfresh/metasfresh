@@ -33,6 +33,7 @@ import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -188,22 +189,27 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 			else if (type == PriceSpecificationType.BASE_PRICING_SYSTEM)
 			{
-				orderLineRecord.setIsManualPrice(true);
-
 				assumeNotNull(basePrice, "If type={}, then the given basePrice may not be null; pricingConditionsBreak={}", type, pricingConditionsBreak);
-				orderLineRecord.setPriceEntered(basePrice.getValue());
+				
+				final BigDecimal priceEntered = limitPrice(basePrice.getValue(), orderLineRecord);
+				
+				orderLineRecord.setIsManualPrice(true);
+				orderLineRecord.setPriceEntered(priceEntered);
 				orderLineRecord.setC_Currency_ID(basePrice.getCurrencyId().getRepoId());
 
 				orderLineRecord.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 			}
 			else if (type == PriceSpecificationType.FIXED_PRICE)
 			{
-				orderLineRecord.setIsManualPrice(true);
-
 				final Money fixedPrice = price.getFixedPrice();
-				orderLineRecord.setPriceEntered(fixedPrice != null ? fixedPrice.getValue() : null);
-				orderLineRecord.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
-
+				Check.assumeNotNull(fixedPrice, "fixedPrice shall not be null for {}", price);
+				
+				final BigDecimal priceEntered = limitPrice(fixedPrice.getValue(), orderLineRecord);
+				
+				orderLineRecord.setIsManualPrice(true);
+				orderLineRecord.setPriceEntered(priceEntered);
+				orderLineRecord.setC_Currency_ID(fixedPrice.getCurrencyId().getRepoId());
+				
 				orderLineRecord.setBase_PricingSystem_ID(-1);
 			}
 
@@ -211,8 +217,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
 
 			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
-			final int paymentTermRepoId = PaymentTermId.toRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull());
-			orderLineRecord.setC_PaymentTerm_Override_ID(paymentTermRepoId);
+			orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull()));
 			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
 
 			// also with a temporary schema break, priceActual still needs to be set
@@ -242,5 +247,21 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 		orderLineBL.setTaxAmtInfo(orderLineRecord);
 
 		InterfaceWrapperHelper.save(orderLineRecord);
+	}
+	
+	private static BigDecimal limitPrice(final BigDecimal price, final I_C_OrderLine orderLineRecord)
+	{
+		if(!orderLineRecord.isEnforcePriceLimit())
+		{
+			return price;
+		}
+		
+		final BigDecimal priceLimit = orderLineRecord.getPriceLimit();
+		if(priceLimit.signum() == 0)
+		{
+			return price;
+		}
+		
+		return price.max(priceLimit);
 	}
 }
