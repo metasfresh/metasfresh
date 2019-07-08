@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits.report;
 
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
+import de.metas.process.AdProcessId;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.ProcessId;
@@ -56,7 +57,7 @@ class WebuiHUProcessDescriptor
 		return processDescriptor.getProcessId();
 	}
 
-	public int getReportADProcessId()
+	public AdProcessId getReportAdProcessId()
 	{
 		return huProcessDescriptor.getProcessId();
 	}

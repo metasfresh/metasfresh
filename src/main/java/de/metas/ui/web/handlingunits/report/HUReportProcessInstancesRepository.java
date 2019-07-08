@@ -25,6 +25,7 @@ import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -123,8 +124,8 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 
 	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(@NonNull final HUProcessDescriptor huProcessDescriptor)
 	{
-		final int reportADProcessId = huProcessDescriptor.getProcessId();
-		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId);
+		final AdProcessId reportADProcessId = huProcessDescriptor.getProcessId();
+		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId.getRepoId());
 
 		final I_AD_Process adProcess = Services.get(IADProcessDAO.class).getById(reportADProcessId);
 		final IModelTranslationMap adProcessTrl = InterfaceWrapperHelper.getModelTranslationMap(adProcess);
@@ -218,7 +219,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final HUReportProcessInstance instance = HUReportProcessInstance.builder()
 				.instanceId(instanceId)
 				.viewRowIdsSelection(request.getViewRowIdsSelection())
-				.reportADProcessId(descriptor.getReportADProcessId())
+				.reportAdProcessId(descriptor.getReportAdProcessId())
 				.parameters(parameters)
 				.build();
 		instance.setCopies(1);
