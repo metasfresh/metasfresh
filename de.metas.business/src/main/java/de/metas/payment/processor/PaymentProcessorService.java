@@ -45,7 +45,9 @@ public class PaymentProcessorService
 	public PaymentProcessorService(
 			@NonNull final Optional<List<PaymentProcessor>> processors)
 	{
-		processorsByPaymentRule = Maps.uniqueIndex(processors.get(), PaymentProcessor::getPaymentRule);
+		processorsByPaymentRule = processors.isPresent()
+				? Maps.uniqueIndex(processors.get(), PaymentProcessor::getPaymentRule)
+				: ImmutableMap.of();
 
 		logger.info("Registered processors: {}", processorsByPaymentRule);
 	}

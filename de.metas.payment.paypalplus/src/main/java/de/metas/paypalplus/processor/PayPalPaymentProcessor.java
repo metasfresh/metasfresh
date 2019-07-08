@@ -1,6 +1,8 @@
 package de.metas.paypalplus.processor;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
@@ -101,6 +103,8 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		{
 			final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, getConfig());
 			final HttpResponse<Order> response = executeRequest(ordersCreateRequest);
+
+			final URL approveUrl = extractApproveUrl(response.result());
 		}
 
 		// TODO Auto-generated method stub
@@ -126,18 +130,25 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		return request;
 	}
 
-	private static String extractApproveUrl(final Order order)
+	private static URL extractApproveUrl(final Order order)
 	{
 		return extractUrl(order, "approve");
 	}
 
-	private static String extractUrl(final Order order, final String rel)
+	private static URL extractUrl(final Order order, final String rel)
 	{
 		for (final LinkDescription link : order.links())
 		{
 			if (rel.contentEquals(link.rel()))
 			{
-				return link.href();
+				try
+				{
+					return new URL(link.href());
+				}
+				catch (MalformedURLException e)
+				{
+					throw new AdempiereException("Invalid URL " + link.href());
+				}
 			}
 		}
 
@@ -151,7 +162,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 				.currencyCode(currencyRepo.getCurrencyCodeById(amount.getCurrencyId()).toThreeLetterCode());
 	}
 
-	private <T> HttpResponse<T> executeRequest(final HttpRequest<T> request) throws IOException
+	private <T> HttpResponse<T> executeRequest(final HttpRequest<T> request)
 	{
 		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder();
 
@@ -167,12 +178,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		catch (final HttpException ex)
 		{
 			log.response(ex);
-			throw ex;
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 		catch (final IOException ex)
 		{
 			log.response(ex);
-			throw ex;
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 		finally
 		{

@@ -44,7 +44,7 @@ public enum PaymentRule implements ReferenceListAwareEnum
 	DirectDebit(X_C_Order.PAYMENTRULE_DirectDebit), //
 	Mixed(X_C_Order.PAYMENTRULE_Mixed), // M
 	//
-	PayPal(null) // TODO
+	PayPal("PP") // TODO
 	;
 
 	@Getter
