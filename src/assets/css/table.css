@@ -143,8 +143,27 @@
     }
 
     /* Table cols sizing */
+    .td-xxl {
+        min-width: 500px;
+        max-width: 800px;
+
+        .input-dropdown-list {
+            width: auto;
+        }
+    }
+
+    .td-xl {
+        min-width: 350px;
+        max-width: 500px;
+
+        .input-dropdown-list {
+            width: auto;
+        }
+    }
+
     .td-lg {
         min-width: 225px;
+        max-width: 350px;
 
         .input-dropdown-list {
             width: auto;
