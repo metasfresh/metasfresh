@@ -34,6 +34,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 {
@@ -58,7 +59,7 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(@NonNull final Object model)
 	{
 		final IMaterialTrackingDocuments materialTrackingDocuments = retrieveMaterialTrackingDocumentsOrNullFor(model);
 		if (materialTrackingDocuments == null)
@@ -70,10 +71,8 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		// Retrieve Material Tracking via material_tracklin
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(model);

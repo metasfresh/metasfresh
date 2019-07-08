@@ -115,10 +115,6 @@ public interface IMaterialTrackingDAO extends ISingletonService
 
 	/**
 	 * Retrieves references of given type, order by their chronological order.
-	 *
-	 * @param materialTracking
-	 * @param referenceType
-	 * @return
 	 */
 	<T> List<T> retrieveReferences(I_M_Material_Tracking materialTracking, Class<T> referenceType);
 
