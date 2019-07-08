@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
-import static org.compiere.util.Util.coalesce;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

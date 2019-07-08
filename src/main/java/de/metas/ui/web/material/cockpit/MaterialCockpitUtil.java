@@ -2,13 +2,13 @@ package de.metas.ui.web.material.cockpit;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -66,7 +66,7 @@ public final class MaterialCockpitUtil
 				Env.getAD_Client_ID(),
 				Env.getAD_Org_ID(Env.getCtx()));
 
-		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(Util.firstNotEmptyTrimmed(
+		final DimensionSpec dimensionSpec = dimensionspecDAO.retrieveForInternalNameOrNull(CoalesceUtil.firstNotEmptyTrimmed(
 				dimSpecName,
 				DEFAULT_DIM_SPEC_INTERNAL_NAME));
 

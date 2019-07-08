@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -13,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -41,7 +41,7 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public final class DocumentLayoutElementGroupDescriptor implements Serializable
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -145,7 +145,7 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 
 		public Builder setColumnCount(final int columnCount)
 		{
-			this.columnCount = Util.firstGreaterThanZero(columnCount, 1);
+			this.columnCount = CoalesceUtil.firstGreaterThanZero(columnCount, 1);
 			return this;
 		}
 

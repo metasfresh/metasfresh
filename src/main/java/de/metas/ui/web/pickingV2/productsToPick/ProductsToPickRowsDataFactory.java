@@ -21,7 +21,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Util;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +57,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -209,7 +209,7 @@ class ProductsToPickRowsDataFactory
 		return rows.stream()
 				.sorted(Comparator
 						.<ProductsToPickRow> comparingInt((row -> row.isHuReservedForThisRow() ? 0 : 1)) // consider reserved HU first
-						.thenComparing(row -> Util.coalesce(row.getExpiringDate(), LocalDate.MAX))) // then first expiring HU
+						.thenComparing(row -> CoalesceUtil.coalesce(row.getExpiringDate(), LocalDate.MAX))) // then first expiring HU
 				.map(row -> allocateRowFromHU(row, packageable))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());

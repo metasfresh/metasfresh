@@ -7,7 +7,6 @@ import java.util.Set;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -28,6 +27,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 
 /*
  * #%L
@@ -158,7 +158,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	public LookupValue getLookupValueById(final Object idObj)
 	{
 		final LookupValue country = getAllCountriesById().getById(idObj);
-		return Util.coalesce(country, LOOKUPVALUE_NULL);
+		return CoalesceUtil.coalesce(country, LOOKUPVALUE_NULL);
 	}
 
 	@Override

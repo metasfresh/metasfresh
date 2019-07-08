@@ -21,7 +21,6 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.X_AD_UI_Element;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -508,7 +507,7 @@ public class LayoutFactory
 	{
 		final List<DocumentFieldDescriptor.Builder> fields = new ArrayList<>();
 
-		final String uiElementType = Util.coalesce(uiElement.getAD_UI_ElementType(), X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
+		final String uiElementType = CoalesceUtil.coalesce(uiElement.getAD_UI_ElementType(), X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
 		if (X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field.equals(uiElementType))
 		{
 			// add the "primary" field
