@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import org.compiere.model.X_AD_UI_Element;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 
@@ -36,8 +37,11 @@ public enum WidgetSize
 {
 	Small("S", X_AD_UI_Element.WIDGETSIZE_Small), //
 	Medium("M", X_AD_UI_Element.WIDGETSIZE_Medium), //
-	Large("L", X_AD_UI_Element.WIDGETSIZE_Large),
-	Default(null, null);
+	Large("L", X_AD_UI_Element.WIDGETSIZE_Large), //
+	ExtraLarge("XL", X_AD_UI_Element.WIDGETSIZE_ExtraLarge), //
+	XXL("XXL", X_AD_UI_Element.WIDGETSIZE_XXL), //
+	Default(null, null) //
+	;
 
 	private final String json;
 	private final String adRefListValue;
@@ -54,6 +58,7 @@ public enum WidgetSize
 		return json;
 	}
 
+	@JsonCreator
 	public static WidgetSize fromNullableADRefListValue(final String adRefListValue)
 	{
 		if (adRefListValue == null || adRefListValue.trim().isEmpty())
