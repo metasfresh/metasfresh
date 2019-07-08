@@ -27,10 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -65,15 +64,18 @@ public class DunningDAO extends AbstractDunningDAO
 		InterfaceWrapperHelper.save(model);
 	}
 
-	@Cached(cacheName = I_C_Dunning.Table_Name + "_For_Client")
+	//	@Cached(cacheName = I_C_Dunning.Table_Name + "_For_Client")
+	// note caching is disabled because sometimes creating dunning types doesn't reset the cache.
+	//	this can be seen with the test from: https://github.com/metasfresh/metasfresh-e2e/issues/129
 	@Override
 	public List<I_C_Dunning> retrieveDunnings(@CacheCtx Properties ctx)
 	{
-		final String trxName = ITrx.TRXNAME_None;
-		return new Query(ctx, I_C_Dunning.Table_Name, null, trxName)
-				.setClient_ID()
-				.setOnlyActiveRecords(true)
-				.list(I_C_Dunning.class);
+		final IQueryBL iQueryBL = Services.get(IQueryBL.class);
+		return iQueryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.list();
 	}
 
 	@Override
