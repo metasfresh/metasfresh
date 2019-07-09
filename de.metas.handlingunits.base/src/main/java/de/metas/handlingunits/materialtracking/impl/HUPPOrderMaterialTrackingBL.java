@@ -13,11 +13,11 @@ package de.metas.handlingunits.materialtracking.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -34,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
@@ -49,7 +50,9 @@ import lombok.NonNull;
 public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 {
 	@Override
-	public void linkPPOrderToMaterialTracking(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final I_M_Material_Tracking materialTracking)
+	public void linkPPOrderToMaterialTracking(
+			@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
+			@NonNull final I_M_Material_Tracking materialTracking)
 	{
 		// Make sure the material tracking is compatible with BOM line
 		if (ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
@@ -58,32 +61,36 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 			return;
 		}
 
-		//
-		// Set PP_Order.M_Material_Tracking_ID
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ppOrderBOMLine.getPP_Order(), I_PP_Order.class);
-		if (ppOrder.getM_Material_Tracking_ID() <= 0)
-		{
-			ppOrder.setM_Material_Tracking(materialTracking);
-			InterfaceWrapperHelper.save(ppOrder);
-		}
-		else
-		{
-			// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
-			Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID(),
-					"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
-					ppOrder,ppOrder.getM_Material_Tracking(), materialTracking);
-		}
+		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
+		final boolean isQualityInspection = materialTrackingPPOrderBL.isQualityInspection(ppOrderBOMLine.getPP_Order_ID());
 
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ppOrderBOMLine.getPP_Order(), I_PP_Order.class);
+		if (isQualityInspection)
+		{
+			// Set PP_Order.M_Material_Tracking_ID
+			if (ppOrder.getM_Material_Tracking_ID() <= 0)
+			{
+				ppOrder.setM_Material_Tracking(materialTracking);
+				InterfaceWrapperHelper.save(ppOrder);
+			}
+			else
+			{
+				// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
+				Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID(),
+						"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
+						ppOrder, ppOrder.getM_Material_Tracking(), materialTracking);
+			}
+		}
 		//
 		// Assign PP_Order to material tracking
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
-						.setModel(ppOrder)
-						.setMaterialTracking(materialTracking)
-						.setAssumeNotAlreadyAssigned(true) // avoid assigning to a different material tracking
-						.build());
+				.setModel(ppOrder)
+				.setMaterialTracking(materialTracking)
+				.setAssumeNotAlreadyAssigned(true) // avoid assigning to a different material tracking
+				.build());
 	}
-	
+
 	@Override
 	public I_M_Material_Tracking extractMaterialTrackingIfAny(final IHUContext huContext, final I_M_HU hu)
 	{

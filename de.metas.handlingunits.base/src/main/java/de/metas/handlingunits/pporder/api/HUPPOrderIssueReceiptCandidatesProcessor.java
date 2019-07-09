@@ -61,11 +61,11 @@ import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
-import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -393,11 +393,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		// Services
 		private final transient IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 		private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
-		//
+
 		private final transient IHUPPOrderMaterialTrackingBL huPPOrderMaterialTrackingBL = Services.get(IHUPPOrderMaterialTrackingBL.class);
 		private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
-		private final transient IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 
 		// Parameters
 		private Date movementDate = null;
@@ -461,12 +460,8 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			// Add Qty To Issue
 			issueCandidate.addQtyToIssue(product, qtyToIssue, huTopLevel);
 
-			final boolean isQualityInspection = materialTrackingPPOrderBL.isQualityInspection(ppOrderBOMLine.getPP_Order_ID());
-			if (isQualityInspection)
-			{
-				// Collect the material tracking if any
-				issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
-			}
+			// Collect the material tracking if any
+			issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
 		}
 
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
@@ -539,8 +534,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 
 		/**
-		 *
-		 * @param candidate
 		 * @return created issue cost collector; never returns ZERO
 		 */
 		private I_PP_Cost_Collector createCostCollector(final IssueCandidate candidate, final String snapshotId)
@@ -558,10 +551,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 			//
 			// Link this manufacturing order to material tracking, if any
-			final I_M_Material_Tracking materialTracking = candidate.getMaterialTracking();
-			if (materialTracking != null)
+			final ImmutableSet<I_M_Material_Tracking> materialTrackings = candidate.getMaterialTrackings();
+			for (final I_M_Material_Tracking materialTracking : materialTrackings)
 			{
-				// we assume that the candidate *does not* have a material tracking, unless the PP_Order is a quality inspection
 				huPPOrderMaterialTrackingBL.linkPPOrderToMaterialTracking(ppOrderBOMLine, materialTracking);
 			}
 
@@ -614,14 +606,19 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		private BigDecimal qtyToIssue = BigDecimal.ZERO;
 		private final Set<I_M_HU> husToAssign = new TreeSet<>(HUByIdComparator.instance);
 
-		/** Only set if the PP_Order in question is a quality inspection. */
 		@Setter(AccessLevel.NONE)
-		private I_M_Material_Tracking materialTracking;
+		@Getter(AccessLevel.NONE)
+		private Map<Integer, I_M_Material_Tracking> id2materialTracking = new HashMap<>();
 
 		private IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 		{
 			this.orderBOMLine = ppOrderBOMLine;
 			this.uom = ppOrderBOMLine.getC_UOM();
+		}
+
+		public ImmutableSet<I_M_Material_Tracking> getMaterialTrackings()
+		{
+			return ImmutableSet.copyOf(id2materialTracking.values());
 		}
 
 		/**
@@ -654,14 +651,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				return;
 			}
 
-			if (this.materialTracking != null && this.materialTracking.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID())
-			{
-				throw new HUException("An material issue cannot have more than one material tracking"
-						+ "\nPrevious: " + this.materialTracking
-						+ "\nRequested to add: " + materialTracking);
-			}
-
-			this.materialTracking = materialTracking;
+			this.id2materialTracking.put(materialTracking.getM_Material_Tracking_ID(), materialTracking);
 		}
 
 		public boolean isZeroQty()
