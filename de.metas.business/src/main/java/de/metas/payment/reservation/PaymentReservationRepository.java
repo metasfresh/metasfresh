@@ -77,6 +77,7 @@ public class PaymentReservationRepository
 		record.setC_Order_ID(paymentReservation.getSalesOrderId().getRepoId());
 		record.setDateTrx(TimeUtil.asTimestamp(paymentReservation.getDateTrx()));
 		record.setPaymentRule(paymentReservation.getPaymentRule().getCode());
+		record.setStatus(paymentReservation.getStatus().getCode());
 
 		saveRecord(record);
 		paymentReservation.setId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()));
@@ -100,6 +101,7 @@ public class PaymentReservationRepository
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
 				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))
+				.status(PaymentReservationStatus.ofCode(record.getStatus()))
 				.build();
 	}
 }

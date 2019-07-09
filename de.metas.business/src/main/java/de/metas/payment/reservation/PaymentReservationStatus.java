@@ -1,5 +1,15 @@
 package de.metas.payment.reservation;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Payment_Reservation;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.business
@@ -22,12 +32,32 @@ package de.metas.payment.reservation;
  * #L%
  */
 
-public enum PaymentReservationStatus
+public enum PaymentReservationStatus implements ReferenceListAwareEnum
 {
-	WAITING_PAYER_APPROVAL, //
-	APPROVED, //
-	VOIDED //
+	WAITING_PAYER_APPROVAL(X_C_Payment_Reservation.STATUS_WAITING_PAYER_APPROVAL), //
+	APPROVED(X_C_Payment_Reservation.STATUS_APPROVED), //
+	VOIDED(X_C_Payment_Reservation.STATUS_VOIDED) //
 	;
+
+	@Getter
+	private final String code;
+
+	private PaymentReservationStatus(final String code)
+	{
+		this.code = code;
+	}
+
+	public static PaymentReservationStatus ofCode(@NonNull final String code)
+	{
+		PaymentReservationStatus type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + PaymentReservationStatus.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, PaymentReservationStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	public boolean isVoided()
 	{

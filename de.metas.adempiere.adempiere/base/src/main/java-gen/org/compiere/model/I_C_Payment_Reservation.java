@@ -320,6 +320,29 @@ public interface I_C_Payment_Reservation
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStatus();
+
+    /** Column definition for Status */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object>(I_C_Payment_Reservation.class, "Status", null);
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

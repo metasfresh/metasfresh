@@ -61,12 +61,15 @@ public class PaymentReservationService
 
 	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)
 	{
+		//
+		// Create & save
 		final PaymentReservation paymentReservation = PaymentReservation.builder()
 				.orgId(createRequest.getOrgId())
 				.amount(createRequest.getAmount())
 				.salesOrderId(createRequest.getSalesOrderId())
 				.dateTrx(createRequest.getDateTrx())
 				.paymentRule(createRequest.getPaymentRule())
+				.status(PaymentReservationStatus.WAITING_PAYER_APPROVAL)
 				.build();
 		reservationsRepo.save(paymentReservation);
 

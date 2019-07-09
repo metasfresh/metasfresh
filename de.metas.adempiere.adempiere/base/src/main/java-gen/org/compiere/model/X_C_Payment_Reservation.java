@@ -15,7 +15,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1007520855L;
+	private static final long serialVersionUID = 2043099083L;
 
     /** Standard Constructor */
     public X_C_Payment_Reservation (Properties ctx, int C_Payment_Reservation_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 			setDateTrx (new Timestamp( System.currentTimeMillis() ));
 			setPaymentRule (null);
 			setProcessed (false); // N
+			setStatus (null);
         } */
     }
 
@@ -255,5 +256,33 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** 
+	 * Status AD_Reference_ID=541011
+	 * Reference name: C_Payment_Reservation_Status
+	 */
+	public static final int STATUS_AD_Reference_ID=541011;
+	/** WAITING_PAYER_APPROVAL = W */
+	public static final String STATUS_WAITING_PAYER_APPROVAL = "W";
+	/** APPROVED = A */
+	public static final String STATUS_APPROVED = "A";
+	/** VOIDED = V */
+	public static final String STATUS_VOIDED = "V";
+	/** Set Status.
+		@param Status Status	  */
+	@Override
+	public void setStatus (java.lang.String Status)
+	{
+
+		set_Value (COLUMNNAME_Status, Status);
+	}
+
+	/** Get Status.
+		@return Status	  */
+	@Override
+	public java.lang.String getStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
 }
