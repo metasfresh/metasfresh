@@ -208,8 +208,7 @@ public class MailBL implements IMailBL
 			throw new AdempiereException("Mailbox incomplete: " + mailbox);
 		}
 
-		final EMail email = new EMail(mailbox, to, subject, message, html);
-		return email;
+		return new EMail(mailbox, to, subject, message, html);
 	}
 
 	private String toString(final I_AD_MailConfig config)

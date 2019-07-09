@@ -124,17 +124,6 @@ public final class EMail implements Serializable
 	@JsonIgnore
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
 
-	/**
-	 * Full Constructor
-	 *
-	 * @param ctx context
-	 * @param smtpHost The mail server
-	 * @param from Sender's EMail address
-	 * @param to Recipient EMail address
-	 * @param subject Subject of message
-	 * @param message The message
-	 * @param html html email
-	 */
 	public EMail(
 			final Mailbox mailbox,
 			final EMailAddress to,
@@ -230,9 +219,8 @@ public final class EMail implements Serializable
 	}
 
 	/** Base constructor */
-	private EMail(final Mailbox mailbox)
+	private EMail(@NonNull final Mailbox mailbox)
 	{
-		Check.assumeNotNull(mailbox, "mailbox not null");
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
 	}
