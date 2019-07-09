@@ -30,6 +30,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.print.IPrintService;
+import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
@@ -83,7 +84,7 @@ public class HUReportExecutor
 	private HUReportExecutor(final Properties ctx)
 	{
 		this.ctx = ctx;
-	};
+	}
 
 	/**
 	 * Give this service a window number. The default is {@link Env#WINDOW_None}.
@@ -116,7 +117,7 @@ public class HUReportExecutor
 	 * @param adProcessId the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
 	 */
-	public void executeHUReportAfterCommit(final int adProcessId, @NonNull final List<HUToReport> husToProcess)
+	public void executeHUReportAfterCommit(final AdProcessId adProcessId, @NonNull final List<HUToReport> husToProcess)
 	{
 		// check if we actually got any new M_HU_ID
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -161,7 +162,7 @@ public class HUReportExecutor
 		huReportTrxListener.setListenerWasRegistered();
 	}
 
-	public HUReportExecutorResult executeNow(final int adProcessId, @NonNull final List<HUToReport> husToProcess)
+	public HUReportExecutorResult executeNow(final AdProcessId adProcessId, @NonNull final List<HUToReport> husToProcess)
 	{
 		return executeNow(HUReportRequest.builder()
 				.ctx(ctx)
@@ -175,7 +176,7 @@ public class HUReportExecutor
 				.build());
 	}
 
-	private HUReportTrxListener newHUReportTrxListener(final int adProcessId)
+	private HUReportTrxListener newHUReportTrxListener(final AdProcessId adProcessId)
 	{
 		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
 	}
@@ -244,7 +245,7 @@ public class HUReportExecutor
 	private static final class HUReportTrxListener
 	{
 		private final Properties ctx;
-		private final int adProcessId;
+		private final AdProcessId adProcessId;
 		private final int windowNo;
 		private final int copies;
 
@@ -264,8 +265,9 @@ public class HUReportExecutor
 
 		private boolean listenerWasRegistered = false;
 
-		private HUReportTrxListener(@NonNull final Properties ctx,
-				final int adProcessId,
+		private HUReportTrxListener(
+				@NonNull final Properties ctx,
+				final AdProcessId adProcessId,
 				final int windowNo,
 				final int copies)
 		{
@@ -353,7 +355,7 @@ public class HUReportExecutor
 	private static class HUReportRequest
 	{
 		Properties ctx;
-		int adProcessId;
+		AdProcessId adProcessId;
 		int windowNo;
 		int copies;
 		Boolean printPreview;
@@ -363,17 +365,15 @@ public class HUReportExecutor
 
 		@lombok.Builder
 		private HUReportRequest(
-				final Properties ctx,
-				final int adProcessId,
+				@NonNull final Properties ctx,
+				@NonNull final AdProcessId adProcessId,
 				final int windowNo,
 				final int copies,
 				@Nullable final Boolean printPreview,
-				final String adLanguage,
+				@NonNull final String adLanguage,
 				final boolean onErrorThrowException,
 				final ImmutableSet<HuId> huIdsToProcess)
 		{
-			Check.assumeNotNull(ctx, "Parameter ctx is not null");
-			Check.assume(adProcessId > 0, "adProcessId > 0");
 			Check.assume(copies > 0, "copies > 0");
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 			Check.assumeNotEmpty(huIdsToProcess, "huIdsToProcess is not empty");
