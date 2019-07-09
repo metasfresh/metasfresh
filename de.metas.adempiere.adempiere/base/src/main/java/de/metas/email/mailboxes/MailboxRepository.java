@@ -97,75 +97,94 @@ public class MailboxRepository
 	{
 		logger.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, orgId, adProcessId, customType);
 
+		//
+		// Check mail routings
 		final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
-		final List<I_AD_MailConfig> configs = retrieveMailConfigs(clientId, adProcessId, docBaseAndSubType, customType);
-
-		for (final I_AD_MailConfig config : configs)
+		final List<I_AD_MailConfig> mailRoutings = retrieveMailRoutings(clientId, adProcessId, docBaseAndSubType, customType);
+		for (final I_AD_MailConfig mailRouting : mailRoutings)
 		{
-			final OrgId configOrgId = OrgId.ofRepoIdOrAny(config.getAD_Org_ID());
+			final OrgId configOrgId = OrgId.ofRepoIdOrAny(mailRouting.getAD_Org_ID());
 
 			if (OrgId.equals(configOrgId, orgId) || configOrgId.isAny())
 			{
-				final I_AD_MailBox adMailbox = config.getAD_MailBox();
-				final Mailbox mailbox = Mailbox.builder()
-						.smtpHost(adMailbox.getSMTPHost())
-						.smtpPort(adMailbox.getSMTPPort())
-						.startTLS(adMailbox.isStartTLS())
-						.email(EMailAddress.ofString(adMailbox.getEMail()))
-						.username(adMailbox.getUserName())
-						.password(adMailbox.getPassword())
-						.smtpAuthorization(adMailbox.isSmtpAuthorization())
-						.sendFromServer(client.isServerEMail())
-						.columnUserTo(config.getColumnUserTo())
-						.build();
+				final I_AD_MailBox mailboxRecord = mailRouting.getAD_MailBox();
+				final boolean sendMailsFromServer = client.isServerEMail();
+				final String userToColumnName = mailRouting.getColumnUserTo();
+				final Mailbox mailbox = toMailbox(mailboxRecord, sendMailsFromServer, userToColumnName);
 
 				if (logger.isDebugEnabled())
 				{
-					logger.debug("Found: {} => {}", toString(config), mailbox);
+					logger.debug("Found: {} => {}", toString(mailRouting), mailbox);
 				}
 
 				return mailbox;
 			}
 		}
 
-		final String smtpHost = client.getSMTPHost();
-		if (Check.isEmpty(smtpHost, true))
-		{
-			final String messageString = StringUtils.formatMessage(
-					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
-							+ "AD_MailConfig search parameters: AD_Client_ID={}; AD_Org_ID={}; AD_Process_ID={}; C_DocType={}; CustomType={}",
-					clientId, orgId, adProcessId, docBaseAndSubType, customType);
-
-			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
-		}
-
-		final Mailbox mailbox = Mailbox.builder()
-				.smtpHost(smtpHost)
-				.smtpPort(client.getSMTPPort())
-				.startTLS(client.isStartTLS())
-				.email(EMailAddress.ofNullableString(client.getRequestEMail()))
-				.username(client.getRequestUser())
-				.password(client.getRequestUserPW())
-				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendFromServer(client.isServerEMail())
-				.build();
+		//
+		// Fallback to AD_Client config
+		final Mailbox mailbox = createClientMailbox(client);
 		logger.debug("Fallback to AD_Client settings: {}", mailbox);
 		return mailbox;
 	}
 
-	private static String toString(final I_AD_MailConfig config)
+	private static Mailbox toMailbox(
+			final I_AD_MailBox record,
+			final boolean sendMailsFromServer,
+			final String userToColumnName)
 	{
-		return config.getClass().getSimpleName() + "["
-				+ "AD_Client_ID=" + config.getAD_Client_ID()
-				+ ", AD_Org_ID=" + config.getAD_Org_ID()
-				+ ", AD_Process_ID=" + config.getAD_Process_ID()
-				+ ", CustomType=" + config.getCustomType()
-				+ ", IsActive=" + config.isActive()
-				+ ", AD_MailConfig_ID=" + config.getAD_MailConfig_ID()
+		return Mailbox.builder()
+				.smtpHost(record.getSMTPHost())
+				.smtpPort(record.getSMTPPort())
+				.startTLS(record.isStartTLS())
+				.email(EMailAddress.ofString(record.getEMail()))
+				.username(record.getUserName())
+				.password(record.getPassword())
+				.smtpAuthorization(record.isSmtpAuthorization())
+				.sendFromServer(sendMailsFromServer)
+				.columnUserTo(userToColumnName)
+				.build();
+	}
+
+	@NonNull
+	private static Mailbox createClientMailbox(final I_AD_Client clientRecord)
+	{
+		final String smtpHost = clientRecord.getSMTPHost();
+		if (Check.isEmpty(smtpHost, true))
+		{
+			final String messageString = StringUtils.formatMessage(
+					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
+							+ "AD_MailConfig search parameters: AD_Client_ID={}",
+					clientRecord);
+
+			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
+		}
+
+		return Mailbox.builder()
+				.smtpHost(smtpHost)
+				.smtpPort(clientRecord.getSMTPPort())
+				.startTLS(clientRecord.isStartTLS())
+				.email(EMailAddress.ofNullableString(clientRecord.getRequestEMail()))
+				.username(clientRecord.getRequestUser())
+				.password(clientRecord.getRequestUserPW())
+				.smtpAuthorization(clientRecord.isSmtpAuthorization())
+				.sendFromServer(clientRecord.isServerEMail())
+				.build();
+	}
+
+	private static String toString(final I_AD_MailConfig routingRecord)
+	{
+		return routingRecord.getClass().getSimpleName() + "["
+				+ "AD_Client_ID=" + routingRecord.getAD_Client_ID()
+				+ ", AD_Org_ID=" + routingRecord.getAD_Org_ID()
+				+ ", AD_Process_ID=" + routingRecord.getAD_Process_ID()
+				+ ", CustomType=" + routingRecord.getCustomType()
+				+ ", IsActive=" + routingRecord.isActive()
+				+ ", AD_MailConfig_ID=" + routingRecord.getAD_MailConfig_ID()
 				+ "]";
 	}
 
-	private List<I_AD_MailConfig> retrieveMailConfigs(
+	private List<I_AD_MailConfig> retrieveMailRoutings(
 			@NonNull final ClientId clientId,
 			@Nullable final AdProcessId processId,
 			@Nullable final DocBaseAndSubType docBaseAndSubType,
