@@ -104,10 +104,6 @@ describe('Create Dunning Candidates', function () {
     });
   });
 
-  // it('use already existing sales invoice', function () {
-  //   cy.visitWindow('167', '1000001');
-  // });
-
 
   it('Sales Invoice is Completed', function () {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
@@ -139,19 +135,21 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  // it('Ensure there are no Dunning Candidates', function () {
-  //   DunningCandidates.visit();
-  //
-  //   filterBySalesInvoiceNumber(siDocumentNumber);
-  //
-  //   DunningCandidates.getRows().should('have.length', 0);
-  // });
+  it('Ensure there are no Dunning Candidates', function () {
+    DunningCandidates.visit();
+    filterBySalesInvoiceNumber(siDocumentNumber);
+    DunningCandidates.getRows().should('have.length', 0);
+  });
 
 
   it('Create Dunning Candidates', function () {
     DunningCandidates.visit();
     cy.wait(1000); // without this wait, the action menu is not properly loaded
-    cy.wait(10000); // maybe this fixes some cache invalidation problem that Dunning type is not found in `de.metas.dunning.api.impl.DunningDAO.retrieveDunnings` (eventually, we should get rid of this sleep)
+
+    // cy.wait(10000);
+    // maybe this 10 seconds sleep fixes some cache invalidation problem that Dunning type is not found in `de.metas.dunning.api.impl.DunningDAO.retrieveDunnings`
+    // currently the sleep is commented out, but left here for easier debugging, in case it will be needed in the future.
+    // if current date is > 01.08.2019, please get rid of this sleep IF it is still commented
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
