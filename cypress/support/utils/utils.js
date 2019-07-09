@@ -65,7 +65,7 @@ const findByName = (dataArray, name) => {
   for (let i = 0; i < dataArray.length; i += 1) {
     const obj = dataArray[i];
 
-    if (obj.caption === name) {
+    if (obj.caption.includes(name)) {
       dataObject = obj;
 
       break;
