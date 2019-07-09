@@ -95,7 +95,7 @@ public class OrderFreightCostsService
 		}
 
 		final FreightCostContext freightCostContext = extractFreightCostContext(order);
-		final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
+		final FreightCost freightCost = freightCostService.findBestMatchingFreightCost(freightCostContext);
 
 		final I_C_OrderLine freightRateOrderLine = orderLineBL.createOrderLine(order);
 		orderLineBL.setProductId(
@@ -142,16 +142,32 @@ public class OrderFreightCostsService
 				? bpartnerBL.getBPartnerLocationCountryId(shipToBPLocationId)
 				: null;
 
+		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded);
+
 		return FreightCostContext.builder()
 				.shipFromOrgId(OrgId.ofRepoId(order.getC_Order_ID()))
 				.shipToBPartnerId(shipToBPartnerId)
 				.shipToCountryId(shipToCountryId)
 				.shipperId(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()))
 				.date(TimeUtil.asLocalDate(order.getDateOrdered()))
-				.freightCostRule(FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded))
+				.freightCostRule(freightCostRule)
 				.deliveryViaRule(DeliveryViaRule.ofNullableCodeOr(order.getDeliveryViaRule(), DeliveryViaRule.Pickup))
-				.freightAmt(Money.of(order.getFreightAmt(), CurrencyId.ofRepoId(order.getC_Currency_ID())))
+				.manualFreightAmt(freightCostRule.isFixPrice() ? extractManualFreightAmtOrNull(order) : null)
 				.build();
+	}
+
+	private Money extractManualFreightAmtOrNull(final I_C_Order order)
+	{
+		final BigDecimal freightAmtBD = order.getFreightAmt();
+
+		// Consider ZERO as not provided.
+		// If user really wants to set ZERO freight cost, he/she shall use FreightIncluded rule.
+		if (freightAmtBD.signum() == 0)
+		{
+			return null;
+		}
+
+		return Money.of(freightAmtBD, CurrencyId.ofRepoId(order.getC_Currency_ID()));
 	}
 
 	private void checkFreightCost(final I_C_Order order)
@@ -177,7 +193,7 @@ public class OrderFreightCostsService
 			return;
 		}
 
-		freightCostService.retrieveFor(freightCostContext);
+		freightCostService.findBestMatchingFreightCost(freightCostContext);
 	}
 
 	public void updateFreightAmt(@NonNull final I_C_Order order)
@@ -211,7 +227,7 @@ public class OrderFreightCostsService
 				return Optional.empty();
 			}
 
-			final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
+			final FreightCost freightCost = freightCostService.findBestMatchingFreightCost(freightCostContext);
 			final Money freightRate = freightCost.getFreightRate(
 					freightCostContext.getShipperId(),
 					freightCostContext.getShipToCountryId(),
@@ -222,10 +238,9 @@ public class OrderFreightCostsService
 		else if (freightCostRule == FreightCostRule.FixPrice)
 		{
 			// get the 'freightcost' product and return its price
-			final FreightCost freightCost = freightCostService.retrieveFor(freightCostContext);
+			final FreightCost freightCost = freightCostService.findBestMatchingFreightCost(freightCostContext);
 
-			final Money freightAmt = freightCostContext.getFreightAmt();
-
+			final Money freightAmt = freightCostContext.getManualFreightAmt();
 			if (freightAmt != null)
 			{
 				return Optional.of(freightAmt);
