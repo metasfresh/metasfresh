@@ -97,10 +97,10 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		}
 
 		// check if the column for the user is specified
-		if (!Check.isEmpty(mailbox.getColumnUserTo(), true))
+		if (!Check.isEmpty(mailbox.getUserToColumnName(), true))
 		{
 			final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
-			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, mailbox.getColumnUserTo());
+			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, mailbox.getUserToColumnName());
 
 			if (existsColumn)
 			{
@@ -108,7 +108,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 				final Object referencedModel = TableRecordReference.ofReferenced(docOutboundLogRecord).getModel(context);
 
 				// load the column content
-				final Integer userRepoId = getValueOrNull(referencedModel, mailbox.getColumnUserTo());
+				final Integer userRepoId = getValueOrNull(referencedModel, mailbox.getUserToColumnName());
 				if (userRepoId == null)
 				{
 					return Optional.empty();
@@ -133,15 +133,12 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
 
 			final IMailBL mailService = Services.get(IMailBL.class);
-			final Mailbox mailbox = mailService.findMailBox(
+			return mailService.findMailBox(
 					tenantEmailConfig,
 					OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 					(AdProcessId)null, // don't filter by processID
 					docBaseAndSubType,
-					(EMailCustomType)null, // mailCustomType
-					null // userFrom
-			);
-			return mailbox;
+					(EMailCustomType)null); // mailCustomType
 		}
 		catch (final MailboxNotFoundException e)
 		{

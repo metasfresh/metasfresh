@@ -32,7 +32,6 @@ import org.adempiere.service.OrgId;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
-import de.metas.email.mailboxes.MailboxNotFoundException;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
@@ -48,16 +47,12 @@ import de.metas.util.ISingletonService;
  */
 public interface IMailBL extends ISingletonService
 {
-	/**
-	 * @throws MailboxNotFoundException
-	 */
 	Mailbox findMailBox(
 			ClientEMailConfig clientEmailConfig,
 			OrgId orgId,
 			AdProcessId adProcessId,
 			DocBaseAndSubType docBaseAndSubType,
-			EMailCustomType customType,
-			UserEMailConfig userEmailConfig);
+			EMailCustomType customType);
 
 	EMail createEMail(
 			ClientEMailConfig client,

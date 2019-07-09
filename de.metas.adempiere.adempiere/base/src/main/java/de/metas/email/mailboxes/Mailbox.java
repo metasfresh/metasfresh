@@ -1,5 +1,9 @@
 package de.metas.email.mailboxes;
 
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -66,10 +70,10 @@ public final class Mailbox
 	@JsonProperty("startTLS")
 	private final boolean startTLS;
 
-	@JsonProperty("sendFromServer")
-	private final boolean sendFromServer;
-	@JsonProperty("columnUserTo")
-	private final String columnUserTo;
+	@JsonProperty("sendEmailsFromServer")
+	private final boolean sendEmailsFromServer;
+	@JsonProperty("userToColumnName")
+	private final String userToColumnName;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -81,8 +85,8 @@ public final class Mailbox
 			@JsonProperty("password") final String password,
 			@JsonProperty("smtpAuthorization") final boolean smtpAuthorization,
 			@JsonProperty("startTLS") final boolean startTLS,
-			@JsonProperty("sendFromServer") final boolean sendFromServer,
-			@JsonProperty("columnUserTo") final String columnUserTo)
+			@JsonProperty("sendEmailsFromServer") final boolean sendEmailsFromServer,
+			@JsonProperty("userToColumnName") final String userToColumnName)
 	{
 		Check.assumeNotEmpty(smtpHost, "smtpHost is not empty");
 
@@ -105,12 +109,46 @@ public final class Mailbox
 
 		this.startTLS = startTLS;
 
-		this.sendFromServer = sendFromServer;
-		this.columnUserTo = !Check.isEmpty(columnUserTo, true) ? columnUserTo.trim() : null;
+		this.sendEmailsFromServer = sendEmailsFromServer;
+		this.userToColumnName = !Check.isEmpty(userToColumnName, true) ? userToColumnName.trim() : null;
 	}
 
 	private static int getDefaultSMTPPort(final boolean startTLS)
 	{
 		return startTLS ? DEFAULT_SMTPS_PORT : DEFAULT_SMTP_PORT;
+	}
+
+	public Mailbox mergeFrom(@Nullable final UserEMailConfig userEmailConfig)
+	{
+		if (userEmailConfig == null)
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.email(userEmailConfig.getEmail())
+				.username(userEmailConfig.getUsername())
+				.password(userEmailConfig.getPassword())
+				.build();
+	}
+
+	public Mailbox withSendEmailsFromServer(final boolean sendEmailsFromServer)
+	{
+		if (this.sendEmailsFromServer == sendEmailsFromServer)
+		{
+			return this;
+		}
+
+		return toBuilder().sendEmailsFromServer(sendEmailsFromServer).build();
+	}
+
+	public Mailbox withUserToColumnName(final String userToColumnName)
+	{
+		if (Objects.equals(this.userToColumnName, userToColumnName))
+		{
+			return this;
+		}
+
+		return toBuilder().userToColumnName(userToColumnName).build();
 	}
 }

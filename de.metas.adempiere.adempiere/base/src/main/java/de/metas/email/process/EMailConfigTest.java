@@ -54,8 +54,8 @@ import de.metas.util.Services;
 public class EMailConfigTest extends JavaProcess
 {
 	private final IUserBL usersService = Services.get(IUserBL.class);
-	private final IMailBL mailBL = Services.get(IMailBL.class);
-	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IMailBL mailService = Services.get(IMailBL.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
 	public static final String PARA_AD_Client_ID = I_AD_MailConfig.COLUMNNAME_AD_Client_ID;
 	public static final String PARA_AD_Org_ID = I_AD_MailConfig.COLUMNNAME_AD_Org_ID;
@@ -144,19 +144,19 @@ public class EMailConfigTest extends JavaProcess
 
 	private void testSend()
 	{
-		final ClientEMailConfig tenantEmailConfig = clientDAO.getEMailConfigById(p_AD_Client_ID);
-		final UserEMailConfig userEMailConfig = getUserEMailConfig();
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(p_AD_Client_ID);
+		final UserEMailConfig userEmailConfig = getUserEMailConfig();
 
-		final Mailbox mailbox = mailBL.findMailBox(
+		final Mailbox mailbox = mailService.findMailBox(
 				tenantEmailConfig,
 				p_AD_Org_ID,
 				p_AD_Process_ID,
 				null,  // C_DocType - Task FRESH-203. This shall work as before
-				p_CustomType,
-				userEMailConfig);
+				p_CustomType)
+				.mergeFrom(userEmailConfig);
 		addLog("Using configuration: " + mailbox);
 
-		final EMail email = mailBL.createEMail(mailbox, p_EMail_To, p_Subject, p_Message, p_IsHtml);
+		final EMail email = mailService.createEMail(mailbox, p_EMail_To, p_Subject, p_Message, p_IsHtml);
 		addLog("EMail: " + email);
 
 		final EMailSentStatus emailSentStatus = email.send();

@@ -156,9 +156,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 				processId,
 				docBaseAndSubType,
-				(EMailCustomType)null, // mailCustomType
-				(UserEMailConfig)null // no user - this mailbox is the AD_Client's mailbox
-		);
+				(EMailCustomType)null); // mailCustomType
 
 		// note that we verified this earlier
 		final EMailAddress mailTo = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress());

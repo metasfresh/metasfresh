@@ -86,8 +86,8 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IMailBL mailBL = Services.get(IMailBL.class);
-	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IMailBL mailService = Services.get(IMailBL.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -424,28 +424,25 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
-		final EMail mail = mailBL.createEMail(
+		final EMail mail = mailService.createEMail(
 				mailbox,
 				notificationsConfig.getEmail(),
 				subject,
 				content,
 				html);
 		request.getAttachments().forEach(mail::addAttachment);
-		mailBL.send(mail);
+		mailService.send(mail);
 	}
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final ClientEMailConfig tenantEmailConfig = clientDAO.getEMailConfigById(notificationsConfig.getClientId());
-		final Mailbox mailbox = mailBL.findMailBox(
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(notificationsConfig.getClientId());
+		return mailService.findMailBox(
 				tenantEmailConfig,
 				notificationsConfig.getOrgId(),
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
-				(EMailCustomType)null,  // customType
-				null); // sender
-		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", tenantEmailConfig, notificationsConfig.getOrgId());
-		return mailbox;
+				(EMailCustomType)null);  // customType
 	}
 
 	private String extractMailContent(final UserNotificationRequest request)

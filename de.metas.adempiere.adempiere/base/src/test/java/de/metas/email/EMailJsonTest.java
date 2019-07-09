@@ -82,8 +82,8 @@ public class EMailJsonTest
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
-				.sendFromServer(true)
-				.columnUserTo("columnUserTo")
+				.sendEmailsFromServer(true)
+				.userToColumnName("userToColumnName")
 				.build();
 		testJsonToStringEquals(mailbox);
 	}
@@ -97,8 +97,8 @@ public class EMailJsonTest
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
-				.sendFromServer(true)
-				.columnUserTo("columnUserTo")
+				.sendEmailsFromServer(true)
+				.userToColumnName("userToColumnName")
 				.build();
 		final EMailAddress to = EMailAddress.ofString("to@email.com");
 		final String subject = "test email subject";

@@ -24,17 +24,21 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxNotFoundException;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.email.templates.MailTextBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 public class MailBL implements IMailBL
@@ -54,10 +58,45 @@ public class MailBL implements IMailBL
 			@NonNull final OrgId orgId,
 			@Nullable final AdProcessId adProcessId,
 			@Nullable final DocBaseAndSubType docBaseAndSubType,
-			@Nullable final EMailCustomType customType,
-			@Nullable final UserEMailConfig userEmailConfig)
+			@Nullable final EMailCustomType customType)
 	{
-		return mailboxRepository().findMailBox(clientEmailConfig, orgId, adProcessId, docBaseAndSubType, customType, userEmailConfig);
+		final MailboxQuery query = MailboxQuery.builder()
+				.clientId(clientEmailConfig.getClientId())
+				.orgId(orgId)
+				.adProcessId(adProcessId)
+				.customType(customType)
+				.build();
+
+		return mailboxRepository()
+				.findMailBox(query)
+				.orElseGet(() -> createClientMailbox(clientEmailConfig))
+				.withSendEmailsFromServer(clientEmailConfig.isSendEmailsFromServer());
+	}
+
+	@NonNull
+	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
+	{
+		final String smtpHost = client.getSmtpHost();
+		if (Check.isEmpty(smtpHost, true))
+		{
+			final String messageString = StringUtils.formatMessage(
+					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
+							+ "AD_MailConfig search parameters: AD_Client_ID={}",
+					client);
+
+			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
+		}
+
+		return Mailbox.builder()
+				.smtpHost(smtpHost)
+				.smtpPort(client.getSmtpPort())
+				.startTLS(client.isStartTLS())
+				.email(client.getEmail())
+				.username(client.getUsername())
+				.password(client.getPassword())
+				.smtpAuthorization(client.isSmtpAuthorization())
+				.sendEmailsFromServer(client.isSendEmailsFromServer())
+				.build();
 	}
 
 	@Override
@@ -70,13 +109,12 @@ public class MailBL implements IMailBL
 			@Nullable final String message,
 			final boolean html)
 	{
-		final Mailbox mailbox = mailboxRepository().findMailBox(
-				clientEmailConfig,
+		final Mailbox mailbox = findMailBox(clientEmailConfig,
 				ProcessExecutor.getCurrentOrgId(),
 				ProcessExecutor.getCurrentProcessIdOrNull(),
 				(DocBaseAndSubType)null,
-				mailCustomType,
-				userEmailConfig);
+				mailCustomType)
+						.mergeFrom(userEmailConfig);
 		return createEMail(mailbox, to, subject, message, html);
 	}
 

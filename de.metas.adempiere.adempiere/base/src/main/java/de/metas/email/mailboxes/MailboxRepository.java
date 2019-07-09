@@ -1,26 +1,23 @@
 package de.metas.email.mailboxes;
 
-import java.util.List;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
+import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.EMailAddress;
-import de.metas.email.EMailCustomType;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -51,85 +48,49 @@ import lombok.NonNull;
 @Repository
 public class MailboxRepository
 {
-	private static final Logger logger = LogManager.getLogger(MailboxRepository.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/**
-	 * @throws MailboxNotFoundException
-	 */
-	public Mailbox findMailBox(
-			@NonNull final ClientEMailConfig client,
-			@NonNull final OrgId orgId,
-			final AdProcessId adProcessId,
-			final DocBaseAndSubType docBaseAndSubType,
-			final EMailCustomType customType,
-			@Nullable final UserEMailConfig user)
+	private final CCache<Integer, Mailbox> mailboxesById = CCache.<Integer, Mailbox> builder()
+			.tableName(I_AD_MailBox.Table_Name)
+			.build();
+
+	@NonNull
+	public Optional<Mailbox> findMailBox(@NonNull final MailboxQuery query)
 	{
-		final Mailbox mailbox = findMailBox(
-				client,
-				orgId,
-				adProcessId,
-				docBaseAndSubType,
-				customType);
-		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
-				client, orgId, adProcessId, customType);
-
-		if (user == null)
-		{
-			return mailbox;
-		}
-
-		// use smtpHost from AD_MailConfig, but user data from AD_User
-		return mailbox.toBuilder()
-				.email(user.getEmail())
-				.username(user.getUsername())
-				.password(user.getPassword())
-				.build();
-	}
-
-	private Mailbox findMailBox(
-			@NonNull final ClientEMailConfig client,
-			@NonNull final OrgId orgId,
-			@Nullable final AdProcessId adProcessId,
-			@Nullable final DocBaseAndSubType docBaseAndSubType,
-			@Nullable final EMailCustomType customType)
-	{
-		logger.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, orgId, adProcessId, customType);
-
-		//
-		// Check mail routings
-		final ClientId clientId = client.getClientId();
-		final List<I_AD_MailConfig> mailRoutings = retrieveMailRoutings(clientId, adProcessId, docBaseAndSubType, customType);
-		for (final I_AD_MailConfig mailRouting : mailRoutings)
+		for (final I_AD_MailConfig mailRouting : retrieveMailRoutings(query))
 		{
 			final OrgId configOrgId = OrgId.ofRepoIdOrAny(mailRouting.getAD_Org_ID());
 
-			if (OrgId.equals(configOrgId, orgId) || configOrgId.isAny())
+			if (OrgId.equals(configOrgId, query.getOrgId()) || configOrgId.isAny())
 			{
-				final I_AD_MailBox mailboxRecord = mailRouting.getAD_MailBox();
-				final boolean sendEmailsFromServer = client.isSendEmailsFromServer();
-				final String userToColumnName = mailRouting.getColumnUserTo();
-				final Mailbox mailbox = toMailbox(mailboxRecord, sendEmailsFromServer, userToColumnName);
-
-				if (logger.isDebugEnabled())
-				{
-					logger.debug("Found: {} => {}", toString(mailRouting), mailbox);
-				}
-
-				return mailbox;
+				final Mailbox mailbox = getMailbox(mailRouting);
+				return Optional.of(mailbox);
 			}
 		}
 
-		//
-		// Fallback to AD_Client config
-		final Mailbox mailbox = createClientMailbox(client);
-		logger.debug("Fallback to AD_Client settings: {}", mailbox);
-		return mailbox;
+		return Optional.empty();
 	}
 
-	private static Mailbox toMailbox(
-			final I_AD_MailBox record,
-			final boolean sendMailsFromServer,
-			final String userToColumnName)
+	private Mailbox getMailbox(final I_AD_MailConfig mailRouting)
+	{
+		return getById(mailRouting.getAD_MailBox_ID())
+				.withUserToColumnName(mailRouting.getColumnUserTo());
+	}
+
+	private Mailbox getById(final int mailboxRepoId)
+	{
+		return mailboxesById.getOrLoad(mailboxRepoId, this::retrieveById);
+	}
+
+	private Mailbox retrieveById(final int mailboxRepoId)
+	{
+		Check.assumeGreaterThanZero(mailboxRepoId, "mailboxRepoId");
+
+		final I_AD_MailBox mailboxRecord = loadOutOfTrx(mailboxRepoId, I_AD_MailBox.class);
+		return toMailbox(mailboxRecord);
+	}
+
+	private static Mailbox toMailbox(final I_AD_MailBox record)
 	{
 		return Mailbox.builder()
 				.smtpHost(record.getSMTPHost())
@@ -139,13 +100,13 @@ public class MailboxRepository
 				.username(record.getUserName())
 				.password(record.getPassword())
 				.smtpAuthorization(record.isSmtpAuthorization())
-				.sendFromServer(sendMailsFromServer)
-				.columnUserTo(userToColumnName)
+				.sendEmailsFromServer(true)
+				.userToColumnName(null)
 				.build();
 	}
 
 	@NonNull
-	private static Mailbox createClientMailbox(final ClientEMailConfig client)
+	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
 	{
 		final String smtpHost = client.getSmtpHost();
 		if (Check.isEmpty(smtpHost, true))
@@ -166,32 +127,15 @@ public class MailboxRepository
 				.username(client.getUsername())
 				.password(client.getPassword())
 				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendFromServer(client.isSendEmailsFromServer())
+				.sendEmailsFromServer(client.isSendEmailsFromServer())
 				.build();
 	}
 
-	private static String toString(final I_AD_MailConfig routingRecord)
+	private List<I_AD_MailConfig> retrieveMailRoutings(@NonNull final MailboxQuery query)
 	{
-		return routingRecord.getClass().getSimpleName() + "["
-				+ "AD_Client_ID=" + routingRecord.getAD_Client_ID()
-				+ ", AD_Org_ID=" + routingRecord.getAD_Org_ID()
-				+ ", AD_Process_ID=" + routingRecord.getAD_Process_ID()
-				+ ", CustomType=" + routingRecord.getCustomType()
-				+ ", IsActive=" + routingRecord.isActive()
-				+ ", AD_MailConfig_ID=" + routingRecord.getAD_MailConfig_ID()
-				+ "]";
-	}
-
-	private List<I_AD_MailConfig> retrieveMailRoutings(
-			@NonNull final ClientId clientId,
-			@Nullable final AdProcessId processId,
-			@Nullable final DocBaseAndSubType docBaseAndSubType,
-			@Nullable final EMailCustomType customType)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_AD_MailConfig> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_MailConfig.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, clientId);
+				.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, query.getClientId());
 
 		// Order by Org, Desc, Nulls Last
 		queryBuilder.orderBy()
@@ -199,18 +143,18 @@ public class MailboxRepository
 				.addColumn(I_AD_MailConfig.COLUMN_DocSubType, Direction.Ascending, Nulls.Last)
 				.endOrderBy();
 
-		if (customType != null)
+		if (query.getCustomType() != null)
 		{
-			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_CustomType, customType.getCode());
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_CustomType, query.getCustomType().getCode());
 		}
-		else if (processId != null)
+		else if (query.getAdProcessId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Process_ID, processId);
-
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Process_ID, query.getAdProcessId());
 		}
 
 		//
 		// DocBaseType and DocSubType added in the mail config (task FRESH-203)
+		final DocBaseAndSubType docBaseAndSubType = query.getDocBaseAndSubType();
 		if (docBaseAndSubType != null)
 		{
 			final String docBaseType = docBaseAndSubType.getDocBaseType();
@@ -224,7 +168,6 @@ public class MailboxRepository
 			{
 				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
 			}
-
 		}
 
 		return queryBuilder.create().list();
