@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.dunning.interfaces.I_C_Dunning;
@@ -54,7 +55,7 @@ public interface IDunningDAO extends ISingletonService
 	 */
 	void save(Object model);
 
-	List<I_C_Dunning> retrieveDunnings(Properties ctx);
+	List<I_C_Dunning> retrieveDunnings();
 
 	/**
 	 * Retrieves the assigned {@link I_C_Dunning} of given business partner.
@@ -73,12 +74,10 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves default dunning for given organization.
-	 *
-	 * @param ctx
-	 * @param adOrgId
+     *
 	 * @return {@link I_C_Dunning}
 	 */
-	I_C_Dunning retrieveDunningByOrg(final Properties ctx, final int adOrgId);
+	I_C_Dunning retrieveDunningByOrg(OrgId orgId);
 
 	/**
 	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.

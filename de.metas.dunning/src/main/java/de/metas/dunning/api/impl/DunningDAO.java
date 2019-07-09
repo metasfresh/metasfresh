@@ -35,7 +35,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 
-import de.metas.cache.annotation.CacheCtx;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -64,16 +63,13 @@ public class DunningDAO extends AbstractDunningDAO
 		InterfaceWrapperHelper.save(model);
 	}
 
-	//	@Cached(cacheName = I_C_Dunning.Table_Name + "_For_Client")
-	// note caching is disabled because sometimes creating dunning types doesn't reset the cache.
-	//	this can be seen with the test from: https://github.com/metasfresh/metasfresh-e2e/issues/129
 	@Override
-	public List<I_C_Dunning> retrieveDunnings(@CacheCtx Properties ctx)
+	public List<I_C_Dunning> retrieveDunnings()
 	{
-		final IQueryBL iQueryBL = Services.get(IQueryBL.class);
-		return iQueryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilderOutOfTrx(I_C_Dunning.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
+				// no need to filter by AD_Client, because C_Dunning doesn't support AD_Cient_ID=0 records
 				.create()
 				.list();
 	}
