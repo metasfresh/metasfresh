@@ -60,23 +60,12 @@ public interface IMailBL extends ISingletonService
 	EMail createEMail(
 			I_AD_Client client,
 			EMailCustomType mailCustomType,
-			EMailAddress to,
-			String subject,
-			String message,
-			boolean html);
-
-	EMail createEMail(
-			I_AD_Client client,
-			EMailCustomType mailCustomType,
 			I_AD_User from,
 			EMailAddress to,
 			String subject,
 			String message,
 			boolean html);
 
-	/**
-	 * @param html see the javadoc in {@link EMail}
-	 */
 	EMail createEMail(
 			Mailbox mailbox,
 			EMailAddress to,

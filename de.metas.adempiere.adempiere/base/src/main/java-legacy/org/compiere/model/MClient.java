@@ -792,23 +792,6 @@ public class MClient extends X_AD_Client
 	}	//	createEMail
 
 	/**
-	 * Create EMail from User.
-	 * 
-	 * @param from optional sender
-	 * @param to recipient
-	 * @param subject subject
-	 * @param message message
-	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
-	 */
-	@Deprecated
-	public EMail createEMail (I_AD_User from, EMailAddress to, String subject, String message)
-	{
-		final boolean html = false;
-		return createEMail(from, to, subject, message, html);
-	}
-
-	/**
 	 * Create EMail from User
 	 * 
 	 * @param from optional sender

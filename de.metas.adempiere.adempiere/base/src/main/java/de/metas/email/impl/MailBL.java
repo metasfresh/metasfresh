@@ -58,19 +58,6 @@ public class MailBL implements IMailBL
 	public EMail createEMail(
 			final I_AD_Client client,
 			final EMailCustomType mailCustomType,
-			final EMailAddress to,
-			final String subject,
-			final String message,
-			final boolean html)
-	{
-		final I_AD_User from = null;
-		return createEMail(client, mailCustomType, from, to, subject, message, html);
-	}
-
-	@Override
-	public EMail createEMail(
-			final I_AD_Client client,
-			final EMailCustomType mailCustomType,
 			final I_AD_User from,
 			final EMailAddress to,
 			final String subject,
@@ -81,7 +68,7 @@ public class MailBL implements IMailBL
 				client,
 				ProcessExecutor.getCurrentOrgId(),
 				ProcessExecutor.getCurrentProcessIdOrNull(),
-				(DocBaseAndSubType)null, // C_DocType - Task FRESH-203 : This shall work as before
+				(DocBaseAndSubType)null,
 				mailCustomType,
 				from);
 		return createEMail(mailbox, to, subject, message, html);
