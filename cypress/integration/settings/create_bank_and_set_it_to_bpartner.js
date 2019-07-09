@@ -16,9 +16,8 @@ describe('Create Bank', function() {
     });
   });
 
+  let bpartnerID = null;
   it('Create customer', function() {
-    let bpartnerID = null;
-
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       const bpartner = new BPartner({ ...customerJson, name: customer1Name })
         .setCustomer(true)
@@ -28,9 +27,19 @@ describe('Create Bank', function() {
 
       bpartner.apply().then(bpartner => {
         bpartnerID = bpartner.id;
-
-        cy.visitWindow('123', bpartnerID);
       });
     });
+  });
+
+  it('Verfify customer has bank', function() {
+    cy.visitWindow('123', bpartnerID);
+
+    cy.selectTab('C_BP_BankAccount')
+      .selectSingleTabRow()
+      .openAdvancedEdit()
+      .getStringFieldValue('C_Bank_ID', true)
+      .then(bankNameFieldvalue => {
+        expect(bankNameFieldvalue).to.eq(`${bankName}_${BLZ}`);
+      });
   });
 });
