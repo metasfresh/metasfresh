@@ -1,5 +1,6 @@
 package de.metas.paypalplus;
 
+import de.metas.email.templates.MailTemplateId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -10,12 +11,10 @@ import lombok.Value;
 @ToString(exclude = { "clientSecret" })
 public class PayPalConfig
 {
-	@NonNull
 	String clientId;
-	@NonNull
 	String clientSecret;
 
-	@NonNull
+	MailTemplateId orderApproveMailTemplateId;
 	String orderApproveCallbackUrl;
 
 	boolean sandbox;
@@ -26,6 +25,7 @@ public class PayPalConfig
 	private PayPalConfig(
 			@NonNull final String clientId,
 			@NonNull final String clientSecret,
+			@NonNull final MailTemplateId orderApproveMailTemplateId,
 			@NonNull final String orderApproveCallbackUrl,
 			final boolean sandbox,
 			final String baseUrl,
@@ -33,6 +33,8 @@ public class PayPalConfig
 	{
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
+
+		this.orderApproveMailTemplateId = orderApproveMailTemplateId;
 		this.orderApproveCallbackUrl = orderApproveCallbackUrl;
 
 		if (sandbox)

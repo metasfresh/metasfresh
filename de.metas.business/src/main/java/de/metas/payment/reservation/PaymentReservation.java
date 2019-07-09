@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.OrgId;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
@@ -47,6 +48,11 @@ public class PaymentReservation
 
 	@NonNull
 	Money amount;
+
+	@NonNull
+	BPartnerContactId payerContactId;
+	@NonNull
+	String payerEmail;
 
 	@NonNull
 	OrderId salesOrderId;

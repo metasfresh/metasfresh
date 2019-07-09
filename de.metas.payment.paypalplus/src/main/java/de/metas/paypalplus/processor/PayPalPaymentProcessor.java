@@ -20,6 +20,9 @@ import com.paypal.orders.OrderRequest;
 import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.IMailBL;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.money.CurrencyRepository;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessor;
@@ -28,6 +31,7 @@ import de.metas.paypalplus.PayPalConfig;
 import de.metas.paypalplus.controller.PayPalConfigProvider;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
+import de.metas.util.Services;
 import de.metas.paypalplus.logs.PayPalLogRepository;
 import lombok.NonNull;
 
@@ -98,13 +102,17 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	@Override
 	public void processReservation(@NonNull final PaymentReservation reservation)
 	{
+		final PayPalConfig config = getConfig();
+		
 		//
 		// Create Order
 		{
-			final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, getConfig());
+			final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, config);
 			final HttpResponse<Order> response = executeRequest(ordersCreateRequest);
 
 			final URL approveUrl = extractApproveUrl(response.result());
+			final MailTextBuilder mailTextBuilder = Services.get(IMailBL.class).newMailTextBuilder(config.getOrderApproveMailTemplateId());
+			mailTextBuilder.bpartner(bpartner)
 		}
 
 		// TODO Auto-generated method stub

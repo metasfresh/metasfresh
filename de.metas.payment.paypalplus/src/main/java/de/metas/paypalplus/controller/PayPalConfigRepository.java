@@ -64,6 +64,7 @@ public class PayPalConfigRepository implements PayPalConfigProvider
 		return PayPalConfig.builder()
 				.clientId(record.getPayPal_ClientId())
 				.clientSecret(record.getPayPal_ClientSecret())
+				// TODO: approval configs
 				.sandbox(record.isPayPal_Sandbox())
 				.baseUrl(record.getPayPal_BaseUrl())
 				.webUrl(record.getPayPal_WebUrl())
