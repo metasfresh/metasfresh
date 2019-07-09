@@ -30,8 +30,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_R_MailText;
 
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailTemplate;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 
@@ -113,9 +115,9 @@ public interface IMailBL extends ISingletonService
 	 */
 	boolean isConnectionError(Exception e);
 
-	IMailTextBuilder newMailTextBuilder(I_R_MailText mailText);
+	MailTextBuilder newMailTextBuilder(MailTemplate mailTemplate);
 
-	IMailTextBuilder newMailTextBuilder(Properties ctx, int R_MailText_ID);
+	MailTextBuilder newMailTextBuilder(MailTemplateId mailTemplateId);
 
 	void validateEmail(String email);
 }

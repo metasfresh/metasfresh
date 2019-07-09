@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
@@ -32,7 +33,8 @@ import org.compiere.util.DB;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -48,8 +50,8 @@ import de.metas.util.Services;
 public class SendMailText extends JavaProcess
 {
 	/** What to send			*/
-	private int				m_R_MailText_ID = -1;
-	private IMailTextBuilder mailTextBuilder;
+	private MailTemplateId mailTemplateId;
+	private MailTextBuilder mailTextBuilder;
 
 	/**	From (sender)			*/
 	private int				m_AD_User_ID = -1;
@@ -58,7 +60,7 @@ public class SendMailText extends JavaProcess
 	/**	From					*/
 	private I_AD_User		m_from = null;
 	/** Recipient List to prevent duplicate mails	*/
-	private ArrayList<Integer>	m_list = new ArrayList<Integer>();
+	private ArrayList<Integer>	m_list = new ArrayList<>();
 
 	
 	private int 			m_counter = 0;
@@ -80,21 +82,33 @@ public class SendMailText extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
-				;
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else if (name.equals("R_InterestArea_ID"))
-				m_R_InterestArea_ID = para[i].getParameterAsInt();
+			{
+				m_R_InterestArea_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("R_MailText_ID"))
-				m_R_MailText_ID = para[i].getParameterAsInt();
+			{
+				mailTemplateId = MailTemplateId.ofRepoId(element.getParameterAsInt());
+			}
 			else if (name.equals("C_BP_Group_ID"))
-				m_C_BP_Group_ID = para[i].getParameterAsInt();
+			{
+				m_C_BP_Group_ID = element.getParameterAsInt();
+			}
 			else if (name.equals("AD_User_ID"))
-				m_AD_User_ID = para[i].getParameterAsInt();
+			{
+				m_AD_User_ID = element.getParameterAsInt();
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	//	prepare
 
@@ -104,20 +118,22 @@ public class SendMailText extends JavaProcess
 	 *  @throws Exception
 	 */
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		log.info("R_MailText_ID=" + m_R_MailText_ID);
-		
 		//	Mail Text
 		final IMailBL mailBL = Services.get(IMailBL.class);
-		this.mailTextBuilder = mailBL.newMailTextBuilder(getCtx(), m_R_MailText_ID);
+		this.mailTextBuilder = mailBL.newMailTextBuilder(mailTemplateId);
 		
 		//	Client Info
 		m_client = MClient.get (getCtx());
 		if (m_client.getAD_Client_ID() == 0)
-			throw new Exception ("Not found @AD_Client_ID@");
+		{
+			throw new AdempiereException("@NotFound@ @AD_Client_ID@");
+		}
 		if (m_client.getSMTPHost() == null || m_client.getSMTPHost().length() == 0)
-			throw new Exception ("No SMTP Host found");
+		{
+			throw new AdempiereException ("No SMTP Host found");
+		}
 		//
 		if (m_AD_User_ID > 0)
 		{
@@ -127,9 +143,13 @@ public class SendMailText extends JavaProcess
 		long start = System.currentTimeMillis();
 		
 		if (m_R_InterestArea_ID > 0)
+		{
 			sendInterestArea();
+		}
 		if (m_C_BP_Group_ID > 0)
+		{
 			sendBPGroup();
+		}
 
 		return "@Created@=" + m_counter + ", @Errors@=" + m_errors + " - "
 			+ (System.currentTimeMillis()-start) + "ms";
@@ -161,7 +181,9 @@ public class SendMailText extends JavaProcess
 				}
 			}
 			if (wstores.length > 0)
+			{
 				unsubscribe += wstores[index].getWebContext(true);
+			}
 		}
 
 		//
@@ -182,11 +204,17 @@ public class SendMailText extends JavaProcess
 			{
 				Boolean ok = sendIndividualMail (rs.getString(1), rs.getInt(3), unsubscribe);
 				if (ok == null)
-					;
+				{
+					
+				}
 				else if (ok.booleanValue())
+				{
 					m_counter++;
+				}
 				else
+				{
 					m_errors++;
+				}
 			}
 			rs.close();
 			pstmt.close();
@@ -200,7 +228,9 @@ public class SendMailText extends JavaProcess
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 		}
 		catch (SQLException ex1)
 		{
@@ -232,11 +262,17 @@ public class SendMailText extends JavaProcess
 			{
 				Boolean ok = sendIndividualMail (rs.getString(1), rs.getInt(3), null);
 				if (ok == null)
-					;
+				{
+					
+				}
 				else if (ok.booleanValue())
+				{
 					m_counter++;
+				}
 				else
+				{
 					m_errors++;
+				}
 			}
 			rs.close();
 			pstmt.close();
@@ -250,7 +286,9 @@ public class SendMailText extends JavaProcess
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 		}
 		catch (SQLException ex1)
 		{
@@ -270,19 +308,25 @@ public class SendMailText extends JavaProcess
 		//	Prevent two email
 		Integer ii = new Integer (AD_User_ID);
 		if (m_list.contains(ii))
+		{
 			return null;
+		}
 		m_list.add(ii);
 		//
 		I_AD_User to = Services.get(IUserDAO.class).getById(AD_User_ID);
-		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
+		mailTextBuilder.bpartnerContact(to);		//	parse context
 		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe
 		if (unsubscribe != null)
+		{
 			message += unsubscribe;
+		}
 		//
 		EMail email = m_client.createEMail(m_from, to, mailTextBuilder.getMailHeader(), message);
 		if (mailTextBuilder.isHtml())
+		{
 			email.setMessageHTML(mailTextBuilder.getMailHeader(), message);
+		}
 		else
 		{
 			email.setSubject (mailTextBuilder.getMailHeader());
@@ -299,12 +343,21 @@ public class SendMailText extends JavaProcess
 
 		final EMailSentStatus emailSentStatus = email.send();
 		final boolean OK = emailSentStatus.isSentOK();
-		new MUserMail(getCtx(), m_R_MailText_ID, AD_User_ID, email, emailSentStatus).save();
+		new MUserMail(getCtx(),
+				mailTemplateId.getRepoId(), 
+				AD_User_ID, 
+				email, 
+				emailSentStatus)
+		.save();
 		//
 		if (OK)
+		{
 			log.debug(to.getEMail());
+		}
 		else
+		{
 			log.warn("FAILURE - " + to.getEMail());
+		}
 		addLog(0, null, null, (OK ? "@OK@" : "@ERROR@") + " - " + to.getEMail());
 		return new Boolean(OK);
 	}	//	sendIndividualMail
@@ -312,12 +365,18 @@ public class SendMailText extends JavaProcess
 	private static final void addDescription(final I_AD_User user, String description)
 	{
 		if (description == null || description.length() == 0)
+		{
 			return;
+		}
 		String descr = user.getDescription();
 		if (descr == null || descr.length() == 0)
+		{
 			user.setDescription(description);
+		}
 		else
+		{
 			user.setDescription(descr + " - " + description);
+		}
 	}	// addDescription
 
 

@@ -9,18 +9,17 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.email.EmailValidator;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_R_MailText;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -28,8 +27,11 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailDAO;
-import de.metas.email.IMailTextBuilder;
 import de.metas.email.Mailbox;
+import de.metas.email.templates.MailTemplate;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTemplateRepository;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutor;
@@ -267,20 +269,17 @@ public class MailBL implements IMailBL
 	}
 
 	@Override
-	public IMailTextBuilder newMailTextBuilder(final I_R_MailText mailText)
+	public MailTextBuilder newMailTextBuilder(@NonNull final MailTemplate mailTemplate)
 	{
-		return MailTextBuilder.of(mailText);
+		return MailTextBuilder.newInstance(mailTemplate);
 	}
 
 	@Override
-	public IMailTextBuilder newMailTextBuilder(final Properties ctx, final int R_MailText_ID)
+	public MailTextBuilder newMailTextBuilder(final MailTemplateId mailTemplateId)
 	{
-		final I_R_MailText mailTextDef = InterfaceWrapperHelper.create(ctx, R_MailText_ID, I_R_MailText.class, ITrx.TRXNAME_None);
-		if (mailTextDef == null)
-		{
-			throw new AdempiereException("@Notfound@ @R_MailText_ID@=" + R_MailText_ID);
-		}
-		return MailTextBuilder.of(mailTextDef);
+		final MailTemplateRepository mailTemplatesRepo = Adempiere.getBean(MailTemplateRepository.class);
+		final MailTemplate mailTemplate = mailTemplatesRepo.getById(mailTemplateId);
+		return newMailTextBuilder(mailTemplate);
 	}
 
 	@Override

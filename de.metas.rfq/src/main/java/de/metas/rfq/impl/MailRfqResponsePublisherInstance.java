@@ -15,7 +15,8 @@ import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
@@ -59,10 +60,10 @@ import de.metas.util.Services;
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 
-	public static enum RfQReportType
+	public enum RfQReportType
 	{
 		Invitation, InvitationWithoutQtyRequired, Won, Lost,
-	};
+	}
 
 	private MailRfqResponsePublisherInstance()
 	{
@@ -107,7 +108,7 @@ import de.metas.util.Services;
 		}
 
 		//
-		final IMailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
+		final MailTextBuilder mailTextBuilder = createMailTextBuilder(rfqResponse, rfqReportType);
 
 		//
 		final String subject = mailTextBuilder.getMailHeader();
@@ -167,7 +168,7 @@ import de.metas.util.Services;
 		final PublishingType publishingType = request.getPublishingType();
 		if (publishingType == PublishingType.Invitation)
 		{
-			if(rfqDAO.hasQtyRequiered(rfqResponse))
+			if (rfqDAO.hasQtyRequiered(rfqResponse))
 			{
 				return RfQReportType.Invitation;
 			}
@@ -219,35 +220,35 @@ import de.metas.util.Services;
 		}
 	}
 
-	private IMailTextBuilder createMailTextBuilder(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	private MailTextBuilder createMailTextBuilder(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
 	{
 		final I_C_RfQ_Topic rfqTopic = rfqResponse.getC_RfQ().getC_RfQ_Topic();
 
-		final IMailTextBuilder mailTextBuilder;
+		final MailTextBuilder mailTextBuilder;
 		if (rfqReportType == RfQReportType.Invitation)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Invitation_MailText());
+			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Invitation_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_InvitationWithoutQty_MailText());
+			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_InvitationWithoutQty_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Won)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Win_MailText());
+			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Win_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Lost)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(rfqTopic.getRfQ_Lost_MailText());
+			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Lost_MailText_ID()));
 		}
 		else
 		{
 			throw new AdempiereException("@Invalid@ @Type@: " + rfqReportType);
 		}
 
-		mailTextBuilder.setC_BPartner(rfqResponse.getC_BPartner());
-		mailTextBuilder.setAD_User(rfqResponse.getAD_User());
-		mailTextBuilder.setRecord(rfqResponse);
+		mailTextBuilder.bpartner(rfqResponse.getC_BPartner());
+		mailTextBuilder.bpartnerContact(rfqResponse.getAD_User());
+		mailTextBuilder.record(rfqResponse);
 		return mailTextBuilder;
 	}
 }

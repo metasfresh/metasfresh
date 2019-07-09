@@ -5,16 +5,21 @@ import java.util.Properties;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_R_MailText;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_StandardResponse;
 import org.compiere.model.MRequestType;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
 /*
@@ -51,25 +56,27 @@ public class R_Request
 	@CalloutMethod(columnNames = I_R_Request.COLUMNNAME_R_MailText_ID)
 	public void onR_MailText_ID(final I_R_Request request, final ICalloutField calloutField)
 	{
-		final int R_MailText_ID = request.getR_MailText_ID();
-		if (R_MailText_ID <= 0)
+		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoIdOrNull(request.getR_MailText_ID());
+		if (mailTemplateId == null)
 		{
 			return;
 		}
 
 		final Properties ctx = calloutField.getCtx();
-		final IMailTextBuilder mailTextBuilder = Services.get(IMailBL.class)
-				.newMailTextBuilder(InterfaceWrapperHelper.create(ctx, R_MailText_ID, I_R_MailText.class, ITrx.TRXNAME_None));
+		final MailTextBuilder mailTextBuilder = Services.get(IMailBL.class).newMailTextBuilder(mailTemplateId);
 
-		final int userId = request.getAD_User_ID();
-		if (userId > 0)
+		final UserId contactId = UserId.ofRepoIdOrNull(request.getAD_User_ID());
+		if (contactId != null)
 		{
-			mailTextBuilder.setAD_User(userId);
+			final I_AD_User contact = Services.get(IUserDAO.class).getById(contactId);
+			mailTextBuilder.bpartnerContact(contact);
 		}
-		final int bpartnerId = request.getC_BPartner_ID();
-		if (bpartnerId > 0)
+		
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(request.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			mailTextBuilder.setC_BPartner(bpartnerId);
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			mailTextBuilder.bpartner(bpartner);
 		}
 
 		String txt = mailTextBuilder.getMailText();

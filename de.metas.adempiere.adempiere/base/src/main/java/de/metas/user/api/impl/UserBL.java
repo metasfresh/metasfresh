@@ -14,13 +14,16 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -34,6 +37,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class UserBL implements IUserBL
@@ -107,13 +111,17 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
+		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(adClient.getPasswordReset_MailText_ID());
 		final IMailBL mailService = Services.get(IMailBL.class);
-		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
-		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
-		mailTextBuilder.setAD_User(user);
-		if (user.getC_BPartner_ID() > 0)
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
+		mailTextBuilder.customVariable("URL", passwordResetURL);
+		mailTextBuilder.bpartnerContact(user);
+		
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			mailTextBuilder.setC_BPartner(user.getC_BPartner());
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			mailTextBuilder.bpartner(bpartner);
 		}
 
 		final String subject = mailTextBuilder.getMailHeader();
@@ -373,7 +381,7 @@ public class UserBL implements IUserBL
 	{
 		final int bPartnerId = userRecord.getC_BPartner_ID();
 
-		final String languageStr = Util.coalesceSuppliers(
+		final String languageStr = CoalesceUtil.coalesceSuppliers(
 				() -> userRecord.getAD_Language(),
 				() -> bPartnerId > 0 ? userRecord.getC_BPartner().getAD_Language() : null,
 				() -> Env.getADLanguageOrBaseLanguage());
