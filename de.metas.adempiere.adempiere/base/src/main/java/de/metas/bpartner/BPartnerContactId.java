@@ -1,12 +1,11 @@
 package de.metas.bpartner;
 
-import lombok.NonNull;
-import lombok.Value;
-
 import javax.annotation.Nullable;
 
-import de.metas.util.Check;
+import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -33,41 +32,58 @@ import de.metas.util.lang.RepoIdAware;
 @Value
 public class BPartnerContactId implements RepoIdAware
 {
-	int repoId;
-
 	@NonNull
 	BPartnerId bpartnerId;
+	@NonNull
+	UserId userId;
 
 	public static BPartnerContactId ofRepoId(@NonNull final BPartnerId bpartnerId, final int contactId)
 	{
-		return new BPartnerContactId(bpartnerId, contactId);
+		return new BPartnerContactId(bpartnerId, UserId.ofRepoId(contactId));
 	}
 
 	public static BPartnerContactId ofRepoId(final int bpartnerId, final int contactId)
 	{
-		return new BPartnerContactId(BPartnerId.ofRepoId(bpartnerId), contactId);
+		return new BPartnerContactId(BPartnerId.ofRepoId(bpartnerId), UserId.ofRepoId(contactId));
 	}
 
 	public static BPartnerContactId ofRepoIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
-			@Nullable final Integer contactId)
+			@Nullable final Integer contactRepoId)
 	{
-		return contactId != null && contactId > 0 ? ofRepoId(bpartnerId, contactId) : null;
+		final UserId userId = contactRepoId != null ? UserId.ofRepoIdOrNull(contactRepoId) : null;
+		return userId != null ? new BPartnerContactId(bpartnerId, userId) : null;
 	}
 
 	public static BPartnerContactId ofRepoIdOrNull(
-			@Nullable final Integer bpartnerId,
-			@Nullable final Integer contactId)
+			@Nullable final Integer bpartnerRepoId,
+			@Nullable final Integer contactRepoId)
 	{
-		return bpartnerId != null && bpartnerId > 0 && contactId != null && contactId > 0
-				? ofRepoId(bpartnerId, contactId)
-				: null;
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(bpartnerRepoId);
+		if (bpartnerId == null)
+		{
+			return null;
+		}
+
+		final UserId contactId = contactRepoId != null ? UserId.ofRepoIdOrNull(contactRepoId) : null;
+		if (contactId == null)
+		{
+			return null;
+		}
+
+		return new BPartnerContactId(bpartnerId, contactId);
 	}
 
-	private BPartnerContactId(@NonNull final BPartnerId bpartnerId, final int contactId)
+	private BPartnerContactId(@NonNull final BPartnerId bpartnerId, @NonNull final UserId userId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(contactId, "contactId");
 		this.bpartnerId = bpartnerId;
+		this.userId = userId;
+	}
+
+	@Override
+	public int getRepoId()
+	{
+		return userId.getRepoId();
 	}
 
 	public static int toRepoId(final BPartnerContactId id)
