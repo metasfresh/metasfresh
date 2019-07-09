@@ -33,7 +33,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.letters.model.MADBoilerPlate;
@@ -95,15 +97,13 @@ public class MailRestController
 
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	@Autowired
 	private UserSession userSession;
-
 	@Autowired
 	private WebuiMailRepository mailRepo;
-
 	@Autowired
 	private WebuiMailAttachmentsRepository mailAttachmentsRepo;
-
 	@Autowired
 	private DocumentCollection documentCollection;
 
@@ -199,14 +199,14 @@ public class MailRestController
 		//
 		// Create the email object
 		final I_AD_Client adClient = Services.get(IClientDAO.class).getById(userSession.getClientId());
-		final String mailCustomType = null;
+		final EMailCustomType mailCustomType = null;
 		final I_AD_User from = Services.get(IUserDAO.class).getById(webuiEmail.getFrom().getIdAsInt());
-		final List<String> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
+		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
 			throw new FillMandatoryException("To");
 		}
-		final String to = toList.get(0);
+		final EMailAddress to = toList.get(0);
 		final String subject = webuiEmail.getSubject();
 		final String message = webuiEmail.getMessage();
 		final boolean html = false;
@@ -237,30 +237,31 @@ public class MailRestController
 		return webuiEmail.toBuilder().sent(true).build();
 	}
 
-	private static final Stream<String> extractEMailAddreses(final LookupValuesList users)
+	private final Stream<EMailAddress> extractEMailAddreses(final LookupValuesList users)
 	{
-		final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 		return users.stream()
-				.map(userLookupValue -> {
-					final int adUserId = userLookupValue.getIdAsInt();
-					if (adUserId < 0)
-					{
-						// consider the email as the DisplayName
-						return userLookupValue.getDisplayName();
-					}
-					else
-					{
-						final I_AD_User adUser = userDAO.getById(adUserId);
-						final String email = adUser.getEMail();
-						if (Check.isEmpty(email, true))
-						{
-							throw new AdempiereException("User " + adUser.getName() + " does not have email");
-						}
-						return email;
-					}
-				})
-				.flatMap(emails -> EMail.toEMailsList(emails).stream());
+				.map(userLookupValue -> extractEMailAddress(userLookupValue));
+	}
+
+	private EMailAddress extractEMailAddress(final LookupValue userLookupValue)
+	{
+		final UserId adUserId = userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		if (adUserId == null)
+		{
+			// consider the email as the DisplayName
+			return EMailAddress.ofString(userLookupValue.getDisplayName());
+		}
+		else
+		{
+			final I_AD_User adUser = userDAO.getById(adUserId);
+			final String email = adUser.getEMail();
+			if (Check.isEmpty(email, true))
+			{
+				throw new AdempiereException("User " + adUser.getName() + " does not have email");
+			}
+			return EMailAddress.ofString(email);
+		}
 	}
 
 	@PatchMapping("/{emailId}")
