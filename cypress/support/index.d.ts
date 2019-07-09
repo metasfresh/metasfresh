@@ -342,5 +342,24 @@ declare namespace Cypress {
      * @param forced - use force clicking or normal clicking
      */
     clickElementWithClass(selector, forced): Chainable<any>
+
+
+    /*
+     * This command allows waiting for the breadcrumb in the header to be visible, which
+     * helps make the tests less flaky as even though the page fires load event, some
+     * requests may still be pending/running.
+     *
+     * Command accepts two params:
+     * - pageName : if we explicitly want to define what to wait for
+     * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+     *                  the given index
+     * In case pageName is not defined, command will fall back to broadcrembNr and either
+     * use the provided value or the value at index 0.
+     *
+     * [@TheBestPessimist]: i have no idea how to use this.
+     */
+    waitForHeader(pageName, breadcrumbNr):Chainable<any>
+
+
   }
 }
