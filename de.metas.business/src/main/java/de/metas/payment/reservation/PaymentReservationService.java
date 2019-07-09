@@ -56,7 +56,7 @@ public class PaymentReservationService
 
 	public Optional<PaymentReservation> getSalesOrderReservation(@NonNull final OrderId salesOrderId)
 	{
-		return reservationsRepo.getBySalesOrderId(salesOrderId);
+		return reservationsRepo.getBySalesOrderIdNotVoided(salesOrderId);
 	}
 
 	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)

@@ -1,21 +1,5 @@
 package de.metas.payment.reservation;
 
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.OrgId;
-
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.payment.PaymentRule;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.Value;
-import lombok.experimental.NonFinal;
-
 /*
  * #%L
  * de.metas.business
@@ -38,30 +22,15 @@ import lombok.experimental.NonFinal;
  * #L%
  */
 
-@Value
-@Builder
-public class PaymentReservation
+public enum PaymentReservationStatus
 {
-	@NonNull
-	OrgId orgId;
+	WAITING_PAYER_APPROVAL, //
+	APPROVED, //
+	VOIDED //
+	;
 
-	@NonNull
-	Money amount;
-
-	@NonNull
-	OrderId salesOrderId;
-
-	@NonNull
-	LocalDate dateTrx;
-
-	@NonNull
-	PaymentRule paymentRule;
-
-	@NonNull
-	PaymentReservationStatus status;
-
-	@Nullable
-	@NonFinal
-	@Setter(AccessLevel.PACKAGE)
-	PaymentReservationId id;
+	public boolean isVoided()
+	{
+		return this == VOIDED;
+	}
 }

@@ -1,20 +1,4 @@
-package de.metas.payment.reservation;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.OrgId;
-
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.payment.PaymentRule;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.Value;
-import lombok.experimental.NonFinal;
+package de.metas.order.payment_reservation;
 
 /*
  * #%L
@@ -38,30 +22,15 @@ import lombok.experimental.NonFinal;
  * #L%
  */
 
-@Value
-@Builder
-public class PaymentReservation
+public enum OrderPaymentReservationCreateResult
 {
-	@NonNull
-	OrgId orgId;
+	NOT_NEEDED, //
+	WAITING_FOR_APPROVAL, //
+	ALREADY_APPROVED //
+	;
 
-	@NonNull
-	Money amount;
-
-	@NonNull
-	OrderId salesOrderId;
-
-	@NonNull
-	LocalDate dateTrx;
-
-	@NonNull
-	PaymentRule paymentRule;
-
-	@NonNull
-	PaymentReservationStatus status;
-
-	@Nullable
-	@NonFinal
-	@Setter(AccessLevel.PACKAGE)
-	PaymentReservationId id;
+	public boolean isWaitingForApproval()
+	{
+		return this == WAITING_FOR_APPROVAL;
+	}
 }

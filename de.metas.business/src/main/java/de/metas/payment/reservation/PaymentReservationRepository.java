@@ -46,11 +46,12 @@ import lombok.NonNull;
 @Repository
 public class PaymentReservationRepository
 {
-	public Optional<PaymentReservation> getBySalesOrderId(final OrderId salesOrderId)
+	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(final OrderId salesOrderId)
 	{
 		final I_C_Payment_Reservation record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment_Reservation.class)
 				.addEqualsFilter(I_C_Payment_Reservation.COLUMN_C_Order_ID, salesOrderId)
+				// .addNotEqualsFilter(I_C_Payment_Reservation.COLUMN_Status, PaymentReservationStatus.VOIDED) // TODO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_C_Payment_Reservation.class);

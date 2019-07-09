@@ -62,19 +62,16 @@ import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
+import de.metas.order.payment_reservation.OrderPaymentReservationCreateResult;
+import de.metas.order.payment_reservation.OrderPaymentReservationService;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.reservation.PaymentReservation;
-import de.metas.payment.reservation.PaymentReservationCreateRequest;
-import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -1737,37 +1734,15 @@ public class MOrder extends X_C_Order implements IDocument
 		// Payment Reservation
 		if (isSOTrx())
 		{
-			final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-			final PaymentReservationService paymentReservationService = Adempiere.getBean(PaymentReservationService.class);
-			if (paymentReservationService.isPaymentReservationRequired(paymentRule))
-			{
-				final OrderId salesOrderId = OrderId.ofRepoId(getC_Order_ID());
-				final PaymentReservation existingPaymentReservation = paymentReservationService
-						.getSalesOrderReservation(salesOrderId)
-						.orElse(null);
-
-				if (existingPaymentReservation == null)
-				{
-					paymentReservationService
-							.create(PaymentReservationCreateRequest.builder()
-									.orgId(OrgId.ofRepoId(getAD_Org_ID()))
-									.amount(Money.of(getGrandTotal(), CurrencyId.ofRepoId(getC_Currency_ID())))
-									.salesOrderId(salesOrderId)
-									.dateTrx(SystemTime.asLocalDate())
-									.paymentRule(paymentRule)
-									.build());
-
-					return true; // wait for payment (i.e. the reservation to be approved by payer)
-				}
-				else
-				{
-					final boolean waitForPayment = !existingPaymentReservation.isApprovedByPayer();
-					return waitForPayment;
-				}
-			}
+			final OrderPaymentReservationService orderPaymentReservationService = Adempiere.getBean(OrderPaymentReservationService.class);
+			final OrderPaymentReservationCreateResult result = orderPaymentReservationService.createPaymentReservationIfNeeded(this);
+			final boolean waitForPayment = result.isWaitingForApproval();
+			return waitForPayment;
 		}
-
-		return false; // don't wait for payment
+		else
+		{
+			return false; // don't wait for payment
+		}
 	}
 
 	/**
