@@ -196,7 +196,7 @@ public class PriceAndDiscount
 		return updatePriceActual();
 	}
 
-	private static Percent calculateDiscountFromPrices(
+	public static Percent calculateDiscountFromPrices(
 			final BigDecimal priceEntered,
 			final BigDecimal priceActual,
 			final CurrencyPrecision precision)
