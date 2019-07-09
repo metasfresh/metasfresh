@@ -1,13 +1,10 @@
 package de.metas.email;
 
-import org.adempiere.service.ClientId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,22 +51,22 @@ public final class Mailbox
 	private final String smtpHost;
 	@JsonProperty("smtpPort")
 	private final int smtpPort;
+
 	@JsonProperty("email")
 	private final EMailAddress email;
+
 	@JsonProperty("username")
 	private final String username;
 	@JsonProperty("password")
 	private final String password;
 	@JsonProperty("smtpAuthorization")
 	private final boolean smtpAuthorization;
+
 	@JsonProperty("startTLS")
 	private final boolean startTLS;
+
 	@JsonProperty("sendFromServer")
 	private final boolean sendFromServer;
-	@JsonProperty("adClientId")
-	private final ClientId adClientId;
-	@JsonProperty("adUserId")
-	private final UserId adUserId;
 	@JsonProperty("columnUserTo")
 	private final String columnUserTo;
 
@@ -84,8 +81,6 @@ public final class Mailbox
 			@JsonProperty("smtpAuthorization") final boolean smtpAuthorization,
 			@JsonProperty("startTLS") final boolean startTLS,
 			@JsonProperty("sendFromServer") final boolean sendFromServer,
-			@JsonProperty("adClientId") final ClientId adClientId,
-			@JsonProperty("adUserId") final UserId adUserId,
 			@JsonProperty("columnUserTo") final String columnUserTo)
 	{
 		Check.assumeNotEmpty(smtpHost, "smtpHost is not empty");
@@ -110,9 +105,7 @@ public final class Mailbox
 		this.startTLS = startTLS;
 
 		this.sendFromServer = sendFromServer;
-		this.adClientId = adClientId;
-		this.adUserId = adUserId;
-		this.columnUserTo = columnUserTo;
+		this.columnUserTo = !Check.isEmpty(columnUserTo, true) ? columnUserTo.trim() : null;
 	}
 
 	private static int getDefaultSMTPPort(final boolean startTLS)

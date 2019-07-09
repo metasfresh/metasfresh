@@ -39,7 +39,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -83,7 +82,6 @@ public class MailBL implements IMailBL
 				.email(EMailAddress.ofNullableString(user.getEMail()))
 				.username(user.getEMailUser())
 				.password(user.getEMailUserPW())
-				.adUserId(UserId.ofRepoId(user.getAD_User_ID()))
 				.build();
 	}
 
@@ -117,8 +115,6 @@ public class MailBL implements IMailBL
 						.password(adMailbox.getPassword())
 						.smtpAuthorization(adMailbox.isSmtpAuthorization())
 						.sendFromServer(client.isServerEMail())
-						.adClientId(clientId)
-						.adUserId(null)
 						.columnUserTo(config.getColumnUserTo())
 						.build();
 
@@ -151,9 +147,6 @@ public class MailBL implements IMailBL
 				.password(client.getRequestUserPW())
 				.smtpAuthorization(client.isSmtpAuthorization())
 				.sendFromServer(client.isServerEMail())
-				.adClientId(ClientId.ofRepoId(client.getAD_Client_ID()))
-				.adUserId(null)
-				.columnUserTo(null)
 				.build();
 		log.debug("Fallback to AD_Client settings: {}", mailbox);
 		return mailbox;

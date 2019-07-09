@@ -3,7 +3,6 @@ package de.metas.email;
 import java.net.URI;
 import java.util.Random;
 
-import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,8 +10,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import de.metas.user.UserId;
 
 /*
  * #%L
@@ -84,8 +81,6 @@ public class EMailJsonTest
 				.username("username")
 				.password("password111")
 				.sendFromServer(true)
-				.adClientId(ClientId.ofRepoId(1234))
-				.adUserId(UserId.ofRepoId(5678))
 				.columnUserTo("columnUserTo")
 				.build();
 		testJsonToStringEquals(mailbox);
@@ -101,8 +96,6 @@ public class EMailJsonTest
 				.username("username")
 				.password("password111")
 				.sendFromServer(true)
-				.adClientId(ClientId.ofRepoId(1234))
-				.adUserId(UserId.ofRepoId(5678))
 				.columnUserTo("columnUserTo")
 				.build();
 		final EMailAddress to = EMailAddress.ofString("to@email.com");
