@@ -34,6 +34,52 @@ export class Warehouse {
   }
 }
 
+export  class WarehouseLocator {
+  setX(x) {
+    cy.log(`WarehouseLocator - set x= ${x}`);
+    this.x = x;
+    return this;
+  }
+
+  setX1(x1) {
+    cy.log(`WarehouseLocator - set x1= ${x1}`);
+    this.x1 = x1;
+    return this;
+  }
+
+  setY(y) {
+    cy.log(`WarehouseLocator - set y= ${y}`);
+    this.y = y;
+    return this;
+  }
+
+  setZ(z) {
+    cy.log(`WarehouseLocator - set z= ${z}`);
+    this.z = z;
+    return this;
+  }
+
+  setValue(value) {
+    cy.log(`WarehouseLocator - set value= ${value}`);
+    this.value = value;
+    return this;
+  }
+  setIsAfterPickingLocator(isAfterPickingLocator) {
+    cy.log(`WarehouseLocator - set isAfterPickingLocator= ${isAfterPickingLocator}`);
+    this.isAfterPickingLocator = isAfterPickingLocator;
+    return this;
+  }
+}
+
+export class WarehouseRoute {
+  setDocBaseType(docBaseType) {
+    cy.log(`WarehouseRoute - set docBaseType= ${docBaseType}`);
+    this.docBaseType = docBaseType;
+    return this;
+  }
+}
+
+
 function applyWarehouse(Warehouse) {
   cy.visitWindow('139', 'NEW')
     .writeIntoStringField('Name', Warehouse.name)
@@ -64,6 +110,6 @@ function applyLocator(locator) {
 function applyRoutes(routes) {
   cy.get(`#tab_M_Warehouse_Routing`).click();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true) // note: the way it's implemented now, there's no de_DE support!
     .pressDoneButton();
 }
