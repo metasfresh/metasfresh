@@ -1,3 +1,5 @@
+import {RewriteURL} from "./constants";
+
 export class Warehouse {
   constructor(name) {
     cy.log(`Create Warehouse - name = ${name}`);
@@ -50,12 +52,12 @@ function applyLocator(locator) {
   cy.get(`#tab_M_Locator`).click();
   cy.pressAddNewButton()
     .clearField('Value', true)
-    .writeIntoStringField('Value', locator.value, true)
-    .writeIntoStringField('X', locator.x1, true)
-    .writeIntoStringField('X1', locator.x1, true)
-    .writeIntoStringField('Z', locator.z, true)
-    .writeIntoStringField('Y', locator.y, true)
-    .setCheckBoxValue('IsAfterPickingLocator', locator.isAfterPickingLocator, true)
+    .writeIntoStringField('Value', locator.value, true, null, true)
+    .writeIntoStringField('X', locator.x1, true, null, true)
+    .writeIntoStringField('X1', locator.x1, true, null, true)
+    .writeIntoStringField('Z', locator.z, true, null, true)
+    .writeIntoStringField('Y', locator.y, true, null, true)
+    .setCheckBoxValue('IsAfterPickingLocator', locator.isAfterPickingLocator, true, RewriteURL.PROCESS)
     .pressDoneButton();
 }
 
