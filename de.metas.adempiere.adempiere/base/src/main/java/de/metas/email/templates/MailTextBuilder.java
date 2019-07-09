@@ -161,7 +161,7 @@ public final class MailTextBuilder
 		String textParsed = text;
 		textParsed = parseTextUsingContext(textParsed, getRecord()); // first parse the record values
 		textParsed = parseTextUsingContext(textParsed, getBPartnerContact());
-		textParsed = parseTextUsingContext(textParsed, getC_BPartner());
+		textParsed = parseTextUsingContext(textParsed, getBPartner());
 		_text2parsedText.put(text, textParsed); // cache it
 		//
 		return textParsed;
@@ -245,6 +245,12 @@ public final class MailTextBuilder
 		return this;
 	}
 
+	public MailTextBuilder bpartnerContact(final UserId bpartnerContactId)
+	{
+		final I_AD_User bpartnerContact = bpartnerContactsRepo.getById(bpartnerContactId);
+		return bpartnerContact(bpartnerContact);
+	}
+
 	private I_AD_User getBPartnerContact()
 	{
 		return _bpartnerContact;
@@ -257,7 +263,13 @@ public final class MailTextBuilder
 		return this;
 	}
 
-	private I_C_BPartner getC_BPartner()
+	public MailTextBuilder bpartner(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		return bpartner(bpartner);
+	}
+
+	private I_C_BPartner getBPartner()
 	{
 		return _bpartner;
 	}
@@ -293,7 +305,7 @@ public final class MailTextBuilder
 
 		//
 		// BPartner Language
-		final I_C_BPartner bpartner = getC_BPartner();
+		final I_C_BPartner bpartner = getBPartner();
 		if (bpartner != null)
 		{
 			final String bpAdLanguage = bpartner.getAD_Language();
@@ -347,15 +359,13 @@ public final class MailTextBuilder
 		final BPartnerId bpartnerId = extractBPartnerId(record);
 		if (bpartnerId != null)
 		{
-			final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
-			bpartner(bpartner);
+			bpartner(bpartnerId);
 		}
 
-		final UserId contactId = extractContactId(record);
-		if (contactId != null)
+		final UserId bpartnerContactId = extractBPartnerContactId(record);
+		if (bpartnerContactId != null)
 		{
-			final I_AD_User contact = bpartnerContactsRepo.getById(contactId);
-			bpartnerContact(contact);
+			bpartnerContact(bpartnerContactId);
 		}
 	}
 
@@ -371,7 +381,7 @@ public final class MailTextBuilder
 		return BPartnerId.ofRepoIdOrNull(bpartnerRepoId);
 	}
 
-	private UserId extractContactId(final Object record)
+	private UserId extractBPartnerContactId(final Object record)
 	{
 		final Integer userIdObj = InterfaceWrapperHelper.getValueOrNull(record, "AD_User_ID");
 		if (!(userIdObj instanceof Integer))
