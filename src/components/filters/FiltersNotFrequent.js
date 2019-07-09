@@ -24,6 +24,7 @@ class FiltersNotFrequent extends Component {
     if (target.classList && target.classList.contains('input-dropdown-list')) {
       return;
     }
+
     if (allowOutsideClick && !widgetShown) {
       dropdownToggled();
       this.toggleDropdown(false);
@@ -56,7 +57,6 @@ class FiltersNotFrequent extends Component {
       modalVisible,
       activeFiltersCaptions,
       resetInitialValues,
-      error,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -73,6 +73,7 @@ class FiltersNotFrequent extends Component {
       buttonCaption = captions[0];
       panelCaption = captions[1];
     }
+
     return (
       <div className="filter-wrapper filters-not-frequent">
         <button
@@ -134,12 +135,8 @@ class FiltersNotFrequent extends Component {
                 }}
                 captionValue={activeFilter.captionValue}
                 data={activeFilter.isActive ? activeFilter : openFilter}
-                closeFilterMenu={() =>
-                  error ? this.toggleDropdown(false) : null
-                }
-                returnBackToDropdown={() =>
-                  error ? this.toggleFilter(null) : null
-                }
+                closeFilterMenu={() => this.toggleDropdown(false)}
+                returnBackToDropdown={() => this.toggleFilter(null)}
                 notValidFields={notValidFields}
                 isActive={activeFilter.isActive}
                 onShow={() => handleShow(true)}
@@ -161,17 +158,6 @@ FiltersNotFrequent.propTypes = {
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
-  widgetShown: PropTypes.bool,
-  dropdownToggled: PropTypes.func,
-  data: PropTypes.array,
-  windowType: PropTypes.string,
-  notValidFields: PropTypes.bool,
-  viewId: PropTypes.string,
-  handleShow: PropTypes.func,
-  applyFilters: PropTypes.func,
-  clearFilters: PropTypes.func,
-  active: PropTypes.array,
-  error: PropTypes.bool,
 };
 
 const mapStateToProps = ({ windowHandler }) => {
