@@ -96,7 +96,7 @@ public class FreightCostService
 	 * @throws AdempiereException
 	 *             if there is no freight cost record for the given inOut
 	 */
-	public FreightCost retrieveFor(final FreightCostContext context)
+	public FreightCost findBestMatchingFreightCost(final FreightCostContext context)
 	{
 		final BPartnerId shipToBPartnerId = context.getShipToBPartnerId();
 		if (shipToBPartnerId == null)
