@@ -3,6 +3,8 @@
  */
 package de.metas.email.process;
 
+import org.adempiere.service.ClientId;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -40,6 +42,7 @@ import de.metas.email.Mailbox;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
@@ -64,11 +67,11 @@ public class EMailConfigTest extends JavaProcess
 	public static final String PARA_Message = "Message";
 	public static final String PARA_IsHtml = "IsHtml";
 
-	private int p_AD_Client_ID;
+	private ClientId p_AD_Client_ID;
 	private OrgId p_AD_Org_ID;
 	private AdProcessId p_AD_Process_ID;
 	private EMailCustomType p_CustomType;
-	private int p_From_User_ID;
+	private UserId p_From_User_ID;
 	private EMailAddress p_EMail_To;
 	private String p_Subject;
 	private String p_Message;
@@ -82,19 +85,19 @@ public class EMailConfigTest extends JavaProcess
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
 			{
-				
+
 			}
 			else if (name.equals(PARA_AD_Client_ID))
 			{
-				p_AD_Client_ID = para.getParameterAsInt();
+				p_AD_Client_ID = para.getParameterAsRepoId(ClientId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_AD_Org_ID))
 			{
-				p_AD_Org_ID = OrgId.ofRepoIdOrAny(para.getParameterAsInt());
+				p_AD_Org_ID = para.getParameterAsRepoId(OrgId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_AD_Process_ID))
 			{
-				p_AD_Process_ID = AdProcessId.ofRepoIdOrNull(para.getParameterAsInt());
+				p_AD_Process_ID = para.getParameterAsRepoId(AdProcessId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_CustomType))
 			{
@@ -102,7 +105,7 @@ public class EMailConfigTest extends JavaProcess
 			}
 			else if (name.equals(PARA_From_User_ID))
 			{
-				p_From_User_ID = para.getParameterAsInt();
+				p_From_User_ID = para.getParameterAsRepoId(UserId::ofRepoIdOrNull);
 			}
 			else if (name.equals(PARA_EMail_To))
 			{
@@ -136,15 +139,7 @@ public class EMailConfigTest extends JavaProcess
 
 	public I_AD_User getFrom_User()
 	{
-		if (p_From_User_ID > 0)
-		{
-
-			return userDAO.retrieveUserOrNull(getCtx(), p_From_User_ID);
-		}
-		else
-		{
-			return null;
-		}
+		return p_From_User_ID != null ? userDAO.getById(p_From_User_ID) : null;
 	}
 
 	private void testSend()
