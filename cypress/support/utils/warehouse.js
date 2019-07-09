@@ -66,16 +66,4 @@ function applyRoutes(routes) {
   cy.pressAddNewButton()
     .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
-  cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true)
-    .pressDoneButton();
-  cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true)
-    .pressDoneButton();
-  cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true)
-    .pressDoneButton();
-  cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true)
-    .pressDoneButton();
 }
