@@ -6,11 +6,11 @@ import java.util.Optional;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_DocType;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +24,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvid
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
 import de.metas.process.AdProcessId;
@@ -128,13 +129,12 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	{
 		try
 		{
-			final IMailBL mailBL = Services.get(IMailBL.class);
-
-			final I_AD_Client adClient = Services.get(IClientDAO.class).getById(docOutboundLogRecord.getAD_Client_ID());
+			final ClientEMailConfig tenantEmailConfig = extractTenantEmailConfig(docOutboundLogRecord);
 			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
 
-			final Mailbox mailbox = mailBL.findMailBox(
-					adClient,
+			final IMailBL mailService = Services.get(IMailBL.class);
+			final Mailbox mailbox = mailService.findMailBox(
+					tenantEmailConfig,
 					OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 					(AdProcessId)null, // don't filter by processID
 					docBaseAndSubType,
@@ -148,6 +148,13 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 			Loggables.get().addLog("DefaultDocOutboundLogMailRecipientProvider - Unable to find a mailbox; exception message: {}", e.getMessage());
 			return null;
 		}
+	}
+
+	private ClientEMailConfig extractTenantEmailConfig(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = Services.get(IClientDAO.class).getEMailConfigById(adClientId);
+		return tenantEmailConfig;
 	}
 
 	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)

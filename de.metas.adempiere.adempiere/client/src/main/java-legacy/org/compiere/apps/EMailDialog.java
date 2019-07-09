@@ -65,6 +65,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.letters.model.I_AD_BoilerPlate;
@@ -112,41 +113,30 @@ public class EMailDialog
 	 */
 	public EMailDialog(final Dialog owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
 			final File attachment)
 	{
 		super(owner, title, true);
-		commonInit(from, to, subject, message, attachment, null); // boilerPlate
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, null); // boilerPlate
 	}	// EmailDialog
 
-	/**
-	 * EMail Dialog
-	 *
-	 * @param owner calling window
-	 * @param title title
-	 * @param from from
-	 * @param to to
-	 * @param subject subject
-	 * @param message message
-	 * @param attachment optional attachment
-	 */
 	public EMailDialog(final Frame owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
 			final File attachment)
 	{
-		this(owner, title, from, to, subject, message, attachment, null, null); // textPreset, archive
+		this(owner, title, fromUserEmailConfig, to, subject, message, attachment, null, null); // textPreset, archive
 	}	// EmailDialog
 
-	public EMailDialog(final Frame owner,
+	private EMailDialog(final Frame owner,
 			final String title,
-			final I_AD_User from,
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
@@ -158,7 +148,7 @@ public class EMailDialog
 
 		this.archive = archive;
 
-		commonInit(from, to, subject, message, attachment, textPreset);
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
 	/**
@@ -170,7 +160,8 @@ public class EMailDialog
 	 * @param message message
 	 * @param attachment optional attachment
 	 */
-	private void commonInit(final I_AD_User from,
+	private void commonInit(
+			final UserEMailConfig fromUserEmailConfig,
 			final String to,
 			final String subject,
 			final String message,
@@ -203,7 +194,7 @@ public class EMailDialog
 		{
 			log.error("EMailDialog", ex);
 		}
-		set(from, to, subject, message);
+		set(fromUserEmailConfig, to, subject, message);
 		setAttachment(attachment);
 
 		// metas adding default bcc and text preset
@@ -217,7 +208,7 @@ public class EMailDialog
 	/** Client */
 	private MClient m_client = null;
 	/** Sender */
-	private I_AD_User m_from = null;
+	private UserEMailConfig fromUserEmailConfig = null;
 	/** Primary Recipient */
 	private I_AD_User m_user = null;
 	/** Cc Recipient */
@@ -375,10 +366,10 @@ public class EMailDialog
 	/**
 	 * Set all properties
 	 */
-	public void set(final I_AD_User from, final String to, final String subject, final String message)
+	private void set(final UserEMailConfig fromUserEmailConfig, final String to, final String subject, final String message)
 	{
 		// Content
-		setFrom(from);
+		setFrom(fromUserEmailConfig);
 		setTo(to);
 		setSubject(subject);
 		setMessage(message);
@@ -425,36 +416,36 @@ public class EMailDialog
 	/**
 	 * Set Sender
 	 */
-	public void setFrom(final I_AD_User newFrom)
+	private void setFrom(final UserEMailConfig fromUserEmailConfig)
 	{
-		m_from = newFrom;
+		this.fromUserEmailConfig = fromUserEmailConfig;
 
 		final IUserBL userBL = Services.get(IUserBL.class);
 
-		if (newFrom == null)
+		if (fromUserEmailConfig == null)
 		{
 			confirmPanel.getOKButton().setEnabled(false);
 			fFrom.setText("**No user**");
 		}
 
-		final ITranslatableString errmsg = userBL.checkCanSendEMail(newFrom);
+		final ITranslatableString errmsg = userBL.checkCanSendEMail(fromUserEmailConfig);
 		if (errmsg != null)
 		{
 			confirmPanel.getOKButton().setEnabled(false);
-			fFrom.setText("** " + errmsg.translate(Env.getAD_Language(Env.getCtx())) + " **");
+			fFrom.setText("** " + errmsg.translate(Env.getAD_Language()) + " **");
 		}
 		else
 		{
-			fFrom.setText(m_from.getEMail());
+			fFrom.setText(EMailAddress.toStringOrNull(fromUserEmailConfig.getEmail()));
 		}
 	}	// setFrom
 
 	/**
 	 * Get Sender
 	 */
-	public I_AD_User getFrom()
+	private UserEMailConfig getFromUserEMailConfig()
 	{
-		return m_from;
+		return fromUserEmailConfig;
 	}	// getFrom
 
 	/**
@@ -568,7 +559,12 @@ public class EMailDialog
 
 		final StringTokenizer st = new StringTokenizer(getTo(), " ,;", false);
 		final EMailAddress to = EMailAddress.ofString(st.nextToken());
-		email = m_client.createEMail(getFrom(), to, getSubject(), getMessage(), true);
+		email = m_client.createEMail(
+				getFromUserEMailConfig(), 
+				to, 
+				getSubject(), 
+				getMessage(), 
+				true);
 		String status = "Check Setup";
 		if (email != null)
 		{
@@ -678,7 +674,8 @@ public class EMailDialog
 	private final CLabel lLetter = new CLabel();
 	private final VLetterAttachment fLetter = new VLetterAttachment(this);
 
-	public EMailDialog(final Frame owner, final String title, final I_AD_User from,
+	public EMailDialog(final Frame owner, final String title, 
+			final UserEMailConfig fromUserEmailConfig,
 			final String to, final String subject, final String message,
 			final File attachment,
 			final MADBoilerPlate textPreset, final I_AD_Archive archive,
@@ -691,7 +688,7 @@ public class EMailDialog
 		// this.fMessage.setAttributes(attributes);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
-		commonInit(from, to, subject, message, attachment, textPreset);
+		commonInit(fromUserEmailConfig, to, subject, message, attachment, textPreset);
 	}	// EmailDialog
 
 	private void updateDocExchange(final String status)
@@ -712,11 +709,12 @@ public class EMailDialog
 			return;
 		}
 		final String action = "eMail";
+		final UserEMailConfig fromUserEMailConfig = getFromUserEMailConfig();
 		Services.get(IArchiveEventManager.class).fireEmailSent(
 				archive, 
 				action, 
-				getFrom(), 
-				EMailAddress.ofNullableString(getFrom().getEMailUser()), 
+				fromUserEMailConfig, 
+				fromUserEMailConfig != null ? fromUserEMailConfig.getEmail() : null, 
 				EMailAddress.ofNullableString(getTo()), 
 				EMailAddress.ofNullableString(getCc()), 
 				EMailAddress.ofNullableString(getBcc()), 

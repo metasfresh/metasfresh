@@ -30,6 +30,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.util.ISingletonService;
 
 public interface IClientDAO extends ISingletonService
@@ -65,4 +66,6 @@ public interface IClientDAO extends ISingletonService
 
 	/** @return client/tenant info for given AD_Client_ID; never returns null */
 	I_AD_ClientInfo retrieveClientInfo(Properties ctx, int adClientId);
+
+	ClientEMailConfig getEMailConfigById(ClientId clientId);
 }

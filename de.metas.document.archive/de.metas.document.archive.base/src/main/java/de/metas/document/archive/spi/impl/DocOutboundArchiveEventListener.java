@@ -36,6 +36,8 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -71,7 +73,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	public void onEmailSent(
 			@NonNull final I_AD_Archive archive,
 			final String action,
-			final I_AD_User user,
+			final UserEMailConfig user,
 			final EMailAddress from,
 			final EMailAddress to,
 			final EMailAddress cc,
@@ -90,7 +92,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
 		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
-		docExchangeLine.setAD_User(user);
+		docExchangeLine.setAD_User_ID(UserId.toRepoId(user.getUserId()));
 
 		save(docExchangeLine);
 

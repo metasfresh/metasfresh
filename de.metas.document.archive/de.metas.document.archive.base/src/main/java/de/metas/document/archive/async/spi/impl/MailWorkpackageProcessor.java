@@ -12,14 +12,13 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
@@ -41,7 +40,9 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
@@ -73,6 +74,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
 	private final transient BoilerPlateRepository boilerPlateRepository = Adempiere.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = Adempiere.getBean(DocOutBoundRecipientRepository.class);
@@ -146,17 +148,17 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID())
 				: ProcessExecutor.getCurrentProcessIdOrNull();
 
-		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
-
-		final I_AD_Client adClient = Services.get(IClientDAO.class).getById(docOutboundLogRecord.getAD_Client_ID());
+		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
 		final Mailbox mailbox = mailBL.findMailBox(
-				adClient,
+				tenantEmailConfig,
 				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 				processId,
 				docBaseAndSubType,
 				(EMailCustomType)null, // mailCustomType
-				userFrom);
+				(UserEMailConfig)null // no user - this mailbox is the AD_Client's mailbox
+		);
 
 		// note that we verified this earlier
 		final EMailAddress mailTo = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress());
@@ -203,7 +205,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			archiveEventManager.fireEmailSent(
 					archive,
 					X_C_Doc_Outbound_Log_Line.ACTION_EMail,
-					userFrom,
+					(UserEMailConfig)null,
 					from,
 					mailTo,
 					cc,
@@ -215,11 +217,11 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID());
-		if(docTypeId == null)
+		if (docTypeId == null)
 		{
 			return null;
 		}
-		
+
 		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}

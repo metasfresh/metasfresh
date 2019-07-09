@@ -13,8 +13,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.email.EmailValidator;
 import org.compiere.Adempiere;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -24,8 +22,10 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
@@ -49,28 +49,34 @@ public class MailBL implements IMailBL
 	}
 
 	@Override
-	public Mailbox findMailBox(final I_AD_Client client, final OrgId orgId, final AdProcessId adProcessId, final DocBaseAndSubType docBaseAndSubType, final EMailCustomType customType, final I_AD_User user)
+	public Mailbox findMailBox(
+			@NonNull final ClientEMailConfig clientEmailConfig,
+			@NonNull final OrgId orgId,
+			@Nullable final AdProcessId adProcessId,
+			@Nullable final DocBaseAndSubType docBaseAndSubType,
+			@Nullable final EMailCustomType customType,
+			@Nullable final UserEMailConfig userEmailConfig)
 	{
-		return mailboxRepository().findMailBox(client, orgId, adProcessId, docBaseAndSubType, customType, user);
+		return mailboxRepository().findMailBox(clientEmailConfig, orgId, adProcessId, docBaseAndSubType, customType, userEmailConfig);
 	}
 
 	@Override
 	public EMail createEMail(
-			final I_AD_Client client,
-			final EMailCustomType mailCustomType,
-			final I_AD_User from,
-			final EMailAddress to,
-			final String subject,
-			final String message,
+			@NonNull final ClientEMailConfig clientEmailConfig,
+			@Nullable final EMailCustomType mailCustomType,
+			@Nullable final UserEMailConfig userEmailConfig,
+			@Nullable final EMailAddress to,
+			@Nullable final String subject,
+			@Nullable final String message,
 			final boolean html)
 	{
 		final Mailbox mailbox = mailboxRepository().findMailBox(
-				client,
+				clientEmailConfig,
 				ProcessExecutor.getCurrentOrgId(),
 				ProcessExecutor.getCurrentProcessIdOrNull(),
 				(DocBaseAndSubType)null,
 				mailCustomType,
-				from);
+				userEmailConfig);
 		return createEMail(mailbox, to, subject, message, html);
 	}
 
@@ -78,8 +84,8 @@ public class MailBL implements IMailBL
 	public EMail createEMail(
 			@NonNull final Mailbox mailbox,
 			@NonNull final EMailAddress to,
-			final String subject,
-			final String message,
+			@Nullable final String subject,
+			@Nullable final String message,
 			final boolean html)
 	{
 		if (mailbox.getEmail() == null

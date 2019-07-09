@@ -10,10 +10,8 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_AD_User;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -59,12 +57,12 @@ public class MailboxRepository
 	 * @throws MailboxNotFoundException
 	 */
 	public Mailbox findMailBox(
-			@NonNull final I_AD_Client client,
-			final OrgId orgId,
+			@NonNull final ClientEMailConfig client,
+			@NonNull final OrgId orgId,
 			final AdProcessId adProcessId,
 			final DocBaseAndSubType docBaseAndSubType,
 			final EMailCustomType customType,
-			@Nullable final I_AD_User user)
+			@Nullable final UserEMailConfig user)
 	{
 		final Mailbox mailbox = findMailBox(
 				client,
@@ -82,14 +80,14 @@ public class MailboxRepository
 
 		// use smtpHost from AD_MailConfig, but user data from AD_User
 		return mailbox.toBuilder()
-				.email(EMailAddress.ofNullableString(user.getEMail()))
-				.username(user.getEMailUser())
-				.password(user.getEMailUserPW())
+				.email(user.getEmail())
+				.username(user.getUsername())
+				.password(user.getPassword())
 				.build();
 	}
 
 	private Mailbox findMailBox(
-			@NonNull final I_AD_Client client,
+			@NonNull final ClientEMailConfig client,
 			@NonNull final OrgId orgId,
 			@Nullable final AdProcessId adProcessId,
 			@Nullable final DocBaseAndSubType docBaseAndSubType,
@@ -99,7 +97,7 @@ public class MailboxRepository
 
 		//
 		// Check mail routings
-		final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
+		final ClientId clientId = client.getClientId();
 		final List<I_AD_MailConfig> mailRoutings = retrieveMailRoutings(clientId, adProcessId, docBaseAndSubType, customType);
 		for (final I_AD_MailConfig mailRouting : mailRoutings)
 		{
@@ -108,9 +106,9 @@ public class MailboxRepository
 			if (OrgId.equals(configOrgId, orgId) || configOrgId.isAny())
 			{
 				final I_AD_MailBox mailboxRecord = mailRouting.getAD_MailBox();
-				final boolean sendMailsFromServer = client.isServerEMail();
+				final boolean sendEmailsFromServer = client.isSendEmailsFromServer();
 				final String userToColumnName = mailRouting.getColumnUserTo();
-				final Mailbox mailbox = toMailbox(mailboxRecord, sendMailsFromServer, userToColumnName);
+				final Mailbox mailbox = toMailbox(mailboxRecord, sendEmailsFromServer, userToColumnName);
 
 				if (logger.isDebugEnabled())
 				{
@@ -147,28 +145,28 @@ public class MailboxRepository
 	}
 
 	@NonNull
-	private static Mailbox createClientMailbox(final I_AD_Client clientRecord)
+	private static Mailbox createClientMailbox(final ClientEMailConfig client)
 	{
-		final String smtpHost = clientRecord.getSMTPHost();
+		final String smtpHost = client.getSmtpHost();
 		if (Check.isEmpty(smtpHost, true))
 		{
 			final String messageString = StringUtils.formatMessage(
 					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
 							+ "AD_MailConfig search parameters: AD_Client_ID={}",
-					clientRecord);
+					client);
 
 			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
 		}
 
 		return Mailbox.builder()
 				.smtpHost(smtpHost)
-				.smtpPort(clientRecord.getSMTPPort())
-				.startTLS(clientRecord.isStartTLS())
-				.email(EMailAddress.ofNullableString(clientRecord.getRequestEMail()))
-				.username(clientRecord.getRequestUser())
-				.password(clientRecord.getRequestUserPW())
-				.smtpAuthorization(clientRecord.isSmtpAuthorization())
-				.sendFromServer(clientRecord.isServerEMail())
+				.smtpPort(client.getSmtpPort())
+				.startTLS(client.isStartTLS())
+				.email(client.getEmail())
+				.username(client.getUsername())
+				.password(client.getPassword())
+				.smtpAuthorization(client.isSmtpAuthorization())
+				.sendFromServer(client.isSendEmailsFromServer())
 				.build();
 	}
 

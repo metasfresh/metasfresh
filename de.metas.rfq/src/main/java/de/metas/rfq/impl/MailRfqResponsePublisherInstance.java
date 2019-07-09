@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -15,6 +17,8 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.rfq.IRfqDAO;
@@ -58,6 +62,7 @@ import de.metas.util.Services;
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
 	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
+	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
 	public enum RfQReportType
 	{
@@ -117,12 +122,15 @@ import de.metas.util.Services;
 		final I_AD_Archive pdfArchive = archiver.archive();
 		final byte[] pdfData = archiver.getPdfData();
 
+		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
+		
 		//
 		// Send it
 		final EMail email = mailBL.createEMail(
-				rfqResponse.getAD_Client(), //
+				tenantEmailConfig, //
 				(EMailCustomType)null, // mailCustomType
-				(I_AD_User)null, // from
+				(UserEMailConfig)null, // from
 				userToEmail, // to
 				subject, // subject
 				message,  // message
@@ -138,7 +146,7 @@ import de.metas.util.Services;
 			archiveEventManager.fireEmailSent(
 					pdfArchive, // archive
 					X_C_Doc_Outbound_Log_Line.ACTION_EMail, // action
-					(I_AD_User)null, // user
+					(UserEMailConfig)null, // user
 					from, // from
 					to, // to
 					(EMailAddress)null, // cc

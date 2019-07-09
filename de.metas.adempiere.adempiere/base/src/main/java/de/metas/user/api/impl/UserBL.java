@@ -9,7 +9,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
@@ -21,6 +20,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.ITranslatableString;
@@ -98,12 +99,12 @@ public class UserBL implements IUserBL
 
 		final IClientDAO adClientsRepo = Services.get(IClientDAO.class);
 		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
-		final I_AD_Client adClient = adClientsRepo.getById(adClientId);
+		final ClientEMailConfig tenantEmailConfig = adClientsRepo.getEMailConfigById(adClientId);
 
-		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoIdOrNull(adClient.getPasswordReset_MailText_ID());
+		final MailTemplateId mailTemplateId = tenantEmailConfig.getPasswordResetMailTemplateId().orElse(null);
 		if (mailTemplateId == null)
 		{
-			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@: {}, @AD_Client_ID@: {})", user, adClientId);
+			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@: {}, @AD_Client_ID@: {})", user, tenantEmailConfig);
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
@@ -126,7 +127,7 @@ public class UserBL implements IUserBL
 
 		final String subject = mailTextBuilder.getMailHeader();
 		final EMail email = mailService.createEMail(
-				adClient,
+				tenantEmailConfig,
 				MAILCONFIG_CUSTOMTYPE_UserPasswordReset, // mailCustomType
 				null, // from email
 				emailTo, // to
@@ -318,11 +319,11 @@ public class UserBL implements IUserBL
 	}	// isEMailValid
 
 	@Override
-	public ITranslatableString checkCanSendEMail(final I_AD_User user)
+	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
 	{
 		// Email
 		{
-			final ITranslatableString errmsg = EMailAddress.checkEMailValid(user.getEMail());
+			final ITranslatableString errmsg = EMailAddress.checkEMailValid(userEmailConfig.getEmail());
 			if (errmsg != null)
 			{
 				return errmsg;
@@ -330,17 +331,18 @@ public class UserBL implements IUserBL
 		}
 
 		// STMP user/password (if SMTP authorization is required)
-		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
+		final ClientEMailConfig clientEmailConfig = Services.get(IClientDAO.class).getEMailConfigById(Env.getClientId());
+		if (clientEmailConfig.isSmtpAuthorization())
 		{
 			// SMTP user
-			final String emailUser = user.getEMailUser();
+			final String emailUser = userEmailConfig.getUsername();
 			if (Check.isEmpty(emailUser, true))
 			{
 				return TranslatableStrings.constant("no STMP user configured");
 			}
 
 			// SMTP password
-			final String emailPassword = user.getEMailUserPW();
+			final String emailPassword = userEmailConfig.getPassword();
 			if (Check.isEmpty(emailPassword, false))
 			{
 				return TranslatableStrings.constant("STMP authorization is required but no STMP password configured");
@@ -353,8 +355,8 @@ public class UserBL implements IUserBL
 	@Override
 	public void assertCanSendEMail(@NonNull final UserId adUserId)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
-		final ITranslatableString errmsg = checkCanSendEMail(user);
+		final UserEMailConfig userEmailConfig = getEmailConfigById(adUserId);
+		final ITranslatableString errmsg = checkCanSendEMail(userEmailConfig);
 		if (errmsg != null)
 		{
 			throw new AdempiereException(TranslatableStrings.builder()
@@ -376,4 +378,22 @@ public class UserBL implements IUserBL
 
 		return Language.getLanguage(languageStr);
 	}
+
+	@Override
+	public UserEMailConfig getEmailConfigById(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = Services.get(IUserDAO.class).getById(userId);
+		return toUserEMailConfig(userRecord);
+	}
+
+	public static UserEMailConfig toUserEMailConfig(@NonNull final I_AD_User userRecord)
+	{
+		return UserEMailConfig.builder()
+				.userId(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.email(EMailAddress.ofNullableString(userRecord.getEMail()))
+				.username(userRecord.getEMailUser())
+				.password(userRecord.getEMailUserPW())
+				.build();
+	}
+
 }

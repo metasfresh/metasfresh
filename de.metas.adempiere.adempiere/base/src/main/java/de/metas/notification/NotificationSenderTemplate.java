@@ -19,7 +19,6 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
-import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -31,6 +30,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
@@ -436,15 +436,15 @@ public class NotificationSenderTemplate
 
 	private Mailbox findMailbox(@NonNull final UserNotificationsConfig notificationsConfig)
 	{
-		final I_AD_Client adClient = clientDAO.getById(notificationsConfig.getClientId());
+		final ClientEMailConfig tenantEmailConfig = clientDAO.getEMailConfigById(notificationsConfig.getClientId());
 		final Mailbox mailbox = mailBL.findMailBox(
-				adClient,
+				tenantEmailConfig,
 				notificationsConfig.getOrgId(),
 				(AdProcessId)null,  // AD_Process_ID
 				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
 				(EMailCustomType)null,  // customType
 				null); // sender
-		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getOrgId());
+		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", tenantEmailConfig, notificationsConfig.getOrgId());
 		return mailbox;
 	}
 

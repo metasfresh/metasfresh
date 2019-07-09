@@ -30,14 +30,19 @@ import org.compiere.model.MStore;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
 
+import com.google.common.base.Stopwatch;
+
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
@@ -54,11 +59,11 @@ public class SendMailText extends JavaProcess
 	private MailTextBuilder mailTextBuilder;
 
 	/**	From (sender)			*/
-	private int				m_AD_User_ID = -1;
+	private UserId m_AD_User_ID = null;
 	/** Client Info				*/
 	private MClient			m_client = null;
 	/**	From					*/
-	private I_AD_User		m_from = null;
+	private UserEMailConfig fromUserEmailConfig = null;
 	/** Recipient List to prevent duplicate mails	*/
 	private ArrayList<Integer>	m_list = new ArrayList<>();
 
@@ -103,7 +108,7 @@ public class SendMailText extends JavaProcess
 			}
 			else if (name.equals("AD_User_ID"))
 			{
-				m_AD_User_ID = element.getParameterAsInt();
+				m_AD_User_ID = element.getParameterAsRepoId(UserId::ofRepoIdOrNull);
 			}
 			else
 			{
@@ -135,12 +140,12 @@ public class SendMailText extends JavaProcess
 			throw new AdempiereException ("No SMTP Host found");
 		}
 		//
-		if (m_AD_User_ID > 0)
+		if (m_AD_User_ID != null)
 		{
-			m_from = Services.get(IUserDAO.class).getById(m_AD_User_ID);
+			fromUserEmailConfig = Services.get(IUserBL.class).getEmailConfigById(m_AD_User_ID);
 		}
-		log.debug("From " + m_from);
-		long start = System.currentTimeMillis();
+		log.debug("From {}", fromUserEmailConfig);
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		
 		if (m_R_InterestArea_ID > 0)
 		{
@@ -151,9 +156,8 @@ public class SendMailText extends JavaProcess
 			sendBPGroup();
 		}
 
-		return "@Created@=" + m_counter + ", @Errors@=" + m_errors + " - "
-			+ (System.currentTimeMillis()-start) + "ms";
-	}	//	doIt
+		return "@Created@=" + m_counter + ", @Errors@=" + m_errors + " - " + stopwatch;
+	}
 
 	/**
 	 * 	Send to InterestArea
@@ -322,7 +326,7 @@ public class SendMailText extends JavaProcess
 			message += unsubscribe;
 		}
 		//
-		EMail email = m_client.createEMail(m_from, to, mailTextBuilder.getMailHeader(), message);
+		EMail email = m_client.createEMail(fromUserEmailConfig, to, mailTextBuilder.getMailHeader(), message);
 		if (mailTextBuilder.isHtml())
 		{
 			email.setMessageHTML(mailTextBuilder.getMailHeader(), message);

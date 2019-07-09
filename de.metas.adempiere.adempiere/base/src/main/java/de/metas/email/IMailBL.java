@@ -28,12 +28,12 @@ import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_User;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
@@ -52,17 +52,17 @@ public interface IMailBL extends ISingletonService
 	 * @throws MailboxNotFoundException
 	 */
 	Mailbox findMailBox(
-			I_AD_Client client,
+			ClientEMailConfig clientEmailConfig,
 			OrgId orgId,
 			AdProcessId adProcessId,
 			DocBaseAndSubType docBaseAndSubType,
 			EMailCustomType customType,
-			I_AD_User user);
+			UserEMailConfig userEmailConfig);
 
 	EMail createEMail(
-			I_AD_Client client,
+			ClientEMailConfig client,
 			EMailCustomType mailCustomType,
-			I_AD_User from,
+			UserEMailConfig from,
 			EMailAddress to,
 			String subject,
 			String message,

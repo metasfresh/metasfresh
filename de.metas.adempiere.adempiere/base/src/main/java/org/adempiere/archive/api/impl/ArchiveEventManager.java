@@ -32,6 +32,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
 import lombok.NonNull;
 
 public class ArchiveEventManager implements IArchiveEventManager
@@ -60,7 +61,7 @@ public class ArchiveEventManager implements IArchiveEventManager
 	public void fireEmailSent(
 			final I_AD_Archive archive, 
 			final String action, 
-			final I_AD_User user, 
+			final UserEMailConfig user, 
 			final EMailAddress emailFrom, 
 			final EMailAddress emailTo, 
 			final EMailAddress emailCc, 

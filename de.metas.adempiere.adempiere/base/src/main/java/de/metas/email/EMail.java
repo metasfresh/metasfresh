@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
+import javax.annotation.Nullable;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
@@ -126,10 +127,10 @@ public final class EMail implements Serializable
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
 
 	public EMail(
-			final Mailbox mailbox,
-			final EMailAddress to,
-			final String subject,
-			final String message,
+			@NonNull final Mailbox mailbox,
+			@Nullable final EMailAddress to,
+			@Nullable final String subject,
+			@Nullable final String message,
 			final boolean html)
 	{
 		this(mailbox);

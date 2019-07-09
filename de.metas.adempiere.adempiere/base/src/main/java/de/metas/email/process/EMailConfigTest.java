@@ -29,21 +29,21 @@ import org.adempiere.service.ClientId;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.OrgId;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 
 /**
@@ -53,7 +53,7 @@ import de.metas.util.Services;
  */
 public class EMailConfigTest extends JavaProcess
 {
-	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IUserBL usersService = Services.get(IUserBL.class);
 	private final IMailBL mailBL = Services.get(IMailBL.class);
 	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
 
@@ -137,22 +137,23 @@ public class EMailConfigTest extends JavaProcess
 		return "Done";
 	}
 
-	public I_AD_User getFrom_User()
+	public UserEMailConfig getUserEMailConfig()
 	{
-		return p_From_User_ID != null ? userDAO.getById(p_From_User_ID) : null;
+		return p_From_User_ID != null ? usersService.getEmailConfigById(p_From_User_ID) : null;
 	}
 
 	private void testSend()
 	{
-		final I_AD_Client client = clientDAO.getById(p_AD_Client_ID);
+		final ClientEMailConfig tenantEmailConfig = clientDAO.getEMailConfigById(p_AD_Client_ID);
+		final UserEMailConfig userEMailConfig = getUserEMailConfig();
 
 		final Mailbox mailbox = mailBL.findMailBox(
-				client,
+				tenantEmailConfig,
 				p_AD_Org_ID,
 				p_AD_Process_ID,
 				null,  // C_DocType - Task FRESH-203. This shall work as before
 				p_CustomType,
-				getFrom_User());
+				userEMailConfig);
 		addLog("Using configuration: " + mailbox);
 
 		final EMail email = mailBL.createEMail(mailbox, p_EMail_To, p_Subject, p_Message, p_IsHtml);

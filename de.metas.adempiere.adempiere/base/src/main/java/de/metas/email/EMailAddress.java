@@ -78,6 +78,15 @@ public final class EMailAddress
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	public static ITranslatableString checkEMailValid(@Nullable final EMailAddress email)
+	{
+		if (email == null)
+		{
+			return TranslatableStrings.constant("no email");
+		}
+		return checkEMailValid(email.getAsString());
+	}
+
 	public static ITranslatableString checkEMailValid(@Nullable final String email)
 	{
 		if (Check.isEmpty(email, true))

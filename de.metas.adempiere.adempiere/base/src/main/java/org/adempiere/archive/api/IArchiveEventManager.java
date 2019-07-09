@@ -27,6 +27,7 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.util.ISingletonService;
 
 /**
@@ -57,7 +58,7 @@ public interface IArchiveEventManager extends ISingletonService
 	 */
 	void firePdfUpdate(I_AD_Archive archive, I_AD_User user, String action);
 
-	void fireEmailSent(I_AD_Archive archive, String action, I_AD_User user, EMailAddress from, EMailAddress to, EMailAddress cc, EMailAddress bcc, String status);
+	void fireEmailSent(I_AD_Archive archive, String action, UserEMailConfig user, EMailAddress from, EMailAddress to, EMailAddress cc, EMailAddress bcc, String status);
 
 	void firePrintOut(I_AD_Archive archive, I_AD_User user, String printerName, int copies, String status);
 

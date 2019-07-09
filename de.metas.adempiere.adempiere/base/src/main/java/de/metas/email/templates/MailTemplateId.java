@@ -1,5 +1,7 @@
 package de.metas.email.templates;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -40,6 +42,11 @@ public class MailTemplateId implements RepoIdAware
 	public static MailTemplateId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new MailTemplateId(repoId) : null;
+	}
+
+	public static Optional<MailTemplateId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
