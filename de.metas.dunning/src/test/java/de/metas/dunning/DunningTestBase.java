@@ -99,7 +99,7 @@ public class DunningTestBase
 
 	protected I_C_Currency currencyEUR;
 	protected I_C_Currency currencyCHF;
-	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);;
+	protected final IDunningBL dunningBL = Services.get(IDunningBL.class);
 
 	@Before
 	public final void beforeTest()
@@ -171,7 +171,7 @@ public class DunningTestBase
 
 	protected void generateDunningCandidates(final PlainDunningContext dunningContext)
 	{
-		for (final I_C_Dunning dunning : dao.retrieveDunnings(dunningContext.getCtx()))
+		for (final I_C_Dunning dunning : dao.retrieveDunnings())
 		{
 			for (final I_C_DunningLevel dunningLevel : dao.retrieveDunningLevels(dunning))
 			{
