@@ -4,13 +4,11 @@ import org.adempiere.service.ClientId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.user.UserId;
-import de.metas.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -57,7 +55,7 @@ public final class Mailbox
 	@JsonProperty("smtpPort")
 	private final int smtpPort;
 	@JsonProperty("email")
-	private final String email;
+	private final EMailAddress email;
 	@JsonProperty("username")
 	private final String username;
 	@JsonProperty("password")
@@ -80,7 +78,7 @@ public final class Mailbox
 	private Mailbox(
 			@JsonProperty("smtpHost") @NonNull final String smtpHost,
 			@JsonProperty("smtpPort") final int smtpPort,
-			@JsonProperty("email") final String email,
+			@JsonProperty("email") final EMailAddress email,
 			@JsonProperty("username") final String username,
 			@JsonProperty("password") final String password,
 			@JsonProperty("smtpAuthorization") final boolean smtpAuthorization,

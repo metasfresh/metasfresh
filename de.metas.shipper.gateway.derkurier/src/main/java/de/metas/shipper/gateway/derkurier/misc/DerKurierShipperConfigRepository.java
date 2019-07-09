@@ -10,6 +10,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
+import de.metas.email.EMailAddress;
 import de.metas.email.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Check;
@@ -78,7 +79,7 @@ public class DerKurierShipperConfigRepository
 				.customerNumber(shipperConfigRecord.getDK_CustomerNumber())
 				.parcelNumberAdSequenceId(shipperConfigRecord.getAD_Sequence_ID())
 				.deliveryOrderMailBoxOrNull(loadMailboxOrNull(shipperConfigRecord.getAD_MailBox_ID()))
-				.deliveryOrderRecipientEmailOrNull(shipperConfigRecord.getEMail_To())
+				.deliveryOrderRecipientEmailOrNull(EMailAddress.ofString(shipperConfigRecord.getEMail_To()))
 				.collectorCode(shipperConfigRecord.getCollectorCode())
 				.customerCode(shipperConfigRecord.getCustomerCode())
 				.desiredTimeFrom(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_From()))
@@ -101,7 +102,7 @@ public class DerKurierShipperConfigRepository
 				.smtpHost(shipperConfigMailBox.getSMTPHost())
 				.smtpPort(shipperConfigMailBox.getSMTPPort())
 				.startTLS(shipperConfigMailBox.isStartTLS())
-				.email(shipperConfigMailBox.getEMail())
+				.email(EMailAddress.ofString(shipperConfigMailBox.getEMail()))
 				.username(shipperConfigMailBox.getUserName())
 				.password(shipperConfigMailBox.getPassword())
 				.smtpAuthorization(shipperConfigMailBox.isSmtpAuthorization())

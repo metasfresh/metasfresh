@@ -17,7 +17,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,8 +35,10 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.email.EMailAddress;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -71,10 +72,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 			@NonNull final I_AD_Archive archive,
 			final String action,
 			final I_AD_User user,
-			final String from,
-			final String to,
-			final String cc,
-			final String bcc,
+			final EMailAddress from,
+			final EMailAddress to,
+			final EMailAddress cc,
+			final EMailAddress bcc,
 			final String status)
 	{
 		if (!isLoggableArchive(archive))
@@ -84,10 +85,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
 		docExchangeLine.setAction(action);
-		docExchangeLine.setEMail_From(from);
-		docExchangeLine.setEMail_To(to);
-		docExchangeLine.setEMail_Cc(cc);
-		docExchangeLine.setEMail_Bcc(bcc);
+		docExchangeLine.setEMail_From(EMailAddress.toStringOrNull(from));
+		docExchangeLine.setEMail_To(EMailAddress.toStringOrNull(to));
+		docExchangeLine.setEMail_Cc(EMailAddress.toStringOrNull(cc));
+		docExchangeLine.setEMail_Bcc(EMailAddress.toStringOrNull(bcc));
 		docExchangeLine.setStatus(status);
 		docExchangeLine.setAD_User(user);
 
@@ -207,7 +208,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
 
-		final LocalDate documentDate = Util.coalesce(
+		final LocalDate documentDate = CoalesceUtil.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),
 				TimeUtil.asLocalDate(docOutboundLogRecord.getCreated()));
 

@@ -10,30 +10,34 @@ import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.email.EmailValidator;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailDAO;
 import de.metas.email.Mailbox;
+import de.metas.email.MailboxNotFoundException;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -51,18 +55,23 @@ public class MailBL implements IMailBL
 
 	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 
-	// @Cached
 	@Override
-	public Mailbox findMailBox(final I_AD_Client client,
-			final int AD_Org_ID,
-			final int AD_Process_ID,
-			final I_C_DocType docType,
-			final String customType,
-			final I_AD_User user)
+	public Mailbox findMailBox(
+			@NonNull final I_AD_Client client,
+			final OrgId orgId,
+			final AdProcessId adProcessId,
+			final DocBaseAndSubType docBaseAndSubType,
+			final EMailCustomType customType,
+			@Nullable final I_AD_User user)
 	{
-		final Mailbox mailbox = findMailBox(client, AD_Org_ID, AD_Process_ID, docType, customType);
+		final Mailbox mailbox = findMailBox(
+				client, 
+				orgId, 
+				adProcessId, 
+				docBaseAndSubType, 
+				customType);
 		Check.errorIf(mailbox == null, "Unable to find IMailbox for AD_Client={}, AD_Org_ID={}, AD_Process_ID={}, customeType={}",
-				client, AD_Org_ID, AD_Process_ID, customType);
+				client, orgId, adProcessId, customType);
 
 		if (user == null)
 		{
@@ -71,36 +80,44 @@ public class MailBL implements IMailBL
 
 		// use smtpHost from AD_MailConfig, but user data from AD_User
 		return mailbox.toBuilder()
-				.email(user.getEMail())
+				.email(EMailAddress.ofNullableString(user.getEMail()))
 				.username(user.getEMailUser())
 				.password(user.getEMailUserPW())
 				.adUserId(UserId.ofRepoId(user.getAD_User_ID()))
 				.build();
 	}
 
-	private Mailbox findMailBox(final I_AD_Client client, final int adOrgId, final int processID, final I_C_DocType docType, final String customType)
+	private Mailbox findMailBox(
+			@NonNull final I_AD_Client client,
+			@NonNull final OrgId orgId,
+			@Nullable final AdProcessId adProcessId,
+			@Nullable final DocBaseAndSubType docBaseAndSubType,
+			@Nullable final EMailCustomType customType)
 	{
-		log.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, adOrgId, processID, customType);
+		log.debug("Looking for AD_Client_ID={}, AD_Org_ID={}, AD_Process_ID={}, customType={}", client, orgId, adProcessId, customType);
 
 		final IMailDAO mailDAO = Services.get(IMailDAO.class);
-		final List<I_AD_MailConfig> configs = mailDAO.retrieveMailConfigs(client, adOrgId, processID, docType, customType);
+		
+		final ClientId clientId = ClientId.ofRepoId(client.getAD_Client_ID());
+		final List<I_AD_MailConfig> configs = mailDAO.retrieveMailConfigs(clientId, orgId, adProcessId, docBaseAndSubType, customType);
 
 		for (final I_AD_MailConfig config : configs)
 		{
-			if (config.getAD_Org_ID() == adOrgId
-					|| config.getAD_Org_ID() != adOrgId && config.getAD_Org_ID() == Env.CTXVALUE_AD_Org_ID_System)
+			final OrgId configOrgId = OrgId.ofRepoIdOrAny(config.getAD_Org_ID());
+			
+			if (OrgId.equals(configOrgId, orgId) || configOrgId.isAny())
 			{
 				final I_AD_MailBox adMailbox = config.getAD_MailBox();
 				final Mailbox mailbox = Mailbox.builder()
 						.smtpHost(adMailbox.getSMTPHost())
 						.smtpPort(adMailbox.getSMTPPort())
 						.startTLS(adMailbox.isStartTLS())
-						.email(adMailbox.getEMail())
+						.email(EMailAddress.ofString(adMailbox.getEMail()))
 						.username(adMailbox.getUserName())
 						.password(adMailbox.getPassword())
 						.smtpAuthorization(adMailbox.isSmtpAuthorization())
 						.sendFromServer(client.isServerEMail())
-						.adClientId(ClientId.ofRepoId(client.getAD_Client_ID()))
+						.adClientId(clientId)
 						.adUserId(null)
 						.columnUserTo(config.getColumnUserTo())
 						.build();
@@ -120,7 +137,7 @@ public class MailBL implements IMailBL
 			final String messageString = StringUtils.formatMessage(
 					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
 							+ "AD_MailConfig search parameters: AD_Client_ID={}; AD_Org_ID={}; AD_Process_ID={}; C_DocType={}; CustomType={}",
-					client.getAD_Client_ID(), adOrgId, processID, docType, customType);
+					clientId, orgId, adProcessId, docBaseAndSubType, customType);
 
 			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
 		}
@@ -129,7 +146,7 @@ public class MailBL implements IMailBL
 				.smtpHost(smtpHost)
 				.smtpPort(client.getSMTPPort())
 				.startTLS(client.isStartTLS())
-				.email(client.getRequestEMail())
+				.email(EMailAddress.ofNullableString(client.getRequestEMail()))
 				.username(client.getRequestUser())
 				.password(client.getRequestUserPW())
 				.smtpAuthorization(client.isSmtpAuthorization())
@@ -143,9 +160,10 @@ public class MailBL implements IMailBL
 	}
 
 	@Override
-	public EMail createEMail(final I_AD_Client client,
-			final String mailCustomType,
-			final String to,
+	public EMail createEMail(
+			final I_AD_Client client,
+			final EMailCustomType mailCustomType,
+			final EMailAddress to,
 			final String subject,
 			final String message,
 			final boolean html)
@@ -155,37 +173,33 @@ public class MailBL implements IMailBL
 	}
 
 	@Override
-	public EMail createEMail(final I_AD_Client client,
-			final String mailCustomType,
+	public EMail createEMail(
+			final I_AD_Client client,
+			final EMailCustomType mailCustomType,
 			final I_AD_User from,
-			final String to,
+			final EMailAddress to,
 			final String subject,
 			final String message,
 			final boolean html)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(client);
-		final I_C_DocType docType = null; // C_DocType - Task FRESH-203 : This shall work as before
 		final Mailbox mailbox = findMailBox(
-				client //
-				, ProcessExecutor.getCurrentOrgId() //
-				, ProcessExecutor.getCurrentProcessId() //
-				, docType //
-				, mailCustomType //
-				, from //
-		);
-		return createEMail(ctx, mailbox, to, subject, message, html);
+				client,
+				ProcessExecutor.getCurrentOrgId(),
+				ProcessExecutor.getCurrentProcessIdOrNull(),
+				(DocBaseAndSubType)null, // C_DocType - Task FRESH-203 : This shall work as before
+				mailCustomType,
+				from);
+		return createEMail(mailbox, to, subject, message, html);
 	}
 
 	@Override
-	public EMail createEMail(final Properties ctx,
+	public EMail createEMail(
 			@NonNull final Mailbox mailbox,
-			final String to,
+			@NonNull final EMailAddress to,
 			final String subject,
 			String message,
 			final boolean html)
 	{
-		Check.assumeNotEmpty(to, "Param 'to' is not empty (mailbox={}, subject={})", mailbox, subject);
-
 		if (mailbox.getEmail() == null
 				// || mailbox.getUsername() == null
 				// is SMTP authorization and password is null - teo_sarca [ 1723309 ]

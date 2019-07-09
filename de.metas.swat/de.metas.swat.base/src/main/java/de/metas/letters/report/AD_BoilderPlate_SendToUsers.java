@@ -41,6 +41,7 @@ import org.compiere.model.MNote;
 import org.compiere.model.Query;
 
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.i18n.IADMessageDAO;
@@ -80,7 +81,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		{
 			final String name = para.getParameterName();
 			if (para.getParameter() == null)
-				;			
+			{
+				
+			}
 			else if ("AD_User_ID".equals(name))
 			{
 				p_AD_User_ID = para.getParameterAsInt();
@@ -105,7 +108,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 	{
 		m_from = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), p_AD_User_ID);
 		if (m_from == null)
+		{
 			throw new FillMandatoryException("AD_User_ID");
+		}
 		//
 		if (p_AD_BoilerPlate_ID <= 0)
 		{ // metas-ts: handle missing or wrong AD_BoilerPlate_ID
@@ -154,7 +159,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			createNote(text, user, e);
 			ok = false;
 			if (LogManager.isLevelFine())
+			{
 				e.printStackTrace();
+			}
 		}
 		return ok;
 	}
@@ -182,10 +189,12 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			{
 				String message = text.getTextSnippetParsed(attributes);
 				//
-				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-				String to = st.nextToken();
-				MClient client = MClient.get(getCtx(), getAD_Client_ID());
-				EMail email = client.createEMail(m_from, to,
+				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
+				final EMailAddress to = EMailAddress.ofString(st.nextToken());
+				final MClient client = MClient.get(getCtx(), getAD_Client_ID());
+				final EMail email = client.createEMail(
+						m_from,
+						to,
 						text.getName(),
 						message,
 						true);
@@ -194,7 +203,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 					throw new AdempiereException("Cannot create email. Check log.");
 				}
 				while (st.hasMoreTokens())
-					email.addTo(st.nextToken());
+				{
+					email.addTo(EMailAddress.ofString(st.nextToken()));
+				}
 				send(email);
 				return email;
 			}
@@ -210,7 +221,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			final EMailSentStatus emailSentStatus = email.send();
 			count++;
 			if (emailSentStatus.isSentOK())
+			{
 				return;
+			}
 			// Timeout => retry
 			if (emailSentStatus.isSentConnectionError() && maxRetries > 0 && count < maxRetries)
 			{
@@ -228,7 +241,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 	{
 		final I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveByValue(getCtx(), AD_Message_UserNotifyError);
 		if (msg == null)
+		{
 			throw new AdempiereException("@NotFound@ @AD_Message_ID@ "+AD_Message_UserNotifyError);
+		}
 		//
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String reference = msgBL.parseTranslation(getCtx(), "@AD_BoilerPlate_ID@: "+text.get_Translation(MADBoilerPlate.COLUMNNAME_Name))

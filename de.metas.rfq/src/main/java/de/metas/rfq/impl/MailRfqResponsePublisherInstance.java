@@ -2,8 +2,6 @@ package de.metas.rfq.impl;
 
 import java.sql.Timestamp;
 
-import javax.mail.internet.InternetAddress;
-
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -13,17 +11,18 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
 import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /*
@@ -101,8 +100,8 @@ import de.metas.util.Services;
 		{
 			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@");
 		}
-		final String userToEmail = userTo.getEMail();
-		if (Check.isEmpty(userToEmail, true))
+		final EMailAddress userToEmail = EMailAddress.ofNullableString(userTo.getEMail());
+		if (userToEmail == null)
 		{
 			throw new RfQPublishException(request, "@NotFound@ @AD_User_ID@ @Email@ - " + userTo);
 		}
@@ -121,31 +120,30 @@ import de.metas.util.Services;
 		//
 		// Send it
 		final EMail email = mailBL.createEMail(
-				rfqResponse.getAD_Client() //
-				, (String)null // mailCustomType
-				, (I_AD_User)null // from
-				, userToEmail // to
-				, subject, message, mailTextBuilder.isHtml() // html
-		);
+				rfqResponse.getAD_Client(), //
+				(EMailCustomType)null, // mailCustomType
+				(I_AD_User)null, // from
+				userToEmail, // to
+				subject, // subject
+				message,  // message
+				mailTextBuilder.isHtml()); // html
 		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData);
 		final EMailSentStatus emailSentStatus = email.send();
 
 		//
 		// Fire mail sent/not sent event (even if there were some errors)
 		{
-			final InternetAddress from = email.getFrom();
-			final String fromStr = from == null ? null : from.toString();
-			final InternetAddress to = email.getTo();
-			final String toStr = to == null ? null : to.getAddress();
+			final EMailAddress from = email.getFrom();
+			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
-					pdfArchive // archive
-					, X_C_Doc_Outbound_Log_Line.ACTION_EMail // action
-					, (I_AD_User)null // user
-					, fromStr // from
-					, toStr // to
-					, (String)null // cc
-					, (String)null // bcc
-					, emailSentStatus.getSentMsg() // status
+					pdfArchive, // archive
+					X_C_Doc_Outbound_Log_Line.ACTION_EMail, // action
+					(I_AD_User)null, // user
+					from, // from
+					to, // to
+					(EMailAddress)null, // cc
+					(EMailAddress)null, // bcc
+					emailSentStatus.getSentMsg() // status
 			);
 		}
 

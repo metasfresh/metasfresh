@@ -34,10 +34,11 @@ import org.compiere.util.AdempiereUserError;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -198,7 +199,10 @@ public class DunningPrint extends JavaProcess
 			boolean printed = false;
 			if (p_EMailPDF)
 			{
-				EMail email = client.createEMail(to.getEMail(), null, null);
+				final EMail email = client.createEMail(
+						EMailAddress.ofString(to.getEMail()),
+						(String)null, // subject
+						(String)null); // message
 				if (!email.isValid())
 				{
 					addLog (entry.get_ID(), null, null, 

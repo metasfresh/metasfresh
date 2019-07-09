@@ -2,10 +2,12 @@ package de.metas.email;
 
 import java.util.List;
 
-import org.compiere.model.I_AD_Client;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_C_DocType;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.process.AdProcessId;
 import de.metas.util.ISingletonService;
 
 /*
@@ -41,6 +43,11 @@ public interface IMailDAO extends ISingletonService
 	 * @param customType
 	 * @return The {@link I_AD_MailConfig} entries that fit the given parameters, empty list if none found
 	 */
-	List<I_AD_MailConfig> retrieveMailConfigs(I_AD_Client client, int orgID, int processID, I_C_DocType docType, String customType);
+	List<I_AD_MailConfig> retrieveMailConfigs(
+			ClientId clientId,
+			OrgId orgId,
+			AdProcessId processId, 
+			DocBaseAndSubType docBaseAndSubType, 
+			EMailCustomType customType);
 
 }

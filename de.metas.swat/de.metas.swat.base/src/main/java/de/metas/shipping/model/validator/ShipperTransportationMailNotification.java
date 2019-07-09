@@ -45,6 +45,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.interfaces.I_C_BPartner;
@@ -91,11 +92,17 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					// check first user from order
 					MOrder order = (MOrder)sp.getM_InOut().getC_Order();
 					if (order != null)
+					{
 						user = order.getAD_User();
+					}
 					if (user == null)
+					{
 						user = sp.getM_InOut().getAD_User();
+					}
 					else
+					{
 						orderUser = user;
+					}
 					//
 					I_C_BPartner partnerPO = InterfaceWrapperHelper.create(user.getC_BPartner(), I_C_BPartner.class);
 					if (partnerPO.isShippingNotificationEmail() && user.isDefaultContact())
@@ -144,7 +151,9 @@ public class ShipperTransportationMailNotification implements ModelValidator
 	public void initialize(ModelValidationEngine engine, MClient client)
 	{
 		if (client != null)
+		{
 			m_AD_Client_ID = client.getAD_Client_ID();
+		}
 		//
 		engine.addDocValidate(MMShipperTransportation.Table_Name, this);
 
@@ -195,14 +204,20 @@ public class ShipperTransportationMailNotification implements ModelValidator
 				String message = text.getTextSnippetParsed(attributesEffective);
 				//
 				if (Check.isEmpty(message, true))
+				{
 					return null;
+				}
 				//
-				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
-				String to = st.nextToken();
+				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
+				EMailAddress to = EMailAddress.ofString(st.nextToken());
 				MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 				if (orderUser != null)
-					to = orderUser.getEMail();
-				EMail email = client.createEMail(null, to,
+				{
+					to = EMailAddress.ofString(orderUser.getEMail());
+				}
+				EMail email = client.createEMail(
+						null,
+						to,
 						text.getName(),
 						message,
 						true);
@@ -211,7 +226,9 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					throw new AdempiereException("Cannot create email. Check log.");
 				}
 				while (st.hasMoreTokens())
-					email.addTo(st.nextToken());
+				{
+					email.addTo(EMailAddress.ofString(st.nextToken()));
+				}
 				send(email);
 				return email;
 			}
@@ -229,7 +246,9 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			final EMailSentStatus emailSentStatus = email.send();
 			count++;
 			if (emailSentStatus.isSentOK())
+			{
 				return;
+			}
 			// Timeout => retry
 			if (emailSentStatus.isSentConnectionError() && count < maxRetries)
 			{

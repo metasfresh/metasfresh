@@ -35,6 +35,7 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -52,7 +53,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.smtp.SMTPMessage;
 
@@ -70,7 +70,7 @@ import lombok.NonNull;
  * To send the message, please use {@link #send()}.
  * 
  * NOTE: This is basically a reimplementation of the class <code>org.compiere.util.EMail</code> which was authored (according to the javadoc) by author Joerg Janke.
-
+ * 
  * @author metas-dev <dev@metasfresh.com>
  */
 @SuppressWarnings("serial")
@@ -82,26 +82,26 @@ public final class EMail implements Serializable
 	@JsonProperty("mailbox")
 	private final Mailbox _mailbox;
 	@JsonIgnore
-	private transient InternetAddress _from;
+	private transient EMailAddress _from;
 
 	/** To Address */
 	@JsonProperty("to")
-	private final List<String> _to = new ArrayList<>();
+	private final List<EMailAddress> _to = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _toAddresses = new ArrayList<>();
 	/** CC Addresses */
 	@JsonProperty("cc")
-	private final List<String> _cc = new ArrayList<>();
+	private final List<EMailAddress> _cc = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _ccAddresses = new ArrayList<>();
 	/** BCC Addresses */
 	@JsonProperty("bcc")
-	private final List<String> _bcc = new ArrayList<>();
+	private final List<EMailAddress> _bcc = new ArrayList<>();
 	@JsonIgnore
 	private final List<InternetAddress> _bccAddresses = new ArrayList<>();
 	/** Reply To Address */
 	@JsonProperty("replyTo")
-	private String _replyTo;
+	private EMailAddress _replyTo;
 	@JsonIgnore
 	private InternetAddress _replyToAddress;
 	/** Mail Subject */
@@ -137,7 +137,7 @@ public final class EMail implements Serializable
 	 */
 	public EMail(
 			final Mailbox mailbox,
-			final String to,
+			final EMailAddress to,
 			final String subject,
 			final String message,
 			final boolean html)
@@ -180,10 +180,10 @@ public final class EMail implements Serializable
 	@JsonCreator
 	private EMail(
 			@JsonProperty("mailbox") final Mailbox mailbox //
-			, @JsonProperty("to") final List<String> to //
-			, @JsonProperty("cc") final List<String> cc //
-			, @JsonProperty("bcc") final List<String> bcc //
-			, @JsonProperty("replyTo") final String replyTo //
+			, @JsonProperty("to") final List<EMailAddress> to //
+			, @JsonProperty("cc") final List<EMailAddress> cc //
+			, @JsonProperty("bcc") final List<EMailAddress> bcc //
+			, @JsonProperty("replyTo") final EMailAddress replyTo //
 			, @JsonProperty("subject") final String subject //
 			, @JsonProperty("messageText") final String messageText //
 			, @JsonProperty("messageHTML") final String messageHTML //
@@ -232,8 +232,6 @@ public final class EMail implements Serializable
 	/** Base constructor */
 	private EMail(final Mailbox mailbox)
 	{
-		super();
-
 		Check.assumeNotNull(mailbox, "mailbox not null");
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
@@ -279,7 +277,7 @@ public final class EMail implements Serializable
 		}
 	}	// send
 
-	private final EMailSentStatus sendNow()
+	private EMailSentStatus sendNow()
 	{
 		//
 		// Create session
@@ -299,7 +297,7 @@ public final class EMail implements Serializable
 			final SMTPMessage msg = new SMTPMessage(session);
 
 			// Addresses
-			msg.setFrom(getFrom());
+			msg.setFrom(getFrom().toInternetAddress());
 
 			//
 			// Note: setRecipients can and will use a default debug email address if configured (see JavaDoc & impl)
@@ -373,7 +371,7 @@ public final class EMail implements Serializable
 		props.put("mail.transport.protocol", "smtp");
 		props.put("mail.host", smtpHost);
 		props.put("mail.smtp.port", mailbox.getSmtpPort());
-		if(mailbox.isStartTLS())
+		if (mailbox.isStartTLS())
 		{
 			props.put("mail.smtp.starttls.enable", "true");
 		}
@@ -396,7 +394,7 @@ public final class EMail implements Serializable
 		setStatus(EMailSentStatus.NOT_SENT);
 	}
 
-	private final EMailSentStatus setStatus(final EMailSentStatus status)
+	private EMailSentStatus setStatus(final EMailSentStatus status)
 	{
 		Check.assumeNotNull(status, "status not null");
 		_status = status;
@@ -483,7 +481,7 @@ public final class EMail implements Serializable
 	 *
 	 * @return Sender's internet address
 	 */
-	public InternetAddress getFrom()
+	public EMailAddress getFrom()
 	{
 		return _from;
 	}   // getFrom
@@ -493,24 +491,18 @@ public final class EMail implements Serializable
 	 *
 	 * @param from Sender's email address
 	 */
-	private void setFrom(final String from)
+	private void setFrom(final EMailAddress from)
 	{
 		if (from == null)
 		{
 			markInvalid();
 			return;
 		}
-		try
+		else
 		{
-			_from = new InternetAddress(from, true);
+			_from = from;
 		}
-		catch (final Exception e)
-		{
-			logger.warn("Invalid from: {}", from, e);
-			markInvalid();
-			return;
-		}
-	}   // setFrom
+	}
 
 	/**
 	 * Add To Recipient
@@ -518,9 +510,9 @@ public final class EMail implements Serializable
 	 * @param to Recipient's email address
 	 * @return true if valid
 	 */
-	public boolean addTo(final String to)
+	public boolean addTo(final EMailAddress to)
 	{
-		if (Check.isEmpty(to, true))
+		if (to == null)
 		{
 			markInvalid();
 			return false;
@@ -529,7 +521,7 @@ public final class EMail implements Serializable
 		final InternetAddress ia;
 		try
 		{
-			ia = new InternetAddress(to, true);
+			ia = to.toInternetAddress();
 		}
 		catch (final Exception e)
 		{
@@ -548,13 +540,13 @@ public final class EMail implements Serializable
 	 *
 	 * @return Recipient's internet address
 	 */
-	public InternetAddress getTo()
+	public EMailAddress getTo()
 	{
-		if (_toAddresses == null || _toAddresses.isEmpty())
+		if (_to == null || _to.isEmpty())
 		{
 			return null;
 		}
-		return _toAddresses.get(0);
+		return _to.get(0);
 	}   // getTo
 
 	/**
@@ -573,9 +565,9 @@ public final class EMail implements Serializable
 	 * @param cc cc Recipient
 	 * @return true if valid and added
 	 */
-	public boolean addCc(final String cc)
+	public boolean addCc(final EMailAddress cc)
 	{
-		if (Check.isEmpty(cc, true))
+		if (cc == null)
 		{
 			return false;
 		}
@@ -583,7 +575,7 @@ public final class EMail implements Serializable
 		final InternetAddress ia;
 		try
 		{
-			ia = new InternetAddress(cc, true);
+			ia = cc.toInternetAddress();
 		}
 		catch (final Exception e)
 		{
@@ -612,16 +604,16 @@ public final class EMail implements Serializable
 	 * @param bcc EMail cc Recipient
 	 * @return true if valid
 	 */
-	public boolean addBcc(final String bcc)
+	public boolean addBcc(final EMailAddress bcc)
 	{
-		if (Check.isEmpty(bcc, true))
+		if (bcc == null)
 		{
 			return false;
 		}
 		final InternetAddress ia;
 		try
 		{
-			ia = new InternetAddress(bcc, true);
+			ia = bcc.toInternetAddress();
 		}
 		catch (final Exception e)
 		{
@@ -639,7 +631,7 @@ public final class EMail implements Serializable
 	 *
 	 * @return Recipient's internet address
 	 */
-	public List<InternetAddress> getBccs()
+	private List<InternetAddress> getBccs()
 	{
 		return ImmutableList.copyOf(_bccAddresses);
 	}   // getBccs
@@ -650,16 +642,16 @@ public final class EMail implements Serializable
 	 * @param replyTo email address
 	 * @return true if valid
 	 */
-	public boolean setReplyTo(final String replyTo)
+	public boolean setReplyTo(final EMailAddress replyTo)
 	{
-		if (Check.isEmpty(replyTo, true))
+		if (replyTo == null)
 		{
 			return false;
 		}
 		final InternetAddress ia;
 		try
 		{
-			ia = new InternetAddress(replyTo, true);
+			ia = replyTo.toInternetAddress();
 		}
 		catch (final Exception e)
 		{
@@ -836,12 +828,11 @@ public final class EMail implements Serializable
 		}
 		addAttachment(EMailAttachment.of(file));
 	}
-	
+
 	public void addAttachment(@NonNull final Resource resource)
 	{
 		addAttachment(EMailAttachment.of(resource));
 	}
-
 
 	/**
 	 * Add a collection of attachments
@@ -885,7 +876,7 @@ public final class EMail implements Serializable
 		addAttachment(EMailAttachment.of(filename, content));
 	}
 
-	public final void addAttachment(@NonNull final EMailAttachment emailAttachment)
+	public void addAttachment(@NonNull final EMailAttachment emailAttachment)
 	{
 		_attachments.add(emailAttachment);
 	}
@@ -944,7 +935,7 @@ public final class EMail implements Serializable
 		}
 	}
 
-	private final String getCharsetName()
+	private String getCharsetName()
 	{
 		// Local Character Set
 		String charSetName = Ini.getCharset().name();
@@ -955,7 +946,7 @@ public final class EMail implements Serializable
 		return charSetName;
 	}
 
-	private final void setMessageContent(final MimePart part) throws MessagingException
+	private void setMessageContent(final MimePart part) throws MessagingException
 	{
 		final String charSetName = getCharsetName();
 		final String messageHtml = getMessageHTML();
@@ -1019,7 +1010,7 @@ public final class EMail implements Serializable
 		boolean valid = true;
 
 		// From
-		final InternetAddress from = getFrom();
+		final EMailAddress from = getFrom();
 		if (!isValidAddress(from))
 		{
 			final String errmsg = "No From address";
@@ -1090,17 +1081,34 @@ public final class EMail implements Serializable
 		return valid;
 	}
 
-	private static final boolean isValidAddress(final InternetAddress from)
+	private static boolean isValidAddress(final EMailAddress emailAddress)
 	{
-		if (from == null)
+		if (emailAddress == null)
 		{
 			return false;
 		}
 
-		final String address = from.getAddress();
-		return address != null
-				&& address.length() > 0
-				&& address.indexOf(' ') < 0;
+		try
+		{
+			return isValidAddress(emailAddress.toInternetAddress());
+		}
+		catch (AddressException e)
+		{
+			return false;
+		}
+	}
+
+	private static boolean isValidAddress(final InternetAddress emailAddress)
+	{
+		if (emailAddress == null)
+		{
+			return false;
+		}
+
+		final String addressStr = emailAddress.getAddress();
+		return addressStr != null
+				&& addressStr.length() > 0
+				&& addressStr.indexOf(' ') < 0;
 	}
 
 	/**
@@ -1116,23 +1124,13 @@ public final class EMail implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("to", _toAddresses)
-				.add("cc", _ccAddresses.isEmpty() ? null : _ccAddresses)
-				.add("bcc", _bccAddresses.isEmpty() ? null : _bccAddresses)
-				.add("replyTo", _replyToAddress)
+				.add("to", _to)
+				.add("cc", _cc.isEmpty() ? null : _cc)
+				.add("bcc", _bcc.isEmpty() ? null : _bcc)
+				.add("replyTo", _replyTo)
 				.add("subject", _subject)
 				.add("attachments", _attachments.isEmpty() ? null : _attachments)
 				.add("mailbox", _mailbox)
 				.toString();
-	}
-	
-	public static List<String> toEMailsList(final String emailsListStr)
-	{
-		if (Check.isEmpty(emailsListStr, true))
-		{
-			return ImmutableList.of();
-		}
-
-		return Splitter.on(";").trimResults().omitEmptyStrings().splitToList(emailsListStr);
 	}
 }	// EMail

@@ -12,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.lang3.StringUtils;
@@ -27,8 +26,10 @@ import org.slf4j.Logger;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
+import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.event.IEventBusFactory;
@@ -40,6 +41,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.notification.UserNotificationRequest.TargetViewAction;
 import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.notification.spi.impl.NullRecordTextProvider;
+import de.metas.process.AdProcessId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.ui.web.WebuiURLs;
@@ -422,7 +424,7 @@ public class NotificationSenderTemplate
 			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
 		}
 
-		final EMail mail = mailBL.createEMail(Env.getCtx(),
+		final EMail mail = mailBL.createEMail(
 				mailbox,
 				notificationsConfig.getEmail(),
 				subject,
@@ -437,10 +439,10 @@ public class NotificationSenderTemplate
 		final I_AD_Client adClient = clientDAO.getById(notificationsConfig.getClientId());
 		final Mailbox mailbox = mailBL.findMailBox(
 				adClient,
-				OrgId.toRepoId(notificationsConfig.getOrgId()),
-				0,  // AD_Process_ID
-				null,  // C_DocType - Task FRESH-203 this shall work as before
-				null,  // customType
+				notificationsConfig.getOrgId(),
+				(AdProcessId)null,  // AD_Process_ID
+				(DocBaseAndSubType)null,  // Task FRESH-203 this shall work as before
+				(EMailCustomType)null,  // customType
 				null); // sender
 		Check.assumeNotNull(mailbox, "IMailbox for adClient={}, AD_Org_ID={}", adClient, notificationsConfig.getOrgId());
 		return mailbox;

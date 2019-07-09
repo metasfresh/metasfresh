@@ -13,6 +13,8 @@ import org.compiere.model.I_C_BPartner;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -108,15 +110,23 @@ public class AutoRegistrationMailUtil
 				final String message = text.getTextSnippetParsed(attributesToUse);
 				//
 				if (Check.isEmpty(message, true))
+				 {
 					return null;
 				//
+				}
 
 				// prepare mail
 				final StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
 				st.nextToken();
 
 				final IMailBL mailBL = Services.get(IMailBL.class);
-				final EMail email = mailBL.createEMail(client, null, user.getEMail(), text.getSubject(), message, true);
+				final EMail email = mailBL.createEMail(
+						client,
+						(EMailCustomType)null, 
+						EMailAddress.ofString(user.getEMail()), 
+						text.getSubject(), 
+						message,
+						true);
 
 				if (email == null)
 				{
@@ -124,7 +134,7 @@ public class AutoRegistrationMailUtil
 				}
 				while (st.hasMoreTokens())
 				{
-					email.addTo(st.nextToken());
+					email.addTo(EMailAddress.ofString(st.nextToken()));
 				}
 
 				// now send mail

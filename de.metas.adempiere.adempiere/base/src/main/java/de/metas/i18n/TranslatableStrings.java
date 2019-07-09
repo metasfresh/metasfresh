@@ -18,10 +18,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.DisplayType;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.currency.Amount;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -215,6 +218,15 @@ public class TranslatableStrings
 	public static ITranslatableString nullToEmpty(final ITranslatableString trl)
 	{
 		return trl != null ? trl : empty();
+	}
+
+	public static ITranslatableString amount(@NonNull final Amount amount)
+	{
+		return builder()
+				.append(amount.getValue(), DisplayType.Amount)
+				.append(" ")
+				.append(amount.getCurrencyCode())
+				.build();
 	}
 
 	public static NumberTranslatableString number(final BigDecimal valueBD, final int displayType)

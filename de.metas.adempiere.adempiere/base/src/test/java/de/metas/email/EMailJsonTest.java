@@ -79,7 +79,7 @@ public class EMailJsonTest
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost("smtpHost")
-				.email("from@email.com")
+				.email(EMailAddress.ofString("from@email.com"))
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
@@ -96,7 +96,7 @@ public class EMailJsonTest
 	{
 		final Mailbox mailbox = Mailbox.builder()
 				.smtpHost("smtpHost")
-				.email("from@email.com")
+				.email(EMailAddress.ofString("from@email.com"))
 				.smtpAuthorization(true)
 				.username("username")
 				.password("password111")
@@ -105,17 +105,17 @@ public class EMailJsonTest
 				.adUserId(UserId.ofRepoId(5678))
 				.columnUserTo("columnUserTo")
 				.build();
-		final String to = "to@email.com";
+		final EMailAddress to = EMailAddress.ofString("to@email.com");
 		final String subject = "test email subject";
 		final String message = "dummy text message";
 		final boolean html = false;
 		final EMail email = new EMail(mailbox, to, subject, message, html);
-		email.addTo("to2@email.com");
-		email.addCc("cc1@email.com");
-		email.addCc("cc2@email.com");
-		email.addBcc("bcc1@email.com");
-		email.addBcc("bcc2@email.com");
-		email.setReplyTo("reply-to@email.com");
+		email.addTo(EMailAddress.ofString("to2@email.com"));
+		email.addCc(EMailAddress.ofString("cc1@email.com"));
+		email.addCc(EMailAddress.ofString("cc2@email.com"));
+		email.addBcc(EMailAddress.ofString("bcc1@email.com"));
+		email.addBcc(EMailAddress.ofString("bcc2@email.com"));
+		email.setReplyTo(EMailAddress.ofString("reply-to@email.com"));
 		email.addAttachment("dummy.pdf", generateBytes(20));
 		email.addAttachment(new URI("http://dummy.com/report.pdf"));
 

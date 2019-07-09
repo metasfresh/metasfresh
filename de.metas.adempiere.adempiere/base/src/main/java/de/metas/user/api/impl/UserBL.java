@@ -4,9 +4,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -21,9 +18,11 @@ import org.slf4j.Logger;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -47,7 +46,7 @@ public class UserBL implements IUserBL
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
 	 */
-	private static final String MAILCONFIG_CUSTOMTYPE_UserPasswordReset = "L";
+	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
@@ -91,18 +90,20 @@ public class UserBL implements IUserBL
 	@Override
 	public void createResetPasswordByEMailRequest(final I_AD_User user)
 	{
-		final String emailTo = user.getEMail();
-		if (Check.isEmpty(emailTo, true))
+		final EMailAddress emailTo = EMailAddress.ofNullableString(user.getEMail());
+		if (emailTo == null)
 		{
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
 
 		final IClientDAO adClientsRepo = Services.get(IClientDAO.class);
-		final int adClientId = user.getAD_Client_ID();
+		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
 		final I_AD_Client adClient = adClientsRepo.getById(adClientId);
-		if (adClient.getPasswordReset_MailText_ID() <= 0)
+
+		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoIdOrNull(adClient.getPasswordReset_MailText_ID());
+		if (mailTemplateId == null)
 		{
-			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ", @AD_Client_ID@: " + adClientId + ")");
+			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@: {}, @AD_Client_ID@: {})", user, adClientId);
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
@@ -111,12 +112,11 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
-		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(adClient.getPasswordReset_MailText_ID());
 		final IMailBL mailService = Services.get(IMailBL.class);
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		mailTextBuilder.customVariable("URL", passwordResetURL);
 		mailTextBuilder.bpartnerContact(user);
-		
+
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
 		if (bpartnerId != null)
 		{
@@ -300,48 +300,29 @@ public class UserBL implements IUserBL
 		// and considers the AD_User.EMail valid only if all of them are valid.
 		// see https://github.com/metasfresh/metasfresh/issues/1953
 
-		final String emailsListStr = user.getEMail();
-		final List<String> emails = EMail.toEMailsList(emailsListStr);
-		if (emails.isEmpty())
+		try
+		{
+			final List<EMailAddress> emails = EMailAddress.ofSemicolonSeparatedList(user.getEMail());
+			if (emails.isEmpty())
+			{
+				return false;
+			}
+
+			final boolean haveInvalidEMails = emails.stream().anyMatch(email -> EMailAddress.checkEMailValid(email.getAsString()) != null);
+			return !haveInvalidEMails;
+		}
+		catch (Exception ex)
 		{
 			return false;
 		}
-
-		final boolean haveInvalidEMails = emails.stream().anyMatch(email -> checkEMailValid(email) != null);
-		return !haveInvalidEMails;
 	}	// isEMailValid
-
-	private static ITranslatableString checkEMailValid(final String email)
-	{
-		if (Check.isEmpty(email, true))
-		{
-			return TranslatableStrings.constant("no email");
-		}
-		try
-		{
-			final InternetAddress ia = new InternetAddress(email, true);
-			ia.validate();	// throws AddressException
-
-			if (ia.getAddress() == null)
-			{
-				return TranslatableStrings.constant("invalid email");
-			}
-
-			return null; // OK
-		}
-		catch (AddressException ex)
-		{
-			logger.warn("Invalid email address: {}", email, ex);
-			return TranslatableStrings.constant(ex.getLocalizedMessage());
-		}
-	}
 
 	@Override
 	public ITranslatableString checkCanSendEMail(final I_AD_User user)
 	{
 		// Email
 		{
-			final ITranslatableString errmsg = checkEMailValid(user.getEMail());
+			final ITranslatableString errmsg = EMailAddress.checkEMailValid(user.getEMail());
 			if (errmsg != null)
 			{
 				return errmsg;
@@ -370,10 +351,17 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public ITranslatableString checkCanSendEMail(final int adUserId)
+	public void assertCanSendEMail(@NonNull final UserId adUserId)
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
-		return checkCanSendEMail(user);
+		final ITranslatableString errmsg = checkCanSendEMail(user);
+		if (errmsg != null)
+		{
+			throw new AdempiereException(TranslatableStrings.builder()
+					.append("User cannot send emails: ")
+					.append(errmsg)
+					.build());
+		}
 	}
 
 	@Override

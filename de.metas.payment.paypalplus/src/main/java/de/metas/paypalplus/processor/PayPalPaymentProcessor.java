@@ -20,9 +20,9 @@ import com.paypal.orders.OrderRequest;
 import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.IMailBL;
 import de.metas.email.templates.MailTextBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.money.CurrencyRepository;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessor;
@@ -31,8 +31,8 @@ import de.metas.paypalplus.PayPalConfig;
 import de.metas.paypalplus.controller.PayPalConfigProvider;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
-import de.metas.util.Services;
 import de.metas.paypalplus.logs.PayPalLogRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -60,6 +60,7 @@ import lombok.NonNull;
 @Component
 public class PayPalPaymentProcessor implements PaymentProcessor
 {
+	private final IMailBL mailService = Services.get(IMailBL.class);
 	private final PayPalConfigProvider payPalConfigProvider;
 	private final PayPalLogRepository logsRepo;
 	private final CurrencyRepository currencyRepo;
@@ -103,16 +104,19 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	public void processReservation(@NonNull final PaymentReservation reservation)
 	{
 		final PayPalConfig config = getConfig();
-		
+
 		//
 		// Create Order
 		{
 			final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, config);
 			final HttpResponse<Order> response = executeRequest(ordersCreateRequest);
 
+			
 			final URL approveUrl = extractApproveUrl(response.result());
-			final MailTextBuilder mailTextBuilder = Services.get(IMailBL.class).newMailTextBuilder(config.getOrderApproveMailTemplateId());
-			mailTextBuilder.bpartner(bpartner)
+			final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(config.getOrderApproveMailTemplateId());
+			mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
+			mailTextBuilder.customVariable("ApproveURL", approveUrl.toExternalForm());
+			mailTextBuilder.customVariable("Amount", TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
 		}
 
 		// TODO Auto-generated method stub

@@ -27,14 +27,15 @@ import java.util.Properties;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_DocType;
 
-import de.metas.email.templates.MailTextBuilder;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
-import de.metas.i18n.ITranslatableString;
+import de.metas.email.templates.MailTextBuilder;
+import de.metas.process.AdProcessId;
 import de.metas.util.ISingletonService;
 
 /**
@@ -48,34 +49,27 @@ public interface IMailBL extends ISingletonService
 	/**
 	 * @throws MailboxNotFoundException
 	 */
-	Mailbox findMailBox(I_AD_Client client,
-			int AD_Org_ID,
-			int AD_Process_ID,
-			I_C_DocType docType,
-			String customType,
+	Mailbox findMailBox(
+			I_AD_Client client,
+			OrgId orgId,
+			AdProcessId adProcessId,
+			DocBaseAndSubType docBaseAndSubType,
+			EMailCustomType customType,
 			I_AD_User user);
 
-	public static final class MailboxNotFoundException extends AdempiereException
-	{
-		private static final long serialVersionUID = 8412719309323544757L;
-
-		public MailboxNotFoundException(ITranslatableString msg)
-		{
-			super(msg);
-		}
-	}
-
-	EMail createEMail(I_AD_Client client,
-			String mailCustomType,
-			String to,
+	EMail createEMail(
+			I_AD_Client client,
+			EMailCustomType mailCustomType,
+			EMailAddress to,
 			String subject,
 			String message,
 			boolean html);
 
-	EMail createEMail(I_AD_Client client,
-			String mailCustomType,
+	EMail createEMail(
+			I_AD_Client client,
+			EMailCustomType mailCustomType,
 			I_AD_User from,
-			String to,
+			EMailAddress to,
 			String subject,
 			String message,
 			boolean html);
@@ -83,9 +77,9 @@ public interface IMailBL extends ISingletonService
 	/**
 	 * @param html see the javadoc in {@link EMail}
 	 */
-	EMail createEMail(Properties ctx,
+	EMail createEMail(
 			Mailbox mailbox,
-			String to,
+			EMailAddress to,
 			String subject,
 			String message,
 			boolean html);

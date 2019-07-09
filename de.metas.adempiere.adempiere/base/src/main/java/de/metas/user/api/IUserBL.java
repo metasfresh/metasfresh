@@ -1,11 +1,9 @@
 package de.metas.user.api;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.hash.HashableString;
@@ -46,19 +44,7 @@ public interface IUserBL extends ISingletonService
 	 */
 	ITranslatableString checkCanSendEMail(I_AD_User user);
 
-	ITranslatableString checkCanSendEMail(int adUserId);
-
-	default void assertCanSendEMail(@NonNull final UserId adUserId)
-	{
-		final ITranslatableString errmsg = checkCanSendEMail(adUserId.getRepoId());
-		if (errmsg != null)
-		{
-			throw new AdempiereException(TranslatableStrings.builder()
-					.append("User cannot send emails: ")
-					.append(errmsg)
-					.build());
-		}
-	}
+	void assertCanSendEMail(@NonNull final UserId adUserId);
 
 	/** @return the user's language or fallbacks; never returns {@code null}. */
 	Language getUserLanguage(I_AD_User userRecord);

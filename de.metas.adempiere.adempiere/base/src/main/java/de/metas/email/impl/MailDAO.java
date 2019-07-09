@@ -2,17 +2,23 @@ package de.metas.email.impl;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.compiere.model.I_AD_Client;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_MailConfig;
-import org.compiere.model.I_C_DocType;
 
+import de.metas.document.DocBaseAndSubType;
+import de.metas.email.EMailCustomType;
 import de.metas.email.IMailDAO;
+import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -40,48 +46,17 @@ public class MailDAO implements IMailDAO
 {
 
 	@Override
-	public List<I_AD_MailConfig> retrieveMailConfigs(final I_AD_Client client, final int orgID, final int processID, final I_C_DocType docType, final String customType)
+	public List<I_AD_MailConfig> retrieveMailConfigs(
+			@NonNull final ClientId clientId,
+			final OrgId orgId_NOTUSED, // FIXME: why is not used????
+			@Nullable final AdProcessId processId,
+			@Nullable final DocBaseAndSubType docBaseAndSubType,
+			@Nullable final EMailCustomType customType)
 	{
-		final IQueryBuilder<I_AD_MailConfig> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_MailConfig.class, client);
-
-		// Client ID
-		queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, client.getAD_Client_ID());
-
-		if (!Check.isEmpty(customType, true))
-		{
-			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_CustomType, customType);
-
-		}
-		else if (processID > 0)
-		{
-			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Process_ID, processID);
-
-		}
-
-		// task FRESH-203
-		// DocBaseType and DocSubType added in the mail config
-
-		if (docType != null)
-		{
-			final String docBaseType = docType.getDocBaseType();
-
-			if (!Check.isEmpty(docBaseType, true))
-			{
-				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocBaseType, docBaseType);
-			}
-
-			final String docSubType = docType.getDocSubType();
-
-			if (!Check.isEmpty(docSubType, true))
-			{
-				queryBuilder.addInArrayOrAllFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
-			}
-
-		}
-
-		// Only active records
-		queryBuilder.addOnlyActiveRecordsFilter();
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_AD_MailConfig> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_AD_MailConfig.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Client_ID, clientId);
 
 		// Order by Org, Desc, Nulls Last
 		queryBuilder.orderBy()
@@ -89,9 +64,34 @@ public class MailDAO implements IMailDAO
 				.addColumn(I_AD_MailConfig.COLUMN_DocSubType, Direction.Ascending, Nulls.Last)
 				.endOrderBy();
 
-		final List<I_AD_MailConfig> configs = queryBuilder.create().list();
-		
-		
-		return configs;
+		if (customType != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_CustomType, customType.getCode());
+		}
+		else if (processId != null)
+		{
+			queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMNNAME_AD_Process_ID, processId);
+
+		}
+
+		//
+		// DocBaseType and DocSubType added in the mail config (task FRESH-203)
+		if (docBaseAndSubType != null)
+		{
+			final String docBaseType = docBaseAndSubType.getDocBaseType();
+			if (!Check.isEmpty(docBaseType, true))
+			{
+				queryBuilder.addEqualsFilter(I_AD_MailConfig.COLUMN_DocBaseType, docBaseType);
+			}
+
+			final String docSubType = docBaseAndSubType.getDocSubType();
+			if (!Check.isEmpty(docSubType, true))
+			{
+				queryBuilder.addInArrayFilter(I_AD_MailConfig.COLUMN_DocSubType, docSubType, null);
+			}
+
+		}
+
+		return queryBuilder.create().list();
 	}
 }

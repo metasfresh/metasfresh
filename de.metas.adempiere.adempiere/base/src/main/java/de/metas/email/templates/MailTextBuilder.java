@@ -12,9 +12,12 @@ import org.compiere.model.I_C_BPartner;
 import com.google.common.base.Joiner;
 
 import de.metas.adempiere.service.IVariableParserBL;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -68,7 +71,7 @@ public final class MailTextBuilder
 	private I_AD_User _bpartnerContact = null;
 	private Object _record = null;
 	private String _adLanguage = null;
-	private final Map<String, String> _customVariables = new HashMap<>();
+	private final Map<String, ITranslatableString> _customVariables = new HashMap<>();
 
 	//
 	// Cache
@@ -226,16 +229,12 @@ public final class MailTextBuilder
 	{
 		if (_customVariables.containsKey(variable))
 		{
-			final String value = _customVariables.get(variable);
-			return value == null ? "" : value;
+			final ITranslatableString valueTrl = _customVariables.get(variable);
+			return valueTrl.translate(getAdLanguage());
 		}
 
 		final Object value = variableParserBL.resolveVariable(variable, context, "@" + variable + "@");
-		if (value == null)
-		{
-			return "";
-		}
-		return value.toString();
+		return value != null ? value.toString() : "";
 	}
 
 	public MailTextBuilder bpartnerContact(final I_AD_User bpartnerContact)
@@ -249,6 +248,13 @@ public final class MailTextBuilder
 	{
 		final I_AD_User bpartnerContact = bpartnerContactsRepo.getById(bpartnerContactId);
 		return bpartnerContact(bpartnerContact);
+	}
+
+	public MailTextBuilder bpartnerContact(@NonNull final BPartnerContactId bpartnerContactId)
+	{
+		bpartner(bpartnerContactId.getBpartnerId());
+		bpartnerContact(bpartnerContactId.getUserId());
+		return this;
 	}
 
 	private I_AD_User getBPartnerContact()
@@ -398,10 +404,16 @@ public final class MailTextBuilder
 		return _record;
 	}
 
-	public MailTextBuilder customVariable(final String name, final String value)
+	public MailTextBuilder customVariable(@NonNull final String name, @Nullable final String value)
+	{
+		return customVariable(name, TranslatableStrings.anyLanguage(value));
+	}
+
+	public MailTextBuilder customVariable(@NonNull final String name, @NonNull final ITranslatableString value)
 	{
 		_customVariables.put(name, value);
 		invalidateCache();
 		return this;
 	}
+
 }

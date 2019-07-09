@@ -39,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLetterAttachment;
@@ -64,6 +63,7 @@ import org.slf4j.Logger;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -287,40 +287,28 @@ public class EMailDialog
 		// metas: new list box to select text snippet
 		lBoilerPlate.setText(msgBL.translate(ctx, I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID) + ":");
 		fBoilerPlate = new VLookup(I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID, false, false, true, MADBoilerPlate.getAllLookup(getWindowNo()));
-		fBoilerPlate.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
+		fBoilerPlate.addActionListener(e -> {
+			final Integer id = (Integer)fBoilerPlate.getValue();
+			if (id == null)
 			{
-				final Integer id = (Integer)fBoilerPlate.getValue();
-				if (id == null)
-				{
-					return;
-				}
-				final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, id);
-
-				//
-				// Set subject from boiler plate
-				// if (Check.isEmpty(getSubject(), true))
-				{
-					final String subject = MADBoilerPlate.parseText(ctx, boilerPlate.getSubject(), true, attributes, ITrx.TRXNAME_None);
-					setSubject(subject);
-				}
-				setMessage(boilerPlate.getTextSnippetParsed(attributes));
+				return;
 			}
+			final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, id);
+
+			//
+			// Set subject from boiler plate
+			// if (Check.isEmpty(getSubject(), true))
+			{
+				final String subject = MADBoilerPlate.parseText(ctx, boilerPlate.getSubject(), true, attributes, ITrx.TRXNAME_None);
+				setSubject(subject);
+			}
+			setMessage(boilerPlate.getTextSnippetParsed(attributes));
 		});
 
 		fMessage = new RichTextEditor(attributes); // metas
 
 		fResolveVariables = new CCheckBox(msgBL.getMsg(ctx, "de.metas.letter.ResolveVariables"), fMessage.isResolveVariables());
-		fResolveVariables.addActionListener(new ActionListener()
-		{
-			@Override
-			public void actionPerformed(final ActionEvent e)
-			{
-				fMessage.setResolveVariables(fResolveVariables.isSelected());
-			}
-		});
+		fResolveVariables.addActionListener(e -> fMessage.setResolveVariables(fResolveVariables.isSelected()));
 
 		lLetter.setText(msgBL.translate(ctx, "de.metas.letters.AttachedLetter") + ":");
 
@@ -579,14 +567,14 @@ public class EMailDialog
 		confirmPanel.getOKButton().setEnabled(false);
 
 		final StringTokenizer st = new StringTokenizer(getTo(), " ,;", false);
-		final String to = st.nextToken();
+		final EMailAddress to = EMailAddress.ofString(st.nextToken());
 		email = m_client.createEMail(getFrom(), to, getSubject(), getMessage(), true);
 		String status = "Check Setup";
 		if (email != null)
 		{
 			while (st.hasMoreTokens())
 			{
-				email.addTo(st.nextToken());
+				email.addTo(EMailAddress.ofString(st.nextToken()));
 			}
 			// cc
 			final StringTokenizer stcc = new StringTokenizer(getCc(), " ,;", false);
@@ -595,7 +583,7 @@ public class EMailDialog
 				final String cc = stcc.nextToken();
 				if (cc != null && cc.length() > 0)
 				{
-					email.addCc(cc);
+					email.addCc(EMailAddress.ofString(cc));
 				}
 			}
 			addBcc(email); // metas
@@ -710,15 +698,12 @@ public class EMailDialog
 	{
 		if (archive == null)
 		{
-			final Properties ctx = Env.getCtx();
-			final IContextAware context = new PlainContextAware(ctx);
-
 			if (m_AD_Table_ID <= 0 || m_Record_ID <= 0)
 			{
 				return;
 			}
 			final Object model = new TableRecordReference(m_AD_Table_ID, m_Record_ID)
-					.getModel(context);
+					.getModel(PlainContextAware.newOutOfTrx());
 
 			archive = Services.get(IArchiveDAO.class).retrievePDFArchiveForModel(model, I_AD_Archive.class);
 		}
@@ -727,7 +712,15 @@ public class EMailDialog
 			return;
 		}
 		final String action = "eMail";
-		Services.get(IArchiveEventManager.class).fireEmailSent(archive, action, getFrom(), getFrom().getEMailUser(), getTo(), getCc(), getBcc(), status);
+		Services.get(IArchiveEventManager.class).fireEmailSent(
+				archive, 
+				action, 
+				getFrom(), 
+				EMailAddress.ofNullableString(getFrom().getEMailUser()), 
+				EMailAddress.ofNullableString(getTo()), 
+				EMailAddress.ofNullableString(getCc()), 
+				EMailAddress.ofNullableString(getBcc()), 
+				status);
 	}
 
 	/**
@@ -768,7 +761,7 @@ public class EMailDialog
 			final String bcc = stBcc.nextToken();
 			if (bcc != null && bcc.length() > 0)
 			{
-				email.addBcc(bcc);
+				email.addBcc(EMailAddress.ofString(bcc));
 			}
 		}
 	}

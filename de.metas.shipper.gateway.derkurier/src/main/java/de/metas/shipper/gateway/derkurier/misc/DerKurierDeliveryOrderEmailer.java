@@ -11,6 +11,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
+import de.metas.email.EMailAddress;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
 import de.metas.i18n.IMsgBL;
@@ -19,7 +20,6 @@ import de.metas.shipping.api.ShipperTransportationId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -73,7 +73,7 @@ public class DerKurierDeliveryOrderEmailer
 		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository
 				.retrieveConfigForShipperId(shipperId);
 
-		final String emailAddress = shipperConfig.getDeliveryOrderRecipientEmailOrNull();
+		final EMailAddress emailAddress = shipperConfig.getDeliveryOrderRecipientEmailOrNull();
 		if (emailAddress == null)
 		{
 			return;
@@ -93,7 +93,7 @@ public class DerKurierDeliveryOrderEmailer
 		final DerKurierShipperConfig shipperConfig = derKurierShipperConfigRepository
 				.retrieveConfigForShipperId(shipperId);
 
-		final String emailAddress = shipperConfig.getDeliveryOrderRecipientEmailOrNull();
+		final EMailAddress emailAddress = shipperConfig.getDeliveryOrderRecipientEmailOrNull();
 		if (emailAddress == null)
 		{
 			return;
@@ -106,7 +106,7 @@ public class DerKurierDeliveryOrderEmailer
 	@VisibleForTesting
 	void sendAttachmentAsEmail(
 			@NonNull final Mailbox mailBox,
-			@NonNull final String mailTo,
+			@NonNull final EMailAddress mailTo,
 			@NonNull final AttachmentEntry attachmentEntry)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
@@ -118,7 +118,7 @@ public class DerKurierDeliveryOrderEmailer
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 		final String message = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage, new Object[] { csvDataString });
 
-		final EMail eMail = mailBL.createEMail(Env.getCtx(),
+		final EMail eMail = mailBL.createEMail(
 				mailBox,
 				mailTo,
 				subject,
