@@ -1,9 +1,9 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-undef */
 export class Warehouse {
   constructor(name) {
     cy.log(`Warehouse - set name = ${name}`);
     this.name = name;
+    this.locators = [];
+    this.routes = [];
   }
 
   setName(name) {
@@ -15,24 +15,6 @@ export class Warehouse {
   setValue(value) {
     cy.log(`Warehouse - set value = ${value}`);
     this.value = value;
-    return this;
-  }
-
-  setDescription(description) {
-    cy.log(`Warehouse - set description = ${description}`);
-    this.description = description;
-    return this;
-  }
-
-  setSOWarehouse(isSOWarehouse) {
-    cy.log(`Warehouse - set isSOWarehouse = ${isSOWarehouse}`);
-    this.isSOWarehouse = isSOWarehouse;
-    return this;
-  }
-
-  setPOWarehouse(isPOWarehouse) {
-    cy.log(`Warehouse - set isPOWarehouse = ${isPOWarehouse}`);
-    this.isPOWarehouse = isPOWarehouse;
     return this;
   }
 
@@ -51,24 +33,45 @@ export class Warehouse {
 }
 
 function applyWarehouse(Warehouse) {
-  const timestamp = new Date().getTime();
-
-  describe(`Create new Warehouse ${Warehouse.name}`, function() {
-    cy.visitWindow('139', 'NEW');
-    cy.writeIntoStringField('Name', `${Warehouse.name}${timestamp}`);
-    cy.clearField('Value').writeIntoStringField('Value', Warehouse.value);
-    cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
-
-    if (Warehouse.isSOWarehouse && !isSOWarehouseValue) {
-      cy.getFieldValue('isSOWarehouse').then(isSOWarehouseValue => {
-        cy.clickOnCheckBox('isSOWarehouse');
-      });
-    }
-
-    if (Warehouse.isPOWarehouse && !isPOWarehouseValue) {
-      cy.getFieldValue('isPOWarehouse').then(isPOWarehouseValue => {
-        cy.clickOnCheckBox('isPOWarehouse');
-      });
-    }
+  cy.visitWindow('139', 'NEW')
+    .writeIntoStringField('Name', Warehouse.Name)
+    .clearField('Value')
+    .writeIntoStringField('Value', Warehouse.Value);
+  cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
+  Warehouse.locators.forEach(locator => {
+    applyLocator(locator);
+    Warehouse.routes.forEach(routes => {
+      applyRoutes(routes);
+    });
   });
+}
+function applyLocator(locator) {
+  cy.get(`#tab_M_Locator`).click();
+  cy.pressAddNewButton()
+    .clearField('Value', true)
+    .writeIntoStringField('Value', locator.value, true)
+    .writeIntoStringField('X', locator.x1)
+    .writeIntoStringField('X1', locator.x1)
+    .writeIntoStringField('Z', locator.z)
+    .writeIntoStringField('Y', locator.y)
+    .setCheckBoxValue('IsAfterPickingLocator', locator.IsAfterPickingLocator, true)
+    .pressDoneButton();
+}
+function applyRoutes(routes) {
+  cy.get(`#tab_M_Warehouse_Routing`).click();
+  cy.pressAddNewButton()
+    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .pressDoneButton();
+  cy.pressAddNewButton()
+    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .pressDoneButton();
+  cy.pressAddNewButton()
+    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .pressDoneButton();
+  cy.pressAddNewButton()
+    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .pressDoneButton();
+  cy.pressAddNewButton()
+    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .pressDoneButton();
 }
