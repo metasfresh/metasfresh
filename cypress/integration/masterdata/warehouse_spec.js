@@ -11,8 +11,8 @@ describe('Create test: warehouse, https://github.com/metasfresh/metasfresh-e2e/i
       Object.assign(new Warehouse(), warehouseJson)
         .setName(warehouseName)
         .setValue(warehouseValue)
-        .setLocator(locator)
-        .setRoutes(getLanguageSpecific(routes, 'DocBaseType'))
+        // .setLocator(locator)
+        // .setRoutes(getLanguageSpecific(routes, 'DocBaseType'))
         .apply();
     });
   });
