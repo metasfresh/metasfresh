@@ -153,7 +153,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setDatePromised(SystemTime.asDayTimestamp()); // task 06269 (see KurzBeschreibung)
 			setDateOrdered(new Timestamp(System.currentTimeMillis()));
 
-			setFreightAmt(BigDecimal.ZERO);
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
@@ -702,7 +701,7 @@ public class MOrder extends X_C_Order implements IDocument
 				.setOrderBy(orderBy)
 				.listImmutable(MOrderLine.class);
 	}
-	
+
 	public void invalidateLines()
 	{
 		_lines = null;
@@ -747,18 +746,16 @@ public class MOrder extends X_C_Order implements IDocument
 	{
 		return getLines(false, null);
 	}	// getLines
-	
+
 	private List<MOrderLine> getLinesRequeryOrderedByProduct()
 	{
 		return getLines(true, I_C_OrderLine.COLUMNNAME_M_Product_ID);
 	}
-	
+
 	public List<MOrderLine> getLinesRequery()
 	{
 		return getLines(true, null);
 	}
-
-
 
 	/**
 	 * Renumber Lines
@@ -843,7 +840,6 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<I_M_InOut> inOuts = Services.get(IOrderDAO.class).retrieveInOutsForMatchingOrderLines(InterfaceWrapperHelper.create(this, I_C_Order.class));
 		return LegacyAdapters.convertToPOArray(inOuts, MInOut.class);
 	}	// getShipments
-
 
 	/**
 	 * Get Document Status
@@ -1379,7 +1375,7 @@ public class MOrder extends X_C_Order implements IDocument
 					line.setAD_Org_ID(getAD_Org_ID());
 				}
 			}
-			
+
 			// Binding
 			final BigDecimal target = binding ? line.getQtyOrdered() : BigDecimal.ZERO;
 			final BigDecimal difference = target
@@ -1611,7 +1607,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setProcessed(false);
 			return IDocument.STATUS_InProgress;
 		}
-		
+
 		//
 		// Offers
 		if (MDocType.DOCSUBTYPE_Proposal.equals(DocSubType)
@@ -1637,7 +1633,7 @@ public class MOrder extends X_C_Order implements IDocument
 			setProcessed(true);
 			return IDocument.STATUS_Completed;
 		}
-		
+
 		//
 		// Waiting Payment - until we have a payment
 		if (!m_forceCreation
@@ -2350,13 +2346,13 @@ public class MOrder extends X_C_Order implements IDocument
 		sb.append(getDocumentNo());
 		// : Grand Total = 123.00 (#1)
 		sb.append(": ").append(Services.get(IMsgBL.class).translate(getCtx(), "GrandTotal")).append("=").append(getGrandTotal());
-		
+
 		final List<MOrderLine> lines = _lines;
 		if (lines != null)
 		{
 			sb.append(" (#").append(lines.size()).append(")");
 		}
-		
+
 		// - Description
 		if (getDescription() != null && getDescription().length() > 0)
 		{
