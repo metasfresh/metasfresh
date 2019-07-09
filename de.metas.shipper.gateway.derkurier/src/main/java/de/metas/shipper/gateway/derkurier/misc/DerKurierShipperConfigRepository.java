@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
 import de.metas.email.EMailAddress;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Check;
 import de.metas.util.Services;

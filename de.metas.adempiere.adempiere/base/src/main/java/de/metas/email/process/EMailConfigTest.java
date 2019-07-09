@@ -38,7 +38,7 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;

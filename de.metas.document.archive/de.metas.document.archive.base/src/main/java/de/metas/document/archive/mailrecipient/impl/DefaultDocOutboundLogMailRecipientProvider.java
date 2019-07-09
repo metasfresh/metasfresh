@@ -24,8 +24,8 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvid
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
-import de.metas.email.MailboxNotFoundException;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxNotFoundException;
 import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;

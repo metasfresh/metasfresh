@@ -32,6 +32,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxNotFoundException;
 import de.metas.email.templates.MailTemplate;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;

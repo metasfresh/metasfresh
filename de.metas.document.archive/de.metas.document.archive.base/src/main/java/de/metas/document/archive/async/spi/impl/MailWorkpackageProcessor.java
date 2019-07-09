@@ -41,7 +41,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;

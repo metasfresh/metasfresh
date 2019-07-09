@@ -1,4 +1,4 @@
-package de.metas.email;
+package de.metas.email.mailboxes;
 
 import org.adempiere.exceptions.AdempiereException;
 

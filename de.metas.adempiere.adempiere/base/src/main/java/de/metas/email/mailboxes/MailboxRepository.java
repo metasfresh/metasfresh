@@ -1,4 +1,4 @@
-package de.metas.email;
+package de.metas.email.mailboxes;
 
 import java.util.List;
 
@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;

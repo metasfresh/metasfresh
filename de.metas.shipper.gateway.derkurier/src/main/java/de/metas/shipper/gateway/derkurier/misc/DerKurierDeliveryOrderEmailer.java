@@ -13,7 +13,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipping.api.ShipperTransportationId;

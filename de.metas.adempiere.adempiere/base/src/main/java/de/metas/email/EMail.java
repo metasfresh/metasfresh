@@ -56,6 +56,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.smtp.SMTPMessage;
 
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 import de.metas.util.Check;

@@ -1,10 +1,11 @@
-package de.metas.email;
+package de.metas.email.mailboxes;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.email.EMailAddress;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;

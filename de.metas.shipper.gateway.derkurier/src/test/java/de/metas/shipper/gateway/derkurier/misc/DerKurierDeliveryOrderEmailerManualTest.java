@@ -15,7 +15,7 @@ import org.junit.Test;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMailAddress;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 
 /*

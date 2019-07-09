@@ -11,6 +11,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import de.metas.email.mailboxes.Mailbox;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

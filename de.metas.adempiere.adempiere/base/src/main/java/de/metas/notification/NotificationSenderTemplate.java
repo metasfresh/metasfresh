@@ -31,7 +31,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
 import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.i18n.IMsgBL;

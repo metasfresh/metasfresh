@@ -5,7 +5,7 @@ import java.time.LocalTime;
 import javax.annotation.Nullable;
 
 import de.metas.email.EMailAddress;
-import de.metas.email.Mailbox;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
