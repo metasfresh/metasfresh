@@ -38,7 +38,6 @@ import lombok.Value;
  */
 
 @Value
-@Builder
 public class FreightCostContext
 {
 	@NonNull
@@ -59,5 +58,36 @@ public class FreightCostContext
 	DeliveryViaRule deliveryViaRule;
 
 	@Nullable
-	Money freightAmt;
+	Money manualFreightAmt;
+
+	@Builder
+	private FreightCostContext(
+			@NonNull final OrgId shipFromOrgId,
+			@Nullable final BPartnerId shipToBPartnerId,
+			@Nullable final CountryId shipToCountryId,
+			@Nullable final ShipperId shipperId,
+			@NonNull final LocalDate date,
+			@NonNull final FreightCostRule freightCostRule,
+			@NonNull final DeliveryViaRule deliveryViaRule,
+			@Nullable final Money manualFreightAmt)
+	{
+		this.shipFromOrgId = shipFromOrgId;
+		this.shipToBPartnerId = shipToBPartnerId;
+		this.shipToCountryId = shipToCountryId;
+		this.shipperId = shipperId;
+		this.date = date;
+		this.freightCostRule = freightCostRule;
+		this.deliveryViaRule = deliveryViaRule;
+
+		if(freightCostRule.isFixPrice())
+		{
+			// Check.assumeNotNull(manualFreightAmt, "Parameter manualFreightAmt is not null"); // null is OK
+			this.manualFreightAmt = manualFreightAmt;
+		}
+		else
+		{
+			this.manualFreightAmt = null;
+		}
+	}
+
 }
