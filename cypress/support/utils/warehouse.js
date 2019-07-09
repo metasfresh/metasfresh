@@ -1,6 +1,6 @@
 export class Warehouse {
   constructor(name) {
-    cy.log(`Warehouse - set name = ${name}`);
+    cy.log(`Create Warehouse - name = ${name}`);
     this.name = name;
     this.locators = [];
     this.routes = [];
@@ -34,9 +34,9 @@ export class Warehouse {
 
 function applyWarehouse(Warehouse) {
   cy.visitWindow('139', 'NEW')
-    .writeIntoStringField('Name', Warehouse.Name)
+    .writeIntoStringField('Name', Warehouse.name)
     .clearField('Value')
-    .writeIntoStringField('Value', Warehouse.Value);
+    .writeIntoStringField('Value', Warehouse.value);
   cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
   Warehouse.locators.forEach(locator => {
     applyLocator(locator);
@@ -45,33 +45,35 @@ function applyWarehouse(Warehouse) {
     });
   });
 }
+
 function applyLocator(locator) {
   cy.get(`#tab_M_Locator`).click();
   cy.pressAddNewButton()
     .clearField('Value', true)
     .writeIntoStringField('Value', locator.value, true)
-    .writeIntoStringField('X', locator.x1)
-    .writeIntoStringField('X1', locator.x1)
-    .writeIntoStringField('Z', locator.z)
-    .writeIntoStringField('Y', locator.y)
-    .setCheckBoxValue('IsAfterPickingLocator', locator.IsAfterPickingLocator, true)
+    .writeIntoStringField('X', locator.x1, true)
+    .writeIntoStringField('X1', locator.x1, true)
+    .writeIntoStringField('Z', locator.z, true)
+    .writeIntoStringField('Y', locator.y, true)
+    .setCheckBoxValue('IsAfterPickingLocator', locator.isAfterPickingLocator, true)
     .pressDoneButton();
 }
+
 function applyRoutes(routes) {
   cy.get(`#tab_M_Warehouse_Routing`).click();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docbasetype, true)
+    .selectInListField('DocBaseType', routes.docBaseType, true)
     .pressDoneButton();
 }
