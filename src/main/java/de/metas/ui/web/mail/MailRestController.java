@@ -12,7 +12,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -38,6 +37,8 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
@@ -194,13 +195,20 @@ public class MailRestController
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
+		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+		final IUserBL usersService = Services.get(IUserBL.class);
+		final IMailBL mailService = Services.get(IMailBL.class);
+		
 		final String emailId = webuiEmail.getEmailId();
 
 		//
 		// Create the email object
-		final I_AD_Client adClient = Services.get(IClientDAO.class).getById(userSession.getClientId());
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(userSession.getClientId());
 		final EMailCustomType mailCustomType = null;
-		final I_AD_User from = Services.get(IUserDAO.class).getById(webuiEmail.getFrom().getIdAsInt());
+		
+		final UserId fromUserId = webuiEmail.getFrom().getIdAs(UserId::ofRepoId);
+		final UserEMailConfig userEmailConfig = usersService.getEmailConfigById(fromUserId);
+		
 		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
 		{
@@ -210,7 +218,14 @@ public class MailRestController
 		final String subject = webuiEmail.getSubject();
 		final String message = webuiEmail.getMessage();
 		final boolean html = false;
-		final EMail email = Services.get(IMailBL.class).createEMail(adClient, mailCustomType, from, to, subject, message, html);
+		final EMail email = mailService.createEMail(
+				tenantEmailConfig, 
+				mailCustomType, 
+				userEmailConfig, 
+				to, 
+				subject, 
+				message, 
+				html);
 		toList.stream().skip(1).forEach(email::addTo);
 
 		webuiEmail.getAttachments()
