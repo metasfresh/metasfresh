@@ -42,8 +42,6 @@ public interface IMaterialTrackingBL extends ISingletonService
 	 * new {@link I_M_Material_Tracking_Ref} record is saved.
 	 *
 	 * If model was previously assigned to another material tracking and {@link MTLinkRequest#isAssumeNotAlreadyAssigned()} is <code>false</code>, then it will be unlinked first.
-	 *
-	 * @param req
 	 */
 	void linkModelToMaterialTracking(MTLinkRequest req);
 
