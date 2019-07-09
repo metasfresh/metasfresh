@@ -185,7 +185,6 @@ describe('Create Dunning Candidates', function () {
     selectNotFrequentFilterWidget('default');
     cy.writeIntoStringField('DocumentNo', siDocNumber, false, null, true);
     applyFilters();
-    cy.wait(1000);
   }
 });
 
