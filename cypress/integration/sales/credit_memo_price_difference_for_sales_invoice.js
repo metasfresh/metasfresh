@@ -70,15 +70,6 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
     });
-
-    // this is stupid. it seems that with cypress you can ONLY read the alias in the same "it" block. so i cannot retrieve my aliases
-    // in an organised (to be read "sane") fashion inside 'Save values needed for the next step', but must do it here, even though
-    // this step should only create the SI.
-    // WAT??!!
-    cy.get('@newInvoiceDocumentId').then(function ({documentId /* this is destructuring */}) {
-      originalSalesInvoiceID = documentId;
-      cy.log(`originalSalesInvoiceID is ${originalSalesInvoiceID}`);
-    });
   });
 
   it('Sales Invoice is Completed', function () {
@@ -95,6 +86,10 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
   it('Save values needed for the next step', function () {
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       originalSalesInvoiceNumber = documentNumber;
+    });
+
+    cy.getCurrentWindowRecordId().then(recordId => {
+      originalSalesInvoiceID = recordId;
     });
 
     cy.getStringFieldValue('M_PriceList_ID').then(priceList => {
@@ -183,14 +178,12 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.pressDoneButton(200);
   });
 
-
   let newTotalAmount = 0;
   it('Save the new total amount', function () {
-    cy.get('.header-breadcrumb-sitename').then(function (si) {
-      newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+    cy.getSalesInvoiceTotalAmount().then(totalAmount => {
+      newTotalAmount = totalAmount;
     });
   });
-
 
   it('Complete the Credit Memo SI', function () {
     // complete it and verify the status

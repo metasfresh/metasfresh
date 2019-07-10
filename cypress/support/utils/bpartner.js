@@ -38,6 +38,12 @@ export class BPartner {
     return this;
   }
 
+  setVendorPaymentTerm(paymentTerm) {
+    cy.log(`BPartner - set vendorPaymentTerm = ${paymentTerm}`);
+    this.vendorPaymentTerm = paymentTerm;
+    return this;
+  }
+
   setCustomerDunning(customerDunning) {
     cy.log(`BPartner - set customerDunning = ${customerDunning}`);
     this.customerDunning = customerDunning;
@@ -217,6 +223,16 @@ export class BPartner {
         })
       );
 
+      const vendorPaymentTermRequest = wrapRequest(
+        cy.request({
+          url: `${basicUri}/${bPartner.id}/AD_Tab-224/${bPartner.id}/field/PO_PaymentTerm_ID/dropdown`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
       const bPartnerRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-223`,
@@ -271,6 +287,7 @@ export class BPartner {
         vendorRequest,
         vendorDiscountSchemaRequest,
         vendorPricingSystemRequest,
+        vendorPaymentTermRequest,
         bPartnerRequest,
         cDiscountSchemaRequest,
         cPricingSystemRequest,
@@ -281,6 +298,7 @@ export class BPartner {
           vendorResponse,
           vendorDiscountSchemaResponse,
           vendorPricingSystemResponse,
+          vendorPaymentTermResponse,
           bPartnerResponse,
           discountSchemaResponse,
           pricingSystemResponse,
@@ -317,6 +335,18 @@ export class BPartner {
             value: {
               key: vendorPricingSystem.key,
               caption: vendorPricingSystem.caption,
+            },
+          });
+        }
+
+        const vendorPaymentTerm = findByName(vendorPaymentTermResponse, bPartner.vendorPaymentTerm);
+        if (bPartner.vendorPaymentTerm && vendorPaymentTerm) {
+          dataObject.push({
+            op: 'replace',
+            path: 'PO_PaymentTerm_ID',
+            value: {
+              key: vendorPaymentTerm.key,
+              caption: vendorPaymentTerm.caption,
             },
           });
         }
