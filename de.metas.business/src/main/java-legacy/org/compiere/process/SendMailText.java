@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
@@ -34,7 +35,7 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
@@ -54,6 +55,8 @@ import de.metas.util.Services;
  */
 public class SendMailText extends JavaProcess
 {
+	private final MailService mailService = Adempiere.getBean(MailService.class);
+	
 	/** What to send			*/
 	private MailTemplateId mailTemplateId;
 	private MailTextBuilder mailTextBuilder;
@@ -126,8 +129,7 @@ public class SendMailText extends JavaProcess
 	protected String doIt()
 	{
 		//	Mail Text
-		final IMailBL mailBL = Services.get(IMailBL.class);
-		this.mailTextBuilder = mailBL.newMailTextBuilder(mailTemplateId);
+		this.mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		
 		//	Client Info
 		m_client = MClient.get (getCtx());

@@ -64,7 +64,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.event.Topic;
@@ -1212,8 +1212,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 
 				MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getNode().getR_MailText_ID());
 				
-				final IMailBL mailBL = Services.get(IMailBL.class);
-				final MailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(mailTemplateId)
+				final MailService mailService = Adempiere.getBean(MailService.class);
+				final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
 						.recordAndUpdateBPartnerAndContact(po);
 
 				// metas: tsa: check for null strings
@@ -1706,9 +1706,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		final IDocument doc = getDocument();
 
-		final IMailBL mailBL = Services.get(IMailBL.class);
+		final MailService mailService = Adempiere.getBean(MailService.class);
 		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(m_node.getR_MailText_ID());
-		final MailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(mailTemplateId)
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
 				.recordAndUpdateBPartnerAndContact(m_po);
 		//
 		String subject = doc.getDocumentInfo()

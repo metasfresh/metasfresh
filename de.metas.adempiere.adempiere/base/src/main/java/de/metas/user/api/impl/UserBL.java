@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
@@ -19,7 +20,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
@@ -51,6 +52,8 @@ public class UserBL implements IUserBL
 
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
+
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
 	@Override
 	public HashableString getUserPassword(final I_AD_User user)
@@ -113,7 +116,6 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
-		final IMailBL mailService = Services.get(IMailBL.class);
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		mailTextBuilder.customVariable("URL", passwordResetURL);
 		mailTextBuilder.bpartnerContact(user);

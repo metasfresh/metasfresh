@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.impl.ClientDAO;
 import org.adempiere.util.LegacyAdapters;
@@ -39,7 +38,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.Language;
@@ -412,7 +411,7 @@ public class MClient extends X_AD_Client
 	 * Test EMail
 	 *
 	 * @return OK or error
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public String testEMail()
@@ -462,7 +461,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (UserId recipientUserId, String subject, String message, File attachment)
@@ -483,7 +482,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional collection of attachments
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	private boolean sendEMailAttachments (UserId recipientUserId, String subject, String message, Collection<File> attachments)
@@ -500,7 +499,7 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional collection of attachments
 	 * @param html
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	private boolean sendEMailAttachments (
@@ -542,7 +541,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment)
@@ -559,7 +558,7 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param html
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (EMailAddress to, String subject, String message, File attachment, boolean html)
@@ -605,7 +604,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param attachment optional attachment
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (UserEMailConfig from, I_AD_User to, String subject, String message, File attachment)
@@ -623,7 +622,7 @@ public class MClient extends X_AD_Client
 	 * @param attachment optional attachment
 	 * @param isHtml
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEMail (UserEMailConfig fromUserEmailConfig, I_AD_User to, String subject, String message, File attachment, boolean isHtml)
@@ -657,7 +656,7 @@ public class MClient extends X_AD_Client
 	 * @param to to user
 	 * @param email email
 	 * @return true if sent
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public boolean sendEmailNow(UserEMailConfig from, I_AD_User to, EMail email)
@@ -723,7 +722,7 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (EMailAddress to, String subject, String message)
@@ -741,7 +740,7 @@ public class MClient extends X_AD_Client
 	 * @param message message
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (EMailAddress to, String subject, String message, boolean html)
@@ -758,7 +757,7 @@ public class MClient extends X_AD_Client
 	 * @param subject sunject
 	 * @param message nessage
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	public EMail createEMail (UserEMailConfig fromUserEmailConfig, I_AD_User to, String subject, String message)
@@ -775,7 +774,7 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
 	private EMail createEMail (UserEMailConfig fromUserEmailConfig, I_AD_User userTo, String subject, String message, boolean html)
@@ -804,21 +803,27 @@ public class MClient extends X_AD_Client
 	 * @param message nessage
 	 * @param html
 	 * @return EMail
-	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
+	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
-	public EMail createEMail (UserEMailConfig fromUserEmailConfig, EMailAddress to, String subject, String message, boolean html)
+	public EMail createEMail (
+			final UserEMailConfig fromUserEmailConfig, 
+			final EMailAddress to, 
+			final String subject,
+			final String message,
+			final boolean html)
 	{
 		try
 		{
-			final IMailBL mailBL = Services.get(IMailBL.class);
+			final MailService mailService = Adempiere.getBean(MailService.class);
+			
 			final EMailCustomType mailCustomType = null;
 			final ClientEMailConfig tenantEmailConfig = ClientDAO.toClientEMailConfig(this);
-			return mailBL.createEMail(tenantEmailConfig, mailCustomType, fromUserEmailConfig, to, subject, message, html);
+			return mailService.createEMail(tenantEmailConfig, mailCustomType, fromUserEmailConfig, to, subject, message, html);
 		}
-		catch (AdempiereException e)
+		catch (Exception ex)
 		{
-			log.error("Failed to create the email", e);
+			log.error("Failed to create the email", ex);
 			return null;
 		}
 	}	//	createEMail

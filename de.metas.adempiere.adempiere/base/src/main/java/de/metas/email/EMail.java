@@ -43,7 +43,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
-import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -67,7 +66,7 @@ import lombok.NonNull;
 /**
  * EMail builder and sender.
  * 
- * To create a new email, please use {@link IMailBL}'s createMail methods.
+ * To create a new email, please use {@link MailService}'s createMail methods.
  * 
  * To send the message, please use {@link #send()}.
  * 
@@ -106,6 +105,10 @@ public final class EMail implements Serializable
 	private EMailAddress _replyTo;
 	@JsonIgnore
 	private InternetAddress _replyToAddress;
+	
+	@JsonIgnore
+	private InternetAddress _debugMailToAddress;
+	
 	/** Mail Subject */
 	@JsonProperty("subject")
 	private String _subject;
@@ -126,7 +129,7 @@ public final class EMail implements Serializable
 	@JsonIgnore
 	private transient EMailSentStatus _status = EMailSentStatus.NOT_SENT;
 
-	public EMail(
+	EMail(
 			@NonNull final Mailbox mailbox,
 			@Nullable final EMailAddress to,
 			@Nullable final String subject,
@@ -225,6 +228,16 @@ public final class EMail implements Serializable
 	{
 		_mailbox = mailbox;
 		setFrom(mailbox.getEmail());
+	}
+	
+	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress)
+	{
+		this._debugMailToAddress = debugMailToAddress;
+	}
+	
+	private InternetAddress getDebugMailToAddress()
+	{
+		return _debugMailToAddress;
 	}
 
 	public EMailSentStatus send()
@@ -403,21 +416,24 @@ public final class EMail implements Serializable
 	/**
 	 * Sets recipients.
 	 *
-	 * <b>NOTE: If {@link IMailBL#getDebugMailToAddressOrNull(Properties)} returns a valid mail address, it will send to that instead!</b>
+	 * <b>NOTE: If {@link #getDebugMailToAddress()} returns a valid mail address, it will send to that instead!</b>
 	 *
 	 * @param message
 	 * @param type
 	 * @param addresses
 	 * @throws MessagingException
 	 */
-	private void setRecipients(final SMTPMessage message, final RecipientType type, final List<? extends Address> addresses) throws MessagingException
+	private void setRecipients(
+			final SMTPMessage message, 
+			final RecipientType type, 
+			final List<? extends Address> addresses) throws MessagingException
 	{
 		if (addresses == null || addresses.isEmpty())
 		{
 			return;
 		}
 
-		final InternetAddress debugMailTo = Services.get(IMailBL.class).getDebugMailToAddressOrNull(Env.getCtx());
+		final InternetAddress debugMailTo = getDebugMailToAddress();
 		if (debugMailTo != null)
 		{
 			if (Message.RecipientType.TO.equals(type))

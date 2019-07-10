@@ -8,11 +8,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_MailText;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
-import de.metas.email.templates.MailTemplate;
+import de.metas.email.MailService;
 import de.metas.email.templates.MailTemplateId;
-import de.metas.email.templates.MailTemplateRepository;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.user.UserId;
@@ -50,11 +48,10 @@ import de.metas.util.Services;
 public class R_MailText_Test extends JavaProcess
 {
 	// services
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final transient IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final transient IUserDAO usersRepo = Services.get(IUserDAO.class);
-	private final transient MailTemplateRepository mailTemplatesRepo = Adempiere.getBean(MailTemplateRepository.class);
+	private final transient MailService mailService = Adempiere.getBean(MailService.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private int p_C_BPartner_ID;
@@ -69,8 +66,7 @@ public class R_MailText_Test extends JavaProcess
 	protected String doIt()
 	{
 		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getRecord_ID());
-		final MailTemplate mailTemplate = mailTemplatesRepo.getById(mailTemplateId);
-		final MailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(mailTemplate);
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 
 		Object record = null;
 		if (p_AD_Table_ID > 0 && p_Record_ID >= 0)
@@ -99,7 +95,7 @@ public class R_MailText_Test extends JavaProcess
 
 		//
 		// Display configuration
-		addLog("Using @R_MailText_ID@: {}", mailTemplate);
+		addLog("Using @R_MailText_ID@: {}", mailTemplateId);
 		addLog("Using @C_BPartner_ID@: {}", bpartner);
 		addLog("Using @AD_User_ID@: {}", contact);
 		addLog("Using @Record_ID@: {}", record);

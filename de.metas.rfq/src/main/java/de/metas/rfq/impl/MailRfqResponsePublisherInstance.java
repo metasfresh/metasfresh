@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 
 import de.metas.document.archive.model.I_AD_Archive;
@@ -16,7 +17,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
@@ -60,9 +61,9 @@ import de.metas.util.Services;
 
 	// services
 	private final transient IRfqDAO rfqDAO = Services.get(IRfqDAO.class);
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
 	public enum RfQReportType
 	{
@@ -127,7 +128,7 @@ import de.metas.util.Services;
 		
 		//
 		// Send it
-		final EMail email = mailBL.createEMail(
+		final EMail email = mailService.createEMail(
 				tenantEmailConfig, //
 				(EMailCustomType)null, // mailCustomType
 				(UserEMailConfig)null, // from
@@ -233,19 +234,19 @@ import de.metas.util.Services;
 		final MailTextBuilder mailTextBuilder;
 		if (rfqReportType == RfQReportType.Invitation)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Invitation_MailText_ID()));
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Invitation_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_InvitationWithoutQty_MailText_ID()));
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_InvitationWithoutQty_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Won)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Win_MailText_ID()));
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Win_MailText_ID()));
 		}
 		else if (rfqReportType == RfQReportType.Lost)
 		{
-			mailTextBuilder = mailBL.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Lost_MailText_ID()));
+			mailTextBuilder = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(rfqTopic.getRfQ_Lost_MailText_ID()));
 		}
 		else
 		{

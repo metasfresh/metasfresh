@@ -29,13 +29,14 @@ import org.adempiere.service.ClientId;
 
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.OrgId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_MailConfig;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -54,8 +55,8 @@ import de.metas.util.Services;
 public class EMailConfigTest extends JavaProcess
 {
 	private final IUserBL usersService = Services.get(IUserBL.class);
-	private final IMailBL mailService = Services.get(IMailBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
 	public static final String PARA_AD_Client_ID = I_AD_MailConfig.COLUMNNAME_AD_Client_ID;
 	public static final String PARA_AD_Org_ID = I_AD_MailConfig.COLUMNNAME_AD_Org_ID;

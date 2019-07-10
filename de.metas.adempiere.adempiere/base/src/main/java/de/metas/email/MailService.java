@@ -1,7 +1,4 @@
-/**
- *
- */
-package de.metas.email.impl;
+package de.metas.email;
 
 import java.util.Properties;
 
@@ -12,16 +9,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.email.EmailValidator;
-import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import de.metas.document.DocBaseAndSubType;
-import de.metas.email.EMail;
-import de.metas.email.EMailAddress;
-import de.metas.email.EMailCustomType;
-import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.impl.EMailSendException;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
@@ -41,23 +34,45 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 
-public class MailBL implements IMailBL
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@Service
+public class MailService
 {
-	private static final Logger logger = LogManager.getLogger(MailBL.class);
+	private static final Logger logger = LogManager.getLogger(MailService.class);
+	private final MailboxRepository mailboxRepo;
+	private final MailTemplateRepository mailTemplatesRepo;
 
 	private static final String SYSCONFIG_DebugMailTo = "org.adempiere.user.api.IUserBL.DebugMailTo";
 
-	private MailboxRepository mailboxRepository()
+	public MailService(
+			@NonNull final MailboxRepository mailboxRepo,
+			@NonNull final MailTemplateRepository mailTemplatesRepo)
 	{
-		return Adempiere.getBean(MailboxRepository.class);
+		this.mailboxRepo = mailboxRepo;
+		this.mailTemplatesRepo = mailTemplatesRepo;
 	}
 
-	private MailTemplateRepository mailTemplatesRepo()
-	{
-		return Adempiere.getBean(MailTemplateRepository.class);
-	}
-
-	@Override
 	public Mailbox findMailBox(
 			@NonNull final ClientEMailConfig tenantEmailConfig,
 			@NonNull final OrgId orgId)
@@ -68,7 +83,6 @@ public class MailBL implements IMailBL
 		return findMailBox(tenantEmailConfig, orgId, adProcessId, docBaseAndSubType, customType);
 	}
 
-	@Override
 	public Mailbox findMailBox(
 			@NonNull final ClientEMailConfig tenantEmailConfig,
 			@NonNull final OrgId orgId,
@@ -83,7 +97,7 @@ public class MailBL implements IMailBL
 				.customType(customType)
 				.build();
 
-		return mailboxRepository()
+		return mailboxRepo
 				.findMailBox(query)
 				.orElseGet(() -> createClientMailbox(tenantEmailConfig))
 				.withSendEmailsFromServer(tenantEmailConfig.isSendEmailsFromServer());
@@ -115,7 +129,6 @@ public class MailBL implements IMailBL
 				.build();
 	}
 
-	@Override
 	public EMail createEMail(
 			@NonNull final ClientEMailConfig clientEmailConfig,
 			@Nullable final EMailCustomType mailCustomType,
@@ -134,7 +147,6 @@ public class MailBL implements IMailBL
 		return createEMail(mailbox, to, subject, message, html);
 	}
 
-	@Override
 	public EMail createEMail(
 			@NonNull final Mailbox mailbox,
 			@NonNull final EMailAddress to,
@@ -150,12 +162,20 @@ public class MailBL implements IMailBL
 			throw new AdempiereException("Mailbox incomplete: " + mailbox);
 		}
 
-		return new EMail(mailbox, to, subject, message, html);
+		final EMail email = new EMail(mailbox, to, subject, message, html);
+		email.setDebugMailToAddress(getDebugMailToAddressOrNull());
+		return email;
 	}
 
-	@Override
-	public InternetAddress getDebugMailToAddressOrNull(final Properties ctx)
+	/**
+	 * Gets the EMail TO address to be used when sending mails.
+	 * If present, this address will be used to send all emails to a particular address instead of actual email addresses.
+	 *
+	 * @return email address or null
+	 */
+	public InternetAddress getDebugMailToAddressOrNull()
 	{
+		final Properties ctx = Env.getCtx();
 		String emailStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_DebugMailTo,
 				null,             // defaultValue
 				Env.getAD_Client_ID(ctx),
@@ -166,7 +186,6 @@ public class MailBL implements IMailBL
 		}
 
 		emailStr = emailStr.trim();
-
 		if (emailStr.equals("-"))
 		{
 			return null;
@@ -186,7 +205,6 @@ public class MailBL implements IMailBL
 		return email;
 	}
 
-	@Override
 	public void send(final EMail email)
 	{
 		final EMailSentStatus sentStatus = email.send();
@@ -196,7 +214,6 @@ public class MailBL implements IMailBL
 		}
 	}
 
-	@Override
 	public boolean isConnectionError(final Exception e)
 	{
 		if (e instanceof EMailSendException)
@@ -211,20 +228,17 @@ public class MailBL implements IMailBL
 		return false;
 	}
 
-	@Override
 	public MailTextBuilder newMailTextBuilder(@NonNull final MailTemplate mailTemplate)
 	{
 		return MailTextBuilder.newInstance(mailTemplate);
 	}
 
-	@Override
 	public MailTextBuilder newMailTextBuilder(final MailTemplateId mailTemplateId)
 	{
-		final MailTemplate mailTemplate = mailTemplatesRepo().getById(mailTemplateId);
+		final MailTemplate mailTemplate = mailTemplatesRepo.getById(mailTemplateId);
 		return newMailTextBuilder(mailTemplate);
 	}
 
-	@Override
 	public void validateEmail(@Nullable final String email)
 	{
 		if (!Check.isEmpty(email, true) && !EmailValidator.validate(email))

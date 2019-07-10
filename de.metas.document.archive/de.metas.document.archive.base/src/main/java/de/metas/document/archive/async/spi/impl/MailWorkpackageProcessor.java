@@ -39,7 +39,7 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -70,12 +70,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	//
 	// Services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
+	private final transient MailService mailService = Adempiere.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = Adempiere.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = Adempiere.getBean(DocOutBoundRecipientRepository.class);
 
@@ -120,7 +120,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		catch (final Exception e)
 		{
-			if (mailBL.isConnectionError(e))
+			if (mailService.isConnectionError(e))
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
@@ -151,7 +151,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
 		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
-		final Mailbox mailbox = mailBL.findMailBox(
+		final Mailbox mailbox = mailService.findMailBox(
 				tenantEmailConfig,
 				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
 				processId,
@@ -169,7 +169,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		{
 			final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
 
-			final EMail email = mailBL.createEMail(
+			final EMail email = mailService.createEMail(
 					mailbox,
 					mailTo,
 					emailParams.getSubject(),
@@ -186,7 +186,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				final String pdfFileName = computePdfFileName(docOutboundLogRecord);
 				email.addAttachment(pdfFileName, attachment);
 
-				mailBL.send(email);
+				mailService.send(email);
 				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
 			}
 		}

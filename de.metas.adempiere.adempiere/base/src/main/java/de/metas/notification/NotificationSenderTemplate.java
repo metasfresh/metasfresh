@@ -19,6 +19,7 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
+import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -29,7 +30,7 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
@@ -86,8 +87,8 @@ public class NotificationSenderTemplate
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
-	private final IMailBL mailService = Services.get(IMailBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final MailService mailService = Adempiere.getBean(MailService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 

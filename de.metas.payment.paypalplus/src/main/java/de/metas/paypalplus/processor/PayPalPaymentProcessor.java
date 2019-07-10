@@ -21,7 +21,7 @@ import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 
 import de.metas.email.EMail;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.templates.MailTemplateId;
@@ -67,12 +67,12 @@ import lombok.NonNull;
 @Component
 public class PayPalPaymentProcessor implements PaymentProcessor
 {
-	private final IMailBL mailService = Services.get(IMailBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final PayPalConfigProvider payPalConfigProvider;
 	private final PayPalOrderService payPalOrdersService;
 	private final PayPalLogRepository logsRepo;
 	private final CurrencyRepository currencyRepo;
+	private final MailService mailService;
 
 	private final PayPalHttpClientFactory payPalHttpClientFactory = new PayPalHttpClientFactory();
 
@@ -80,12 +80,14 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 			@NonNull final PayPalConfigProvider payPalConfigProvider,
 			@NonNull final PayPalOrderService payPalOrdersService,
 			@NonNull final PayPalLogRepository logsRepo,
-			@NonNull final CurrencyRepository currencyRepo)
+			@NonNull final CurrencyRepository currencyRepo,
+			@NonNull final MailService mailService)
 	{
 		this.payPalConfigProvider = payPalConfigProvider;
 		this.payPalOrdersService = payPalOrdersService;
 		this.logsRepo = logsRepo;
 		this.currencyRepo = currencyRepo;
+		this.mailService = mailService;
 	}
 
 	private PayPalHttpClient getClient()

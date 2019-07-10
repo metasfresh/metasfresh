@@ -6,6 +6,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_StandardResponse;
@@ -15,9 +16,9 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.email.IMailBL;
-import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.MailService;
 import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
@@ -62,8 +63,9 @@ public class R_Request
 			return;
 		}
 
-		final Properties ctx = calloutField.getCtx();
-		final MailTextBuilder mailTextBuilder = Services.get(IMailBL.class).newMailTextBuilder(mailTemplateId);
+		
+		final MailService mailService = Adempiere.getBean(MailService.class);
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 
 		final UserId contactId = UserId.ofRepoIdOrNull(request.getAD_User_ID());
 		if (contactId != null)
@@ -79,6 +81,7 @@ public class R_Request
 			mailTextBuilder.bpartner(bpartner);
 		}
 
+		final Properties ctx = calloutField.getCtx();
 		String txt = mailTextBuilder.getMailText();
 		txt = Env.parseContext(ctx, calloutField.getWindowNo(), txt, false, true);
 		request.setResult(txt);

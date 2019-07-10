@@ -12,7 +12,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
@@ -53,16 +53,21 @@ public class DerKurierDeliveryOrderEmailer
 	@VisibleForTesting
 	static final String SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage = "de.metas.shipper.gateway.derkurier.DerKurier_DeliveryOrder_EmailMessage_1P";
 
+	//
+	// Services
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
-
 	private final AttachmentEntryService attachmentEntryService;
+	private final MailService mailService;
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public DerKurierDeliveryOrderEmailer(
 			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final MailService mailService)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
 		this.attachmentEntryService = attachmentEntryService;
+		this.mailService = mailService;
 	}
 
 	public void sendShipperTransportationAsEmail(@NonNull final ShipperTransportationId shipperTransportationId)
@@ -109,16 +114,13 @@ public class DerKurierDeliveryOrderEmailer
 			@NonNull final EMailAddress mailTo,
 			@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		final IMailBL mailBL = Services.get(IMailBL.class);
-
 		final byte[] data = attachmentEntryService.retrieveData(attachmentEntry.getId());
 		final String csvDataString = new String(data, DerKurierConstants.CSV_DATA_CHARSET);
 
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);
 		final String message = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailMessage, new Object[] { csvDataString });
 
-		final EMail eMail = mailBL.createEMail(
+		final EMail eMail = mailService.createEMail(
 				mailBox,
 				mailTo,
 				subject,
@@ -126,7 +128,7 @@ public class DerKurierDeliveryOrderEmailer
 				false // html=false
 		);
 
-		mailBL.send(eMail);
+		mailService.send(eMail);
 
 		// we don't have an AD_Archive..
 		// final I_AD_User user = loadOutOfTrx(Env.getAD_User_ID(), I_AD_User.class);

@@ -15,6 +15,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.email.EMailAddress;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
@@ -81,11 +84,14 @@ public class PayPalCheckoutManualTest2
 		final PayPalOrderRepository payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
 		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
 
+		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
+		
 		final PayPalPaymentProcessor payPalProcessor = new PayPalPaymentProcessor(
 				new TestPayPalConfigProvider(),
 				payPalOrdersService,
 				new PayPalLogRepository(Optional.empty()),
-				new CurrencyRepository());
+				new CurrencyRepository(),
+				mailService);
 
 		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalProcessor)));
 

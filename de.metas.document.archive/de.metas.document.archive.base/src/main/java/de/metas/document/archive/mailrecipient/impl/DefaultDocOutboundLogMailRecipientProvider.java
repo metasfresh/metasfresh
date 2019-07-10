@@ -23,7 +23,7 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.email.EMailCustomType;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxNotFoundException;
@@ -58,12 +58,18 @@ import lombok.NonNull;
 @Component
 public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
-
 	private final DocOutBoundRecipientRepository docOutBoundRecipientRepository;
+	private final MailService mailService;
+	
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
-	public DefaultDocOutboundLogMailRecipientProvider(@NonNull final DocOutBoundRecipientRepository userRepository)
+	public DefaultDocOutboundLogMailRecipientProvider(
+			@NonNull final DocOutBoundRecipientRepository userRepository,
+			@NonNull final MailService mailService)
 	{
 		this.docOutBoundRecipientRepository = userRepository;
+		this.mailService = mailService;
 	}
 
 	/** returns {@code true}. */
@@ -88,7 +94,6 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 			return Optional.empty();
 		}
 
-		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 		final Mailbox mailbox = findMailboxOrNull(docOutboundLogRecord);
 		if (mailbox == null)
@@ -99,6 +104,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 		// check if the column for the user is specified
 		if (!Check.isEmpty(mailbox.getUserToColumnName(), true))
 		{
+			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 			final String tableName = adTableDAO.retrieveTableName(docOutboundLogRecord.getAD_Table_ID());
 			final boolean existsColumn = tableName != null && adTableDAO.hasColumnName(tableName, mailbox.getUserToColumnName());
 
@@ -132,7 +138,6 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 			final ClientEMailConfig tenantEmailConfig = extractTenantEmailConfig(docOutboundLogRecord);
 			final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
 
-			final IMailBL mailService = Services.get(IMailBL.class);
 			return mailService.findMailBox(
 					tenantEmailConfig,
 					OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
@@ -150,7 +155,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 	private ClientEMailConfig extractTenantEmailConfig(final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = Services.get(IClientDAO.class).getEMailConfigById(adClientId);
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
 		return tenantEmailConfig;
 	}
 
@@ -162,7 +167,7 @@ public class DefaultDocOutboundLogMailRecipientProvider implements DocOutboundLo
 			return null;
 		}
 
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final I_C_DocType docType = docTypesRepo.getById(docTypeId);
 		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 }

@@ -18,6 +18,7 @@ package org.compiere.process;
 
 import java.io.File;
 
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
@@ -36,7 +37,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.process.JavaProcess;
@@ -56,6 +57,8 @@ import de.metas.util.Services;
 @Deprecated
 public class DunningPrint extends JavaProcess
 {
+	private final MailService mailService = Adempiere.getBean(MailService.class);
+	
 	/**	Mail PDF				*/
 	private boolean		p_EMailPDF = false;
 	/** Mail Template			*/
@@ -129,7 +132,7 @@ public class DunningPrint extends JavaProcess
 		MailTextBuilder mText = null;
 		if (p_EMailPDF)
 		{
-			mText = Services.get(IMailBL.class).newMailTextBuilder(MailTemplateId.ofRepoId(p_R_MailText_ID));
+			mText = mailService.newMailTextBuilder(MailTemplateId.ofRepoId(p_R_MailText_ID));
 		}
 		//
 		MDunningRun run = new MDunningRun (getCtx(), p_C_DunningRun_ID, get_TrxName());
