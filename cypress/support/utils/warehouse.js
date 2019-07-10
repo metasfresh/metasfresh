@@ -1,4 +1,5 @@
-import {RewriteURL} from "./constants";
+import { RewriteURL } from './constants';
+import { getLanguageSpecific } from './utils';
 
 export class Warehouse {
   constructor(name) {
@@ -34,7 +35,7 @@ export class Warehouse {
   }
 }
 
-export  class WarehouseLocator {
+export class WarehouseLocator {
   setX(x) {
     cy.log(`WarehouseLocator - set x= ${x}`);
     this.x = x;
@@ -79,7 +80,6 @@ export class WarehouseRoute {
   }
 }
 
-
 function applyWarehouse(Warehouse) {
   cy.visitWindow('139', 'NEW')
     .writeIntoStringField('Name', Warehouse.name)
@@ -88,8 +88,8 @@ function applyWarehouse(Warehouse) {
   cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
   Warehouse.locators.forEach(locator => {
     applyLocator(locator);
-    Warehouse.routes.forEach(routes => {
-      applyRoutes(routes);
+    Warehouse.routes.forEach(route => {
+      applyRoute(route);
     });
   });
 }
@@ -107,9 +107,9 @@ function applyLocator(locator) {
     .pressDoneButton();
 }
 
-function applyRoutes(routes) {
+function applyRoute(route) {
   cy.get(`#tab_M_Warehouse_Routing`).click();
   cy.pressAddNewButton()
-    .selectInListField('DocBaseType', routes.docBaseType, true) // note: the way it's implemented now, there's no de_DE support!
+    .selectInListField('DocBaseType', getLanguageSpecific(route, 'docBaseType'), true) // note: the way it's implemented now, there's no de_DE support!
     .pressDoneButton();
 }

@@ -1,5 +1,4 @@
-import { Warehouse, locator, routes } from '../../support/utils/warehouse';
-import { getLanguageSpecific } from '../../support/utils/utils';
+import { Warehouse } from '../../support/utils/warehouse';
 
 describe('Create test: warehouse, https://github.com/metasfresh/metasfresh-e2e/issues/46', function() {
   const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
@@ -11,8 +10,6 @@ describe('Create test: warehouse, https://github.com/metasfresh/metasfresh-e2e/i
       Object.assign(new Warehouse(), warehouseJson)
         .setName(warehouseName)
         .setValue(warehouseValue)
-        // .setLocator(locator)
-        // .setRoutes(getLanguageSpecific(routes, 'DocBaseType'))
         .apply();
     });
   });
