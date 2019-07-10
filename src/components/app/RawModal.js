@@ -257,6 +257,7 @@ class RawModal extends Component {
 
     return (
       <div className="screen-freeze raw-modal">
+        <div className="click-overlay" onClick={this.removeModal} />
         <div className="modal-content-wrapper">
           <div className="panel panel-modal panel-modal-primary">
             <div
