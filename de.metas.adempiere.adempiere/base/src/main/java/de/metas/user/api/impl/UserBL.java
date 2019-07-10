@@ -53,7 +53,10 @@ public class UserBL implements IUserBL
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
 
-	private final MailService mailService = Adempiere.getBean(MailService.class);
+	private MailService mailService()
+	{
+		return Adempiere.getBean(MailService.class);
+	}
 
 	@Override
 	public HashableString getUserPassword(final I_AD_User user)
@@ -116,6 +119,7 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
+		final MailService mailService = mailService();
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		mailTextBuilder.customVariable("URL", passwordResetURL);
 		mailTextBuilder.bpartnerContact(user);
