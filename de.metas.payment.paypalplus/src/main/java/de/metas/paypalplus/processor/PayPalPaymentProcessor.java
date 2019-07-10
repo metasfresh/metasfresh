@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.braintreepayments.http.HttpRequest;
 import com.braintreepayments.http.HttpResponse;
 import com.braintreepayments.http.exceptions.HttpException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.orders.AmountWithBreakdown;
@@ -75,6 +76,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	private final MailService mailService;
 
 	private final PayPalHttpClientFactory payPalHttpClientFactory = new PayPalHttpClientFactory();
+	
+	@VisibleForTesting
+	public static final String MAIL_VAR_ApproveURL = "ApproveURL";
+	@VisibleForTesting
+	public static final String MAIL_VAR_Amount = "Amount";
+
 
 	public PayPalPaymentProcessor(
 			@NonNull final PayPalConfigProvider payPalConfigProvider,
@@ -174,8 +181,8 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	{
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
-		mailTextBuilder.customVariable("ApproveURL", payerApproveUrl.toExternalForm());
-		mailTextBuilder.customVariable("Amount", TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
+		mailTextBuilder.customVariable(MAIL_VAR_ApproveURL, payerApproveUrl.toExternalForm());
+		mailTextBuilder.customVariable(MAIL_VAR_Amount, TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
 
 		final Mailbox mailbox = findMailbox(reservation);
 		final EMail email = mailService.createEMail(mailbox,
