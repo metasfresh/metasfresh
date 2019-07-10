@@ -9,11 +9,11 @@
 	</parent>
 
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.metas.payment.paypalplus</groupId>
-	<artifactId>de.metas.payment.paypalplus</artifactId>
+	<groupId>de.metas.payment.paypal</groupId>
+	<artifactId>de.metas.payment.paypal</artifactId>
 	<packaging>jar</packaging>
 
-	<description>PayPalPlus Payments</description>
+	<description>PayPal Payments</description>
 
 
 	<dependencies>

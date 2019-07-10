@@ -137,7 +137,7 @@
 
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>
-		<module>de.metas.payment.paypalplus</module>
+		<module>de.metas.payment.paypal</module>
 
 		<module>de.metas.printing</module>
 
