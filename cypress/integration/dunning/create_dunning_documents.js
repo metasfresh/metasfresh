@@ -32,13 +32,11 @@ import {applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters} f
 import {DunningType} from "../../support/utils/dunning_type";
 import {Dunning} from "../../page_objects/dunning";
 
-describe('Create Dunning Candidates', function () {
+describe('Create Dunning Documents', function() {
   // human readable date with millis!
   const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
 
   const dunningTypeName = `Dunning ${date}`;
-  // const dunningTypeName = `Dunning 2019-07-05T10:09:30.514Z`;
-
 
   const businessPartnerName = `Customer Dunning ${date}`;
   const paymentTerm = 'immediately';
@@ -51,100 +49,65 @@ describe('Create Dunning Candidates', function () {
   // Test data
   let siDocumentNumber;
   let siCurrency;
-  let siDueDate;
-  let siTotalAmount;
 
 
-  before(function () {
-    // This wait is stupid.
-    // It also appears to be a good workaround for the problems in
-    // cypress/support/utils/utils.js:1
-    cy.wait(5000);
+  it('Prepare dunning type', function() {
+
+    cy.fixture('settings/dunning_type.json').then(dunningType => {
+      Object.assign(new DunningType(), dunningType)
+        .setName(dunningTypeName)
+        .apply();
+    });
   });
 
-  // describe('Prepare data', function () {
-  //   it('Prepare dunning type', function () {
-  //
-  //     cy.fixture('settings/dunning_type.json').then(dunningType => {
-  //       Object.assign(new DunningType(), dunningType)
-  //         .setName(dunningTypeName)
-  //         .apply();
-  //     });
-  //   });
-  //
-  //   it('Prepare customer bpartner (via api)', function () {
-  //     cy.fixture('sales/simple_customer.json').then(customerJson => {
-  //       const bpartner = new BPartner({...customerJson, name: businessPartnerName})
-  //         .setCustomer(true)
-  //         .setDunning(dunningTypeName)
-  //         .setPaymentTerm(paymentTerm)
-  //         .setBank(undefined);
-  //
-  //       bpartner.apply();
-  //     });
-  //   });
-  //
-  //   it('Prepare sales invoice', function () {
-  //     cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
-  //       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
-  //         .addLine(
-  //           new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-  //           // todo @dh: how to add a "per test" packing item
-  //           // .setPackingItem('IFCO 6410 x 10 Stk')
-  //           // .setTuQuantity(2)
-  //         )
-  //         // .addLine(
-  //         // todo @dh: how to add this line which depends on the packing item?
-  //         //   new SalesInvoiceLine()
-  //         //     .setProduct('IFCO 6410_P001512')
-  //         //     .setQuantity(2)
-  //         // )
-  //         // .setPriceList(priceListName)
-  //         .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-  //         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
-  //         .apply();
-  //     });
-  //   });
-  // });
+  it('Prepare customer bpartner (via api)', function() {
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
+        .setCustomer(true)
+        .setDunning(dunningTypeName)
+        .setPaymentTerm(paymentTerm)
+        .setBank(undefined);
 
-  it('use already existing sales invoice', function () {
-    cy.visitWindow('167', '1000033');
+      bpartner.apply();
+    });
   });
 
+  it('Prepare sales invoice', function() {
+    cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
+      new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+        .addLine(
+          new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
+        )
+        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
+        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
+        .apply();
+    });
+  });
 
-  it('Sales Invoice is Completed', function () {
+  it('Sales Invoice is Completed', function() {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
 
-  it('Sales Invoice is not paid', function () {
+  it('Sales Invoice is not paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, false);
     });
   });
 
-  it('Save values needed for the next step', function () {
+  it('Save values needed for the next step', function() {
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       siDocumentNumber = documentNumber;
     });
 
-    // cy.getStringFieldValue('C_Currency_ID').then(currency => {
-    //   siCurrency = currency;
-    // });
-    //
-    // cy.getStringFieldValue('DateInvoiced').then(dueDate => {
-    //   siDueDate = dueDate;
-    // });
-    //
-    // cy.getSalesInvoiceTotalAmount().then(amount => {
-    //   siTotalAmount = amount;
-    // });
+    cy.getStringFieldValue('C_Currency_ID').then(currency => {
+      siCurrency = currency;
+    });
   });
 
-  it('Create Dunning Candidates', function () {
+  it('Create Dunning Candidates', function() {
     DunningCandidates.visit();
     cy.wait(1000); // without this wait, the action menu is not properly loaded
-    // cy.wait(10000); // maybe this fixes some cache invalidation problem that Dunning type is not found in `de.metas.dunning.api.impl.DunningDAO.retrieveDunnings` (eventually, we should get rid of this sleep)
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
@@ -152,7 +115,7 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  it('Ensure there are exactly 2 Dunning Candidates', function () {
+  it('Ensure there are exactly 2 Dunning Candidates', function() {
     DunningCandidates.visit();
     filterBySalesInvoiceNumber(siDocumentNumber);
 
@@ -160,7 +123,7 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  it('Create Dunning Documents', function () {
+  it('Create Dunning Documents', function() {
     DunningCandidates.selectAllVisibleRows();
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Process');
     cy.setCheckBoxValue('IsComplete', true, true);
@@ -168,16 +131,61 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  describe('Create And Check Dunning Documents', function () {
-    it('bla', function () {
-      /**
-       * Currently there's no way to move from Dunning -> Dunning Candidates (and so to Sales Invoice).
-       * In order to check each dunning document, we have to go the other way: Dunning Candidates -> related docs -> the Dunning Doc.
-       */
-      Dunning.visit();
-      filterBySalesInvoiceNumber(siDocumentNumber);
+  describe('Create And Check Dunning Documents', function() {
+    /**
+     * Currently there's no way to move from Dunning -> Dunning Candidates (and so to Sales Invoice).
+     * In order to check each dunning document, we have to go the other way: Dunning Candidates -> related docs -> the Dunning Doc.
+     * There's also no way to check if there are more than 2 dunning documents created.
+     */
+    it('CANNOT Expect there are exactly 2 dunning documents created!', function() {
+    });
+
+    it('Check Level 1 document', function() {
+      const dunningLevel = 'Level 1';
+      checkDunningDocument(dunningLevel);
+    });
+
+    it('Check Level 2 document', function() {
+      const dunningLevel = 'Level 2';
+      checkDunningDocument(dunningLevel);
     });
   });
+
+
+  function checkDunningDocument(dunningLevel) {
+    describe('Open Dunning document', function() {
+      // Open Dunning document
+      DunningCandidates.visit();
+      filterBySalesInvoiceNumber(siDocumentNumber);
+      DunningCandidates.getRows().contains('td', dunningLevel, { log: true }).dblclick();
+      cy.openReferencedDocuments('AD_RelationType_ID-540150');
+      Dunning.getRows().get('tr').dblclick();
+    });
+
+    describe('Do the checks', function() {
+
+      // @kuba how to check bpartner?
+      // cy.get('#lookup_C_BPartner_ID')
+      //   .get('input')
+      //    //.invoke('value')
+      //   .then(function (v) {
+      //     cy.log(JSON.stringify(v));
+      //   });
+
+
+      cy.getCheckboxValue('Processed').then(checkBoxValue => {
+        assert.equal(checkBoxValue, true);
+      });
+      cy.getStringFieldValue('C_DunningLevel_ID').should('equals', dunningLevel);
+
+      cy.selectSingleTabRow();
+      cy.openAdvancedEdit();
+      cy.getStringFieldValue('C_DunningLevel_ID', true).should('equals', dunningLevel);
+      cy.getStringFieldValue('C_Currency_ID', true).should('equals', siCurrency);
+      cy.getStringFieldValue('C_BPartner_ID', true).should('contain', businessPartnerName);
+      cy.pressDoneButton();
+    });
+  }
 
 
   function filterBySalesInvoiceNumber(siDocNumber) {
