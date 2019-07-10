@@ -1117,9 +1117,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Update <code>masterenddate</code> only for contract of which we know the entire period
-	 *
-	 * @param contracts
-	 * @param initialContract
 	 */
 	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
 	{

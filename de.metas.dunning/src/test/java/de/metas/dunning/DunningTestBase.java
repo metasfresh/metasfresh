@@ -157,7 +157,7 @@ public class DunningTestBase
 
 	protected void generateDunningCandidates(final PlainDunningContext dunningContext)
 	{
-		for (final I_C_Dunning dunning : dao.retrieveDunnings(dunningContext.getCtx()))
+		for (final I_C_Dunning dunning : dao.retrieveDunnings())
 		{
 			for (final I_C_DunningLevel dunningLevel : dao.retrieveDunningLevels(dunning))
 			{
