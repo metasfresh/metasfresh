@@ -56,6 +56,32 @@ declare namespace Cypress {
      */
     getCheckboxValue(fieldName: string, modal?: boolean): Chainable<any>
 
+    /**
+     * Select the current record ID from the URL.
+     * The URL looks like `/window/123/123456789` and the value returned is `123456789`.
+     *
+     * @example
+     * cy.getCurrentWindowRecordId().then(recordId => {
+     *     // recordId has value 123456789
+     *     theRecordId = recordId;
+     * });
+     */
+    getCurrentWindowRecordId(): Chainable<any>
+
+
+    /**
+     * Select the total amount from Sales Invoice's header
+     *
+     * The header format is "DOCUMENT_NO MM/DD/YYYY totalAmount"
+     * @example
+     * let newTotalAmount = 0;
+     * it('Save the new total amount', function () {
+     *   cy.getSalesInvoiceTotalAmount().then(totalAmount => {
+     *     newTotalAmount = totalAmount;
+     *   });
+     * });
+     */
+    getSalesInvoiceTotalAmount(): Chainable<any>
 
     /**
      * @param fieldName name of the field is question
@@ -274,7 +300,7 @@ declare namespace Cypress {
      * Unset the value of a list.
      * Similar to pressing the (x) button of a list.
      *
-     * @param fieldName name of the field is question
+     * @param fieldName - name of the field is question
      * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
@@ -299,5 +325,22 @@ declare namespace Cypress {
      * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
      */
     pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
+
+    /**
+     * Erase the contents of this field.
+     *
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     */
+    clearField(fieldName, modal): Chainable<any>
+
+
+    /**
+     * Basic command for clicking an element with certain selector.
+     *
+     * @param selector - string used to query for the element
+     * @param forced - use force clicking or normal clicking
+     */
+    clickElementWithClass(selector, forced): Chainable<any>
   }
 }
