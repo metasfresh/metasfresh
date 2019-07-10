@@ -4,7 +4,9 @@ import org.junit.Ignore;
 
 import de.metas.email.templates.MailTemplateId;
 import de.metas.paypalplus.PayPalConfig;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -38,12 +40,15 @@ public class TestPayPalConfigProvider implements PayPalConfigProvider
 	@Getter
 	private final PayPalConfig config;
 
-	public TestPayPalConfigProvider()
+	@Builder
+	private TestPayPalConfigProvider(
+			@NonNull final MailTemplateId approveMailTemplateId)
 	{
-		this.config = createPayPalConfig();
+		this.config = createPayPalConfig(approveMailTemplateId);
 	}
 
-	private static PayPalConfig createPayPalConfig()
+	private static PayPalConfig createPayPalConfig(
+			@NonNull final MailTemplateId approveMailTemplateId)
 	{
 		final String clientId = System.getProperty("PAYPAL_CLIENT_ID", DEFAULT_CLIENT_ID);
 		final String clientSecret = System.getProperty("PAYPAL_CLIENT_SECRET", DEFAULT_CLIENT_SECRET);
@@ -51,7 +56,7 @@ public class TestPayPalConfigProvider implements PayPalConfigProvider
 		return PayPalConfig.builder()
 				.clientId(clientId)
 				.clientSecret(clientSecret)
-				.orderApproveMailTemplateId(MailTemplateId.ofRepoId(12345))
+				.orderApproveMailTemplateId(approveMailTemplateId)
 				.orderApproveCallbackUrl("https://www.example.com")
 				.sandbox(true)
 				.build();

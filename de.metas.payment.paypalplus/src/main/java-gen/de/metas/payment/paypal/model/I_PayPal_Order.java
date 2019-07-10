@@ -260,6 +260,29 @@ public interface I_PayPal_Order
     public static final String COLUMNNAME_PayPal_PayerApproveUrl = "PayPal_PayerApproveUrl";
 
 	/**
+	 * Set Status.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setStatus (java.lang.String Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getStatus();
+
+    /** Column definition for Status */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "Status", null);
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

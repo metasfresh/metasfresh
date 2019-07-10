@@ -15,7 +15,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1501446423L;
+	private static final long serialVersionUID = -90094632L;
 
     /** Standard Constructor */
     public X_C_Payment_Reservation (Properties ctx, int C_Payment_Reservation_ID, String trxName)
@@ -24,6 +24,9 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
       /** if (C_Payment_Reservation_ID == 0)
         {
 			setAmount (BigDecimal.ZERO);
+			setBill_BPartner_ID (0);
+			setBill_EMail (null);
+			setBill_User_ID (0);
 			setC_Currency_ID (0);
 			setC_Order_ID (0);
 			setC_Payment_Reservation_ID (0);
@@ -69,6 +72,72 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Rechnungspartner.
+		@param Bill_BPartner_ID 
+		Geschäftspartner für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	{
+		if (Bill_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+	}
+
+	/** Get Rechnungspartner.
+		@return Geschäftspartner für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Bill EMail.
+		@param Bill_EMail Bill EMail	  */
+	@Override
+	public void setBill_EMail (java.lang.String Bill_EMail)
+	{
+		set_Value (COLUMNNAME_Bill_EMail, Bill_EMail);
+	}
+
+	/** Get Bill EMail.
+		@return Bill EMail	  */
+	@Override
+	public java.lang.String getBill_EMail () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Bill_EMail);
+	}
+
+	/** Set Rechnungskontakt.
+		@param Bill_User_ID 
+		Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public void setBill_User_ID (int Bill_User_ID)
+	{
+		if (Bill_User_ID < 1) 
+			set_Value (COLUMNNAME_Bill_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
+	}
+
+	/** Get Rechnungskontakt.
+		@return Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	  */
+	@Override
+	public int getBill_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Währung.

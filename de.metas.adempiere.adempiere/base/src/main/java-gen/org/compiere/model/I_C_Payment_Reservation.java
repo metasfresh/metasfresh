@@ -88,6 +88,79 @@ public interface I_C_Payment_Reservation
     public static final String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_BPartner_ID (int Bill_BPartner_ID);
+
+	/**
+	 * Get Rechnungspartner.
+	 * Geschäftspartner für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_BPartner_ID();
+
+    /** Column definition for Bill_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, org.compiere.model.I_C_BPartner>(I_C_Payment_Reservation.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name Bill_BPartner_ID */
+    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+
+	/**
+	 * Set Bill EMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_EMail (java.lang.String Bill_EMail);
+
+	/**
+	 * Get Bill EMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBill_EMail();
+
+    /** Column definition for Bill_EMail */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object> COLUMN_Bill_EMail = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, Object>(I_C_Payment_Reservation.class, "Bill_EMail", null);
+    /** Column name Bill_EMail */
+    public static final String COLUMNNAME_Bill_EMail = "Bill_EMail";
+
+	/**
+	 * Set Rechnungskontakt.
+	 * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Rechnungskontakt.
+	 * Ansprechpartner des Geschäftspartners für die Rechnungsstellung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_User_ID();
+
+    /** Column definition for Bill_User_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation, org.compiere.model.I_AD_User> COLUMN_Bill_User_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation, org.compiere.model.I_AD_User>(I_C_Payment_Reservation.class, "Bill_User_ID", org.compiere.model.I_AD_User.class);
+    /** Column name Bill_User_ID */
+    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
 	 * Set Währung.
 	 * Die Währung für diesen Eintrag
 	 *

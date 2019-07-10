@@ -1,24 +1,17 @@
 package de.metas.paypalplus.processor;
 
-import java.io.IOException;
 import java.net.URL;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
 import org.springframework.stereotype.Component;
 
-import com.braintreepayments.http.HttpRequest;
-import com.braintreepayments.http.HttpResponse;
-import com.braintreepayments.http.exceptions.HttpException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.paypal.core.PayPalHttpClient;
 import com.paypal.orders.AmountWithBreakdown;
 import com.paypal.orders.ApplicationContext;
 import com.paypal.orders.Order;
 import com.paypal.orders.OrderRequest;
-import com.paypal.orders.OrdersAuthorizeRequest;
-import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 
 import de.metas.email.EMail;
@@ -34,11 +27,8 @@ import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationStatus;
 import de.metas.paypalplus.PayPalConfig;
-import de.metas.paypalplus.controller.PayPalConfigProvider;
-import de.metas.paypalplus.logs.PayPalCreateLogRequest;
-import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
-import de.metas.paypalplus.logs.PayPalLogRepository;
 import de.metas.paypalplus.orders.PayPalOrder;
+import de.metas.paypalplus.orders.PayPalOrderId;
 import de.metas.paypalplus.orders.PayPalOrderService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,43 +59,26 @@ import lombok.NonNull;
 public class PayPalPaymentProcessor implements PaymentProcessor
 {
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	private final PayPalConfigProvider payPalConfigProvider;
+	private final PayPalClient payPalClient;
 	private final PayPalOrderService payPalOrdersService;
-	private final PayPalLogRepository logsRepo;
 	private final CurrencyRepository currencyRepo;
 	private final MailService mailService;
 
-	private final PayPalHttpClientFactory payPalHttpClientFactory = new PayPalHttpClientFactory();
-	
 	@VisibleForTesting
 	public static final String MAIL_VAR_ApproveURL = "ApproveURL";
 	@VisibleForTesting
 	public static final String MAIL_VAR_Amount = "Amount";
 
-
 	public PayPalPaymentProcessor(
-			@NonNull final PayPalConfigProvider payPalConfigProvider,
+			@NonNull final PayPalClient payPalClient,
 			@NonNull final PayPalOrderService payPalOrdersService,
-			@NonNull final PayPalLogRepository logsRepo,
 			@NonNull final CurrencyRepository currencyRepo,
 			@NonNull final MailService mailService)
 	{
-		this.payPalConfigProvider = payPalConfigProvider;
+		this.payPalClient = payPalClient;
 		this.payPalOrdersService = payPalOrdersService;
-		this.logsRepo = logsRepo;
 		this.currencyRepo = currencyRepo;
 		this.mailService = mailService;
-	}
-
-	private PayPalHttpClient getClient()
-	{
-		final PayPalConfig config = getConfig();
-		return payPalHttpClientFactory.getPayPalHttpClient(config);
-	}
-
-	private PayPalConfig getConfig()
-	{
-		return payPalConfigProvider.getConfig();
 	}
 
 	@Override
@@ -118,6 +91,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	public boolean canReserveMoney()
 	{
 		return true;
+	}
+
+	public PayPalOrder updatePayPalOrderFromAPI(@NonNull final PayPalOrderId externalId)
+	{
+		final Order apiOrder = payPalClient.getAPIOrderById(externalId);
+		return payPalOrdersService.save(externalId, apiOrder);
 	}
 
 	@Override
@@ -149,29 +128,37 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 
 	private void createPayPalOrderAndRequestPayerApproval(final PaymentReservation reservation)
 	{
-		final PayPalConfig config = getConfig();
-		final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, config);
-		final HttpResponse<Order> response = executeRequest(ordersCreateRequest, reservation);
-
-		final PayPalOrder order = payPalOrdersService.save(reservation.getId(), response.result());
+		final PayPalConfig config = payPalClient.getConfig();
+		final OrderRequest apiRequest = toAPIOrderRequest(reservation, config);
+		final Order apiOrder = payPalClient.createOrder(apiRequest, toPayPalClientExecutionContext(reservation));
+		final PayPalOrder order = payPalOrdersService.save(reservation.getId(), apiOrder);
 
 		final URL payerApproveUrl = order.getPayerApproveUrl();
 		sendPayerApprovalRequestEmail(reservation, payerApproveUrl, config.getOrderApproveMailTemplateId());
 	}
 
-	private void authorizePayPalOrder(final PaymentReservation reservation)
+	private static PayPalClientExecutionContext toPayPalClientExecutionContext(final PaymentReservation reservation)
 	{
-		PayPalOrder paypalOrder = payPalOrdersService.getByReservationId(reservation.getId());
-		final OrdersAuthorizeRequest request = new OrdersAuthorizeRequest(paypalOrder.getExternalId());
-		final HttpResponse<Order> response = executeRequest(request, reservation);
+		return PayPalClientExecutionContext.builder()
+				.paymentReservationId(reservation.getId())
+				.salesOrderId(reservation.getSalesOrderId())
+				.build();
+	}
 
-		paypalOrder = payPalOrdersService.save(reservation.getId(), response.result());
+	public void authorizePayPalOrder(final PaymentReservation reservation)
+	{
+		reservation.getStatus().assertApprovedByPayer();
+
+		PayPalOrder paypalOrder = payPalOrdersService.getByReservationId(reservation.getId());
+		final Order apiOrder = payPalClient.authorizeOrder(paypalOrder.getExternalId(), toPayPalClientExecutionContext(reservation));
+
+		paypalOrder = payPalOrdersService.save(reservation.getId(), apiOrder);
 		if (!paypalOrder.isAuthorized())
 		{
 			throw new AdempiereException("Not authorized: " + paypalOrder);
 		}
 
-		reservation.setStatus(PaymentReservationStatus.COMPLETED);
+		reservation.changeStatusTo(paypalOrder.getStatus().toPaymentReservationStatus());
 	}
 
 	private void sendPayerApprovalRequestEmail(
@@ -202,11 +189,11 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		return mailService.findMailBox(tenantEmailConfig, reservation.getOrgId());
 	}
 
-	private OrdersCreateRequest createOrdersCreateRequest(
+	private OrderRequest toAPIOrderRequest(
 			@NonNull final PaymentReservation reservation,
 			@NonNull final PayPalConfig config)
 	{
-		final OrderRequest requestBody = new OrderRequest()
+		return new OrderRequest()
 				.intent("AUTHORIZE")
 				.applicationContext(new ApplicationContext()
 						.returnUrl(config.getOrderApproveCallbackUrl())
@@ -214,12 +201,6 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 				.purchaseUnits(ImmutableList.of(
 						new PurchaseUnitRequest()
 								.amount(toAmountWithBreakdown(reservation.getAmount()))));
-
-		final OrdersCreateRequest request = new OrdersCreateRequest();
-		request.header("prefer", "return=representation");
-		request.requestBody(requestBody);
-
-		return request;
 	}
 
 	private AmountWithBreakdown toAmountWithBreakdown(final de.metas.money.Money amount)
@@ -227,39 +208,6 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		return new AmountWithBreakdown()
 				.value(amount.getAsBigDecimal().toString())
 				.currencyCode(currencyRepo.getCurrencyCodeById(amount.getCurrencyId()).toThreeLetterCode());
-	}
-
-	private <T> HttpResponse<T> executeRequest(
-			@NonNull final HttpRequest<T> request,
-			@NonNull final PaymentReservation context)
-	{
-		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder()
-				.salesOrderId(context.getSalesOrderId())
-				.paymentReservationId(context.getId());
-
-		try
-		{
-			log.request(request);
-
-			final PayPalHttpClient client = getClient();
-			final HttpResponse<T> response = client.execute(request);
-			log.response(response);
-			return response;
-		}
-		catch (final HttpException ex)
-		{
-			log.response(ex);
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-		catch (final IOException ex)
-		{
-			log.response(ex);
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-		finally
-		{
-			logsRepo.log(log.build());
-		}
 	}
 
 	@Override

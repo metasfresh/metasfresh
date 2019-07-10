@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +22,6 @@ import com.paypal.orders.PurchaseUnit;
 import de.metas.logging.LogManager;
 import de.metas.payment.paypal.model.I_PayPal_Order;
 import de.metas.payment.reservation.PaymentReservationId;
-import de.metas.paypalplus.orders.PayPalOrder.PayPalOrderBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -84,24 +84,45 @@ public class PayPalOrderRepository
 		return Optional.ofNullable(record);
 	}
 
-	private static PayPalOrder toPayPalOrder(final I_PayPal_Order record)
+	public Optional<I_PayPal_Order> getRecordByExternalId(@NonNull final PayPalOrderId externalId)
 	{
-		return preparePayPalOrderFromRecord(record).build();
+		final I_PayPal_Order record = Services.get(IQueryBL.class).createQueryBuilder(I_PayPal_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PayPal_Order.COLUMN_ExternalId, externalId.getAsString())
+				.create()
+				.firstOnly(I_PayPal_Order.class);
+
+		return Optional.ofNullable(record);
 	}
 
-	private static PayPalOrder.PayPalOrderBuilder preparePayPalOrderFromRecord(final I_PayPal_Order record)
+	private static PayPalOrder toPayPalOrder(final I_PayPal_Order record)
 	{
 		return PayPalOrder.builder()
 				.paymentReservationId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
-				.externalId(record.getExternalId())
+				.externalId(PayPalOrderId.ofNullableString(record.getExternalId()))
+				.status(PayPalOrderStatus.ofCode(record.getStatus()))
 				.authorizationId(record.getPayPal_AuthorizationId())
 				.payerApproveUrlString(record.getPayPal_PayerApproveUrl())
-				.bodyAsJson(record.getPayPal_OrderJSON());
+				.bodyAsJson(record.getPayPal_OrderJSON())
+				.build();
+	}
+
+	private PayPalOrder updateFromAPIOrder(
+			@NonNull final PayPalOrder order,
+			@NonNull final com.paypal.orders.Order apiOrder)
+	{
+		return order.toBuilder()
+				.externalId(PayPalOrderId.ofString(apiOrder.id()))
+				.status(PayPalOrderStatus.ofCode(apiOrder.status()))
+				.payerApproveUrlString(extractApproveUrlOrNull(apiOrder))
+				.authorizationId(extractAuthorizationIdOrNull(apiOrder))
+				.bodyAsJson(toJson(apiOrder))
+				.build();
 	}
 
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
-		order.setExternalId(from.getExternalId());
+		order.setExternalId(PayPalOrderId.toString(from.getExternalId()));
 		order.setPayPal_AuthorizationId(from.getAuthorizationId());
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
@@ -112,30 +133,44 @@ public class PayPalOrderRepository
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		I_PayPal_Order record = getRecordByReservationId(reservationId).orElse(null);
-		final PayPalOrderBuilder orderBuilder;
 		if (record == null)
 		{
-			orderBuilder = PayPalOrder.builder().paymentReservationId(reservationId);
 			record = newInstance(I_PayPal_Order.class);
+			record.setC_Payment_Reservation_ID(reservationId.getRepoId());
+			record.setStatus(apiOrder.status());
+			record.setExternalId(apiOrder.id());
 		}
-		else
+
+		return updateFromAPIOrderAndSave(record, apiOrder);
+	}
+
+	public PayPalOrder save(
+			@NonNull final PayPalOrderId externalId,
+			@NonNull final com.paypal.orders.Order apiOrder)
+	{
+		final I_PayPal_Order existingRecord = getRecordByExternalId(externalId).orElse(null);
+		if (existingRecord == null)
 		{
-			orderBuilder = preparePayPalOrderFromRecord(record);
+			throw new AdempiereException("@NotFound@ @PayPal_Order_ID@ (@ExternalId@: " + externalId + ")");
 		}
 
-		orderBuilder.externalId(apiOrder.id());
-		orderBuilder.payerApproveUrlString(extractApproveUrlOrNull(apiOrder));
-		orderBuilder.authorizationId(extractAuthorizationIdOrNull(apiOrder));
-		orderBuilder.bodyAsJson(toJson(apiOrder));
+		return updateFromAPIOrderAndSave(existingRecord, apiOrder);
+	}
 
-		final PayPalOrder order = orderBuilder.build();
+	private PayPalOrder updateFromAPIOrderAndSave(
+			@NonNull final I_PayPal_Order record,
+			@NonNull final com.paypal.orders.Order apiOrder)
+	{
+		PayPalOrder order = toPayPalOrder(record);
+		order = updateFromAPIOrder(order, apiOrder);
+
 		updateRecord(record, order);
 		saveRecord(record);
 
 		return order;
 	}
 
-	private String extractAuthorizationIdOrNull(@NonNull final Order apiOrder)
+	private static String extractAuthorizationIdOrNull(@NonNull final Order apiOrder)
 	{
 		final List<PurchaseUnit> purchaseUnits = apiOrder.purchaseUnits();
 		if (purchaseUnits == null || purchaseUnits.isEmpty())

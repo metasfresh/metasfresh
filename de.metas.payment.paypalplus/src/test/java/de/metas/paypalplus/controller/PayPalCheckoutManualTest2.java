@@ -1,22 +1,29 @@
 package de.metas.paypalplus.controller;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_R_MailText;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
@@ -24,13 +31,19 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationCreateRequest;
+import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.paypalplus.logs.PayPalLogRepository;
+import de.metas.paypalplus.orders.PayPalOrderId;
 import de.metas.paypalplus.orders.PayPalOrderRepository;
 import de.metas.paypalplus.orders.PayPalOrderService;
+import de.metas.paypalplus.processor.PayPalCallbacksService;
+import de.metas.paypalplus.processor.PayPalClient;
 import de.metas.paypalplus.processor.PayPalPaymentProcessor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,43 +74,80 @@ public class PayPalCheckoutManualTest2
 		AdempiereTestHelper.get().init();
 
 		new PayPalCheckoutManualTest2().run();
+
 		System.out.println("-------------------------------------------------------------------------");
 		System.out.println("Done");
+		POJOLookupMap.get().dumpStatus();
 	}
 
-	private ClientId clientId = ClientId.ofRepoId(1);
+	private final ClientId clientId;
 	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final CurrencyId currencyId;
 
-	private final PaymentReservationService paymentReservationService;
+	private PayPalOrderRepository payPalOrderRepository;
+	private PayPalPaymentProcessor payPalPaymentProcessor;
+	private PaymentReservationService paymentReservationService;
+	private PayPalCallbacksService payPalCallbacksService;
 
 	private PayPalCheckoutManualTest2()
 	{
-		paymentReservationService = createPaymentReservationService();
-
-		//
+		clientId = createClient();
 		currencyId = createCurrency("EUR");
+
+		setupServices();
 	}
 
-	private static PaymentReservationService createPaymentReservationService()
+	private static ClientId createClient()
 	{
-		final PayPalOrderRepository payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
+		final I_AD_Client record = newInstanceOutOfTrx(I_AD_Client.class);
+		record.setRequestEMail("payments@metasfresh.com");
+		record.setSMTPHost("localhost");
+		record.setSMTPPort(25);
+		record.setIsSmtpAuthorization(false);
+		record.setIsServerEMail(false);
+
+		saveRecord(record);
+		return ClientId.ofRepoId(record.getAD_Client_ID());
+	}
+
+	private void setupServices()
+	{
+		final PayPalConfigProvider payPalConfigProvider = TestPayPalConfigProvider.builder()
+				.approveMailTemplateId(createApproveMailTemplate())
+				.build();
+
+		final PayPalClient payPalClient = new PayPalClient(payPalConfigProvider, new PayPalLogRepository(Optional.empty()));
+
+		payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
 		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
 
 		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
-		
-		final PayPalPaymentProcessor payPalProcessor = new PayPalPaymentProcessor(
-				new TestPayPalConfigProvider(),
+
+		payPalPaymentProcessor = new PayPalPaymentProcessor(
+				payPalClient,
 				payPalOrdersService,
-				new PayPalLogRepository(Optional.empty()),
 				new CurrencyRepository(),
 				mailService);
 
-		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalProcessor)));
-
-		return new PaymentReservationService(
+		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalPaymentProcessor)));
+		paymentReservationService = new PaymentReservationService(
 				new PaymentReservationRepository(),
 				paymentProcessors);
+
+		payPalCallbacksService = new PayPalCallbacksService(paymentReservationService, payPalPaymentProcessor);
+
+	}
+
+	private static MailTemplateId createApproveMailTemplate()
+	{
+		final I_R_MailText record = newInstanceOutOfTrx(I_R_MailText.class);
+		record.setName("approve mail template");
+		record.setMailHeader("approve payment");
+		record.setMailText("please approve payment:"
+				+ "\n Approve URL: @" + PayPalPaymentProcessor.MAIL_VAR_ApproveURL + "@"
+				+ "\n Amount: @" + PayPalPaymentProcessor.MAIL_VAR_Amount + "@");
+		saveRecord(record);
+		return MailTemplateId.ofRepoId(record.getR_MailText_ID());
 	}
 
 	private static CurrencyId createCurrency(String currencyCode)
@@ -109,20 +159,81 @@ public class PayPalCheckoutManualTest2
 		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
 	}
 
+	private static BPartnerContactId createPayerBPartnerContact()
+	{
+		final I_C_BPartner bpartnerRecord = newInstanceOutOfTrx(I_C_BPartner.class);
+		bpartnerRecord.setValue("payer");
+		bpartnerRecord.setName("payer");
+		saveRecord(bpartnerRecord);
+
+		final I_AD_User contactRecord = newInstanceOutOfTrx(I_AD_User.class);
+		contactRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		contactRecord.setName("payer contact");
+		saveRecord(contactRecord);
+
+		return BPartnerContactId.ofRepoId(contactRecord.getC_BPartner_ID(), contactRecord.getAD_User_ID());
+	}
+
 	private void run()
 	{
 		final OrderId salesOrderId = OrderId.ofRepoId(123);
 
-		paymentReservationService.create(PaymentReservationCreateRequest.builder()
-				.clientId(clientId)
-				.orgId(orgId)
-				.amount(Money.of(100, currencyId))
-				.payerContactId(BPartnerContactId.ofRepoId(1, 2))
-				.payerEmail(EMailAddress.ofNullableString("from@example.com"))
-				.salesOrderId(salesOrderId)
-				.dateTrx(LocalDate.now())
-				.paymentRule(PaymentRule.PayPal)
-				.build());
+		//
+		// Create Reservation
+		final PaymentReservationId reservationId;
+		{
+			final PaymentReservation reservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
+					.clientId(clientId)
+					.orgId(orgId)
+					.amount(Money.of(100, currencyId))
+					.payerContactId(createPayerBPartnerContact())
+					.payerEmail(EMailAddress.ofNullableString("from@example.com"))
+					.salesOrderId(salesOrderId)
+					.dateTrx(LocalDate.now())
+					.paymentRule(PaymentRule.PayPal)
+					.build());
+			reservation.getStatus().assertWaitingForPayerApproval();
+			reservationId = reservation.getId();
+		}
+
+		//
+		// Wait: payer approval & order authorization
+		{
+			final PayPalOrderId apiOrderId = payPalOrderRepository.getByReservationId(reservationId)
+					.get()
+					.getExternalId();
+
+			pollUntilCompleted(apiOrderId);
+		}
+
+		// TODO: capture
+		// TODO: refund
+	}
+
+	private void pollUntilCompleted(@NonNull final PayPalOrderId apiOrderId)
+	{
+		while (true)
+		{
+			final PaymentReservation reservation = payPalCallbacksService.onOrderApprovedByPayer(apiOrderId);
+			if (reservation.getStatus().isCompleted())
+			{
+				System.out.println("Reservation " + reservation.getId() + " (apiOrderId=" + apiOrderId + ") was completed!");
+				return;
+			}
+			else
+			{
+				System.out.println("Reservation " + reservation.getId() + " (apiOrderId=" + apiOrderId + ")"
+						+ "  has status " + reservation.getStatus() + "."
+						+ " Waiting until completed.");
+				try
+				{
+					Thread.sleep(2000);
+				}
+				catch (InterruptedException e)
+				{
+				}
+			}
+		}
 	}
 
 }

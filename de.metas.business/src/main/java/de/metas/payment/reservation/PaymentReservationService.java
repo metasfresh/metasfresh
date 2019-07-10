@@ -21,12 +21,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,9 +54,19 @@ public class PaymentReservationService
 				.orElse(Boolean.FALSE);
 	}
 
-	public Optional<PaymentReservation> getSalesOrderReservation(@NonNull final OrderId salesOrderId)
+	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(@NonNull final OrderId salesOrderId)
 	{
 		return reservationsRepo.getBySalesOrderIdNotVoided(salesOrderId);
+	}
+
+	public PaymentReservation getById(@NonNull final PaymentReservationId id)
+	{
+		return reservationsRepo.getById(id);
+	}
+
+	public void save(@NonNull final PaymentReservation paymentReservation)
+	{
+		reservationsRepo.save(paymentReservation);
 	}
 
 	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)
@@ -74,13 +84,13 @@ public class PaymentReservationService
 				.paymentRule(createRequest.getPaymentRule())
 				.status(PaymentReservationStatus.WAITING_PAYER_APPROVAL)
 				.build();
-		reservationsRepo.save(paymentReservation);
+		save(paymentReservation);
 
 		//
 		// Process
 		final PaymentProcessor paymentProcessor = getPaymentProcessor(paymentReservation.getPaymentRule());
 		paymentProcessor.processReservation(paymentReservation);
-		reservationsRepo.save(paymentReservation);
+		save(paymentReservation);
 
 		return paymentReservation;
 	}

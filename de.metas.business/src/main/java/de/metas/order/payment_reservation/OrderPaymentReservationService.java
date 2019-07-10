@@ -63,7 +63,7 @@ public class OrderPaymentReservationService
 
 		final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
 		final PaymentReservation existingPaymentReservation = paymentReservationService
-				.getSalesOrderReservation(salesOrderId)
+				.getBySalesOrderIdNotVoided(salesOrderId)
 				.orElse(null);
 
 		final PaymentReservation paymentReservation;

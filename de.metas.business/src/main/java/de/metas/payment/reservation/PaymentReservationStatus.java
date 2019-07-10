@@ -60,14 +60,48 @@ public enum PaymentReservationStatus implements ReferenceListAwareEnum
 
 	private static final ImmutableMap<String, PaymentReservationStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
+	public boolean isCompleted()
+	{
+		return this == COMPLETED;
+	}
+
 	public boolean isVoided()
 	{
 		return this == VOIDED;
 	}
-	
+
+	public boolean isApprovedByPayer()
+	{
+		return this == APPROVED_BY_PAYER;
+	}
+
+	public void assertApprovedByPayer()
+	{
+		assertEquals(APPROVED_BY_PAYER);
+	}
+
+	public void assertEquals(@NonNull final PaymentReservationStatus expected)
+	{
+		if (!this.equals(expected))
+		{
+			throw new AdempiereException("Invalid reservation status. Expected " + expected + " but got " + this);
+		}
+	}
+
+	public boolean isWaitingForPayerApproval()
+	{
+		return this == WAITING_PAYER_APPROVAL;
+	}
+
+	public void assertWaitingForPayerApproval()
+	{
+		assertEquals(WAITING_PAYER_APPROVAL);
+	}
+
 	public boolean isWaitingToComplete()
 	{
-		return this == WAITING_PAYER_APPROVAL
-				|| this == APPROVED_BY_PAYER;
+		return isWaitingForPayerApproval()
+				|| isApprovedByPayer();
 	}
+
 }

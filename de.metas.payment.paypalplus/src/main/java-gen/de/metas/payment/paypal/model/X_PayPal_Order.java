@@ -14,7 +14,7 @@ public class X_PayPal_Order extends org.compiere.model.PO implements I_PayPal_Or
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -257774314L;
+	private static final long serialVersionUID = -2045093435L;
 
     /** Standard Constructor */
     public X_PayPal_Order (Properties ctx, int PayPal_Order_ID, String trxName)
@@ -25,6 +25,7 @@ public class X_PayPal_Order extends org.compiere.model.PO implements I_PayPal_Or
 			setC_Payment_Reservation_ID (0);
 			setPayPal_Order_ID (0);
 			setPayPal_OrderJSON (null); // 0
+			setStatus (null);
         } */
     }
 
@@ -161,5 +162,21 @@ public class X_PayPal_Order extends org.compiere.model.PO implements I_PayPal_Or
 	public java.lang.String getPayPal_PayerApproveUrl () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PayPal_PayerApproveUrl);
+	}
+
+	/** Set Status.
+		@param Status Status	  */
+	@Override
+	public void setStatus (java.lang.String Status)
+	{
+		set_Value (COLUMNNAME_Status, Status);
+	}
+
+	/** Get Status.
+		@return Status	  */
+	@Override
+	public java.lang.String getStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
 }

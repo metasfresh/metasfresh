@@ -3,6 +3,8 @@ package de.metas.paypalplus.orders;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.payment.reservation.PaymentReservationId;
@@ -41,11 +43,17 @@ public class PayPalOrder
 
 	/** i.e. the paypal order id */
 	@NonNull
-	String externalId;
+	PayPalOrderId externalId;
+	
+	@NonNull
+	PayPalOrderStatus status;
 
+	@Nullable
 	String authorizationId;
+	@Nullable
 	String payerApproveUrlString;
 
+	@Nullable
 	String bodyAsJson;
 
 	public boolean isAuthorized()

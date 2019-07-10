@@ -70,11 +70,15 @@ public class PaymentReservation
 
 	@NonNull
 	@NonFinal
-	@Setter(AccessLevel.PUBLIC)
 	PaymentReservationStatus status;
 
 	@Nullable
 	@NonFinal
 	@Setter(AccessLevel.PACKAGE)
 	PaymentReservationId id;
+	
+	public void changeStatusTo(@NonNull final PaymentReservationStatus status)
+	{
+		this.status = status;
+	}
 }

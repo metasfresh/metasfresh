@@ -1,10 +1,9 @@
 package de.metas.paypalplus.processor;
 
-import com.paypal.core.PayPalEnvironment;
-import com.paypal.core.PayPalHttpClient;
-
-import de.metas.paypalplus.PayPalConfig;
-import lombok.NonNull;
+import de.metas.order.OrderId;
+import de.metas.payment.reservation.PaymentReservationId;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -28,30 +27,12 @@ import lombok.NonNull;
  * #L%
  */
 
-final class PayPalHttpClientFactory
+@Value
+@Builder
+public class PayPalClientExecutionContext
 {
-	public PayPalHttpClient getPayPalHttpClient(@NonNull final PayPalConfig config)
-	{
-		final PayPalEnvironment environment = createPayPalEnvironment(config);
-		return new PayPalHttpClient(environment);
-	}
+	public static final PayPalClientExecutionContext EMPTY = builder().build();
 
-	private static PayPalEnvironment createPayPalEnvironment(@NonNull final PayPalConfig config)
-	{
-		if (!config.isSandbox())
-		{
-			return new PayPalEnvironment(
-					config.getClientId(),
-					config.getClientSecret(),
-					config.getBaseUrl(),
-					config.getWebUrl());
-		}
-		else
-		{
-			return new PayPalEnvironment.Sandbox(
-					config.getClientId(),
-					config.getClientSecret());
-		}
-	}
-
+	PaymentReservationId paymentReservationId;
+	OrderId salesOrderId;
 }

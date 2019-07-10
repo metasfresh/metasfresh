@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -16,6 +17,8 @@ import org.compiere.model.I_C_Payment_Reservation;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.email.EMailAddress;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -48,7 +51,18 @@ import lombok.NonNull;
 @Repository
 public class PaymentReservationRepository
 {
-	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(final OrderId salesOrderId)
+	public PaymentReservation getById(@NonNull final PaymentReservationId id)
+	{
+		final I_C_Payment_Reservation record = load(id, I_C_Payment_Reservation.class);
+		if (record == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_Payment_Reservation_ID@: " + id);
+		}
+
+		return toPaymentReservation(record);
+	}
+
+	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(@NonNull final OrderId salesOrderId)
 	{
 		final I_C_Payment_Reservation record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment_Reservation.class)
@@ -76,6 +90,9 @@ public class PaymentReservationRepository
 		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", paymentReservation.getClientId().getRepoId());
 		record.setAD_Org_ID(paymentReservation.getOrgId().getRepoId());
 		record.setAmount(paymentReservation.getAmount().getAsBigDecimal());
+		record.setBill_BPartner_ID(paymentReservation.getPayerContactId().getBpartnerId().getRepoId());
+		record.setBill_User_ID(paymentReservation.getPayerContactId().getUserId().getRepoId());
+		record.setBill_EMail(paymentReservation.getPayerEmail().getAsString());
 		record.setC_Currency_ID(paymentReservation.getAmount().getCurrencyId().getRepoId());
 		record.setC_Order_ID(paymentReservation.getSalesOrderId().getRepoId());
 		record.setDateTrx(TimeUtil.asTimestamp(paymentReservation.getDateTrx()));
@@ -102,8 +119,8 @@ public class PaymentReservationRepository
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.amount(Money.of(record.getAmount(), currencyId))
-				// .payerContactId(payerContactId) // TODO
-				// .payerEmail(payerEmail) // TODO
+				.payerContactId(BPartnerContactId.ofRepoId(record.getBill_BPartner_ID(), record.getBill_User_ID()))
+				.payerEmail(EMailAddress.ofString(record.getBill_EMail()))
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
 				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))

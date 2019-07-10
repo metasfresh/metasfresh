@@ -56,4 +56,11 @@ public class PayPalOrderService
 		return payPalOrderRepo.save(reservationId, apiOrder);
 	}
 
+	public PayPalOrder save(
+			@NonNull final PayPalOrderId externalId,
+			@NonNull final com.paypal.orders.Order apiOrder)
+	{
+		return payPalOrderRepo.save(externalId, apiOrder);
+	}
+
 }

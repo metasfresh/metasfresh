@@ -36,6 +36,7 @@ import com.paypal.payments.CapturesRefundRequest;
 import com.paypal.payments.Refund;
 import com.paypal.payments.RefundRequest;
 
+import de.metas.email.templates.MailTemplateId;
 import de.metas.paypalplus.PayPalConfig;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
@@ -81,7 +82,10 @@ public class PayPalCheckoutManualTest
 
 	public PayPalCheckoutManualTest()
 	{
-		final TestPayPalConfigProvider configProvider = new TestPayPalConfigProvider();
+		final TestPayPalConfigProvider configProvider = TestPayPalConfigProvider.builder()
+				.approveMailTemplateId(MailTemplateId.ofRepoId(12345)) // dummy
+				.build();
+
 		config = configProvider.getConfig();
 		System.out.println("Using " + config);
 
@@ -139,6 +143,10 @@ public class PayPalCheckoutManualTest
 		// Authorizing created order
 		String authId = null;
 		{
+			System.out.println("-------------------------------------------------------------------------");
+			System.out.println("Checking before authorizing Order... orderId=" + orderId);
+			getOrder(orderId);
+
 			System.out.println("-------------------------------------------------------------------------");
 			System.out.println("Authorizing Order... orderId=" + orderId);
 			HttpResponse<Order> orderResponse = authorizeOrder(orderId);
