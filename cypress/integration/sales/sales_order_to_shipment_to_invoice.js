@@ -75,7 +75,7 @@ describe('Create Sales order', function() {
       .should('have.value', '0.1')
       .type('1{enter}');
     // cy.wait('@resetQuickInputFields');
-    // cy.wait(3000);
+    cy.wait(5000);
     /**Complete sales order */
     cy.get('.form-field-DocAction ul')
       .click({ force: true })
