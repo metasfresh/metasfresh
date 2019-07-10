@@ -23,9 +23,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
+        "baseLanguage": true,
         "leftToRight": true,
-        "decimalPoint": false,
-        "baseLanguage": true
+        "decimalPoint": false
       },
       "url": "bPartner.url",
       "groupId": 15,
@@ -138,8 +138,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
     "contacts": [
       {
         "id": {
-          "repoId": 100011,
-          "bpartnerId": 100006
+          "bpartnerId": 100006,
+          "userId": 100011
         },
         "externalId": {
           "value": "c1_externalId"
@@ -173,8 +173,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       },
       {
         "id": {
-          "repoId": 100012,
-          "bpartnerId": 100006
+          "bpartnerId": 100006,
+          "userId": 100012
         },
         "externalId": {
           "value": "c2_externalId"
@@ -291,8 +291,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
     "contacts": [
       {
         "id": {
-          "repoId": 30,
-          "bpartnerId": 20
+          "bpartnerId": 20,
+          "userId": 30
         },
         "externalId": {
           "value": "abcde"
@@ -328,8 +328,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       },
       {
         "id": {
-          "repoId": 100004,
-          "bpartnerId": 20
+          "bpartnerId": 20,
+          "userId": 100004
         },
         "externalId": {
           "value": "newContact-_externalId"
@@ -486,8 +486,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
     "contacts": [
       {
         "id": {
-          "repoId": 30,
-          "bpartnerId": 20
+          "bpartnerId": 20,
+          "userId": 30
         },
         "externalId": {
           "value": "abcde"
