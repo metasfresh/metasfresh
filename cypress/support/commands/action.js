@@ -1,17 +1,25 @@
 function executeHeaderAction(actionName) {
-  /*
-  if this is run straight after visiting a window, the action is not loaded, and everything gets broken.
-  example:
+  /**
+   * Only specific windows can have actions. They match one of the following urls:
+   *
+   * https://dev586.metasfresh.com/window/123?viewId=123-o&page=1
+   * https://dev586.metasfresh.com/window/123/2156425
+   *
+   * This match is needed because cypress is so fast that it may press the action button before any viewId is available, and the system will error out.
+   */
+  cy.url().should('matches', new RegExp(`window/[0-9]+(/[0-9]+|.*viewId=)`));
 
-    cy.visitWindow('540154);
-    // cy.wait(2000); // <- i need to get rid of this!
-    cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
-
-    we should wait for
-    "rest/api/window/windowID/* /actions"
-    */
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');
+
+
+
+  //
+  // cy.wait(`@${layoutAliasName}`, {
+  //   requestTimeout: 20000,
+  //   responseTimeout: 20000,
+  // });
+
   cy.get(`#headerAction_${actionName}`).click();
 }
 
