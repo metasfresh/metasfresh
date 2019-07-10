@@ -216,7 +216,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions(conditions);
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
-		term.setM_Product(product);
+		term.setM_Product_ID(product.getM_Product_ID());
 		term.setStartDate(startDate);
 		term.setC_OrderLine_Term(orderLine);
 		term.setIsAutoRenew(isAutoRenew);

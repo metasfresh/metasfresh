@@ -162,8 +162,8 @@ public class CopyPriceToStandard extends JavaProcess
 						pprice.getPriceStd(),
 						C_Currency_ID, 
 						acctSchema.getCurrencyId(),
-						getAD_Client_ID(), 
-						p_AD_Org_ID.getRepoId());
+						ClientId.ofRepoId(getAD_Client_ID()), 
+						p_AD_Org_ID);
 			}
 
 			final I_M_Product product = Services.get(IProductDAO.class).getById(pprice.getM_Product_ID());

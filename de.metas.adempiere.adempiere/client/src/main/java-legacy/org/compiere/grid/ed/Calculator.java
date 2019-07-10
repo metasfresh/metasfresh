@@ -48,6 +48,8 @@ import javax.swing.SwingConstants;
 
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.apps.ADialog;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -388,8 +390,8 @@ public final class Calculator extends CDialog
 			p = (KeyNamePair)curTo.getSelectedItem();
 			final CurrencyId curToID = CurrencyId.ofRepoId(p.getKey());
 			//	convert
-			int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-			int AD_Org_ID = Env.getAD_Org_ID(Env.getCtx());
+			ClientId AD_Client_ID = Env.getClientId();
+			OrgId AD_Org_ID = Env.getOrgId();
 			m_number = Services.get(ICurrencyBL.class).convert(
 					evaluate(), 
 					curFromID, 

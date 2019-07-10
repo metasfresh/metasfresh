@@ -27,11 +27,14 @@ import java.math.BigDecimal;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.banking.model.I_C_BankStatementLine;
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -174,10 +177,10 @@ public class C_BankStatementLine
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				bsl.getValutaDate(),
-				ConversionType.Spot,
-				bsl.getAD_Client_ID(),
-				bsl.getAD_Org_ID());
+				TimeUtil.asLocalDate(bsl.getValutaDate()),
+				ConversionTypeMethod.Spot,
+				ClientId.ofRepoId(bsl.getAD_Client_ID()),
+				OrgId.ofRepoId(bsl.getAD_Org_ID()));
 
 		final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(currencyConversionCtx, trxAmtFromCurrencyId, trxAmtCurrencyId);
 		final BigDecimal trxAmt = currencyRate

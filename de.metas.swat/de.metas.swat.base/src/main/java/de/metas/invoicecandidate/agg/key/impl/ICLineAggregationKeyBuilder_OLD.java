@@ -28,9 +28,9 @@ import java.text.NumberFormat;
 import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.Evaluatee;
 
@@ -41,12 +41,15 @@ import de.metas.aggregation.api.IAggregationAttribute;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -203,10 +206,11 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final Locale locale = Language.getLanguage(langInfo).getLocale();
 		final NumberFormat numberFormat = NumberFormat.getCurrencyInstance(locale);
 
-		final I_C_Currency currency = ic.getC_Currency();
-		if (currency != null)
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+		if (currencyId != null)
 		{
-			numberFormat.setCurrency(Currency.getInstance(currency.getISO_Code()));
+			final CurrencyCode currencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+			numberFormat.setCurrency(Currency.getInstance(currencyCode.toThreeLetterCode()));
 		}
 
 		return numberFormat;
@@ -218,7 +222,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final String aggregationKey1 = buildKey(model1);
 		final String aggregationKey2 = buildKey(model2);
 
-		return Check.equals(aggregationKey1, aggregationKey2);
+		return Objects.equals(aggregationKey1, aggregationKey2);
 	}
 
 	@Override

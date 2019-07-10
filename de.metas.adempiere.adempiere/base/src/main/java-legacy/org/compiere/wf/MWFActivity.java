@@ -34,6 +34,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.SpringContextHolder;
@@ -848,8 +849,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 							amtApproval,
 							CurrencyId.ofRepoId(amtApprovalCurrencyId),
 							CurrencyId.ofRepoId(C_Currency_ID),
-							getAD_Client_ID(),
-							AD_Org_ID);
+							ClientId.ofRepoId(getAD_Client_ID()),
+							OrgId.ofRepoId(AD_Org_ID));
 					if (amtApproval == null || amtApproval.signum() == 0)
 					{
 						continue;

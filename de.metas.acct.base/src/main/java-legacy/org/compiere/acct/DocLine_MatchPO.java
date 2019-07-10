@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -94,10 +94,10 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final BigDecimal rate = currencyConversionBL.getRate(
 				poCost.getCurrencyId(),
 				as.getCurrencyId(),
-				order.getDateAcct(),
-				order.getC_ConversionType_ID(),
-				orderLine.getAD_Client_ID(),
-				orderLine.getAD_Org_ID());
+				TimeUtil.asLocalDate(order.getDateAcct()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()));
 		if (rate == null)
 		{
 			throw newPostingException()
@@ -111,7 +111,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	public CostAmount getStandardCosts(final AcctSchema acctSchema)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(acctSchema))
@@ -136,7 +136,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
 
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
 		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());

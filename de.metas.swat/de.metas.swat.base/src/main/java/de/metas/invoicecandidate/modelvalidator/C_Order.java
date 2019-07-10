@@ -28,13 +28,16 @@ import java.sql.Timestamp;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
@@ -46,6 +49,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
@@ -99,10 +103,10 @@ public class C_Order
 		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(
 				order.getGrandTotal(),
 				CurrencyId.ofRepoId(order.getC_Currency_ID()),
-				order.getDateOrdered(),
-				order.getC_ConversionType_ID(),
-				order.getAD_Client_ID(),
-				order.getAD_Org_ID());
+				TimeUtil.asLocalDate(order.getDateOrdered()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
+				ClientId.ofRepoId(order.getAD_Client_ID()),
+				OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 				.stat(stats)

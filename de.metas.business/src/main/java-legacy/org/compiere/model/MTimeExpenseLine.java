@@ -22,10 +22,14 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -228,10 +232,10 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 						getExpenseAmt(),
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(getC_Currency_Report_ID()),
-						getDateExpense(),
-						0,
-						getAD_Client_ID(),
-						getAD_Org_ID()));
+						TimeUtil.asLocalDate(getDateExpense()),
+						(CurrencyConversionTypeId)null,
+						ClientId.ofRepoId(getAD_Client_ID()),
+						OrgId.ofRepoId(getAD_Org_ID())));
 			}
 		}
 		if (isTimeReport())

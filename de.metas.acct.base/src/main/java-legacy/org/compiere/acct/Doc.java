@@ -950,10 +950,10 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			}
 
 			final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					TimeUtil.asDate(getDateAcct()),
+					getDateAcct(),
 					getCurrencyConversionTypeId(),
-					getAD_Client_ID(),
-					getAD_Org_ID());
+					getClientId(),
+					getOrgId());
 			try
 			{
 				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);

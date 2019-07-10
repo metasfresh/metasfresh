@@ -36,14 +36,12 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -57,11 +55,14 @@ import org.junit.rules.TestWatcher;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.impl.PlainPaymentDAO;
@@ -136,19 +137,14 @@ public class AllocationBLTest
 		partner.setValue("partner1");
 		db.save(partner);
 
-		final I_C_Currency currencyEUR = db.newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		db.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
 		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		db.save(invoice);
 		
 		final I_C_AllocationHdr alloc = Services.get(IAllocationBL.class).autoAllocateAvailablePayments(invoice);
@@ -169,19 +165,14 @@ public class AllocationBLTest
 		partner.setValue("partner1");
 		InterfaceWrapperHelper.save(partner);
 
-		final I_C_Currency currencyEUR = db.newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
 		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.setTrxName(invoice, Services.get(ITrxManager.class).createTrxName("trxName_test_AllocateForLine_PartiallyPaid", true));
 		InterfaceWrapperHelper.save(invoice);
 
@@ -195,7 +186,7 @@ public class AllocationBLTest
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment1.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment1.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment1);
 
 		Assert.assertTrue(invoice.getGrandTotal().compareTo(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)) == 0);
@@ -229,19 +220,14 @@ public class AllocationBLTest
 		partner.setValue("partner1");
 		InterfaceWrapperHelper.save(partner);
 
-		final I_C_Currency currencyEUR = db.newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
 		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.setTrxName(invoice, Services.get(ITrxManager.class).createTrxName("trxName_test_AllocateForLine_FullyPaid", true));
 		InterfaceWrapperHelper.save(invoice);
 
@@ -255,7 +241,7 @@ public class AllocationBLTest
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment1.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment1.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment1);
 
 		final I_C_Payment payment2 = db.newInstance(I_C_Payment.class);
@@ -268,7 +254,7 @@ public class AllocationBLTest
 		payment2.setIsActive(true);
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment2.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment2.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment2);
 
 		final I_C_Payment payment3 = db.newInstance(I_C_Payment.class);
@@ -281,7 +267,7 @@ public class AllocationBLTest
 		payment3.setIsActive(true);
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment3.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment3.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment3);
 
 		Assert.assertTrue(invoice.getGrandTotal().compareTo(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice)) == 0);
@@ -321,19 +307,14 @@ public class AllocationBLTest
 		partner.setValue("partner1");
 		db.save(partner);
 
-		final I_C_Currency currencyEUR = db.newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		db.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
 		invoice.setGrandTotal(new BigDecimal("100"));
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setIsSOTrx(true);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.setTrxName(invoice, Services.get(ITrxManager.class).createTrxName("trxName_test_AllocateForLine_FullyPaid_ExtraPayment", true));
 		InterfaceWrapperHelper.save(invoice);
 
@@ -347,7 +328,7 @@ public class AllocationBLTest
 		payment1.setIsActive(true);
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment1.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment1.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment1);
 
 		final I_C_Payment payment2 = db.newInstance(I_C_Payment.class);
@@ -360,7 +341,7 @@ public class AllocationBLTest
 		payment2.setIsActive(true);
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment2.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment2.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment2);
 
 		final I_C_Payment payment3 = db.newInstance(I_C_Payment.class);
@@ -373,7 +354,7 @@ public class AllocationBLTest
 		payment3.setIsActive(true);
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
-		payment3.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment3.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment3);
 
 		assertThat(Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice), comparesEqualTo(invoice.getGrandTotal())); // guard

@@ -26,13 +26,16 @@ import javax.annotation.Nullable;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MTax;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -437,10 +440,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 			final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 			Check.assumeNotNull(invoice, "invoice not null");
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					invoice.getDateAcct(),
+					TimeUtil.asLocalDate(invoice.getDateAcct()),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					invoice.getAD_Client_ID(),
-					invoice.getAD_Org_ID());
+					ClientId.ofRepoId(invoice.getAD_Client_ID()),
+					OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		}
 		return invoiceCurrencyConversionCtx;
 	}
@@ -496,7 +499,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
 		final CurrencyId currentId = getInvoiceCurrencyId();

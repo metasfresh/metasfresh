@@ -25,6 +25,10 @@ package de.metas.dunning.api.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
+import org.compiere.util.TimeUtil;
+
 import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
 import de.metas.money.CurrencyConversionTypeId;
@@ -47,10 +51,10 @@ public class DunningUtil implements IDunningUtil
 				Amt,
 				CurrencyId.ofRepoId(CurFrom_ID),
 				CurrencyId.ofRepoId(CurTo_ID),
-				ConvDate,
-				CurrencyConversionTypeId.toRepoId(conversionTypeId),
-				AD_Client_ID,
-				AD_Org_ID);
+				TimeUtil.asLocalDate(ConvDate),
+				conversionTypeId,
+				ClientId.ofRepoId(AD_Client_ID),
+				OrgId.ofRepoId(AD_Org_ID));
 	}
 
 	@Override

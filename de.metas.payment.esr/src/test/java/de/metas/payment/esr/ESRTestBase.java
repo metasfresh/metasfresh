@@ -38,7 +38,6 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -49,7 +48,6 @@ import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -62,6 +60,8 @@ import org.junit.rules.TestWatcher;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -72,6 +72,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -295,12 +296,7 @@ public class ESRTestBase
 		save(refNoType);
 
 		// currency
-		final I_C_Currency currencyEUR = newInstance(I_C_Currency.class, contextProvider);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
@@ -308,7 +304,7 @@ public class ESRTestBase
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_RenderedAccountNo);
-		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		account.setC_Currency_ID(currencyEUR.getRepoId());
 		save(account);
 
 		// doc type
@@ -331,7 +327,7 @@ public class ESRTestBase
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo(invDocNo);
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice.setIsPaid(invPaid);
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
@@ -379,7 +375,7 @@ public class ESRTestBase
 		if (createAllocation)
 		{
 			final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
-			allocHdr.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+			allocHdr.setC_Currency_ID(currencyEUR.getRepoId());
 			save(allocHdr);
 
 			final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);

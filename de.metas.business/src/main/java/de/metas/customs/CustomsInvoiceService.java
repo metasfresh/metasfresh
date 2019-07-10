@@ -230,8 +230,8 @@ public class CustomsInvoiceService
 				priceActual.getAsBigDecimal(),
 				priceActual.getCurrencyId(),
 				currencyId,
-				Env.getClientId().getRepoId(),
-				Env.getOrgId().getRepoId());
+				Env.getClientId(),
+				Env.getOrgId());
 
 		if (shipmentLinePriceConverted == null)
 		{

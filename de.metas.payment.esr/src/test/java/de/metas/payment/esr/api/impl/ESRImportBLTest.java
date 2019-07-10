@@ -42,11 +42,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -55,12 +53,15 @@ import org.junit.Test;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.impl.PlainAllocationDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.money.CurrencyId;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.ESRValidationRuleTools;
@@ -169,12 +170,7 @@ public class ESRImportBLTest extends ESRTestBase
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		save(type);
 
-		final I_C_Currency currencyEUR = newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -183,7 +179,7 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setGrandTotal(HUNDRET);
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);

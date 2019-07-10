@@ -12,15 +12,17 @@ import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -71,9 +73,7 @@ public class AssignableInvoiceCandidateFactoryTest
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(productRecord);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		save(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
@@ -83,7 +83,7 @@ public class AssignableInvoiceCandidateFactoryTest
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		save(assignableIcRecord);
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
@@ -106,7 +106,7 @@ public class AssignableInvoiceCandidateFactoryTest
 
 		// TODO move to dedicated test case
 		// assertThat(cast.getAssignmentsToRefundCandidates().get(0).getRefundInvoiceCandidate().getId().getRepoId()).isEqualTo(refundContractIcRecord.getC_Invoice_Candidate_ID());
-		assertThat(ofRecord.getMoney().getValue()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 	}
 }

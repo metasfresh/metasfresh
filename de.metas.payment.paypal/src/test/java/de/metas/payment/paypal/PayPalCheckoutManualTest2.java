@@ -1,6 +1,5 @@
 package de.metas.payment.paypal;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -13,14 +12,15 @@ import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_R_MailText;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
@@ -94,7 +94,7 @@ public class PayPalCheckoutManualTest2
 	private PayPalCheckoutManualTest2()
 	{
 		clientId = createClient();
-		currencyId = createCurrency("EUR");
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		setupServices();
 	}
@@ -152,15 +152,6 @@ public class PayPalCheckoutManualTest2
 				+ "\n Amount: @" + PayPalPaymentProcessor.MAIL_VAR_Amount + "@");
 		saveRecord(record);
 		return MailTemplateId.ofRepoId(record.getR_MailText_ID());
-	}
-
-	private static CurrencyId createCurrency(String currencyCode)
-	{
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		currency.setISO_Code(currencyCode);
-		currency.setStdPrecision(2);
-		saveRecord(currency);
-		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
 	}
 
 	private Money money(final int value)

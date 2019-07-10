@@ -24,17 +24,20 @@ package de.metas.acct.callout;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -43,6 +46,7 @@ import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -73,14 +77,14 @@ public class GL_JournalLine
 			return;
 		}
 
-		final int conversionTypeId = glJournalLine.getC_ConversionType_ID();
-		Timestamp dateAcct = glJournalLine.getDateAcct();
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournalLine.getC_ConversionType_ID());
+		LocalDate dateAcct = TimeUtil.asLocalDate(glJournalLine.getDateAcct());
 		if (dateAcct == null)
 		{
-			dateAcct = SystemTime.asDayTimestamp();
+			dateAcct = SystemTime.asLocalDate();
 		}
-		final int adClientId = glJournalLine.getAD_Client_ID();
-		final int adOrgId = glJournalLine.getAD_Org_ID();
+		final ClientId adClientId = ClientId.ofRepoId(glJournalLine.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(glJournalLine.getAD_Org_ID());
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);

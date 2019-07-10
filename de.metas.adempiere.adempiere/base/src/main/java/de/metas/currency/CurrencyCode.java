@@ -78,4 +78,8 @@ public final class CurrencyCode
 		return threeLetterCode;
 	}
 
+	public boolean isEuro()
+	{
+		return this.equals(EUR);
+	}
 }

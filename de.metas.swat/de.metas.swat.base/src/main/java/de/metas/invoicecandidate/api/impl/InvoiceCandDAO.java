@@ -29,6 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,6 +58,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
@@ -105,6 +108,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IADPInstanceDAO;
@@ -1350,7 +1354,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID + ","
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID;
 
-		final HashMap<CurrencyId, HashMap<Integer, BigDecimal>> currencyId2conversion2Amt = new HashMap<>();
+		final HashMap<CurrencyId, HashMap<CurrencyConversionTypeId, BigDecimal>> currencyId2conversion2Amt = new HashMap<>();
 
 		final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 		ResultSet rs = null;
@@ -1367,9 +1371,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 					continue;
 				}
 				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID));
-				final int conversionTypeId = rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID);
+				final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID));
 				
-				HashMap<Integer, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
+				HashMap<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 				if (conversion2Amt == null)
 				{
 					conversion2Amt = new HashMap<>();
@@ -1389,14 +1393,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Conversion date to be used on currency conversion
-		final Timestamp dateConv = SystemTime.asTimestamp();
+		final LocalDate dateConv = SystemTime.asLocalDate();
 
 		BigDecimal result = BigDecimal.ZERO;
 		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())
 		{
-			final Map<Integer, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
+			final Map<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 
-			for (final Integer conversionTypeId : conversion2Amt.keySet())
+			for (final CurrencyConversionTypeId conversionTypeId : conversion2Amt.keySet())
 			{
 				final BigDecimal amt = conversion2Amt.get(conversionTypeId);
 				final BigDecimal amtConverted = Services.get(ICurrencyBL.class).convert(
@@ -1405,7 +1409,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						targetCurrencyId,    // CurTo_ID,
 						dateConv,    // ConvDate,
 						conversionTypeId,
-						adClientId, adOrgId);
+						ClientId.ofRepoId(adClientId),
+						OrgId.ofRepoId(adOrgId));
 				result = result.add(amtConverted);
 			}
 		}

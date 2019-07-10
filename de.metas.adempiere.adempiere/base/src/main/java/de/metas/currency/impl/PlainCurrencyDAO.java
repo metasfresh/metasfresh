@@ -8,7 +8,10 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
@@ -20,12 +23,15 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import lombok.Builder;
 import lombok.NonNull;
 
 /*
@@ -71,12 +77,12 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	}
 
 	/**
-	 * Creates all {@link I_C_ConversionType}s (from {@link ConversionType}) and sets the {@link ConversionType#Spot} as default.
+	 * Creates all {@link I_C_ConversionType}s (from {@link ConversionTypeMethod}) and sets the {@link ConversionTypeMethod#Spot} as default.
 	 */
 	public void createDefaultConversionTypes()
 	{
 		final Properties ctx = Env.getCtx();
-		for (final ConversionType type : ConversionType.values())
+		for (final ConversionTypeMethod type : ConversionTypeMethod.values())
 		{
 			final I_C_ConversionType conversionType = InterfaceWrapperHelper.create(ctx, I_C_ConversionType.class, ITrx.TRXNAME_None);
 			InterfaceWrapperHelper.setValue(conversionType, I_C_ConversionType.COLUMNNAME_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System);
@@ -85,7 +91,7 @@ public class PlainCurrencyDAO extends CurrencyDAO
 			conversionType.setName(type.toString());
 			InterfaceWrapperHelper.save(conversionType);
 
-			if (type == ConversionType.Spot)
+			if (type == ConversionTypeMethod.Spot)
 			{
 				final I_C_ConversionType_Default conversionTypeDefault = InterfaceWrapperHelper.newInstance(I_C_ConversionType_Default.class, conversionType, true);
 				conversionTypeDefault.setC_ConversionType(conversionType);
@@ -107,14 +113,16 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	 * @param currencyTo
 	 * @param rate
 	 */
-	public void setRate(final I_C_Currency currencyFrom, final I_C_Currency currencyTo, final BigDecimal rate)
+	public void setRate(
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId,
+			@NonNull final BigDecimal rate)
 	{
 		final Properties ctx = Env.getCtx();
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 		final LocalDate date = LocalDate.of(1970, Month.JANUARY, 1);
-		final I_C_ConversionType conversionType = retrieveDefaultConversionType(ctx, clientId.getRepoId(), orgId.getRepoId(), TimeUtil.asDate(date));
-		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoId(conversionType.getC_ConversionType_ID());
+		final CurrencyConversionTypeId conversionTypeId = getDefaultConversionTypeId(clientId, orgId, date);
 		final CurrencyConversionContext conversionCtx = CurrencyConversionContext.builder()
 				.clientId(clientId)
 				.orgId(orgId)
@@ -122,16 +130,16 @@ public class PlainCurrencyDAO extends CurrencyDAO
 				.conversionDate(date)
 				.build();
 
-		I_C_Conversion_Rate conversionRate = retrieveRateQuery(conversionCtx, currencyFrom.getC_Currency_ID(), currencyTo.getC_Currency_ID())
+		I_C_Conversion_Rate conversionRate = retrieveRateQuery(conversionCtx, currencyFromId, currencyToId)
 				.create()
 				.first();
 		if (conversionRate == null)
 		{
-			conversionRate = InterfaceWrapperHelper.create(ctx, I_C_Conversion_Rate.class, ITrx.TRXNAME_None);
+			conversionRate = newInstanceOutOfTrx(I_C_Conversion_Rate.class);
 			conversionRate.setAD_Org_ID(orgId.getRepoId());
 			conversionRate.setC_ConversionType_ID(conversionTypeId.getRepoId());
-			conversionRate.setC_Currency_ID(currencyFrom.getC_Currency_ID());
-			conversionRate.setC_Currency_ID_To(currencyTo.getC_Currency_ID());
+			conversionRate.setC_Currency_ID(currencyFromId.getRepoId());
+			conversionRate.setC_Currency_ID_To(currencyToId.getRepoId());
 			// FIXME: this one is not working due a bug in POJOWrapper or because it's not respecting the standard naming conventions (i.e. C_Currency_To_ID)
 			// conversionRate.setC_Currency_To(currencyTo);
 			conversionRate.setValidFrom(TimeUtil.asTimestamp(date));
@@ -157,14 +165,52 @@ public class PlainCurrencyDAO extends CurrencyDAO
 				.orElseGet(() -> createCurrency(currencyCode));
 	}
 
-	private Currency createCurrency(final CurrencyCode currencyCode)
+	public static CurrencyId createCurrencyId(@NonNull final CurrencyCode currencyCode)
 	{
+		return createCurrency(currencyCode).getId();
+	}
+
+	public static Currency createCurrency(@NonNull final CurrencyCode currencyCode)
+	{
+		return prepareCurrency()
+				.currencyCode(currencyCode)
+				.build();
+	}
+
+	public static Currency createCurrency(
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final CurrencyPrecision precision)
+	{
+		return prepareCurrency()
+				.currencyCode(currencyCode)
+				.precision(precision)
+				.build();
+	}
+	
+	@Builder(builderMethodName="prepareCurrency", builderClassName="CurrencyBuilder")
+	private static Currency createCurrency(
+			@NonNull final CurrencyCode currencyCode,
+			@Nullable final CurrencyPrecision precision,
+			@Nullable final CurrencyId currencyId)
+	{
+		final CurrencyPrecision precisionToUse = precision != null ? precision : CurrencyPrecision.TWO;
+		
 		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
+		
 		record.setISO_Code(currencyCode.toThreeLetterCode());
 		record.setCurSymbol(currencyCode.toThreeLetterCode());
-		record.setStdPrecision(2);
-		record.setCostingPrecision(4);
+		record.setIsEuro(currencyCode.isEuro());
+		
+		record.setStdPrecision(precisionToUse.toInt());
+		record.setCostingPrecision(precisionToUse.toInt() + 2);
+		
+		if(currencyId != null)
+		{
+			record.setC_Currency_ID(currencyId.getRepoId());
+		}
+		
 		saveRecord(record);
+		POJOWrapper.enableStrictValues(record);
 
 		return toCurrency(record);
 	}

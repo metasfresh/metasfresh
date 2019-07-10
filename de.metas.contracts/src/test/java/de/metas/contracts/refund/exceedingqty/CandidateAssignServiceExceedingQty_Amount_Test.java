@@ -11,7 +11,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
@@ -36,6 +35,9 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
@@ -104,10 +106,11 @@ public class CandidateAssignServiceExceedingQty_Amount_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
+		PlainCurrencyDAO.prepareCurrency()
+				.currencyId(CURRENCY_ID)
+				.currencyCode(CurrencyCode.EUR)
+				.precision(CurrencyPrecision.TWO)
+				.build();
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();
 

@@ -73,6 +73,7 @@ import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
@@ -1788,10 +1789,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
 				getGrandTotal(true), 	// CM adjusted
 				CurrencyId.ofRepoId(getC_Currency_ID()),
-				getDateAcct(),
-				getC_ConversionType_ID(),
-				getAD_Client_ID(),
-				getAD_Org_ID());
+				TimeUtil.asLocalDate(getDateAcct()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(getC_ConversionType_ID()),
+				ClientId.ofRepoId(getAD_Client_ID()),
+				OrgId.ofRepoId(getAD_Org_ID()));
 
 		if (invAmt == null)
 		{
@@ -1821,10 +1822,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						amt, 
 						CurrencyId.ofRepoId(getC_Currency_ID()), 
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						getDateAcct(), 
-						0, 
-						getAD_Client_ID(), 
-						getAD_Org_ID());
+						TimeUtil.asLocalDate(getDateAcct()), 
+						(CurrencyConversionTypeId)null, 
+						ClientId.ofRepoId(getAD_Client_ID()), 
+						OrgId.ofRepoId(getAD_Org_ID()));
 			}
 			if (amt == null)
 			{

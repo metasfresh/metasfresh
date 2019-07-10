@@ -21,8 +21,11 @@ import org.slf4j.Logger;
 import de.metas.banking.model.I_C_RecurrentPayment;
 import de.metas.banking.model.X_C_RecurrentPaymentLine;
 import de.metas.banking.service.IBankingBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -180,13 +183,17 @@ public class BankingBL implements IBankingBL
 			// fallback
 			name.append(bankAccount.getA_Name());
 		}
-		if (bankAccount.getC_Currency_ID() > 0)
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(bankAccount.getC_Currency_ID());
+		if (currencyId != null)
 		{
 			if (name.length() > 0)
 			{
 				name.append("_");
 			}
-			name.append(bankAccount.getC_Currency().getISO_Code());
+			
+			final CurrencyCode currencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+			name.append(currencyCode.toThreeLetterCode());
 		}
 		return name.toString();
 	}

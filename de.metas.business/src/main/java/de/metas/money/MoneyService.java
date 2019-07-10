@@ -8,7 +8,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
@@ -69,10 +69,10 @@ public class MoneyService
 
 		final CurrencyConversionContext currencyConversionContext = currencyBL
 				.createCurrencyConversionContext(
-						SystemTime.asDate(),
-						ConversionType.Spot,
-						Env.getAD_Client_ID(),
-						Env.getAD_Org_ID(Env.getCtx()));
+						SystemTime.asLocalDate(),
+						ConversionTypeMethod.Spot,
+						Env.getClientId(),
+						Env.getOrgId());
 
 		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,

@@ -30,6 +30,7 @@ import static java.math.BigDecimal.ZERO;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,7 +41,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -127,10 +130,10 @@ public class PaymentBL implements IPaymentBL
 
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final Timestamp ConvDate = payment.getDateTrx();
-		final int C_ConversionType_ID = payment.getC_ConversionType_ID();
-		final int AD_Client_ID = payment.getAD_Client_ID();
-		final int AD_Org_ID = payment.getAD_Org_ID();
+		final LocalDate ConvDate = TimeUtil.asLocalDate(payment.getDateTrx());
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
+		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
 		// Get Currency Rate
 		BigDecimal CurrencyRate = BigDecimal.ONE;
@@ -138,7 +141,13 @@ public class PaymentBL implements IPaymentBL
 				&& invoiceCurrencyId != null 
 				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			CurrencyRate = Services.get(ICurrencyBL.class).getRate(invoiceCurrencyId, currencyId, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+			CurrencyRate = Services.get(ICurrencyBL.class).getRate(
+					invoiceCurrencyId, 
+					currencyId, 
+					ConvDate, 
+					conversionTypeId, 
+					clientId, 
+					orgId);
 			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
 			{
 				throw new AdempiereException("NoCurrencyConversion");
@@ -245,10 +254,10 @@ public class PaymentBL implements IPaymentBL
 		// Get Currency Info
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
 		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
-		final Timestamp ConvDate = payment.getDateTrx();
+		final LocalDate convDate = TimeUtil.asLocalDate(payment.getDateTrx());
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
-		final int AD_Client_ID = payment.getAD_Client_ID();
-		final int AD_Org_ID = payment.getAD_Org_ID();
+		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
 		// Get Currency Rate
 		BigDecimal currencyRate = BigDecimal.ONE;
@@ -260,13 +269,17 @@ public class PaymentBL implements IPaymentBL
 			currencyRate = currencyBL.getRate(
 					invoiceCurrencyId,
 					currencyId,
-					ConvDate,
-					CurrencyConversionTypeId.toRepoId(conversionTypeId),
-					AD_Client_ID,
-					AD_Org_ID);
+					convDate,
+					conversionTypeId,
+					clientId,
+					orgId);
 			if (currencyRate == null || currencyRate.signum() == 0)
 			{
-				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
+				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+						convDate, 
+						conversionTypeId, 
+						clientId, 
+						orgId);
 				throw new NoCurrencyRateFoundException(conversionCtx, invoiceCurrencyId, currencyId);
 			}
 		}

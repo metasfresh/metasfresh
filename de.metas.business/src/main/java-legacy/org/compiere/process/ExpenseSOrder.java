@@ -21,6 +21,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -73,7 +75,7 @@ public class ExpenseSOrder extends JavaProcess
 			String name = element.getParameterName();
 			if (element.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals("C_BPartner_ID"))
 			{
@@ -293,8 +295,8 @@ public class ExpenseSOrder extends JavaProcess
 						price,
 						CurrencyId.ofRepoId(tel.getC_Currency_ID()),
 						CurrencyId.ofRepoId(m_order.getC_Currency_ID()),
-						m_order.getAD_Client_ID(),
-						m_order.getAD_Org_ID());
+						ClientId.ofRepoId(m_order.getAD_Client_ID()),
+						OrgId.ofRepoId(m_order.getAD_Org_ID()));
 			}
 			ol.setPrice(price);
 		}

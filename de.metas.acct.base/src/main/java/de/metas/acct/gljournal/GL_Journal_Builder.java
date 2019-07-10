@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_ConversionType;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
@@ -16,6 +17,7 @@ import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -153,18 +155,14 @@ public class GL_Journal_Builder
 		return this;
 	}
 	
-	public GL_Journal_Builder setC_ConversionType(final I_C_ConversionType conversionType)
-	{
-		glJournal.setC_ConversionType(conversionType);
-		return this;
-	}
-	
 	public GL_Journal_Builder setC_ConversionType_Default()
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(glJournal);
-		final I_C_ConversionType conversionType = currencyDAO.retrieveDefaultConversionType(ctx, glJournal.getAD_Client_ID(), glJournal.getAD_Org_ID(), glJournal.getDateAcct());
-		setC_ConversionType(conversionType);
-		return this;
+		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getDefaultConversionTypeId(
+				ClientId.ofRepoId(glJournal.getAD_Client_ID()),
+				OrgId.ofRepoId(glJournal.getAD_Org_ID()),
+				TimeUtil.asLocalDate(glJournal.getDateAcct()));
+		
+		return setC_ConversionType_ID(conversionTypeId.getRepoId());
 	}
 
 	public GL_Journal_Builder setGL_Category_ForCategoryType(final String categoryType)

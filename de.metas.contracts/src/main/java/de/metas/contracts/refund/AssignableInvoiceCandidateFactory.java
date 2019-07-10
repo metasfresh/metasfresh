@@ -10,7 +10,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -85,9 +86,8 @@ public class AssignableInvoiceCandidateFactory
 				.getNetAmtInvoiced()
 				.add(assignableRecord.getNetAmtToInvoice());
 
-		final I_C_Currency currencyRecord = assignableRecord.getC_Currency();
-		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
-		final int precision = currencyRecord.getStdPrecision();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
+		final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
 		final Quantity quantity = extractQuantity(assignableRecord);
@@ -100,7 +100,7 @@ public class AssignableInvoiceCandidateFactory
 				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
-				.precision(precision)
+				.precision(precision.toInt())
 				.quantity(quantity)
 				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))

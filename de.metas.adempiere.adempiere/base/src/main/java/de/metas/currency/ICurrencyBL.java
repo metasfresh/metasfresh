@@ -23,14 +23,13 @@ package de.metas.currency;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
-import org.compiere.util.TimeUtil;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
@@ -47,25 +46,16 @@ import lombok.NonNull;
 public interface ICurrencyBL extends ISingletonService
 {
 	CurrencyConversionContext createCurrencyConversionContext(
-			Date ConvDate,
-			CurrencyConversionTypeId ConversionType_ID,
-			int AD_Client_ID,
-			int AD_Org_ID);
-
-	default CurrencyConversionContext createCurrencyConversionContext(
-			final LocalDate ConvDate,
-			final CurrencyConversionTypeId ConversionType_ID,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
-	{
-		return createCurrencyConversionContext(TimeUtil.asDate(ConvDate), ConversionType_ID, clientId.getRepoId(), orgId.getRepoId());
-	}
+			@Nullable LocalDate convDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	CurrencyConversionContext createCurrencyConversionContext(
-			Date ConvDate, 
-			ConversionType conversionType, 
-			int AD_Client_ID, 
-			int AD_Org_ID);
+			@Nullable LocalDate convDate,
+			@Nullable ConversionTypeMethod conversionType, 
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	/**
 	 * @return base currency of AD_Client and AD_Org which are set in context.
@@ -98,10 +88,10 @@ public interface ICurrencyBL extends ISingletonService
 	BigDecimal convertBase(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
-			Timestamp ConvDate,
-			int C_ConversionType_ID,
-			int AD_Client_ID,
-			int AD_Org_ID);
+			LocalDate convDate,
+			CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	/**
 	 * Convert an amount
@@ -120,10 +110,10 @@ public interface ICurrencyBL extends ISingletonService
 			BigDecimal amt,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId,
-			Timestamp ConvDate,
-			int C_ConversionType_ID,
-			int AD_Client_ID,
-			int AD_Org_ID);
+			LocalDate convDate,
+			CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	/**
 	 * Convert an amount with today's default rate
@@ -140,8 +130,8 @@ public interface ICurrencyBL extends ISingletonService
 			BigDecimal amt,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId,
-			int AD_Client_ID,
-			int AD_Org_ID);
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	CurrencyConversionResult convert(
 			CurrencyConversionContext conversionCtx,
@@ -155,12 +145,15 @@ public interface ICurrencyBL extends ISingletonService
 	BigDecimal getRate(
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId,
-			Timestamp ConvDate,
-			int ConversionType_ID,
-			int AD_Client_ID,
-			int AD_Org_ID);
+			LocalDate convDate,
+			CurrencyConversionTypeId conversionTypeId,
+			ClientId clientId,
+			OrgId orgId);
 
-	BigDecimal getRate(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
+	BigDecimal getRate(
+			CurrencyConversionContext conversionCtx, 
+			CurrencyId currencyFromId,
+			CurrencyId currencyToId);
 
 	/**
 	 *

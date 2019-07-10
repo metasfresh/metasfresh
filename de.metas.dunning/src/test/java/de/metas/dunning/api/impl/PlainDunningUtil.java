@@ -25,11 +25,11 @@ package de.metas.dunning.api.impl;
 
 import java.math.BigDecimal;
 
-import org.compiere.model.I_C_Currency;
 import org.junit.Ignore;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 @Ignore
@@ -44,9 +44,9 @@ public class PlainDunningUtil extends DunningUtil
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 	}
 
-	public void setRate(final I_C_Currency currencyFrom, final I_C_Currency currencyTo, final BigDecimal rate)
+	public void setRate(final CurrencyId currencyFromId, final CurrencyId currencyToId, final BigDecimal rate)
 	{
-		currencyDAO.setRate(currencyFrom, currencyTo, rate);
+		currencyDAO.setRate(currencyFromId, currencyToId, rate);
 	}
 
 }

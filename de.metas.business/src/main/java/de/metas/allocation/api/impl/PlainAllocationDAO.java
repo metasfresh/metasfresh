@@ -27,10 +27,14 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
@@ -73,9 +77,10 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx(), // ConvDate
-						invoice.getC_ConversionType_ID(),
-						line.getAD_Client_ID(), line.getAD_Org_ID());
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+						ClientId.ofRepoId(line.getAD_Client_ID()), 
+						OrgId.ofRepoId(line.getAD_Org_ID()));
 
 				sum = sum.add(lineAmtConv);
 			}
@@ -116,9 +121,10 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx(), // ConvDate
-						invoice.getC_ConversionType_ID(),
-						line.getAD_Client_ID(), line.getAD_Org_ID());
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+						ClientId.ofRepoId(line.getAD_Client_ID()), 
+						OrgId.ofRepoId(line.getAD_Org_ID()));
 
 				sum = sum.add(lineAmtConv);
 			}
@@ -157,9 +163,10 @@ public class PlainAllocationDAO extends AllocationDAO
 						lineWriteOff, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx(), // ConvDate
-						invoice.getC_ConversionType_ID(),
-						line.getAD_Client_ID(), line.getAD_Org_ID());
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+						ClientId.ofRepoId(line.getAD_Client_ID()),
+						OrgId.ofRepoId(line.getAD_Org_ID()));
 
 				sum = sum.add(lineWriteOffConv);
 			}

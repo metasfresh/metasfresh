@@ -27,11 +27,15 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -72,9 +76,10 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 						lineAmt, // Amt
 						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
 						CurrencyId.ofRepoId(payment.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx(), // ConvDate
-						payment.getC_ConversionType_ID(),
-						line.getAD_Client_ID(), line.getAD_Org_ID());
+						TimeUtil.asLocalDate(ah.getDateTrx()), // ConvDate
+						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
+						ClientId.ofRepoId(line.getAD_Client_ID()),
+						OrgId.ofRepoId(line.getAD_Org_ID()));
 
 				sum = sum.add(lineAmtConv);
 			}

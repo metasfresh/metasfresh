@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
@@ -44,7 +43,7 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.CurrencyDAO;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -148,11 +147,7 @@ public class RefundTestTools
 		docTypeRecord.setDocSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
 		saveRecord(docTypeRecord);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		currencyRecord.setISO_Code(CurrencyCode.EUR.toThreeLetterCode());
-		saveRecord(currencyRecord);
-		currency = CurrencyDAO.toCurrency(currencyRecord);
+		currency = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR);
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -258,7 +253,7 @@ public class RefundTestTools
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		contractRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
-		contractRecord.setM_Product(productRecord);
+		contractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(CONTRACT_START_DATE));
 		contractRecord.setEndDate(TimeUtil.asTimestamp(CONTRACT_END_DATE));
 		saveRecord(contractRecord);

@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -31,8 +30,11 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -73,9 +75,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final Timestamp dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		save(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
@@ -93,7 +93,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		save(assignableIcRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
@@ -119,8 +119,8 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		refundContractRecord.setBill_BPartner(bPartnerRecord);
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
-		refundContractRecord.setM_Product(productRecord);
-		refundContractRecord.setC_Currency(currencyRecord);
+		refundContractRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		refundContractRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractRecord.setStartDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_START_DATE));
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
@@ -131,7 +131,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency(currencyRecord);
+		refundContractIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 

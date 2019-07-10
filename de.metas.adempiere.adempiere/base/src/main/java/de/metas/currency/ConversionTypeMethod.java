@@ -4,6 +4,8 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
+import lombok.NonNull;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -17,11 +19,11 @@ import com.google.common.collect.ImmutableMap;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,16 +34,13 @@ import com.google.common.collect.ImmutableMap;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public enum ConversionType
+public enum ConversionTypeMethod
 {
-	Spot("S"),
-	PeriodEnd("P"),
-	Average("A"),
-	Company("C");
+	Spot("S"), PeriodEnd("P"), Average("A"), Company("C");
 
-	public static final ConversionType forCode(final String code)
+	public static final ConversionTypeMethod forCode(final String code)
 	{
-		final ConversionType type = _indexedByCode.get(code);
+		final ConversionTypeMethod type = _indexedByCode.get(code);
 		if (type == null)
 		{
 			throw new IllegalArgumentException("No enum constant found for code: " + code);
@@ -49,11 +48,11 @@ public enum ConversionType
 		return type;
 	}
 
-	private static final Map<String, ConversionType> _indexedByCode;
+	private static final Map<String, ConversionTypeMethod> _indexedByCode;
 	static
 	{
-		final ImmutableMap.Builder<String, ConversionType> builder = ImmutableMap.builder();
-		for (final ConversionType t : values())
+		final ImmutableMap.Builder<String, ConversionTypeMethod> builder = ImmutableMap.builder();
+		for (final ConversionTypeMethod t : values())
 		{
 			builder.put(t.getCode(), t);
 		}
@@ -62,7 +61,7 @@ public enum ConversionType
 
 	private final String code;
 
-	private ConversionType(final String code)
+	private ConversionTypeMethod(@NonNull final String code)
 	{
 		this.code = code;
 	}

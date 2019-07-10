@@ -5,12 +5,15 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
@@ -25,6 +28,7 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -175,10 +179,10 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 				// Assumption: everything is matched
 				final BigDecimal price = rs.getBigDecimal(4);
 				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(5));
-				final Timestamp DateAcct = rs.getTimestamp(6);
-				final int C_ConversionType_ID = rs.getInt(7);
-				final int Client_ID = rs.getInt(8);
-				final int Org_ID = rs.getInt(9);
+				final LocalDate DateAcct = TimeUtil.asLocalDate(rs.getTimestamp(6));
+				final CurrencyConversionTypeId C_ConversionType_ID = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(7));
+				final ClientId Client_ID = ClientId.ofRepoId(rs.getInt(8));
+				final OrgId Org_ID = OrgId.ofRepoId(rs.getInt(9));
 				final BigDecimal cost = currencyConversionBL.convert(
 						price,
 						currencyId,

@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 
 import de.metas.currency.ICurrencyBL;
@@ -185,8 +187,8 @@ public class MDunningRunLine extends X_C_DunningRunLine
 				getOpenAmt(),
 				CurrencyId.ofRepoId(C_Currency_ID), 
 				CurrencyId.ofRepoId(getC_CurrencyTo_ID()), 
-				getAD_Client_ID(), 
-				getAD_Org_ID()));
+				ClientId.ofRepoId(getAD_Client_ID()), 
+				OrgId.ofRepoId(getAD_Org_ID())));
 		setIsInDispute(IsInDispute);
 		setDaysDue(DaysDue);
 		setTimesDunned(TimesDunned);
@@ -209,8 +211,8 @@ public class MDunningRunLine extends X_C_DunningRunLine
 				getOpenAmt(),
 				CurrencyId.ofRepoId(C_Currency_ID), 
 				CurrencyId.ofRepoId(getC_CurrencyTo_ID()), 
-				getAD_Client_ID(), 
-				getAD_Org_ID()));
+				ClientId.ofRepoId(getAD_Client_ID()), 
+				OrgId.ofRepoId(getAD_Org_ID())));
 	}	// setInvoice
 
 	/**
@@ -272,8 +274,8 @@ public class MDunningRunLine extends X_C_DunningRunLine
 				getOpenAmt(),
 				CurrencyId.ofRepoId(C_Currency_ID), 
 				CurrencyId.ofRepoId(getC_CurrencyTo_ID()), 
-				getAD_Client_ID(), 
-				getAD_Org_ID()));
+				ClientId.ofRepoId(getAD_Client_ID()), 
+				OrgId.ofRepoId(getAD_Org_ID())));
 	}	// setPayment
 
 	/**
@@ -368,8 +370,8 @@ public class MDunningRunLine extends X_C_DunningRunLine
 				getOpenAmt(),
 				CurrencyId.ofRepoId(getC_CurrencyFrom_ID()), 
 				CurrencyId.ofRepoId(getC_CurrencyTo_ID()), 
-				getAD_Client_ID(), 
-				getAD_Org_ID());
+				ClientId.ofRepoId(getAD_Client_ID()), 
+				OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

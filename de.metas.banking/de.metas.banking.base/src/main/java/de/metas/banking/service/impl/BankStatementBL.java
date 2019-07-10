@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -36,6 +38,7 @@ import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
@@ -183,10 +186,10 @@ public class BankStatementBL implements IBankStatementBL
 				final I_C_Invoice inv = refLine.getC_Invoice();
 
 				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						bsl.getDateAcct(), // ConvDate,
+						TimeUtil.asLocalDate(bsl.getDateAcct()), // ConvDate,
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
-						bsl.getAD_Client_ID(), // AD_Client_ID
-						bsl.getAD_Org_ID() // AD_Org_ID
+						ClientId.ofRepoId(bsl.getAD_Client_ID()), // AD_Client_ID
+						OrgId.ofRepoId(bsl.getAD_Org_ID()) // AD_Org_ID
 						);
 
 				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());

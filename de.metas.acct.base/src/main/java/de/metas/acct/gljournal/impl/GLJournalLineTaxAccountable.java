@@ -26,14 +26,17 @@ package de.metas.acct.gljournal.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.tax.ITaxAccountable;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Adapts {@link I_GL_JournalLine} to {@link ITaxAccountable}
@@ -196,14 +199,12 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public int getPrecision()
+	public CurrencyPrecision getPrecision()
 	{
-		final I_C_Currency currency = glJournalLine.getC_Currency();
-		if (currency == null || currency.getC_Currency_ID() <= 0)
-		{
-			return 2;
-		}
-		return currency.getStdPrecision();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournalLine.getC_Currency_ID());
+		return currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 	}
 
 	@Override

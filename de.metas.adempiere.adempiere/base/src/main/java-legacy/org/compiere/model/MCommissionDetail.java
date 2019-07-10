@@ -21,9 +21,13 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -116,9 +120,10 @@ public class MCommissionDetail extends X_C_CommissionDetail
 		BigDecimal amt = Services.get(ICurrencyBL.class).convertBase(
 				getActualAmt(),
 				CurrencyId.ofRepoId(getC_Currency_ID()),
-				date,
-				0, 	// type
-				getAD_Client_ID(), getAD_Org_ID());
+				TimeUtil.asLocalDate(date),
+				(CurrencyConversionTypeId)null, 	// type
+				ClientId.ofRepoId(getAD_Client_ID()),
+				OrgId.ofRepoId(getAD_Org_ID()));
 		if (amt != null)
 		{
 			setConvertedAmt(amt);

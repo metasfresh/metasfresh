@@ -1,17 +1,15 @@
 package de.metas.money;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.util.lang.Percent;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -59,23 +57,13 @@ public class MoneyServiceTest
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		moneyService = new MoneyService(currencyRepository);
 
-		currencyId = createCurrency("EUR");
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		// Currency currency = currencyRepository.getById(currencyId);
 
 		zeroEuro = Money.of(0, currencyId);
 		seventyEuro = Money.of(70, currencyId);
 		oneHundretEuro = Money.of(100, currencyId);
 		twoHundredEuro = Money.of(200, currencyId);
-	}
-
-	private CurrencyId createCurrency(@NonNull final String currencyCode)
-	{
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setISO_Code(currencyCode);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
-
-		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 	}
 
 	@Test

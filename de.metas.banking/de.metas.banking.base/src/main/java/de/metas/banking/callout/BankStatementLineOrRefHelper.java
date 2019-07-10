@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -15,9 +16,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
 
@@ -29,6 +33,7 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -406,7 +411,7 @@ public class BankStatementLineOrRefHelper
 	private static BigDecimal computeCurrencyRate(final IBankStatementLineOrRef lineOrRef, final InvoiceInfoVO invoiceInfo)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(lineOrRef.getC_Currency_ID());
-		final Timestamp convDate = getTrxDate(lineOrRef);
+		final LocalDate convDate = TimeUtil.asLocalDate(getTrxDate(lineOrRef));
 
 		BigDecimal currencyRate = BigDecimal.ONE;
 		if (invoiceInfo != null
@@ -418,9 +423,9 @@ public class BankStatementLineOrRefHelper
 					invoiceInfo.getCurrencyId(),
 					currencyId,
 					convDate,
-					0, // conversionType
-					lineOrRef.getAD_Client_ID(),
-					lineOrRef.getAD_Org_ID());
+					(CurrencyConversionTypeId)null, // conversionTypeId
+					ClientId.ofRepoId(lineOrRef.getAD_Client_ID()),
+					OrgId.ofRepoId(lineOrRef.getAD_Org_ID()));
 			if (currencyRate == null || currencyRate.signum() == 0)
 			{
 				throw new AdempiereException("@NoCurrencyConversion@");

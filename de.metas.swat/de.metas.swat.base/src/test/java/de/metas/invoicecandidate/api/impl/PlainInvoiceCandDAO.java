@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +34,8 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -43,6 +46,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -66,11 +70,17 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 			.getComparator(I_C_Invoice_Candidate.class);
 
 	@Override
-	public BigDecimal retrieveInvoicableAmount(final Properties ctx, final IInvoiceCandidateQuery query, final CurrencyId targetCurrencyId, final int adClientId, final int adOrgId,
-			final String amountColumnName, final String trxName)
+	public BigDecimal retrieveInvoicableAmount(
+			final Properties ctx, 
+			final IInvoiceCandidateQuery query, 
+			final CurrencyId targetCurrencyId, 
+			final int adClientId, 
+			final int adOrgId,
+			final String amountColumnName, 
+			final String trxName)
 	{
 		// Conversion date to be used on currency conversion
-		final Timestamp dateConv = SystemTime.asTimestamp();
+		final LocalDate dateConv = SystemTime.asLocalDate();
 
 		BigDecimal totalAmt = BigDecimal.ZERO;
 		for (final I_C_Invoice_Candidate ic : retrieveCandidates(query))
@@ -86,8 +96,9 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 					CurrencyId.ofRepoId(ic.getC_Currency_ID()), // CurFrom_ID,
 					targetCurrencyId, // CurTo_ID,
 					dateConv,
-					ic.getC_ConversionType_ID(),
-					adClientId, adOrgId);
+					CurrencyConversionTypeId.ofRepoIdOrNull(ic.getC_ConversionType_ID()),
+					ClientId.ofRepoId(adClientId),
+					OrgId.ofRepoId(adOrgId));
 
 			totalAmt = totalAmt.add(netAmtToInvoiceConv);
 

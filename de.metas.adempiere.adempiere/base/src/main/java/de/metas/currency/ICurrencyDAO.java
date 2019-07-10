@@ -4,11 +4,10 @@
 package de.metas.currency;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Properties;
+import java.time.LocalDate;
 
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.util.Env;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -49,8 +48,6 @@ public interface ICurrencyDAO extends ISingletonService
 	/**
 	 * retrieves currency by ISO code
 	 *
-	 * @param ctx
-	 * @param ISOCode
 	 * @return currency or <code>null</code>
 	 */
 	Currency getByCurrencyCode(CurrencyCode currencyCode);
@@ -61,18 +58,9 @@ public interface ICurrencyDAO extends ISingletonService
 
 	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
 
-	/**
-	 * @return default {@link I_C_ConversionType}; never returns null
-	 */
-	I_C_ConversionType retrieveDefaultConversionType(Properties ctx, int adClientId, int adOrgId, Date date);
+	CurrencyConversionTypeId getDefaultConversionTypeId(ClientId adClientId, OrgId adOrgId, LocalDate date);
 
-	default CurrencyConversionTypeId getDefaultConversionTypeId(final int adClientId, final int adOrgId, final Date date)
-	{
-		final I_C_ConversionType defaultConversionType = retrieveDefaultConversionType(Env.getCtx(), adClientId, adOrgId, date);
-		return defaultConversionType != null ? CurrencyConversionTypeId.ofRepoId(defaultConversionType.getC_ConversionType_ID()) : null;
-	}
+	CurrencyConversionTypeId getConversionTypeId(ConversionTypeMethod type);
 
-	CurrencyConversionTypeId getConversionTypeId(ConversionType type);
-
-	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, int CurFrom_ID, int CurTo_ID);
+	BigDecimal retrieveRateOrNull(CurrencyConversionContext conversionCtx, CurrencyId currencyFromId, CurrencyId currencyToId);
 }

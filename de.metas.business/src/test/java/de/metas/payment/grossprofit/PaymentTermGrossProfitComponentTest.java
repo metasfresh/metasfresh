@@ -3,23 +3,23 @@ package de.metas.payment.grossprofit;
 import static java.math.BigDecimal.ONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -54,19 +54,9 @@ public class PaymentTermGrossProfitComponentTest
 		AdempiereTestHelper.get().init();
 
 		// the precision is crucial for the rounding, when we subtract the contract's discount
-		currencyId = createCurrency("EUR", 2);
+		currencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR, CurrencyPrecision.TWO).getId();
 
 		moneyService = new MoneyService(new CurrencyRepository());
-	}
-
-	private CurrencyId createCurrency(@NonNull final String currencyCode, final int precision)
-	{
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setISO_Code(currencyCode);
-		currencyRecord.setStdPrecision(precision);
-		saveRecord(currencyRecord);
-
-		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 	}
 
 	@Test

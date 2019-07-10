@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -39,6 +41,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
@@ -428,10 +431,10 @@ public class MCash extends X_C_Cash implements IDocument
 						line.getAmount(),
 						lineCurrencyId,
 						currencyId,
-						getDateAcct(),
-						0,
-						getAD_Client_ID(),
-						getAD_Org_ID());
+						TimeUtil.asLocalDate(getDateAcct()),
+						(CurrencyConversionTypeId)null,
+						ClientId.ofRepoId(getAD_Client_ID()),
+						OrgId.ofRepoId(getAD_Org_ID()));
 				if (amt == null)
 				{
 					m_processMsg = "No Conversion Rate found - @C_CashLine_ID@= " + line.getLine();

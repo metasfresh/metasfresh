@@ -24,12 +24,15 @@ package de.metas.banking.payment.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
@@ -41,6 +44,7 @@ import org.compiere.model.X_C_AllocationHdr;
 import org.compiere.model.X_C_Payment;
 import org.compiere.model.X_I_BankStatement;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
@@ -50,6 +54,7 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
@@ -310,38 +315,42 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 
 					final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
 					final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+					final LocalDate dateConv = TimeUtil.asLocalDate(bsl.getDateAcct());
+					final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID());
+					final ClientId clientId = ClientId.ofRepoId(bsl.getAD_Client_ID());
+					final OrgId orgId = OrgId.ofRepoId(bsl.getAD_Org_ID());
 					amount = currencyConversionBL.convert(
 							amount,
 							refLineCurrencyId,
 							bslCurrencyId,
-							bsl.getDateAcct(),
-							inv.getC_ConversionType_ID(),
-							bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
+							dateConv,
+							conversionTypeId,
+							clientId,
+							orgId);
 					discountAmt = currencyConversionBL.convert(
 							discountAmt, 
 							refLineCurrencyId,
 							bslCurrencyId, 
-							bsl.getDateAcct(), 
-							inv.getC_ConversionType_ID(), 
-							bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
 					writeOffAmt = currencyConversionBL.convert(
 							writeOffAmt, 
 							refLineCurrencyId,
 							bslCurrencyId, 
-							bsl.getDateAcct(), 
-							inv.getC_ConversionType_ID(), 
-							bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
 					overUnderAmt = currencyConversionBL.convert(
 							overUnderAmt, 
 							refLineCurrencyId,
 							bslCurrencyId, 
-							bsl.getDateAcct(), 
-							inv.getC_ConversionType_ID(), 
-							bsl.getAD_Client_ID(),
-							bsl.getAD_Org_ID());
+							dateConv, 
+							conversionTypeId, 
+							clientId,
+							orgId);
 				}
 				final MAllocationLine aLine = new MAllocationLine(alloc, amount, discountAmt, writeOffAmt, overUnderAmt);
 				aLine.setDocInfo(inv.getC_BPartner_ID(), inv.getC_Order_ID(), inv.get_ID());

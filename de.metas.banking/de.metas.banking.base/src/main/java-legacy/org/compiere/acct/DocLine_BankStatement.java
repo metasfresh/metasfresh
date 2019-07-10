@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ConversionType;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
@@ -202,10 +202,10 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	 */
 	public CurrencyConversionContext getBankTransferCurrencyConversionCtx()
 	{
-		return getCurrencyConversionCtx(ConversionType.Spot);
+		return getCurrencyConversionCtx(ConversionTypeMethod.Spot);
 	}
 
-	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionType type)
+	private final CurrencyConversionContext getCurrencyConversionCtx(final ConversionTypeMethod type)
 	{
 		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(type);
 		return getCurrencyConversionCtx(conversionTypeId);

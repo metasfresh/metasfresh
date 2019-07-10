@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -42,7 +41,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.uom.CreateUOMConversionRequest;
@@ -83,17 +85,15 @@ public class OrderLineBLTest
 		product.setM_Product_Category_ID(20);
 		InterfaceWrapperHelper.save(product);
 
-		final I_C_Currency currency = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-		currency.setStdPrecision(0);
-		InterfaceWrapperHelper.save(currency);
+		final CurrencyId currency = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.create(ctx, I_M_PriceList.class, ITrx.TRXNAME_None);
-		priceList.setC_Currency_ID(currency.getC_Currency_ID());
+		priceList.setC_Currency_ID(currency.getRepoId());
 		InterfaceWrapperHelper.save(priceList);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setM_PriceList_ID(priceList.getM_PriceList_ID());
-		order.setC_Currency_ID(currency.getC_Currency_ID());
+		order.setC_Currency_ID(currency.getRepoId());
 		InterfaceWrapperHelper.save(order);
 
 		final I_M_PriceList_Version plv = InterfaceWrapperHelper.create(ctx, I_M_PriceList_Version.class, ITrx.TRXNAME_None);
