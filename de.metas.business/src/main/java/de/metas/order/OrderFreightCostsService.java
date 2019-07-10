@@ -30,6 +30,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /*
@@ -144,11 +145,14 @@ public class OrderFreightCostsService
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded);
 
+		final ShipperId orderShipperid = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
+		final ShipperId partnerShipperId = bpartnerBL.getShipperIdOrNull(shipToBPartnerId);
+
 		return FreightCostContext.builder()
 				.shipFromOrgId(OrgId.ofRepoId(order.getC_Order_ID()))
 				.shipToBPartnerId(shipToBPartnerId)
 				.shipToCountryId(shipToCountryId)
-				.shipperId(ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID()))
+				.shipperId(CoalesceUtil.coalesce(orderShipperid, partnerShipperId))
 				.date(TimeUtil.asLocalDate(order.getDateOrdered()))
 				.freightCostRule(freightCostRule)
 				.deliveryViaRule(DeliveryViaRule.ofNullableCodeOr(order.getDeliveryViaRule(), DeliveryViaRule.Pickup))

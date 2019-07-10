@@ -57,6 +57,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -573,6 +574,18 @@ public class BPartnerBL implements IBPartnerBL
 		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
 
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
+	}
+
+	@Override
+	public ShipperId getShipperIdOrNull(final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
+
+		final int shipperId = bpartnerRecord.getM_Shipper_ID();
+
+		return ShipperId.ofRepoIdOrNull(shipperId);
 	}
 
 	@Override

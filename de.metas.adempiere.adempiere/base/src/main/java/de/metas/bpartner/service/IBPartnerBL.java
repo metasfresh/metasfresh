@@ -41,6 +41,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -178,6 +179,8 @@ public interface IBPartnerBL extends ISingletonService
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
+
+	ShipperId getShipperIdOrNull(final BPartnerId bpartnerId);
 
 	@Value
 	@Builder

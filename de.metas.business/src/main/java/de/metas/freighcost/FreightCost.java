@@ -103,8 +103,11 @@ public class FreightCost
 
 	public FreightCostShipper getShipper(@NonNull final ShipperId shipperId, @NonNull final LocalDate date)
 	{
-		return getShipperIfExists(shipperId, date)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @M_FreightCostShipper_ID@ (@M_Shipper_ID@:" + shipperId + ", @M_FreightCost_ID@:" + getName() + ")"));
+
+		Optional<FreightCostShipper> shipperIfExists = getShipperIfExists(shipperId, date);
+
+
+			return shipperIfExists.orElseThrow(() -> new AdempiereException("@NotFound@ @M_FreightCostShipper_ID@ (@M_Shipper_ID@:" + shipperId + ", @M_FreightCost_ID@:" + getName() + ")"));
 	}
 
 	public Optional<FreightCostShipper> getShipperIfExists(@NonNull final ShipperId shipperId, @NonNull final LocalDate date)
