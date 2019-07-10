@@ -334,15 +334,24 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		{
 			return ArrayKey.of(
 					extractPaymentType(sepaLine),
-					sepaLine.getC_Currency().getISO_Code());
+					extractCurrencyCode(sepaLine));
 		}
-		return ArrayKey.of(sepaLine.getSEPA_Export_Line_ID());
+		else
+		{
+			return ArrayKey.of(sepaLine.getSEPA_Export_Line_ID());
+		}
 	}
 
 	private boolean extractBatchFlag(@NonNull final I_SEPA_Export_Line sepaLine)
 	{
 		final boolean batch = sepaLine.getSEPA_Export().isExportBatchBookings();
 		return batch;
+	}
+
+	private CurrencyCode extractCurrencyCode(final I_SEPA_Export_Line sepaLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(sepaLine.getC_Currency_ID());
+		return Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
 	}
 
 	private PaymentInstructionInformation3CH createAndAddPmtInf(
@@ -907,24 +916,23 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		}
 		else
 		{
-			final String currencyIso = line.getC_Currency().getISO_Code();
-
+			final CurrencyCode currencyCode = extractCurrencyCode(line);
 			final String iban = line.getIBAN();
 
 			final boolean swizzIban = isSwizzIBAN(iban);
 			if (swizzIban || bPBankAccount.isEsrAccount())
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
-				Check.errorIf(!"EUR".equals(currencyIso) && !"CHF".equals(currencyIso),
+				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
 						SepaMarshallerException.class,
 						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-						createInfo(line), currencyIso);
+						createInfo(line), currencyCode);
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
 			else
 			{
-				final boolean hasIbanAndEurCurrency = !Check.isEmpty(iban, true) && "EUR".equals(currencyIso);
+				final boolean hasIbanAndEurCurrency = !Check.isEmpty(iban, true) && currencyCode.isEuro();
 				if (hasIbanAndEurCurrency)
 				{
 					paymentMode = PAYMENT_TYPE_5;

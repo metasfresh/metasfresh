@@ -16,7 +16,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -30,6 +29,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.InvoiceUtil;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
@@ -45,10 +46,12 @@ import de.metas.invoice_gateway.spi.model.MetasfreshVersion;
 import de.metas.invoice_gateway.spi.model.Money;
 import de.metas.invoice_gateway.spi.model.ProductId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 
@@ -110,11 +113,11 @@ public class InvoiceToExportFactory
 
 		final boolean reversal = invoiceBL.isReversal(invoiceRecord);
 
-		final String currencyStr = invoiceRecord.getC_Currency().getISO_Code();
-		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyStr);
+		final CurrencyCode currencyCode = extractCurrencyCode(invoiceRecord);
+		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-		final BigDecimal allocatedAmt = Util.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
-		final Money allocatedMoney = Money.of(allocatedAmt, currencyStr);
+		final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
+		final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 		final InvoiceToExport invoiceWithoutEsrInfo = InvoiceToExport
 				.builder()
@@ -125,7 +128,7 @@ public class InvoiceToExportFactory
 				.documentNumber(invoiceRecord.getDocumentNo())
 				.invoiceAttachments(createInvoiceAttachments(invoiceRecord))
 				.invoiceDate(createInvoiceDate(invoiceRecord))
-				.invoiceLines(createInvoiceLines(invoiceRecord, currencyStr))
+				.invoiceLines(createInvoiceLines(invoiceRecord, currencyCode))
 				.invoiceTaxes(createInvoiceTax(invoiceRecord))
 				.invoiceTimestamp(invoiceRecord.getCreated().toInstant())
 				.isReversal(reversal)
@@ -135,6 +138,15 @@ public class InvoiceToExportFactory
 
 		return addCustomInvoicePayload(invoiceWithoutEsrInfo);
 	}
+	
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
+	}
+
 
 	private InvoiceToExport addCustomInvoicePayload(@NonNull final InvoiceToExport invoiceWithoutEsrInfo)
 	{
@@ -152,7 +164,7 @@ public class InvoiceToExportFactory
 
 	private ImmutableList<InvoiceLine> createInvoiceLines(
 			@NonNull final I_C_Invoice invoiceRecord,
-			@NonNull final String currentyStr)
+			@NonNull final CurrencyCode currentyCode)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final ImmutableList.Builder<InvoiceLine> invoiceLines = ImmutableList.builder();
@@ -162,7 +174,7 @@ public class InvoiceToExportFactory
 		{
 			final InvoiceLine invoiceLine = InvoiceLine
 					.builder()
-					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyStr))
+					.lineAmount(Money.of(lineRecord.getLineNetAmt(), currentyCode.toThreeLetterCode()))
 					.productId(ProductId.ofId(lineRecord.getM_Product_ID()))
 					.externalIds(InvoiceUtil.splitExternalIds(lineRecord.getExternalIds()))
 					.build();

@@ -30,7 +30,10 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.money.CurrencyId;
 import de.metas.rest_api.invoice.SalesInvoicePayment;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatus;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatus.SalesInvoicePaymentStatusBuilder;
@@ -154,7 +157,7 @@ public class SalesInvoicePaymentStatusRepository
 					.builder()
 					.invoiceDocumentNumber(invoiceRecord.getDocumentNo())
 					.openAmt(openAmt)
-					.currency(invoiceRecord.getC_Currency().getISO_Code());
+					.currency(extractCurrencyCode(invoiceRecord).toThreeLetterCode());
 			final List<I_C_Payment> paymentrecords = allocationDAO.retrieveInvoicePayments(invoiceRecord);
 
 			for (final I_C_Payment paymentRecord : paymentrecords)
@@ -168,6 +171,14 @@ public class SalesInvoicePaymentStatusRepository
 			result.add(statusBuilder.build());
 		}
 		return result.build();
+	}
+
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}
 
 	private IQueryBuilder<I_C_Invoice> createCommonQueryBuilder(@NonNull final OrgId orgId)

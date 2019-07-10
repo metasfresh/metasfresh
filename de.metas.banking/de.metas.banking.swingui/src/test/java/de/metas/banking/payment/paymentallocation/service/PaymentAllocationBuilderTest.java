@@ -69,8 +69,10 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -569,7 +571,7 @@ public class PaymentAllocationBuilderTest
 				.setMultiplierAP(invoiceType.getMultiplierAP()) // Vendor/Customer multiplier
 				.setCreditMemo(invoiceType.isCreditMemo())
 				//
-				.setCurrencyISOCode(invoice.getC_Currency().getISO_Code())
+				.setCurrencyISOCode(extractCurrencyCode(invoice))
 				.setGrandTotal(openAmt_CMAdjusted)
 				.setGrandTotalConv(openAmt_CMAdjusted)
 				.setOpenAmtConv(openAmt_CMAdjusted)
@@ -583,6 +585,15 @@ public class PaymentAllocationBuilderTest
 
 		return invoiceRow;
 	}
+	
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
+	}
+
 
 	private final LoadingCache<InvoiceType, I_C_DocType> invoiceType2docType = CacheBuilder.newBuilder()
 			.build(new CacheLoader<InvoiceType, I_C_DocType>()

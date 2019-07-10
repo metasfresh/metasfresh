@@ -623,11 +623,9 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 			return this;
 		}
 
-		public Builder setCurrencyISOCode(final String currencyISOCode)
+		public Builder setCurrencyISOCode(final CurrencyCode currencyISOCode)
 		{
-			this.currencyISOCode = currencyISOCode != null
-					? CurrencyCode.ofThreeLetterCode(currencyISOCode)
-					: null;
+			this.currencyISOCode = currencyISOCode;
 			return this;
 		}
 

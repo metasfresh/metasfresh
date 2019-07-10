@@ -1,10 +1,13 @@
 package de.metas.currency;
 
+import java.util.Arrays;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -40,18 +43,16 @@ public final class CurrencyCode
 	@JsonCreator
 	public static CurrencyCode ofThreeLetterCode(@NonNull final String threeLetterCode)
 	{
-		final CurrencyCode currencyCode = cache.get(threeLetterCode);
-		return currencyCode != null ? currencyCode : new CurrencyCode(threeLetterCode);
+		final CurrencyCode cachedCurrencyCode = cache.get(threeLetterCode);
+		return cachedCurrencyCode != null ? cachedCurrencyCode : new CurrencyCode(threeLetterCode);
 	}
 
 	public static final CurrencyCode EUR = new CurrencyCode("EUR");
 	public static final CurrencyCode USD = new CurrencyCode("USD");
 	public static final CurrencyCode CHF = new CurrencyCode("CHF");
-	private static final ImmutableMap<String, CurrencyCode> cache = ImmutableMap.<String, CurrencyCode> builder()
-			.put(EUR.toThreeLetterCode(), EUR)
-			.put(USD.toThreeLetterCode(), USD)
-			.put(CHF.toThreeLetterCode(), CHF)
-			.build();
+	private static final ImmutableMap<String, CurrencyCode> cache = Maps.uniqueIndex(
+			Arrays.asList(EUR, USD, CHF),
+			CurrencyCode::toThreeLetterCode);
 
 	private final String threeLetterCode;
 
@@ -81,5 +82,10 @@ public final class CurrencyCode
 	public boolean isEuro()
 	{
 		return this.equals(EUR);
+	}
+
+	public boolean isCHF()
+	{
+		return this.equals(CHF);
 	}
 }
