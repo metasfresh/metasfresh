@@ -1,0 +1,194 @@
+/*
+ * #%L
+ * metasfresh-e2e
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/// <reference types="Cypress" />
+
+
+import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
+import {getLanguageSpecific} from "../../support/utils/utils";
+import {DocumentActionKey, DocumentStatusKey} from "../../support/utils/constants";
+import {BPartner} from "../../support/utils/bpartner";
+import {DunningCandidates} from "../../page_objects/dunning_candidates";
+import {applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters} from "../../support/functions";
+import {DunningType} from "../../support/utils/dunning_type";
+import {Dunning} from "../../page_objects/dunning";
+
+describe('Create Dunning Candidates', function () {
+  // human readable date with millis!
+  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
+
+  const dunningTypeName = `Dunning ${date}`;
+  // const dunningTypeName = `Dunning 2019-07-05T10:09:30.514Z`;
+
+
+  const businessPartnerName = `Customer Dunning ${date}`;
+  const paymentTerm = 'immediately';
+
+  const salesInvoiceTargetDocumentType = 'Sales Invoice';
+  const productName = 'Convenience Salat 250g';
+  const originalQuantity = 200;
+
+
+  // Test data
+  let siDocumentNumber;
+  let siCurrency;
+  let siDueDate;
+  let siTotalAmount;
+
+
+  before(function () {
+    // This wait is stupid.
+    // It also appears to be a good workaround for the problems in
+    // cypress/support/utils/utils.js:1
+    cy.wait(5000);
+  });
+
+  // describe('Prepare data', function () {
+  //   it('Prepare dunning type', function () {
+  //
+  //     cy.fixture('settings/dunning_type.json').then(dunningType => {
+  //       Object.assign(new DunningType(), dunningType)
+  //         .setName(dunningTypeName)
+  //         .apply();
+  //     });
+  //   });
+  //
+  //   it('Prepare customer bpartner (via api)', function () {
+  //     cy.fixture('sales/simple_customer.json').then(customerJson => {
+  //       const bpartner = new BPartner({...customerJson, name: businessPartnerName})
+  //         .setCustomer(true)
+  //         .setDunning(dunningTypeName)
+  //         .setPaymentTerm(paymentTerm)
+  //         .setBank(undefined);
+  //
+  //       bpartner.apply();
+  //     });
+  //   });
+  //
+  //   it('Prepare sales invoice', function () {
+  //     cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
+  //       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
+  //         .addLine(
+  //           new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
+  //           // todo @dh: how to add a "per test" packing item
+  //           // .setPackingItem('IFCO 6410 x 10 Stk')
+  //           // .setTuQuantity(2)
+  //         )
+  //         // .addLine(
+  //         // todo @dh: how to add this line which depends on the packing item?
+  //         //   new SalesInvoiceLine()
+  //         //     .setProduct('IFCO 6410_P001512')
+  //         //     .setQuantity(2)
+  //         // )
+  //         // .setPriceList(priceListName)
+  //         .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
+  //         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
+  //         .apply();
+  //     });
+  //   });
+  // });
+
+  it('use already existing sales invoice', function () {
+    cy.visitWindow('167', '1000033');
+  });
+
+
+  it('Sales Invoice is Completed', function () {
+    cy.expectDocumentStatus(DocumentStatusKey.Completed);
+  });
+
+  it('Sales Invoice is not paid', function () {
+    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
+      cy.log(`IsPaid = ${checkBoxValue}`);
+      assert.equal(checkBoxValue, false);
+    });
+  });
+
+  it('Save values needed for the next step', function () {
+    cy.getStringFieldValue('DocumentNo').then(documentNumber => {
+      siDocumentNumber = documentNumber;
+    });
+
+    // cy.getStringFieldValue('C_Currency_ID').then(currency => {
+    //   siCurrency = currency;
+    // });
+    //
+    // cy.getStringFieldValue('DateInvoiced').then(dueDate => {
+    //   siDueDate = dueDate;
+    // });
+    //
+    // cy.getSalesInvoiceTotalAmount().then(amount => {
+    //   siTotalAmount = amount;
+    // });
+  });
+
+  it('Create Dunning Candidates', function () {
+    DunningCandidates.visit();
+    cy.wait(1000); // without this wait, the action menu is not properly loaded
+    // cy.wait(10000); // maybe this fixes some cache invalidation problem that Dunning type is not found in `de.metas.dunning.api.impl.DunningDAO.retrieveDunnings` (eventually, we should get rid of this sleep)
+
+    cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
+    cy.setCheckBoxValue('IsFullUpdate', true, true);
+    cy.pressStartButton();
+  });
+
+
+  it('Ensure there are exactly 2 Dunning Candidates', function () {
+    DunningCandidates.visit();
+    filterBySalesInvoiceNumber(siDocumentNumber);
+
+    DunningCandidates.getRows().should('have.length', 2);
+  });
+
+
+  it('Create Dunning Documents', function () {
+    DunningCandidates.selectAllVisibleRows();
+    cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Process');
+    cy.setCheckBoxValue('IsComplete', true, true);
+    cy.pressStartButton();
+  });
+
+
+  describe('Create And Check Dunning Documents', function () {
+    it('bla', function () {
+      /**
+       * Currently there's no way to move from Dunning -> Dunning Candidates (and so to Sales Invoice).
+       * In order to check each dunning document, we have to go the other way: Dunning Candidates -> related docs -> the Dunning Doc.
+       */
+      Dunning.visit();
+      filterBySalesInvoiceNumber(siDocumentNumber);
+    });
+  });
+
+
+  function filterBySalesInvoiceNumber(siDocNumber) {
+    cy.wait(1000);
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoStringField('DocumentNo', siDocNumber, false, null, true);
+    applyFilters();
+  }
+});
+
+
+
+
