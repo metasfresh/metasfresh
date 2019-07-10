@@ -54,6 +54,7 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -61,7 +62,6 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.calendar.IPeriodBL;
@@ -1066,15 +1066,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef,/*esrLineText, refNo,*/ ESR_Rendered_AccountNo, partnerValue, "50", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		final Runnable runnable = new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				esrImportBL.process(esrImport);
-			}
-		};
+		final Runnable runnable = () -> esrImportBL.process(esrImport);
 
 		final List<Thread> threadsRunning = new ArrayList<>();
 		for (int threadNo = 1; threadNo <= 5; threadNo++)

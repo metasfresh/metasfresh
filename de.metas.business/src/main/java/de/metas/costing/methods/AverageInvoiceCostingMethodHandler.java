@@ -7,12 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
@@ -115,7 +113,6 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId().getRepoId();
 		final int orgId = costSegment.getOrgId().getRepoId();
 		final int asiId = costSegment.getAttributeSetInstanceId().getRepoId();
@@ -177,14 +174,19 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 				}
 				// Assumption: everything is matched
 				final BigDecimal price = rs.getBigDecimal(4);
-				final int C_Currency_ID = rs.getInt(5);
+				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(5));
 				final Timestamp DateAcct = rs.getTimestamp(6);
 				final int C_ConversionType_ID = rs.getInt(7);
 				final int Client_ID = rs.getInt(8);
 				final int Org_ID = rs.getInt(9);
-				final BigDecimal cost = currencyConversionBL.convert(ctx, price,
-						C_Currency_ID, acctCurencyId.getRepoId(),
-						DateAcct, C_ConversionType_ID, Client_ID, Org_ID);
+				final BigDecimal cost = currencyConversionBL.convert(
+						price,
+						currencyId,
+						acctCurencyId,
+						DateAcct, 
+						C_ConversionType_ID, 
+						Client_ID, 
+						Org_ID);
 				//
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);

@@ -28,7 +28,6 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
@@ -49,7 +48,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -440,7 +441,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		filters.addOnlyActiveRecordsFilter();
 
-		final int currencyId = Services.get(ICurrencyBL.class).getBaseCurrency(Env.getCtx()).getC_Currency_ID();
+		final CurrencyId currencyId = Services.get(ICurrencyBL.class).getBaseCurrency(Env.getCtx()).getId();
 
 		final IQuery<I_M_PriceList> currencyPriceListQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
 				.addEqualsFilter(I_M_PriceList.COLUMN_C_Currency_ID, currencyId)

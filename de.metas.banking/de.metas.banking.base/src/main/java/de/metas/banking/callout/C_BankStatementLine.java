@@ -32,9 +32,10 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.currency.ConversionType;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -167,9 +168,9 @@ public class C_BankStatementLine
 		final org.compiere.model.I_C_BankStatementLine bslFrom = bsl.getLink_BankStatementLine();
 
 		final BigDecimal trxAmtFrom = bslFrom.getTrxAmt();
-		final int trxAmtFromCurrencyId = bslFrom.getC_Currency_ID();
+		final CurrencyId trxAmtFromCurrencyId = CurrencyId.ofRepoId(bslFrom.getC_Currency_ID());
 
-		final int trxAmtCurrencyId = bsl.getC_Currency_ID();
+		final CurrencyId trxAmtCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
 
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		final CurrencyConversionContext currencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(

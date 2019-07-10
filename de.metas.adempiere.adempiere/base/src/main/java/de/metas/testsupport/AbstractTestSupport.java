@@ -348,7 +348,7 @@ public class AbstractTestSupport
 			orderLine.setDescription(orderLineDescription);
 
 			final PlainCurrencyBL currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
-			orderLine.setC_Currency_ID(currencyConversionBL.getBaseCurrency(Env.getCtx()).getC_Currency_ID());
+			orderLine.setC_Currency_ID(currencyConversionBL.getBaseCurrency(Env.getCtx()).getId().getRepoId());
 			InterfaceWrapperHelper.save(orderLine);
 		}
 

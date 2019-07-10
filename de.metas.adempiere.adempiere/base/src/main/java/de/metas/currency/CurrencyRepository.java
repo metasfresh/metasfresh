@@ -1,9 +1,10 @@
-package de.metas.money;
+package de.metas.currency;
 
-import de.metas.currency.CurrencyPrecision;
-import lombok.Builder;
+import org.springframework.stereotype.Repository;
+
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -27,16 +28,22 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class Currency
+@Repository
+public class CurrencyRepository
 {
-	@NonNull
-	CurrencyId id;
+	public Currency getById(@NonNull final CurrencyId currencyId)
+	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+		return currencyDAO.getById(currencyId);
+	}
 
-	@NonNull
-	CurrencyPrecision precision;
+	public Currency getById(final int currencyId)
+	{
+		return getById(CurrencyId.ofRepoId(currencyId));
+	}
 
-	@NonNull
-	CurrencyCode currencyCode;
+	public CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
+	{
+		return getById(currencyId).getCurrencyCode();
+	}
 }

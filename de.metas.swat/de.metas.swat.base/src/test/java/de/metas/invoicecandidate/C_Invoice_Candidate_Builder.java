@@ -129,7 +129,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setBill_BPartner(billPartner);
 		ic.setAD_User_InCharge_ID(-1); // nobody, aka null
 		ic.setM_Product(test.product("1", -1));
-		ic.setC_Currency(test.currencyConversionBL.getBaseCurrency(ctx));
+		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qty);
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed

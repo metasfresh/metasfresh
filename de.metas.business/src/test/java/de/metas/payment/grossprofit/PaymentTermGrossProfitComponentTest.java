@@ -14,8 +14,8 @@ import org.compiere.model.I_C_PaymentTerm;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;

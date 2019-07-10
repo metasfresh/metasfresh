@@ -25,16 +25,14 @@ package de.metas.payment.api.impl;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Properties;
 
-import org.adempiere.ad.wrapper.IPOJOFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 public class PlainPaymentDAO extends AbstractPaymentDAO
@@ -55,21 +53,12 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 	@Override
 	public List<I_C_AllocationLine> retrieveAllocationLines(final I_C_Payment payment)
 	{
-		return db.getRecords(I_C_AllocationLine.class, new IPOJOFilter<I_C_AllocationLine>()
-		{
-			@Override
-			public boolean accept(I_C_AllocationLine pojo)
-			{
-				return pojo.getC_Payment_ID() == payment.getC_Payment_ID();
-			}
-		});
+		return db.getRecords(I_C_AllocationLine.class, pojo -> pojo.getC_Payment_ID() == payment.getC_Payment_ID());
 	}
 	
 	@Override
 	public BigDecimal getAllocatedAmt(I_C_Payment payment)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(payment);
-
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(payment))
 		{
@@ -79,10 +68,10 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 
 			if ((null != ah) && (ah.getC_Currency_ID() != payment.getC_Currency_ID()))
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(
 						lineAmt, // Amt
-						ah.getC_Currency_ID(), // CurFrom_ID
-						payment.getC_Currency_ID(), // CurTo_ID
+						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
+						CurrencyId.ofRepoId(payment.getC_Currency_ID()), // CurTo_ID
 						ah.getDateTrx(), // ConvDate
 						payment.getC_ConversionType_ID(),
 						line.getAD_Client_ID(), line.getAD_Org_ID());

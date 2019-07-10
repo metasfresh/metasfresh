@@ -13,15 +13,14 @@ package de.metas.banking.payment.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -51,6 +50,7 @@ import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -308,17 +308,39 @@ public class BankStatmentPaymentBL implements IBankStatmentPaymentBL
 					// convert amounts
 					final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 
-					amount = currencyConversionBL.convert(ctx, amount, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
+					final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
+					final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+					amount = currencyConversionBL.convert(
+							amount,
+							refLineCurrencyId,
+							bslCurrencyId,
+							bsl.getDateAcct(),
+							inv.getC_ConversionType_ID(),
+							bsl.getAD_Client_ID(),
 							bsl.getAD_Org_ID());
-					discountAmt = currencyConversionBL.convert(ctx, discountAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
+					discountAmt = currencyConversionBL.convert(
+							discountAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							bsl.getDateAcct(), 
+							inv.getC_ConversionType_ID(), 
+							bsl.getAD_Client_ID(),
 							bsl.getAD_Org_ID());
-					writeOffAmt = currencyConversionBL.convert(ctx, writeOffAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
+					writeOffAmt = currencyConversionBL.convert(
+							writeOffAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							bsl.getDateAcct(), 
+							inv.getC_ConversionType_ID(), 
+							bsl.getAD_Client_ID(),
 							bsl.getAD_Org_ID());
-					overUnderAmt = currencyConversionBL.convert(ctx, overUnderAmt, refLine.getC_Currency_ID(),
-							bsl.getC_Currency_ID(), bsl.getDateAcct(), inv.getC_ConversionType_ID(), bsl.getAD_Client_ID(),
+					overUnderAmt = currencyConversionBL.convert(
+							overUnderAmt, 
+							refLineCurrencyId,
+							bslCurrencyId, 
+							bsl.getDateAcct(), 
+							inv.getC_ConversionType_ID(), 
+							bsl.getAD_Client_ID(),
 							bsl.getAD_Org_ID());
 				}
 				final MAllocationLine aLine = new MAllocationLine(alloc, amount, discountAmt, writeOffAmt, overUnderAmt);

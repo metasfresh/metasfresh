@@ -36,7 +36,7 @@ import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
@@ -70,6 +70,7 @@ import de.metas.email.templates.MailTextBuilder;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -843,9 +844,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (C_Currency_ID != amtApprovalCurrencyId
 						&& amtApprovalCurrencyId > 0)			// No currency = amt only
 				{
-					amtApproval = Services.get(ICurrencyBL.class).convert(getCtx(),// today & default rate
-							amtApproval, amtApprovalCurrencyId,
-							C_Currency_ID, getAD_Client_ID(), AD_Org_ID);
+					amtApproval = Services.get(ICurrencyBL.class).convert(// today & default rate
+							amtApproval,
+							CurrencyId.ofRepoId(amtApprovalCurrencyId),
+							CurrencyId.ofRepoId(C_Currency_ID),
+							getAD_Client_ID(),
+							AD_Org_ID);
 					if (amtApproval == null || amtApproval.signum() == 0)
 					{
 						continue;
@@ -1158,7 +1162,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			note.save();
 			// Attachment
 
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 			attachmentEntryService.createNewAttachment(note, report);
 			return true;
 		}
@@ -1212,7 +1216,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 
 				MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getNode().getR_MailText_ID());
 				
-				final MailService mailService = Adempiere.getBean(MailService.class);
+				final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 				final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
 						.recordAndUpdateBPartnerAndContact(po);
 
@@ -1706,7 +1710,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		final IDocument doc = getDocument();
 
-		final MailService mailService = Adempiere.getBean(MailService.class);
+		final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(m_node.getR_MailText_ID());
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
 				.recordAndUpdateBPartnerAndContact(m_po);

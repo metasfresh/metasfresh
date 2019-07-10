@@ -45,10 +45,11 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -188,25 +189,28 @@ public class BankStatementBL implements IBankStatementBL
 						bsl.getAD_Org_ID() // AD_Org_ID
 						);
 
+				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
+				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+				
 				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getTrxAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal discountAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getDiscountAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal writeOffAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getWriteOffAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal overUnderAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getOverUnderAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				
 				totalStmtAmt = totalStmtAmt.add(trxAmt);

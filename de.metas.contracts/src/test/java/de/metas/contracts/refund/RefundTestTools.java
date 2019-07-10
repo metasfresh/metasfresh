@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
@@ -26,7 +27,6 @@ import org.compiere.util.TimeUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
@@ -42,14 +42,14 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.CurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.Currency;
-import de.metas.money.CurrencyCode;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -152,7 +152,7 @@ public class RefundTestTools
 		currencyRecord.setStdPrecision(2);
 		currencyRecord.setISO_Code(CurrencyCode.EUR.toThreeLetterCode());
 		saveRecord(currencyRecord);
-		currency = CurrencyRepository.toCurrency(currencyRecord);
+		currency = CurrencyDAO.toCurrency(currencyRecord);
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);

@@ -24,18 +24,17 @@ package de.metas.dunning.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.dunning.api.IDunningUtil;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 public class DunningUtil implements IDunningUtil
 {
 	@Override
 	public BigDecimal currencyConvert(
-			Properties ctx,
 			BigDecimal Amt,
 			int CurFrom_ID,
 			int CurTo_ID,
@@ -45,10 +44,9 @@ public class DunningUtil implements IDunningUtil
 			int AD_Org_ID)
 	{
 		return Services.get(ICurrencyBL.class).convert(
-				ctx,
 				Amt,
-				CurFrom_ID,
-				CurTo_ID,
+				CurrencyId.ofRepoId(CurFrom_ID),
+				CurrencyId.ofRepoId(CurTo_ID),
 				ConvDate,
 				CurrencyConversionTypeId.toRepoId(conversionTypeId),
 				AD_Client_ID,

@@ -9,8 +9,10 @@ import org.springframework.stereotype.Service;
 
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionType;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -75,8 +77,8 @@ public class MoneyService
 		final CurrencyConversionResult conversionResult = currencyBL.convert(
 				currencyConversionContext,
 				money.getAsBigDecimal(),
-				money.getCurrencyId().getRepoId(),
-				targetCurrencyId.getRepoId());
+				money.getCurrencyId(),
+				targetCurrencyId);
 
 		final BigDecimal convertedAmount = Check.assumeNotNull(
 				conversionResult.getAmount(),

@@ -37,6 +37,7 @@ import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -107,9 +108,14 @@ public class MMatchPO extends X_M_MatchPO
 		final int orderCurrency_ID = order.getC_Currency_ID();
 		if (invoiceCurrency_ID != orderCurrency_ID)
 		{
-			priceActual = Services.get(ICurrencyBL.class).convert(getCtx(), priceActual, invoiceCurrency_ID, orderCurrency_ID,
-					invoice.getDateInvoiced(), invoice.getC_ConversionType_ID(),
-					getAD_Client_ID(), getAD_Org_ID());
+			priceActual = Services.get(ICurrencyBL.class).convert(
+					priceActual, 
+					CurrencyId.ofRepoId(invoiceCurrency_ID), 
+					CurrencyId.ofRepoId(orderCurrency_ID),
+					invoice.getDateInvoiced(), 
+					invoice.getC_ConversionType_ID(),
+					getAD_Client_ID(), 
+					getAD_Org_ID());
 		}
 		return priceActual;
 	}

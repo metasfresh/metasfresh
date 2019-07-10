@@ -39,6 +39,7 @@ import org.compiere.util.DisplayType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
+import de.metas.money.CurrencyId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
@@ -64,15 +65,21 @@ public class CommissionCalc extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals("StartDate"))
-				p_StartDate = (Timestamp)para[i].getParameter();
+			{
+				p_StartDate = (Timestamp)element.getParameter();
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 	}	//	prepare
 
@@ -86,10 +93,14 @@ public class CommissionCalc extends JavaProcess
 	{
 		log.info("C_Commission_ID=" + getRecord_ID() + ", StartDate=" + p_StartDate);
 		if (p_StartDate == null)
+		{
 			p_StartDate = new Timestamp (System.currentTimeMillis());
+		}
 		m_com = new MCommission (getCtx(), getRecord_ID(), get_TrxName());
 		if (m_com.get_ID() == 0)
+		{
 			throw new AdempiereUserError ("No Commission");
+		}
 
 		//	Create Commission
 		MCommissionRun comRun = new MCommissionRun (m_com);
@@ -97,20 +108,25 @@ public class CommissionCalc extends JavaProcess
 		comRun.setStartDate(p_StartDate);
 		//	01-Jan-2000 - 31-Jan-2001 - USD
 		SimpleDateFormat format = DisplayType.getDateFormat(DisplayType.Date);
+		final CurrencyId currencyId = CurrencyId.ofRepoId(m_com.getC_Currency_ID());
 		String description = format.format(p_StartDate)
 			+ " - " + format.format(m_EndDate)
-			+ " - " + Services.get(ICurrencyDAO.class).getISO_Code(getCtx(), m_com.getC_Currency_ID());
+			+ " - " + Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
 		comRun.setDescription(description);
 		if (!comRun.save())
+		{
 			throw new AdempiereSystemError ("Could not save Commission Run");
+		}
 
 		MCommissionLine[] lines = m_com.getLines();
-		for (int i = 0; i < lines.length; i++)
+		for (MCommissionLine line : lines)
 		{
 			//	Amt for Line - Updated By Trigger
-			MCommissionAmt comAmt = new MCommissionAmt (comRun, lines[i].getC_CommissionLine_ID());
+			MCommissionAmt comAmt = new MCommissionAmt (comRun, line.getC_CommissionLine_ID());
 			if (!comAmt.save())
+			{
 				throw new AdempiereSystemError ("Could not save Commission Amt");
+			}
 			//
 			StringBuffer sql = new StringBuffer();
 			if (MCommission.DOCBASISTYPE_Receipt.equals(m_com.getDocBasisType()))
@@ -203,11 +219,13 @@ public class CommissionCalc extends JavaProcess
 				}
 			}
 			//	CommissionOrders/Invoices
-			if (lines[i].isCommissionOrders())
+			if (line.isCommissionOrders())
 			{
 				final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(getCtx(), m_com.getC_BPartner_ID(), ITrx.TRXNAME_None);
 				if (users.isEmpty())
+				{
 					throw new AdempiereUserError ("Commission Business Partner has no Users/Contact");
+				}
 				if (users.size() == 1)
 				{
 					int SalesRep_ID = users.get(0).getAD_User_ID();
@@ -220,35 +238,51 @@ public class CommissionCalc extends JavaProcess
 				}
 			}
 			//	Organization
-			if (lines[i].getOrg_ID() != 0)
-				sql.append(" AND h.AD_Org_ID=").append(lines[i].getOrg_ID());
+			if (line.getOrg_ID() != 0)
+			{
+				sql.append(" AND h.AD_Org_ID=").append(line.getOrg_ID());
+			}
 			//	BPartner
-			if (lines[i].getC_BPartner_ID() != 0)
-				sql.append(" AND h.C_BPartner_ID=").append(lines[i].getC_BPartner_ID());
+			if (line.getC_BPartner_ID() != 0)
+			{
+				sql.append(" AND h.C_BPartner_ID=").append(line.getC_BPartner_ID());
+			}
 			//	BPartner Group
-			if (lines[i].getC_BP_Group_ID() != 0)
+			if (line.getC_BP_Group_ID() != 0)
+			{
 				sql.append(" AND h.C_BPartner_ID IN "
-					+ "(SELECT C_BPartner_ID FROM C_BPartner WHERE C_BP_Group_ID=").append(lines[i].getC_BP_Group_ID()).append(")");
+					+ "(SELECT C_BPartner_ID FROM C_BPartner WHERE C_BP_Group_ID=").append(line.getC_BP_Group_ID()).append(")");
+			}
 			//	Sales Region
-			if (lines[i].getC_SalesRegion_ID() != 0)
+			if (line.getC_SalesRegion_ID() != 0)
+			{
 				sql.append(" AND h.C_BPartner_Location_ID IN "
-					+ "(SELECT C_BPartner_Location_ID FROM C_BPartner_Location WHERE C_SalesRegion_ID=").append(lines[i].getC_SalesRegion_ID()).append(")");
+					+ "(SELECT C_BPartner_Location_ID FROM C_BPartner_Location WHERE C_SalesRegion_ID=").append(line.getC_SalesRegion_ID()).append(")");
+			}
 			//	Product
-			if (lines[i].getM_Product_ID() != 0)
-				sql.append(" AND l.M_Product_ID=").append(lines[i].getM_Product_ID());
+			if (line.getM_Product_ID() != 0)
+			{
+				sql.append(" AND l.M_Product_ID=").append(line.getM_Product_ID());
+			}
 			//	Product Category
-			if (lines[i].getM_Product_Category_ID() != 0)
+			if (line.getM_Product_Category_ID() != 0)
+			{
 				sql.append(" AND l.M_Product_ID IN "
-					+ "(SELECT M_Product_ID FROM M_Product WHERE M_Product_Category_ID=").append(lines[i].getM_Product_Category_ID()).append(")");
+					+ "(SELECT M_Product_ID FROM M_Product WHERE M_Product_Category_ID=").append(line.getM_Product_Category_ID()).append(")");
+			}
 			//	Payment Rule
-			if (lines[i].getPaymentRule() != null)
+			if (line.getPaymentRule() != null)
+			{
 				sql.append(" AND h.PaymentRule IN "
-					+ "(SELECT AD_Ref_List_ID FROM AD_Ref_List WHERE AD_Reference_ID=195 and value = '").append(lines[i].getPaymentRule()).append("')");
+					+ "(SELECT AD_Ref_List_ID FROM AD_Ref_List WHERE AD_Reference_ID=195 and value = '").append(line.getPaymentRule()).append("')");
+			}
 			//	Grouping
 			if (!m_com.isListDetails())
+			{
 				sql.append(" GROUP BY h.C_Currency_ID");
+			}
 			//
-			log.debug("Line=" + lines[i].getLine() + " - " + sql);
+			log.debug("Line=" + line.getLine() + " - " + sql);
 			//
 			createDetail(sql.toString(), comAmt);
 			comAmt.calculateCommission();
@@ -294,13 +328,21 @@ public class CommissionCalc extends JavaProcess
 			cal.set(Calendar.DAY_OF_MONTH, 1);
 			int month = cal.get(Calendar.MONTH);
 			if (month < Calendar.APRIL)
+			{
 				cal.set(Calendar.MONTH, Calendar.JANUARY);
+			}
 			else if (month < Calendar.JULY)
+			{
 				cal.set(Calendar.MONTH, Calendar.APRIL);
+			}
 			else if (month < Calendar.OCTOBER)
+			{
 				cal.set(Calendar.MONTH, Calendar.JULY);
+			}
 			else
+			{
 				cal.set(Calendar.MONTH, Calendar.OCTOBER);
+			}
 			p_StartDate = new Timestamp (cal.getTimeInMillis());
 			//
 			cal.add(Calendar.MONTH, 3);
@@ -368,18 +410,24 @@ public class CommissionCalc extends JavaProcess
 				//	Reference, Info,
 				String s = rs.getString(6);
 				if (s != null)
+				{
 					cd.setReference(s);
+				}
 				s = rs.getString(7);
 				if (s != null)
+				{
 					cd.setInfo(s);
+				}
 
 				//	Date
 				Timestamp date = rs.getTimestamp(8);
 				cd.setConvertedAmt(date);
 
 				//
-				if (!cd.save())		//	creates memory leak
+				if (!cd.save())
+				{
 					throw new IllegalArgumentException ("CommissionCalc - Detail Not saved");
+				}
 			}
 			rs.close();
 			pstmt.close();
@@ -392,7 +440,9 @@ public class CommissionCalc extends JavaProcess
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)

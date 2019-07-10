@@ -53,6 +53,7 @@ import de.metas.acct.vatcode.VATCode;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
@@ -242,7 +243,7 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}   // setAccount
 
-	final AcctSchema getAcctSchema()
+	AcctSchema getAcctSchema()
 	{
 		return acctSchema;
 	}
@@ -252,7 +253,7 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	@Override
 	@Deprecated
-	public final void setC_AcctSchema_ID(final int C_AcctSchema_ID)
+	public void setC_AcctSchema_ID(final int C_AcctSchema_ID)
 	{
 		throw new UnsupportedOperationException("Please use setAccount()");
 	}
@@ -298,7 +299,9 @@ public final class FactLine extends X_Fact_Acct
 		setC_Currency_ID(CurrencyId.toRepoId(currencyId));
 
 		// Currency Precision
-		final int precision = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), CurrencyId.toRepoId(currencyId));
+		final CurrencyPrecision precision = currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: ICurrencyDAO.DEFAULT_PRECISION;
 		setAmtSourceDr(roundAmountToPrecision("AmtSourceDr", AmtSourceDr, precision));
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
@@ -331,7 +334,7 @@ public final class FactLine extends X_Fact_Acct
 		setAmtAcctCr(AmtAcctCr);
 	}   // setAmtAcct
 
-	public final void invertDrAndCrAmounts()
+	public void invertDrAndCrAmounts()
 	{
 		final BigDecimal amtSourceDr = getAmtSourceDr();
 		final BigDecimal amtSourceCr = getAmtSourceCr();
@@ -344,7 +347,7 @@ public final class FactLine extends X_Fact_Acct
 		setAmtAcctCr(amtAcctDr);
 	}
 
-	public final void invertDrAndCrAmountsIfTrue(final boolean condition)
+	public void invertDrAndCrAmountsIfTrue(final boolean condition)
 	{
 		if (!condition)
 		{
@@ -356,7 +359,7 @@ public final class FactLine extends X_Fact_Acct
 	/**
 	 * Negate the DR and CR source and accounted amounts.
 	 */
-	public final void negateDrAndCrAmounts()
+	public void negateDrAndCrAmounts()
 	{
 		final BigDecimal amtSourceDr = getAmtSourceDr();
 		final BigDecimal amtSourceCr = getAmtSourceCr();
@@ -378,24 +381,26 @@ public final class FactLine extends X_Fact_Acct
 	 */
 	public void setAmtAcct(final CurrencyId currencyId, final BigDecimal AmtAcctDr, final BigDecimal AmtAcctCr)
 	{
-		final int precision = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), currencyId.getRepoId());
+		final CurrencyPrecision precision = currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: ICurrencyDAO.DEFAULT_PRECISION;
 		setAmtAcctDr(roundAmountToPrecision("AmtAcctDr", AmtAcctDr, precision));
 		setAmtAcctCr(roundAmountToPrecision("AmtAcctCr", AmtAcctCr, precision));
 	}   // setAmtAcct
 
-	private final BigDecimal roundAmountToPrecision(final String amountName, final BigDecimal amt, final int precision)
+	private BigDecimal roundAmountToPrecision(final String amountName, final BigDecimal amt, final CurrencyPrecision precision)
 	{
 		if (amt == null)
 		{
 			return null;
 		}
 
-		if (amt.scale() <= precision)
+		if (amt.scale() <= precision.toInt())
 		{
 			return amt;
 		}
 
-		final BigDecimal amtRounded = amt.setScale(precision, BigDecimal.ROUND_HALF_UP);
+		final BigDecimal amtRounded = precision.round(amt);
 
 		// In case the amount was really changed, log a detailed warning
 		final BigDecimal amtRoundingError = amt.subtract(amtRounded).abs();
@@ -634,12 +639,12 @@ public final class FactLine extends X_Fact_Acct
 		super.setDateTrx(TimeUtil.asTimestamp(dateTrx));
 	}
 
-	private final void setDateAcct(final LocalDate dateAcct)
+	private void setDateAcct(final LocalDate dateAcct)
 	{
 		super.setDateAcct(TimeUtil.asTimestamp(dateAcct));
 	}
 
-	public final Doc<?> getDoc()
+	public Doc<?> getDoc()
 	{
 		return m_doc;
 	}
@@ -649,7 +654,7 @@ public final class FactLine extends X_Fact_Acct
 	 *
 	 * @return doc line
 	 */
-	public final DocLine<?> getDocLine()
+	public DocLine<?> getDocLine()
 	{
 		return m_docLine;
 	}	// getDocLine
@@ -918,7 +923,7 @@ public final class FactLine extends X_Fact_Acct
 	 * @return AmtAcctDr or AmtAcctCr, which one is not ZERO
 	 * @throws IllegalStateException if both of them are not ZERO
 	 */
-	public final BigDecimal getAmtAcctDrOrCr()
+	public BigDecimal getAmtAcctDrOrCr()
 	{
 		final BigDecimal amtAcctDr = getAmtAcctDr();
 		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
@@ -948,7 +953,7 @@ public final class FactLine extends X_Fact_Acct
 	 * @return AmtSourceDr/AmtAcctDr or AmtSourceCr/AmtAcctCr, which one is not ZERO
 	 * @throws IllegalStateException if both of them are not ZERO
 	 */
-	public final AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
+	public AmountSourceAndAcct getAmtSourceAndAcctDrOrCr()
 	{
 		final BigDecimal amtAcctDr = getAmtAcctDr();
 		final int amtAcctDrSign = amtAcctDr == null ? 0 : amtAcctDr.signum();
@@ -1058,7 +1063,7 @@ public final class FactLine extends X_Fact_Acct
 		{
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			final CurrencyConversionContext conversionCtx = getCurrencyConversionCtx();
-			final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, currencyId.getRepoId(), acctCurrencyId.getRepoId());
+			final CurrencyRate currencyRate = currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
 			final BigDecimal amtAcctDr = currencyRate.convertAmount(getAmtSourceDr());
 			final BigDecimal amtAcctCr = currencyRate.convertAmount(getAmtSourceCr());
 
@@ -1073,7 +1078,7 @@ public final class FactLine extends X_Fact_Acct
 		this.currencyConversionCtx = currencyConversionCtx;
 	}
 
-	private final CurrencyConversionContext getCurrencyConversionCtx()
+	private CurrencyConversionContext getCurrencyConversionCtx()
 	{
 		// Use preset currency conversion context, if any
 		if (currencyConversionCtx != null)
@@ -1539,7 +1544,7 @@ public final class FactLine extends X_Fact_Acct
 		}
 	}   // updateReverseLine
 
-	private final void setVATCodeIfApplies()
+	private void setVATCodeIfApplies()
 	{
 		final int taxId = getC_Tax_ID();
 		if (taxId <= 0)
@@ -1575,7 +1580,7 @@ public final class FactLine extends X_Fact_Acct
 	public void setQty(@NonNull final Quantity quantity)
 	{
 		setQty(quantity.getAsBigDecimal());
-		setC_UOM_ID(quantity.getUOMId());
+		setC_UOM_ID(quantity.getUomId().getRepoId());
 	}
 
 	public AcctSchemaId getAcctSchemaId()

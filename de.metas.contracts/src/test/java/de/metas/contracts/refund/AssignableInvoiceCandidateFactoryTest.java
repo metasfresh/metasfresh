@@ -12,13 +12,13 @@ import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.time.SystemTime;

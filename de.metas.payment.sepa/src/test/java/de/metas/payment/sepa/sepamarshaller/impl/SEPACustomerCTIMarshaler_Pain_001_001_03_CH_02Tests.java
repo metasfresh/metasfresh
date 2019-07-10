@@ -7,10 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;

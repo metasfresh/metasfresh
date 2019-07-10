@@ -41,6 +41,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -296,8 +297,11 @@ class OLCandOrderFactory
 			}
 			if (candidate.isManualPrice() || candidate.isManualDiscount())
 			{
-				final int currencyId = candidate.getC_Currency_ID();
-				final CurrencyPrecision stdPrecision = CurrencyPrecision.ofInt(currencyDAO.getStdPrecision(ctx, currencyId)); // FIXME: use price list's precision
+				// FIXME: use price list's precision
+				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(candidate.getC_Currency_ID());
+				final CurrencyPrecision stdPrecision = currencyId != null
+						? currencyDAO.getStdPrecision(currencyId)
+						: ICurrencyDAO.DEFAULT_PRECISION;
 				orderLineBL.updatePriceActual(currentOrderLine, stdPrecision);
 			}
 		}

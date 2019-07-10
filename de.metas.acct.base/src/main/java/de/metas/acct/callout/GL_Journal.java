@@ -13,6 +13,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -68,12 +69,21 @@ public class GL_Journal
 		glJournal.setDateAcct(dateDoc);
 	}
 
-	@CalloutMethod(columnNames = { I_GL_Journal.COLUMNNAME_DateAcct, I_GL_Journal.COLUMNNAME_C_Currency_ID, I_GL_Journal.COLUMNNAME_C_ConversionType_ID })
+	@CalloutMethod(columnNames = {
+			I_GL_Journal.COLUMNNAME_DateAcct,
+			I_GL_Journal.COLUMNNAME_C_Currency_ID,
+			I_GL_Journal.COLUMNNAME_C_ConversionType_ID })
 	public void updateCurrencyRate(final I_GL_Journal glJournal)
 	{
 		//
 		// Extract data from source Journal
-		final int currencyId = glJournal.getC_Currency_ID();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournal.getC_Currency_ID());
+		if (currencyId == null)
+		{
+			// not set yet
+			return;
+		}
+
 		final int conversionTypeId = glJournal.getC_ConversionType_ID();
 		Timestamp dateAcct = glJournal.getDateAcct();
 		if (dateAcct == null)
@@ -92,7 +102,7 @@ public class GL_Journal
 		{
 			currencyRate = Services.get(ICurrencyBL.class).getRate(
 					currencyId,
-					acctSchema.getCurrencyId().getRepoId(),
+					acctSchema.getCurrencyId(),
 					dateAcct,
 					conversionTypeId,
 					adClientId,

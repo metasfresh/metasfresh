@@ -28,6 +28,7 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
 import de.metas.acct.tax.ITaxAccountable;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.util.ISingletonService;
 
 public interface IGLJournalLineBL extends ISingletonService
@@ -47,7 +48,7 @@ public interface IGLJournalLineBL extends ISingletonService
 	 * @param glJournalLine
 	 * @return currency precision
 	 */
-	int getPrecision(I_GL_JournalLine glJournalLine);
+	CurrencyPrecision getPrecision(I_GL_JournalLine glJournalLine);
 
 	/**
 	 * Checks if given {@link I_GL_JournalLine} shall be part of a group of transactions (i.e. it's a split booking) or not.

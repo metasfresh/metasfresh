@@ -59,6 +59,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CCache;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
@@ -1244,22 +1245,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return getPDFFileName(documentDir, getC_Invoice_ID());
 	}	// getPDFFileName
 
-	/**
-	 * Get ISO Code of Currency
-	 *
-	 * @return Currency ISO
-	 */
-	public String getCurrencyISO()
-	{
-		return Services.get(ICurrencyDAO.class).getISO_Code(getCtx(), getC_Currency_ID());
-	}	// getCurrencyISO
-
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
@@ -1801,9 +1786,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// verify that we can deal with the invoice's currency
 		// Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
 		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
-				getCtx(),
 				getGrandTotal(true), 	// CM adjusted
-				getC_Currency_ID(),
+				CurrencyId.ofRepoId(getC_Currency_ID()),
 				getDateAcct(),
 				getC_ConversionType_ID(),
 				getAD_Client_ID(),
@@ -1811,16 +1795,16 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		if (invAmt == null)
 		{
-			final I_C_Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
-			final I_C_Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
+			final Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
 			final I_C_BPartner bp = getC_BPartner();
 
 			m_processMsg = Services.get(IMsgBL.class).getMsg(getCtx(),
 					ERR_NoBaseConversionBetweenCurrencies,
 					new Object[] { bp.getName(),
 							bp.getValue(),
-							currency.getISO_Code(),
-							currencyTo.getISO_Code() });
+							currency.getCurrencyCode().toThreeLetterCode(),
+							currencyTo.getCurrencyCode().toThreeLetterCode() });
 
 			return IDocument.STATUS_Invalid;
 		}
@@ -1833,8 +1817,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final int C_CurrencyTo_ID = project.getC_Currency_ID();
 			if (C_CurrencyTo_ID != getC_Currency_ID())
 			{
-				amt = Services.get(ICurrencyBL.class).convert(getCtx(), amt, getC_Currency_ID(), C_CurrencyTo_ID,
-						getDateAcct(), 0, getAD_Client_ID(), getAD_Org_ID());
+				amt = Services.get(ICurrencyBL.class).convert(
+						amt, 
+						CurrencyId.ofRepoId(getC_Currency_ID()), 
+						CurrencyId.ofRepoId(C_CurrencyTo_ID),
+						getDateAcct(), 
+						0, 
+						getAD_Client_ID(), 
+						getAD_Org_ID());
 			}
 			if (amt == null)
 			{

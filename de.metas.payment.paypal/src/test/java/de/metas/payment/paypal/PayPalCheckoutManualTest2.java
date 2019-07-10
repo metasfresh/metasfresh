@@ -20,13 +20,13 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;

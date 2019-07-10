@@ -3,8 +3,6 @@
  */
 package de.metas.currency.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
@@ -23,7 +21,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
 import org.compiere.model.I_C_Conversion_Rate;
@@ -31,12 +28,17 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.currency.ConversionType;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
@@ -72,77 +74,72 @@ import lombok.NonNull;
 @Deprecated
 public class CurrencyDAO implements ICurrencyDAO
 {
+	private final CCache<Integer, CurrenciesMap> currenciesCache = CCache.<Integer, CurrenciesMap> builder()
+			.tableName(I_C_Currency.Table_Name)
+			.build();
+
 	private final CCache<ConversionType, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionType, CurrencyConversionTypeId> builder()
 			.tableName(I_C_ConversionType.Table_Name)
 			.build();
 
 	@Override
-	public I_C_Currency getById(@NonNull final CurrencyId currencyId)
+	public Currency getById(@NonNull final CurrencyId currencyId)
 	{
-		return loadOutOfTrx(currencyId, I_C_Currency.class);
+		return getCurrenciesMap().getById(currencyId);
 	}
 
-	@Override
-	@Cached(cacheName = I_C_Currency.Table_Name)
-	public I_C_Currency retrieveCurrency(@CacheCtx final Properties ctx, final int currencyId)
+	final CurrenciesMap getCurrenciesMap()
 	{
-		return InterfaceWrapperHelper.create(ctx, currencyId, I_C_Currency.class, ITrx.TRXNAME_None);
+		return currenciesCache.getOrLoad(0, this::retrieveCurrenciesMap);
 	}
 
-	@Override
-	@Cached(cacheName = I_C_Currency.Table_Name + "#by#" + I_C_Currency.COLUMNNAME_ISO_Code)
-	public I_C_Currency retrieveCurrencyByISOCode(@CacheCtx final Properties ctx, final String ISOCode)
+	private CurrenciesMap retrieveCurrenciesMap()
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Currency.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_C_Currency.COLUMNNAME_ISO_Code, ISOCode)
+		final ImmutableList<Currency> currencies = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_Currency.class)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				//
-				.orderBy()
-				.addColumn(I_C_Currency.COLUMNNAME_ISO_Code) // ordering by value to make it easier for the user to browse the logging.
-				.endOrderBy()
-				//
 				.create()
-				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
-				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
-				.firstOnly(I_C_Currency.class);
+				.stream()
+				.map(currencyRecord -> toCurrency(currencyRecord))
+				.collect(ImmutableList.toImmutableList());
+
+		return new CurrenciesMap(currencies);
+	}
+
+	public static final Currency toCurrency(@NonNull final I_C_Currency record)
+	{
+		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(record);
+		return Currency.builder()
+				.id(CurrencyId.ofRepoId(record.getC_Currency_ID()))
+				.currencyCode(CurrencyCode.ofThreeLetterCode(record.getISO_Code()))
+				.symbol(trlMap.getColumnTrl(I_C_Currency.COLUMNNAME_CurSymbol, record.getCurSymbol()))
+				.precision(CurrencyPrecision.ofInt(record.getStdPrecision()))
+				.costingPrecision(CurrencyPrecision.ofInt(record.getCostingPrecision()))
+				.build();
 	}
 
 	@Override
-	public String getISO_Code(Properties ctx, int C_Currency_ID)
+	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
-		if (C_Currency_ID <= 0)
-		{
-			return null;
-		}
-
-		final I_C_Currency currency = retrieveCurrency(ctx, C_Currency_ID);
-		if (currency == null)
-		{
-			return null;
-		}
-		return currency.getISO_Code();
+		return getCurrenciesMap().getByCurrencyCode(currencyCode);
 	}
 
 	@Override
-	public int getStdPrecision(Properties ctx, int C_Currency_ID)
+	public CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
 	{
-		final I_C_Currency c = retrieveCurrency(ctx, C_Currency_ID);
-		if (c == null || c.getC_Currency_ID() <= 0)
-		{
-			return DEFAULT_PRECISION.toInt(); // default
-		}
-		return c.getStdPrecision();
+		return getById(currencyId).getCurrencyCode();
+	}
+
+	@Override
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return getById(currencyId).getPrecision();
 	}
 
 	@Override
 	public CurrencyPrecision getCostingPrecision(@NonNull final CurrencyId currencyId)
 	{
-		final I_C_Currency currency = getById(currencyId);
-		Check.assumeNotNull(currency, "Parameter currency is not null");
-
-		return CurrencyPrecision.ofInt(currency.getCostingPrecision());
+		return getById(currencyId).getCostingPrecision();
 	}
 
 	@Override

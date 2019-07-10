@@ -9,6 +9,7 @@ import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyRepository;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 

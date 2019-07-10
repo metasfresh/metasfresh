@@ -280,14 +280,19 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 				{
 					price = rs.getBigDecimal(5);			// Actual
 				}
-				final int C_Currency_ID = rs.getInt(6);
+				final CurrencyId C_Currency_ID = CurrencyId.ofRepoId(rs.getInt(6));
 				final Timestamp DateAcct = rs.getTimestamp(7);
 				final int C_ConversionType_ID = rs.getInt(8);
 				final int Client_ID = rs.getInt(9);
 				final int Org_ID = rs.getInt(10);
-				final BigDecimal cost = currencyConversionBL.convert(ctx, price,
-						C_Currency_ID, acctCurencyId.getRepoId(),
-						DateAcct, C_ConversionType_ID, Client_ID, Org_ID);
+				final BigDecimal cost = currencyConversionBL.convert(
+						price,
+						C_Currency_ID,
+						acctCurencyId,
+						DateAcct,
+						C_ConversionType_ID,
+						Client_ID,
+						Org_ID);
 				//
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);

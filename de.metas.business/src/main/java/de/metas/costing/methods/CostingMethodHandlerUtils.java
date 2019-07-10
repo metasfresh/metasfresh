@@ -194,8 +194,8 @@ public class CostingMethodHandlerUtils
 		final CurrencyConversionResult result = currencyBL.convert(
 				conversionCtx,
 				amt.getValue(),
-				amt.getCurrencyId().getRepoId(),
-				acctCurrencyId.getRepoId());
+				amt.getCurrencyId(),
+				acctCurrencyId);
 
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
 	}

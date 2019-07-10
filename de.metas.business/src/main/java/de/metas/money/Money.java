@@ -31,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;

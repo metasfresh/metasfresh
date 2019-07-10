@@ -29,6 +29,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
@@ -40,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;

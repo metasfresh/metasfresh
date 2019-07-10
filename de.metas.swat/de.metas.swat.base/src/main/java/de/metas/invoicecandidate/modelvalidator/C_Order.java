@@ -2,7 +2,6 @@ package de.metas.invoicecandidate.modelvalidator;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 /*
  * #%L
@@ -29,7 +28,6 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
@@ -48,6 +46,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -97,11 +96,9 @@ public class C_Order
 					.append(", ").appendADElement("SO_CreditLimit").append("=").append(creditLimit, DisplayType.Amount)
 					.build());
 		}
-		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final BigDecimal grandTotal = Services.get(ICurrencyBL.class).convertBase(
-				ctx,
 				order.getGrandTotal(),
-				order.getC_Currency_ID(),
+				CurrencyId.ofRepoId(order.getC_Currency_ID()),
 				order.getDateOrdered(),
 				order.getC_ConversionType_ID(),
 				order.getAD_Client_ID(),

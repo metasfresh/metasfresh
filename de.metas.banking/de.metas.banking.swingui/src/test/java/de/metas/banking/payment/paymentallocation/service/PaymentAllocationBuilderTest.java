@@ -45,6 +45,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_C_DocType;
@@ -59,7 +60,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;

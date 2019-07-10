@@ -35,7 +35,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import de.metas.location.LocationId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -53,7 +52,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -72,12 +70,14 @@ import de.metas.acct.doc.PostingException;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -87,6 +87,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
@@ -291,7 +292,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	private int m_C_CashBook_ID = -1;
 
 	private Optional<CurrencyId> _currencyId; // lazy
-	private Integer _currencyPrecision = -1; // lazy
+	private CurrencyPrecision _currencyPrecision; // lazy
 
 	/** Contained Doc Lines */
 	private List<DocLineType> docLines;
@@ -419,7 +420,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 				|| m_DocStatus.equals(IDocument.STATUS_Voided)
 				|| m_DocStatus.equals(IDocument.STATUS_Reversed))
 		{
-			;
+			
 		}
 		else
 		{
@@ -955,7 +956,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 					getAD_Org_ID());
 			try
 			{
-				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId.getRepoId(), acctCurrencyId.getRepoId());
+				currencyConversionBL.getCurrencyRate(conversionCtx, currencyId, acctCurrencyId);
 			}
 			catch (final NoCurrencyRateFoundException e)
 			{
@@ -1433,7 +1434,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		if (m_DocumentNo == null)
 		{
-			m_DocumentNo = Util.coalesceSuppliers(
+			m_DocumentNo = CoalesceUtil.coalesceSuppliers(
 					() -> getValueAsString("DocumentNo"),
 					() -> getValueAsString("Name"),
 					() -> {
@@ -1502,7 +1503,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	{
 		if (_currencyPrecision != null)
 		{
-			return _currencyPrecision;
+			return _currencyPrecision.toInt();
 		}
 
 		final CurrencyId currencyId = getCurrencyId();
@@ -1511,8 +1512,8 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 			return ICurrencyDAO.DEFAULT_PRECISION.toInt();
 		}
 
-		_currencyPrecision = currencyDAO.getStdPrecision(Env.getCtx(), currencyId.getRepoId());
-		return _currencyPrecision;
+		_currencyPrecision = currencyDAO.getStdPrecision(currencyId);
+		return _currencyPrecision.toInt();
 	}
 
 	public final int getGL_Category_ID()
@@ -1527,7 +1528,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final LocalDate getDateAcct()
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateAcct,
 				() -> getValueAsLocalDateOrNull("DateAcct"),
 				() -> {
@@ -1542,7 +1543,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final LocalDate getDateDoc()
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> _dateDoc,
 				() -> getValueAsLocalDateOrNull("DateDoc"),
 				() -> getValueAsLocalDateOrNull("MovementDate"),
@@ -1573,7 +1574,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 
 	public final boolean isSOTrx()
 	{
-		return Util.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliers(
 				() -> getValueAsBoolean("IsSOTrx", null),
 				() -> getValueAsBoolean("IsReceipt", null),
 				() -> SOTrx.PURCHASE.toBoolean());

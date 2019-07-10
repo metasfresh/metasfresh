@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Before;
@@ -19,7 +20,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;

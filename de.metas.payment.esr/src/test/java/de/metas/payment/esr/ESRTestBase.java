@@ -49,6 +49,7 @@ import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -58,7 +59,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
 import de.metas.attachments.AttachmentEntryService;

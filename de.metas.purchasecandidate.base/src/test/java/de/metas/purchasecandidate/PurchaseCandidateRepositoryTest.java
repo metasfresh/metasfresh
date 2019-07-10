@@ -11,12 +11,12 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;

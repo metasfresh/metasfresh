@@ -1,4 +1,4 @@
-package de.metas.money;
+package de.metas.currency;
 
 import org.adempiere.exceptions.AdempiereException;
 

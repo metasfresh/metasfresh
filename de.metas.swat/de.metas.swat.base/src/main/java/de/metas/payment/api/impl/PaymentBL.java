@@ -46,7 +46,6 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.TimeUtil;
@@ -57,11 +56,14 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
@@ -87,20 +89,20 @@ public class PaymentBL implements IPaymentBL
 	 * @param payment
 	 * @return
 	 */
-	private int fetchC_Currency_Invoice_ID(final I_C_Payment payment)
+	private CurrencyId fetchC_Currency_Invoice_ID(final I_C_Payment payment)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 		final int C_Order_ID = payment.getC_Order_ID();
 
-		int C_Currency_Invoice_ID = 0;
+		CurrencyId C_Currency_Invoice_ID = null;
 
 		if (C_Invoice_ID > 0)
 		{
-			C_Currency_Invoice_ID = payment.getC_Invoice().getC_Currency_ID();
+			C_Currency_Invoice_ID = CurrencyId.ofRepoIdOrNull(payment.getC_Invoice().getC_Currency_ID());
 		} // get Invoice Info
 		else if (C_Order_ID > 0)
 		{
-			C_Currency_Invoice_ID = payment.getC_Order().getC_Currency_ID();
+			C_Currency_Invoice_ID = CurrencyId.ofRepoIdOrNull(payment.getC_Order().getC_Currency_ID());
 		}
 		log.debug("C_Currency_Invoice_ID = " + C_Currency_Invoice_ID + ", C_Invoice_ID=" + C_Invoice_ID);
 
@@ -123,11 +125,8 @@ public class PaymentBL implements IPaymentBL
 			InvoiceOpenAmt = Services.get(IPaymentDAO.class).getInvoiceOpenAmount(payment, creditMemoAdjusted);
 		}
 
-		log.debug("Open=" + InvoiceOpenAmt + ", C_Invoice_ID=" + C_Invoice_ID);
-
-		final int C_Currency_ID = payment.getC_Currency_ID();
-		final I_C_Currency currency = payment.getC_Currency();
-		final int C_Currency_Invoice_ID = fetchC_Currency_Invoice_ID(payment);
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
+		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
 		final Timestamp ConvDate = payment.getDateTrx();
 		final int C_ConversionType_ID = payment.getC_ConversionType_ID();
 		final int AD_Client_ID = payment.getAD_Client_ID();
@@ -135,29 +134,19 @@ public class PaymentBL implements IPaymentBL
 
 		// Get Currency Rate
 		BigDecimal CurrencyRate = BigDecimal.ONE;
-		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
+		if (currencyId != null 
+				&& invoiceCurrencyId != null 
+				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			log.debug("InvCurrency=" + C_Currency_Invoice_ID + ", PayCurrency="
-					+ C_Currency_ID + ", Date=" + ConvDate + ", Type="
-					+ C_ConversionType_ID);
-
-			CurrencyRate = Services.get(ICurrencyBL.class).getRate(C_Currency_Invoice_ID, C_Currency_ID, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
+			CurrencyRate = Services.get(ICurrencyBL.class).getRate(invoiceCurrencyId, currencyId, ConvDate, C_ConversionType_ID, AD_Client_ID, AD_Org_ID);
 			if (CurrencyRate == null || CurrencyRate.compareTo(ZERO) == 0)
 			{
-				if (C_Currency_Invoice_ID == 0)
-				{
-					return InvoiceOpenAmt;
-				}
-
 				throw new AdempiereException("NoCurrencyConversion");
 			}
 
 			//
-			InvoiceOpenAmt = InvoiceOpenAmt.multiply(CurrencyRate).setScale(
-					currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
-
-			log.debug("Rate=" + CurrencyRate + ", InvoiceOpenAmt="
-					+ InvoiceOpenAmt);
+			final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+			InvoiceOpenAmt = precision.round(InvoiceOpenAmt.multiply(CurrencyRate));
 		}
 
 		return InvoiceOpenAmt;
@@ -254,55 +243,53 @@ public class PaymentBL implements IPaymentBL
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 		final int C_Order_ID = payment.getC_Order_ID();
 		// Get Currency Info
-		final int C_Currency_ID = payment.getC_Currency_ID();
-		final I_C_Currency currency = payment.getC_Currency();
-		final int C_Currency_Invoice_ID = fetchC_Currency_Invoice_ID(payment);
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(payment.getC_Currency_ID());
+		final CurrencyId invoiceCurrencyId = fetchC_Currency_Invoice_ID(payment);
 		final Timestamp ConvDate = payment.getDateTrx();
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID());
 		final int AD_Client_ID = payment.getAD_Client_ID();
 		final int AD_Org_ID = payment.getAD_Org_ID();
 
 		// Get Currency Rate
-		BigDecimal CurrencyRate = BigDecimal.ONE;
-		if ((C_Currency_ID > 0 && C_Currency_Invoice_ID > 0 && C_Currency_ID != C_Currency_Invoice_ID))
+		BigDecimal currencyRate = BigDecimal.ONE;
+		if (currencyId != null 
+				&& invoiceCurrencyId != null 
+				&& !currencyId.equals(invoiceCurrencyId))
 		{
-			log.debug("InvCurrency={}, PayCurrency={}, Date={}, Type={}", new Object[] { C_Currency_Invoice_ID, C_Currency_ID, C_Currency_ID, ConvDate, conversionTypeId });
-
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-			CurrencyRate = currencyBL.getRate(
-					C_Currency_Invoice_ID,
-					C_Currency_ID, ConvDate,
+			currencyRate = currencyBL.getRate(
+					invoiceCurrencyId,
+					currencyId,
+					ConvDate,
 					CurrencyConversionTypeId.toRepoId(conversionTypeId),
 					AD_Client_ID,
 					AD_Org_ID);
-			if (Check.isEmpty(CurrencyRate))
+			if (currencyRate == null || currencyRate.signum() == 0)
 			{
-				if (C_Currency_Invoice_ID <= 0)
-				{
-					return; // no error message when no invoice is selected
-				}
-
 				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(ConvDate, conversionTypeId, AD_Client_ID, AD_Org_ID);
-				throw new NoCurrencyRateFoundException(conversionCtx, C_Currency_Invoice_ID, C_Currency_ID);
+				throw new NoCurrencyRateFoundException(conversionCtx, invoiceCurrencyId, currencyId);
 			}
-
 		}
 
 		BigDecimal PayAmt = payment.getPayAmt();
 		BigDecimal DiscountAmt = payment.getDiscountAmt();
 		BigDecimal WriteOffAmt = payment.getWriteOffAmt();
 		BigDecimal OverUnderAmt = payment.getOverUnderAmt();
+		
+		final CurrencyPrecision precision = currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 
-		PayAmt = PayAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		PayAmt = precision.round(PayAmt.multiply(currencyRate));
 		payment.setPayAmt(PayAmt);
 
-		DiscountAmt = DiscountAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		DiscountAmt = precision.round(DiscountAmt.multiply(currencyRate));
 		payment.setDiscountAmt(DiscountAmt);
 
-		WriteOffAmt = WriteOffAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		WriteOffAmt = precision.round(WriteOffAmt.multiply(currencyRate));
 		payment.setWriteOffAmt(WriteOffAmt);
 
-		OverUnderAmt = OverUnderAmt.multiply(CurrencyRate).setScale(currency.getStdPrecision(), BigDecimal.ROUND_HALF_UP);
+		OverUnderAmt = precision.round(OverUnderAmt.multiply(currencyRate));
 		payment.setOverUnderAmt(OverUnderAmt);
 
 		// No Invoice or Order - Set Discount, Witeoff, Under/Over to 0

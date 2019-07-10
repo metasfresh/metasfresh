@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -21,7 +22,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;

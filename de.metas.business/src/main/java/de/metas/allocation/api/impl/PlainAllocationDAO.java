@@ -31,6 +31,7 @@ import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 
@@ -41,17 +42,12 @@ public class PlainAllocationDAO extends AllocationDAO
 			final org.compiere.model.I_C_Invoice invoice,
 			final Set<Integer> paymentIDsToIgnore)
 	{
-		return retrieveAllocatedAmt(invoice, paymentIDsToIgnore, new TypedAccessor<BigDecimal>()
-		{
-			@Override
-			public BigDecimal getValue(final Object o)
-			{
-				final I_C_AllocationLine line = (I_C_AllocationLine)o;
-				final BigDecimal lineAmt = line.getAmount()
-						.add(line.getDiscountAmt())
-						.add(line.getWriteOffAmt());
-				return lineAmt;
-			}
+		return retrieveAllocatedAmt(invoice, paymentIDsToIgnore, o -> {
+			final I_C_AllocationLine line = (I_C_AllocationLine)o;
+			final BigDecimal lineAmt = line.getAmount()
+					.add(line.getDiscountAmt())
+					.add(line.getWriteOffAmt());
+			return lineAmt;
 		});
 	}
 
@@ -60,8 +56,6 @@ public class PlainAllocationDAO extends AllocationDAO
 			final Set<Integer> paymentIDsToIgnore,
 			final TypedAccessor<BigDecimal> amountAccessor)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
@@ -75,10 +69,10 @@ public class PlainAllocationDAO extends AllocationDAO
 
 			if (null != ah && ah.getC_Currency_ID() != invoice.getC_Currency_ID())
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(
 						lineAmt, // Amt
-						ah.getC_Currency_ID(), // CurFrom_ID
-						invoice.getC_Currency_ID(), // CurTo_ID
+						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
+						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
 						ah.getDateTrx(), // ConvDate
 						invoice.getC_ConversionType_ID(),
 						line.getAD_Client_ID(), line.getAD_Org_ID());
@@ -97,18 +91,12 @@ public class PlainAllocationDAO extends AllocationDAO
 	@Override
 	public BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
-		return retrieveAllocatedAmt(invoice, new TypedAccessor<BigDecimal>()
-		{
-
-			@Override
-			public BigDecimal getValue(final Object o)
-			{
-				final I_C_AllocationLine line = (I_C_AllocationLine)o;
-				final BigDecimal lineAmt = line.getAmount()
-						.add(line.getDiscountAmt())
-						.add(line.getWriteOffAmt());
-				return lineAmt;
-			}
+		return retrieveAllocatedAmt(invoice, o -> {
+			final I_C_AllocationLine line = (I_C_AllocationLine)o;
+			final BigDecimal lineAmt = line.getAmount()
+					.add(line.getDiscountAmt())
+					.add(line.getWriteOffAmt());
+			return lineAmt;
 		});
 	}
 
@@ -124,10 +112,10 @@ public class PlainAllocationDAO extends AllocationDAO
 
 			if (null != ah && ah.getC_Currency_ID() != invoice.getC_Currency_ID())
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(
 						lineAmt, // Amt
-						ah.getC_Currency_ID(), // CurFrom_ID
-						invoice.getC_Currency_ID(), // CurTo_ID
+						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
+						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
 						ah.getDateTrx(), // ConvDate
 						invoice.getC_ConversionType_ID(),
 						line.getAD_Client_ID(), line.getAD_Org_ID());
@@ -147,24 +135,16 @@ public class PlainAllocationDAO extends AllocationDAO
 	public BigDecimal retrieveWriteoffAmt(final org.compiere.model.I_C_Invoice invoice)
 	{
 
-		return retrieveWriteoffAmt(invoice,  new TypedAccessor<BigDecimal>()
-		{
-
-			@Override
-			public BigDecimal getValue(final Object o)
-			{
-				final I_C_AllocationLine line = (I_C_AllocationLine)o;
-				final BigDecimal lineWriteOff = line.getWriteOffAmt();
-				return lineWriteOff;
-			}
+		return retrieveWriteoffAmt(invoice,  o -> {
+			final I_C_AllocationLine line = (I_C_AllocationLine)o;
+			final BigDecimal lineWriteOff = line.getWriteOffAmt();
+			return lineWriteOff;
 		});
 
 	}
 
 	private BigDecimal retrieveWriteoffAmt(final org.compiere.model.I_C_Invoice invoice, final TypedAccessor<BigDecimal> amountAccessor)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-
 		BigDecimal sum = BigDecimal.ZERO;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
@@ -173,10 +153,10 @@ public class PlainAllocationDAO extends AllocationDAO
 
 			if (null != ah && ah.getC_Currency_ID() != invoice.getC_Currency_ID())
 			{
-				final BigDecimal lineWriteOffConv = Services.get(ICurrencyBL.class).convert(ctx,
+				final BigDecimal lineWriteOffConv = Services.get(ICurrencyBL.class).convert(
 						lineWriteOff, // Amt
-						ah.getC_Currency_ID(), // CurFrom_ID
-						invoice.getC_Currency_ID(), // CurTo_ID
+						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
+						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
 						ah.getDateTrx(), // ConvDate
 						invoice.getC_ConversionType_ID(),
 						line.getAD_Client_ID(), line.getAD_Org_ID());

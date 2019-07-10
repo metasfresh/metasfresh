@@ -20,7 +20,7 @@ import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
-import de.metas.money.CurrencyRepository;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;

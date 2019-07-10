@@ -35,10 +35,10 @@ import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResu
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;

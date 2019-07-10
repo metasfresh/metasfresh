@@ -1,5 +1,8 @@
 package de.metas.currency.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
@@ -18,9 +21,12 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ConversionType;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,8 +60,6 @@ public class PlainCurrencyDAO extends CurrencyDAO
 {
 	public PlainCurrencyDAO()
 	{
-		super();
-
 		if (Adempiere.isUnitTestMode())
 		{
 			createDefaultConversionTypes();
@@ -146,22 +150,22 @@ public class PlainCurrencyDAO extends CurrencyDAO
 	 * If the currency was not found, this method is automatically creating it.
 	 */
 	@Override
-	public I_C_Currency retrieveCurrencyByISOCode(final Properties ctx, final String ISOCode)
+	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
-		I_C_Currency currency = super.retrieveCurrencyByISOCode(ctx, ISOCode);
+		return getCurrenciesMap()
+				.getByCurrencyCodeIfExists(currencyCode)
+				.orElseGet(() -> createCurrency(currencyCode));
+	}
 
-		// Create the currency if it does not exist.
-		// We do this to speed up the test writing.
-		if (currency == null)
-		{
-			currency = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-			currency.setISO_Code(ISOCode);
-			currency.setCurSymbol(ISOCode);
-			currency.setStdPrecision(2);
-			currency.setCostingPrecision(4);
-			InterfaceWrapperHelper.save(currency);
-		}
+	private Currency createCurrency(final CurrencyCode currencyCode)
+	{
+		final I_C_Currency record = newInstanceOutOfTrx(I_C_Currency.class);
+		record.setISO_Code(currencyCode.toThreeLetterCode());
+		record.setCurSymbol(currencyCode.toThreeLetterCode());
+		record.setStdPrecision(2);
+		record.setCostingPrecision(4);
+		saveRecord(record);
 
-		return currency;
+		return toCurrency(record);
 	}
 }

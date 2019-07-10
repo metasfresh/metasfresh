@@ -92,8 +92,8 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final I_C_Order order = orderLine.getC_Order();
 		final BigDecimal rate = currencyConversionBL.getRate(
-				poCost.getCurrencyId().getRepoId(),
-				as.getCurrencyId().getRepoId(),
+				poCost.getCurrencyId(),
+				as.getCurrencyId(),
 				order.getDateAcct(),
 				order.getC_ConversionType_ID(),
 				orderLine.getAD_Client_ID(),
