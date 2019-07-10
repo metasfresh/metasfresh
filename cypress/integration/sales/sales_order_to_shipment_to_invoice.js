@@ -82,7 +82,7 @@ describe('Create Sales order', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
-    // cy.wait(8000);
+    cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -92,7 +92,7 @@ describe('Create Sales order', function() {
     cy.get('.reference_M_ShipmentSchedule').click();
     cy.get('tbody tr')
       .eq('0')
-      .click();
+      .click({ force: true });
     /**Generate shipments */
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
@@ -119,7 +119,7 @@ describe('Create Sales order', function() {
     cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
     cy.pressStartButton();
     // /**Open notifications */
-    cy.get('.header-item-badge.icon-lg i').click();
+    cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')
       .first()
