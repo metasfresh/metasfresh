@@ -1763,8 +1763,8 @@ public class FlatrateBL implements IFlatrateBL
 		// services
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
-		final ProductId newProductId = ProductId.ofRepoId(newTerm.getM_Product_ID());
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+		final ProductId newProductId = ProductId.ofRepoIdOrNull(newTerm.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(term.getM_Product_ID());
 		if (newProductId != null && productId != null)
 		{
 			return ProductId.equals(newProductId, productId);
