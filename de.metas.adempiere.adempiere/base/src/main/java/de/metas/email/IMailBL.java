@@ -48,7 +48,11 @@ import de.metas.util.ISingletonService;
 public interface IMailBL extends ISingletonService
 {
 	Mailbox findMailBox(
-			ClientEMailConfig clientEmailConfig,
+			ClientEMailConfig tenantEmailConfig,
+			OrgId orgId);
+
+	Mailbox findMailBox(
+			ClientEMailConfig tenantEmailConfig,
 			OrgId orgId,
 			AdProcessId adProcessId,
 			DocBaseAndSubType docBaseAndSubType,

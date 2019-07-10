@@ -1,6 +1,7 @@
 package de.metas.order.payment_reservation;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
@@ -69,6 +70,7 @@ public class OrderPaymentReservationService
 		if (existingPaymentReservation == null)
 		{
 			paymentReservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
+					.clientId(ClientId.ofRepoId(salesOrder.getAD_Client_ID()))
 					.orgId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()))
 					.amount(extractGrandTotal(salesOrder))
 					.salesOrderId(salesOrderId)
@@ -85,13 +87,13 @@ public class OrderPaymentReservationService
 		//
 		// Result based on payment reservation's status
 		final PaymentReservationStatus paymentReservationStatus = paymentReservation.getStatus();
-		if (PaymentReservationStatus.APPROVED.equals(paymentReservationStatus))
+		if (PaymentReservationStatus.COMPLETED.equals(paymentReservationStatus))
 		{
-			return OrderPaymentReservationCreateResult.ALREADY_APPROVED;
+			return OrderPaymentReservationCreateResult.ALREADY_COMPLETED;
 		}
-		else if (PaymentReservationStatus.WAITING_PAYER_APPROVAL.equals(paymentReservationStatus))
+		else if (paymentReservationStatus.isWaitingToComplete())
 		{
-			return OrderPaymentReservationCreateResult.WAITING_FOR_APPROVAL;
+			return OrderPaymentReservationCreateResult.WAITING_TO_COMPLETE;
 		}
 		else
 		{

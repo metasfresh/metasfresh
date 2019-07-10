@@ -25,12 +25,12 @@ package de.metas.order.payment_reservation;
 public enum OrderPaymentReservationCreateResult
 {
 	NOT_NEEDED, //
-	WAITING_FOR_APPROVAL, //
-	ALREADY_APPROVED //
+	WAITING_TO_COMPLETE, //
+	ALREADY_COMPLETED //
 	;
 
-	public boolean isWaitingForApproval()
+	public boolean isWaitingToComplete()
 	{
-		return this == WAITING_FOR_APPROVAL;
+		return this == WAITING_TO_COMPLETE;
 	}
 }

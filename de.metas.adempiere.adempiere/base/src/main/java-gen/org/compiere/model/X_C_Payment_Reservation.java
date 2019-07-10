@@ -15,7 +15,7 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2043099083L;
+	private static final long serialVersionUID = -1501446423L;
 
     /** Standard Constructor */
     public X_C_Payment_Reservation (Properties ctx, int C_Payment_Reservation_ID, String trxName)
@@ -269,6 +269,8 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	public static final String STATUS_APPROVED = "A";
 	/** VOIDED = V */
 	public static final String STATUS_VOIDED = "V";
+	/** COMPLETED = C */
+	public static final String STATUS_COMPLETED = "C";
 	/** Set Status.
 		@param Status Status	  */
 	@Override

@@ -1,10 +1,10 @@
 package de.metas.paypalplus.processor;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.IClientDAO;
 import org.springframework.stereotype.Component;
 
 import com.braintreepayments.http.HttpRequest;
@@ -14,24 +14,31 @@ import com.google.common.collect.ImmutableList;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.orders.AmountWithBreakdown;
 import com.paypal.orders.ApplicationContext;
-import com.paypal.orders.LinkDescription;
 import com.paypal.orders.Order;
 import com.paypal.orders.OrderRequest;
+import com.paypal.orders.OrdersAuthorizeRequest;
 import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.PurchaseUnitRequest;
 
+import de.metas.email.EMail;
 import de.metas.email.IMailBL;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.money.CurrencyRepository;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationStatus;
 import de.metas.paypalplus.PayPalConfig;
 import de.metas.paypalplus.controller.PayPalConfigProvider;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
 import de.metas.paypalplus.logs.PayPalLogRepository;
+import de.metas.paypalplus.orders.PayPalOrder;
+import de.metas.paypalplus.orders.PayPalOrderService;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -61,7 +68,9 @@ import lombok.NonNull;
 public class PayPalPaymentProcessor implements PaymentProcessor
 {
 	private final IMailBL mailService = Services.get(IMailBL.class);
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final PayPalConfigProvider payPalConfigProvider;
+	private final PayPalOrderService payPalOrdersService;
 	private final PayPalLogRepository logsRepo;
 	private final CurrencyRepository currencyRepo;
 
@@ -69,10 +78,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 
 	public PayPalPaymentProcessor(
 			@NonNull final PayPalConfigProvider payPalConfigProvider,
+			@NonNull final PayPalOrderService payPalOrdersService,
 			@NonNull final PayPalLogRepository logsRepo,
 			@NonNull final CurrencyRepository currencyRepo)
 	{
 		this.payPalConfigProvider = payPalConfigProvider;
+		this.payPalOrdersService = payPalOrdersService;
 		this.logsRepo = logsRepo;
 		this.currencyRepo = currencyRepo;
 	}
@@ -103,23 +114,83 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	@Override
 	public void processReservation(@NonNull final PaymentReservation reservation)
 	{
-		final PayPalConfig config = getConfig();
+		final PaymentReservationStatus status = reservation.getStatus();
 
-		//
-		// Create Order
+		if (PaymentReservationStatus.WAITING_PAYER_APPROVAL.equals(status))
 		{
-			final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, config);
-			final HttpResponse<Order> response = executeRequest(ordersCreateRequest);
+			createPayPalOrderAndRequestPayerApproval(reservation);
+		}
+		else if (PaymentReservationStatus.APPROVED_BY_PAYER.equals(status))
+		{
+			authorizePayPalOrder(reservation);
+		}
+		else if (PaymentReservationStatus.COMPLETED.equals(status))
+		{
+			throw new AdempiereException("already completed: " + reservation);
+		}
+		else if (PaymentReservationStatus.VOIDED.equals(status))
+		{
+			throw new AdempiereException("Request for approval for a voided reservation makes no sense: " + reservation);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown status: " + reservation);
+		}
+	}
 
-			
-			final URL approveUrl = extractApproveUrl(response.result());
-			final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(config.getOrderApproveMailTemplateId());
-			mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
-			mailTextBuilder.customVariable("ApproveURL", approveUrl.toExternalForm());
-			mailTextBuilder.customVariable("Amount", TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
+	private void createPayPalOrderAndRequestPayerApproval(final PaymentReservation reservation)
+	{
+		final PayPalConfig config = getConfig();
+		final OrdersCreateRequest ordersCreateRequest = createOrdersCreateRequest(reservation, config);
+		final HttpResponse<Order> response = executeRequest(ordersCreateRequest, reservation);
+
+		final PayPalOrder order = payPalOrdersService.save(reservation.getId(), response.result());
+
+		final URL payerApproveUrl = order.getPayerApproveUrl();
+		sendPayerApprovalRequestEmail(reservation, payerApproveUrl, config.getOrderApproveMailTemplateId());
+	}
+
+	private void authorizePayPalOrder(final PaymentReservation reservation)
+	{
+		PayPalOrder paypalOrder = payPalOrdersService.getByReservationId(reservation.getId());
+		final OrdersAuthorizeRequest request = new OrdersAuthorizeRequest(paypalOrder.getExternalId());
+		final HttpResponse<Order> response = executeRequest(request, reservation);
+
+		paypalOrder = payPalOrdersService.save(reservation.getId(), response.result());
+		if (!paypalOrder.isAuthorized())
+		{
+			throw new AdempiereException("Not authorized: " + paypalOrder);
 		}
 
-		// TODO Auto-generated method stub
+		reservation.setStatus(PaymentReservationStatus.COMPLETED);
+	}
+
+	private void sendPayerApprovalRequestEmail(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final URL payerApproveUrl,
+			@NonNull final MailTemplateId mailTemplateId)
+	{
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
+		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
+		mailTextBuilder.customVariable("ApproveURL", payerApproveUrl.toExternalForm());
+		mailTextBuilder.customVariable("Amount", TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
+
+		final Mailbox mailbox = findMailbox(reservation);
+		final EMail email = mailService.createEMail(mailbox,
+				reservation.getPayerEmail(),
+				mailTextBuilder.getMailHeader(),
+				mailTextBuilder.getFullMailText(),
+				mailTextBuilder.isHtml());
+
+		mailService.send(email);
+
+	}
+
+	private Mailbox findMailbox(@NonNull final PaymentReservation reservation)
+	{
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(reservation.getClientId());
+
+		return mailService.findMailBox(tenantEmailConfig, reservation.getOrgId());
 	}
 
 	private OrdersCreateRequest createOrdersCreateRequest(
@@ -142,31 +213,6 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		return request;
 	}
 
-	private static URL extractApproveUrl(final Order order)
-	{
-		return extractUrl(order, "approve");
-	}
-
-	private static URL extractUrl(final Order order, final String rel)
-	{
-		for (final LinkDescription link : order.links())
-		{
-			if (rel.contentEquals(link.rel()))
-			{
-				try
-				{
-					return new URL(link.href());
-				}
-				catch (MalformedURLException e)
-				{
-					throw new AdempiereException("Invalid URL " + link.href());
-				}
-			}
-		}
-
-		throw new AdempiereException("No URL found for `" + rel + "`");
-	}
-
 	private AmountWithBreakdown toAmountWithBreakdown(final de.metas.money.Money amount)
 	{
 		return new AmountWithBreakdown()
@@ -174,9 +220,13 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 				.currencyCode(currencyRepo.getCurrencyCodeById(amount.getCurrencyId()).toThreeLetterCode());
 	}
 
-	private <T> HttpResponse<T> executeRequest(final HttpRequest<T> request)
+	private <T> HttpResponse<T> executeRequest(
+			@NonNull final HttpRequest<T> request,
+			@NonNull final PaymentReservation context)
 	{
-		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder();
+		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder()
+				.salesOrderId(context.getSalesOrderId())
+				.paymentReservationId(context.getId());
 
 		try
 		{

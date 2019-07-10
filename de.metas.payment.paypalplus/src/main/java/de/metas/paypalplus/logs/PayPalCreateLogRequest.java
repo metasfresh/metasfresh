@@ -10,6 +10,7 @@ import com.braintreepayments.http.serializer.Json;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.order.OrderId;
+import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,8 +50,9 @@ public class PayPalCreateLogRequest
 	int responseStatusCode;
 	ImmutableMap<String, String> responseHeaders;
 	String responseBodyAsJson;
-	
-	OrderId orderId;
+
+	OrderId salesOrderId;
+	PaymentReservationId paymentReservationId;
 
 	public static class PayPalCreateLogRequestBuilder
 	{
@@ -73,20 +75,21 @@ public class PayPalCreateLogRequest
 			return this;
 		}
 
-		public PayPalCreateLogRequestBuilder response(@NonNull final HttpException ex)
-		{
-			responseStatusCode(ex.statusCode());
-			responseHeaders(toMap(ex.headers()));
-			responseBodyAsJson(ex.getMessage());
-
-			return this;
-		}
-
 		public PayPalCreateLogRequestBuilder response(@NonNull final Throwable ex)
 		{
-			responseStatusCode(0);
-			responseHeaders(ImmutableMap.of());
-			responseBodyAsJson(Util.dumpStackTraceToString(ex));
+			if (ex instanceof HttpException)
+			{
+				final HttpException httpException = (HttpException)ex;
+				responseStatusCode(httpException.statusCode());
+				responseHeaders(toMap(httpException.headers()));
+				responseBodyAsJson(httpException.getMessage());
+			}
+			else
+			{
+				responseStatusCode(0);
+				responseHeaders(ImmutableMap.of());
+				responseBodyAsJson(Util.dumpStackTraceToString(ex));
+			}
 
 			return this;
 		}

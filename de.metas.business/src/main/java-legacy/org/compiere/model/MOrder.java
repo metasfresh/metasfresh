@@ -1736,7 +1736,7 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			final OrderPaymentReservationService orderPaymentReservationService = Adempiere.getBean(OrderPaymentReservationService.class);
 			final OrderPaymentReservationCreateResult result = orderPaymentReservationService.createPaymentReservationIfNeeded(this);
-			final boolean waitForPayment = result.isWaitingForApproval();
+			final boolean waitForPayment = result.isWaitingToComplete();
 			return waitForPayment;
 		}
 		else

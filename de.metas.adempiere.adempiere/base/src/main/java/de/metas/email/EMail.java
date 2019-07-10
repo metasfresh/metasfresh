@@ -229,9 +229,9 @@ public final class EMail implements Serializable
 
 	public EMailSentStatus send()
 	{
-		if (logger.isInfoEnabled())
+		if (logger.isDebugEnabled())
 		{
-			logger.info("Sending email {} -> {} ({})", getFrom(), getTos(), getMailbox());
+			logger.debug("Sending email {} -> {} ({})", getFrom(), getTos(), getMailbox());
 		}
 
 		//

@@ -14,7 +14,7 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 971060862L;
+	private static final long serialVersionUID = -474425789L;
 
     /** Standard Constructor */
     public X_PayPal_Log (Properties ctx, int PayPal_Log_ID, String trxName)
@@ -73,6 +73,40 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Payment_Reservation getC_Payment_Reservation()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Payment_Reservation_ID, org.compiere.model.I_C_Payment_Reservation.class);
+	}
+
+	@Override
+	public void setC_Payment_Reservation(org.compiere.model.I_C_Payment_Reservation C_Payment_Reservation)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Payment_Reservation_ID, org.compiere.model.I_C_Payment_Reservation.class, C_Payment_Reservation);
+	}
+
+	/** Set Payment Reservation.
+		@param C_Payment_Reservation_ID Payment Reservation	  */
+	@Override
+	public void setC_Payment_Reservation_ID (int C_Payment_Reservation_ID)
+	{
+		if (C_Payment_Reservation_ID < 1) 
+			set_Value (COLUMNNAME_C_Payment_Reservation_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Payment_Reservation_ID, Integer.valueOf(C_Payment_Reservation_ID));
+	}
+
+	/** Get Payment Reservation.
+		@return Payment Reservation	  */
+	@Override
+	public int getC_Payment_Reservation_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_Reservation_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

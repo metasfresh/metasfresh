@@ -4,9 +4,11 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.email.EMailAddress;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
@@ -44,6 +46,9 @@ import lombok.experimental.NonFinal;
 public class PaymentReservation
 {
 	@NonNull
+	ClientId clientId;
+
+	@NonNull
 	OrgId orgId;
 
 	@NonNull
@@ -52,7 +57,7 @@ public class PaymentReservation
 	@NonNull
 	BPartnerContactId payerContactId;
 	@NonNull
-	String payerEmail;
+	EMailAddress payerEmail;
 
 	@NonNull
 	OrderId salesOrderId;
@@ -64,6 +69,8 @@ public class PaymentReservation
 	PaymentRule paymentRule;
 
 	@NonNull
+	@NonFinal
+	@Setter(AccessLevel.PUBLIC)
 	PaymentReservationStatus status;
 
 	@Nullable

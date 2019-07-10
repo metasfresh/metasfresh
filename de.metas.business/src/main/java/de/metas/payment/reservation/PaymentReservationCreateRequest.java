@@ -2,8 +2,11 @@ package de.metas.payment.reservation;
 
 import java.time.LocalDate;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.email.EMailAddress;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
@@ -38,10 +41,18 @@ import lombok.Value;
 public class PaymentReservationCreateRequest
 {
 	@NonNull
+	ClientId clientId;
+
+	@NonNull
 	OrgId orgId;
 
 	@NonNull
 	Money amount;
+
+	@NonNull
+	BPartnerContactId payerContactId;
+	@NonNull
+	EMailAddress payerEmail;
 
 	@NonNull
 	OrderId salesOrderId;

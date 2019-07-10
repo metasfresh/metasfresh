@@ -35,7 +35,8 @@ import lombok.NonNull;
 public enum PaymentReservationStatus implements ReferenceListAwareEnum
 {
 	WAITING_PAYER_APPROVAL(X_C_Payment_Reservation.STATUS_WAITING_PAYER_APPROVAL), //
-	APPROVED(X_C_Payment_Reservation.STATUS_APPROVED), //
+	APPROVED_BY_PAYER(X_C_Payment_Reservation.STATUS_APPROVED), //
+	COMPLETED(X_C_Payment_Reservation.STATUS_COMPLETED), //
 	VOIDED(X_C_Payment_Reservation.STATUS_VOIDED) //
 	;
 
@@ -62,5 +63,11 @@ public enum PaymentReservationStatus implements ReferenceListAwareEnum
 	public boolean isVoided()
 	{
 		return this == VOIDED;
+	}
+	
+	public boolean isWaitingToComplete()
+	{
+		return this == WAITING_PAYER_APPROVAL
+				|| this == APPROVED_BY_PAYER;
 	}
 }

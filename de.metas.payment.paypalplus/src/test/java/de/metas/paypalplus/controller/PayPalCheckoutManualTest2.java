@@ -6,12 +6,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.time.LocalDate;
 import java.util.Optional;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Currency;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.email.EMailAddress;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
@@ -22,6 +25,8 @@ import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.paypalplus.logs.PayPalLogRepository;
+import de.metas.paypalplus.orders.PayPalOrderRepository;
+import de.metas.paypalplus.orders.PayPalOrderService;
 import de.metas.paypalplus.processor.PayPalPaymentProcessor;
 
 /*
@@ -57,6 +62,7 @@ public class PayPalCheckoutManualTest2
 		System.out.println("Done");
 	}
 
+	private ClientId clientId = ClientId.ofRepoId(1);
 	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final CurrencyId currencyId;
 
@@ -64,19 +70,28 @@ public class PayPalCheckoutManualTest2
 
 	private PayPalCheckoutManualTest2()
 	{
+		paymentReservationService = createPaymentReservationService();
+
+		//
+		currencyId = createCurrency("EUR");
+	}
+
+	private static PaymentReservationService createPaymentReservationService()
+	{
+		final PayPalOrderRepository payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
+		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
+
 		final PayPalPaymentProcessor payPalProcessor = new PayPalPaymentProcessor(
 				new TestPayPalConfigProvider(),
+				payPalOrdersService,
 				new PayPalLogRepository(Optional.empty()),
 				new CurrencyRepository());
 
 		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalProcessor)));
 
-		this.paymentReservationService = new PaymentReservationService(
+		return new PaymentReservationService(
 				new PaymentReservationRepository(),
 				paymentProcessors);
-
-		//
-		currencyId = createCurrency("EUR");
 	}
 
 	private static CurrencyId createCurrency(String currencyCode)
@@ -93,8 +108,11 @@ public class PayPalCheckoutManualTest2
 		final OrderId salesOrderId = OrderId.ofRepoId(123);
 
 		paymentReservationService.create(PaymentReservationCreateRequest.builder()
+				.clientId(clientId)
 				.orgId(orgId)
 				.amount(Money.of(100, currencyId))
+				.payerContactId(BPartnerContactId.ofRepoId(1, 2))
+				.payerEmail(EMailAddress.ofNullableString("from@example.com"))
 				.salesOrderId(salesOrderId)
 				.dateTrx(LocalDate.now())
 				.paymentRule(PaymentRule.PayPal)

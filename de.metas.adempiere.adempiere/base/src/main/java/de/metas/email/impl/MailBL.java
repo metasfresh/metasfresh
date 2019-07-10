@@ -52,16 +52,32 @@ public class MailBL implements IMailBL
 		return Adempiere.getBean(MailboxRepository.class);
 	}
 
+	private MailTemplateRepository mailTemplatesRepo()
+	{
+		return Adempiere.getBean(MailTemplateRepository.class);
+	}
+
 	@Override
 	public Mailbox findMailBox(
-			@NonNull final ClientEMailConfig clientEmailConfig,
+			@NonNull final ClientEMailConfig tenantEmailConfig,
+			@NonNull final OrgId orgId)
+	{
+		final AdProcessId adProcessId = null;
+		final DocBaseAndSubType docBaseAndSubType = null;
+		final EMailCustomType customType = null;
+		return findMailBox(tenantEmailConfig, orgId, adProcessId, docBaseAndSubType, customType);
+	}
+
+	@Override
+	public Mailbox findMailBox(
+			@NonNull final ClientEMailConfig tenantEmailConfig,
 			@NonNull final OrgId orgId,
 			@Nullable final AdProcessId adProcessId,
 			@Nullable final DocBaseAndSubType docBaseAndSubType,
 			@Nullable final EMailCustomType customType)
 	{
 		final MailboxQuery query = MailboxQuery.builder()
-				.clientId(clientEmailConfig.getClientId())
+				.clientId(tenantEmailConfig.getClientId())
 				.orgId(orgId)
 				.adProcessId(adProcessId)
 				.customType(customType)
@@ -69,8 +85,8 @@ public class MailBL implements IMailBL
 
 		return mailboxRepository()
 				.findMailBox(query)
-				.orElseGet(() -> createClientMailbox(clientEmailConfig))
-				.withSendEmailsFromServer(clientEmailConfig.isSendEmailsFromServer());
+				.orElseGet(() -> createClientMailbox(tenantEmailConfig))
+				.withSendEmailsFromServer(tenantEmailConfig.isSendEmailsFromServer());
 	}
 
 	@NonNull
@@ -204,8 +220,7 @@ public class MailBL implements IMailBL
 	@Override
 	public MailTextBuilder newMailTextBuilder(final MailTemplateId mailTemplateId)
 	{
-		final MailTemplateRepository mailTemplatesRepo = Adempiere.getBean(MailTemplateRepository.class);
-		final MailTemplate mailTemplate = mailTemplatesRepo.getById(mailTemplateId);
+		final MailTemplate mailTemplate = mailTemplatesRepo().getById(mailTemplateId);
 		return newMailTextBuilder(mailTemplate);
 	}
 

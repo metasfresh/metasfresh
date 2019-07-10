@@ -9,6 +9,8 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Payment_Reservation;
 import org.compiere.util.TimeUtil;
@@ -51,7 +53,7 @@ public class PaymentReservationRepository
 		final I_C_Payment_Reservation record = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Payment_Reservation.class)
 				.addEqualsFilter(I_C_Payment_Reservation.COLUMN_C_Order_ID, salesOrderId)
-				// .addNotEqualsFilter(I_C_Payment_Reservation.COLUMN_Status, PaymentReservationStatus.VOIDED) // TODO
+				.addNotEqualsFilter(I_C_Payment_Reservation.COLUMN_Status, PaymentReservationStatus.VOIDED)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_C_Payment_Reservation.class);
@@ -71,6 +73,7 @@ public class PaymentReservationRepository
 			record = load(paymentReservation.getId(), I_C_Payment_Reservation.class);
 		}
 
+		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", paymentReservation.getClientId().getRepoId());
 		record.setAD_Org_ID(paymentReservation.getOrgId().getRepoId());
 		record.setAmount(paymentReservation.getAmount().getAsBigDecimal());
 		record.setC_Currency_ID(paymentReservation.getAmount().getCurrencyId().getRepoId());
@@ -96,8 +99,11 @@ public class PaymentReservationRepository
 
 		return PaymentReservation.builder()
 				.id(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.amount(Money.of(record.getAmount(), currencyId))
+				// .payerContactId(payerContactId) // TODO
+				// .payerEmail(payerEmail) // TODO
 				.salesOrderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
 				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))

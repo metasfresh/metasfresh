@@ -64,8 +64,11 @@ public class PaymentReservationService
 		//
 		// Create & save
 		final PaymentReservation paymentReservation = PaymentReservation.builder()
+				.clientId(createRequest.getClientId())
 				.orgId(createRequest.getOrgId())
 				.amount(createRequest.getAmount())
+				.payerContactId(createRequest.getPayerContactId())
+				.payerEmail(createRequest.getPayerEmail())
 				.salesOrderId(createRequest.getSalesOrderId())
 				.dateTrx(createRequest.getDateTrx())
 				.paymentRule(createRequest.getPaymentRule())

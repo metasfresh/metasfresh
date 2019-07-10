@@ -2,6 +2,7 @@ package de.metas.paypalplus.controller;
 
 import org.junit.Ignore;
 
+import de.metas.email.templates.MailTemplateId;
 import de.metas.paypalplus.PayPalConfig;
 import lombok.Getter;
 import lombok.ToString;
@@ -50,6 +51,7 @@ public class TestPayPalConfigProvider implements PayPalConfigProvider
 		return PayPalConfig.builder()
 				.clientId(clientId)
 				.clientSecret(clientSecret)
+				.orderApproveMailTemplateId(MailTemplateId.ofRepoId(12345))
 				.orderApproveCallbackUrl("https://www.example.com")
 				.sandbox(true)
 				.build();

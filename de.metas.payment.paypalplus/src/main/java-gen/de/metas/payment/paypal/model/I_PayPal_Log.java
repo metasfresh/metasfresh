@@ -92,6 +92,33 @@ public interface I_PayPal_Log
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Payment Reservation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Payment_Reservation_ID (int C_Payment_Reservation_ID);
+
+	/**
+	 * Get Payment Reservation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Payment_Reservation_ID();
+
+	public org.compiere.model.I_C_Payment_Reservation getC_Payment_Reservation();
+
+	public void setC_Payment_Reservation(org.compiere.model.I_C_Payment_Reservation C_Payment_Reservation);
+
+    /** Column definition for C_Payment_Reservation_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment_Reservation> COLUMN_C_Payment_Reservation_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment_Reservation>(I_PayPal_Log.class, "C_Payment_Reservation_ID", org.compiere.model.I_C_Payment_Reservation.class);
+    /** Column name C_Payment_Reservation_ID */
+    public static final String COLUMNNAME_C_Payment_Reservation_ID = "C_Payment_Reservation_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
