@@ -44,7 +44,14 @@ export class Builder {
    *
    * - Only the tests which need customised Product* types should create their own (by copying the contents of this method and modifying as needed).
    */
-  static createBasicProductEntities(productCategoryName, productCategoryValue, priceListName, productName, productValue, productType) {
+  static createBasicProductEntities(
+    productCategoryName,
+    productCategoryValue,
+    priceListName,
+    productName,
+    productValue,
+    productType
+  ) {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -63,6 +70,56 @@ export class Builder {
         .setValue(productValue)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice)
+        .apply();
+    });
+  }
+
+  static createBasicProductEntitiesWithCUTUAllocation(
+    productCategoryName,
+    productCategoryValue,
+    priceListName,
+    productName,
+    productValue,
+    productType,
+    packingInstructionsName
+  ) {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductType(productType)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice)
+        .setCUTUAllocation(packingInstructionsName)
+        .apply();
+    });
+  }
+
+  static createBasicProductEntitiesWithPrice(priceListName, productName, productValue, productType) {
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductType(productType)
+        .setProductCategory('24_Gebinde')
         .addProductPrice(productPrice)
         .apply();
     });

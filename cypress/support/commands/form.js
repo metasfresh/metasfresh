@@ -224,7 +224,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
  * @param typeList - use when selecting value from a list not lookup field. Someone thought it's a great idea to return different
  *                   responses for different fields.
- * @param {boolean} skipPatch - if set to true, the PATCH request will be skipped
+ * @param {boolean} skipRequest - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add(
   'writeIntoLookupListField',
