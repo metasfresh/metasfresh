@@ -30,7 +30,8 @@ import {BPartner} from "../../support/utils/bpartner";
 import {DunningCandidates} from "../../page_objects/dunning_candidates";
 import {applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters} from "../../support/functions";
 import {DunningType} from "../../support/utils/dunning_type";
-import {Dunning} from "../../page_objects/dunning";
+import {DunningDocuments} from "../../page_objects/dunning_documents";
+import {salesInvoices} from "../../page_objects/sales_invoices";
 
 describe('Create Dunning Documents', function() {
   // human readable date with millis!
@@ -49,6 +50,7 @@ describe('Create Dunning Documents', function() {
   // Test data
   let siDocumentNumber;
   let siCurrency;
+  let siRecordId;
 
 
   it('Prepare dunning type', function() {
@@ -103,11 +105,14 @@ describe('Create Dunning Documents', function() {
     cy.getStringFieldValue('C_Currency_ID').then(currency => {
       siCurrency = currency;
     });
+
+    cy.getCurrentWindowRecordId().then(function(record) {
+      siRecordId = record;
+    });
   });
 
   it('Create Dunning Candidates', function() {
     DunningCandidates.visit();
-    cy.wait(1000); // without this wait, the action menu is not properly loaded
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
@@ -131,13 +136,11 @@ describe('Create Dunning Documents', function() {
   });
 
 
-  describe('Create And Check Dunning Documents', function() {
-    /**
-     * Currently there's no way to move from Dunning -> Dunning Candidates (and so to Sales Invoice).
-     * In order to check each dunning document, we have to go the other way: Dunning Candidates -> related docs -> the Dunning Doc.
-     * There's also no way to check if there are more than 2 dunning documents created.
-     */
-    it('CANNOT Expect there are exactly 2 dunning documents created!', function() {
+  describe('Check Dunning Documents', function() {
+    it('Expect there are exactly 2 dunning documents created!', function() {
+      cy.visitWindow(salesInvoices.windowId, siRecordId);
+      cy.openReferencedDocuments('AD_RelationType_ID-540226');
+      DunningDocuments.getRows().should('have.length', 2);
     });
 
     it('Check Level 1 document', function() {
@@ -153,25 +156,17 @@ describe('Create Dunning Documents', function() {
 
 
   function checkDunningDocument(dunningLevel) {
-    describe('Open Dunning document', function() {
-      // Open Dunning document
-      DunningCandidates.visit();
-      filterBySalesInvoiceNumber(siDocumentNumber);
-      DunningCandidates.getRows().contains('td', dunningLevel, { log: true }).dblclick();
-      cy.openReferencedDocuments('AD_RelationType_ID-540150');
-      Dunning.getRows().get('tr').dblclick();
+    describe(`Open Dunning document ${dunningLevel}`, function() {
+      cy.visitWindow(salesInvoices.windowId, siRecordId);
+      cy.openReferencedDocuments('AD_RelationType_ID-540226');
+      DunningDocuments.getRows().contains('td', dunningLevel, { log: true }).dblclick();
     });
 
     describe('Do the checks', function() {
-
-      // @kuba how to check bpartner?
-      // cy.get('#lookup_C_BPartner_ID')
-      //   .get('input')
-      //    //.invoke('value')
-      //   .then(function (v) {
-      //     cy.log(JSON.stringify(v));
-      //   });
-
+      cy.get('#lookup_C_BPartner_ID')
+        .find('input')
+        .invoke('val')
+        .should('contain', businessPartnerName);
 
       cy.getCheckboxValue('Processed').then(checkBoxValue => {
         assert.equal(checkBoxValue, true);

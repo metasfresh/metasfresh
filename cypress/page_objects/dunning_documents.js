@@ -22,7 +22,7 @@
 
 import Metasfresh from './page';
 
-class _Dunning extends Metasfresh {
+class _DunningDocuments extends Metasfresh {
   constructor() {
     super();
 
@@ -42,4 +42,4 @@ class _Dunning extends Metasfresh {
   }
 }
 
-export const Dunning = new _Dunning();
+export const DunningDocuments = new _DunningDocuments();
