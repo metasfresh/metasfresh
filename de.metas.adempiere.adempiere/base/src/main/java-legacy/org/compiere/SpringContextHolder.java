@@ -2,8 +2,13 @@ package org.compiere;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.reflect.ClassReference;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
@@ -41,6 +46,8 @@ public final class SpringContextHolder
 
 	private ApplicationContext applicationContext;
 
+	private final ConcurrentMap<ClassReference<?>, Object> junitRegisteredBeans = new ConcurrentHashMap<>();
+
 	private SpringContextHolder()
 	{
 	}
@@ -73,13 +80,14 @@ public final class SpringContextHolder
 	public void clearApplicationContext()
 	{
 		this.applicationContext = null;
+		this.junitRegisteredBeans.clear();
 		logger.info("Cleared application context");
 	}
 
 	/**
 	 * Allows to "statically" autowire a bean that is somehow not wired by spring. Needs the applicationContext to be set.
 	 */
-	public void autowire(final Object bean)
+	public void autowire(@NonNull final Object bean)
 	{
 		final ApplicationContext springApplicationContext = getApplicationContext();
 		if (springApplicationContext == null)
@@ -92,8 +100,19 @@ public final class SpringContextHolder
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */
-	public <T> T getBean(final Class<T> requiredType)
+	public <T> T getBean(@NonNull final Class<T> requiredType)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			@SuppressWarnings("unchecked")
+			final T beanImpl = (T)junitRegisteredBeans.get(ClassReference.of(requiredType));
+			if (beanImpl != null)
+			{
+				logger.info("JUnit testingL Returning manually registered bean: {}", beanImpl);
+				return beanImpl;
+			}
+		}
+
 		final ApplicationContext springApplicationContext = getApplicationContext();
 		try
 		{
@@ -110,7 +129,7 @@ public final class SpringContextHolder
 	/**
 	 * When running this method from within a junit test, we need to fire up spring
 	 */
-	public <T> Collection<T> getBeansOfType(final Class<T> requiredType)
+	public <T> Collection<T> getBeansOfType(@NonNull final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getApplicationContext();
 		try
@@ -125,7 +144,7 @@ public final class SpringContextHolder
 		return springApplicationContext.getBeansOfType(requiredType).values();
 	}
 
-	private static ApplicationContext throwExceptionIfNull(final ApplicationContext springApplicationContext)
+	private static ApplicationContext throwExceptionIfNull(@Nullable final ApplicationContext springApplicationContext)
 	{
 		if (springApplicationContext != null)
 		{
@@ -161,4 +180,22 @@ public final class SpringContextHolder
 		return profileIsActive;
 	}
 
+	public static <T> void registerJUnitBean(@NonNull final T beanImpl)
+	{
+		@SuppressWarnings("unchecked")
+		final Class<T> beanType = (Class<T>)beanImpl.getClass();
+
+		registerJUnitBean(beanType, beanImpl);
+	}
+
+	public static <BT, T extends BT> void registerJUnitBean(@NonNull final Class<BT> beanType, @NonNull final T beanImpl)
+	{
+		if (!Adempiere.isUnitTestMode())
+		{
+			throw new AdempiereException("JUnit mode is not active!");
+		}
+
+		instance.junitRegisteredBeans.put(ClassReference.of(beanType), beanImpl);
+		logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+	}
 }
