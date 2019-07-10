@@ -1,4 +1,4 @@
-package de.metas.paypalplus.processor;
+package de.metas.paypal.processor;
 
 import java.net.URL;
 
@@ -28,10 +28,12 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationStatus;
-import de.metas.paypalplus.PayPalConfig;
-import de.metas.paypalplus.orders.PayPalOrder;
-import de.metas.paypalplus.orders.PayPalOrderId;
-import de.metas.paypalplus.orders.PayPalOrderService;
+import de.metas.paypal.client.PayPalClientService;
+import de.metas.paypal.client.PayPalClientExecutionContext;
+import de.metas.paypal.client.PayPalOrder;
+import de.metas.paypal.client.PayPalOrderId;
+import de.metas.paypal.client.PayPalOrderService;
+import de.metas.paypal.config.PayPalConfig;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -61,7 +63,7 @@ import lombok.NonNull;
 public class PayPalPaymentProcessor implements PaymentProcessor
 {
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	private final PayPalClient payPalClient;
+	private final PayPalClientService payPalClient;
 	private final PayPalOrderService payPalOrdersService;
 	private final MoneyService moneyService;
 	private final MailService mailService;
@@ -72,7 +74,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	public static final String MAIL_VAR_Amount = "Amount";
 
 	public PayPalPaymentProcessor(
-			@NonNull final PayPalClient payPalClient,
+			@NonNull final PayPalClientService payPalClient,
 			@NonNull final PayPalOrderService payPalOrdersService,
 			@NonNull final MoneyService moneyService,
 			@NonNull final MailService mailService)
@@ -225,10 +227,18 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 				toPayPalClientExecutionContext(reservation));
 
 		payPalOrder = updatePayPalOrderFromAPI(payPalOrder.getExternalId());
-		PayPalCallbacksService.updateReservationFromPayPalOrder(reservation, payPalOrder);
+		updateReservationFromPayPalOrder(reservation, payPalOrder);
 
 		// TODO
 		// apiCapture.statusDetails(statusDetails);
 		// reservation.captureAmount(amount);
 	}
+	
+	public static void updateReservationFromPayPalOrder(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final PayPalOrder payPalOrder)
+	{
+		reservation.changeStatusTo(payPalOrder.getStatus().toPaymentReservationStatus());
+	}
+
 }

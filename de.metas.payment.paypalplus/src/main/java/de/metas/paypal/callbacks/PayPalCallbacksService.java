@@ -1,12 +1,13 @@
-package de.metas.paypalplus.processor;
+package de.metas.paypal.callbacks;
 
 import org.springframework.stereotype.Service;
 
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.paypalplus.orders.PayPalOrder;
-import de.metas.paypalplus.orders.PayPalOrderId;
+import de.metas.paypal.client.PayPalOrder;
+import de.metas.paypal.client.PayPalOrderId;
+import de.metas.paypal.processor.PayPalPaymentProcessor;
 import lombok.NonNull;
 
 /*
@@ -63,16 +64,8 @@ public class PayPalCallbacksService
 
 		final PaymentReservationId reservationId = payPalOrder.getPaymentReservationId();
 		final PaymentReservation reservation = paymentReservationService.getById(reservationId);
-		updateReservationFromPayPalOrder(reservation, payPalOrder);
+		PayPalPaymentProcessor.updateReservationFromPayPalOrder(reservation, payPalOrder);
 		paymentReservationService.save(reservation);
 		return reservation;
 	}
-
-	public static void updateReservationFromPayPalOrder(
-			@NonNull final PaymentReservation reservation,
-			@NonNull final PayPalOrder payPalOrder)
-	{
-		reservation.changeStatusTo(payPalOrder.getStatus().toPaymentReservationStatus());
-	}
-
 }

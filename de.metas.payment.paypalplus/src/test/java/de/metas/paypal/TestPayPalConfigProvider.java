@@ -1,9 +1,10 @@
-package de.metas.paypalplus.controller;
+package de.metas.paypal;
 
 import org.junit.Ignore;
 
 import de.metas.email.templates.MailTemplateId;
-import de.metas.paypalplus.PayPalConfig;
+import de.metas.paypal.config.PayPalConfig;
+import de.metas.paypal.config.PayPalConfigProvider;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

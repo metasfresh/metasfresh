@@ -1,4 +1,4 @@
-package de.metas.paypalplus.orders;
+package de.metas.paypal.client;
 
 import java.net.MalformedURLException;
 import java.net.URL;

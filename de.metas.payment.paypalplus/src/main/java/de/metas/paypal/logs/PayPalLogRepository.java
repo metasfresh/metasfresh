@@ -1,4 +1,4 @@
-package de.metas.paypalplus.logs;
+package de.metas.paypal.logs;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;

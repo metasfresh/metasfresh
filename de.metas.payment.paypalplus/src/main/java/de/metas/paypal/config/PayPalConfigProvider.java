@@ -1,9 +1,4 @@
-package de.metas.paypalplus.processor;
-
-import de.metas.order.OrderId;
-import de.metas.payment.reservation.PaymentReservationId;
-import lombok.Builder;
-import lombok.Value;
+package de.metas.paypal.config;
 
 /*
  * #%L
@@ -27,12 +22,7 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class PayPalClientExecutionContext
+public interface PayPalConfigProvider
 {
-	public static final PayPalClientExecutionContext EMPTY = builder().build();
-
-	PaymentReservationId paymentReservationId;
-	OrderId salesOrderId;
+	PayPalConfig getConfig();
 }

@@ -1,4 +1,4 @@
-package de.metas.paypalplus.controller;
+package de.metas.paypal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -38,13 +38,14 @@ import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.paypalplus.logs.PayPalLogRepository;
-import de.metas.paypalplus.orders.PayPalOrderId;
-import de.metas.paypalplus.orders.PayPalOrderRepository;
-import de.metas.paypalplus.orders.PayPalOrderService;
-import de.metas.paypalplus.processor.PayPalCallbacksService;
-import de.metas.paypalplus.processor.PayPalClient;
-import de.metas.paypalplus.processor.PayPalPaymentProcessor;
+import de.metas.paypal.callbacks.PayPalCallbacksService;
+import de.metas.paypal.client.PayPalClientService;
+import de.metas.paypal.client.PayPalOrderId;
+import de.metas.paypal.client.PayPalOrderRepository;
+import de.metas.paypal.client.PayPalOrderService;
+import de.metas.paypal.config.PayPalConfigProvider;
+import de.metas.paypal.logs.PayPalLogRepository;
+import de.metas.paypal.processor.PayPalPaymentProcessor;
 import lombok.NonNull;
 
 /*
@@ -118,7 +119,7 @@ public class PayPalCheckoutManualTest2
 				.approveMailTemplateId(createApproveMailTemplate())
 				.build();
 
-		final PayPalClient payPalClient = new PayPalClient(payPalConfigProvider, new PayPalLogRepository(Optional.empty()));
+		final PayPalClientService payPalClient = new PayPalClientService(payPalConfigProvider, new PayPalLogRepository(Optional.empty()));
 
 		payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
 		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
@@ -227,7 +228,7 @@ public class PayPalCheckoutManualTest2
 				.paymentReservationId(reservationId)
 				.amount(money(20))
 				.build());
-		
+
 		// TODO: refund
 	}
 

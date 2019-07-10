@@ -1,4 +1,4 @@
-package de.metas.paypalplus.orders;
+package de.metas.paypal.client;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;

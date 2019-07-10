@@ -1,4 +1,4 @@
-package de.metas.paypalplus.controller;
+package de.metas.paypal.config;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
 import de.metas.payment.paypal.model.I_PayPal_Config;
-import de.metas.paypalplus.PayPalConfig;
 import de.metas.util.Services;
 import lombok.NonNull;
 

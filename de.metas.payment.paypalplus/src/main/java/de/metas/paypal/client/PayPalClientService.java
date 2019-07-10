@@ -1,4 +1,4 @@
-package de.metas.paypalplus.processor;
+package de.metas.paypal.client;
 
 import java.io.IOException;
 
@@ -22,13 +22,11 @@ import com.paypal.payments.Capture;
 import com.paypal.payments.CaptureRequest;
 
 import de.metas.currency.Amount;
-import de.metas.paypalplus.PayPalConfig;
-import de.metas.paypalplus.controller.PayPalConfigProvider;
-import de.metas.paypalplus.logs.PayPalCreateLogRequest;
-import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
-import de.metas.paypalplus.logs.PayPalLogRepository;
-import de.metas.paypalplus.orders.PayPalOrderAuthorizationId;
-import de.metas.paypalplus.orders.PayPalOrderId;
+import de.metas.paypal.config.PayPalConfig;
+import de.metas.paypal.config.PayPalConfigProvider;
+import de.metas.paypal.logs.PayPalCreateLogRequest;
+import de.metas.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
+import de.metas.paypal.logs.PayPalLogRepository;
 import lombok.NonNull;
 
 /*
@@ -53,13 +51,16 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * PayPal Client (connects to PayPal).
+ */
 @Service
-public class PayPalClient
+public class PayPalClientService
 {
 	private final PayPalConfigProvider payPalConfigProvider;
 	private final PayPalLogRepository logsRepo;
 
-	public PayPalClient(
+	public PayPalClientService(
 			@NonNull final PayPalConfigProvider payPalConfigProvider,
 			@NonNull final PayPalLogRepository logsRepo)
 	{

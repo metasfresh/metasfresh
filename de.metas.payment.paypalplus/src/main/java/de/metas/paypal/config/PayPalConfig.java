@@ -1,4 +1,4 @@
-package de.metas.paypalplus;
+package de.metas.paypal.config;
 
 import de.metas.email.templates.MailTemplateId;
 import de.metas.util.Check;

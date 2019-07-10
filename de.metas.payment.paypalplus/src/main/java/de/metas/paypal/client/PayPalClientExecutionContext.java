@@ -1,14 +1,13 @@
-package de.metas.paypalplus.model;
+package de.metas.paypal.client;
 
-import java.time.LocalDate;
-
+import de.metas.order.OrderId;
+import de.metas.payment.reservation.PaymentReservationId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.paypalplus.model
+ * de.metas.payment.paypalplus
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -16,38 +15,24 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Value
-public class PaymentReservationRequest
-{
-	LocalDate paymentDate;
-	PaymentAmount paymentAmount;
-	String transactionDescription;
-	BillingAddress billingAddress;
-	CreditCard creditCard;
 
-	@Builder
-	private PaymentReservationRequest(
-			@NonNull final LocalDate paymentDate,
-			@NonNull final PaymentAmount paymentAmount,
-			final String transactionDescription,
-			@NonNull final BillingAddress billingAddress,
-			@NonNull final CreditCard creditCard)
-	{
-		this.paymentDate = paymentDate;
-		this.paymentAmount = paymentAmount;
-		this.transactionDescription = transactionDescription;
-		this.billingAddress = billingAddress;
-		this.creditCard = creditCard;
-	}
+@Value
+@Builder
+public class PayPalClientExecutionContext
+{
+	public static final PayPalClientExecutionContext EMPTY = builder().build();
+
+	PaymentReservationId paymentReservationId;
+	OrderId salesOrderId;
 }

@@ -1,4 +1,4 @@
-package de.metas.paypalplus.orders;
+package de.metas.paypal.client;
 
 import java.util.Optional;
 
