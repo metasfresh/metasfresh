@@ -4,9 +4,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -14,8 +14,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Payment_Reservation;
+import org.compiere.model.I_C_Payment_Reservation_Capture;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.email.EMailAddress;
@@ -23,6 +26,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -36,12 +40,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -59,7 +63,8 @@ public class PaymentReservationRepository
 			throw new AdempiereException("@NotFound@ @C_Payment_Reservation_ID@: " + id);
 		}
 
-		return toPaymentReservation(record);
+		final List<I_C_Payment_Reservation_Capture> captureRecords = retrieveCaptureRecords(id);
+		return toPaymentReservation(record, captureRecords);
 	}
 
 	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(@NonNull final OrderId salesOrderId)
@@ -71,48 +76,120 @@ public class PaymentReservationRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnly(I_C_Payment_Reservation.class);
+		if (record == null)
+		{
+			return Optional.empty();
+		}
 
-		return toOptionalPaymentReservation(record);
+		final PaymentReservationId reservationId = PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID());
+		final List<I_C_Payment_Reservation_Capture> captureRecords = retrieveCaptureRecords(reservationId);
+		final PaymentReservation reservation = toPaymentReservation(record, captureRecords);
+		return Optional.of(reservation);
 	}
 
-	public void save(@NonNull final PaymentReservation paymentReservation)
+	private List<I_C_Payment_Reservation_Capture> retrieveCaptureRecords(@NonNull final PaymentReservationId reservationId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Payment_Reservation_Capture.class)
+				.addEqualsFilter(I_C_Payment_Reservation_Capture.COLUMN_C_Payment_Reservation_ID, reservationId)
+				.create()
+				.listImmutable(I_C_Payment_Reservation_Capture.class);
+	}
+
+	public void save(@NonNull final PaymentReservation reservation)
 	{
 		final I_C_Payment_Reservation record;
-		if (paymentReservation.getId() == null)
+		final boolean isNewRecord;
+		if (reservation.getId() == null)
 		{
 			record = newInstance(I_C_Payment_Reservation.class);
+			isNewRecord = true;
 		}
 		else
 		{
-			record = load(paymentReservation.getId(), I_C_Payment_Reservation.class);
+			record = load(reservation.getId(), I_C_Payment_Reservation.class);
+			isNewRecord = false;
 		}
 
-		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", paymentReservation.getClientId().getRepoId());
-		record.setAD_Org_ID(paymentReservation.getOrgId().getRepoId());
-		record.setAmount(paymentReservation.getAmount().getAsBigDecimal());
-		record.setBill_BPartner_ID(paymentReservation.getPayerContactId().getBpartnerId().getRepoId());
-		record.setBill_User_ID(paymentReservation.getPayerContactId().getUserId().getRepoId());
-		record.setBill_EMail(paymentReservation.getPayerEmail().getAsString());
-		record.setC_Currency_ID(paymentReservation.getAmount().getCurrencyId().getRepoId());
-		record.setC_Order_ID(paymentReservation.getSalesOrderId().getRepoId());
-		record.setDateTrx(TimeUtil.asTimestamp(paymentReservation.getDateTrx()));
-		record.setPaymentRule(paymentReservation.getPaymentRule().getCode());
-		record.setStatus(paymentReservation.getStatus().getCode());
-
+		updateReservationRecord(record, reservation);
 		saveRecord(record);
-		paymentReservation.setId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()));
+		final PaymentReservationId reservationId = PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID());
+		reservation.setId(reservationId);
+
+		//
+		// Captures
+		{
+			final HashMap<PaymentReservationCaptureId, I_C_Payment_Reservation_Capture> existingCaptureRecords;
+			if (isNewRecord)
+			{
+				existingCaptureRecords = new HashMap<>();
+			}
+			else
+			{
+				existingCaptureRecords = retrieveCaptureRecords(reservationId)
+						.stream()
+						.collect(GuavaCollectors.toHashMapByKey(captureRecord -> extractCaptureId(captureRecord)));
+			}
+
+			for (final PaymentReservationCapture capture : reservation.getCaptures())
+			{
+				I_C_Payment_Reservation_Capture captureRecord = existingCaptureRecords.remove(capture.getId());
+				if (captureRecord == null)
+				{
+					captureRecord = newInstance(I_C_Payment_Reservation_Capture.class);
+					captureRecord.setC_Payment_Reservation_ID(reservationId.getRepoId());
+					captureRecord.setAD_Org_ID(reservation.getOrgId().getRepoId());
+				}
+
+				updateCaptureRecord(captureRecord, capture);
+				saveRecord(captureRecord);
+			}
+
+			//
+			// Delete remaining captures
+			InterfaceWrapperHelper.deleteAll(existingCaptureRecords.values());
+		}
 	}
 
-	private static Optional<PaymentReservation> toOptionalPaymentReservation(@Nullable final I_C_Payment_Reservation record)
+	private static void updateReservationRecord(
+			@NonNull final I_C_Payment_Reservation record,
+			@NonNull final PaymentReservation from)
 	{
-		return record != null
-				? Optional.of(toPaymentReservation(record))
-				: Optional.empty();
+		InterfaceWrapperHelper.setValue(record, "AD_Client_ID", from.getClientId().getRepoId());
+		record.setAD_Org_ID(from.getOrgId().getRepoId());
+		record.setAmount(from.getAmount().getAsBigDecimal());
+		record.setBill_BPartner_ID(from.getPayerContactId().getBpartnerId().getRepoId());
+		record.setBill_User_ID(from.getPayerContactId().getUserId().getRepoId());
+		record.setBill_EMail(from.getPayerEmail().getAsString());
+		record.setC_Currency_ID(from.getAmount().getCurrencyId().getRepoId());
+		record.setC_Order_ID(from.getSalesOrderId().getRepoId());
+		record.setDateTrx(TimeUtil.asTimestamp(from.getDateTrx()));
+		record.setPaymentRule(from.getPaymentRule().getCode());
+		record.setStatus(from.getStatus().getCode());
 	}
 
-	private static PaymentReservation toPaymentReservation(@NonNull final I_C_Payment_Reservation record)
+	private static void updateCaptureRecord(
+			@NonNull final I_C_Payment_Reservation_Capture record,
+			@NonNull final PaymentReservationCapture from)
+	{
+		record.setAmount(from.getAmount().getAsBigDecimal());
+		record.setStatus(from.getStatus().getCode());
+	}
+
+	private static PaymentReservationCaptureId extractCaptureId(final I_C_Payment_Reservation_Capture captureRecord)
+	{
+		return PaymentReservationCaptureId.ofRepoId(captureRecord.getC_Payment_Reservation_Capture_ID());
+	}
+
+	private static PaymentReservation toPaymentReservation(
+			@NonNull final I_C_Payment_Reservation record,
+			@NonNull final List<I_C_Payment_Reservation_Capture> captureRecords)
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
+
+		final List<PaymentReservationCapture> captures = captureRecords.stream()
+				.map(captureRecord -> toPaymentReservationCapture(captureRecord, currencyId))
+				.collect(ImmutableList.toImmutableList());
 
 		return PaymentReservation.builder()
 				.id(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
@@ -125,6 +202,19 @@ public class PaymentReservationRepository
 				.dateTrx(TimeUtil.asLocalDate(record.getDateTrx()))
 				.paymentRule(PaymentRule.ofCode(record.getPaymentRule()))
 				.status(PaymentReservationStatus.ofCode(record.getStatus()))
+				.captures(captures)
 				.build();
 	}
+
+	private static PaymentReservationCapture toPaymentReservationCapture(
+			@NonNull final I_C_Payment_Reservation_Capture record,
+			@NonNull final CurrencyId currencyId)
+	{
+		return PaymentReservationCapture.builder()
+				.status(PaymentReservationCaptureStatus.ofCode(record.getStatus()))
+				.amount(Money.of(record.getAmount(), currencyId))
+				.id(PaymentReservationCaptureId.ofRepoIdOrNull(record.getC_Payment_Reservation_Capture_ID()))
+				.build();
+	}
+
 }

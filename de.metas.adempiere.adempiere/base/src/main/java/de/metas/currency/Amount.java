@@ -54,6 +54,20 @@ public final class Amount implements Comparable<Amount>
 		this.currencyCode = currencyCode;
 	}
 
+	public BigDecimal getAsBigDecimal()
+	{
+		return value;
+	}
+
+	/**
+	 * @deprecated Please use {@link #getAsBigDecimal()}
+	 */
+	@Deprecated
+	public BigDecimal getValue()
+	{
+		return value;
+	}
+
 	public static void assertSameCurrency(final Amount... amounts)
 	{
 		if (amounts == null || amounts.length == 0)

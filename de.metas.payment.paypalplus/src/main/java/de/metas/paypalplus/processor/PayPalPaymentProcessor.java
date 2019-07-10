@@ -13,15 +13,17 @@ import com.paypal.orders.ApplicationContext;
 import com.paypal.orders.Order;
 import com.paypal.orders.OrderRequest;
 import com.paypal.orders.PurchaseUnitRequest;
+import com.paypal.payments.Capture;
 
+import de.metas.currency.Amount;
 import de.metas.email.EMail;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.money.CurrencyRepository;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
@@ -61,7 +63,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final PayPalClient payPalClient;
 	private final PayPalOrderService payPalOrdersService;
-	private final CurrencyRepository currencyRepo;
+	private final MoneyService moneyService;
 	private final MailService mailService;
 
 	@VisibleForTesting
@@ -72,12 +74,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	public PayPalPaymentProcessor(
 			@NonNull final PayPalClient payPalClient,
 			@NonNull final PayPalOrderService payPalOrdersService,
-			@NonNull final CurrencyRepository currencyRepo,
+			@NonNull final MoneyService moneyService,
 			@NonNull final MailService mailService)
 	{
 		this.payPalClient = payPalClient;
 		this.payPalOrdersService = payPalOrdersService;
-		this.currencyRepo = currencyRepo;
+		this.moneyService = moneyService;
 		this.mailService = mailService;
 	}
 
@@ -169,7 +171,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
 		mailTextBuilder.customVariable(MAIL_VAR_ApproveURL, payerApproveUrl.toExternalForm());
-		mailTextBuilder.customVariable(MAIL_VAR_Amount, TranslatableStrings.amount(reservation.getAmount().toAmount(currencyRepo::getCurrencyCodeById)));
+		mailTextBuilder.customVariable(MAIL_VAR_Amount, moneyService.toTranslatableString(reservation.getAmount()));
 
 		final Mailbox mailbox = findMailbox(reservation);
 		final EMail email = mailService.createEMail(mailbox,
@@ -203,17 +205,30 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 								.amount(toAmountWithBreakdown(reservation.getAmount()))));
 	}
 
-	private AmountWithBreakdown toAmountWithBreakdown(final de.metas.money.Money amount)
+	private AmountWithBreakdown toAmountWithBreakdown(final de.metas.money.Money money)
 	{
+		final Amount amount = moneyService.toAmount(money);
 		return new AmountWithBreakdown()
-				.value(amount.getAsBigDecimal().toString())
-				.currencyCode(currencyRepo.getCurrencyCodeById(amount.getCurrencyId()).toThreeLetterCode());
+				.value(amount.getAsBigDecimal().toPlainString())
+				.currencyCode(amount.getCurrencyCode());
 	}
 
 	@Override
-	public void captureMoney()
+	public void captureMoney(final PaymentReservation reservation, final Money money)
 	{
-		throw new UnsupportedOperationException("not implemented");
-	}
+		PayPalOrder payPalOrder = payPalOrdersService.getByReservationId(reservation.getId());
+		final Boolean finalCapture = null;
+		final Capture apiCapture = payPalClient.captureOrder(
+				payPalOrder.getAuthorizationId(),
+				moneyService.toAmount(money),
+				finalCapture,
+				toPayPalClientExecutionContext(reservation));
 
+		payPalOrder = updatePayPalOrderFromAPI(payPalOrder.getExternalId());
+		PayPalCallbacksService.updateReservationFromPayPalOrder(reservation, payPalOrder);
+
+		// TODO
+		// apiCapture.statusDetails(statusDetails);
+		// reservation.captureAmount(amount);
+	}
 }

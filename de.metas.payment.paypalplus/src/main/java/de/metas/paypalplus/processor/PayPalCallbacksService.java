@@ -63,9 +63,16 @@ public class PayPalCallbacksService
 
 		final PaymentReservationId reservationId = payPalOrder.getPaymentReservationId();
 		final PaymentReservation reservation = paymentReservationService.getById(reservationId);
-		reservation.changeStatusTo(payPalOrder.getStatus().toPaymentReservationStatus());
+		updateReservationFromPayPalOrder(reservation, payPalOrder);
 		paymentReservationService.save(reservation);
 		return reservation;
+	}
+
+	public static void updateReservationFromPayPalOrder(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final PayPalOrder payPalOrder)
+	{
+		reservation.changeStatusTo(payPalOrder.getStatus().toPaymentReservationStatus());
 	}
 
 }

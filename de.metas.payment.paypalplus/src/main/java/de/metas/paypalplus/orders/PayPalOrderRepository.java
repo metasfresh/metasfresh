@@ -100,7 +100,7 @@ public class PayPalOrderRepository
 				.paymentReservationId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
 				.externalId(PayPalOrderId.ofNullableString(record.getExternalId()))
 				.status(PayPalOrderStatus.ofCode(record.getStatus()))
-				.authorizationId(record.getPayPal_AuthorizationId())
+				.authorizationId(PayPalOrderAuthorizationId.ofNullableString(record.getPayPal_AuthorizationId()))
 				.payerApproveUrlString(record.getPayPal_PayerApproveUrl())
 				.bodyAsJson(record.getPayPal_OrderJSON())
 				.build();
@@ -122,7 +122,7 @@ public class PayPalOrderRepository
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
 		order.setExternalId(PayPalOrderId.toString(from.getExternalId()));
-		order.setPayPal_AuthorizationId(from.getAuthorizationId());
+		order.setPayPal_AuthorizationId(PayPalOrderAuthorizationId.toString(from.getAuthorizationId()));
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
 	}
@@ -169,7 +169,7 @@ public class PayPalOrderRepository
 		return order;
 	}
 
-	private static String extractAuthorizationIdOrNull(@NonNull final com.paypal.orders.Order apiOrder)
+	private static PayPalOrderAuthorizationId extractAuthorizationIdOrNull(@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		final List<PurchaseUnit> purchaseUnits = apiOrder.purchaseUnits();
 		if (purchaseUnits == null || purchaseUnits.isEmpty())
@@ -189,7 +189,7 @@ public class PayPalOrderRepository
 			return null;
 		}
 
-		return authorizations.get(0).id();
+		return PayPalOrderAuthorizationId.ofString(authorizations.get(0).id());
 	}
 
 	private static String extractApproveUrlOrNull(@NonNull final com.paypal.orders.Order apiOrder)

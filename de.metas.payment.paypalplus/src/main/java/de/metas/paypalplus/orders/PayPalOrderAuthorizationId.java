@@ -19,12 +19,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,22 +32,22 @@ import lombok.NonNull;
  */
 
 @EqualsAndHashCode
-public final class PayPalOrderId
+public final class PayPalOrderAuthorizationId
 {
 	@JsonCreator
-	public static PayPalOrderId ofString(@NonNull final String orderId)
+	public static PayPalOrderAuthorizationId ofString(@NonNull final String authId)
 	{
-		return new PayPalOrderId(orderId);
+		return new PayPalOrderAuthorizationId(authId);
 	}
 
-	public static PayPalOrderId ofNullableString(@Nullable final String orderId)
+	public static PayPalOrderAuthorizationId ofNullableString(@Nullable final String authId)
 	{
-		return !Check.isEmpty(orderId, true) ? new PayPalOrderId(orderId) : null;
+		return !Check.isEmpty(authId, true) ? new PayPalOrderAuthorizationId(authId) : null;
 	}
 
 	private final String id;
 
-	private PayPalOrderId(final String id)
+	private PayPalOrderAuthorizationId(final String id)
 	{
 		Check.assumeNotEmpty(id, "id is not empty");
 		this.id = id;
@@ -66,7 +66,7 @@ public final class PayPalOrderId
 		return id;
 	}
 
-	public static String toString(@Nullable final PayPalOrderId id)
+	public static String toString(@Nullable final PayPalOrderAuthorizationId id)
 	{
 		return id != null ? id.getAsString() : null;
 	}

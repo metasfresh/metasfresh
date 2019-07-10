@@ -49,7 +49,7 @@ public class PayPalOrder
 	PayPalOrderStatus status;
 
 	@Nullable
-	String authorizationId;
+	PayPalOrderAuthorizationId authorizationId;
 	@Nullable
 	String payerApproveUrlString;
 

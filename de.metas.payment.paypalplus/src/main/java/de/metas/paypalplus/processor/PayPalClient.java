@@ -2,6 +2,8 @@ package de.metas.paypalplus.processor;
 
 import java.io.IOException;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +17,17 @@ import com.paypal.orders.OrderRequest;
 import com.paypal.orders.OrdersAuthorizeRequest;
 import com.paypal.orders.OrdersCreateRequest;
 import com.paypal.orders.OrdersGetRequest;
+import com.paypal.payments.AuthorizationsCaptureRequest;
+import com.paypal.payments.Capture;
+import com.paypal.payments.CaptureRequest;
 
+import de.metas.currency.Amount;
 import de.metas.paypalplus.PayPalConfig;
 import de.metas.paypalplus.controller.PayPalConfigProvider;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest;
 import de.metas.paypalplus.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
 import de.metas.paypalplus.logs.PayPalLogRepository;
+import de.metas.paypalplus.orders.PayPalOrderAuthorizationId;
 import de.metas.paypalplus.orders.PayPalOrderId;
 import lombok.NonNull;
 
@@ -146,5 +153,22 @@ public class PayPalClient
 		{
 			logsRepo.log(log.build());
 		}
+	}
+
+	public Capture captureOrder(
+			@NonNull final PayPalOrderAuthorizationId authId,
+			@NonNull final Amount amount,
+			@Nullable final Boolean finalCapture,
+			@NonNull final PayPalClientExecutionContext context)
+	{
+		final AuthorizationsCaptureRequest request = new AuthorizationsCaptureRequest(authId.getAsString())
+				.requestBody(new CaptureRequest()
+						.amount(new com.paypal.payments.Money()
+								.currencyCode(amount.getCurrencyCode())
+								.value(amount.getAsBigDecimal().toPlainString()))
+						.finalCapture(finalCapture));
+
+		final HttpResponse<Capture> response = executeRequest(request, context);
+		return response.result();
 	}
 }

@@ -1,8 +1,4 @@
-package de.metas.payment.processor;
-
-import de.metas.money.Money;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.reservation.PaymentReservation;
+package de.metas.payment.reservation;
 
 /*
  * #%L
@@ -26,13 +22,19 @@ import de.metas.payment.reservation.PaymentReservation;
  * #L%
  */
 
-public interface PaymentProcessor
+public class PaymentReservationCaptureStatus
 {
-	PaymentRule getPaymentRule();
 
-	boolean canReserveMoney();
+	public static PaymentReservationCaptureStatus ofCode(String status)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+	// TODO
 
-	void processReservation(PaymentReservation reservation);
-
-	void captureMoney(PaymentReservation reservation, Money amount);
+	public String getCode()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

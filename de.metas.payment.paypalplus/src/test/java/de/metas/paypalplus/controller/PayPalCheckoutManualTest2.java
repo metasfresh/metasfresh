@@ -28,10 +28,12 @@ import de.metas.email.templates.MailTemplateRepository;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
@@ -121,12 +123,14 @@ public class PayPalCheckoutManualTest2
 		payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
 		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
 
+		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
+
 		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
 
 		payPalPaymentProcessor = new PayPalPaymentProcessor(
 				payPalClient,
 				payPalOrdersService,
-				new CurrencyRepository(),
+				moneyService,
 				mailService);
 
 		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalPaymentProcessor)));
@@ -159,6 +163,11 @@ public class PayPalCheckoutManualTest2
 		return CurrencyId.ofRepoId(currency.getC_Currency_ID());
 	}
 
+	private Money money(final int value)
+	{
+		return Money.of(value, currencyId);
+	}
+
 	private static BPartnerContactId createPayerBPartnerContact()
 	{
 		final I_C_BPartner bpartnerRecord = newInstanceOutOfTrx(I_C_BPartner.class);
@@ -185,7 +194,7 @@ public class PayPalCheckoutManualTest2
 			final PaymentReservation reservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
 					.clientId(clientId)
 					.orgId(orgId)
-					.amount(Money.of(100, currencyId))
+					.amount(money(100))
 					.payerContactId(createPayerBPartnerContact())
 					.payerEmail(EMailAddress.ofNullableString("from@example.com"))
 					.salesOrderId(salesOrderId)
@@ -206,7 +215,19 @@ public class PayPalCheckoutManualTest2
 			pollUntilCompleted(apiOrderId);
 		}
 
-		// TODO: capture
+		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
+				.paymentReservationId(reservationId)
+				.amount(money(30))
+				.build());
+		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
+				.paymentReservationId(reservationId)
+				.amount(money(40))
+				.build());
+		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
+				.paymentReservationId(reservationId)
+				.amount(money(20))
+				.build());
+		
 		// TODO: refund
 	}
 

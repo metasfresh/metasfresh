@@ -105,4 +105,14 @@ public class PaymentReservationService
 	{
 		return paymentProcessors.getByPaymentRule(paymentRule);
 	}
+
+	public void captureAmount(@NonNull final PaymentReservationCaptureRequest request)
+	{
+		final PaymentReservation reservation = getById(request.getPaymentReservationId());
+
+		getPaymentProcessor(reservation.getPaymentRule())
+				.captureMoney(reservation, request.getAmount());
+
+		reservationsRepo.save(reservation);
+	}
 }

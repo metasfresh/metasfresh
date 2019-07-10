@@ -1,8 +1,9 @@
-package de.metas.payment.processor;
+package de.metas.payment.reservation;
 
 import de.metas.money.Money;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.reservation.PaymentReservation;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -26,13 +27,13 @@ import de.metas.payment.reservation.PaymentReservation;
  * #L%
  */
 
-public interface PaymentProcessor
+@Value
+@Builder
+public class PaymentReservationCaptureRequest
 {
-	PaymentRule getPaymentRule();
+	@NonNull
+	PaymentReservationId paymentReservationId;
 
-	boolean canReserveMoney();
-
-	void processReservation(PaymentReservation reservation);
-
-	void captureMoney(PaymentReservation reservation, Money amount);
+	@NonNull
+	Money amount;
 }

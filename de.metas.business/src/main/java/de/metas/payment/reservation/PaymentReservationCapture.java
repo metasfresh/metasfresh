@@ -1,8 +1,14 @@
-package de.metas.payment.processor;
+package de.metas.payment.reservation;
+
+import javax.annotation.Nullable;
 
 import de.metas.money.Money;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.reservation.PaymentReservation;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
 /*
  * #%L
@@ -26,13 +32,18 @@ import de.metas.payment.reservation.PaymentReservation;
  * #L%
  */
 
-public interface PaymentProcessor
+@Value
+@Builder
+public class PaymentReservationCapture
 {
-	PaymentRule getPaymentRule();
+	@NonNull
+	PaymentReservationCaptureStatus status;
 
-	boolean canReserveMoney();
+	@NonNull
+	Money amount;
 
-	void processReservation(PaymentReservation reservation);
-
-	void captureMoney(PaymentReservation reservation, Money amount);
+	@Nullable
+	@NonFinal
+	@Setter(AccessLevel.PACKAGE)
+	PaymentReservationCaptureId id;
 }
