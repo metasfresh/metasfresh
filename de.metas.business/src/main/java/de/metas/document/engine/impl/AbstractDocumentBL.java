@@ -22,7 +22,7 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Order;
@@ -67,14 +67,14 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private static final Map<String, DocumentHandlerProvider> retrieveDocActionHandlerProvidersIndexedByTableName()
 	{
-		if (Adempiere.getSpringApplicationContext() == null)
+		if (!SpringContextHolder.instance.isApplicationContextSet())
 		{
 			// here we support the case of a unit test that
 			// * doesn't care about DocumentHandlerProviders
 			// * and does not want to do the @SpringBootTest dance
 			return ImmutableMap.of();
 		}
-		final Map<String, DocumentHandlerProvider> providersByTableName = Adempiere.getBeansOfType(DocumentHandlerProvider.class)
+		final Map<String, DocumentHandlerProvider> providersByTableName = SpringContextHolder.instance.getBeansOfType(DocumentHandlerProvider.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(DocumentHandlerProvider::getHandledTableName, Function.identity()));
 		logger.debug("Retrieved providers: {}", providersByTableName);

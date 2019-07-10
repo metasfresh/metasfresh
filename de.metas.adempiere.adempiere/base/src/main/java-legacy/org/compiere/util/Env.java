@@ -48,6 +48,7 @@ import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CFrame;
@@ -155,7 +156,7 @@ public final class Env
 		LogManager.shutdown();
 		//
 
-		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
+		final ApplicationContext springApplicationContext = SpringContextHolder.instance.getApplicationContext();
 		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
 		{
 			SpringApplication.exit(springApplicationContext, () -> 0);
@@ -331,7 +332,7 @@ public final class Env
 	 *
 	 * @return Properties
 	 */
-	public static final Properties getCtx()
+	public static Properties getCtx()
 	{
 		return contextProvider.getContext();
 	}   // getCtx
@@ -341,7 +342,7 @@ public final class Env
 	 *
 	 * @return new context to be used temporary
 	 */
-	public static final Properties newTemporaryCtx()
+	public static Properties newTemporaryCtx()
 	{
 		return new Properties();
 	}
@@ -354,7 +355,7 @@ public final class Env
 	 * @param ctx
 	 * @return new context
 	 */
-	public static final Properties deriveCtx(final Properties ctx)
+	public static Properties deriveCtx(final Properties ctx)
 	{
 		Check.assumeNotNull(ctx, "ctx not null");
 		return new Properties(ctx);
@@ -368,7 +369,7 @@ public final class Env
 	 * @param ctx
 	 * @return
 	 */
-	public static final Properties copyCtx(final Properties ctx)
+	public static Properties copyCtx(final Properties ctx)
 	{
 		Check.assumeNotNull(ctx, "ctx not null");
 
@@ -421,7 +422,7 @@ public final class Env
 	 *
 	 * @return
 	 */
-	public static final boolean isCtxAvailable()
+	public static boolean isCtxAvailable()
 	{
 		return contextProvider != null && contextProvider.getContext() != null;
 	}   // getCtx
@@ -441,7 +442,7 @@ public final class Env
 		return contextProvider.switchContext(ctx);
 	}
 
-	private static final void clearContext()
+	private static void clearContext()
 	{
 		if (contextProvider != null)
 		{
@@ -455,7 +456,7 @@ public final class Env
 	 * @param ctx context
 	 * @param key context key (property name)
 	 */
-	public static final void removeContext(final Properties ctx, final String key)
+	public static void removeContext(final Properties ctx, final String key)
 	{
 		// NOTE: because the "ctx" it might have underlying "defaults" we cannot just remove it,
 		// because it might be that another value is set on parent level (or parent of the parent).
@@ -468,14 +469,14 @@ public final class Env
 		s_log.trace("Unset {}=={}", key, nullValue);
 	}
 
-	private static final void setProperty(final Properties ctx, final String key, final String value)
+	private static void setProperty(final Properties ctx, final String key, final String value)
 	{
 		ctx.setProperty(key, value);
 
 		s_log.trace("Set {}=={}", key, value);
 	}
 
-	private static final void removeContextForPrefix(final Properties ctx, final String keyPrefix)
+	private static void removeContextForPrefix(final Properties ctx, final String keyPrefix)
 	{
 		removeContextMatching(ctx, key -> {
 			final String tag = key.toString();
@@ -490,7 +491,7 @@ public final class Env
 	 * @param ctx
 	 * @param keyMatcher
 	 */
-	public static final void removeContextMatching(final Properties ctx, final Predicate<Object> keyMatcher)
+	public static void removeContextMatching(final Properties ctx, final Predicate<Object> keyMatcher)
 	{
 		final Set<String> keys = ctx.stringPropertyNames();
 		for (final String key : keys)
@@ -710,7 +711,7 @@ public final class Env
 	 * @param name
 	 * @return built context name
 	 */
-	public static final String createContextName(final int windowNo, final int tabNo, final String name)
+	public static String createContextName(final int windowNo, final int tabNo, final String name)
 	{
 		final StringBuilder nameFQ = new StringBuilder();
 		nameFQ.append(windowNo).append("|");
@@ -1375,7 +1376,7 @@ public final class Env
 		setContext(ctx, preferenceName, preferenceValue);
 	}
 
-	private static final String createPreferenceName(final int AD_Window_ID, final String baseName)
+	private static String createPreferenceName(final int AD_Window_ID, final String baseName)
 	{
 		if (AD_Window_ID <= 0 || AD_Window_ID == IUserValuePreference.AD_WINDOW_ID_NONE)
 		{
@@ -1801,7 +1802,7 @@ public final class Env
 	/**
 	 * @return true if given windowNo is a valid windowNo and is for a regular window (not the main window)
 	 */
-	public static final boolean isRegularWindowNo(final int windowNo)
+	public static boolean isRegularWindowNo(final int windowNo)
 	{
 		return windowNo > 0
 				&& windowNo != WINDOW_None
@@ -1811,7 +1812,7 @@ public final class Env
 	/**
 	 * @return true if given windowNo is a valid windowNo and is for a regular window or for main window
 	 */
-	public static final boolean isRegularOrMainWindowNo(final int windowNo)
+	public static boolean isRegularOrMainWindowNo(final int windowNo)
 	{
 		return windowNo == WINDOW_MAIN
 				|| isRegularWindowNo(windowNo);
@@ -1976,7 +1977,7 @@ public final class Env
 	// NOTE: before changing this to some other value, please evaluate where the result of getContext variables is compared with hardcoded ""
 	/* package */static final String CTXVALUE_NullString = new String(""); // NOTE: new String to make sure it's a unique instance
 
-	public static enum Scope
+	public enum Scope
 	{
 		// Please note that the order is VERY important.
 		// Scopes should be ordered by priority, from lower to higher
@@ -2112,7 +2113,7 @@ public final class Env
 	 * @param context
 	 * @return string value or <code>null</code> if it does not exist
 	 */
-	private static final String getProperty(final Properties ctx, final String context)
+	private static String getProperty(final Properties ctx, final String context)
 	{
 		if (ctx == null || context == null)
 		{
@@ -2205,7 +2206,7 @@ public final class Env
 	 * @param context context name that was required (used only for logging)
 	 * @return int value
 	 */
-	private static final int toInteger(String s, String context)
+	private static int toInteger(String s, String context)
 	{
 		if (CTXVALUE_NullString.equals(s))
 		{
@@ -2230,7 +2231,7 @@ public final class Env
 	 * @return timestamp as string (JDBC Format 2005-05-09 00:00:00, without nanos) or <code>null</code> if timestamp was null
 	 * @see #parseTimestamp(String)
 	 */
-	public static final String toString(final Date date)
+	public static String toString(final Date date)
 	{
 		final Timestamp timestamp;
 		if (date == null)
@@ -2315,12 +2316,12 @@ public final class Env
 		}
 	}
 
-	public static final String toString(final boolean value)
+	public static String toString(final boolean value)
 	{
 		return DisplayType.toBooleanString(value);
 	}
 
-	private static final boolean isPropertyValueNull(final String value)
+	private static boolean isPropertyValueNull(final String value)
 	{
 		if (value == null
 				|| value == CTXVALUE_NullID
@@ -2364,7 +2365,7 @@ public final class Env
 	 * @param propertyName
 	 * @return true if given propertyName is for a numeric value (i.e. if it ends with "_ID")
 	 */
-	public static final boolean isNumericPropertyName(final String propertyName)
+	public static boolean isNumericPropertyName(final String propertyName)
 	{
 		if (propertyName == null)
 		{
@@ -2375,7 +2376,7 @@ public final class Env
 		return propertyName.endsWith("_ID");
 	}
 
-	private static final String getNullPropertyValue(final String propertyName)
+	private static String getNullPropertyValue(final String propertyName)
 	{
 		if (isNumericPropertyName(propertyName))
 		{
@@ -2396,7 +2397,7 @@ public final class Env
 	 * @param ctx2
 	 * @return
 	 */
-	public static final boolean isSameSession(final Properties ctx1, final Properties ctx2)
+	public static boolean isSameSession(final Properties ctx1, final Properties ctx2)
 	{
 		if (ctx1 == ctx2)
 		{
@@ -2415,7 +2416,7 @@ public final class Env
 	 * @param ctx2
 	 * @return true if given contexts are exactly the same (compared by reference)
 	 */
-	public static final boolean isSame(final Properties ctx1, final Properties ctx2)
+	public static boolean isSame(final Properties ctx1, final Properties ctx2)
 	{
 		return ctx1 == ctx2;
 	}
@@ -2426,7 +2427,7 @@ public final class Env
 	{
 		if (applicationContext != null)
 		{
-			Adempiere.instance.setApplicationContext(applicationContext);
+			SpringContextHolder.instance.setApplicationContext(applicationContext);
 		}
 		return Adempiere.instance;
 	}
@@ -2438,7 +2439,7 @@ public final class Env
 	 */
 	public static void autowireBean(final Object bean)
 	{
-		Adempiere.getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		SpringContextHolder.instance.autowire(bean);
 	}
 
 	/**
@@ -2570,7 +2571,7 @@ public final class Env
 	 * @param ctx
 	 * @return ctx or {@link #getCtx()}; never returns null
 	 */
-	public static final Properties coalesce(final Properties ctx)
+	public static Properties coalesce(final Properties ctx)
 	{
 		return ctx == null ? getCtx() : ctx;
 	}

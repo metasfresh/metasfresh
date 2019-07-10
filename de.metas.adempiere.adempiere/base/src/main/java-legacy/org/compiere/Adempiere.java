@@ -23,8 +23,6 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -50,7 +48,6 @@ import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.SecureInterface;
 import org.slf4j.Logger;
-import org.springframework.context.ApplicationContext;
 
 import com.github.zafarkhaja.semver.ParseException;
 import com.github.zafarkhaja.semver.Version;
@@ -143,121 +140,13 @@ public class Adempiere
 	/** Logging */
 	private static final transient Logger logger = LogManager.getLogger(Adempiere.class);
 
-	private ApplicationContext applicationContext;
-
-	public static final ApplicationContext getSpringApplicationContext()
-	{
-		return instance.applicationContext;
-	}
-
 	/**
-	 * Inject the application context from outside <b>and</b> enable {@link Services} to retrieve service implementations from it.
-	 *
-	 * Currently seems to be required because currently the client startup procedure needs to be decomposed more.
-	 * See <code>SwingUIApplication</code> to know what I mean.
-	 *
-	 * @param applicationContext
+	 * @deprecated Please use {@link SpringContextHolder#getBean(Class)}
 	 */
-	public void setApplicationContext(final ApplicationContext applicationContext)
-	{
-		this.applicationContext = applicationContext;
-		logger.info("Set application context: {}", applicationContext);
-
-		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
-		// we will call it when the spring context was loaded.
-	}
-
-	/**
-	 * Allows to "statically" autowire a bean that is somehow not wired by spring. Needs the applicationContext to be set.
-	 *
-	 * @param bean
-	 */
-	public static final void autowire(final Object bean)
-	{
-		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		if (springApplicationContext == null)
-		{
-			return;
-		}
-		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
-	}
-
-	/**
-	 * When running this method from within a junit test, we need to fire up spring
-	 *
-	 * @param requiredType
-	 * @return
-	 */
+	@Deprecated
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
-		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		try
-		{
-			throwExceptionIfNull(springApplicationContext);
-		}
-		catch (final AdempiereException e)
-		{
-			throw e.appendParametersToMessage()
-					.setParameter("requiredType", requiredType);
-		}
-		return springApplicationContext.getBean(requiredType);
-	}
-
-	/**
-	 * When running this method from within a junit test, we need to fire up spring
-	 *
-	 * @param requiredType
-	 * @return
-	 */
-	public static final <T> Collection<T> getBeansOfType(final Class<T> requiredType)
-	{
-		final ApplicationContext springApplicationContext = getSpringApplicationContext();
-		try
-		{
-			throwExceptionIfNull(springApplicationContext);
-		}
-		catch (final AdempiereException e)
-		{
-			throw e.appendParametersToMessage()
-					.setParameter("requiredType", requiredType);
-		}
-		return springApplicationContext.getBeansOfType(requiredType).values();
-	}
-
-	private static ApplicationContext throwExceptionIfNull(final ApplicationContext springApplicationContext)
-	{
-		if (springApplicationContext != null)
-		{
-			return springApplicationContext;
-		}
-		final String message;
-		if (isUnitTestMode())
-		{
-			message = "This unit test requires a spring ApplicationContext; A known way to do that is to annotate the test class like this:\n"
-					+ "\n"
-					+ "@RunWith(SpringRunner.class)\n"
-					+ "@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, <further classes> })\n"
-					+ "public class YourTest ...\n"
-					+ "\n"
-					+ "Where the further configuration classes contain @ComponentScan annotations to discover spring components required by the actual tests"
-					+ "Also see https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-testing.html";
-		}
-		else
-		{
-			message = "SpringApplicationContext not configured yet";
-		}
-		throw new AdempiereException(message);
-	}
-
-	public static boolean isSpringProfileActive(@NonNull final String profileName)
-	{
-		final ApplicationContext springApplicationContext = throwExceptionIfNull(getSpringApplicationContext());
-
-		final String[] activeProfiles = springApplicationContext.getEnvironment().getActiveProfiles();
-		final boolean profileIsActive = Arrays
-				.stream(activeProfiles)
-				.anyMatch(env -> env.equalsIgnoreCase(profileName));
-		return profileIsActive;
+		return SpringContextHolder.instance.getBean(requiredType);
 	}
 
 	//
@@ -337,7 +226,7 @@ public class Adempiere
 
 	private Adempiere()
 	{
-	};
+	}
 
 	public static SoftwareVersion getBuildVersion()
 	{
@@ -428,7 +317,9 @@ public class Adempiere
 	private static void setPackageInfo()
 	{
 		if (_implementationVendor != null)
+		{
 			return;
+		}
 
 		Package adempierePackage = Package.getPackage("org.compiere");
 		_implementationVendor = adempierePackage.getImplementationVendor();
@@ -448,7 +339,9 @@ public class Adempiere
 	public static String getImplementationVersion()
 	{
 		if (_implementationVersion == null)
+		{
 			setPackageInfo();
+		}
 		return _implementationVersion;
 	}	// getImplementationVersion
 
@@ -460,7 +353,9 @@ public class Adempiere
 	public static String getImplementationVendor()
 	{
 		if (_implementationVendor == null)
+		{
 			setPackageInfo();
+		}
 		return _implementationVendor;
 	}	// getImplementationVendor
 
@@ -539,7 +434,9 @@ public class Adempiere
 		{
 			URL url = org.compiere.Adempiere.class.getResource(_productIconSmallName);
 			if (url == null)
+			{
 				return null;
+			}
 			final Toolkit tk = Toolkit.getDefaultToolkit();
 			_productIconSmall = tk.getImage(url);
 		}
@@ -555,7 +452,9 @@ public class Adempiere
 		{
 			URL url = getProductLogoLargeURL();
 			if (url == null)
+			{
 				return null;
+			}
 			Toolkit tk = Toolkit.getDefaultToolkit();
 			_productLogoLargeImage = tk.getImage(url);
 		}
@@ -584,7 +483,9 @@ public class Adempiere
 		{
 			URL url = org.compiere.Adempiere.class.getResource(_productLogoSmallName);
 			if (url == null)
+			{
 				return null;
+			}
 			Toolkit tk = Toolkit.getDefaultToolkit();
 			_productLogoSmallImage = tk.getImage(url);
 		}

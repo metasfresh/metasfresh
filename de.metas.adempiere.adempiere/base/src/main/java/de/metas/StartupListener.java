@@ -1,6 +1,6 @@
 package de.metas;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -44,7 +44,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 	public void onApplicationEvent(final ContextRefreshedEvent event)
 	{
 		final ApplicationContext applicationContext = event.getApplicationContext();
-		Adempiere.instance.setApplicationContext(applicationContext);
+		SpringContextHolder.instance.setApplicationContext(applicationContext);
 
 		// gh #427: allow service implementations to be managed by spring.
 		Services.setExternalServiceImplProvider(new SpringApplicationContextAsServiceImplProvider(applicationContext));

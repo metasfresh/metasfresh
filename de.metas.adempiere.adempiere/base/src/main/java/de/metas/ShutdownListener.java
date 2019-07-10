@@ -1,6 +1,6 @@
 package de.metas;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.stereotype.Component;
@@ -31,8 +31,8 @@ import org.springframework.stereotype.Component;
 public class ShutdownListener implements ApplicationListener<ContextStoppedEvent>
 {
 	@Override
-	public void onApplicationEvent(ContextStoppedEvent event)
+	public void onApplicationEvent(final ContextStoppedEvent event)
 	{
-		Adempiere.instance.setApplicationContext(null);
+		SpringContextHolder.instance.clearApplicationContext();
 	}
 }
