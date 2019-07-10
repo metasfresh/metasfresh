@@ -213,6 +213,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	@Override
 	public void captureMoney()
 	{
+		throw new UnsupportedOperationException("not implemented");
 	}
 
 }

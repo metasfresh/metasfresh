@@ -53,7 +53,6 @@ import de.metas.banking.interfaces.I_C_BankStatementLine_Ref;
 import de.metas.banking.payment.IBankStatmentPaymentBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -70,8 +69,6 @@ import de.metas.util.Services;
 public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements IProcessPrecondition
 {
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	/**
 	 * Prepare - e.g., get Parameters.

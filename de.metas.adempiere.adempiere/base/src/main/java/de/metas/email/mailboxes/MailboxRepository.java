@@ -17,10 +17,8 @@ import org.springframework.stereotype.Repository;
 import de.metas.cache.CCache;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.EMailAddress;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 
 /*
@@ -102,32 +100,6 @@ public class MailboxRepository
 				.smtpAuthorization(record.isSmtpAuthorization())
 				.sendEmailsFromServer(true)
 				.userToColumnName(null)
-				.build();
-	}
-
-	@NonNull
-	private static Mailbox createClientMailbox(@NonNull final ClientEMailConfig client)
-	{
-		final String smtpHost = client.getSmtpHost();
-		if (Check.isEmpty(smtpHost, true))
-		{
-			final String messageString = StringUtils.formatMessage(
-					"Mail System not configured. Please define some AD_MailConfig or set AD_Client.SMTPHost; "
-							+ "AD_MailConfig search parameters: AD_Client_ID={}",
-					client);
-
-			throw new MailboxNotFoundException(TranslatableStrings.constant(messageString));
-		}
-
-		return Mailbox.builder()
-				.smtpHost(smtpHost)
-				.smtpPort(client.getSmtpPort())
-				.startTLS(client.isStartTLS())
-				.email(client.getEmail())
-				.username(client.getUsername())
-				.password(client.getPassword())
-				.smtpAuthorization(client.isSmtpAuthorization())
-				.sendEmailsFromServer(client.isSendEmailsFromServer())
 				.build();
 	}
 

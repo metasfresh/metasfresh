@@ -15,7 +15,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.orders.Authorization;
 import com.paypal.orders.LinkDescription;
-import com.paypal.orders.Order;
 import com.paypal.orders.PaymentCollection;
 import com.paypal.orders.PurchaseUnit;
 
@@ -170,7 +169,7 @@ public class PayPalOrderRepository
 		return order;
 	}
 
-	private static String extractAuthorizationIdOrNull(@NonNull final Order apiOrder)
+	private static String extractAuthorizationIdOrNull(@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		final List<PurchaseUnit> purchaseUnits = apiOrder.purchaseUnits();
 		if (purchaseUnits == null || purchaseUnits.isEmpty())
