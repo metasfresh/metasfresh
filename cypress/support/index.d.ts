@@ -358,8 +358,29 @@ declare namespace Cypress {
      *
      * [@TheBestPessimist]: i have no idea how to use this.
      */
-    waitForHeader(pageName, breadcrumbNr):Chainable<any>
+    waitForHeader(pageName, breadcrumbNr): Chainable<any>
 
 
+    /**
+     * Open the referenced documents sidebar then click a reference.
+     *
+     * If the parameter `referenceId` is not present then only open the sidebar.
+     *
+     * @param referenceId - optional - the reference id
+
+     * @example
+     * // This is equivalent to pressing `[alt + 6]`, then selecting one of the referenced documents:
+     * cy.get('body').type('{alt}6');
+     * cy.selectReference('AD_RelationType_ID-540150').click();
+     *
+     * @example
+     * // Only open the documents sidebar
+     * cy.openReferencedDocuments();
+     *
+     * @example
+     * // Open the sidebar and select a specific document
+     * cy.openReferencedDocuments('AD_RelationType_ID-540150');
+     */
+    openReferencedDocuments(referenceId?: string): Chainable<any>
   }
 }
