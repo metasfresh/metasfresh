@@ -104,7 +104,7 @@ public class PurchaseRowsLoaderTest
 	private I_C_Order salesOrderRecord;
 	private I_C_BPartner bPartnerVendor;
 
-	private I_C_Currency currency;
+	private CurrencyId currencyId;
 
 	private Quantity TEN;
 
@@ -153,9 +153,10 @@ public class PurchaseRowsLoaderTest
 		bPartnerVendor.setName("bPartnerVendor.Name");
 		saveRecord(bPartnerVendor);
 
-		currency = newInstance(I_C_Currency.class);
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setStdPrecision(2);
 		saveRecord(currency);
+		currencyId = CurrencyId.ofRepoId(currency.getC_Currency_ID());
 
 		// wire together a SalesOrder2PurchaseViewFactory
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
@@ -193,8 +194,8 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setM_Product_ID(product.getM_Product_ID());
 		salesOrderLineRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		salesOrderLineRecord.setC_Order_ID(salesOrderRecord.getC_Order_ID());
-		salesOrderLineRecord.setC_Currency_ID(currency.getC_Currency_ID());
-		salesOrderLineRecord.setC_UOM_ID(TEN.getUOMId());
+		salesOrderLineRecord.setC_Currency_ID(currencyId.getRepoId());
+		salesOrderLineRecord.setC_UOM_ID(TEN.getUomId().getRepoId());
 		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());

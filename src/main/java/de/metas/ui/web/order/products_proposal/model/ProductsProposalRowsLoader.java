@@ -23,6 +23,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -82,7 +83,7 @@ public final class ProductsProposalRowsLoader
 	private final SOTrx soTrx;
 	private final ImmutableSet<ProductId> productIdsToExclude;
 
-	private final Map<PriceListVersionId, String> currencyCodesByPriceListVersionId = new HashMap<>();
+	private final Map<PriceListVersionId, CurrencyCode> currencyCodesByPriceListVersionId = new HashMap<>();
 
 	@Builder
 	private ProductsProposalRowsLoader(
@@ -184,7 +185,7 @@ public final class ProductsProposalRowsLoader
 	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());
-		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId));
+		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId).toThreeLetterCode());
 
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
@@ -195,17 +196,16 @@ public final class ProductsProposalRowsLoader
 				.build();
 	}
 
-	private String getCurrencyCode(final PriceListVersionId priceListVersionId)
+	private CurrencyCode getCurrencyCode(final PriceListVersionId priceListVersionId)
 	{
 		return currencyCodesByPriceListVersionId.computeIfAbsent(priceListVersionId, this::retrieveCurrencyCode);
 	}
 
-	private String retrieveCurrencyCode(final PriceListVersionId priceListVersionId)
+	private CurrencyCode retrieveCurrencyCode(final PriceListVersionId priceListVersionId)
 	{
 		final I_M_PriceList priceList = priceListsRepo.getPriceListByPriceListVersionId(priceListVersionId);
 		final CurrencyId currencyId = CurrencyId.ofRepoId(priceList.getC_Currency_ID());
-		final String currencyCode = currenciesRepo.getISOCodeById(currencyId);
-		return currencyCode;
+		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}
 
 	private List<ProductsProposalRow> updateLastShipmentDays(final List<ProductsProposalRow> rows)

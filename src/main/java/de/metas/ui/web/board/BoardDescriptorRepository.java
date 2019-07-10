@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
@@ -288,14 +289,8 @@ public class BoardDescriptorRepository
 					return valueBD;
 				}
 
-				final String currencyCode = Services.get(ICurrencyDAO.class).getISOCodeById(currencyId);
-				if (currencyCode == null)
-				{
-					return valueBD;
-				}
-
-				return Amount.of(valueBD, currencyCode);
-
+				final CurrencyCode currencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+				return Amount.of(valueBD, currencyCode.toThreeLetterCode());
 			};
 
 		}
@@ -604,9 +599,7 @@ public class BoardDescriptorRepository
 		if (value instanceof Amount)
 		{
 			final Amount amount = (Amount)value;
-			return TranslatableStrings.join(" ",
-					TranslatableStrings.number(amount.getValue(), DisplayType.Amount),
-					TranslatableStrings.constant(amount.getCurrencyCode()));
+			return TranslatableStrings.join(" ", TranslatableStrings.amount(amount));
 
 		}
 
