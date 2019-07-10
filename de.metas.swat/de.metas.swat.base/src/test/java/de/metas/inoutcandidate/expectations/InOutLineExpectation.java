@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.expectations;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -296,6 +297,12 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 	}
 
 	public InOutLineExpectation<ParentExpectationType> attribute(final I_M_Attribute attribute, final Date valueDate)
+	{
+		newAttributeExpectation().attribute(attribute).valueDate(valueDate);
+		return this;
+	}
+
+	public InOutLineExpectation<ParentExpectationType> attribute(final I_M_Attribute attribute, final LocalDate valueDate)
 	{
 		newAttributeExpectation().attribute(attribute).valueDate(valueDate);
 		return this;
