@@ -5,6 +5,10 @@ describe('Create test: warehouse, https://github.com/metasfresh/metasfresh-e2e/i
   const warehouseName = `TestWarehouseName ${date}`;
   const warehouseValue = `TestWarehouseValue ${date}`;
 
+  before(function() {
+    cy.wait(5000);
+  });
+
   it('Create a new warehouse', function() {
     cy.fixture('misc/warehouse.json').then(warehouseJson => {
       Object.assign(new Warehouse(), warehouseJson)
