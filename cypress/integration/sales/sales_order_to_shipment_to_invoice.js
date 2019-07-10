@@ -82,7 +82,7 @@ describe('Create Sales order', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
-    // cy.wait(8000);
+    cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
