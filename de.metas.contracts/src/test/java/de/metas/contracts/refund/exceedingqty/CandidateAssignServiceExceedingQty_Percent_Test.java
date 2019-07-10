@@ -105,6 +105,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
 		currencyRecord.setStdPrecision(2);
+		currencyRecord.setISO_Code("EUR");
 		saveRecord(currencyRecord);
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();

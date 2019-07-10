@@ -79,7 +79,7 @@ public class DerKurierShipperConfigRepository
 				.customerNumber(shipperConfigRecord.getDK_CustomerNumber())
 				.parcelNumberAdSequenceId(shipperConfigRecord.getAD_Sequence_ID())
 				.deliveryOrderMailBoxOrNull(loadMailboxOrNull(shipperConfigRecord.getAD_MailBox_ID()))
-				.deliveryOrderRecipientEmailOrNull(EMailAddress.ofString(shipperConfigRecord.getEMail_To()))
+				.deliveryOrderRecipientEmailOrNull(EMailAddress.ofNullableString(shipperConfigRecord.getEMail_To()))
 				.collectorCode(shipperConfigRecord.getCollectorCode())
 				.customerCode(shipperConfigRecord.getCustomerCode())
 				.desiredTimeFrom(TimeUtil.asLocalTime(shipperConfigRecord.getDK_DesiredDeliveryTime_From()))
