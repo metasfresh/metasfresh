@@ -50,7 +50,7 @@ public class CurrencyRepository
 		return getById(currencyId).getCurrencyCode();
 	}
 
-	private static Currency toCurrency(@NonNull final I_C_Currency currencyRecord)
+	public static Currency toCurrency(@NonNull final I_C_Currency currencyRecord)
 	{
 		return Currency.builder()
 				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))

@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,11 +58,7 @@ public class MoneyServiceTest
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		moneyService = new MoneyService(currencyRepository);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
-
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		currencyId = createCurrency("EUR");
 		// Currency currency = currencyRepository.getById(currencyId);
 
 		zeroEuro = Money.of(0, currencyId);
@@ -70,13 +67,23 @@ public class MoneyServiceTest
 		twoHundredEuro = Money.of(200, currencyId);
 	}
 
+	private CurrencyId createCurrency(@NonNull final String currencyCode)
+	{
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setISO_Code(currencyCode);
+		currencyRecord.setStdPrecision(2);
+		saveRecord(currencyRecord);
+
+		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+	}
+
 	@Test
 	public void percentage()
 	{
 		final Money result = moneyService.percentage(Percent.of(80), twoHundredEuro);
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getValue()).isEqualByComparingTo("160");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("160");
 	}
 
 	@Test
@@ -96,7 +103,7 @@ public class MoneyServiceTest
 		final Money result = moneyService.percentage(Percent.of(10), Money.of(14, currencyId));
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getValue()).isEqualByComparingTo("1.4");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("1.4");
 	}
 
 	@Test

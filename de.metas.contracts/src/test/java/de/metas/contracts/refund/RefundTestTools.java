@@ -42,7 +42,6 @@ import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -50,7 +49,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Currency;
 import de.metas.money.CurrencyCode;
-import de.metas.money.CurrencyId;
+import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -132,9 +131,6 @@ public class RefundTestTools
 	@Getter
 	private I_M_Product productRecord;
 
-	@Getter
-	private I_C_Currency currencyRecord;
-
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 
 	// used when creating refund configs
@@ -152,15 +148,11 @@ public class RefundTestTools
 		docTypeRecord.setDocSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
 		saveRecord(docTypeRecord);
 
-		currencyRecord = newInstance(I_C_Currency.class);
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
 		currencyRecord.setStdPrecision(2);
+		currencyRecord.setISO_Code(CurrencyCode.EUR.toThreeLetterCode());
 		saveRecord(currencyRecord);
-
-		currency = Currency.builder()
-				.id(CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID()))
-				.precision(CurrencyPrecision.ofInt(currencyRecord.getStdPrecision()))
-				.currencyCode(CurrencyCode.EUR)
-				.build();
+		currency = CurrencyRepository.toCurrency(currencyRecord);
 
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);

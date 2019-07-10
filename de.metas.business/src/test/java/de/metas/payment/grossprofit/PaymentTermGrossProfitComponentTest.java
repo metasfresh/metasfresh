@@ -19,6 +19,7 @@ import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,12 +53,20 @@ public class PaymentTermGrossProfitComponentTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2); // the precision is crucial for the rounding, when we subtract the contract's discount
-		saveRecord(currencyRecord);
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		// the precision is crucial for the rounding, when we subtract the contract's discount
+		currencyId = createCurrency("EUR", 2);
 
 		moneyService = new MoneyService(new CurrencyRepository());
+	}
+
+	private CurrencyId createCurrency(@NonNull final String currencyCode, final int precision)
+	{
+		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setISO_Code(currencyCode);
+		currencyRecord.setStdPrecision(precision);
+		saveRecord(currencyRecord);
+
+		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 	}
 
 	@Test
@@ -73,7 +82,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getValue()).isEqualByComparingTo("0.97");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("0.97");
 	}
 
 	@Test
@@ -83,7 +92,7 @@ public class PaymentTermGrossProfitComponentTest
 
 		// invoke the method under test
 		final Money result = component.applyToInput(Money.of(ONE, currencyId));
-		assertThat(result.getValue()).isEqualByComparingTo("1");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("1");
 	}
 
 }

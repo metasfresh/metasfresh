@@ -120,6 +120,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(uomRecord);
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setISO_Code("EUR");
 		currencyRecord.setStdPrecision(2);
 		saveRecord(currencyRecord);
 		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());

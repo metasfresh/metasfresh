@@ -84,7 +84,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 		assignableCandidateRecord.setBill_BPartner_ID(20);
 		assignableCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(NOW));
 		assignableCandidateRecord.setNetAmtToInvoice(TWENTY);
-		assignableCandidateRecord.setC_Currency(refundTestTools.getCurrencyRecord());
+		assignableCandidateRecord.setC_Currency_ID(refundTestTools.getCurrency().getId().getRepoId());
 		assignableCandidateRecord.setM_Product(refundTestTools.getProductRecord());
 		assignableCandidateRecord.setQtyInvoiced(TEN);
 		assignableCandidateRecord.setQtyToInvoice(FIVE);
