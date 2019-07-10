@@ -230,10 +230,12 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		updateReservationFromPayPalOrder(reservation, payPalOrder);
 
 		// TODO
-		// apiCapture.statusDetails(statusDetails);
+		// toMoney(apiCapture.amount());
+		// apiCapture.status();
+		// apiCapture.statusDetails();
 		// reservation.captureAmount(amount);
 	}
-	
+
 	public static void updateReservationFromPayPalOrder(
 			@NonNull final PaymentReservation reservation,
 			@NonNull final PayPalOrder payPalOrder)

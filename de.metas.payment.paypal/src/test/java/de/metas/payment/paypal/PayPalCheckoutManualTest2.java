@@ -89,7 +89,7 @@ public class PayPalCheckoutManualTest2
 	private PayPalOrderRepository payPalOrderRepository;
 	private PayPalPaymentProcessor payPalPaymentProcessor;
 	private PaymentReservationService paymentReservationService;
-	private PayPalCallbacksService payPalCallbacksService;
+	private PayPalRestController payPalCallbacksService;
 
 	private PayPalCheckoutManualTest2()
 	{
@@ -138,7 +138,7 @@ public class PayPalCheckoutManualTest2
 				new PaymentReservationRepository(),
 				paymentProcessors);
 
-		payPalCallbacksService = new PayPalCallbacksService(paymentReservationService, payPalPaymentProcessor);
+		payPalCallbacksService = new PayPalRestController(paymentReservationService, payPalPaymentProcessor);
 
 	}
 

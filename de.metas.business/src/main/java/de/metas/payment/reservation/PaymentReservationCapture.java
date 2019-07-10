@@ -38,6 +38,7 @@ public class PaymentReservationCapture
 {
 	@NonNull
 	PaymentReservationCaptureStatus status;
+	String statusDetails;
 
 	@NonNull
 	Money amount;

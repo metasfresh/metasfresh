@@ -1,7 +1,13 @@
 package de.metas.payment.paypal;
 
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.Profiles;
 import de.metas.payment.paypal.client.PayPalOrder;
 import de.metas.payment.paypal.client.PayPalOrderId;
 import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
@@ -12,7 +18,7 @@ import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.payment.paypalplus
+ * de.metas.payment.paypal
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -32,13 +38,15 @@ import lombok.NonNull;
  * #L%
  */
 
-@Service
-public class PayPalCallbacksService
+@RestController
+@Profile(Profiles.PROFILE_Webui)
+@RequestMapping("/paypal")
+public class PayPalRestController
 {
 	private final PaymentReservationService paymentReservationService;
 	private final PayPalPaymentProcessor payPalPaymentProcessor;
 
-	public PayPalCallbacksService(
+	public PayPalRestController(
 			@NonNull final PaymentReservationService paymentReservationService,
 			@NonNull final PayPalPaymentProcessor payPalPaymentProcessor)
 	{
@@ -46,6 +54,15 @@ public class PayPalCallbacksService
 		this.payPalPaymentProcessor = payPalPaymentProcessor;
 	}
 
+	@RequestMapping("/approved")
+	public void notifyOrderApprovedByPayer(
+			@RequestParam(value = "token", required = true) final String token)
+	{
+		final PayPalOrderId apiOrderId = PayPalOrderId.ofString(token);
+		onOrderApprovedByPayer(apiOrderId);
+	}
+
+	@VisibleForTesting
 	public PaymentReservation onOrderApprovedByPayer(@NonNull final PayPalOrderId apiOrderId)
 	{
 		final PaymentReservation reservation = updateReservationFromAPIOrder(apiOrderId);
@@ -68,4 +85,5 @@ public class PayPalCallbacksService
 		paymentReservationService.save(reservation);
 		return reservation;
 	}
+
 }
