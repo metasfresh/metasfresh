@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.OrgId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -91,7 +91,7 @@ public class UserSession
 			{
 				if (_staticUserSession == null)
 				{
-					userSession = _staticUserSession = Adempiere.getSpringApplicationContext().getBean(UserSession.class);
+					userSession = _staticUserSession = SpringContextHolder.instance.getBean(UserSession.class);
 				}
 			}
 		}
