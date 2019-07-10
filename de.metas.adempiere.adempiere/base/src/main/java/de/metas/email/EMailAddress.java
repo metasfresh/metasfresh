@@ -50,7 +50,7 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class EMailAddress
 {
-	public static EMailAddress ofNullableString(@NonNull final String emailStr)
+	public static EMailAddress ofNullableString(@Nullable final String emailStr)
 	{
 		return !Check.isEmpty(emailStr, true) ? new EMailAddress(emailStr) : null;
 	}
