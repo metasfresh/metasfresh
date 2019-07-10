@@ -87,17 +87,7 @@ describe('Create Dunning Candidates', function () {
       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
         .addLine(
           new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity)
-          // todo @dh: how to add a "per test" packing item
-          // .setPackingItem('IFCO 6410 x 10 Stk')
-          // .setTuQuantity(2)
         )
-        // .addLine(
-        // todo @dh: how to add this line which depends on the packing item?
-        //   new SalesInvoiceLine()
-        //     .setProduct('IFCO 6410_P001512')
-        //     .setQuantity(2)
-        // )
-        // .setPriceList(priceListName)
         .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
@@ -145,11 +135,6 @@ describe('Create Dunning Candidates', function () {
   it('Create Dunning Candidates', function () {
     DunningCandidates.visit();
     cy.wait(1000); // without this wait, the action menu is not properly loaded
-
-    // cy.wait(10000);
-    // maybe this 10 seconds sleep fixes some cache invalidation problem that Dunning type is not found in `de.metas.dunning.api.impl.DunningDAO.retrieveDunnings`
-    // currently the sleep is commented out, but left here for easier debugging, in case it will be needed in the future.
-    // if current date is > 01.08.2019, please get rid of this sleep IF it is still commented
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
