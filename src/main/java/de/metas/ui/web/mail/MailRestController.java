@@ -36,7 +36,7 @@ import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailCustomType;
 import de.metas.email.EMailSentStatus;
-import de.metas.email.IMailBL;
+import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.letters.model.MADBoilerPlate;
@@ -98,6 +98,8 @@ public class MailRestController
 
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
+	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+	private final IUserBL usersService = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	@Autowired
 	private UserSession userSession;
@@ -105,6 +107,8 @@ public class MailRestController
 	private WebuiMailRepository mailRepo;
 	@Autowired
 	private WebuiMailAttachmentsRepository mailAttachmentsRepo;
+	@Autowired
+	private MailService mailService;
 	@Autowired
 	private DocumentCollection documentCollection;
 
@@ -146,7 +150,7 @@ public class MailRestController
 		userSession.assertLoggedIn();
 
 		final UserId adUserId = userSession.getLoggedUserId();
-		Services.get(IUserBL.class).assertCanSendEMail(adUserId);
+		usersService.assertCanSendEMail(adUserId);
 
 		final IntegerLookupValue from = IntegerLookupValue.of(adUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
@@ -195,10 +199,6 @@ public class MailRestController
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
-		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-		final IUserBL usersService = Services.get(IUserBL.class);
-		final IMailBL mailService = Services.get(IMailBL.class);
-		
 		final String emailId = webuiEmail.getEmailId();
 
 		//
