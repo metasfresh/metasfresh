@@ -14,7 +14,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -34,6 +33,8 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -153,10 +154,7 @@ public class PurchaseRowsLoaderTest
 		bPartnerVendor.setName("bPartnerVendor.Name");
 		saveRecord(bPartnerVendor);
 
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		currency.setStdPrecision(2);
-		saveRecord(currency);
-		currencyId = CurrencyId.ofRepoId(currency.getC_Currency_ID());
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// wire together a SalesOrder2PurchaseViewFactory
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
