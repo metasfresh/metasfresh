@@ -1,4 +1,4 @@
-package de.metas.paypal.logs;
+package de.metas.payment.paypal.logs;
 
 import org.compiere.util.Util;
 

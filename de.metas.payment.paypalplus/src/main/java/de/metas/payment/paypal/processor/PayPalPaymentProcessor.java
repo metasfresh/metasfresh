@@ -1,4 +1,4 @@
-package de.metas.paypal.processor;
+package de.metas.payment.paypal.processor;
 
 import java.net.URL;
 
@@ -25,15 +25,15 @@ import de.metas.email.templates.MailTextBuilder;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paypal.client.PayPalClientExecutionContext;
+import de.metas.payment.paypal.client.PayPalClientService;
+import de.metas.payment.paypal.client.PayPalOrder;
+import de.metas.payment.paypal.client.PayPalOrderId;
+import de.metas.payment.paypal.client.PayPalOrderService;
+import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationStatus;
-import de.metas.paypal.client.PayPalClientService;
-import de.metas.paypal.client.PayPalClientExecutionContext;
-import de.metas.paypal.client.PayPalOrder;
-import de.metas.paypal.client.PayPalOrderId;
-import de.metas.paypal.client.PayPalOrderService;
-import de.metas.paypal.config.PayPalConfig;
 import de.metas.util.Services;
 import lombok.NonNull;
 

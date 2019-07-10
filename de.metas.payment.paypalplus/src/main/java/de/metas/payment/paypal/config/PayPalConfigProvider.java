@@ -1,4 +1,4 @@
-package de.metas.paypal.config;
+package de.metas.payment.paypal.config;
 
 /*
  * #%L

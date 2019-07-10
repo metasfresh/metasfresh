@@ -1,4 +1,4 @@
-package de.metas.paypal.config;
+package de.metas.payment.paypal.config;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;

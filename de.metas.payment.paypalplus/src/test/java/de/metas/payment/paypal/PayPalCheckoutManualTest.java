@@ -1,4 +1,4 @@
-package de.metas.paypal;
+package de.metas.payment.paypal;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,10 +37,10 @@ import com.paypal.payments.Refund;
 import com.paypal.payments.RefundRequest;
 
 import de.metas.email.templates.MailTemplateId;
-import de.metas.paypal.config.PayPalConfig;
-import de.metas.paypal.logs.PayPalCreateLogRequest;
-import de.metas.paypal.logs.PayPalLogRepository;
-import de.metas.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
+import de.metas.payment.paypal.config.PayPalConfig;
+import de.metas.payment.paypal.logs.PayPalCreateLogRequest;
+import de.metas.payment.paypal.logs.PayPalLogRepository;
+import de.metas.payment.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
 import lombok.NonNull;
 
 /*

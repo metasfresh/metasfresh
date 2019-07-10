@@ -1,4 +1,4 @@
-package de.metas.paypal.client;
+package de.metas.payment.paypal.client;
 
 import java.util.Arrays;
 

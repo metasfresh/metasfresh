@@ -1,8 +1,15 @@
-package de.metas.paypal.client;
+package de.metas.payment.paypal.client;
 
-import de.metas.order.OrderId;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.payment.reservation.PaymentReservationId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,11 +35,46 @@ import lombok.Value;
  */
 
 @Value
-@Builder
-public class PayPalClientExecutionContext
+@Builder(toBuilder = true)
+public class PayPalOrder
 {
-	public static final PayPalClientExecutionContext EMPTY = builder().build();
-
+	@NonNull
 	PaymentReservationId paymentReservationId;
-	OrderId salesOrderId;
+
+	/** i.e. the paypal order id */
+	@NonNull
+	PayPalOrderId externalId;
+	
+	@NonNull
+	PayPalOrderStatus status;
+
+	@Nullable
+	PayPalOrderAuthorizationId authorizationId;
+	@Nullable
+	String payerApproveUrlString;
+
+	@Nullable
+	String bodyAsJson;
+
+	public boolean isAuthorized()
+	{
+		return authorizationId != null;
+	}
+
+	public URL getPayerApproveUrl()
+	{
+		if (payerApproveUrlString == null)
+		{
+			throw new AdempiereException("No payer url");
+		}
+
+		try
+		{
+			return new URL(payerApproveUrlString);
+		}
+		catch (MalformedURLException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
 }

@@ -1,4 +1,4 @@
-package de.metas.paypal;
+package de.metas.payment.paypal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -31,6 +31,13 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paypal.client.PayPalClientService;
+import de.metas.payment.paypal.client.PayPalOrderId;
+import de.metas.payment.paypal.client.PayPalOrderRepository;
+import de.metas.payment.paypal.client.PayPalOrderService;
+import de.metas.payment.paypal.config.PayPalConfigProvider;
+import de.metas.payment.paypal.logs.PayPalLogRepository;
+import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
 import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
@@ -38,14 +45,6 @@ import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.paypal.callbacks.PayPalCallbacksService;
-import de.metas.paypal.client.PayPalClientService;
-import de.metas.paypal.client.PayPalOrderId;
-import de.metas.paypal.client.PayPalOrderRepository;
-import de.metas.paypal.client.PayPalOrderService;
-import de.metas.paypal.config.PayPalConfigProvider;
-import de.metas.paypal.logs.PayPalLogRepository;
-import de.metas.paypal.processor.PayPalPaymentProcessor;
 import lombok.NonNull;
 
 /*

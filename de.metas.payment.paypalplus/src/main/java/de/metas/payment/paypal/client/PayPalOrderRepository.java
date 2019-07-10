@@ -1,4 +1,4 @@
-package de.metas.paypal.client;
+package de.metas.payment.paypal.client;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;

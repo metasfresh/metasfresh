@@ -1,13 +1,13 @@
-package de.metas.paypal.callbacks;
+package de.metas.payment.paypal;
 
 import org.springframework.stereotype.Service;
 
+import de.metas.payment.paypal.client.PayPalOrder;
+import de.metas.payment.paypal.client.PayPalOrderId;
+import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.paypal.client.PayPalOrder;
-import de.metas.paypal.client.PayPalOrderId;
-import de.metas.paypal.processor.PayPalPaymentProcessor;
 import lombok.NonNull;
 
 /*

@@ -1,4 +1,4 @@
-package de.metas.paypal.client;
+package de.metas.payment.paypal.client;
 
 import java.io.IOException;
 
@@ -22,11 +22,11 @@ import com.paypal.payments.Capture;
 import com.paypal.payments.CaptureRequest;
 
 import de.metas.currency.Amount;
-import de.metas.paypal.config.PayPalConfig;
-import de.metas.paypal.config.PayPalConfigProvider;
-import de.metas.paypal.logs.PayPalCreateLogRequest;
-import de.metas.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
-import de.metas.paypal.logs.PayPalLogRepository;
+import de.metas.payment.paypal.config.PayPalConfig;
+import de.metas.payment.paypal.config.PayPalConfigProvider;
+import de.metas.payment.paypal.logs.PayPalCreateLogRequest;
+import de.metas.payment.paypal.logs.PayPalLogRepository;
+import de.metas.payment.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
 import lombok.NonNull;
 
 /*
