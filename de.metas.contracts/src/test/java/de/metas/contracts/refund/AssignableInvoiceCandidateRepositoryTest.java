@@ -69,9 +69,9 @@ public class AssignableInvoiceCandidateRepositoryTest
 		final AssignableInvoiceCandidate assignableCandidate = assignableInvoiceCandidateRepository.getById(InvoiceCandidateId.ofRepoId(assignableCandidateRecord.getC_Invoice_Candidate_ID()));
 
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo("15");
-		assertThat(assignableCandidate.getQuantity().getUOMId()).isEqualTo(assignableCandidateRecord.getM_Product().getC_UOM_ID());
+		assertThat(assignableCandidate.getQuantity().getUomId().getRepoId()).isEqualTo(assignableCandidateRecord.getM_Product().getC_UOM_ID());
 		assertThat(assignableCandidate.getBpartnerId().getRepoId()).isEqualTo(20);
-		assertThat(assignableCandidate.getMoney().getValue()).isEqualTo(TWENTY);
+		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualTo(TWENTY);
 		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrency().getId());
 		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
 	}

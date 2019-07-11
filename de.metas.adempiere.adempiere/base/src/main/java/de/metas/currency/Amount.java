@@ -56,7 +56,7 @@ public final class Amount implements Comparable<Amount>
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyCode = currencyCode;
 	}
-
+	
 	public BigDecimal getAsBigDecimal()
 	{
 		return value;

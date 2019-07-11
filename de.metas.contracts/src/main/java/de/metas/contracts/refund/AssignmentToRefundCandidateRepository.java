@@ -138,8 +138,8 @@ public class AssignmentToRefundCandidateRepository
 		assignmentRecord.setC_Flatrate_RefundConfig_ID(assignmentToRefundCandidate.getRefundConfigId().getRepoId());
 		assignmentRecord.setC_Invoice_Candidate_Term_ID(refundInvoiceCandidate.getId().getRepoId());
 		assignmentRecord.setC_Flatrate_Term_ID(refundInvoiceCandidate.getRefundContract().getId().getRepoId());
-		assignmentRecord.setBaseMoneyAmount(assignmentToRefundCandidate.getMoneyBase().getValue());
-		assignmentRecord.setAssignedMoneyAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getValue());
+		assignmentRecord.setBaseMoneyAmount(assignmentToRefundCandidate.getMoneyBase().getAsBigDecimal());
+		assignmentRecord.setAssignedMoneyAmount(assignmentToRefundCandidate.getMoneyAssignedToRefundCandidate().getAsBigDecimal());
 		assignmentRecord.setAssignedQuantity(assignmentToRefundCandidate.getQuantityAssigendToRefundCandidate().getAsBigDecimal());
 		assignmentRecord.setIsAssignedQuantityIncludedInSum(assignmentToRefundCandidate.isUseAssignedQtyInSum());
 

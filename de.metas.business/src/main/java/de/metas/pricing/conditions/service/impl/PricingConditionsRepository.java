@@ -499,7 +499,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setBase_PricingSystem_ID(price.getBasePricingSystemId().getRepoId());
 
 			final Money surcharge = price.getPricingSystemSurcharge();
-			schemaBreak.setPricingSystemSurchargeAmt(surcharge != null ? surcharge.getValue() : null);
+			schemaBreak.setPricingSystemSurchargeAmt(surcharge != null ? surcharge.getAsBigDecimal() : null);
 			schemaBreak.setC_Currency_ID(surcharge != null ? surcharge.getCurrencyId().getRepoId() : -1);
 
 			schemaBreak.setPriceStdFixed(null);
@@ -511,7 +511,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			schemaBreak.setPricingSystemSurchargeAmt(BigDecimal.ZERO);
 
 			final Money fixedPrice = price.getFixedPrice();
-			schemaBreak.setPriceStdFixed(fixedPrice != null ? fixedPrice.getValue() : null);
+			schemaBreak.setPriceStdFixed(fixedPrice != null ? fixedPrice.getAsBigDecimal() : null);
 			schemaBreak.setC_Currency_ID(fixedPrice != null ? fixedPrice.getCurrencyId().getRepoId() : -1);
 		}
 		else

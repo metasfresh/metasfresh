@@ -310,7 +310,7 @@ class BPartnerProductStatsRepository
 		record.setLastSalesInvoiceDate(TimeUtil.asTimestamp(invoiceDate));
 
 		final Money price = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getPrice() : null;
-		record.setLastSalesPrice(price != null ? price.getValue() : null);
+		record.setLastSalesPrice(price != null ? price.getAsBigDecimal() : null);
 		record.setLastSalesPrice_Currency_ID(price != null ? price.getCurrencyId().getRepoId() : -1);
 	}
 }

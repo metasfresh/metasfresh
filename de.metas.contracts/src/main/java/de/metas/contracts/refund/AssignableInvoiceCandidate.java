@@ -1,6 +1,6 @@
 package de.metas.contracts.refund;
 
-import static org.compiere.util.Util.coalesce;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -122,7 +122,7 @@ public class AssignableInvoiceCandidate
 				.divide(quantity.getAsBigDecimal(), RoundingMode.HALF_UP);
 
 		final BigDecimal newMoneyValue = money
-				.getValue()
+				.getAsBigDecimal()
 				.setScale(precision, RoundingMode.HALF_UP)
 				.multiply(newFraction)
 				.setScale(precision, RoundingMode.HALF_UP);

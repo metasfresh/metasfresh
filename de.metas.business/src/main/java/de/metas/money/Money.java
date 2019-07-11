@@ -122,18 +122,18 @@ public final class Money
 		this.currencyId = currencyId;
 	}
 
-	/**
-	 * @deprecated please use {@link #getAsBigDecimal()}
-	 */
-	@Deprecated
-	public BigDecimal getValue()
+	public BigDecimal getAsBigDecimal()
 	{
 		return value;
 	}
 
-	public BigDecimal getAsBigDecimal()
+	public static BigDecimal getAsBigDecimalOrZero(@Nullable final Money money)
 	{
-		return value;
+		if (money == null)
+		{
+			return ZERO;
+		}
+		return money.getAsBigDecimal();
 	}
 
 	public int signum()
@@ -258,8 +258,7 @@ public final class Money
 		return this.value.compareTo(other.value) >= 0 ? this : other;
 	}
 
-	private void assertCurrencyIdMatching(
-			@NonNull final Money amt)
+	private void assertCurrencyIdMatching(@NonNull final Money amt)
 	{
 		if (!Objects.equals(currencyId, amt.currencyId))
 		{
@@ -289,15 +288,6 @@ public final class Money
 		};
 
 		return Collector.of(supplier, accumulator, combiner, finisher);
-	}
-
-	public static BigDecimal getValueOrZero(@Nullable final Money money)
-	{
-		if (money == null)
-		{
-			return ZERO;
-		}
-		return money.getAsBigDecimal();
 	}
 
 	public Amount toAmount(@NonNull final Function<CurrencyId, CurrencyCode> currencyCodeMapper)

@@ -349,12 +349,12 @@ public class RefundInvoiceCandidateServiceTest
 	public void addAssignableMoney()
 	{
 		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-		assertThat(refundCandidate.getMoney().getValue()).isEqualByComparingTo("100"); // guard
+		assertThat(refundCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo("100"); // guard
 		assertThat(refundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(ZERO); // guard
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone();
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(ONE);// guard
-		assertThat(assignableCandidate.getMoney().getValue()).isEqualByComparingTo(TEN);// guard
+		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 		assertThat(refundConfig.getRefundBase()).isEqualTo(RefundBase.PERCENTAGE);
@@ -364,7 +364,7 @@ public class RefundInvoiceCandidateServiceTest
 		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate);
 
 		assertThat(result.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
-		assertThat(result.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");
-		assertThat(result.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102");
+		assertThat(result.getMoneyAssignedToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo("2");
+		assertThat(result.getRefundInvoiceCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("102");
 	}
 }

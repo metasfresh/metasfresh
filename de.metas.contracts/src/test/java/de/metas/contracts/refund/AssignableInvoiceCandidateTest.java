@@ -68,12 +68,12 @@ public class AssignableInvoiceCandidateTest
 
 		assertThat(result.getRemainder()).isNotNull();
 		assertThat(result.getRemainder().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TWENTY);
-		assertThat(result.getRemainder().getMoney().getValue()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
+		assertThat(result.getRemainder().getMoney().getAsBigDecimal()).isEqualByComparingTo("6.67"); // 2/3 of the original's quantity
 		assertThat(result.getRemainder().getId()).isEqualTo(candidate.getId());
 
 		assertThat(result.getNewCandidate()).isNotNull();
 		assertThat(result.getNewCandidate().getQuantity().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(result.getNewCandidate().getMoney().getValue()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
+		assertThat(result.getNewCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("3.33"); // 1/3 of the original's quantity
 		assertThat(result.getNewCandidate().getId()).isEqualTo(candidate.getId());
 	}
 }
