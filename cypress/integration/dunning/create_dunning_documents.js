@@ -135,11 +135,10 @@ describe('Create Dunning Documents', function() {
     cy.pressStartButton();
   });
 
-
   describe('Check Dunning Documents', function() {
     it('Expect there are exactly 2 dunning documents created!', function() {
       cy.visitWindow(salesInvoices.windowId, siRecordId);
-      cy.openReferencedDocuments('AD_RelationType_ID-540226');
+      cy.openReferencedDocuments('C_Invoice-C_DunningDoc');
       DunningDocuments.getRows().should('have.length', 2);
     });
 
@@ -158,7 +157,7 @@ describe('Create Dunning Documents', function() {
   function checkDunningDocument(dunningLevel) {
     describe(`Open Dunning document ${dunningLevel} via reference from Sales Invoice`, function() {
       cy.visitWindow(salesInvoices.windowId, siRecordId);
-      cy.openReferencedDocuments('AD_RelationType_ID-540226');
+      cy.openReferencedDocuments('C_Invoice-C_DunningDoc');
       DunningDocuments.getRows().contains('td', dunningLevel, { log: true }).dblclick();
     });
 
@@ -182,7 +181,7 @@ describe('Create Dunning Documents', function() {
     });
 
     describe(`Check reference from Dunning document to its Sales Invoices`, function() {
-      cy.openReferencedDocuments('AD_RelationType_ID-540227');
+      cy.openReferencedDocuments('C_DunningDoc-C_Invoice');
       DunningDocuments.getRows().contains('td', siDocumentNumber, { log: true });
     });
   }
