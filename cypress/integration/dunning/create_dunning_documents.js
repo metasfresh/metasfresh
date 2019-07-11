@@ -156,7 +156,7 @@ describe('Create Dunning Documents', function() {
 
 
   function checkDunningDocument(dunningLevel) {
-    describe(`Open Dunning document ${dunningLevel}`, function() {
+    describe(`Open Dunning document ${dunningLevel} via reference from Sales Invoice`, function() {
       cy.visitWindow(salesInvoices.windowId, siRecordId);
       cy.openReferencedDocuments('AD_RelationType_ID-540226');
       DunningDocuments.getRows().contains('td', dunningLevel, { log: true }).dblclick();
@@ -179,6 +179,11 @@ describe('Create Dunning Documents', function() {
       cy.getStringFieldValue('C_Currency_ID', true).should('equals', siCurrency);
       cy.getStringFieldValue('C_BPartner_ID', true).should('contain', businessPartnerName);
       cy.pressDoneButton();
+    });
+
+    describe(`Check reference from Dunning document to its Sales Invoices`, function() {
+      cy.openReferencedDocuments('AD_RelationType_ID-540227');
+      DunningDocuments.getRows().contains('td', siDocumentNumber, { log: true });
     });
   }
 
