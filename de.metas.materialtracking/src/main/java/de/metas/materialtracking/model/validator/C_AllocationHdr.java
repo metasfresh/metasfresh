@@ -106,7 +106,7 @@ public class C_AllocationHdr extends MaterialTrackableDocumentByASIInterceptor<I
 			return null;
 		}
 
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(invoice);
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(invoice);
 		return materialTracking;
 	}
 }

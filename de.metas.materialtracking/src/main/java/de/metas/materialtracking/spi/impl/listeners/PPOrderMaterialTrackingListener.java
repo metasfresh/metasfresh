@@ -10,12 +10,12 @@ package de.metas.materialtracking.spi.impl.listeners;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,8 @@ package de.metas.materialtracking.spi.impl.listeners;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order;
+
+import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.MTLinkRequest;
@@ -38,14 +40,13 @@ public final class PPOrderMaterialTrackingListener extends MaterialTrackingListe
 
 	private PPOrderMaterialTrackingListener()
 	{
-		super();
 	}
 
 	/**
 	 * Set {@link I_M_Material_Tracking_Ref#COLUMN_IsQualityInspectionDoc}.
 	 */
 	@Override
-	public void beforeModelLinked(final MTLinkRequest request, 
+	public void beforeModelLinked(final MTLinkRequest request,
 			final I_M_Material_Tracking_Ref materialTrackingRef)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(request.getModel(), I_PP_Order.class);
@@ -54,12 +55,8 @@ public final class PPOrderMaterialTrackingListener extends MaterialTrackingListe
 
 	/**
 	 * Sets {@link I_M_Material_Tracking_Ref#COLUMN_IsQualityInspectionDoc} flag.
-	 *
-	 * @param materialTrackingRef
-	 * @param ppOrder
 	 */
-	// NOTE: package level for testing purposes
-	/* package */final void setIsQualityInspectionDoc(final I_M_Material_Tracking_Ref materialTrackingRef, final I_PP_Order ppOrder)
+	@VisibleForTesting void setIsQualityInspectionDoc(final I_M_Material_Tracking_Ref materialTrackingRef, final I_PP_Order ppOrder)
 	{
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
 		final boolean isQualityInspectionDoc = materialTrackingPPOrderBL.isQualityInspection(ppOrder);

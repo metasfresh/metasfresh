@@ -1,6 +1,7 @@
 package de.metas.uom.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -26,6 +27,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collection;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -149,6 +151,23 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
 		final BigDecimal qty = convertQty(conversionCtx, sourceQty, sourceUOM, uomTo);
 		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
+	}
+
+	@Override
+	public Quantity computeSum(
+			@NonNull final UOMConversionContext conversionCtx,
+			@NonNull final Collection<Quantity> quantities,
+			@NonNull final UomId toUomId)
+	{
+		final I_C_UOM toUomRecord = loadOutOfTrx(toUomId, I_C_UOM.class);
+		Quantity resultInTargetUOM = Quantity.zero(toUomRecord);
+
+		for (final Quantity currentQuantity : quantities)
+		{
+			final Quantity currentQuantityInTargetUOM = convertQuantityTo(currentQuantity, conversionCtx, toUomId);
+			resultInTargetUOM = resultInTargetUOM.add(currentQuantityInTargetUOM);
+		}
+		return resultInTargetUOM;
 	}
 
 	@Override

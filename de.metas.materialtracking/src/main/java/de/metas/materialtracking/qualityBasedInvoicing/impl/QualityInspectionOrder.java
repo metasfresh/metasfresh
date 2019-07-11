@@ -111,7 +111,7 @@ import de.metas.util.Services;
 		if (_materialTracking == null)
 		{
 			final I_PP_Order ppOrder = getPP_Order();
-			_materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(ppOrder);
+			_materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(ppOrder);
 			Check.assumeNotNull(_materialTracking, "material tracking exists for {}", ppOrder);
 		}
 
