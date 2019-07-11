@@ -46,4 +46,14 @@ public class CurrencyRepository
 	{
 		return getById(currencyId).getCurrencyCode();
 	}
+
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return getById(currencyId).getPrecision();
+	}
+
+	public CurrencyPrecision getCostingPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return getById(currencyId).getCostingPrecision();
+	}
 }

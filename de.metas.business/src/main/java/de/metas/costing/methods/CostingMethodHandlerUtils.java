@@ -23,6 +23,8 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
@@ -55,14 +57,18 @@ public class CostingMethodHandlerUtils
 {
 	private final IAcctSchemaDAO acctSchemaRepo = Services.get(IAcctSchemaDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final CurrencyRepository currenciesRepo;
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final ICostDetailRepository costDetailsRepo;
 	private final ICurrentCostsRepository currentCostsRepo;
 
 	public CostingMethodHandlerUtils(
+			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
 			@NonNull final ICostDetailRepository costDetailsRepo)
 	{
+		this.currenciesRepo = currenciesRepo;
+
 		this.currentCostsRepo = currentCostsRepo;
 		this.costDetailsRepo = costDetailsRepo;
 	}
@@ -221,5 +227,10 @@ public class CostingMethodHandlerUtils
 				.orgId(costingLevel.effectiveValueOrNull(costDetail.getOrgId()))
 				.afterCostDetailId(costDetail.getId())
 				.build());
+	}
+
+	public CurrencyPrecision getCostingPrecision(CurrencyId currencyId)
+	{
+		return currenciesRepo.getCostingPrecision(currencyId);
 	}
 }

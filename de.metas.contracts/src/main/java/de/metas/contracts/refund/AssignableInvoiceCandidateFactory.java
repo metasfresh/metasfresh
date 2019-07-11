@@ -18,7 +18,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -56,6 +56,7 @@ import lombok.NonNull;
 public class AssignableInvoiceCandidateFactory
 {
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+	private final CurrencyRepository currenciesRepo;
 
 	@VisibleForTesting
 	public static AssignableInvoiceCandidateFactory newForUnitTesting()
@@ -68,12 +69,17 @@ public class AssignableInvoiceCandidateFactory
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
 
-		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository);
+		final CurrencyRepository currenciesRepo = new CurrencyRepository();
+		
+		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository, currenciesRepo);
 	}
 
-	public AssignableInvoiceCandidateFactory(@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+	public AssignableInvoiceCandidateFactory(
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */
@@ -87,7 +93,7 @@ public class AssignableInvoiceCandidateFactory
 				.add(assignableRecord.getNetAmtToInvoice());
 
 		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
-		final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+		final CurrencyPrecision precision = currenciesRepo.getStdPrecision(currencyId);
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
 		final Quantity quantity = extractQuantity(assignableRecord);

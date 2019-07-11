@@ -39,8 +39,6 @@ public class PlainDunningUtil extends DunningUtil
 
 	public PlainDunningUtil()
 	{
-		super();
-
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 	}
 

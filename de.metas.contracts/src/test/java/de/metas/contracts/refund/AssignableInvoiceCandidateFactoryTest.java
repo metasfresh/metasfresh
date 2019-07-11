@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -92,7 +93,9 @@ public class AssignableInvoiceCandidateFactoryTest
 		final AssignmentAggregateService assignmentAggregateService = new AssignmentAggregateService(refundConfigRepository);
 		final RefundInvoiceCandidateFactory refundInvoiceCandidateFactory = new RefundInvoiceCandidateFactory(refundContractRepository, assignmentAggregateService);
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
-		assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository));
+		assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(
+				new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository),
+				new CurrencyRepository());
 	}
 
 	@Test

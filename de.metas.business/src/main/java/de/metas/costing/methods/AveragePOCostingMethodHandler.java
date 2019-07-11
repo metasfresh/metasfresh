@@ -40,7 +40,6 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.IMatchInvDAO;
@@ -116,9 +115,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	private ProductPrice convertToUOM(final ProductPrice costPrice, final UomId uomId)
 	{
 		final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 
-		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
+		final CurrencyPrecision precision = utils.getCostingPrecision(costPrice.getCurrencyId());
 		return uomConversionsBL.convertProductPriceToUom(costPrice, uomId, precision);
 	}
 
@@ -126,7 +124,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 	protected CostDetailCreateResult createCostForMaterialReceipt(final CostDetailCreateRequest request)
 	{
 		final Quantity qty = request.getQty();
-		final UomId qtyUOMId = UomId.ofRepoId(qty.getUOMId());
+		final UomId qtyUOMId = qty.getUomId();
 
 		final InOutLineId receiptInOutLineId = InOutLineId.ofRepoId(request.getDocumentRef().getRecordId());
 		final CostAmount costPrice = getPOCostPriceForReceiptInOutLine(receiptInOutLineId)

@@ -20,7 +20,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -63,13 +63,16 @@ public class DunningToExportFactory
 {
 	private final DunningService dunningService;
 	private final AttachmentEntryService attachmentEntryService;
+	private final CurrencyRepository currenciesRepo;
 
 	public DunningToExportFactory(
 			@NonNull final DunningService dunningService,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 		this.dunningService = dunningService;
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	public List<DunningToExport> getCreateForId(@NonNull final DunningDocId dunningDocId)
@@ -110,8 +113,6 @@ public class DunningToExportFactory
 
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}

@@ -30,7 +30,7 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceUtil;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.esr.ESRPaymentInfoProvider;
@@ -82,13 +82,16 @@ public class InvoiceToExportFactory
 {
 	private final AttachmentEntryService attachmentEntryService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
+	private final CurrencyRepository currenciesRepo;
 
 	public InvoiceToExportFactory(
 			@NonNull final AttachmentEntryService attachmentEntryservice,
-			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider)
+			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.attachmentEntryService = attachmentEntryservice;
 		this.esrPaymentInfoProvider = esrPaymentInfoProvider.orElse(null);
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	public Optional<InvoiceToExport> getCreateForId(@NonNull final InvoiceId id)
@@ -141,8 +144,6 @@ public class InvoiceToExportFactory
 	
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}

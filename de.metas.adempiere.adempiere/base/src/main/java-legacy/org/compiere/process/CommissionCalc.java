@@ -25,6 +25,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionAmt;
@@ -37,7 +38,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.Language;
 import de.metas.money.CurrencyId;
 import de.metas.process.JavaProcess;
@@ -52,6 +53,8 @@ import de.metas.util.Services;
  */
 public class CommissionCalc extends JavaProcess
 {
+	private final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+	
 	private Timestamp		p_StartDate;
 	//
 	private Timestamp		m_EndDate;
@@ -70,7 +73,7 @@ public class CommissionCalc extends JavaProcess
 			String name = element.getParameterName();
 			if (element.getParameter() == null)
 			{
-				;
+				
 			}
 			else if (name.equals("StartDate"))
 			{
@@ -111,7 +114,7 @@ public class CommissionCalc extends JavaProcess
 		final CurrencyId currencyId = CurrencyId.ofRepoId(m_com.getC_Currency_ID());
 		String description = format.format(p_StartDate)
 			+ " - " + format.format(m_EndDate)
-			+ " - " + Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+			+ " - " + currenciesRepo.getCurrencyCodeById(currencyId);
 		comRun.setDescription(description);
 		if (!comRun.save())
 		{

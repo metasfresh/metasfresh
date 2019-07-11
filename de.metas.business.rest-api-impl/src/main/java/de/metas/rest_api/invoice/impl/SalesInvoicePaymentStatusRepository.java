@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.money.CurrencyId;
 import de.metas.rest_api.invoice.SalesInvoicePayment;
@@ -70,6 +70,13 @@ import lombok.Value;
 @Repository
 public class SalesInvoicePaymentStatusRepository
 {
+	private final CurrencyRepository currenciesRepo;
+	
+	public SalesInvoicePaymentStatusRepository(@NonNull final CurrencyRepository currenciesRepo)
+	{
+		this.currenciesRepo = currenciesRepo;
+	}
+
 	public ImmutableList<SalesInvoicePaymentStatus> getBy(@NonNull final PaymentStatusQuery query)
 	{
 		final OrgId orgId = retrieveOrgId(query.getOrgValue());
@@ -175,8 +182,6 @@ public class SalesInvoicePaymentStatusRepository
 
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}

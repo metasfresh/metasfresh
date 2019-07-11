@@ -69,7 +69,7 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.money.CurrencyId;
@@ -83,6 +83,7 @@ public class PaymentAllocationBuilderTest
 	private IAllocationDAO allocationDAO;
 	private IPaymentDAO paymentDAO;
 	private IInvoiceBL invoiceBL;
+	private CurrencyRepository currenciesRepo;
 
 	private final Properties ctx = Env.getCtx();
 
@@ -106,6 +107,7 @@ public class PaymentAllocationBuilderTest
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);
+		currenciesRepo = new CurrencyRepository();
 
 		currency = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF);
 
@@ -588,8 +590,6 @@ public class PaymentAllocationBuilderTest
 	
 	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
 	{
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		
 		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
 		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}

@@ -38,6 +38,7 @@ import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
@@ -172,7 +173,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		final InvoiceScheduleRepository invoiceScheduleRepository = refundConfigRepository.getInvoiceScheduleRepository();
 
 		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(
-				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository());
+				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository(),
+				new CurrencyRepository());
 
 		this.assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(assignableInvoiceCandidateFactory);
 
