@@ -20,12 +20,15 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.X_C_Order;
 import org.junit.Before;
@@ -39,6 +42,7 @@ import de.metas.freighcost.FreightCostService;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
+import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.time.FixedTimeSource;
@@ -75,6 +79,8 @@ public class FreightCostTest
 	{
 		AdempiereTestHelper.get().init();
 
+		new PricingTestHelper();
+
 		final FreightCostRepository freightCostRepo = new FreightCostRepository();
 		final FreightCostService freightCostService = new FreightCostService(freightCostRepo);
 		orderFreightCostsService = new OrderFreightCostsService(freightCostService);
@@ -104,21 +110,24 @@ public class FreightCostTest
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+
 		final I_C_UOM uom1 = createUOM("uom1");
-		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID());
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
 
 		final BigDecimal freightAmt = new BigDecimal(123);
 
-		final I_C_Order order1 = createOrder(
+		final I_C_Order order1 = createSalesOrder(
 				partner1.getC_BPartner_ID(),
 				location1.getC_BPartner_Location_ID(),
 				X_C_Order.FREIGHTCOSTRULE_FixPrice,
 				freightAmt,
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
-				currency1.getC_Currency_ID());
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
 
-		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID());
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
@@ -148,6 +157,16 @@ public class FreightCostTest
 		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
 		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(freightAmt));
 
+	}
+
+	private I_M_Product_Category createProductCategory(final String name)
+	{
+		final I_M_Product_Category productCateogry = newInstance(I_M_Product_Category.class);
+		productCateogry.setName(name);
+
+		save(productCateogry);
+
+		return productCateogry;
 	}
 
 	@Test
@@ -170,31 +189,39 @@ public class FreightCostTest
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
 		final I_C_UOM uom1 = createUOM("uom1");
-		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID());
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
 
-		final I_C_Order order1 = createOrder(
+		final I_C_Order order1 = createSalesOrder(
 				partner1.getC_BPartner_ID(),
 				location1.getC_BPartner_Location_ID(),
 				X_C_Order.FREIGHTCOSTRULE_FixPrice,
 				BigDecimal.ZERO,
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
-				currency1.getC_Currency_ID());
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
 
-		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID());
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
 
 		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
 		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-		final BigDecimal freightAmt = new BigDecimal(123);
-//
-//		final I_M_ProductPrice productPrice = createProductPrice(
-//				pricingSystem.getM_PricingSystem_ID(),
-//				freightCostProduct.getM_Product_ID(),
-//				freightAmt,
-//				currency1.getC_Currency_ID(),
-//				); TODO
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+
+		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
+
+		final BigDecimal stdPrice = new BigDecimal(123);
+
+		createProductPrice(
+				pricingSystem.getM_PricingSystem_ID(),
+				pricelist.getM_PriceList_ID(),
+				freightCostProduct.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				stdPrice,
+				currency1.getC_Currency_ID(),
+				taxCategory1.getC_TaxCategory_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
 
@@ -210,7 +237,7 @@ public class FreightCostTest
 
 		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
 
-		assertThat(order1.getFreightAmt(), comparesEqualTo(freightAmt));
+		assertThat(order1.getFreightAmt(), comparesEqualTo(stdPrice));
 
 		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
 
@@ -222,30 +249,449 @@ public class FreightCostTest
 		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
 
 		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
-		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(freightAmt));
+		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(stdPrice));
 
 	}
 
-	private I_M_ProductPrice createProductPrice(final int pricingSystemId,
-			final int productId,
-			final BigDecimal price,
-			final int currencyId,
-			final int taxCategoryId)
+	@Test
+	public void orderWithFreightCost_Included()
+	{
+
+		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
+
+		final I_C_BPartner shipperPartner = createPartner("ShipperPartner", bpGroup.getC_BP_Group_ID());
+
+		final I_M_Shipper shipper1 = createShipper("Shipper1", shipperPartner.getC_BPartner_ID());
+
+		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
+		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		save(partner1);
+
+		final I_C_Currency currency1 = createCurrency("Currency1");
+
+		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+
+		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
+
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+		final I_C_UOM uom1 = createUOM("uom1");
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_C_Order order1 = createSalesOrder(
+				partner1.getC_BPartner_ID(),
+				location1.getC_BPartner_Location_ID(),
+				X_C_Order.FREIGHTCOSTRULE_FreightIncluded,
+				BigDecimal.ZERO,
+				product1.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
+
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
+		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+
+		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
+
+		final BigDecimal stdPrice = new BigDecimal(123);
+
+		createProductPrice(
+				pricingSystem.getM_PricingSystem_ID(),
+				pricelist.getM_PriceList_ID(),
+				freightCostProduct.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				stdPrice,
+				currency1.getC_Currency_ID(),
+				taxCategory1.getC_TaxCategory_ID());
+
+		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
+
+		final Timestamp validForm = SystemTime.asDayTimestamp();
+
+		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
+				shipper1.getM_Shipper_ID(),
+				validForm);
+
+		createFreightCostDetail(country1.getC_Country_ID(), freightCostShipper.getM_FreightCostShipper_ID());
+
+		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
+
+		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
+
+		assertThat(order1.getFreightAmt(), comparesEqualTo(BigDecimal.ZERO));
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
+
+		assertThat(orderLines.size(), comparesEqualTo(2));
+
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+
+		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
+
+		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
+		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(BigDecimal.ZERO));
+
+	}
+
+	@Test
+	public void orderWithFreightCost_NonCustomFreightCostRule_Calculated()
+	{
+
+		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
+
+		final I_C_BPartner shipperPartner = createPartner("ShipperPartner", bpGroup.getC_BP_Group_ID());
+
+		final I_M_Shipper shipper1 = createShipper("Shipper1", shipperPartner.getC_BPartner_ID());
+
+		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
+		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		save(partner1);
+
+		final I_C_Currency currency1 = createCurrency("Currency1");
+
+		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+
+		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
+
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+		final I_C_UOM uom1 = createUOM("uom1");
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_C_Order order1 = createSalesOrder(
+				partner1.getC_BPartner_ID(),
+				location1.getC_BPartner_Location_ID(),
+				X_C_Order.FREIGHTCOSTRULE_Calculated,
+				BigDecimal.ZERO,
+				product1.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
+
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
+		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+
+		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
+
+		final BigDecimal stdPrice = new BigDecimal(123);
+
+		createProductPrice(
+				pricingSystem.getM_PricingSystem_ID(),
+				pricelist.getM_PriceList_ID(),
+				freightCostProduct.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				stdPrice,
+				currency1.getC_Currency_ID(),
+				taxCategory1.getC_TaxCategory_ID());
+
+		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
+
+		final Timestamp validForm = SystemTime.asDayTimestamp();
+
+		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
+				shipper1.getM_Shipper_ID(),
+				validForm);
+
+		createFreightCostDetail(country1.getC_Country_ID(), freightCostShipper.getM_FreightCostShipper_ID());
+
+		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
+
+		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
+
+		assertThat(order1.getFreightAmt(), comparesEqualTo(BigDecimal.ZERO));
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
+
+		assertThat(orderLines.size(), comparesEqualTo(1));
+
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+
+	}
+
+	@Test
+	public void orderWithFreightCost_NonCustomFreightCostRule_Line()
+	{
+
+		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
+
+		final I_C_BPartner shipperPartner = createPartner("ShipperPartner", bpGroup.getC_BP_Group_ID());
+
+		final I_M_Shipper shipper1 = createShipper("Shipper1", shipperPartner.getC_BPartner_ID());
+
+		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
+		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		save(partner1);
+
+		final I_C_Currency currency1 = createCurrency("Currency1");
+
+		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+
+		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
+
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+		final I_C_UOM uom1 = createUOM("uom1");
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_C_Order order1 = createSalesOrder(
+				partner1.getC_BPartner_ID(),
+				location1.getC_BPartner_Location_ID(),
+				X_C_Order.FREIGHTCOSTRULE_Line,
+				BigDecimal.ZERO,
+				product1.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
+
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
+		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+
+		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
+
+		final BigDecimal stdPrice = new BigDecimal(123);
+
+		createProductPrice(
+				pricingSystem.getM_PricingSystem_ID(),
+				pricelist.getM_PriceList_ID(),
+				freightCostProduct.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				stdPrice,
+				currency1.getC_Currency_ID(),
+				taxCategory1.getC_TaxCategory_ID());
+
+		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
+
+		final Timestamp validForm = SystemTime.asDayTimestamp();
+
+		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
+				shipper1.getM_Shipper_ID(),
+				validForm);
+
+		createFreightCostDetail(country1.getC_Country_ID(), freightCostShipper.getM_FreightCostShipper_ID());
+
+		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
+
+		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
+
+		assertThat(order1.getFreightAmt(), comparesEqualTo(BigDecimal.ZERO));
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
+
+		assertThat(orderLines.size(), comparesEqualTo(1));
+
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+
+	}
+
+	@Test
+	public void orderWithFreightCost_NonCustomFreightCostRule_Versandkostenpauschale()
+	{
+
+		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
+
+		final I_C_BPartner shipperPartner = createPartner("ShipperPartner", bpGroup.getC_BP_Group_ID());
+
+		final I_M_Shipper shipper1 = createShipper("Shipper1", shipperPartner.getC_BPartner_ID());
+
+		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
+		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		save(partner1);
+
+		final I_C_Currency currency1 = createCurrency("Currency1");
+
+		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+
+		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
+
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+		final I_C_UOM uom1 = createUOM("uom1");
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_C_Order order1 = createSalesOrder(
+				partner1.getC_BPartner_ID(),
+				location1.getC_BPartner_Location_ID(),
+				X_C_Order.FREIGHTCOSTRULE_Versandkostenpauschale,
+				BigDecimal.ZERO,
+				product1.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Shipper);
+
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
+		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+
+		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
+
+		final BigDecimal stdPrice = new BigDecimal(123);
+
+		createProductPrice(
+				pricingSystem.getM_PricingSystem_ID(),
+				pricelist.getM_PriceList_ID(),
+				freightCostProduct.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				stdPrice,
+				currency1.getC_Currency_ID(),
+				taxCategory1.getC_TaxCategory_ID());
+
+		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
+
+		final Timestamp validForm = SystemTime.asDayTimestamp();
+
+		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
+				shipper1.getM_Shipper_ID(),
+				validForm);
+
+		createFreightCostDetail(country1.getC_Country_ID(), freightCostShipper.getM_FreightCostShipper_ID());
+
+		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
+
+		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
+
+		assertThat(order1.getFreightAmt(), comparesEqualTo(BigDecimal.ZERO));
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
+
+		assertThat(orderLines.size(), comparesEqualTo(1));
+
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+
+	}
+
+	@Test
+	public void orderWithFreightCost_DeliveryViaRulePickup()
+	{
+
+		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
+
+		final I_C_BPartner shipperPartner = createPartner("ShipperPartner", bpGroup.getC_BP_Group_ID());
+
+		final I_M_Shipper shipper1 = createShipper("Shipper1", shipperPartner.getC_BPartner_ID());
+
+		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
+		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
+		save(partner1);
+
+		final I_C_Currency currency1 = createCurrency("Currency1");
+
+		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+
+		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
+
+		final I_M_Product_Category productCategory = createProductCategory("ProductCategory1");
+
+		final I_C_UOM uom1 = createUOM("uom1");
+		final I_M_Product product1 = createProduct("Product1", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final BigDecimal freightAmt = new BigDecimal(123);
+
+		final I_C_Order order1 = createSalesOrder(
+				partner1.getC_BPartner_ID(),
+				location1.getC_BPartner_Location_ID(),
+				X_C_Order.FREIGHTCOSTRULE_FixPrice,
+				freightAmt,
+				product1.getM_Product_ID(),
+				uom1.getC_UOM_ID(),
+				currency1.getC_Currency_ID(),
+				X_C_Order.DELIVERYVIARULE_Pickup);
+
+		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
+
+		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
+
+		final Timestamp validForm = SystemTime.asDayTimestamp();
+
+		final I_M_FreightCostShipper freightCostShipper = createFreightCostShipper(freightCost.getM_FreightCost_ID(),
+				shipper1.getM_Shipper_ID(),
+				validForm);
+
+		createFreightCostDetail(country1.getC_Country_ID(), freightCostShipper.getM_FreightCostShipper_ID());
+
+		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
+
+		Services.get(IDocumentBL.class).processIt(order1, X_C_Order.DOCACTION_Complete);
+
+		assertThat(order1.getFreightAmt(), comparesEqualTo(BigDecimal.ZERO));
+
+		final List<de.metas.interfaces.I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).retrieveOrderLines(order1);
+
+		assertThat(orderLines.size(), comparesEqualTo(2));
+
+		final de.metas.interfaces.I_C_OrderLine productOrderLine = orderLines.get(0);
+		assertThat(productOrderLine.getM_Product_ID(), comparesEqualTo(product1.getM_Product_ID()));
+
+		final de.metas.interfaces.I_C_OrderLine freightCostLine = orderLines.get(1);
+
+		assertThat(freightCostLine.getM_Product_ID(), comparesEqualTo(freightCostProduct.getM_Product_ID()));
+		assertThat(freightCostLine.getPriceActual(), comparesEqualTo(BigDecimal.ZERO));
+
+	}
+
+	private I_C_TaxCategory createTaxCategory(final String taxCateogryName, final int countryId)
+	{
+		final I_C_TaxCategory taxCateogry = newInstance(I_C_TaxCategory.class);
+
+		taxCateogry.setName(taxCateogryName);
+
+		save(taxCateogry);
+
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+
+		tax.setC_TaxCategory_ID(taxCateogry.getC_TaxCategory_ID());
+		tax.setC_Country_ID(countryId);
+		tax.setValidFrom(SystemTime.asDayTimestamp());
+		save(tax);
+
+		return taxCateogry;
+	}
+
+	private I_M_PriceList createPriceList(final int pricingSystemId, final int currencyId)
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setM_PricingSystem_ID(pricingSystemId);
 		priceList.setC_Currency_ID(currencyId);
+		priceList.setIsSOPriceList(true);
 		save(priceList);
 
+		return priceList;
+	}
+
+	private I_M_ProductPrice createProductPrice(final int pricingSystemId,
+			final int priceListId,
+			final int productId,
+			final int uomId,
+			final BigDecimal price,
+			final int currencyId,
+			final int taxCategoryId)
+	{
+
 		final I_M_PriceList_Version pricelistVersion = newInstance(I_M_PriceList_Version.class);
-		pricelistVersion.setM_PriceList_ID(priceList.getM_PriceList_ID());
+		pricelistVersion.setM_PriceList_ID(priceListId);
 		pricelistVersion.setValidFrom(SystemTime.asDayTimestamp());
 		save(pricelistVersion);
 
 		final I_M_ProductPrice productPrice = newInstance(I_M_ProductPrice.class);
 		productPrice.setM_PriceList_Version_ID(pricelistVersion.getM_PriceList_Version_ID());
 		productPrice.setM_Product_ID(productId);
+		productPrice.setIsAttributeDependant(false);
 		productPrice.setC_TaxCategory_ID(taxCategoryId);
+		productPrice.setC_UOM_ID(uomId);
 		productPrice.setPriceStd(price);
 
 		save(productPrice);
@@ -374,20 +820,22 @@ public class FreightCostTest
 		return partner;
 	}
 
-	private I_C_Order createOrder(final int partnerId,
+	private I_C_Order createSalesOrder(final int partnerId,
 			final int locationId,
 			final String freightCostRule,
 			final BigDecimal freightAmt,
 			final int productId,
 			final int uomId,
-			final int currencyId)
+			final int currencyId,
+			final String deliveryViaRule)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 
+		order.setIsSOTrx(true);
 		order.setC_BPartner_ID(partnerId);
 		order.setC_BPartner_Location_ID(locationId);
 		order.setFreightCostRule(freightCostRule);
-		order.setDeliveryRule(X_C_Order.DELIVERYVIARULE_Shipper);
+		order.setDeliveryViaRule(deliveryViaRule);
 		order.setFreightAmt(freightAmt);
 		order.setC_Currency_ID(currencyId);
 		order.setDateOrdered(SystemTime.asDayTimestamp());
@@ -399,7 +847,7 @@ public class FreightCostTest
 		orderLine.setM_Product_ID(productId);
 		orderLine.setC_UOM_ID(uomId);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-
+		orderLine.setC_Currency_ID(currencyId);
 		orderLine.setPriceEntered(BigDecimal.TEN);
 		orderLine.setQtyEntered(BigDecimal.TEN);
 
@@ -420,12 +868,13 @@ public class FreightCostTest
 		return uom;
 	}
 
-	private I_M_Product createProduct(final String productName, int uomId)
+	private I_M_Product createProduct(final String productName, int uomId, final int productCategoryId)
 	{
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setName(productName);
 		product.setValue(productName);
 		product.setC_UOM_ID(uomId);
+		product.setM_Product_Category_ID(productCategoryId);
 
 		save(product);
 
