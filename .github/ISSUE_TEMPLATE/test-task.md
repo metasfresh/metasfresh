@@ -7,9 +7,6 @@ assignees: ''
 
 ---
 
-**This issue is related to**
-- (e.g. a metasfresh-me03 issue)
-
 
 **Test shall include:**
 
