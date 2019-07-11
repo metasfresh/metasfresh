@@ -183,7 +183,8 @@ describe('Create Sales order', function() {
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
-      .type('15{enter}');
+      .clear()
+      .type('1{enter}');
     cy.wait(8000);
 
     cy.get('.quick-input-container .form-group').should('exist');
@@ -203,7 +204,8 @@ describe('Create Sales order', function() {
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
-      .type('25{enter}');
+      .clear()
+      .type('1{enter}');
     cy.wait(8000);
     /**Complete purchase order */
     cy.get('.form-field-DocAction ul')
@@ -219,8 +221,62 @@ describe('Create Sales order', function() {
       .click({ force: true });
     /** Go to Material Receipt Candidates*/
     cy.get('.reference_M_ReceiptSchedule').click();
+    /**Select the first product */
     cy.get('tbody tr')
       .eq('0')
+      .click();
+    cy.wait(8000);
+    cy.get('.quick-actions-tag.pointer').click({ force: true });
+
+    cy.wait(8000);
+    /**Create material receipt */
+    cy.contains('Create material receipt').click();
+    cy.wait(2000);
+    cy.pressDoneButton();
+    /**Select the second product */
+    cy.get('tbody tr')
+      .eq('1')
+      .click();
+    cy.wait(8000);
+    cy.get('.quick-actions-tag.pointer').click({ force: true });
+
+    cy.wait(8000);
+    /**Create material receipt */
+    cy.contains('Create material receipt').click();
+    cy.wait(2000);
+    cy.pressDoneButton();
+    /**Navigate back in the purchase order */
+    cy.go('back');
+    /**Go to 'Material receipt' */
+    cy.wait(4000);
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    cy.contains('Material Receipt (#').click();
+    /**Navigate back in the purchase order */
+    cy.wait(2000);
+    cy.go('back');
+    /**Go to 'Invoice disposition' */
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    cy.get('.reference_C_Invoice_Candidate').click();
+    cy.wait(5000);//look into
+    cy.get('.pagination-link.pointer').click({ force: true });
+    cy.contains('generate invoices').click();
+    cy.wait(5000);
+    cy.pressStartButton();
+    cy.wait(8000);
+
+    /**Open notifications */
+    cy.get('.header-item-badge.icon-lg i').click();
+    cy.get('.inbox-item-unread .inbox-item-title')
+      .filter(':contains("' + vendorName + '")')
+      .first()
       .click();
   });
 });
