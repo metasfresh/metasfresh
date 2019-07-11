@@ -42,9 +42,8 @@ import lombok.NonNull;
 public class PPCostCollectorDAO implements IPPCostCollectorDAO
 {
 	@Override
-	public List<I_PP_Cost_Collector> retrieveForOrder(final I_PP_Order order)
+	public List<I_PP_Cost_Collector> retrieveForOrder(@NonNull final I_PP_Order order)
 	{
-		Check.assumeNotNull(order, "order not null");
 		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID());
 

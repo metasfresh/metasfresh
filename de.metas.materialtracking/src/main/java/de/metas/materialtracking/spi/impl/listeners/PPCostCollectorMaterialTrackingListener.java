@@ -147,7 +147,7 @@ public final class PPCostCollectorMaterialTrackingListener extends MaterialTrack
 		BigDecimal qtyIssuedNew = ZERO;
 
 		final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveForOrder(ppCostCollector.getPP_Order());
+		final List<I_PP_Cost_Collector> costCollectors = ppCostCollectorDAO.retrieveNotReversedForOrder(ppCostCollector.getPP_Order());
 		for (final I_PP_Cost_Collector currentCostCollectorRecord : costCollectors)
 		{
 			// TODO select the refs for all cost collectors at once
