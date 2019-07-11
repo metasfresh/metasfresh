@@ -54,13 +54,6 @@ describe('Create Dunning Candidates', function () {
   let siTotalAmount;
 
 
-  before(function () {
-    // This wait is stupid.
-    // It also appears to be a good workaround for the problems in
-    // cypress/support/utils/utils.js:1
-    cy.wait(5000);
-  });
-
   it('Prepare dunning type', function () {
 
     cy.fixture('settings/dunning_type.json').then(dunningType => {
@@ -134,7 +127,6 @@ describe('Create Dunning Candidates', function () {
 
   it('Create Dunning Candidates', function () {
     DunningCandidates.visit();
-    cy.wait(1000); // without this wait, the action menu is not properly loaded
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
@@ -180,7 +172,6 @@ describe('Create Dunning Candidates', function () {
 
 
   function filterBySalesInvoiceNumber(siDocNumber) {
-    cy.wait(1000);
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoStringField('DocumentNo', siDocNumber, false, null, true);

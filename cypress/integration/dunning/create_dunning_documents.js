@@ -184,7 +184,7 @@ describe('Create Dunning Documents', function() {
 
 
   function filterBySalesInvoiceNumber(siDocNumber) {
-    cy.wait(1000);
+    // cy.wait(1000); // if it's past 01.08.2019 and the test won't fail because this sleep is missing, then we can delete this line
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoStringField('DocumentNo', siDocNumber, false, null, true);
