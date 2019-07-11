@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import NumericInput from './NumericQuickInput';
+import NumberInput from './CustomNumberInput';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -129,8 +130,13 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch } = this.props;
+    const { handlePatch, widgetData } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
+
+    // When patching to redux we look for widget type and most important thing
+    // to be number if widget is CostPrice
+    const fieldData = widgetData.find(widget => widget.field === property);
+    const isCostPriceWidget = fieldData.widgetType === 'CostPrice';
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -140,7 +146,13 @@ export class RawWidget extends Component {
         clearedFieldWarning: false,
       });
 
-      return handlePatch(property, value, id, valueTo);
+      return handlePatch(
+        property,
+        // value,
+        isCostPriceWidget ? value.replace(',', '.') : value,
+        id,
+        valueTo
+      );
     }
 
     return Promise.resolve(null);
@@ -649,7 +661,7 @@ export class RawWidget extends Component {
               'input-focused': isEdited,
             })}
           >
-            <input {...widgetProperties} type="number" />
+            <NumberInput {...widgetProperties} />
           </div>
         );
       case 'YesNo':
