@@ -30,14 +30,14 @@ import {BPartner} from "../../support/utils/bpartner";
 import {DunningCandidates} from "../../page_objects/dunning_candidates";
 import {applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters} from "../../support/functions";
 import {DunningType} from "../../support/utils/dunning_type";
+import {DunningDocuments} from "../../page_objects/dunning_documents";
+import {salesInvoices} from "../../page_objects/sales_invoices";
 
-describe('Create Dunning Candidates', function () {
+describe('Create Dunning Documents', function() {
   // human readable date with millis!
   const date = humanReadableNow();
 
   const dunningTypeName = `Dunning ${date}`;
-  // const dunningTypeName = `Dunning 2019-07-05T10:09:30.514Z`;
-
 
   const businessPartnerName = `Customer Dunning ${date}`;
   const paymentTerm = 'immediately';
@@ -50,11 +50,10 @@ describe('Create Dunning Candidates', function () {
   // Test data
   let siDocumentNumber;
   let siCurrency;
-  let siDueDate;
-  let siTotalAmount;
+  let siRecordId;
 
 
-  it('Prepare dunning type', function () {
+  it('Prepare dunning type', function() {
 
     cy.fixture('settings/dunning_type.json').then(dunningType => {
       Object.assign(new DunningType(), dunningType)
@@ -63,9 +62,9 @@ describe('Create Dunning Candidates', function () {
     });
   });
 
-  it('Prepare customer bpartner (via api)', function () {
+  it('Prepare customer bpartner (via api)', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({...customerJson, name: businessPartnerName})
+      const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
         .setCustomer(true)
         .setDunning(dunningTypeName)
         .setPaymentTerm(paymentTerm)
@@ -75,7 +74,7 @@ describe('Create Dunning Candidates', function () {
     });
   });
 
-  it('Prepare sales invoice', function () {
+  it('Prepare sales invoice', function() {
     cy.fixture('sales/sales_invoice.json').then((salesInvoiceJson) => {
       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
         .addLine(
@@ -87,19 +86,18 @@ describe('Create Dunning Candidates', function () {
     });
   });
 
-
-  it('Sales Invoice is Completed', function () {
+  it('Sales Invoice is Completed', function() {
     cy.expectDocumentStatus(DocumentStatusKey.Completed);
   });
 
-  it('Sales Invoice is not paid', function () {
+  it('Sales Invoice is not paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
       cy.log(`IsPaid = ${checkBoxValue}`);
       assert.equal(checkBoxValue, false);
     });
   });
 
-  it('Save values needed for the next step', function () {
+  it('Save values needed for the next step', function() {
     cy.getStringFieldValue('DocumentNo').then(documentNumber => {
       siDocumentNumber = documentNumber;
     });
@@ -108,24 +106,12 @@ describe('Create Dunning Candidates', function () {
       siCurrency = currency;
     });
 
-    cy.getStringFieldValue('DateInvoiced').then(dueDate => {
-      siDueDate = dueDate;
-    });
-
-    cy.getSalesInvoiceTotalAmount().then(amount => {
-      siTotalAmount = amount;
+    cy.getCurrentWindowRecordId().then(function(record) {
+      siRecordId = record;
     });
   });
 
-
-  it('Ensure there are no Dunning Candidates', function () {
-    DunningCandidates.visit();
-    filterBySalesInvoiceNumber(siDocumentNumber);
-    DunningCandidates.getRows().should('have.length', 0);
-  });
-
-
-  it('Create Dunning Candidates', function () {
+  it('Create Dunning Candidates', function() {
     DunningCandidates.visit();
 
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
@@ -134,7 +120,7 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  it('Ensure there are exactly 2 Dunning Candidates', function () {
+  it('Ensure there are exactly 2 Dunning Candidates', function() {
     DunningCandidates.visit();
     filterBySalesInvoiceNumber(siDocumentNumber);
 
@@ -142,36 +128,67 @@ describe('Create Dunning Candidates', function () {
   });
 
 
-  describe("Check the dunning candidates", function () {
-    it('Check Level 1 candidate', function () {
-      const dunningLevel = 'Level 1';
-      checkDunningCandidate(dunningLevel);
+  it('Create Dunning Documents', function() {
+    DunningCandidates.selectAllVisibleRows();
+    cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Process');
+    cy.setCheckBoxValue('IsComplete', true, true);
+    cy.pressStartButton();
+  });
+
+  describe('Check Dunning Documents', function() {
+    it('Expect there are exactly 2 dunning documents created!', function() {
+      cy.visitWindow(salesInvoices.windowId, siRecordId);
+      cy.openReferencedDocuments('C_Invoice-C_DunningDoc');
+      DunningDocuments.getRows().should('have.length', 2);
     });
 
-    it('Check Level 2 candidate', function () {
+    it('Check Level 1 document', function() {
+      const dunningLevel = 'Level 1';
+      checkDunningDocument(dunningLevel);
+    });
+
+    it('Check Level 2 document', function() {
       const dunningLevel = 'Level 2';
-      checkDunningCandidate(dunningLevel);
+      checkDunningDocument(dunningLevel);
     });
   });
 
 
-  function checkDunningCandidate(dunningLevel) {
-    DunningCandidates.visit();
-    filterBySalesInvoiceNumber(siDocumentNumber);
-    DunningCandidates.getRows().contains('td', dunningLevel, {log: true}).dblclick();
-
-    cy.getStringFieldValue('DocumentNo').should('equals', siDocumentNumber);
-    cy.getStringFieldValue('C_BPartner_ID').should('contains', businessPartnerName);
-    cy.getStringFieldValue('OpenAmt').then(amount => {
-      expect(parseFloat(amount)).to.equals(parseFloat(siTotalAmount));
+  function checkDunningDocument(dunningLevel) {
+    describe(`Open Dunning document ${dunningLevel} via reference from Sales Invoice`, function() {
+      cy.visitWindow(salesInvoices.windowId, siRecordId);
+      cy.openReferencedDocuments('C_Invoice-C_DunningDoc');
+      DunningDocuments.getRows().contains('td', dunningLevel, { log: true }).dblclick();
     });
-    cy.getStringFieldValue('DaysDue').should('equals', '0');
-    cy.getStringFieldValue('DueDate').should('equals', siDueDate);
-    cy.getStringFieldValue('C_Currency_ID').should('equals', siCurrency);
+
+    describe('Do the checks', function() {
+      cy.get('#lookup_C_BPartner_ID')
+        .find('input')
+        .invoke('val')
+        .should('contain', businessPartnerName);
+
+      cy.getCheckboxValue('Processed').then(checkBoxValue => {
+        assert.equal(checkBoxValue, true);
+      });
+      cy.getStringFieldValue('C_DunningLevel_ID').should('equals', dunningLevel);
+
+      cy.selectSingleTabRow();
+      cy.openAdvancedEdit();
+      cy.getStringFieldValue('C_DunningLevel_ID', true).should('equals', dunningLevel);
+      cy.getStringFieldValue('C_Currency_ID', true).should('equals', siCurrency);
+      cy.getStringFieldValue('C_BPartner_ID', true).should('contain', businessPartnerName);
+      cy.pressDoneButton();
+    });
+
+    describe(`Check reference from Dunning document to its Sales Invoices`, function() {
+      cy.openReferencedDocuments('C_DunningDoc-C_Invoice');
+      DunningDocuments.getRows().contains('td', siDocumentNumber, { log: true });
+    });
   }
 
 
   function filterBySalesInvoiceNumber(siDocNumber) {
+    // cy.wait(1000); // if it's past 01.08.2019 and the test won't fail because this sleep is missing, then we can delete this line
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     cy.writeIntoStringField('DocumentNo', siDocNumber, false, null, true);

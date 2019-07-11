@@ -3,21 +3,17 @@
 import {DocumentStatusKey, RewriteURL} from "./utils/constants";
 
 declare namespace Cypress {
+  // noinspection JSUnusedGlobalSymbols
   interface Chainable<Subject> {
 
     /**
      * Asserts that a particular filed is not shown (e.g. because of a display rule)
      *
-     * @param fieldName name of the field is question
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      */
     assertFieldNotShown(fieldName: string, modal?: boolean): Chainable<any>
 
-    /**
-     * @param fieldName name of the field is question
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
-     */
-    clearField(fieldName: string, modal: boolean): Chainable<any>
 
     /**
      * Fire header action with a certain name and expect a modal dialog to pop up within 10 secs
@@ -29,14 +25,14 @@ declare namespace Cypress {
     /**
      * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
      *
-     * @param actionName internal name of the action to be executed
-     * @param active if truthy, the default action will be executed.
+     * @param actionName - internal name of the action to be executed
+     * @param active - if truthy, the default action will be executed.
      */
     executeQuickAction(actionName: string, active: boolean): Chainable<any>
 
     /**
-     * @param fieldName name of the field is question
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      *
      * @example
      * cy.getStringFieldValue('Description').then(fieldValue => {
@@ -46,8 +42,8 @@ declare namespace Cypress {
     getStringFieldValue(fieldName: string, modal?: boolean): Chainable<any>
 
     /**
-     * @param fieldName name of the field is question
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      *
      * @example
      * cy.getCheckboxValue('IsDefault').then(checkBoxValue => {
@@ -84,10 +80,12 @@ declare namespace Cypress {
     getSalesInvoiceTotalAmount(): Chainable<any>
 
     /**
-     * @param fieldName name of the field is question
+     * Better use {@link setCheckBoxValue} instead!
+     *
+     * @param fieldName - name of the field is question
      * @param expectedPatchValue - the expected value of the checkbox
-     * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
-     * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch
+     * @param modal optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param rewriteUrl optional, default = null; - specify to which URL the command expects the frontend to patch
      *
      * @example
      * // click on a checkbox in a modal started from action
@@ -152,6 +150,8 @@ declare namespace Cypress {
     /**
      * Select a reference (zoom-to-target) from the reference-sidelist
      *
+     * Better use {@link openReferencedDocuments} instead!
+     *
      * @param internalReferenceName
      * @example
      * // this should work from a sales order
@@ -184,6 +184,8 @@ declare namespace Cypress {
      * thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
      *
      * @param alias name of the alias to wait for; needs to begin with '@'
+     * @param fieldName ???? [help with docu]
+     * @param fieldValue ???? [help with docu]
      */
     waitForFieldValue(alias: String, fieldName: String, fieldValue: String): Chainable<any>
 
@@ -301,7 +303,7 @@ declare namespace Cypress {
      * Similar to pressing the (x) button of a list.
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
      */
     resetListValue(fieldName: string, modal?: boolean, rewriteUrl?: RewriteURL): Chainable<any>
@@ -332,7 +334,7 @@ declare namespace Cypress {
      * @param fieldName - name of the field is question
      * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
      */
-    clearField(fieldName, modal): Chainable<any>
+    clearField(fieldName: string, modal: boolean): Chainable<any>
 
 
     /**
@@ -342,5 +344,210 @@ declare namespace Cypress {
      * @param forced - use force clicking or normal clicking
      */
     clickElementWithClass(selector, forced): Chainable<any>
+
+
+    /*
+     * This command allows waiting for the breadcrumb in the header to be visible, which
+     * helps make the tests less flaky as even though the page fires load event, some
+     * requests may still be pending/running.
+     *
+     * Command accepts two params:
+     * - pageName : if we explicitly want to define what to wait for
+     * - breadcrumbNr : if we want to select breadcrumb value from the redux store at
+     *                  the given index
+     * In case pageName is not defined, command will fall back to broadcrembNr and either
+     * use the provided value or the value at index 0.
+     *
+     * [@TheBestPessimist]: i have no idea how to use this.
+     */
+    waitForHeader(pageName, breadcrumbNr): Chainable<any>
+
+
+    /**
+     * Open the referenced documents sidebar then click a reference.
+     *
+     * If the parameter `referenceId` is not present then only open the sidebar.
+     *
+     * @param referenceId - optional - the reference id
+
+     * @example
+     * // This is equivalent to pressing `[alt + 6]`, then selecting one of the referenced documents:
+     * cy.get('body').type('{alt}6');
+     * cy.selectReference('AD_RelationType_ID-540150').click();
+     *
+     * @example
+     * // Only open the documents sidebar
+     * cy.openReferencedDocuments();
+     *
+     * @example
+     * // Open the sidebar and select a specific document
+     * cy.openReferencedDocuments('AD_RelationType_ID-540150');
+     */
+    openReferencedDocuments(referenceId?: string): Chainable<any>
+
+
+    /**
+     * Select the option with a given index from a static list. This command does not wait for response from the server.
+     *
+     * @param fieldName - id of the field to select from
+     * @param index - index of the item to select
+     * @param modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
+     */
+    selectNthInListField(fieldName: string, index: number, modal?: boolean): Chainable<any>
+
+
+    ////////////////////////////////
+    ////////////////////////////////
+    // ALL OF THESE FUNCTIONS NEED DOCUMENTATION!
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/action.js
+     */
+    clickHeaderNav(navName): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/action.js
+     */
+    executeHeaderAction(actionName): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/form.js
+     */
+    clickOnIsActive(modal): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/form.js
+     */
+    selectDateViaPicker(fieldName, modal): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/form.js
+     */
+    selectOffsetDateViaPicker(fieldName, dayOffset, modal): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    loginViaAPI(username, password, redirect): Chainable<any>
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    tab(prevSubject, subject, direction, options): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    active(options): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    resetNotifications(): Chainable<any>
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    readAllNotifications(): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    addNotification(notificationObject): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    newNotification(notificationObject, unreadCount): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    getDOMNotificationsNumber(): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * cypress/support/commands/general.js
+     */
+    getNotificationsInbox(): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/navigation.js
+     */
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/navigation.js
+     */
+    clickButtonWithText(text): Chainable<any>
+
+
+    /**
+     * Please help with documentation!
+     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
+     *
+     * from cypress/support/commands/test.js
+     */
+    editAddress(fieldName, addressFunction): Chainable<any>
+
   }
 }
