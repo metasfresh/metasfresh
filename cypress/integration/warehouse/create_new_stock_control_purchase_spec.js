@@ -3,19 +3,18 @@ import {Product, ProductCategory, ProductPrice} from '../../support/utils/produc
 import {Builder} from "../../support/utils/builder";
 
 describe('Create new Stock Control Purchase', function() {
-  // const timestamp = new Date().getTime();
-  const timestamp = '1562842215343';
+  const timestamp = new Date().getTime();
   const productName1 = `StockControlPurchase1 ${timestamp}`;
   const productName2 = `StockControlPurchase2 ${timestamp}`;
   const productName3 = `StockControlPurchase3 ${timestamp}`;
   const productCategoryName = `ProductCategory ${timestamp}`;
   const priceListName = `PriceList ${timestamp}`;
   const priceSystemName = `PriceSystem ${timestamp}`;
-  const pricelistVersionName = `PriceListVersion ${timestamp}`;
+  const priceListVersionName = `PriceListVersion ${timestamp}`;
   const productType = `Item`;
 
   it('Prepare 3 products', function() {
-    Builder.createBasicPriceEntities(priceSystemName, pricelistVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
