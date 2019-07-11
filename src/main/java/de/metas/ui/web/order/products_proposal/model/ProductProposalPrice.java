@@ -75,11 +75,11 @@ public class ProductProposalPrice
 		}
 		else if (campaignPrice != null)
 		{
-			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getValue();
+			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getAsBigDecimal();
 		}
 		else
 		{
-			this.userEnteredPriceValue = priceListPrice.getValue();
+			this.userEnteredPriceValue = priceListPrice.getAsBigDecimal();
 		}
 
 		//
