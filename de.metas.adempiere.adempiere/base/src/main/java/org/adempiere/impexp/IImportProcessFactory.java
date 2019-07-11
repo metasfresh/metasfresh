@@ -13,19 +13,16 @@ package org.adempiere.impexp;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-
-import com.google.common.base.Supplier;
 
 import de.metas.util.ISingletonService;
 
@@ -45,15 +42,17 @@ public interface IImportProcessFactory extends ISingletonService
 	 */
 	<ImportRecordType> void registerImportProcess(Class<ImportRecordType> modelImportClass, Class<? extends IImportProcess<ImportRecordType>> importProcessClass);
 
+	void setDeleteImportDataProcessClass(Class<?> deleteImportDataProcessClass);
+
 	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcess(Class<ImportRecordType> modelImportClass);
 
 	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(Class<ImportRecordType> modelImportClass);
 
-	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(String tableName);
+	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(String importTableName);
 
-	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(String tableName);
+	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(String importTableName);
 
-	void setAsyncImportProcessBuilderSupplier(final Supplier<IAsyncImportProcessBuilder> asyncImportProcessBuilderSupplier);
+	void setAsyncImportProcessBuilderFactory(final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory);
 
 	IAsyncImportProcessBuilder newAsyncImportProcessBuilder();
 }

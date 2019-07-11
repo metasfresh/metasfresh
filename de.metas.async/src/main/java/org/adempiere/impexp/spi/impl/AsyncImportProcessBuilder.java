@@ -34,8 +34,6 @@ import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DB;
 
-import com.google.common.base.Supplier;
-
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -47,26 +45,15 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
-public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
+final class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 {
-	public static final Supplier<IAsyncImportProcessBuilder> instanceSupplier = new Supplier<IAsyncImportProcessBuilder>()
-	{
-
-		@Override
-		public IAsyncImportProcessBuilder get()
-		{
-			return new AsyncImportProcessBuilder();
-		}
-	};
-
 	private String _importTableName;
 	private final Set<Integer> importRecordIds = new HashSet<>();
 
 	private Properties _ctx;
 
-	private AsyncImportProcessBuilder()
+	AsyncImportProcessBuilder()
 	{
-		super();
 	}
 
 	@Override
@@ -101,7 +88,7 @@ public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 		return this;
 	}
 
-	private final Properties getCtx()
+	private Properties getCtx()
 	{
 		Check.assumeNotNull(_ctx, "_ctx not null");
 		return _ctx;
@@ -116,7 +103,7 @@ public class AsyncImportProcessBuilder implements IAsyncImportProcessBuilder
 		return this;
 	}
 
-	private final String getImportTableName()
+	private String getImportTableName()
 	{
 		Check.assumeNotEmpty(_importTableName, "importTableName not empty");
 		return _importTableName;
