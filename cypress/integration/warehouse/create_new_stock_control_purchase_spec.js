@@ -1,49 +1,80 @@
-import { StockControlPurchase, StockControlPurchaseProduct } from '../../support/utils/stockControlPurchase';
-import { Product } from '../../support/utils/product';
+import {StockControlPurchase, StockControlPurchaseProduct} from '../../support/utils/stockControlPurchase';
+import {Product, ProductCategory, ProductPrice} from '../../support/utils/product';
+import {Builder} from "../../support/utils/builder";
 
-describe('create new stock control purchase', function() {
-  const timestamp = new Date().getTime();
-  const description = `test ${timestamp}`;
+describe('Create new Stock Control Purchase', function() {
+  // const timestamp = new Date().getTime();
+  const timestamp = '1562842215343';
   const productName1 = `StockControlPurchase1 ${timestamp}`;
   const productName2 = `StockControlPurchase2 ${timestamp}`;
   const productName3 = `StockControlPurchase3 ${timestamp}`;
+  const productCategoryName = `ProductCategory ${timestamp}`;
+  const priceListName = `PriceList ${timestamp}`;
+  const priceSystemName = `PriceSystem ${timestamp}`;
+  const pricelistVersionName = `PriceListVersion ${timestamp}`;
+  const productType = `Item`;
 
-  before(function() {
-    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+  it('Prepare 3 products', function() {
+    Builder.createBasicPriceEntities(priceSystemName, pricelistVersionName, priceListName);
+
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryName)
+        .apply();
+    });
+
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
+        .setValue(productName1)
+        .setProductType(productType)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .addProductPrice(productPrice)
         .apply();
     });
 
-    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+    cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName2)
+        .setValue(productName2)
+        .setProductType(productType)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .addProductPrice(productPrice)
         .apply();
     });
 
-    cy.fixture('warehouse/product_stock_control_purchase.json').then(productJson => {
+    cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName3)
+        .setValue(productName3)
+        .setProductType(productType)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .addProductPrice(productPrice)
         .apply();
     });
   });
 
-  it('create process', function() {
-    cy.fixture('warehouse/stock_control_purchase.json').then(stockControlPurchase => {
-      Object.assign(new StockControlPurchase(), stockControlPurchase)
-        .setDescription(description)
-        .addProduct(new StockControlPurchaseProduct().setProduct(productName1).setQuantity('100'))
-        .addProduct(new StockControlPurchaseProduct().setProduct(productName2).setQuantity('200'))
-        .addProduct(new StockControlPurchaseProduct().setProduct(productName3).setQuantity('500'))
-        .apply();
-    });
+  it('Create Stock Control Purchase', function() {
+    new StockControlPurchase()
+      .setDescription('test')
+      .addProduct(new StockControlPurchaseProduct().setProduct(productName1).setQuantity('100'))
+      .addProduct(new StockControlPurchaseProduct().setProduct(productName2).setQuantity('200'))
+      .addProduct(new StockControlPurchaseProduct().setProduct(productName3).setQuantity('500'))
+      .apply();
   });
 
-  it('header actions', function() {
+  it('Execute action Fresh_QtyOnHand_UpdateSeqNo', function() {
     cy.executeHeaderAction('Fresh_QtyOnHand_UpdateSeqNo');
+    cy.getNotificationModal('Process completed successfully');
   });
 
-  it('processed activate', function() {
-    cy.clickOnCheckBox('Processed');
+  it('Check Processed button', function() {
+    cy.setCheckBoxValue('Processed', true);
   });
 });

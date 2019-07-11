@@ -1,6 +1,5 @@
 export class StockControlPurchase {
-  contructor(description) {
-    this.description = description;
+  constructor() {
     this.products = [];
   }
 
@@ -18,9 +17,31 @@ export class StockControlPurchase {
 
   apply() {
     cy.log(`StockControlPurchase - apply - START (${this.description})`);
-    applyStockControlPurchase(this);
+    StockControlPurchase.applyStockControlPurchase(this);
     cy.log(`StockControlPurchase - apply - END (${this.description})`);
     return this;
+  }
+
+
+  static applyStockControlPurchase(stockControlPurchase) {
+    cy.visitWindow('540253');
+    cy.get('body').type('{alt}n');
+
+    cy.writeIntoStringField('Description', stockControlPurchase.description);
+
+    stockControlPurchase.products.forEach(product => {
+      StockControlPurchase.applyProduct(product);
+    });
+  }
+
+
+  static applyProduct(product) {
+    cy.pressAddNewButton();
+    cy.writeIntoLookupListField('M_Product_ID', product.product, product.product, true);
+
+    cy.writeIntoStringField('QtyCount', product.qty, true);
+    cy.selectInListField('PP_Plant_ID', 'test', true);
+    cy.pressDoneButton();
   }
 }
 
@@ -42,24 +63,5 @@ export class StockControlPurchaseProduct {
   }
 }
 
-function applyStockControlPurchase(stockControlPurchase) {
-  cy.visitWindow('540253');
-  cy.clickHeaderNav(Cypress.messages.window.new.caption);
 
-  cy.writeIntoStringField('Description', stockControlPurchase.description);
 
-  if (stockControlPurchase.products.length > 0) {
-    stockControlPurchase.products.forEach(product => {
-      applyProduct(product);
-    });
-  }
-}
-
-function applyProduct(product) {
-  cy.pressAddNewButton();
-  cy.writeIntoLookupListField('M_Product_ID', product.product, product.product, true);
-
-  cy.writeIntoStringField('QtyCount', product.qty, true);
-  cy.selectInListField('PP_Plant_ID', 'test', true);
-  cy.pressDoneButton();
-}
