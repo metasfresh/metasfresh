@@ -25,6 +25,8 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 
 import de.metas.cache.CCache;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
@@ -32,6 +34,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -65,6 +68,8 @@ public class FreightCostRepository
 	private static final Logger logger = LogManager.getLogger(FreightCostRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+
+	private static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
 
 	private final CCache<Integer, IndexedFreightCosts> freightCostsCache = CCache.<Integer, IndexedFreightCosts> builder()
 			.additionalTableNameToResetFor(I_M_FreightCost.Table_Name)
@@ -147,6 +152,15 @@ public class FreightCostRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableListMultimap<FreightCostShipperId, FreightCostBreak> breaks = retrieveBreaks(fcShipperIds);
+
+		if(Check.isEmpty(breaks))
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_NO_FREIGHT_COST_DETAIL);
+
+			throw new AdempiereException(translatableMsgText);
+		}
 
 		final ListMultimap<FreightCostId, FreightCostShipper> result = ArrayListMultimap.create();
 		for (final I_M_FreightCostShipper shipperRecord : shipperRecords)

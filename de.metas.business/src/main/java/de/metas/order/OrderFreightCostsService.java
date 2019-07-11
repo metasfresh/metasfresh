@@ -59,7 +59,7 @@ import lombok.NonNull;
 @Service
 public class OrderFreightCostsService
 {
-	private static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
+
 
 	private static final Logger logger = LogManager.getLogger(OrderFreightCostsService.class);
 
@@ -81,7 +81,7 @@ public class OrderFreightCostsService
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
 		final boolean isCustomFreightCost = freightCostRule.isFixPrice()
-				|| FreightCostRule.FreightIncluded.equals(freightCostRule);
+				|| FreightCostRule.FlatShippingFee.equals(freightCostRule);
 		if (!isCustomFreightCost)
 		{
 			return;
@@ -170,32 +170,6 @@ public class OrderFreightCostsService
 		}
 
 		return Money.of(freightAmtBD, CurrencyId.ofRepoId(order.getC_Currency_ID()));
-	}
-
-	private void checkFreightCost(final I_C_Order order)
-	{
-		if (!order.isSOTrx())
-		{
-			logger.debug("{} is not a sales order", order);
-			return;
-		}
-
-		final FreightCostContext freightCostContext = extractFreightCostContext(order);
-		if (freightCostContext.getShipToBPartnerId() == null
-				|| freightCostContext.getShipToCountryId() == null
-				|| freightCostContext.getShipperId() == null)
-		{
-			logger.debug("Can't check cause freight cost info is not yet complete for {}", order);
-			return;
-		}
-
-		if (freightCostService.checkIfFree(freightCostContext))
-		{
-			logger.debug("No freight cost for {}", order);
-			return;
-		}
-
-		freightCostService.findBestMatchingFreightCost(freightCostContext);
 	}
 
 	public void updateFreightAmt(@NonNull final I_C_Order order)
