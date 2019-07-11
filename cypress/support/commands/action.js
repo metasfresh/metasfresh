@@ -11,15 +11,6 @@ function executeHeaderAction(actionName) {
 
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');
-
-
-
-  //
-  // cy.wait(`@${layoutAliasName}`, {
-  //   requestTimeout: 20000,
-  //   responseTimeout: 20000,
-  // });
-
   cy.get(`#headerAction_${actionName}`).click();
 }
 
