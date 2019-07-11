@@ -258,7 +258,14 @@ describe('Create Sales order', function() {
     /**Navigate back in the purchase order */
     cy.wait(2000);
     cy.go('back');
+    let grandTotal = null;
+    cy.openAdvancedEdit()
+      .get('.form-field-GrandTotal input')
+      .then(el => {
+        grandTotal = el.val();
+      });
     /**Go to 'Invoice disposition' */
+    cy.pressDoneButton();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -271,12 +278,16 @@ describe('Create Sales order', function() {
     cy.wait(5000);
     cy.pressStartButton();
     cy.wait(8000);
-
     /**Open notifications */
     cy.get('.header-item-badge.icon-lg i').click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + vendorName + '")')
       .first()
       .click();
+    cy.openAdvancedEdit();
+    /**because should('have.value',grandTotal) evaluates using a null grand total */
+    cy.get('.form-field-GrandTotal input').should(el => {
+      expect(el).to.have.value(grandTotal);
+    });
   });
 });
