@@ -223,9 +223,9 @@ public class TranslatableStrings
 	public static ITranslatableString amount(@NonNull final Amount amount)
 	{
 		return builder()
-				.append(amount.getValue(), DisplayType.Amount)
+				.append(amount.getAsBigDecimal(), DisplayType.Amount)
 				.append(" ")
-				.append(amount.getCurrencyCode())
+				.append(amount.getCurrencyCode().toThreeLetterCode())
 				.build();
 	}
 

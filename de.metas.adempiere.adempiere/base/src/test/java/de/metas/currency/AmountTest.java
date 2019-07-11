@@ -81,7 +81,7 @@ public class AmountTest
 
 	private static Amount amt(final String amt, final String currencyCode)
 	{
-		return Amount.of(new BigDecimal(amt), currencyCode);
+		return Amount.of(new BigDecimal(amt), CurrencyCode.ofThreeLetterCode(currencyCode));
 	}
 
 	private static void assertThrowsAmountShallHaveSameCurrencyException(ThrowingCallable callable)

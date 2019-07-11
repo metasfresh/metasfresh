@@ -25,8 +25,8 @@ import de.metas.currency.Amount;
 import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.paypal.config.PayPalConfigProvider;
 import de.metas.payment.paypal.logs.PayPalCreateLogRequest;
-import de.metas.payment.paypal.logs.PayPalLogRepository;
 import de.metas.payment.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
+import de.metas.payment.paypal.logs.PayPalLogRepository;
 import lombok.NonNull;
 
 /*
@@ -165,7 +165,7 @@ public class PayPalClientService
 		final AuthorizationsCaptureRequest request = new AuthorizationsCaptureRequest(authId.getAsString())
 				.requestBody(new CaptureRequest()
 						.amount(new com.paypal.payments.Money()
-								.currencyCode(amount.getCurrencyCode())
+								.currencyCode(amount.getCurrencyCode().toThreeLetterCode())
 								.value(amount.getAsBigDecimal().toPlainString()))
 						.finalCapture(finalCapture));
 

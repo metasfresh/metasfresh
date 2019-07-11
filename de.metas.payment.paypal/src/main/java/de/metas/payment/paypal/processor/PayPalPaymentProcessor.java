@@ -212,7 +212,7 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 		final Amount amount = moneyService.toAmount(money);
 		return new AmountWithBreakdown()
 				.value(amount.getAsBigDecimal().toPlainString())
-				.currencyCode(amount.getCurrencyCode());
+				.currencyCode(amount.getCurrencyCode().toThreeLetterCode());
 	}
 
 	@Override

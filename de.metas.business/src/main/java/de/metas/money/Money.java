@@ -35,7 +35,9 @@ import de.metas.currency.CurrencyCode;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -104,6 +106,7 @@ public final class Money
 	}
 
 	@JsonProperty("value")
+	@Getter(AccessLevel.NONE)
 	BigDecimal value;
 
 	@JsonProperty("currencyId")
@@ -299,7 +302,7 @@ public final class Money
 
 	public Amount toAmount(@NonNull final Function<CurrencyId, CurrencyCode> currencyCodeMapper)
 	{
-		return Amount.of(getAsBigDecimal(), currencyCodeMapper.apply(getCurrencyId()).toThreeLetterCode());
+		return Amount.of(getAsBigDecimal(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 
 }
