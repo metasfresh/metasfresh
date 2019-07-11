@@ -24,7 +24,7 @@
 
 
 import {SalesInvoice, SalesInvoiceLine} from "../../support/utils/sales_invoice";
-import {getLanguageSpecific} from "../../support/utils/utils";
+import {getLanguageSpecific, humanReadableNow} from "../../support/utils/utils";
 import {DocumentActionKey, DocumentStatusKey} from "../../support/utils/constants";
 import {BPartner} from "../../support/utils/bpartner";
 import {DunningCandidates} from "../../page_objects/dunning_candidates";
@@ -35,7 +35,7 @@ import {salesInvoices} from "../../page_objects/sales_invoices";
 
 describe('Create Dunning Documents', function() {
   // human readable date with millis!
-  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
+  const date = humanReadableNow();
 
   const dunningTypeName = `Dunning ${date}`;
 
