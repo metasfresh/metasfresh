@@ -25,7 +25,7 @@ export class StockControlPurchase {
 
   static applyStockControlPurchase(stockControlPurchase) {
     cy.visitWindow('540253');
-    cy.get('body').type('{alt}n');
+    cy.clickHeaderNav('new');
 
     cy.writeIntoStringField('Description', stockControlPurchase.description);
 
