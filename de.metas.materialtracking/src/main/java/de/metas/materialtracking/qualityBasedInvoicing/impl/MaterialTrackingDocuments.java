@@ -297,7 +297,7 @@ import lombok.NonNull;
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
 						.model(model)
-						.materialTracking(materialTracking)
+						.materialTrackingRecord(materialTracking)
 						.build());
 	}
 

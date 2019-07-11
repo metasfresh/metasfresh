@@ -52,7 +52,6 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -107,7 +106,7 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 	 */
 	private void processLinkRequestForHU(@NonNull final I_M_HU hu, @NonNull final MTLinkRequest request)
 	{
-		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
+		final I_M_Material_Tracking materialTracking = request.getMaterialTrackingRecord();
 
 		//
 		// update the HU itself

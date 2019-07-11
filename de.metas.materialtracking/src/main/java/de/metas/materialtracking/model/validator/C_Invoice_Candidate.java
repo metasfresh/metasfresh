@@ -98,7 +98,7 @@ public class C_Invoice_Candidate
 		{
 			materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
 					.model(ic)
-					.materialTracking(ic.getM_Material_Tracking())
+					.materialTrackingRecord(ic.getM_Material_Tracking())
 					.build());
 		}
 		else

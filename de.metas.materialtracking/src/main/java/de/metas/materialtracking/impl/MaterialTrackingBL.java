@@ -9,9 +9,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Loggables;
-import org.adempiere.util.Services;
-
 
 /*
  * #%L
@@ -48,7 +45,6 @@ import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 import de.metas.materialtracking.spi.impl.listeners.CompositeMaterialTrackingListener;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -88,7 +84,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	@Override
 	public void linkModelToMaterialTracking(@NonNull final MTLinkRequest request)
 	{
-		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
+		final I_M_Material_Tracking materialTracking = request.getMaterialTrackingRecord();
 		final Object model = request.getModel();
 
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
@@ -165,7 +161,7 @@ public class MaterialTrackingBL implements IMaterialTrackingBL
 	private final I_M_Material_Tracking_Ref createMaterialTrackingRef(@NonNull final MTLinkRequest request)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking_Ref refNew = materialTrackingDAO.createMaterialTrackingRefNoSave(request.getMaterialTracking(), request.getModel());
+		final I_M_Material_Tracking_Ref refNew = materialTrackingDAO.createMaterialTrackingRefNoSave(request.getMaterialTrackingRecord(), request.getModel());
 		if (request.getQtyIssued() != null)
 		{
 			refNew.setQtyIssued(request.getQtyIssued());

@@ -2,10 +2,6 @@ package de.metas.materialtracking.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
-import lombok.NonNull;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
 /*
  * #%L
  * de.metas.materialtracking
@@ -47,13 +43,14 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.cache.model.impl.TableRecordCacheLocal;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;
+import de.metas.materialtracking.MaterialTrackingId;
 import de.metas.materialtracking.ch.lagerkonf.interfaces.I_C_Flatrate_Conditions;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report_Line;
@@ -149,7 +146,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	@Override
 	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(
 			@NonNull final Object model,
-			@NonNull final I_M_Material_Tracking materialTracking/* TODO use materialTrackingId */)
+			@NonNull final MaterialTrackingId materialTrackingId)
 	{
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
@@ -158,7 +155,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.setContext(threadContextAware)
 				.createMaterialTrackingRefQueryBuilderForModel(model)
 				.addOnlyActiveRecordsFilter() /* TODO cleanup/extend MaterialTrackingQueryCompiler */
-				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTrackingId)
 				.create()
 				.firstOnly(I_M_Material_Tracking_Ref.class);
 	}
@@ -358,10 +355,6 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 
 		final int partnerID = materialTracking.getC_BPartner_ID();
 		final int productID = materialTracking.getM_Product_ID();
-
-		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = create(
-				materialTracking, de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking.class)
-						.getM_QualityInsp_LagerKonf_Version();
 		final int lagerKonfID = lagerKonfVersion == null ? -1 : lagerKonfVersion.getM_QualityInsp_LagerKonf_ID();
 
 		final Timestamp startDate = materialTracking.getValidFrom();

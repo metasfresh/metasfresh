@@ -99,7 +99,7 @@ public class PP_Cost_Collector
 		if (!anyCCLeft)
 		{
 			final I_PP_Order ppOrder = Services.get(IPPOrderDAO.class).getById(ppOrderId);
-			materialTrackingBL.unlinkModelFromMaterialTracking(ppOrder);
+			materialTrackingBL.unlinkModelFromMaterialTrackings(ppOrder);
 		}
 	}
 	}

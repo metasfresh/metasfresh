@@ -80,7 +80,7 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 				materialTrackingBL.linkModelToMaterialTracking(
 						MTLinkRequest.builder()
 								.model(documentLine)
-								.materialTracking(materialTracking)
+								.materialTrackingRecord(materialTracking)
 								.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
 								.build());
 			}

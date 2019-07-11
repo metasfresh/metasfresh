@@ -69,7 +69,7 @@ public final class PaymentAllocationLineMaterialTrackingListener extends Materia
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
 						.model(payment)
-						.materialTracking(request.getMaterialTracking())
+						.materialTrackingRecord(request.getMaterialTrackingRecord())
 						.build());
 	}
 

@@ -71,7 +71,7 @@ public class MaterialTrackingInvoiceCandidateListener implements IInvoiceCandida
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
 						.model(invoice)
-						.materialTracking(materialTracking)
+						.materialTrackingRecord(materialTracking)
 						.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
 						.build()
 				);

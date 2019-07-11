@@ -57,8 +57,8 @@ public interface I_PP_Order extends
 		 */
 		ByProduct(CostCollectorType.MixVariance, BOMComponentType.ByProduct, -1);
 
-		private String costCollectorType;
-		private String bomLineComponentType;
+		private CostCollectorType costCollectorType;
+		private BOMComponentType bomLineComponentType;
 		private int factor;
 
 		Type(final CostCollectorType costCollectorType,

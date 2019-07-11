@@ -62,7 +62,7 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 */
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForModel(Object model);
 
-	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(Object model, I_M_Material_Tracking materialTracking);
+	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(Object model, MaterialTrackingId materialTrackingId);
 
 	/** Convenience method that assumes there is at most one material tracking ref for the given model*/
 	I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(Object model);

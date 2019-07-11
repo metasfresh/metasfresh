@@ -13,22 +13,17 @@ package de.metas.handlingunits.materialtracking.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.util.Check;
-import org.adempiere.util.Services;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
+import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.handlingunits.IHUContext;
@@ -45,7 +40,13 @@ import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /**
@@ -77,19 +78,19 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(costCollectorRecord.getPP_Order(), I_PP_Order.class);
 		if (isQualityInspection)
 		{
-		// Set PP_Order.M_Material_Tracking_ID
-		if (ppOrder.getM_Material_Tracking_ID() <= 0)
-		{
+			// Set PP_Order.M_Material_Tracking_ID
+			if (ppOrder.getM_Material_Tracking_ID() <= 0)
+			{
 				ppOrder.setM_Material_Tracking(materialTrackingRecord);
-			Services.get(IPPOrderDAO.class).save(ppOrder);
-		}
-		else
-		{
-			// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
+				Services.get(IPPOrderDAO.class).save(ppOrder);
+			}
+			else
+			{
+				// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
 				Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTrackingRecord.getM_Material_Tracking_ID(),
-					"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
+						"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
 						ppOrder, ppOrder.getM_Material_Tracking(), materialTrackingRecord);
-		}
+			}
 		}
 
 		// Assign PP_Order to material tracking
@@ -100,29 +101,29 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		// in case of non-quality inspections, we can have multiple links; in case of quality inspections there is a dedicated check
 		final MTLinkRequest ppOrderLinkRequest = MTLinkRequest.builder()
 				.model(ppOrder)
-				.materialTracking(materialTrackingRecord)
+				.materialTrackingRecord(materialTrackingRecord)
 				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
 				.build();
 
 		materialTrackingBL.linkModelToMaterialTracking(ppOrderLinkRequest);
 
 		// Assign PP_Cost_Collector and quantity to material tracking
-		final I_M_Product productRecord = materialTrackingRecord.getM_Product();
-		final I_C_UOM targetUOM = productBL.getStockingUOM(productRecord);
+		final ProductId productId = ProductId.ofRepoId(materialTrackingRecord.getM_Product_ID());
+		final UomId toUOMId = productBL.getStockingUOMId(productId);
 		final Quantity sum = uomConversionBL.computeSum(
-				IUOMConversionContext.of(productRecord),
+				UOMConversionContext.of(productId),
 				materialTrackingWithQuantity.getQuantities(),
-				targetUOM);
+				toUOMId);
 
 		final MTLinkRequest costCollectorLinkRequest = MTLinkRequest.builder()
 				.model(costCollectorRecord)
-				.materialTracking(materialTrackingRecord)
-				.qtyIssued(sum.getQty())
+				.materialTrackingRecord(materialTrackingRecord)
+				.qtyIssued(sum.getAsBigDecimal())
 				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
 				.build();
 		materialTrackingBL.linkModelToMaterialTracking(costCollectorLinkRequest);
 	}
-	
+
 	@Override
 	public I_M_Material_Tracking extractMaterialTrackingIfAny(final IHUContext huContext, final I_M_HU hu)
 	{

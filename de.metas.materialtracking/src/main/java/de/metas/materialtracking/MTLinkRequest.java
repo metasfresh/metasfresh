@@ -26,9 +26,9 @@ public class MTLinkRequest
 		/** If the model is already linked an exception is thrown. */
 		FAIL,
 
-	/**
+		/**
 		 * If the model is already linked, it unassigns the model from old material tracking.
-	 */
+		 */
 		UNLINK_FROM_PREVIOUS,
 
 		ADD_ADDITIONAL_LINK
@@ -42,12 +42,12 @@ public class MTLinkRequest
 
 	@NonNull
 	Object model;
-	
+
 	@Default
 	IParams params = IParams.NULL;
 
 	@NonNull
-	I_M_Material_Tracking materialTracking;
+	I_M_Material_Tracking materialTrackingRecord;
 
 	/** Can be set if this request is about linking a PP_Order. Note that unfortunately there is no UOM-field; The UOM is implicitly the product's stocking-UOM. */
 	BigDecimal qtyIssued;
@@ -59,4 +59,4 @@ public class MTLinkRequest
 	{
 		return InterfaceWrapperHelper.create(model, clazz);
 	}
-	}
+}
