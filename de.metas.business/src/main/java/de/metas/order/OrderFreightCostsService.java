@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.freighcost.FreightCost;
 import de.metas.freighcost.FreightCostContext;
 import de.metas.freighcost.FreightCostRule;
@@ -75,11 +76,8 @@ public class OrderFreightCostsService
 
 	public void addFreightRateLineIfNeeded(final I_C_Order order)
 	{
+		updateFreightAmt(order);
 		final BigDecimal freightAmt = order.getFreightAmt();
-		if (freightAmt.signum() == 0)
-		{
-			return;
-		}
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
 		final boolean isCustomFreightCost = freightCostRule.isFixPrice()
@@ -256,9 +254,14 @@ public class OrderFreightCostsService
 					0,
 					BigDecimal.ONE,
 					SOTrx.SALES.toBoolean());
+
+			final CountryId countryId = getCountryIdOrNull(salesOrder);
+
+			pricingContext.setCountryId(countryId);
 			pricingContext.setFailIfNotCalculated();
 			pricingContext.setPricingSystemId(PricingSystemId.ofRepoIdOrNull(salesOrder.getM_PricingSystem_ID()));
 			pricingContext.setPriceListId(PriceListId.ofRepoIdOrNull(salesOrder.getM_PriceList_ID()));
+			pricingContext.setCurrencyId(CurrencyId.ofRepoId(salesOrder.getC_Currency_ID()));
 
 			final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 			final Money freightRate = Money.of(pricingResult.getPriceStd(), pricingResult.getCurrencyId());
@@ -270,6 +273,27 @@ public class OrderFreightCostsService
 			return Optional.empty();
 		}
 	}
+
+	private CountryId getCountryIdOrNull(@NonNull final I_C_Order salesOrder)
+	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final int locationRecordId = salesOrder.getC_BPartner_Location_ID();
+
+		if (locationRecordId <= 0)
+		{
+			return null;
+		}
+
+		final int bpartnerRecordId = salesOrder.getC_BPartner_ID();
+		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpartnerRecordId, locationRecordId);
+
+
+		final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocationId);
+
+		return countryId;
+	}
+
 
 	private Optional<Money> computeShipmentValueAmt(@NonNull final OrderId orderId)
 	{
