@@ -56,7 +56,7 @@ public final class Values
 	/**
 	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
 	 */
-	public static final Object valueToJsonObject(final Object value)
+	public static Object valueToJsonObject(final Object value)
 	{
 		return valueToJsonObject(value, UnaryOperator.identity());
 	}
@@ -68,7 +68,7 @@ public final class Values
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
-	public static final Object valueToJsonObject(final Object value, final UnaryOperator<Object> fallbackMapper)
+	public static Object valueToJsonObject(final Object value, final UnaryOperator<Object> fallbackMapper)
 	{
 		if (value == null)
 		{
@@ -125,11 +125,11 @@ public final class Values
 		}
 		else if (value instanceof Money)
 		{
-			return bigDecimalToJson(((Money)value).getValue());
+			return bigDecimalToJson(((Money)value).getAsBigDecimal());
 		}
 		else if (value instanceof Amount)
 		{
-			return bigDecimalToJson(((Amount)value).getValue());
+			return bigDecimalToJson(((Amount)value).getAsBigDecimal());
 		}
 		else if (value instanceof DocumentId)
 		{
@@ -148,7 +148,7 @@ public final class Values
 		}
 	}
 
-	private static final String bigDecimalToJson(final BigDecimal value)
+	private static String bigDecimalToJson(final BigDecimal value)
 	{
 		// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
 		// we need to provide the BigDecimals as Strings.

@@ -297,7 +297,7 @@ public class BoardDescriptorRepository
 				}
 
 				final CurrencyCode currencyCode = currenciesRepo.getCurrencyCodeById(currencyId);
-				return Amount.of(valueBD, currencyCode.toThreeLetterCode());
+				return Amount.of(valueBD, currencyCode);
 			};
 
 		}

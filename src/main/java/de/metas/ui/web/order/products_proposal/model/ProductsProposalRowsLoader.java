@@ -185,7 +185,7 @@ public final class ProductsProposalRowsLoader
 	private ProductProposalPrice extractProductProposalPrice(final I_M_ProductPrice record)
 	{
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID());
-		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId).toThreeLetterCode());
+		final Amount priceListPrice = Amount.of(record.getPriceStd(), getCurrencyCode(priceListVersionId));
 
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final ProductProposalCampaignPrice campaignPrice = campaignPriceProvider.getCampaignPrice(productId).orElse(null);
