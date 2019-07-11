@@ -20,6 +20,8 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.AccessLevel;
@@ -59,13 +61,13 @@ import lombok.Value;
 @Value
 public final class ProcessClassParamInfo
 {
-	static final ArrayKey createFieldUniqueKey(final Field field)
+	static ArrayKey createFieldUniqueKey(final Field field)
 	{
 		// NOTE: when building the make, make sure we don't have any references to Class, Field or other java reflection classes
 		return ArrayKey.of(field.getType().getName(), field.getDeclaringClass().getName(), field.getName());
 	}
 
-	static final ArrayKey createParameterUniqueKey(final String parameterName, final boolean parameterTo)
+	static ArrayKey createParameterUniqueKey(final String parameterName, final boolean parameterTo)
 	{
 		return ArrayKey.of(parameterName, parameterTo);
 	}
@@ -167,7 +169,7 @@ public final class ProcessClassParamInfo
 		}
 	}
 
-	private final Object extractParameterValue(
+	private Object extractParameterValue(
 			final JavaProcess processInstance,
 			final Field processField,
 			final IRangeAwareParams source)
@@ -232,9 +234,20 @@ public final class ProcessClassParamInfo
 			final int valueInt = parameterTo
 					? source.getParameter_ToAsInt(parameterName, -1)
 					: source.getParameterAsInt(parameterName, -1);
+			
 			@SuppressWarnings("unchecked")
 			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)fieldType;
 			value = RepoIdAwares.ofRepoIdOrNull(valueInt, repoIdAwareType);
+		}
+		else if(ReferenceListAwareEnum.class.isAssignableFrom(fieldType))
+		{
+			final String valueStr = parameterTo
+					? source.getParameter_ToAsString(parameterName)
+					: source.getParameterAsString(parameterName);
+			
+			@SuppressWarnings("unchecked")
+			final Class<? extends ReferenceListAwareEnum> referenceListAwareClass = (Class<? extends ReferenceListAwareEnum>)fieldType;
+			value = ReferenceListAwareEnums.ofCode(valueStr, referenceListAwareClass);
 		}
 		//
 		else if (fieldType.isAssignableFrom(String.class))
