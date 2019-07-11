@@ -7,6 +7,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -46,7 +47,7 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 		throw new UnsupportedOperationException("windowId not available");
 	}
 
-	private final void onViewRemoved(final RemovalNotification<Object, Object> notification)
+	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
 	{
 		final IView view = (IView)notification.getValue();
 		final ViewCloseReason closeReason = ViewCloseReason.fromCacheEvictedFlag(notification.wasEvicted());
@@ -90,6 +91,9 @@ public final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 		}
 
 		view.invalidateAll();
+		
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(view);
 	}
 
 	@Override
