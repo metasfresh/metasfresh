@@ -21,20 +21,24 @@ export class WarehouseRouting {
 function applyRouting(Routing) {
   describe(`Create new Routing ${Routing.Routing}`, function() {
     cy.get(`#tab_M_Warehouse_Routing`).click();
+    const DocBaseType = getLanguageSpecific(Routing, 'DocBaseType');
     cy.pressAddNewButton()
-      .selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Distribution Order', true))
+      .selectInListField('DocBaseType', DocBaseType, true)
       .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Sales Order', true))
-      .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Purchase Order', true))
-      .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Material Receipt', true))
-      .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Manufacturing Order', true))
-      .pressDoneButton();
+    //cy.pressAddNewButton()
+    //.selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Distribution Order', true))
+    //.pressDoneButton();
+    //cy.pressAddNewButton()
+    //.selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Sales Order', true))
+    //.pressDoneButton();
+    //cy.pressAddNewButton()
+    //.selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Purchase Order', true))
+    //.pressDoneButton();
+    //cy.pressAddNewButton()
+    //.selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Material Receipt', true))
+    //.pressDoneButton();
+    //cy.pressAddNewButton()
+    //.selectInListField('DocBaseType', getLanguageSpecific(DocBaseType, 'Manufacturing Order', true))
+    //.pressDoneButton();
   });
 }

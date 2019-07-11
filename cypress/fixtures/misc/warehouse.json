@@ -13,22 +13,24 @@
     ],
     "routes": [
       {
-        "docBaseType": "Sales Order",
-        "de_DE__docBaseType": "Auftrag"
+        "de_DE__docBaseType": "Auftrag",
+        "docBaseType": "Sales Order"
       },
       {
-        "docBaseType": "Purchase Order",
-        "de_DE__docBaseType": "Bestellung"
+        "de_DE__docBaseType": "Bestellung",
+        "docBaseType": "Purchase Order"
       },
       {
+        "de_DE__docBaseType": "Manufacturing Order",
         "docBaseType": "Manufacturing Order"
       },
       {
+        "de_DE__docBaseType": "Distribution Order",
         "docBaseType": "Distribution Order"
       },
       {
-        "docBaseType": "Material Receipt",
-        "de_DE__docBaseType": "Wareneingang"
+        "de_DE__docBaseType": "Wareneingang",
+        "docBaseType": "Material Receipt"
       }
     ]
 }
