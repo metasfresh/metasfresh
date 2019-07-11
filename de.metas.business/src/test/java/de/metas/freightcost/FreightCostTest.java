@@ -159,16 +159,6 @@ public class FreightCostTest
 
 	}
 
-	private I_M_Product_Category createProductCategory(final String name)
-	{
-		final I_M_Product_Category productCateogry = newInstance(I_M_Product_Category.class);
-		productCateogry.setName(name);
-
-		save(productCateogry);
-
-		return productCateogry;
-	}
-
 	@Test
 	public void orderWithFreightCost_FreightAmtFromPricelist()
 	{
@@ -643,6 +633,208 @@ public class FreightCostTest
 
 	}
 
+	private I_C_BP_Group createBPGroup(final String name)
+	{
+		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
+		bpGroup.setName(name);
+	
+		save(bpGroup);
+	
+		return bpGroup;
+	}
+
+	private I_C_BPartner createPartner(final String partnerName, final int bpGroupId)
+	{
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setName(partnerName);
+		partner.setC_BP_Group_ID(bpGroupId);
+	
+		save(partner);
+	
+		return partner;
+	}
+
+	private I_M_Shipper createShipper(final String shipperName, final int bpartnerId)
+	{
+		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
+		shipper.setName(shipperName);
+		shipper.setC_BPartner_ID(bpartnerId);
+	
+		save(shipper);
+		return shipper;
+	}
+
+	private I_C_Currency createCurrency(final String name)
+	{
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setCurSymbol(name);
+	
+		save(currency);
+	
+		return currency;
+	}
+
+	private I_C_Country createCountry(final String countryName, final int currencyId)
+	{
+		final I_C_Country country = newInstance(I_C_Country.class);
+		country.setName(countryName);
+		country.setC_Currency_ID(currencyId);
+	
+		save(country);
+	
+		return country;
+	}
+
+	private I_C_BPartner_Location createBPartnerLocation(final int partnerId, final int countryId)
+	{
+		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setC_Country_ID(countryId);
+		location.setAddress1("Address1");
+	
+		save(location);
+	
+		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_Location_ID(location.getC_Location_ID());
+		bpLocation.setC_BPartner_ID(partnerId);
+		bpLocation.setIsBillTo(true);
+		bpLocation.setIsShipTo(true);
+	
+		save(bpLocation);
+	
+		return bpLocation;
+	}
+
+	private I_M_Product_Category createProductCategory(final String name)
+	{
+		final I_M_Product_Category productCateogry = newInstance(I_M_Product_Category.class);
+		productCateogry.setName(name);
+	
+		save(productCateogry);
+	
+		return productCateogry;
+	}
+
+	private I_C_UOM createUOM(final String uomName)
+	{
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+	
+		uom.setName(uomName);
+		uom.setUOMSymbol(uomName);
+	
+		save(uom);
+	
+		return uom;
+	}
+
+	private I_M_Product createProduct(final String productName, int uomId, final int productCategoryId)
+	{
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName(productName);
+		product.setValue(productName);
+		product.setC_UOM_ID(uomId);
+		product.setM_Product_Category_ID(productCategoryId);
+	
+		save(product);
+	
+		return product;
+	}
+
+	private I_C_Order createSalesOrder(final int partnerId,
+			final int locationId,
+			final String freightCostRule,
+			final BigDecimal freightAmt,
+			final int productId,
+			final int uomId,
+			final int currencyId,
+			final String deliveryViaRule)
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+	
+		order.setIsSOTrx(true);
+		order.setC_BPartner_ID(partnerId);
+		order.setC_BPartner_Location_ID(locationId);
+		order.setFreightCostRule(freightCostRule);
+		order.setDeliveryViaRule(deliveryViaRule);
+		order.setFreightAmt(freightAmt);
+		order.setC_Currency_ID(currencyId);
+		order.setDateOrdered(SystemTime.asDayTimestamp());
+	
+		save(order);
+	
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+	
+		orderLine.setM_Product_ID(productId);
+		orderLine.setC_UOM_ID(uomId);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
+		orderLine.setC_Currency_ID(currencyId);
+		orderLine.setPriceEntered(BigDecimal.TEN);
+		orderLine.setQtyEntered(BigDecimal.TEN);
+	
+		save(orderLine);
+	
+		return order;
+	}
+
+	private I_M_FreightCost createFreightCost(final int freightCostProductId, final String name)
+	{
+		final I_M_FreightCost freightCost = newInstance(I_M_FreightCost.class);
+		freightCost.setM_Product_ID(freightCostProductId);
+		freightCost.setName(name);
+		freightCost.setValue(name);
+		freightCost.setIsDefault(true);
+	
+		save(freightCost);
+	
+		return freightCost;
+	}
+
+	private I_M_FreightCostShipper createFreightCostShipper(final int freightCostId, final int shipperId, final Timestamp validFrom)
+	{
+		final I_M_FreightCostShipper freightCostShipper = newInstance(I_M_FreightCostShipper.class);
+	
+		freightCostShipper.setM_FreightCost_ID(freightCostId);
+		freightCostShipper.setM_Shipper_ID(shipperId);
+		freightCostShipper.setValidFrom(validFrom);
+	
+		save(freightCostShipper);
+	
+		return freightCostShipper;
+	
+	}
+
+	private I_M_FreightCostDetail createFreightCostDetail(final int countryId, final int freightCostShipperId)
+	{
+		final I_M_FreightCostDetail freightCostDetail = newInstance(I_M_FreightCostDetail.class);
+		freightCostDetail.setC_Country_ID(countryId);
+		freightCostDetail.setM_FreightCostShipper_ID(freightCostShipperId);
+	
+		save(freightCostDetail);
+	
+		return freightCostDetail;
+	}
+
+	private I_M_PricingSystem createPricingSystem(final String name)
+	{
+		final I_M_PricingSystem pricingSystem = newInstance(I_M_PricingSystem.class);
+		pricingSystem.setName(name);
+		pricingSystem.setValue(name);
+	
+		save(pricingSystem);
+	
+		return pricingSystem;
+	}
+
+	private I_M_PriceList createPriceList(final int pricingSystemId, final int currencyId)
+	{
+		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
+		priceList.setM_PricingSystem_ID(pricingSystemId);
+		priceList.setC_Currency_ID(currencyId);
+		priceList.setIsSOPriceList(true);
+		save(priceList);
+	
+		return priceList;
+	}
+
 	private I_C_TaxCategory createTaxCategory(final String taxCateogryName, final int countryId)
 	{
 		final I_C_TaxCategory taxCateogry = newInstance(I_C_TaxCategory.class);
@@ -659,17 +851,6 @@ public class FreightCostTest
 		save(tax);
 
 		return taxCateogry;
-	}
-
-	private I_M_PriceList createPriceList(final int pricingSystemId, final int currencyId)
-	{
-		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
-		priceList.setM_PricingSystem_ID(pricingSystemId);
-		priceList.setC_Currency_ID(currencyId);
-		priceList.setIsSOPriceList(true);
-		save(priceList);
-
-		return priceList;
 	}
 
 	private I_M_ProductPrice createProductPrice(final int pricingSystemId,
@@ -699,186 +880,4 @@ public class FreightCostTest
 		return productPrice;
 
 	}
-
-	private I_M_PricingSystem createPricingSystem(final String name)
-	{
-		final I_M_PricingSystem pricingSystem = newInstance(I_M_PricingSystem.class);
-		pricingSystem.setName(name);
-		pricingSystem.setValue(name);
-
-		save(pricingSystem);
-
-		return pricingSystem;
-	}
-
-	private I_C_BP_Group createBPGroup(final String name)
-	{
-		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
-		bpGroup.setName(name);
-
-		save(bpGroup);
-
-		return bpGroup;
-	}
-
-	private I_M_FreightCostShipper createFreightCostShipper(final int freightCostId, final int shipperId, final Timestamp validFrom)
-	{
-		final I_M_FreightCostShipper freightCostShipper = newInstance(I_M_FreightCostShipper.class);
-
-		freightCostShipper.setM_FreightCost_ID(freightCostId);
-		freightCostShipper.setM_Shipper_ID(shipperId);
-		freightCostShipper.setValidFrom(validFrom);
-
-		save(freightCostShipper);
-
-		return freightCostShipper;
-
-	}
-
-	private I_M_FreightCostDetail createFreightCostDetail(final int countryId, final int freightCostShipperId)
-	{
-		final I_M_FreightCostDetail freightCostDetail = newInstance(I_M_FreightCostDetail.class);
-		freightCostDetail.setC_Country_ID(countryId);
-		freightCostDetail.setM_FreightCostShipper_ID(freightCostShipperId);
-
-		save(freightCostDetail);
-
-		return freightCostDetail;
-	}
-
-	private I_M_FreightCost createFreightCost(final int freightCostProductId, final String name)
-	{
-		final I_M_FreightCost freightCost = newInstance(I_M_FreightCost.class);
-		freightCost.setM_Product_ID(freightCostProductId);
-		freightCost.setName(name);
-		freightCost.setValue(name);
-		freightCost.setIsDefault(true);
-
-		save(freightCost);
-
-		return freightCost;
-	}
-
-	private I_C_Currency createCurrency(final String name)
-	{
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		currency.setCurSymbol(name);
-
-		save(currency);
-
-		return currency;
-	}
-
-	private I_C_Country createCountry(final String countryName, final int currencyId)
-	{
-		final I_C_Country country = newInstance(I_C_Country.class);
-		country.setName(countryName);
-		country.setC_Currency_ID(currencyId);
-
-		save(country);
-
-		return country;
-	}
-
-	private I_C_BPartner_Location createBPartnerLocation(final int partnerId, final int countryId)
-	{
-		final I_C_Location location = newInstance(I_C_Location.class);
-		location.setC_Country_ID(countryId);
-		location.setAddress1("Address1");
-
-		save(location);
-
-		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);
-		bpLocation.setC_Location_ID(location.getC_Location_ID());
-		bpLocation.setC_BPartner_ID(partnerId);
-		bpLocation.setIsBillTo(true);
-		bpLocation.setIsShipTo(true);
-
-		save(bpLocation);
-
-		return bpLocation;
-	}
-
-	private I_M_Shipper createShipper(final String shipperName, final int bpartnerId)
-	{
-		final I_M_Shipper shipper = newInstance(I_M_Shipper.class);
-		shipper.setName(shipperName);
-		shipper.setC_BPartner_ID(bpartnerId);
-
-		save(shipper);
-		return shipper;
-	}
-
-	private I_C_BPartner createPartner(final String partnerName, final int bpGroupId)
-	{
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
-		partner.setName(partnerName);
-		partner.setC_BP_Group_ID(bpGroupId);
-
-		save(partner);
-
-		return partner;
-	}
-
-	private I_C_Order createSalesOrder(final int partnerId,
-			final int locationId,
-			final String freightCostRule,
-			final BigDecimal freightAmt,
-			final int productId,
-			final int uomId,
-			final int currencyId,
-			final String deliveryViaRule)
-	{
-		final I_C_Order order = newInstance(I_C_Order.class);
-
-		order.setIsSOTrx(true);
-		order.setC_BPartner_ID(partnerId);
-		order.setC_BPartner_Location_ID(locationId);
-		order.setFreightCostRule(freightCostRule);
-		order.setDeliveryViaRule(deliveryViaRule);
-		order.setFreightAmt(freightAmt);
-		order.setC_Currency_ID(currencyId);
-		order.setDateOrdered(SystemTime.asDayTimestamp());
-
-		save(order);
-
-		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
-
-		orderLine.setM_Product_ID(productId);
-		orderLine.setC_UOM_ID(uomId);
-		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setC_Currency_ID(currencyId);
-		orderLine.setPriceEntered(BigDecimal.TEN);
-		orderLine.setQtyEntered(BigDecimal.TEN);
-
-		save(orderLine);
-
-		return order;
-	}
-
-	private I_C_UOM createUOM(final String uomName)
-	{
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-
-		uom.setName(uomName);
-		uom.setUOMSymbol(uomName);
-
-		save(uom);
-
-		return uom;
-	}
-
-	private I_M_Product createProduct(final String productName, int uomId, final int productCategoryId)
-	{
-		final I_M_Product product = newInstance(I_M_Product.class);
-		product.setName(productName);
-		product.setValue(productName);
-		product.setC_UOM_ID(uomId);
-		product.setM_Product_Category_ID(productCategoryId);
-
-		save(product);
-
-		return product;
-	}
-
 }
