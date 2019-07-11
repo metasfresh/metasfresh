@@ -58,42 +58,38 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * Retrieve the reference, using the threadContextAware of the given <code>model</code>. Background: new M_Material_Tracking_Refs are created in the thread's inherited transaction, so if we want
 	 * to find then without a previous commit, we need to use that same trx.
 	 *
-	 * @param model
-	 * @return
 	 * @see org.adempiere.ad.trx.api.ITrxManager#createThreadContextAware(Object)
 	 */
-	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(Object model);
+	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForModel(Object model);
+
+	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(Object model, I_M_Material_Tracking materialTracking);
+
+	/** Convenience method that assumes there is at most one material tracking ref for the given model*/
+	I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(Object model);
 
 	/**
 	 * Create material tracking reference (draft). Set its trxName to "thread inherited"
 	 *
 	 * NOTE: this is an internal API method, don't call it
-	 *
-	 * @param materialTracking
-	 * @param model
-	 * @return
 	 */
 	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(I_M_Material_Tracking materialTracking, Object model);
 
 	/**
 	 *
 	 * Retrieve the material tracking refs for the given {@link I_M_Material_Tracking} and model's {@link I_AD_Table}
-	 *
-	 * @param materialTracking
-	 * @param modelClass
-	 * @return
 	 */
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
-	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking (=> might be <code>null</code>).
-	 * Otherwise, if the given model is referenced by a {@link I_M_Material_Tracking_Ref}, then return that reference's material tracking.
-	 * Otherwise, return <code>null</code>.
+	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking.
+	 * Otherwise, if the given model is referenced by {@link I_M_Material_Tracking_Ref}s, then return that references' material trackings.
+	 * Otherwise, return an empty list.
 	 *
-	 * @param model
-	 * @return material tracking or <code>null</code>
 	 */
-	I_M_Material_Tracking retrieveMaterialTrackingForModel(Object model);
+	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(Object model);
+
+	/** Convenience method that assumes there is at most one material tracking for the given model*/
+	de.metas.materialtracking.model.I_M_Material_Tracking retrieveSingleMaterialTrackingForModel(Object model);
 
 	/**
 	 * Retrieves {@link I_M_Material_Tracking}s list for models specified by a query builder.

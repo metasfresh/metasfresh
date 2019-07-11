@@ -4,6 +4,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 import lombok.NonNull;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 /*
  * #%L
  * de.metas.materialtracking
@@ -46,6 +48,8 @@ import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
@@ -131,7 +135,36 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(@NonNull final Object model)
+	public I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(@NonNull final Object model)
+	{
+		final List<I_M_Material_Tracking_Ref> refs = retrieveMaterialTrackingRefsForModel(model);
+		if (refs.isEmpty())
+		{
+			return null;
+		}
+		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
+		return refs.get(0);
+	}
+
+	@Override
+	public I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(
+			@NonNull final Object model,
+			@NonNull final I_M_Material_Tracking materialTracking/* TODO use materialTrackingId */)
+	{
+		// 07669: Use the transaction of the thread and do not rely on the model's transaction
+		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
+
+		return new MaterialTrackingQueryCompiler()
+				.setContext(threadContextAware)
+				.createMaterialTrackingRefQueryBuilderForModel(model)
+				.addOnlyActiveRecordsFilter() /* TODO cleanup/extend MaterialTrackingQueryCompiler */
+				.addEqualsFilter(I_M_Material_Tracking_Ref.COLUMNNAME_M_Material_Tracking_ID, materialTracking.getM_Material_Tracking_ID())
+				.create()
+				.firstOnly(I_M_Material_Tracking_Ref.class);
+	}
+
+	@Override
+	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForModel(@NonNull final Object model)
 	{
 		// 07669: Use the transaction of the thread and do not rely on the model's transaction
 		final IContextAware threadContextAware = Services.get(ITrxManager.class).createThreadContextAware(model);
@@ -141,7 +174,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 				.createMaterialTrackingRefQueryBuilderForModel(model)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnly(I_M_Material_Tracking_Ref.class);
+				.list();
 	}
 
 	/* package */final void setDefaultOrderBy(final IQueryOrderByBuilder<I_M_Material_Tracking_Ref> orderByBuilder)
@@ -153,10 +186,9 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(final I_M_Material_Tracking materialTracking, final Class<?> modelClass)
+	public List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(
+			@NonNull final I_M_Material_Tracking materialTracking, final Class<?> modelClass)
 	{
-		Check.assumeNotNull(materialTracking, "materialTracking not null");
-
 		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
 
 		final IQueryBuilder<I_M_Material_Tracking_Ref> queryBuilder = Services.get(IQueryBL.class)
@@ -172,20 +204,34 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public I_M_Material_Tracking retrieveMaterialTrackingForModel(final Object model)
+	public de.metas.materialtracking.model.I_M_Material_Tracking retrieveSingleMaterialTrackingForModel(@NonNull final Object model)
 	{
-		final IMaterialTrackingAware materialTrackingAwareOrNull = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IMaterialTrackingAware.class);
-		if (materialTrackingAwareOrNull != null)
-		{
-			return materialTrackingAwareOrNull.getM_Material_Tracking();
-		}
-
-		final I_M_Material_Tracking_Ref ref = retrieveMaterialTrackingRefForModel(model);
-		if (ref == null)
+		final List<de.metas.materialtracking.model.I_M_Material_Tracking> refs = retrieveMaterialTrackingsForModel(model);
+		if (refs.isEmpty())
 		{
 			return null;
 		}
-		return ref.getM_Material_Tracking();
+		Check.assume(refs.size() <= 1, "At most one element M_Material_Tracking_Ref was expected for the given model, but we got more; model={}; refs={}", model, refs);
+		return refs.get(0);
+	}
+
+	@Override
+	public List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(@NonNull final Object model)
+		{
+		final IMaterialTrackingAware materialTrackingAwareOrNull = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IMaterialTrackingAware.class);
+		if (materialTrackingAwareOrNull != null)
+		{
+			if (materialTrackingAwareOrNull.getM_Material_Tracking_ID() > 0)
+			{
+				return ImmutableList.of(materialTrackingAwareOrNull.getM_Material_Tracking());
+		}
+			return ImmutableList.of();
+	}
+
+		final List<I_M_Material_Tracking_Ref> refs = retrieveMaterialTrackingRefsForModel(model);
+		return refs.stream()
+				.map(I_M_Material_Tracking_Ref::getM_Material_Tracking)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -270,9 +316,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	@Override
 	public int retrieveNumberOfInspection(final I_PP_Order ppOrder)
 	{
-		// TODO: optimize a lot here!
-
-		final I_M_Material_Tracking materialTracking = retrieveMaterialTrackingForModel(ppOrder);
+		final de.metas.materialtracking.model.I_M_Material_Tracking materialTracking = retrieveSingleMaterialTrackingForModel(ppOrder);
 		Check.assumeNotNull(materialTracking, "Inspection order has material tracking: {}", ppOrder);
 
 		final List<I_M_Material_Tracking_Ref> references = retrieveMaterialTrackingRefForType(materialTracking, I_PP_Order.class);
@@ -305,7 +349,7 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 	}
 
 	@Override
-	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(final I_M_Material_Tracking materialTracking)
+	public List<I_C_Flatrate_Term> retrieveC_Flatrate_Terms_For_MaterialTracking(@NonNull final I_M_Material_Tracking materialTracking)
 	{
 		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = create(
 				materialTracking,
@@ -314,7 +358,12 @@ public class MaterialTrackingDAO implements IMaterialTrackingDAO
 
 		final int partnerID = materialTracking.getC_BPartner_ID();
 		final int productID = materialTracking.getM_Product_ID();
+
+		final I_M_QualityInsp_LagerKonf_Version lagerKonfVersion = create(
+				materialTracking, de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking.class)
+						.getM_QualityInsp_LagerKonf_Version();
 		final int lagerKonfID = lagerKonfVersion == null ? -1 : lagerKonfVersion.getM_QualityInsp_LagerKonf_ID();
+
 		final Timestamp startDate = materialTracking.getValidFrom();
 		final Timestamp endDate = materialTracking.getValidTo();
 

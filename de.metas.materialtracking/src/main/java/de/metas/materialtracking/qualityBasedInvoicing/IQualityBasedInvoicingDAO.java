@@ -24,6 +24,9 @@ package de.metas.materialtracking.qualityBasedInvoicing;
 
 import java.util.List;
 
+import org.adempiere.util.ISingletonService;
+import org.eevolution.model.I_PP_Order;
+
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.ISingletonService;
 
@@ -48,12 +51,12 @@ public interface IQualityBasedInvoicingDAO extends ISingletonService
 	 * @param model
 	 * @return {@link IMaterialTrackingDocuments} which contains given model (via <code>M_Material_Tracking_Ref</code>); never return <code>null</code>.
 	 */
-	IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(Object model);
+	IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(I_PP_Order model);
 
 	/**
 	 *
 	 * @param model
 	 * @return see {@link #retrieveMaterialTrackingDocumentsFor(Object)}; if manufacturing order was not assigned to a material tracking then <code>null</code> will be returned;
 	 */
-	IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(Object model);
+	IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(I_PP_Order model);
 }

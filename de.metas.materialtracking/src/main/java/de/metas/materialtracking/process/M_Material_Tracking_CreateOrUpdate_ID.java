@@ -40,6 +40,7 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingListener;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -249,15 +250,16 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(documentLine)
-						.setMaterialTracking(materialTracking)
+						.model(documentLine)
+						.materialTracking(materialTracking)
 
 						// pass the process parameters on. They contain HU specific infos which this class and module doesn't know or care about, but which are required to
 						// happen when this process runs. Search for references to this process class name in the HU module to find out specifics.
-						.setParams(getParameterAsIParams())
+						.params(getParameterAsIParams())
 
 						// unlink from another material tracking if necessary
-						.setAssumeNotAlreadyAssigned(false)
+						.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
+
 						.build());
 	}
 

@@ -97,13 +97,13 @@ public class C_Invoice_Candidate
 		if (createLink)
 		{
 			materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
-					.setModel(ic)
-					.setMaterialTracking(ic.getM_Material_Tracking())
+					.model(ic)
+					.materialTracking(ic.getM_Material_Tracking())
 					.build());
 		}
 		else
 		{
-			materialTrackingBL.unlinkModelFromMaterialTracking(ic);
+			materialTrackingBL.unlinkModelFromMaterialTrackings(ic);
 		}
 	}
 }
