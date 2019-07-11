@@ -12,8 +12,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -461,7 +459,11 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			issueCandidate.addQtyToIssue(product, qtyToIssue, huTopLevel);
 
 			// Collect the material tracking if any
-			issueCandidate.addMaterialTracking(huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu));
+			final I_M_Material_Tracking materialTrackingOrNull = huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu);
+			if (materialTrackingOrNull != null)
+			{
+				issueCandidate.addMaterialTracking(materialTrackingOrNull, qtyToIssue);
+			}
 		}
 
 		private I_PP_Order_BOMLine getOrderBOMLineToIssueOrNull(final IHUTransactionCandidate huTransaction)
@@ -491,11 +493,9 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		}
 
 		/**
-		 * Creates single cost collector
-		 *
-		 * @return cost collector; never returns null
+		 * @return never returns null
 		 */
-		public I_PP_Cost_Collector createSingleCostCollector(final String snapshotId)
+		private I_PP_Cost_Collector createSingleCostCollector(final String snapshotId)
 		{
 			final List<IssueCandidate> candidates = getCandidatesToProcess();
 			if (candidates.isEmpty())
@@ -536,7 +536,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 		/**
 		 * @return created issue cost collector; never returns ZERO
 		 */
-		private I_PP_Cost_Collector createCostCollector(final IssueCandidate candidate, final String snapshotId)
+		private I_PP_Cost_Collector createCostCollector(@NonNull final IssueCandidate candidate, final String snapshotId)
 		{
 			if (candidate.isZeroQty())
 			{
@@ -548,14 +548,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			final Date movementDate = getMovementDate();
 			final I_PP_Order_BOMLine ppOrderBOMLine = candidate.getOrderBOMLine();
 			final int locatorId = ppOrderBOMLine.getM_Locator_ID();
-
-			//
-			// Link this manufacturing order to material tracking, if any
-			final ImmutableSet<I_M_Material_Tracking> materialTrackings = candidate.getMaterialTrackings();
-			for (final I_M_Material_Tracking materialTracking : materialTrackings)
-			{
-				huPPOrderMaterialTrackingBL.linkPPOrderToMaterialTracking(ppOrderBOMLine, materialTracking);
-			}
 
 			//
 			// Create the cost collector & process it.
@@ -585,6 +577,13 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			ppOrderProductAttributeBL.addPPOrderProductAttributes(cc);
 
 			//
+			// Link this cost collector and its manufacturing order to the material trackings, if any
+			final ImmutableSet<MaterialTrackingWithQuantity> materialTrackings = candidate.getMaterialTrackings();
+			for (final MaterialTrackingWithQuantity materialTracking : materialTrackings)
+			{
+				huPPOrderMaterialTrackingBL.linkPPOrderToMaterialTracking(cc, materialTracking);
+			}
+
 			// Return it
 			return cc;
 		}
@@ -608,7 +607,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		@Setter(AccessLevel.NONE)
 		@Getter(AccessLevel.NONE)
-		private Map<Integer, I_M_Material_Tracking> id2materialTracking = new HashMap<>();
+		private Map<Integer, MaterialTrackingWithQuantity> id2materialTracking = new HashMap<>();
 
 		private IssueCandidate(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 		{
@@ -616,7 +615,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			this.uom = ppOrderBOMLine.getC_UOM();
 		}
 
-		public ImmutableSet<I_M_Material_Tracking> getMaterialTrackings()
+		public ImmutableSet<MaterialTrackingWithQuantity> getMaterialTrackings()
 		{
 			return ImmutableSet.copyOf(id2materialTracking.values());
 		}
@@ -644,14 +643,17 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 			husToAssign.add(huToAssign);
 		}
 
-		private void addMaterialTracking(@Nullable final I_M_Material_Tracking materialTracking)
+		private void addMaterialTracking(
+				@NonNull final I_M_Material_Tracking materialTracking,
+				@NonNull final Quantity quantity)
 		{
-			if (materialTracking == null)
+			MaterialTrackingWithQuantity materialTrackingWithQuantity = this.id2materialTracking.get(materialTracking.getM_Material_Tracking_ID());
+			if (materialTrackingWithQuantity == null)
 			{
-				return;
+				materialTrackingWithQuantity = new MaterialTrackingWithQuantity(materialTracking);
+				this.id2materialTracking.put(materialTracking.getM_Material_Tracking_ID(), materialTrackingWithQuantity);
 			}
-
-			this.id2materialTracking.put(materialTracking.getM_Material_Tracking_ID(), materialTracking);
+			materialTrackingWithQuantity.addQuantity(quantity);
 		}
 
 		public boolean isZeroQty()

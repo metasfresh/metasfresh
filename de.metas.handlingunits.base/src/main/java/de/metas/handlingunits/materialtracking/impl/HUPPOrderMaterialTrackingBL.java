@@ -23,21 +23,29 @@ package de.metas.handlingunits.materialtracking.impl;
  */
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.materialtracking.IHUPPOrderMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_PP_Order_BOMLine;
+import de.metas.handlingunits.pporder.api.MaterialTrackingWithQuantity;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
+import de.metas.product.IProductBL;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /**
@@ -51,44 +59,68 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 {
 	@Override
 	public void linkPPOrderToMaterialTracking(
-			@NonNull final I_PP_Order_BOMLine ppOrderBOMLine,
-			@NonNull final I_M_Material_Tracking materialTracking)
+			@NonNull final I_PP_Cost_Collector costCollectorRecord,
+			@NonNull final MaterialTrackingWithQuantity materialTrackingWithQuantity)
 	{
+		final I_M_Material_Tracking materialTrackingRecord = materialTrackingWithQuantity.getMaterialTrackingRecord();
+
 		// Make sure the material tracking is compatible with BOM line
-		if (ppOrderBOMLine.getM_Product_ID() != materialTracking.getM_Product_ID())
+		if (costCollectorRecord.getM_Product_ID() != materialTrackingRecord.getM_Product_ID())
 		{
 			// the M_Material_Tracking HU-Attribute was inherited from the original raw material, but this PP_Order is about a different product
 			return;
 		}
 
 		final IMaterialTrackingPPOrderBL materialTrackingPPOrderBL = Services.get(IMaterialTrackingPPOrderBL.class);
-		final boolean isQualityInspection = materialTrackingPPOrderBL.isQualityInspection(ppOrderBOMLine.getPP_Order_ID());
+		final boolean isQualityInspection = materialTrackingPPOrderBL.isQualityInspection(costCollectorRecord.getPP_Order_ID());
 
-		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(ppOrderBOMLine.getPP_Order(), I_PP_Order.class);
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(costCollectorRecord.getPP_Order(), I_PP_Order.class);
 		if (isQualityInspection)
 		{
 			// Set PP_Order.M_Material_Tracking_ID
 			if (ppOrder.getM_Material_Tracking_ID() <= 0)
 			{
-				ppOrder.setM_Material_Tracking(materialTracking);
+				ppOrder.setM_Material_Tracking(materialTrackingRecord);
 				InterfaceWrapperHelper.save(ppOrder);
 			}
 			else
 			{
 				// this should be preserved in HUIssueFiltering, so we don't need a nice user-friendly message
-				Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTracking.getM_Material_Tracking_ID(),
+				Check.errorIf(ppOrder.getM_Material_Tracking_ID() != materialTrackingRecord.getM_Material_Tracking_ID(),
 						"ppOrder {} is already assinged to materialtracking {} and therefore cannot be additionally assigned to materialtracking {}",
-						ppOrder, ppOrder.getM_Material_Tracking(), materialTracking);
+						ppOrder, ppOrder.getM_Material_Tracking(), materialTrackingRecord);
 			}
 		}
-		//
+
 		// Assign PP_Order to material tracking
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
-		materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
-				.setModel(ppOrder)
-				.setMaterialTracking(materialTracking)
-				.setAssumeNotAlreadyAssigned(true) // avoid assigning to a different material tracking
-				.build());
+
+		// in case of non-quality inspections, we can have multiple links; in case of quality inspections there is a dedicated check
+		final MTLinkRequest ppOrderLinkRequest = MTLinkRequest.builder()
+				.model(ppOrder)
+				.materialTracking(materialTrackingRecord)
+				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
+				.build();
+
+		materialTrackingBL.linkModelToMaterialTracking(ppOrderLinkRequest);
+
+		// Assign PP_Cost_Collector and quantity to material tracking
+		final I_M_Product productRecord = materialTrackingRecord.getM_Product();
+		final I_C_UOM targetUOM = productBL.getStockingUOM(productRecord);
+		final Quantity sum = uomConversionBL.computeSum(
+				IUOMConversionContext.of(productRecord),
+				materialTrackingWithQuantity.getQuantities(),
+				targetUOM);
+
+		final MTLinkRequest costCollectorLinkRequest = MTLinkRequest.builder()
+				.model(costCollectorRecord)
+				.materialTracking(materialTrackingRecord)
+				.qtyIssued(sum.getQty())
+				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
+				.build();
+		materialTrackingBL.linkModelToMaterialTracking(costCollectorLinkRequest);
 	}
 
 	@Override

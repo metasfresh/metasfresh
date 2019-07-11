@@ -296,8 +296,8 @@ import lombok.NonNull;
 		final I_M_Material_Tracking materialTracking = getM_Material_Tracking();
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(model)
-						.setMaterialTracking(materialTracking)
+						.model(model)
+						.materialTracking(materialTracking)
 						.build());
 	}
 

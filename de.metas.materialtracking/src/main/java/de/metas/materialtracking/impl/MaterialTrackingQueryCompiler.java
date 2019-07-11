@@ -44,6 +44,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import lombok.NonNull;
 
 /**
  * Helper class used to compile {@link IMaterialTrackingQuery} to actual {@link IQuery} or {@link IQueryBuilder}.
@@ -62,7 +63,6 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 	public MaterialTrackingQueryCompiler()
 	{
-		super();
 	}
 
 	public MaterialTrackingQueryCompiler setCtx(final Properties ctx)
@@ -89,7 +89,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 		return _trxName;
 	}
 
-	public IQueryBuilder<I_M_Material_Tracking> createQueryBuilder(final IMaterialTrackingQuery queryVO)
+	public IQueryBuilder<I_M_Material_Tracking> createQueryBuilder(@NonNull final IMaterialTrackingQuery queryVO)
 	{
 		Check.assumeNotNull(queryVO, "queryVO not null");
 
@@ -157,7 +157,6 @@ import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 						materialTrackingRefQuery);
 
 			}
-			// TODO
 		}
 
 		return queryBuilder;

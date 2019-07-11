@@ -13,11 +13,11 @@ package de.metas.materialtracking;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -29,13 +29,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_M_AttributeValue;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.materialtracking.ch.lagerkonf.interfaces.I_M_Material_Tracking;
 import de.metas.materialtracking.ch.lagerkonf.model.I_M_Material_Tracking_Report;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
 
 public interface IMaterialTrackingDAO extends ISingletonService
@@ -44,9 +45,6 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	IMaterialTrackingQuery createMaterialTrackingQuery();
 
 	/**
-	 *
-	 * @param ctx
-	 * @param query
 	 * @return Material tracking or null
 	 */
 	de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTracking(Properties ctx, IMaterialTrackingQuery query);
@@ -55,42 +53,38 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * Retrieve the reference, using the threadContextAware of the given <code>model</code>. Background: new M_Material_Tracking_Refs are created in the thread's inherited transaction, so if we want
 	 * to find then without a previous commit, we need to use that same trx.
 	 *
-	 * @param model
-	 * @return
 	 * @see org.adempiere.ad.trx.api.ITrxManager#createThreadContextAware(Object)
 	 */
-	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefForModel(Object model);
+	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefsForModel(Object model);
+
+	I_M_Material_Tracking_Ref retrieveMaterialTrackingRefFor(Object model, I_M_Material_Tracking materialTracking);
+
+	/** Convenience method that assumes there is at most one material tracking ref for the given model*/
+	I_M_Material_Tracking_Ref retrieveSingleMaterialTrackingRefForModel(Object model);
 
 	/**
 	 * Create material tracking reference (draft). Set its trxName to "thread inherited"
 	 *
 	 * NOTE: this is an internal API method, don't call it
-	 *
-	 * @param materialTracking
-	 * @param model
-	 * @return
 	 */
 	I_M_Material_Tracking_Ref createMaterialTrackingRefNoSave(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Object model);
 
 	/**
 	 *
 	 * Retrieve the material tracking refs for the given {@link de.metas.materialtracking.model.I_M_Material_Tracking} and model's {@link I_AD_Table}
-	 *
-	 * @param materialTracking
-	 * @param modelClass
-	 * @return
 	 */
 	List<I_M_Material_Tracking_Ref> retrieveMaterialTrackingRefForType(de.metas.materialtracking.model.I_M_Material_Tracking materialTracking, Class<?> modelClass);
 
 	/**
-	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking (=> might be <code>null</code>).
-	 * Otherwise, if the given model is referenced by a {@link I_M_Material_Tracking_Ref}, then return that reference's material tracking.
-	 * Otherwise, return <code>null</code>.
+	 * If the given model has a <code>M_Material_Tracking_ID</code> column, then return that referenced material tracking.
+	 * Otherwise, if the given model is referenced by {@link I_M_Material_Tracking_Ref}s, then return that references' material trackings.
+	 * Otherwise, return an empty list.
 	 *
-	 * @param model
-	 * @return material tracking or <code>null</code>
 	 */
-	de.metas.materialtracking.model.I_M_Material_Tracking retrieveMaterialTrackingForModel(Object model);
+	List<de.metas.materialtracking.model.I_M_Material_Tracking> retrieveMaterialTrackingsForModel(Object model);
+
+	/** Convenience method that assumes there is at most one material tracking for the given model*/
+	de.metas.materialtracking.model.I_M_Material_Tracking retrieveSingleMaterialTrackingForModel(Object model);
 
 	/**
 	 * Retrieves {@link de.metas.materialtracking.model.I_M_Material_Tracking}s list for models specified by a query builder.
@@ -150,5 +144,4 @@ public interface IMaterialTrackingDAO extends ISingletonService
 	 * @param report
 	 */
 	void deleteMaterialTrackingReportLines(I_M_Material_Tracking_Report report);
-
 }

@@ -23,6 +23,7 @@ package org.adempiere.uom.api;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -196,6 +197,8 @@ public interface IUOMConversionBL extends ISingletonService
 
 	BigDecimal convertToProductUOM(Quantity quantity, I_M_Product product);
 
+	Quantity computeSum(IUOMConversionContext conversionCtx, Collection<Quantity> quantities, I_C_UOM targetUOM);
+
 	/**
 	 * Get Product Conversions (cached). More detailed: gets those <code>C_UOM_Conversion</code>s that
 	 * <ul>
@@ -231,4 +234,5 @@ public interface IUOMConversionBL extends ISingletonService
 	 * @return
 	 */
 	BigDecimal convertPriceToUOMUnit(Properties ctx, I_M_Product product, BigDecimal priceInUOMFrom, I_C_UOM uomFrom, I_C_UOM uomTo);
+
 }

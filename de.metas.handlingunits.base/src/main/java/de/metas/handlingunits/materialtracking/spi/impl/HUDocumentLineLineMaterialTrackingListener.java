@@ -1,5 +1,7 @@
 package de.metas.handlingunits.materialtracking.spi.impl;
 
+import java.util.HashMap;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,27 +15,31 @@ package de.metas.handlingunits.materialtracking.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
+import de.metas.handlingunits.materialtracking.IHUPPOrderMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
@@ -41,7 +47,11 @@ import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
 import de.metas.materialtracking.MaterialTrackingListenerAdapter;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
+import de.metas.materialtracking.MTLinkRequest.MTLinkRequestBuilder;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * For link requests whose <code>model</code> has an {@link I_M_HU_Assignment} this listener updates the <code>M_Material_Tracking</code> HU-attributes of the assigned HUs.
@@ -51,6 +61,7 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
  * @author metas-dev <dev@metasfresh.com>
  * @task http://dewiki908/mediawiki/index.php/09106_Material-Vorgangs-ID_nachtr%C3%A4glich_erfassen_%28101556035702%29
  */
+@ToString
 public class HUDocumentLineLineMaterialTrackingListener extends MaterialTrackingListenerAdapter
 {
 	private static final transient Logger logger = LogManager.getLogger(HUDocumentLineLineMaterialTrackingListener.class);
@@ -88,14 +99,11 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 	/**
 	 * This method:
 	 * <ul>
-	 * <li>updates the given HU's M_Matrial_Tracking_ID HU_Attribute
+	 * <li>updates the given HU's M_Material_Tracking_ID HU_Attribute
 	 * <li>checks if the HU was issued to a PP_Order and updates the PP_Order's M_Material_Tracking_Refs
 	 * </ul>
-	 *
-	 * @param hu
-	 * @param request
 	 */
-	private void processLinkRequestForHU(final I_M_HU hu, final MTLinkRequest request)
+	private void processLinkRequestForHU(@NonNull final I_M_HU hu, @NonNull final MTLinkRequest request)
 	{
 		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
 
@@ -113,33 +121,39 @@ public class HUDocumentLineLineMaterialTrackingListener extends MaterialTracking
 
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 			final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			final IHUPPOrderMaterialTrackingBL huPPOrderMaterialTrackingBL = Services.get(IHUPPOrderMaterialTrackingBL.class);
+
+			final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(Env.getCtx());
+			final I_M_Material_Tracking previousMaterialTrackingRecord = huPPOrderMaterialTrackingBL.extractMaterialTrackingIfAny(huContext, hu);
+
+			final MTLinkRequestBuilder requestBuilder = request
+					.toBuilder()
+					.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS);
+			if (previousMaterialTrackingRecord != null)
+			{
+				requestBuilder.previousMaterialTrackingId(previousMaterialTrackingRecord.getM_Material_Tracking_ID());
+			}
 
 			final List<I_PP_Cost_Collector> costCollectors = huAssignmentDAO.retrieveModelsForHU(hu, I_PP_Cost_Collector.class);
+			final Map<Integer, I_PP_Order> id2pporder = new HashMap<>();
 			for (final I_PP_Cost_Collector costCollector : costCollectors)
 			{
 				if (costCollector.getPP_Order_ID() <= 0)
 				{
 					continue; // this might never be the case but I'm not well versed with such stuff
 				}
+				id2pporder.put(costCollector.getPP_Order_ID(), costCollector.getPP_Order());
+			}
 
-				final I_PP_Order ppOrder = costCollector.getPP_Order();
-
-				materialTrackingBL.linkModelToMaterialTracking(
-						MTLinkRequest.builder(request)
-								.setModel(ppOrder)
-								.setAssumeNotAlreadyAssigned(false) // unlink if necessary
-								.build());
+			for (final I_PP_Order ppOrder : id2pporder.values())
+			{
+				materialTrackingBL.linkModelToMaterialTracking(requestBuilder.model(ppOrder).build());
 
 				final String msg = "Updated M_Material_Tracking_Ref for PP_Order " + ppOrder + " of M_HU " + hu;
 				logger.debug(msg);
 				loggable.addLog(msg);
 			}
 		}
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
 	}
 }

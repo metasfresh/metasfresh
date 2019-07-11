@@ -25,6 +25,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
  */
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -144,10 +145,8 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQtyToProductUOM(final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom)
+	public BigDecimal convertQtyToProductUOM(@NonNull final IUOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom)
 	{
-		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
-
 		// Get Product's stocking UOM
 		final I_M_Product product = conversionCtx.getM_Product();
 		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(product);
@@ -162,11 +161,23 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal roundToUOMPrecisionIfPossible(final BigDecimal qty, final I_C_UOM uom)
+	public Quantity computeSum(
+			@NonNull final IUOMConversionContext conversionCtx,
+			@NonNull final Collection<Quantity> quantities,
+			@NonNull final I_C_UOM targetUOM)
 	{
-		Check.assumeNotNull(qty, "qty not null");
-		Check.assumeNotNull(uom, "uom not null");
+		Quantity resultInTargetUOM = Quantity.zero(targetUOM);
+		for (Quantity currentQuantity : quantities)
+		{
+			BigDecimal currentQuantityInTargetUOM = convertQty(conversionCtx, currentQuantity.getQty(), currentQuantity.getUOM(), targetUOM);
+			resultInTargetUOM = resultInTargetUOM.add(Quantity.of(currentQuantityInTargetUOM, targetUOM));
+		}
+		return resultInTargetUOM;
+	}
 
+	@Override
+	public BigDecimal roundToUOMPrecisionIfPossible(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	{
 		final int precision = uom.getStdPrecision();
 		// NOTE: negative precision is not supported atm
 		Check.assume(precision >= 0, "UOM {} shall have positive precision", uom);
@@ -983,5 +994,4 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		return null;
 	}	// deriveRate
-
 }

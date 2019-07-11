@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -58,7 +59,7 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(@NonNull final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(@NonNull final I_PP_Order model)
 	{
 		final IMaterialTrackingDocuments materialTrackingDocuments = retrieveMaterialTrackingDocumentsOrNullFor(model);
 		if (materialTrackingDocuments == null)
@@ -70,11 +71,11 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(@NonNull final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(@NonNull final I_PP_Order model)
 	{
 		// Retrieve Material Tracking via material_tracklin
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(model);
 
 		if (materialTracking == null)
 		{

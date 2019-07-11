@@ -106,7 +106,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		// set values from the referencedObject's material tracking
 		//
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(referencedObject);
+
+		// only normal non-quality-inspection PP_Orders have >1 material tracking, and those are not referenced by invoice candidates
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(referencedObject);
 		if (materialTracking == null)
 		{
 			return; // the referenced object is not linked to a tracking
@@ -117,7 +119,7 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 		icExt.setM_Material_Tracking(materialTracking);
 
 		// get the tracking's config and set its C_DocType
-		// task 09668: for "two-phase" material trackings (with downpayment and finla settlement), the packaging shall *not* be part of the invoice
+		// task 09668: for "two-phase" material tracking's (with downpayment and final settlement), the packaging shall *not* be part of the invoice
 		final IQualityBasedSpiProviderService qualityBasedSpiProviderService = Services.get(IQualityBasedSpiProviderService.class);
 		final IQualityBasedConfig config = qualityBasedSpiProviderService.getQualityBasedConfigProvider().provideConfigFor(materialTracking);
 		if (config.getOverallNumberOfInvoicings() == 1)
@@ -151,7 +153,9 @@ public class QualityInspectionHandlerDAO implements IQualityInspectionHandlerDAO
 	public List<I_C_Invoice_Candidate> retrieveRelatedICs(final Object model)
 	{
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTrackingForModel = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+
+		// only normal non-quality-inspection PP_Orders have >1 material tracking, and those are not referenced by invoice candidates
+		final I_M_Material_Tracking materialTrackingForModel = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(model);
 		if (materialTrackingForModel == null)
 		{
 			return Collections.emptyList();
