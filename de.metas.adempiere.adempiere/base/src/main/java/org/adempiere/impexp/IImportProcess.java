@@ -16,11 +16,11 @@ package org.adempiere.impexp;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,7 +36,8 @@ import de.metas.util.ILoggable;
  *
  * NOTE to developers: instead of implementing this class, please consider extending {@link AbstractImportProcess}.
  *
- * @author Teo Sarca, www.arhipac.ro <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
+ * @author Teo Sarca, www.arhipac.ro
+ *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
  */
 public interface IImportProcess<ImportRecordType>
 {
@@ -70,4 +71,11 @@ public interface IImportProcess<ImportRecordType>
 	 * Run the import.
 	 */
 	ImportProcessResult run();
+
+	/**
+	 * Delete import records
+	 * 
+	 * @return how many rows were deleted
+	 */
+	int deleteImportRecords(ImportDataDeleteRequest request);
 }

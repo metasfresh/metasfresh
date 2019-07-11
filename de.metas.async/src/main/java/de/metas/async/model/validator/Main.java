@@ -29,7 +29,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
+import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilderFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
@@ -91,7 +91,7 @@ public class Main extends AbstractModuleInterceptor
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
 
 		// Data import (async support)
-		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
+		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderFactory(AsyncImportProcessBuilderFactory.instance);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
