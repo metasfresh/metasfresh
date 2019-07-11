@@ -156,7 +156,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setPaymentDate(rs.getTimestamp("paymentdate"))
 				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
-				.setCurrencyISOCode(rs.getString("iso_code"))
+				.setCurrencyISOCode(getCurrencyCode(rs, "iso_code"))
 				// Amounts
 				// NOTE: we assume the amounts were already AP adjusted, so we are converting them back to relative values (i.e. not AP adjusted)
 				.setMultiplierAP(multiplierAP)
@@ -339,7 +339,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setDateInvoiced(rs.getTimestamp("invoicedate"))
 				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
-				.setCurrencyISOCode(getCurrencyCode(rs))
+				.setCurrencyISOCode(getCurrencyCode(rs, "iso_code"))
 				.setGrandTotal(grandTotalOrig)
 				.setGrandTotalConv(grandTotal)
 				.setOpenAmtConv(openAmt)
@@ -352,9 +352,9 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.build();
 	}
 
-	private CurrencyCode getCurrencyCode(final ResultSet rs) throws SQLException
+	private CurrencyCode getCurrencyCode(final ResultSet rs, final String columnName) throws SQLException
 	{
-		final String code = rs.getString("iso_code");
+		final String code = rs.getString(columnName);
 		return !Check.isEmpty(code, true)
 				? CurrencyCode.ofThreeLetterCode(code)
 				: null;

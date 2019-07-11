@@ -25,6 +25,8 @@ package de.metas.banking.payment.paymentallocation.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.banking.payment.paymentallocation.service.IPaymentDocument;
@@ -445,11 +447,9 @@ public final class PaymentRow extends AbstractAllocableDocRow implements IPaymen
 			return this;
 		}
 
-		public Builder setCurrencyISOCode(final String currencyISOCode)
+		public Builder setCurrencyISOCode(@Nullable final CurrencyCode currencyISOCode)
 		{
-			this.currencyISOCode = currencyISOCode != null
-					? CurrencyCode.ofThreeLetterCode(currencyISOCode)
-					: null;
+			this.currencyISOCode = currencyISOCode;
 			return this;
 		}
 

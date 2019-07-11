@@ -647,7 +647,7 @@ public class PaymentAllocationBuilderTest
 				.setDocTypeName(isReceipt ? "Receipt" : "Payment")
 				.setMultiplierAP(multiplierAP)
 				//
-				.setCurrencyISOCode(currency.getCurrencyCode().toThreeLetterCode())
+				.setCurrencyISOCode(currency.getCurrencyCode())
 				.setPayAmt(openAmt)
 				.setPayAmtConv(openAmt)
 				.setOpenAmtConv(openAmt)
