@@ -393,6 +393,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.payment.paypal</groupId>
+			<artifactId>de.metas.payment.paypal</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
 			<artifactId>de.metas.printing.base</artifactId>
 			<groupId>de.metas.printing</groupId>
 			<version>${metasfresh.version}</version>
