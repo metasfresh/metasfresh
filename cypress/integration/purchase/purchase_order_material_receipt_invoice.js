@@ -1,12 +1,10 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
-import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
+import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
-import { Pricesystem } from '../../support/utils/pricesystem';
-import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
 
@@ -30,45 +28,12 @@ describe('Create Sales order', function() {
   const vendorName = `Vendor ${timestamp}`;
 
   before(function() {
-    // cy.fixture('price/pricesystem.json').then(priceSystemJson => {
-    //   Object.assign(
-    //     new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
-    //     priceSystemJson
-    //   )
-    //     .setName(priceSystemName)
-    //     .apply();
-    // });
-
-    // let priceListVersion;
-    // cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-    //   priceListVersion = Object.assign(
-    //     new PriceListVersion(/* useless to set anything here since it's replaced by the fixture */),
-    //     priceListVersionJson
-    //   ).setName(priceListVersionName);
-    // });
-
-    // cy.fixture('price/pricelist.json').then(pricelistJson => {
-    //   Object.assign(new PriceList(/* useless to set anything here since it's replaced by the fixture */), pricelistJson)
-    //     .setName(priceListName)
-    //     .setPriceSystem(priceSystemName)
-    //     .setSalesPriceList(false)
-    //     .addPriceListVersion(priceListVersion)
-    //     .apply();
-    // });
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
         .apply();
     });
-    // cy.fixture('product/simple_product.json').then(productJson => {
-    //   Object.assign(new Product(), productJson)
-    //     .setName(productForPackingMaterial)
-    //     .setValue(productPMValue)
-    //     .setProductType(productType)
-    //     .setProductCategory('24_Gebinde')
-    //     .apply();
-    // });
     Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
@@ -94,35 +59,7 @@ describe('Create Sales order', function() {
         .setValue(productCategoryValue)
         .apply();
     });
-    // let productPrice;
-    // cy.fixture('product/product_price.json').then(productPriceJson => {
-    //   productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
-    // });
-    // cy.fixture('product/simple_product.json').then(productJson => {
-    //   Object.assign(new Product(), productJson)
-    //     .setName(productName1)
-    //     .setValue(productValue1)
-    //     .setProductCategory(productCategoryValue + '_' + productCategoryName)
-    //     .setStocked(true)
-    //     .setPurchased(true)
-    //     .setSold(true)
-    //     .addProductPrice(priceListName)
-    //     .setCUTUAllocation(packingInstructionsName)
-    //     .apply();
-    // });
 
-    // cy.fixture('product/simple_product.json').then(productJson => {
-    //   Object.assign(new Product(), productJson)
-    //     .setName(productName2)
-    //     .setValue(productValue2)
-    //     .setProductCategory(productCategoryValue + '_' + productCategoryName)
-    //     .setStocked(true)
-    //     .setPurchased(true)
-    //     .setSold(true)
-    //     .addProductPrice(productPrice)
-    //     .setCUTUAllocation(packingInstructionsName)
-    //     .apply();
-    // });
     Builder.createBasicProductEntitiesWithCUTUAllocation(
       productCategoryName,
       productCategoryValue,
@@ -151,7 +88,7 @@ describe('Create Sales order', function() {
 
     cy.readAllNotifications();
   });
-  it('Create a sales order', function() {
+  it('Create a purchase order', function() {
     cy.visitWindow('181', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
       .type(vendorName)
@@ -284,6 +221,7 @@ describe('Create Sales order', function() {
       .filter(':contains("' + vendorName + '")')
       .first()
       .click();
+    cy.wait(3000);
     cy.openAdvancedEdit();
     /**because should('have.value',grandTotal) evaluates using a null grand total */
     cy.get('.form-field-GrandTotal input').should(el => {
