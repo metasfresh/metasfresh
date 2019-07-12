@@ -64,7 +64,6 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -194,7 +193,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
-					.widgetType(DocumentFieldWidgetType.Date)
+					.widgetType(DocumentFieldWidgetType.LocalDate)
 					.columnSql(HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID))
 					.fieldLoader((rs, adLanguage) -> rs.getTimestamp(HUEditorRow.FIELDNAME_BestBeforeDate))
 					.build());

@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -132,11 +133,15 @@ public interface IView
 		invalidateAll();
 	}
 
-	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
+	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys, JSONOptions jsonOpts);
 
-	default ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	default ViewResult getPageWithRowIdsOnly(
+			final int firstRow,
+			final int pageLength,
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		return getPage(firstRow, pageLength, orderBys);
+		return getPage(firstRow, pageLength, orderBys, jsonOpts);
 	}
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;

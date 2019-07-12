@@ -117,7 +117,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 	private int getBPartnerLocationId(@NonNull final IViewRow row)
 	{
 		final JSONLookupValue jsonLookupValue = (JSONLookupValue)row
-				.getFieldNameAndJsonValues()
+				.getFieldNameAndJsonValues(getJSONOptions())
 				.get(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 		return jsonLookupValue.getKeyAsInt();
 	}

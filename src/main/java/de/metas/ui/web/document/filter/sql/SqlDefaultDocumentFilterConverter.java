@@ -162,15 +162,10 @@ import lombok.NonNull;
 
 	private static IQueryFilterModifier extractFieldModifier(final DocumentFieldWidgetType widgetType)
 	{
-		if (widgetType == DocumentFieldWidgetType.DateTime
-				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
-		{
-			return DateTruncQueryFilterModifier.DAY;
-		}
 		// NOTE: for performance reasons we are not truncating the field if the field is already Date.
 		// If we would do so, it might happen that the index we have on that column will not be used.
 		// More, we assume the column already contains truncated Date(s).
-		else if (widgetType == DocumentFieldWidgetType.Date)
+		if (widgetType.isDateWithTime())
 		{
 			return DateTruncQueryFilterModifier.DAY;
 		}
@@ -182,12 +177,7 @@ import lombok.NonNull;
 
 	private static IQueryFilterModifier extractValueModifier(final DocumentFieldWidgetType widgetType)
 	{
-		if (widgetType == DocumentFieldWidgetType.DateTime
-				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
-		{
-			return DateTruncQueryFilterModifier.DAY;
-		}
-		else if (widgetType == DocumentFieldWidgetType.Date)
+		if (widgetType.isDateWithTime())
 		{
 			return DateTruncQueryFilterModifier.DAY;
 		}
@@ -218,7 +208,7 @@ import lombok.NonNull;
 		return modifier.convertValue(columnName, sqlValue, null/* model */);
 	}
 
-	private final String buildSqlWhereClause_StandardWidget(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
+	private String buildSqlWhereClause_StandardWidget(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
 		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
@@ -310,7 +300,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -324,21 +314,21 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_IsNull(final String sqlColumnExpr, final boolean negate)
+	private static String buildSqlWhereClause_IsNull(final String sqlColumnExpr, final boolean negate)
 	{
 		return new StringBuilder()
 				.append(sqlColumnExpr).append(negate ? " IS NOT NULL" : " IS NULL")
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, final Object sqlValue, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		return new StringBuilder()
 				.append(sqlColumnExpr).append(sqlOperator).append(sqlParams.placeholder(sqlValue))
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValues == null || sqlValues.isEmpty())
 		{
@@ -359,7 +349,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private static final String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -392,7 +382,7 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_Between(final String sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final SqlParamsCollector sqlParams)
+	private static String buildSqlWhereClause_Between(final String sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -419,7 +409,7 @@ import lombok.NonNull;
 		return entityBinding.replaceTableNameWithTableAlias(sql, tableAlias);
 	}
 
-	private final String buildSqlWhereClause_LabelsWidget(
+	private String buildSqlWhereClause_LabelsWidget(
 			final DocumentFilterParam filterParam,
 			final DocumentFilterParamDescriptor paramDescriptor,
 			final SqlParamsCollector sqlParams,
@@ -460,7 +450,7 @@ import lombok.NonNull;
 		return sql.toString();
 	}
 
-	private static final LookupValuesList extractLookupValuesList(final DocumentFilterParam filterParam)
+	private static LookupValuesList extractLookupValuesList(final DocumentFilterParam filterParam)
 	{
 		final Object valueObj = filterParam.getValue();
 		if (valueObj == null)

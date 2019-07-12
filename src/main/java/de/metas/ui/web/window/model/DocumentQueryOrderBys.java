@@ -3,7 +3,10 @@ package de.metas.ui.web.window.model;
 import java.util.Comparator;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -33,10 +36,17 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DocumentQueryOrderBys
 {
-	public static <T extends IViewRow> Comparator<T> asComparator(@NonNull final List<DocumentQueryOrderBy> orderBys)
+	public static List<DocumentQueryOrderBy> emptyList()
+	{
+		return ImmutableList.of();
+	}
+	
+	public static <T extends IViewRow> Comparator<T> asComparator(
+			@NonNull final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final FieldValueExtractor<T> fieldValueExtractor = (row, fieldName) -> row
-				.getFieldNameAndJsonValues()
+				.getFieldNameAndJsonValues(jsonOpts)
 				.get(fieldName);
 
 		// used in case orderBys is empty or whatever else goes wrong

@@ -84,7 +84,8 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		if (PARAM_M_LocatorTo_ID.equals(parameterName))
 		{
 			final IViewRow row = getSingleSelectedRow();
-			return row.getFieldJsonValueAsInt(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, -1);
+			return row.getFieldNameAndJsonValues(getJSONOptions())
+					.getAsInt(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, -1);
 		}
 		else if (PARAM_M_HU_ID.equals(parameterName))
 		{

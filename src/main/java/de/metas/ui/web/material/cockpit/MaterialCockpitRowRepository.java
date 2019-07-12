@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +14,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.collect.ImmutableList;
@@ -148,7 +147,7 @@ public class MaterialCockpitRowRepository
 
 	private List<MaterialCockpitRow> retrieveRows(@NonNull final List<DocumentFilter> filters)
 	{
-		final Date date = materialCockpitFilters.getFilterByDate(filters);
+		final LocalDate date = materialCockpitFilters.getFilterByDate(filters);
 		if (date == null)
 		{
 			return ImmutableList.of();
@@ -166,7 +165,7 @@ public class MaterialCockpitRowRepository
 
 		final CreateRowsRequest request = CreateRowsRequest
 				.builder()
-				.date(TimeUtil.asTimestamp(date))
+				.date(date)
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)

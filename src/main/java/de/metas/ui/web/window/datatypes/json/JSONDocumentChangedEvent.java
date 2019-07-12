@@ -2,6 +2,7 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -68,7 +69,7 @@ public class JSONDocumentChangedEvent
 	}
 
 	@ApiModel("operation")
-	public static enum JSONOperation
+	public enum JSONOperation
 	{
 		replace;
 	}
@@ -143,7 +144,12 @@ public class JSONDocumentChangedEvent
 
 	public LocalDateTime getValueAsLocalDateTime()
 	{
-		return JSONDate.localDateTimeFromObject(value);
+		return JSONDate.fromObjectToLocalDateTime(value);
+	}
+	
+	public ZonedDateTime getValueAsZonedDateTime()
+	{
+		return JSONDate.fromObjectToZonedDateTime(value);
 	}
 
 	public LookupValue getValueAsIntegerLookupValue()

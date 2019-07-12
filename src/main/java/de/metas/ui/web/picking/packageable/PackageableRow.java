@@ -1,14 +1,13 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
@@ -23,13 +22,15 @@ import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
@@ -63,7 +64,7 @@ import lombok.ToString;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ToString(exclude = "_fieldNameAndJsonValues")
+@ToString(exclude = "values")
 public final class PackageableRow implements IViewRow
 {
 	private final ViewId viewId;
@@ -95,10 +96,10 @@ public final class PackageableRow implements IViewRow
 	})
 	private final LookupValue bpartner;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
+	@ViewColumn(widgetType = DocumentFieldWidgetType.ZonedDateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
-	private final LocalDateTime preparationDate;
+	private final ZonedDateTime preparationDate;
 
 	private final ShipmentScheduleId shipmentScheduleId;
 
@@ -106,7 +107,7 @@ public final class PackageableRow implements IViewRow
 
 	private final ViewId includedViewId;
 
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
+	private final ViewRowFieldNameAndJsonValuesHolder<PackageableRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PackageableRow.class);
 
 	public static PackageableRow cast(final IViewRow row)
 	{
@@ -133,7 +134,7 @@ public final class PackageableRow implements IViewRow
 			@NonNull final Quantity qtyOrdered,
 			final Quantity qtyPicked,
 			final LookupValue bpartner,
-			final LocalDateTime preparationDate)
+			final ZonedDateTime preparationDate)
 	{
 		this.viewId = viewId;
 		this.id = createRowIdFromShipmentScheduleId(shipmentScheduleId);
@@ -184,13 +185,15 @@ public final class PackageableRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
 	{
-		if (_fieldNameAndJsonValues == null)
-		{
-			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
-		}
-		return _fieldNameAndJsonValues;
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	{
+		return values.get(this, jsonOpts);
 	}
 
 	@Override

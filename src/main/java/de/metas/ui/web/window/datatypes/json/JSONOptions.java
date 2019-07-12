@@ -1,25 +1,28 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.session.UserSession;
@@ -30,6 +33,7 @@ import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -59,21 +63,43 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@ToString(doNotUseGetters = true)
 public final class JSONOptions
 {
-	public static final Builder builder(final UserSession userSession)
+	public static Builder builder(@NonNull final UserSession userSession)
 	{
 		return new Builder(userSession);
 	}
 
-	public static final JSONOptions of(final UserSession userSession)
+	public static Builder builder()
+	{
+		final UserSession userSession = null;
+		return new Builder(userSession);
+	}
+
+	public static JSONOptions of(final UserSession userSession)
 	{
 		return new Builder(userSession).build();
+	}
+
+	public static JSONOptions ofAdLanguage(final String adLanguage)
+	{
+		return builder().adLanguage(adLanguage).build();
+	}
+
+	public static JSONOptions newInstance()
+	{
+		final UserSession userSession = UserSession.getCurrentOrNull();
+		return userSession != null
+				? of(userSession)
+				: ofAdLanguage(Language.getBaseAD_Language());
 	}
 
 	public static final String DEBUG_ATTRNAME = "json-options";
 
 	private final String adLanguage;
+	private final ZoneId zoneId;
+
 	private final boolean showAdvancedFields;
 	private final String dataFieldsListStr;
 	private final boolean debugShowColumnNamesForCaption;
@@ -87,14 +113,14 @@ public final class JSONOptions
 	private Predicate<DocumentFieldChange> _documentFieldChangeFilter; // lazy
 
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
-
 	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
-
 	private final Supplier<Duration> defaultLookupSearchStartDelaySupplier;
 
 	private JSONOptions(@NonNull final Builder builder)
 	{
-		adLanguage = builder.getAD_Language();
+		adLanguage = builder.getAdLanguage();
+		zoneId = builder.getZoneId();
+
 		showAdvancedFields = builder.isShowAdvancedFields();
 		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
 		debugShowColumnNamesForCaption = builder.isShowColumnNamesForCaption(false);
@@ -106,20 +132,14 @@ public final class JSONOptions
 		defaultLookupSearchStartDelaySupplier = builder.getDefaultLookupSearchStartDelaySupplier();
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("showAdvancedFields", showAdvancedFields)
-				.add("dataFieldsListStr", dataFieldsListStr)
-				.add("debugShowColumnNamesForCaption", debugShowColumnNamesForCaption)
-				.toString();
-	}
-
 	public String getAD_Language()
 	{
 		return adLanguage;
+	}
+
+	public ZoneId getZoneId()
+	{
+		return zoneId;
 	}
 
 	public boolean isShowAdvancedFields()
@@ -322,7 +342,7 @@ public final class JSONOptions
 		public String toString()
 		{
 			return "field name in " + fieldNamesSet + " and " + parentFilter;
-		};
+		}
 
 		@Override
 		public boolean test(final IDocumentFieldView field)
@@ -334,7 +354,7 @@ public final class JSONOptions
 
 			return parentFilter.test(field);
 		}
-	};
+	}
 
 	private static final class FILTER_DocumentFieldChange_ByFieldNamesSet implements Predicate<DocumentFieldChange>
 	{
@@ -352,7 +372,7 @@ public final class JSONOptions
 		public String toString()
 		{
 			return "field name in " + fieldNamesSet + " and " + parentFilter;
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentFieldChange field)
@@ -364,7 +384,7 @@ public final class JSONOptions
 
 			return parentFilter.test(field);
 		}
-	};
+	}
 
 	//
 	//
@@ -379,11 +399,13 @@ public final class JSONOptions
 		private String adLanguage;
 		private final String sessionADLanguage;
 		private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+		private ZoneId zoneId;
 
-		private Builder(final UserSession userSession)
+		private Builder(@Nullable final UserSession userSession)
 		{
 			_userSession = userSession;
 			sessionADLanguage = userSession != null ? userSession.getAD_Language() : null;
+			zoneId = userSession != null ? userSession.getTimeZone() : null;
 		}
 
 		public JSONOptions build()
@@ -391,18 +413,18 @@ public final class JSONOptions
 			return new JSONOptions(this);
 		}
 
-		public Builder setAD_LanguageIfNotEmpty(final String adLanguage)
+		public Builder adLanguage(@NonNull final String adLanguage)
 		{
 			if (Check.isEmpty(adLanguage, true))
 			{
-				return this;
+				throw new AdempiereException("Invalid language: " + adLanguage);
 			}
 
 			this.adLanguage = adLanguage.trim();
 			return this;
 		}
 
-		private String getAD_Language()
+		private String getAdLanguage()
 		{
 			if (adLanguage != null)
 			{
@@ -439,7 +461,18 @@ public final class JSONOptions
 			throw new IllegalStateException("Cannot detect the AD_Language");
 		}
 
-		private static final HttpServletRequest getHttpServletRequest()
+		public Builder zoneId(@NonNull final ZoneId zoneId)
+		{
+			this.zoneId = zoneId;
+			return this;
+		}
+
+		private ZoneId getZoneId()
+		{
+			return zoneId != null ? zoneId : ZoneId.systemDefault();
+		}
+
+		private static HttpServletRequest getHttpServletRequest()
 		{
 			RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 			if (requestAttributes == null)
@@ -460,7 +493,7 @@ public final class JSONOptions
 			return createPermissionsSupplier(_userSession);
 		}
 
-		private static final Supplier<JSONDocumentPermissions> createPermissionsSupplier(final UserSession userSession)
+		private static Supplier<JSONDocumentPermissions> createPermissionsSupplier(final UserSession userSession)
 		{
 			if (userSession == null)
 			{

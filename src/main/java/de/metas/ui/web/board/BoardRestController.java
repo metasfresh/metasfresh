@@ -39,8 +39,8 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -253,7 +253,8 @@ public class BoardRestController
 		final IView view = viewsRepo.createView(request);
 		addActiveNewCardsView(boardId, view);
 
-		return toJSONCardsViewResult(boardId, view, userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return toJSONCardsViewResult(boardId, view, jsonOpts);
 	}
 
 	@GetMapping("/{boardId}/newCardsView/layout")
@@ -292,13 +293,16 @@ public class BoardRestController
 	{
 		userSession.assertLoggedIn();
 
+		final JSONOptions jsonOpts = newJSONOptions();
+		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		
 		final ViewResult viewResult = viewsRepo.getView(viewIdStr)
-				.getPageWithRowIdsOnly(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
+				.getPageWithRowIdsOnly(firstRow, pageLength, orderBys, jsonOpts);
 
 		final List<Integer> boardCardIds = boardsRepo.retrieveCardIds(boardId);
 
 		return toJSONCardsViewResult(boardId, viewResult,
-				userSession.getAD_Language(), // language
+				jsonOpts,
 				cardId -> !boardCardIds.contains(cardId) // filter out cards which already exist in our board
 		);
 	}
@@ -312,7 +316,9 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
-		return toJSONCardsViewResult(boardId, newView, userSession.getAD_Language());
+		
+		final JSONOptions jsonOpts = newJSONOptions();
+		return toJSONCardsViewResult(boardId, newView, jsonOpts);
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
@@ -346,8 +352,14 @@ public class BoardRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	private final JSONViewResult toJSONCardsViewResult(final int boardId, final ViewResult viewResult, final String adLanguage, Predicate<Integer> cardIdFilter)
+	private final JSONViewResult toJSONCardsViewResult(
+			final int boardId, 
+			final ViewResult viewResult, 
+			final JSONOptions jsonOpts, 
+			Predicate<Integer> cardIdFilter)
 	{
+		final String adLanguage = jsonOpts.getAD_Language();
+		
 		final List<Integer> cardIds = viewResult.getRowIds()
 				.stream()
 				.filter(DocumentId::isInt).map(DocumentId::toInt)
@@ -360,13 +372,13 @@ public class BoardRestController
 				.sorted(FixedOrderByKeyComparator.notMatchedAtTheEnd(cardIds, JSONBoardCard::getCardId))
 				.collect(ImmutableList.toImmutableList());
 
-		return JSONViewResult.of(viewResult, jsonCards, adLanguage);
+		return JSONViewResult.of(viewResult, jsonCards, jsonOpts);
 	}
 
-	private final JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final String adLanguage)
+	private final JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final JSONOptions jsonOpts)
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(viewResult, rowOverrides, adLanguage);
+		return JSONViewResult.of(viewResult, rowOverrides, jsonOpts);
 	}
 }

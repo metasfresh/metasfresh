@@ -4,8 +4,8 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +15,7 @@ import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -26,6 +27,8 @@ import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsBreakId;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -34,6 +37,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.lang.Percent;
@@ -64,7 +68,7 @@ import lombok.ToString;;
  * #L%
  */
 
-@ToString(exclude = "_fieldNameAndJsonValues")
+@ToString(exclude = "values")
 public class PricingConditionsRow implements IViewRow
 {
 	public static PricingConditionsRow cast(final IViewRow row)
@@ -112,8 +116,7 @@ public class PricingConditionsRow implements IViewRow
 	private final LookupValue basePriceType;
 
 	public static final String FIELDNAME_BasePricingSystem = "basePricingSystem";
-	@ViewColumn(fieldName = FIELDNAME_BasePricingSystem,
-			captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_Base_PricingSystem_ID, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_BasePricingSystem, captionKey = I_M_DiscountSchemaBreak.COLUMNNAME_Base_PricingSystem_ID, widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
@@ -169,7 +172,7 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final BigDecimal netPrice;
 
-	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.Date, layouts = {
+	@ViewColumn(captionKey = "LastInOutDate", widgetType = DocumentFieldWidgetType.LocalDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 130)
 	})
@@ -182,11 +185,11 @@ public class PricingConditionsRow implements IViewRow
 	})
 	private final LookupValue createdBy;
 
-	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.ZonedDateTime, layouts = {
+	@ViewColumn(captionKey = "Created", widgetType = DocumentFieldWidgetType.Timestamp, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 110)
 	})
-	private final LocalDateTime dateCreated;
+	private final Instant dateCreated;
 
 	//
 	private final PricingConditionsRowLookups lookups;
@@ -208,8 +211,7 @@ public class PricingConditionsRow implements IViewRow
 	@Getter
 	private final PricingConditionsBreakId copiedFromPricingConditionsBreakId;
 
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
-	private final ImmutableMap<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName;
+	private final ViewRowFieldNameAndJsonValuesHolder<PricingConditionsRow> values;
 
 	@Builder(toBuilder = true)
 	private PricingConditionsRow(
@@ -271,7 +273,7 @@ public class PricingConditionsRow implements IViewRow
 
 				this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
 				this.basePriceAmt = basePrice.getValue();
-				
+
 				final Money surcharge = price.getPricingSystemSurcharge();
 				this.pricingSystemSurchargeAmt = surcharge != null ? surcharge.getValue() : null;
 				this.currency = lookups.lookupCurrency(surcharge != null ? surcharge.getCurrencyId() : null);
@@ -280,7 +282,7 @@ public class PricingConditionsRow implements IViewRow
 			case FIXED_PRICE:
 			{
 				final Money fixedPrice = price.getFixedPrice();
-				
+
 				this.basePricingSystem = null;
 				this.basePriceAmt = fixedPrice != null ? fixedPrice.getValue() : null;
 				this.pricingSystemSurchargeAmt = null;
@@ -300,10 +302,14 @@ public class PricingConditionsRow implements IViewRow
 		this.createdBy = lookups.lookupUser(pricingConditionsBreak.getCreatedById());
 
 		this.editable = editable;
-		this.viewEditorRenderModeByFieldName = buildViewEditorRenderModeByFieldName(
-				editable,
-				price.getType(),
-				pricingConditionsBreak.isTemporaryPricingConditionsBreak());
+
+		this.values = ViewRowFieldNameAndJsonValuesHolder.<PricingConditionsRow> builder(PricingConditionsRow.class)
+				.widgetTypesByFieldName(ViewColumnHelper.getWidgetTypesByFieldName(getClass()))
+				.viewEditorRenderModeByFieldName(buildViewEditorRenderModeByFieldName(
+						editable,
+						price.getType(),
+						pricingConditionsBreak.isTemporaryPricingConditionsBreak()))
+				.build();
 
 		this.copiedFromPricingConditionsBreakId = copiedFromPricingConditionsBreakId;
 
@@ -407,25 +413,27 @@ public class PricingConditionsRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
 	{
-		if (_fieldNameAndJsonValues == null)
-		{
-			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
-		}
-		return _fieldNameAndJsonValues;
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	{
+		return values.get(this, jsonOpts);
 	}
 
 	@Override
 	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
-		return ViewColumnHelper.getWidgetTypesByFieldName(getClass());
+		return values.getWidgetTypesByFieldName();
 	}
 
 	@Override
 	public Map<String, ViewEditorRenderMode> getViewEditorRenderModeByFieldName()
 	{
-		return viewEditorRenderModeByFieldName;
+		return values.getViewEditorRenderModeByFieldName();
 	}
 
 	@Override

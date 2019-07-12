@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 
 /*
@@ -90,6 +91,11 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	private final Map<Class<?>, HttpStatus> EXCEPTION_HTTPSTATUS = ImmutableMap.<Class<?>, HttpStatus> builder()
 			.put(org.elasticsearch.client.transport.NoNodeAvailableException.class, HttpStatus.SERVICE_UNAVAILABLE)
 			.build();
+
+	private JSONOptions newJSONOptions()
+	{
+		return JSONOptions.newInstance();
+	}
 
 	@Override
 	public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response, final Object handler, final Exception ex)
@@ -228,9 +234,10 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 			final Map<String, Object> exceptionAttributes = ((AdempiereException)error).getParameters();
 			if (exceptionAttributes != null && !exceptionAttributes.isEmpty())
 			{
+				final JSONOptions jsonOpts = newJSONOptions();
 				final Map<String, Object> jsonExceptionAttributes = exceptionAttributes.entrySet()
 						.stream()
-						.map(entry -> GuavaCollectors.entry(entry.getKey(), Values.valueToJsonObject(entry.getValue(), String::valueOf)))
+						.map(entry -> GuavaCollectors.entry(entry.getKey(), Values.valueToJsonObject(entry.getValue(), jsonOpts, String::valueOf)))
 						.collect(GuavaCollectors.toImmutableMap());
 				errorAttributes.put(ATTR_ExceptionAttributes, jsonExceptionAttributes);
 			}

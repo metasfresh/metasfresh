@@ -74,7 +74,7 @@ public class DataEntryTabLoaderTest
 	{
 		AdempiereTestHelper.get().init(); // ..because at one point in the code under test, we use IMsgBL
 
-		jsonOptions = JSONOptions.builder(null/* userSession */).setAD_LanguageIfNotEmpty("en_US").build();
+		jsonOptions = JSONOptions.ofAdLanguage("en_US");
 
 		dataEntryTabLoader = createDataEntryTabLoader();
 	}

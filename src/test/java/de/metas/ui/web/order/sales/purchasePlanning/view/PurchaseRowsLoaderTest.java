@@ -290,7 +290,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(20))
-				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
+				.purchaseDatePromised(TimeUtil.asZonedDateTime(orderLine.getDatePromised()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), productStockingUOM))

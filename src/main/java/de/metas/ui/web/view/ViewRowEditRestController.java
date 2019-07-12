@@ -18,6 +18,7 @@ import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -67,6 +68,11 @@ public class ViewRowEditRestController
 	@Autowired
 	private DocumentCollection documentsCollection;
 
+	private JSONOptions newJSONOptions()
+	{
+		return JSONOptions.of(userSession);
+	}
+
 	private static IEditableView asEditableView(final IView view)
 	{
 		if (view instanceof IEditableView)
@@ -112,7 +118,8 @@ public class ViewRowEditRestController
 
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewRow.ofRow(row, rowOverrides, userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return JSONViewRow.ofRow(row, rowOverrides, jsonOpts);
 	}
 
 	@GetMapping("/{fieldName}/typeahead")

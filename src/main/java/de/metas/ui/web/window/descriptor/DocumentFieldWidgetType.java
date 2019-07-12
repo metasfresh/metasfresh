@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -51,10 +52,11 @@ public enum DocumentFieldWidgetType
 
 	//
 	// Dates
-	, Date(LayoutAlign.Right, LocalDate.class, DisplayType.Date) //
-	, Time(LayoutAlign.Right, LocalTime.class, DisplayType.Time) //
-	, DateTime(LayoutAlign.Right, LocalDateTime.class, DisplayType.DateTime) //
+	, LocalDate(LayoutAlign.Right, LocalDate.class, DisplayType.Date) //
+	, LocalTime(LayoutAlign.Right, LocalTime.class, DisplayType.Time) //
+	, LocalDateTime(LayoutAlign.Right, LocalDateTime.class, DisplayType.DateTime) //
 	, ZonedDateTime(LayoutAlign.Right, ZonedDateTime.class, DisplayType.DateTime) //
+	, Timestamp(LayoutAlign.Right, Instant.class, DisplayType.DateTime) //
 	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
 
 	// Numbers, Amounts, Prices
@@ -93,8 +95,8 @@ public enum DocumentFieldWidgetType
 	//
 	;
 
-	private static final Set<DocumentFieldWidgetType> TYPES_Date = Sets.immutableEnumSet(Date, Time, DateTime, ZonedDateTime);
-	private static final Set<DocumentFieldWidgetType> TYPES_Numeric = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
+	private static final Set<DocumentFieldWidgetType> TYPES_ALL_DATES = Sets.immutableEnumSet(LocalDate, LocalTime, LocalDateTime, ZonedDateTime, Timestamp);
+	private static final Set<DocumentFieldWidgetType> TYPES_ALL_NUMERIC = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
 
 	private final LayoutAlign gridAlign;
 	private final Class<?> valueClass;
@@ -135,12 +137,19 @@ public enum DocumentFieldWidgetType
 
 	public final boolean isDateOrTime()
 	{
-		return TYPES_Date.contains(this);
+		return TYPES_ALL_DATES.contains(this);
+	}
+
+	public final boolean isDateWithTime()
+	{
+		return this == LocalDateTime
+				|| this == ZonedDateTime
+				|| this == Timestamp;
 	}
 
 	public final boolean isNumeric()
 	{
-		return TYPES_Numeric.contains(this);
+		return TYPES_ALL_NUMERIC.contains(this);
 	}
 
 	public final boolean isText()

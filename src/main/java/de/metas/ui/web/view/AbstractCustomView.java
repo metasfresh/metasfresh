@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -231,13 +232,17 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	 * Simple in-memory implementation with paging and ordering.
 	 */
 	@Override
-	public final ViewResult getPage(final int firstRow, final int pageLength, @NonNull final List<DocumentQueryOrderBy> orderBys)
+	public final ViewResult getPage(
+			final int firstRow, 
+			final int pageLength, 
+			@NonNull final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : getDefaultOrderBys();
 
 		final List<IViewRow> pageRows = getRows()
 				.stream()
-				.sorted(DocumentQueryOrderBys.asComparator(orderBysEffective))
+				.sorted(DocumentQueryOrderBys.asComparator(orderBysEffective, jsonOpts))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());

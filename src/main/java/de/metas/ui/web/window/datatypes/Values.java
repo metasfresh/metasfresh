@@ -10,7 +10,10 @@ import java.util.Collection;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.Amount;
 import de.metas.money.Money;
@@ -19,7 +22,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -56,9 +61,11 @@ public final class Values
 	/**
 	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
 	 */
-	public static final Object valueToJsonObject(final Object value)
+	public static Object valueToJsonObject(
+			@Nullable final Object value,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		return valueToJsonObject(value, UnaryOperator.identity());
+		return valueToJsonObject(value, jsonOpts, UnaryOperator.identity());
 	}
 
 	/**
@@ -68,7 +75,10 @@ public final class Values
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
-	public static final Object valueToJsonObject(final Object value, final UnaryOperator<Object> fallbackMapper)
+	public static Object valueToJsonObject(
+			@Nullable final Object value,
+			@NonNull final JSONOptions jsonOpts,
+			@NonNull final UnaryOperator<Object> fallbackMapper)
 	{
 		if (value == null)
 		{
@@ -76,7 +86,7 @@ public final class Values
 		}
 		else if (value instanceof java.util.Date)
 		{
-			final java.util.Date valueDate = (java.util.Date)value;
+			final ZonedDateTime valueDate = TimeUtil.asZonedDateTime(value);
 			return JSONDate.toJson(valueDate);
 		}
 		else if (value instanceof LocalDate)
@@ -139,7 +149,7 @@ public final class Values
 		{
 			final Collection<?> valuesList = (Collection<?>)value;
 			return valuesList.stream()
-					.map(v -> valueToJsonObject(v, fallbackMapper))
+					.map(v -> valueToJsonObject(v, jsonOpts, fallbackMapper))
 					.collect(Collectors.toCollection(ArrayList::new)); // don't use ImmutableList because we might get null values
 		}
 		else
@@ -148,7 +158,7 @@ public final class Values
 		}
 	}
 
-	private static final String bigDecimalToJson(final BigDecimal value)
+	private static String bigDecimalToJson(final BigDecimal value)
 	{
 		// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
 		// we need to provide the BigDecimals as Strings.

@@ -1,6 +1,7 @@
 package de.metas.ui.web.session;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
@@ -463,6 +464,11 @@ public class UserSession
 			final int defaultLookupSearchStartDelayMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
 			return defaultLookupSearchStartDelayMillis > 0 ? Duration.ofMillis(defaultLookupSearchStartDelayMillis) : Duration.ZERO;
 		};
+	}
+
+	public ZoneId getTimeZone()
+	{
+		return ZoneId.systemDefault(); // TODO: get it from organization
 	}
 
 	/**

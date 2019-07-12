@@ -10,6 +10,7 @@ import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -112,7 +113,8 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 			}
 
 			final Object valueObj = deviceAccessor.acquireValue();
-			final Object valueJson = Values.valueToJsonObject(valueObj);
+			final JSONOptions jsonOpts = JSONOptions.newInstance();
+			final Object valueJson = Values.valueToJsonObject(valueObj, jsonOpts);
 
 			final JSONDeviceValueChangedEvent event = JSONDeviceValueChangedEvent.of(deviceId, valueJson);
 			return event;

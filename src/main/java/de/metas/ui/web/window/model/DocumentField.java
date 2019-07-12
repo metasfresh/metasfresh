@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.compiere.util.Evaluatee;
@@ -20,6 +22,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
@@ -218,7 +221,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public Object getValueAsJsonObject(final String adLanguage)
+	public Object getValueAsJsonObject(@NonNull final JSONOptions jsonOpts)
 	{
 		Object value = getValue();
 		if (value == null)
@@ -233,14 +236,14 @@ import lombok.NonNull;
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
-			if (!displayNameTrl.isTranslatedTo(adLanguage))
+			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAD_Language()))
 			{
 				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
 				value = lookupValueNew;
 			}
 		}
 
-		return Values.valueToJsonObject(value);
+		return Values.valueToJsonObject(value, jsonOpts);
 	}
 
 	@Override
@@ -258,7 +261,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public <T> T getValueAs(final Class<T> returnType)
+	public <T> T getValueAs(@NonNull final Class<T> returnType)
 	{
 		Preconditions.checkNotNull(returnType, "returnType shall not be null");
 		final DocumentFieldWidgetType widgetType = null; // N/A
@@ -328,7 +331,10 @@ import lombok.NonNull;
 		return valueConv;
 	}
 
-	private final <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType)
+	private final <T> T convertToValueClass(
+			@Nullable final Object value, 
+			@Nullable final DocumentFieldWidgetType widgetType, 
+			final Class<T> targetType)
 	{
 		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSourceOrNull());
 	}

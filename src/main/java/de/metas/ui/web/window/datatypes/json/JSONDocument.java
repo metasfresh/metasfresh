@@ -65,7 +65,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
-	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
+	public static JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
@@ -81,7 +81,7 @@ public final class JSONDocument extends JSONDocumentBase
 			document.getFieldViews()
 					.stream()
 					.filter(jsonOpts.documentFieldFilter())
-					.map(field -> JSONDocumentField.ofDocumentField(field, jsonOpts.getAD_Language()))
+					.map(field -> JSONDocumentField.ofDocumentField(field, jsonOpts))
 					.peek(jsonField -> jsonOpts.getDocumentPermissions().apply(document, jsonField)) // apply permissions
 					.forEach(jsonFields::add);
 
@@ -215,7 +215,7 @@ public final class JSONDocument extends JSONDocumentBase
 						// Add the pseudo-field "ID" first
 						if (field.isKey())
 						{
-							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
+							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject(jsonOpts)));
 						}
 
 						// Append the other fields
@@ -317,7 +317,7 @@ public final class JSONDocument extends JSONDocumentBase
 		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 
-	private static final String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
+	private static String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
 	{
 		if (windowId != null && documentId != null)
 		{

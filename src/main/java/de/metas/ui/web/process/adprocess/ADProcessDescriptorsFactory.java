@@ -22,6 +22,7 @@ import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.X_AD_Process;
+import org.compiere.util.TimeUtil;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
@@ -346,12 +347,16 @@ import lombok.NonNull;
 		}
 	}
 
-	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final Optional<LookupDescriptor> lookupDescriptor, final boolean isRange)
+	private static DocumentFieldWidgetType extractWidgetType(
+			final String parameterName, 
+			final int adReferenceId, 
+			final Optional<LookupDescriptor> lookupDescriptor, 
+			final boolean isRange)
 	{
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adReferenceId, lookupDescriptor);
 
 		// Date range:
-		if (isRange && widgetType == DocumentFieldWidgetType.Date)
+		if (isRange && widgetType == DocumentFieldWidgetType.LocalDate)
 		{
 			return DocumentFieldWidgetType.DateRange;
 		}
@@ -382,7 +387,8 @@ import lombok.NonNull;
 		}
 	}
 
-	@Nullable private static String extractClassnameOrNull(final I_AD_Process adProcess)
+	@Nullable
+	private static String extractClassnameOrNull(final I_AD_Process adProcess)
 	{
 		//
 		// First try: Check process classname
@@ -448,7 +454,10 @@ import lombok.NonNull;
 			else if (fieldValue instanceof DateRangeValue)
 			{
 				final DateRangeValue dateRange = (DateRangeValue)fieldValue;
-				return ProcessParams.of(parameterName, dateRange.getFrom(), dateRange.getTo());
+				return ProcessParams.of(
+						parameterName,
+						TimeUtil.asDate(dateRange.getFrom()),
+						TimeUtil.asDate(dateRange.getTo()));
 			}
 			else
 			{

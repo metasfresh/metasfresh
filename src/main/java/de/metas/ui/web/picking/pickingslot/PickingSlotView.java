@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
@@ -166,7 +167,11 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(
+			final int firstRow, 
+			final int pageLength, 
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts_NOTUSED)
 	{
 		final List<PickingSlotRow> pageRows = rows.getPage(firstRow, pageLength);
 		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, pageRows);

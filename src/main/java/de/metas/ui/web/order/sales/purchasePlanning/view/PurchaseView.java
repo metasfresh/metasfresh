@@ -25,6 +25,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
@@ -142,7 +143,11 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(
+			final int firstRow, 
+			final int pageLength, 
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts_NOTUSED)
 	{
 		if (!orderBys.isEmpty())
 		{

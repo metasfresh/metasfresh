@@ -1,10 +1,9 @@
 package de.metas.ui.web.handlingunits;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -20,6 +19,7 @@ import org.compiere.util.Env;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
@@ -33,10 +33,11 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -45,6 +46,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
@@ -87,12 +89,12 @@ public final class HUEditorRow implements IViewRow
 {
 	private static final String SYSCFG_PREFIX = "de.metas.ui.web.handlingunits.field";
 
-	public static final Builder builder(final WindowId windowId)
+	public static Builder builder(final WindowId windowId)
 	{
 		return new Builder(windowId);
 	}
 
-	public static final HUEditorRow cast(final IViewRow viewRow)
+	public static HUEditorRow cast(final IViewRow viewRow)
 	{
 		return (HUEditorRow)viewRow;
 	}
@@ -187,11 +189,11 @@ public final class HUEditorRow implements IViewRow
 	private final String huStatus;
 
 	public static final String FIELDNAME_BestBeforeDate = "BestBeforeDate";
-	@ViewColumn(fieldName = FIELDNAME_BestBeforeDate, widgetType = DocumentFieldWidgetType.Date, layouts = {
+	@ViewColumn(fieldName = FIELDNAME_BestBeforeDate, widgetType = DocumentFieldWidgetType.LocalDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80, displayed = Displayed.FALSE),
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 80, displayed = Displayed.FALSE)
 	})
-	private final Date bestBeforeDate;
+	private final LocalDate bestBeforeDate;
 
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
@@ -201,7 +203,7 @@ public final class HUEditorRow implements IViewRow
 	private final ImmutableMultimap<OrderLineId, HUEditorRow> includedOrderLineReservations;
 
 	private transient String _summary; // lazy
-	private transient Map<String, Object> _values; // lazy
+	private final ViewRowFieldNameAndJsonValuesHolder<HUEditorRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(HUEditorRow.class);
 
 	private HUEditorRow(@NonNull final Builder builder)
 	{
@@ -291,21 +293,22 @@ public final class HUEditorRow implements IViewRow
 	{
 		return bpartnerId;
 	}
-
-	Object getFieldValueAsJson(final String fieldName)
+	
+	@Override
+	public ImmutableSet<String> getFieldNames()
 	{
-		return getFieldNameAndJsonValues().get(fieldName);
+		return values.getFieldNames();
+	}
+
+	Object getFieldValueAsJson(@NonNull final String fieldName, @NonNull final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues(jsonOpts).get(fieldName);
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
 	{
-		Map<String, Object> values = _values;
-		if (values == null)
-		{
-			values = _values = ViewColumnHelper.extractJsonMap(this);
-		}
-		return values;
+		return values.get(this, jsonOpts);
 	}
 
 	@Override
@@ -610,7 +613,7 @@ public final class HUEditorRow implements IViewRow
 		private JSONLookupValue product;
 		private JSONLookupValue uom;
 		private BigDecimal qtyCU;
-		private Date bestBeforeDate;
+		private LocalDate bestBeforeDate;
 		private JSONLookupValue locator;
 		private BPartnerId bpartnerId;
 
@@ -737,15 +740,15 @@ public final class HUEditorRow implements IViewRow
 			return this;
 		}
 
-		public Builder setBestBeforeDate(final Date bestBeforeDate)
+		public Builder setBestBeforeDate(final LocalDate bestBeforeDate)
 		{
 			this.bestBeforeDate = bestBeforeDate;
 			return this;
 		}
 
-		private Date getBestBeforeDate()
+		private LocalDate getBestBeforeDate()
 		{
-			return bestBeforeDate != null ? (Date)bestBeforeDate.clone() : null;
+			return bestBeforeDate;
 		}
 
 		public Builder setLocator(final JSONLookupValue locator)

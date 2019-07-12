@@ -45,6 +45,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -363,7 +364,11 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(
+			final int firstRow,
+			final int pageLength,
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		assertNotClosed();
 		checkChangedRows();
@@ -382,11 +387,13 @@ public final class DefaultView implements IEditableView
 				.pageLength(pageLength)
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
-				.columnInfos(extractViewResultColumns(rows))
+				.columnInfos(extractViewResultColumns(rows, jsonOpts))
 				.build();
 	}
 
-	private List<ViewResultColumn> extractViewResultColumns(final List<IViewRow> rows)
+	private List<ViewResultColumn> extractViewResultColumns(
+			@NonNull final List<IViewRow> rows,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		if (rows.isEmpty())
 		{
@@ -396,12 +403,16 @@ public final class DefaultView implements IEditableView
 		return viewDataRepository.getWidgetTypesByFieldName()
 				.entrySet()
 				.stream()
-				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows))
+				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows, jsonOpts))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ViewResultColumn extractViewResultColumnOrNull(final String fieldName, final DocumentFieldWidgetType widgetType, final List<IViewRow> rows)
+	private ViewResultColumn extractViewResultColumnOrNull(
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final List<IViewRow> rows,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		if (widgetType == DocumentFieldWidgetType.Integer)
 		{
@@ -410,7 +421,7 @@ public final class DefaultView implements IEditableView
 		else if (widgetType.isNumeric())
 		{
 			final int maxPrecision = rows.stream()
-					.map(row -> row.getFieldJsonValueAsBigDecimal(fieldName, BigDecimal.ZERO))
+					.map(row -> row.getFieldNameAndJsonValues(jsonOpts).getAsBigDecimal(fieldName, BigDecimal.ZERO))
 					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
 					.max()
 					.orElse(0);
@@ -428,7 +439,11 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPageWithRowIdsOnly(
+			final int firstRow,
+			final int pageLength,
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull final JSONOptions jsonOpts)
 	{
 		assertNotClosed();
 		checkChangedRows();

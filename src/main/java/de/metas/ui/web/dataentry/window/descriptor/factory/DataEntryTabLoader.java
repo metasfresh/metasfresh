@@ -513,7 +513,7 @@ public class DataEntryTabLoader
 		switch (fieldType)
 		{
 			case DATE:
-				return DocumentFieldWidgetType.Date;
+				return DocumentFieldWidgetType.LocalDate;
 			case LIST:
 				return DocumentFieldWidgetType.List;
 			case NUMBER:

@@ -2,7 +2,7 @@ package de.metas.ui.web.material.cockpit.stockdetails;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
 
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -17,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.stock.HUStockInfo;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -24,6 +25,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
@@ -182,9 +184,15 @@ public class StockDetailsRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public Set<String> getFieldNames()
 	{
-		return ViewColumnHelper.extractJsonMap(this);
+		return ViewColumnHelper.extractFieldNames(this);
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	{
+		return ViewColumnHelper.extractJsonMap(this, jsonOpts);
 	}
 
 	@Override

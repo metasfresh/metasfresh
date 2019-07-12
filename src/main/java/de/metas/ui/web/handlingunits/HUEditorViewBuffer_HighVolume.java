@@ -29,6 +29,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.PageFetcher;
@@ -211,7 +212,9 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			throw new UnsupportedOperationException("Streaming all rows when selection is bigger than " + STREAM_ALL_MAX_SIZE_ALLOWED + " is not allowed");
 		}
 
-		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys())
+		final JSONOptions jsonOpts = JSONOptions.newInstance();
+		
+		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys(), jsonOpts)
 				.flatMap(HUEditorRow::streamRecursive)
 				.map(HUEditorRow::cast)
 				.filter(HUEditorRowFilters.toPredicate(filter));
@@ -252,7 +255,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final int firstRow,
 			final int pageLength,
 			@NonNull final HUEditorRowFilter filter,
-			final List<DocumentQueryOrderBy> orderBys)
+			final List<DocumentQueryOrderBy> orderBys,
+			@NonNull JSONOptions jsonOpts)
 	{
 		final Iterator<HUEditorRowId> rowIds = streamHUIdsByPage(firstRow, pageLength, orderBys)
 				.map(HUEditorRowId::ofTopLevelHU)

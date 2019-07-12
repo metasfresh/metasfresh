@@ -1,7 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -177,13 +177,13 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	}
 
 	@Override
-	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts_NOTUSED)
+	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 
 		final List<JSONDocumentField> jsonFields = attributesStorage.getAttributeValues()
 				.stream()
-				.map(this::toJSONDocumentField)
+				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
 
 		jsonDocument.setFields(jsonFields);
@@ -191,10 +191,10 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return jsonDocument;
 	}
 
-	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue)
+	private final JSONDocumentField toJSONDocumentField(final IAttributeValue attributeValue, final JSONOptions jsonOpts)
 	{
 		final String fieldName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
-		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue);
+		final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(attributesStorage, attributeValue, jsonOpts);
 		final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(isDisplayed(fieldName))
@@ -260,7 +260,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return JSONDate.fromJson(jsonValue.toString(), DocumentFieldWidgetType.Date);
+			return JSONDate.fromJson(jsonValue.toString(), DocumentFieldWidgetType.LocalDate);
 		}
 
 		return jsonValue;
@@ -309,14 +309,14 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.of(sscc18.trim());
 	}
 
-	public Optional<Date> getBestBeforeDate()
+	public Optional<LocalDate> getBestBeforeDate()
 	{
 		if (!attributesStorage.hasAttribute(HUAttributeConstants.ATTR_BestBeforeDate))
 		{
 			return Optional.empty();
 		}
 
-		final Date bestBeforeDate = attributesStorage.getValueAsDate(HUAttributeConstants.ATTR_BestBeforeDate);
+		final LocalDate bestBeforeDate = attributesStorage.getValueAsLocalDate(HUAttributeConstants.ATTR_BestBeforeDate);
 		return Optional.ofNullable(bestBeforeDate);
 	}
 
@@ -359,7 +359,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollector();
 
 			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
-			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue);
+			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue, JSONOptions.newInstance());
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
 			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)

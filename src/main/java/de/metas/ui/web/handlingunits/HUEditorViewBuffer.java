@@ -11,6 +11,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -83,7 +84,12 @@ interface HUEditorViewBuffer
 	 */
 	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(HUEditorRowFilter filter);
 
-	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, HUEditorRowFilter filter, List<DocumentQueryOrderBy> orderBys);
+	Stream<HUEditorRow> streamPage(
+			int firstRow, 
+			int pageLength,
+			HUEditorRowFilter filter,
+			List<DocumentQueryOrderBy> orderBys,
+			JSONOptions jsonOpts);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 

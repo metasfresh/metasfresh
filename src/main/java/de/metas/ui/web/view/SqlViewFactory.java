@@ -27,9 +27,9 @@ import de.metas.ui.web.document.filter.DocumentFilter.Builder;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.DocumentFiltersList;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
@@ -39,6 +39,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -371,13 +372,13 @@ public class SqlViewFactory implements IViewFactory
 		if (filterParamDescriptor.isAutoFilterInitialValueIsDateNow())
 		{
 			final DocumentFieldWidgetType widgetType = filterParamDescriptor.getWidgetType();
-			if (widgetType == DocumentFieldWidgetType.Date)
+			if (widgetType == DocumentFieldWidgetType.LocalDate)
 			{
-				value = SystemTime.asDayTimestamp();
+				value = SystemTime.asLocalDate();
 			}
 			else
 			{
-				value = SystemTime.asTimestamp();
+				value = SystemTime.asZonedDateTime();
 			}
 		}
 		else
@@ -494,10 +495,14 @@ public class SqlViewFactory implements IViewFactory
 		private final boolean isDisplayColumnAvailable;
 
 		@Override
-		public Object retrieveValueAsJson(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
+		public Object retrieveValueAsJson(@NonNull final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 		{
-			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage, (LookupDescriptor)null);
-			return Values.valueToJsonObject(fieldValue);
+			final Object fieldValue = fieldValueLoader.retrieveFieldValue(
+					rs, 
+					isDisplayColumnAvailable, 
+					jsonOpts.getAD_Language(), 
+					(LookupDescriptor)null);
+			return Values.valueToJsonObject(fieldValue, jsonOpts);
 		}
 
 	}

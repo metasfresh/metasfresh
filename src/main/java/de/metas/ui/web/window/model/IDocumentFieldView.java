@@ -6,6 +6,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -78,7 +79,7 @@ public interface IDocumentFieldView
 	default Class<?> getValueClass() { return getDescriptor().getValueClass(); }
 	/** @return field's current value */
 	Object getValue();
-	Object getValueAsJsonObject(String adLanguage);
+	Object getValueAsJsonObject(JSONOptions jsonOpts);
 	boolean getValueAsBoolean();
 	int getValueAsInt(final int defaultValueWhenNull);
 	DocumentZoomIntoInfo getZoomIntoInfo();

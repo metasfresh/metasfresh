@@ -11,6 +11,7 @@ import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -250,7 +251,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 
 			try
 			{
-				final java.util.Date date = JSONDate.fromObject(fieldValue, widgetType);
+				final java.util.Date date = TimeUtil.asDate(JSONDate.fromObject(fieldValue, widgetType));
 				return DisplayType.getDateFormat(widgetType.getDisplayType())
 						.format(date);
 			}

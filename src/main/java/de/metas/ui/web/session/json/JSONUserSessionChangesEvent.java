@@ -63,7 +63,7 @@ public class JSONUserSessionChangesEvent
 	private final JSONLookupValue language;
 
 	@JsonProperty("timestamp")
-	private final String timestamp = JSONDate.toJson(SystemTime.asTimestamp());
+	private final String timestamp = JSONDate.toJson(SystemTime.asInstant());
 
 	public boolean isEmpty()
 	{

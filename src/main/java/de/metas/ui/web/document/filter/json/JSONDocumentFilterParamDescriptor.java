@@ -50,7 +50,7 @@ import lombok.ToString;
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static final JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
+	private static JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentFilterParamDescriptor(param, jsonOpts);
 	}
@@ -109,8 +109,8 @@ import lombok.ToString;
 		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
 		rangeParameter = param.isRange();
 
-		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted());
-		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueToConverted());
+		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted(), jsonOpts);
+		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueToConverted(), jsonOpts);
 
 		mandatory = param.isMandatory();
 		displayed = true;
@@ -121,7 +121,7 @@ import lombok.ToString;
 		showIncrementDecrementButtons = param.isShowIncrementDecrementButtons() ? Boolean.TRUE : null;
 	}
 
-	private static final JSONLayoutType toJSONLayoutType(final JSONLayoutWidgetType widgetType)
+	private static JSONLayoutType toJSONLayoutType(final JSONLayoutWidgetType widgetType)
 	{
 		// Checkboxes
 		// see https://github.com/metasfresh/metasfresh-webui-api/issues/352

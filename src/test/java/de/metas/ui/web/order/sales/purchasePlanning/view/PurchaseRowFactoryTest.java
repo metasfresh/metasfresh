@@ -131,7 +131,7 @@ public class PurchaseRowFactoryTest
 				.productId(vendorProductInfo.getProductId())
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.qtyToPurchase(ONE)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfoOrNull(profitInfo)
 				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)

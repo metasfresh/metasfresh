@@ -36,7 +36,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONNotification implements Serializable
 {
-	public static final JSONNotification of(final UserNotification notification, final String adLanguage)
+	public static JSONNotification of(final UserNotification notification, final String adLanguage)
 	{
 		return new JSONNotification(notification, adLanguage);
 	}

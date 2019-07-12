@@ -1,6 +1,7 @@
 package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
+import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -35,14 +36,14 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class TimeRange
 {
-	public static final TimeRange main(final long fromMillis, final long toMillis)
+	public static TimeRange main(final long fromMillis, final long toMillis)
 	{
 		final boolean mainTimeRange = true;
 		final int offsetMillis = 0;
 		return new TimeRange(mainTimeRange, fromMillis, toMillis, offsetMillis);
 	}
 
-	public static final TimeRange offset(final TimeRange mainRange, final Duration offset)
+	public static TimeRange offset(final TimeRange mainRange, final Duration offset)
 	{
 		final boolean mainTimeRange = false;
 		final long offsetMillis = offset.toMillis();
@@ -76,8 +77,8 @@ public final class TimeRange
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("from", JSONDate.toJson(fromMillis))
-				.add("to", JSONDate.toJson(toMillis))
+				.add("from", JSONDate.toJson(Instant.ofEpochMilli(fromMillis)))
+				.add("to", JSONDate.toJson(Instant.ofEpochMilli(toMillis)))
 				.add("main", mainTimeRange)
 				.add("offset", Duration.ofMillis(offsetMillis))
 				.toString();

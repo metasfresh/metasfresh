@@ -1,7 +1,7 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.compiere.util.TimeUtil;
 
@@ -41,25 +41,25 @@ public class MainRowBucketId
 	{
 		return new MainRowBucketId(
 				ProductId.ofRepoId(dataRecord.getM_Product_ID()),
-				TimeUtil.getDay(dataRecord.getDateGeneral()));
+				TimeUtil.asLocalDate(dataRecord.getDateGeneral()));
 	}
 
 	public static MainRowBucketId createInstanceForStockRecord(
 			@NonNull final I_MD_Stock stockRecord,
-			@NonNull final Timestamp date)
+			@NonNull final LocalDate date)
 	{
 		return new MainRowBucketId(
 				ProductId.ofRepoId(stockRecord.getM_Product_ID()),
-				TimeUtil.getDay(date));
+				date);
 	}
 
-	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final Timestamp date)
+	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final LocalDate date)
 	{
 		return new MainRowBucketId(productId, date);
 	}
 
 	ProductId productId;
-	Timestamp date;
+	LocalDate date;
 
 	private BigDecimal pmmQtyPromised = BigDecimal.ZERO;
 
@@ -77,12 +77,10 @@ public class MainRowBucketId
 
 	private MainRowBucketId(
 			@NonNull final ProductId productId,
-			@NonNull final Timestamp date)
+			@NonNull final LocalDate date)
 	{
 		this.productId = productId;
 		this.date = date;
 	}
-
-
 
 }

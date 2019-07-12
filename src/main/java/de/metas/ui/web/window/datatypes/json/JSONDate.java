@@ -1,29 +1,18 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Month;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.concurrent.Callable;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.util.time.SimpleDateFormatThreadLocal;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -53,220 +42,191 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class JSONDate
 {
-	private static final transient Logger logger = LogManager.getLogger(JSONDate.class);
-
-	private static final DateTimeFormatter DATE_FORMAT = Env.DATE_FORMAT;
-
-	private static final SimpleDateFormatThreadLocal TIMEZONE_FORMAT = new SimpleDateFormatThreadLocal("XXX");
-
-	private static final LocalDate DATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
-	private static ZoneId fixedSystemZoneId = null; // used for testing
-
-	private static ZoneId getSystemZoneId()
+	public static void setConfig(@NonNull final JSONDateConfig config)
 	{
-		final ZoneId fixedSystemZoneId = JSONDate.fixedSystemZoneId;
-		if (fixedSystemZoneId != null)
+		JSONDate._config = config;
+	}
+
+	private static JSONDateConfig getConfig()
+	{
+		return _config;
+	}
+
+	private static JSONDateConfig _config = JSONDateConfig.DEFAULT;
+
+	public static String toJson(@NonNull final LocalDate date)
+	{
+		final JSONDateConfig config = getConfig();
+		return config.getLocalDateFormatter().format(date);
+	}
+
+	public static String toJson(@NonNull final LocalDateTime date)
+	{
+		final JSONDateConfig config = getConfig();
+		return config.getLocalDateTimeFormatter().format(date);
+	}
+
+	public static String toJson(@NonNull final Instant instant)
+	{
+		return toJson(TimeUtil.asZonedDateTime(instant));
+	}
+
+	public static String toJson(@NonNull final LocalTime time)
+	{
+		final JSONDateConfig config = getConfig();
+		return config.getLocalTimeFormatter().format(time);
+	}
+
+	public static String toJson(@NonNull final ZonedDateTime date)
+	{
+		final JSONDateConfig config = getConfig();
+		return config.getZonedDateTimeFormatter().format(date);
+	}
+
+	public static Object fromJson(
+			@Nullable final String valueStr,
+			@NonNull final DocumentFieldWidgetType widgetType)
+	{
+		return fromObject(valueStr, widgetType);
+	}
+
+	public static Object fromObject(
+			@Nullable final Object valueObj,
+			@NonNull final DocumentFieldWidgetType widgetType)
+	{
+		if (widgetType == DocumentFieldWidgetType.LocalDate)
 		{
-			return fixedSystemZoneId;
+			return fromObjectToLocalDate(valueObj);
 		}
-
-		return ZoneId.systemDefault();
-	}
-
-	@VisibleForTesting
-	public synchronized static <T> T withFixedSystemZoneId(@NonNull final ZoneId zoneId, @NonNull final Callable<T> callable)
-	{
-		final ZoneId fixedSystemZoneIdBackup = fixedSystemZoneId;
-		fixedSystemZoneId = zoneId;
-		try
+		else if (widgetType == DocumentFieldWidgetType.LocalTime)
 		{
-			return callable.call();
+			return fromObjectToLocalTime(valueObj);
 		}
-		catch (Exception ex)
+		else if (widgetType == DocumentFieldWidgetType.LocalDateTime)
 		{
-			throw AdempiereException.wrapIfNeeded(ex);
+			return fromObjectToLocalDateTime(valueObj);
 		}
-		finally
+		else if (widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
-			fixedSystemZoneId = fixedSystemZoneIdBackup;
+			return fromObjectToZonedDateTime(valueObj);
 		}
-	}
-
-	public static String toJson(final Date date)
-	{
-		return toJson(date.getTime());
-	}
-
-	public static String toJson(final LocalDate date)
-	{
-		return toJson(date.atStartOfDay(getSystemZoneId()));
-	}
-
-	public static String toJson(final LocalDateTime date)
-	{
-		return toJson(date.atZone(getSystemZoneId()));
-	}
-
-	public static String toJson(final long millis)
-	{
-		final ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.ofEpochMilli(millis), getSystemZoneId());
-		return toJson(zdt);
-	}
-
-	public static String toJson(final LocalTime time)
-	{
-		return toJson(time.atDate(DATE_1970_01_01).atZone(getSystemZoneId()));
-	}
-
-	public static String toJson(final ZonedDateTime date)
-	{
-		return DATE_FORMAT.format(date);
-	}
-
-	public static Date fromJson(final String valueStr, final DocumentFieldWidgetType widgetType)
-	{
-		if (widgetType == DocumentFieldWidgetType.Date)
+		else if (widgetType == DocumentFieldWidgetType.Timestamp)
 		{
-			return toJULDate(valueStr);
+			return fromObjectToInstant(valueObj);
 		}
 		else
 		{
-			return toJULDateWithTime(valueStr);
+			throw new AdempiereException("Invalid date/time type: " + widgetType);
 		}
 	}
 
-	public static LocalDateTime localDateTimeFromJson(final String valueStr)
+	public static LocalDate fromObjectToLocalDate(final Object valueObj)
 	{
-		// TODO: optimize, convert directly
-		return TimeUtil.asLocalDateTime(toJULDateWithTime(valueStr));
+		return fromObjectTo(valueObj,
+				LocalDate.class,
+				JSONDate::fromJsonToLocalDate,
+				TimeUtil::asLocalDate);
 	}
 
-	public static ZonedDateTime zonedDateTimeFromJson(final String valueStr)
+	private static LocalDate fromJsonToLocalDate(final String valueStr)
 	{
-		// TODO: optimize, convert directly
-		return TimeUtil.asZonedDateTime(toJULDateWithTime(valueStr));
+		final JSONDateConfig config = getConfig();
+		return LocalDate.parse(valueStr, config.getLocalDateFormatter());
 	}
 
-	public static Date fromObject(final Object value, final DocumentFieldWidgetType widgetType)
+	private static LocalTime fromObjectToLocalTime(final Object valueObj)
 	{
-		if (value == null)
+		return fromObjectTo(valueObj,
+				LocalTime.class,
+				JSONDate::fromJsonToLocalTime,
+				TimeUtil::asLocalTime);
+	}
+
+	private static LocalTime fromJsonToLocalTime(final String valueStr)
+	{
+		final JSONDateConfig config = getConfig();
+		return LocalTime.parse(valueStr, config.getLocalTimeFormatter());
+	}
+
+	public static LocalDateTime fromObjectToLocalDateTime(final Object valueObj)
+	{
+		return fromObjectTo(valueObj,
+				LocalDateTime.class,
+				JSONDate::fromJsonToLocalDateTime,
+				TimeUtil::asLocalDateTime);
+	}
+
+	private static LocalDateTime fromJsonToLocalDateTime(final String valueStr)
+	{
+		final JSONDateConfig config = getConfig();
+		return LocalDateTime.parse(valueStr, config.getLocalDateTimeFormatter());
+	}
+
+	public static ZonedDateTime fromObjectToZonedDateTime(final Object valueObj)
+	{
+		return fromObjectTo(valueObj,
+				ZonedDateTime.class,
+				JSONDate::fromJsonToZonedDateTime,
+				TimeUtil::asZonedDateTime);
+	}
+
+	private static ZonedDateTime fromJsonToZonedDateTime(final String valueStr)
+	{
+		final JSONDateConfig config = getConfig();
+		return ZonedDateTime.parse(valueStr, config.getZonedDateTimeFormatter());
+	}
+
+	public static Instant fromObjectToInstant(final Object valueObj)
+	{
+		return fromObjectTo(valueObj,
+				Instant.class,
+				JSONDate::fromJsonToInstant,
+				TimeUtil::asInstant);
+	}
+
+	private static Instant fromJsonToInstant(final String valueStr)
+	{
+		final JSONDateConfig config = getConfig();
+		return ZonedDateTime.parse(valueStr, config.getTimestampFormatter())
+				.toInstant();
+	}
+
+	private static <T> T fromObjectTo(
+			final Object valueObj,
+			@NonNull final Class<T> type,
+			@NonNull final Function<String, T> fromJsonConverer,
+			@NonNull final Function<Object, T> fromObjectConverter)
+	{
+		if (valueObj == null
+				|| JSONNullValue.isNull(valueObj))
 		{
 			return null;
 		}
-		else if (value instanceof Date)
+		else if (type.isInstance(valueObj))
 		{
-			return (Date)value;
+			return type.cast(valueObj);
 		}
-		else if (value instanceof String)
+		else if (valueObj instanceof CharSequence)
 		{
-			final String valueStr = value.toString().trim();
-			return fromJson(valueStr, widgetType);
+			final String json = valueObj.toString().trim();
+			if (json.isEmpty())
+			{
+				return null;
+			}
+			else
+			{
+				return fromJsonConverer.apply(json);
+			}
 		}
 		else
 		{
-			return TimeUtil.asDate(value);
-		}
-	}
-
-	public static LocalDateTime localDateTimeFromObject(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		if (value instanceof LocalDateTime)
-		{
-			return (LocalDateTime)value;
-		}
-
-		final String valueStr = value.toString().trim();
-		return localDateTimeFromJson(valueStr);
-	}
-
-	public static Date fromTimestamp(final Timestamp ts)
-	{
-		if (ts == null)
-		{
-			return null;
-		}
-		return new Date(ts.getTime());
-	}
-
-	private static final Date toJULDateWithTime(final String valueStr)
-	{
-		try
-		{
-			final ZonedDateTime zdt = ZonedDateTime.parse(valueStr, DATE_FORMAT);
-			Date date = Date.from(zdt.toInstant());
-			return date;
-		}
-		catch (final DateTimeParseException ex1)
-		{
-			// second try
-			// FIXME: this is not optimum. We shall unify how we store Dates (as String)
-			logger.warn("Using Env.parseTimestamp to convert '{}' to Date", valueStr);
-			try
-			{
-				final Timestamp ts = Env.parseTimestamp(valueStr);
-				return fromTimestamp(ts);
-			}
-			catch (final Exception ex2)
-			{
-				final String errmsg = "Failed converting '" + valueStr + "' to date."
-						+ "\n Please use following format: " + DATE_FORMAT + "."
-						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
-				final IllegalArgumentException exFinal = new IllegalArgumentException(errmsg, ex1);
-				exFinal.addSuppressed(ex2);
-				throw exFinal;
-			}
-		}
-	}
-
-	private static final Date toJULDate(final String valueStr)
-	{
-		try
-		{
-			// NOTE: no matter which timezone was used by the frontend, we are always taking only the date part,
-			// because our Date (without time) fields are without timezone.
-			final ZonedDateTime zdt = ZonedDateTime.parse(valueStr, DATE_FORMAT);
-			final Calendar cal = Calendar.getInstance();
-			cal.set(Calendar.YEAR, zdt.getYear());
-			cal.set(Calendar.MONTH, zdt.getMonthValue() - 1);
-			cal.set(Calendar.DAY_OF_MONTH, zdt.getDayOfMonth());
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-
-			Date date = cal.getTime();
-			return date;
-		}
-		catch (final DateTimeParseException ex1)
-		{
-			// second try
-			// FIXME: this is not optimum. We shall unify how we store Dates (as String)
-			logger.warn("Using Env.parseTimestamp to convert '{}' to Date", valueStr);
-			try
-			{
-				final Timestamp ts = TimeUtil.truncToDay(Env.parseTimestamp(valueStr));
-				return fromTimestamp(ts);
-			}
-			catch (final Exception ex2)
-			{
-				final String errmsg = "Failed converting '" + valueStr + "' to date."
-						+ "\n Please use following format: " + DATE_FORMAT + "."
-						+ "\n e.g. " + DATE_FORMAT.format(ZonedDateTime.now());
-				final AdempiereException exFinal = new AdempiereException(errmsg, ex1);
-				exFinal.addSuppressed(ex2);
-				throw exFinal;
-			}
+			return fromObjectConverter.apply(valueObj);
 		}
 	}
 
 	public static String getCurrentTimeZoneAsJson()
 	{
-		final Date now = SystemTime.asDate();
-		final String timeZone = TIMEZONE_FORMAT.format(now);
-		return timeZone;
+		final JSONDateConfig config = getConfig();
+		return config.getTimeZoneFormatter().format(SystemTime.asZonedDateTime());
 	}
 }

@@ -46,7 +46,11 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 final class SqlValueConverters
 {
-	public static Object convertToPOValue(final Object value, final String columnName, final DocumentFieldWidgetType widgetType, final Class<?> targetClass)
+	public static Object convertToPOValue(
+			final Object value, 
+			final String columnName, 
+			final DocumentFieldWidgetType widgetType, 
+			final Class<?> targetClass)
 	{
 		final Class<?> valueClass = JSONNullValue.isNull(value) ? null : value.getClass();
 
@@ -120,18 +124,10 @@ final class SqlValueConverters
 			{
 				return null;
 			}
-			else if (java.util.Date.class.isAssignableFrom(valueClass))
-			{
-				return new Timestamp(((java.util.Date)value).getTime());
-			}
-			else if (value instanceof String)
-			{
-				final java.util.Date valueDate = JSONDate.fromJson(value.toString(), widgetType);
-				return TimeUtil.asTimestamp(valueDate);
-			}
 			else
 			{
-				return TimeUtil.asTimestamp(value);
+				final Object valueDate = JSONDate.fromObject(value, widgetType);
+				return TimeUtil.asTimestamp(valueDate);
 			}
 		}
 		else if (Boolean.class.equals(targetClass) || boolean.class.equals(targetClass))

@@ -8,6 +8,7 @@ import java.util.Map;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -15,6 +16,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -42,17 +44,17 @@ import lombok.ToString;
 
 public final class ViewRow implements IViewRow
 {
-	public static final Builder builder(final WindowId windowId)
+	public static Builder builder(final WindowId windowId)
 	{
 		return new Builder(windowId);
 	}
 
-	public static final ViewRow cast(final IViewRow row)
+	public static ViewRow cast(final IViewRow row)
 	{
 		return (ViewRow)row;
 	}
 
-	public static enum DefaultRowType implements IViewRowType
+	public enum DefaultRowType implements IViewRowType
 	{
 		Row
 		{
@@ -80,7 +82,7 @@ public final class ViewRow implements IViewRow
 	private final IViewRowType type;
 	private final boolean processed;
 
-	private final Map<String, Object> values;
+	private final ViewRowFieldNameAndJsonValues values;
 
 	private final List<IViewRow> includedRows;
 
@@ -92,7 +94,7 @@ public final class ViewRow implements IViewRow
 		type = builder.getType();
 		processed = builder.isProcessed();
 
-		values = ImmutableMap.copyOf(builder.getValues());
+		values = ViewRowFieldNameAndJsonValues.ofMap(ImmutableMap.copyOf(builder.getValues()));
 
 		includedRows = builder.buildIncludedRows();
 	}
@@ -141,7 +143,13 @@ public final class ViewRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
+	{
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts_NOTUSED)
 	{
 		return values;
 	}

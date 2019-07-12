@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import lombok.Builder;
@@ -41,9 +42,9 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	 * Retrieves a particular field from given {@link ResultSet}.
 	 */
 	@FunctionalInterface
-	public static interface SqlViewRowFieldLoader
+	public interface SqlViewRowFieldLoader
 	{
-		Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException;
+		Object retrieveValueAsJson(ResultSet rs, JSONOptions jsonOpts) throws SQLException;
 	}
 
 	private final String fieldName;

@@ -45,6 +45,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -266,11 +267,12 @@ class SqlViewDataRepository implements IViewDataRepository
 			final ViewId viewId,
 			final int limit) throws SQLException
 	{
+		final JSONOptions jsonOpts = JSONOptions.ofAdLanguage(viewEvalCtx.getAdLanguage());
 		final Map<DocumentId, ViewRow.Builder> rowBuilders = new LinkedHashMap<>();
 		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
 		{
-			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAdLanguage());
+			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), jsonOpts);
 			if (rowBuilder == null)
 			{
 				continue;
@@ -317,7 +319,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private ViewRow.Builder loadViewRow(
 			@NonNull final ResultSet rs,
 			final WindowId windowId,
-			final String adLanguage) throws SQLException
+			final JSONOptions jsonOpts) throws SQLException
 	{
 		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
 		if (isRecordMissing)
@@ -338,7 +340,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			viewRowBuilder.setType(DefaultRowType.Row);
 		}
 
-		final DocumentId rowId = retrieveRowId(rs, adLanguage);
+		final DocumentId rowId = retrieveRowId(rs, jsonOpts);
 		if (rowId == null)
 		{
 			logger.warn("No ID found for current row. Skipping the row.");
@@ -350,7 +352,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			final String fieldName = fieldNameAndLoader.getKey();
 			final SqlViewRowFieldLoader fieldLoader = fieldNameAndLoader.getValue();
-			final Object value = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+			final Object value = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
 
@@ -362,23 +364,23 @@ class SqlViewDataRepository implements IViewDataRepository
 		return viewRowBuilder;
 	}
 
-	private DocumentId retrieveRowId(final ResultSet rs, final String adLanguage) throws SQLException
+	private DocumentId retrieveRowId(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		if (keyColumnNamesMap.isSingleKey())
 		{
-			return retrieveRowId_SingleKey(rs, adLanguage);
+			return retrieveRowId_SingleKey(rs, jsonOpts);
 		}
 		else
 		{
-			return retrieveRowId_MultiKey(rs, adLanguage);
+			return retrieveRowId_MultiKey(rs, jsonOpts);
 		}
 	}
 
-	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final String adLanguage) throws SQLException
+	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
-		final Object jsonRowIdObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+		final Object jsonRowIdObj = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
 		if (JSONNullValue.isNull(jsonRowIdObj))
 		{
 			return null;
@@ -407,7 +409,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final String adLanguage) throws SQLException
+	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		final List<Object> rowIdParts = new ArrayList<>(keyColumnNamesMap.getKeyPartsCount());
 		boolean onlyNullValues = true;
@@ -417,7 +419,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
 			// Check.assumeNotNull(fieldLoader, "fieldLoader shall exist for {}", keyColumnName);
 
-			final Object rowIdPartObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+			final Object rowIdPartObj = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
 			if (JSONNullValue.isNull(rowIdPartObj))
 			{
 				rowIdParts.add(null);
@@ -530,11 +532,11 @@ class SqlViewDataRepository implements IViewDataRepository
 			rs = pstmt.executeQuery();
 
 			final ImmutableList.Builder<DocumentId> rowIds = ImmutableList.builder();
-			final String adLanguage = null; // N/A, not important
+			final JSONOptions jsonOpts = JSONOptions.newInstance(); // not important
 
 			while (rs.next())
 			{
-				final DocumentId rowId = retrieveRowId(rs, adLanguage);
+				final DocumentId rowId = retrieveRowId(rs, jsonOpts);
 				if (rowId == null)
 				{
 					continue;

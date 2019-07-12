@@ -116,7 +116,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		tabid = tabId;
 		this.rowId = rowId;
 
-		timestamp = JSONDate.toJson(SystemTime.millis());
+		timestamp = JSONDate.toJson(SystemTime.asInstant());
 	}
 
 	private JSONDocumentChangedWebSocketEvent(JSONDocumentChangedWebSocketEvent from)

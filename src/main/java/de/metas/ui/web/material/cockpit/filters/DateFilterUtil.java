@@ -13,7 +13,6 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.experimental.UtilityClass;
 
 /*
@@ -48,7 +47,7 @@ class DateFilterUtil
 		final DocumentFilterParamDescriptor.Builder standaloneParamDescriptor = DocumentFilterParamDescriptor.builder()
 				.setFieldName(DateFilterVO.PARAM_Date)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
-				.setWidgetType(DocumentFieldWidgetType.Date)
+				.setWidgetType(DocumentFieldWidgetType.LocalDate)
 				.setOperator(Operator.EQUAL)
 				.setMandatory(true)
 				.setShowIncrementDecrementButtons(true);
@@ -83,7 +82,7 @@ class DateFilterUtil
 	{
 		Check.assume(DateFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", DateFilterVO.FILTER_ID, filter);
 		return DateFilterVO.builder()
-				.date(filter.getParameterValueAsDate(DateFilterVO.PARAM_Date, null))
+				.date(filter.getParameterValueAsLocalDate(DateFilterVO.PARAM_Date, null))
 				.build();
 	}
 
