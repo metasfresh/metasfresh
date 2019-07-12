@@ -8,7 +8,7 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
 
-describe('Create Sales order', function() {
+describe('Create Purchase order - material receipt - invoice', function() {
   const timestamp = new Date().getTime();
   const productForPackingMaterial = `ProductPackingMaterial ${timestamp}`;
   const productPMValue = `purchase_order_testPM ${timestamp}`;
