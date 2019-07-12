@@ -134,7 +134,11 @@ export class RawWidget extends Component {
     const willPatch = this.willPatch(property, value, valueTo);
 
     const fieldData = widgetData.find(widget => widget.field === property);
-    const isCostPriceWidget = fieldData.widgetType === 'CostPrice';
+    let isCostPriceInput = false;
+
+    if (fieldData && fieldData.widgetType === 'CostPrice') {
+      isCostPriceInput = true;
+    }
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -147,7 +151,7 @@ export class RawWidget extends Component {
       return handlePatch(
         property,
         // for CostPrice inputs we replace commas with dots before patching
-        isCostPriceWidget ? value.replace(',', '.') : value,
+        isCostPriceInput ? value.replace(',', '.') : value,
         id,
         valueTo
       );
