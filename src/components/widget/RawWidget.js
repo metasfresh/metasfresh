@@ -133,8 +133,6 @@ export class RawWidget extends Component {
     const { handlePatch, widgetData } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
 
-    // When patching to redux we look for widget type and most important thing
-    // to be number if widget is CostPrice
     const fieldData = widgetData.find(widget => widget.field === property);
     const isCostPriceWidget = fieldData.widgetType === 'CostPrice';
 
@@ -148,7 +146,7 @@ export class RawWidget extends Component {
 
       return handlePatch(
         property,
-        // value,
+        // for CostPrice inputs we replace commas with dots before patching
         isCostPriceWidget ? value.replace(',', '.') : value,
         id,
         valueTo

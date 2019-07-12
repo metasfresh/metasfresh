@@ -99,5 +99,37 @@
       "viewEditorRenderMode": "never",
       "widgetType": "Integer"
     }
+  },
+  "costPrice": {
+    "data1": {
+      "displayed": true,
+      "field": "PriceList",
+      "mandatory": true,
+      "readonly": false,
+      "validStatus": {
+        "valid": true,
+        "initialValue": true,
+        "fieldName": "PriceList"
+      },
+      "fieldName": "PriceList",
+      "initialValue": true,
+      "valid": true,
+      "value": "13.50",
+      "viewEditorRenderMode": "always",
+      "widgetType": "CostPrice"
+    },
+    "layout1": {
+      "caption": "List Price",
+      "description": "List Price",
+      "fields": [
+        {
+          "field": "PriceList",
+          "emptyText": "none"
+        }
+      ],
+      "size": "L",
+      "viewEditorRenderMode": "on-demand",
+      "widgetType": "CostPrice"
+    }
   }
 }
