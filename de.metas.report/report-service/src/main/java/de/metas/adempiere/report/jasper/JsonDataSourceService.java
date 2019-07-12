@@ -150,7 +150,7 @@ public class JsonDataSourceService
 		final String sql = reportContext.getSQLStatement();
 
 		final ProcessType type = reportContext.getType();
-		if (type.isJasperJson() || Check.isEmpty(sql, true))
+		if (!type.isJasperJson() || Check.isEmpty(sql, true))
 		{
 			return null;
 		}
