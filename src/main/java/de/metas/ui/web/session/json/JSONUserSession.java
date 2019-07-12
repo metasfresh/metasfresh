@@ -87,8 +87,6 @@ public class JSONUserSession
 
 	private JSONUserSession(final UserSession userSession)
 	{
-		super();
-
 		loggedIn = userSession.isLoggedIn();
 		if (loggedIn)
 		{
@@ -120,6 +118,6 @@ public class JSONUserSession
 		this.language = JSONLookupValue.of(language.getAD_Language(), language.getName());
 		this.locale = JSONUserSessionLocale.of(userSession.getUserSessionLocale());
 
-		timeZone = JSONDate.getCurrentTimeZoneAsJson();
+		timeZone = JSONDate.toJson(userSession.getTimeZone());
 	}
 }

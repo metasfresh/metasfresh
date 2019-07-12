@@ -46,12 +46,17 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangeLog;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions.JSONDocumentLayoutOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions.JSONDocumentOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -136,10 +141,21 @@ public class WindowRestController
 	@Autowired
 	private DocumentWebsocketPublisher websocketPublisher;
 
-	private JSONOptions.Builder newJSONOptions()
+	private JSONOptionsBuilder newJSONOptions()
 	{
-		return JSONOptions.builder(userSession)
-				.setNewRecordDescriptorsProvider(newRecordDescriptorsProvider);
+		return JSONOptions.prepareFrom(userSession);
+	}
+
+	private JSONDocumentLayoutOptionsBuilder newJSONLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.prepareFrom(userSession)
+				.newRecordDescriptorsProvider(newRecordDescriptorsProvider);
+	}
+
+	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
+	{
+		return JSONDocumentOptions.builder()
+				.userSession(userSession);
 	}
 
 	@GetMapping("/{windowId}/layout")
@@ -159,8 +175,8 @@ public class WindowRestController
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
-				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
-				.toJson(JSONDocumentLayout::ofHeaderLayout);
+				.jsonLayoutOptions(() -> newJSONLayoutOptions().showAdvancedFields(advanced).build())
+				.toLayoutJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
 	@GetMapping("/{windowId}/{tabId}/layout")
@@ -183,8 +199,8 @@ public class WindowRestController
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
-				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
-				.toJson(JSONDocumentLayout::ofDetailTab);
+				.jsonLayoutOptions(() -> newJSONLayoutOptions().showAdvancedFields(advanced).build())
+				.toLayoutJson(JSONDocumentLayout::ofDetailTab);
 	}
 
 	@GetMapping("/{windowId}/{documentId}")
@@ -237,9 +253,9 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
-				.setDataFieldsList(fieldsListStr)
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showAdvancedFields(advanced)
+				.dataFieldsListStr(fieldsListStr)
 				.build();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
@@ -309,18 +325,24 @@ public class WindowRestController
 		return patchDocument(documentPath, advanced, events);
 	}
 
-	private List<JSONDocument> patchDocument(final DocumentPath documentPath, final boolean advanced, final List<JSONDocumentChangedEvent> events)
+	private List<JSONDocument> patchDocument(
+			final DocumentPath documentPath,
+			final boolean advanced,
+			final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
 
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showAdvancedFields(advanced)
 				.build();
 
 		return Execution.callInNewExecution("window.commit", () -> patchDocument0(documentPath, events, jsonOpts));
 	}
 
-	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
+	private List<JSONDocument> patchDocument0(
+			final DocumentPath documentPath,
+			final List<JSONDocumentChangedEvent> events,
+			final JSONDocumentOptions jsonOpts)
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		documentCollection.forDocumentWritable(
@@ -350,7 +372,8 @@ public class WindowRestController
 		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
 
 		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
-		return JSONDocument.ofDocument(documentCopy, newJSONOptions().setShowAdvancedFields(advanced).build());
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().showAdvancedFields(advanced).build();
+		return JSONDocument.ofDocument(documentCopy, jsonOpts);
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -418,8 +441,8 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(false)
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
+				.showAdvancedFields(false)
 				.build();
 
 		return Execution.callInNewExecution("window.delete", () -> {
@@ -751,8 +774,8 @@ public class WindowRestController
 
 		// Organize document references in groups (by top level menu) and return them as JSON
 		final JSONOptions jsonOpts = newJSONOptions().build();
-		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAD_Language());
-		final String othersMenuCaption = Services.get(IMsgBL.class).translatable("DocumentReferences.group.Others").translate(jsonOpts.getAD_Language());
+		final MenuTree menuTree = menuTreeRepository.getMenuTree(userSession.getUserRolePermissionsKey(), jsonOpts.getAdLanguage());
+		final String othersMenuCaption = Services.get(IMsgBL.class).translatable("DocumentReferences.group.Others").translate(jsonOpts.getAdLanguage());
 		return JSONDocumentReferencesGroupList.of(documentReferences, menuTree, othersMenuCaption, jsonOpts);
 	}
 

@@ -236,7 +236,7 @@ import lombok.NonNull;
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
-			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAD_Language()))
+			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAdLanguage()))
 			{
 				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
 				value = lookupValueNew;

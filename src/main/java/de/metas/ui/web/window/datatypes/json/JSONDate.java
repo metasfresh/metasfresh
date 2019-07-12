@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.function.Function;
 
@@ -13,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -81,6 +81,12 @@ public final class JSONDate
 	{
 		final JSONDateConfig config = getConfig();
 		return config.getZonedDateTimeFormatter().format(date);
+	}
+
+	public static String toJson(@NonNull final ZoneId zoneId)
+	{
+		final JSONDateConfig config = getConfig();
+		return config.getTimeZoneFormatter().format(LocalDateTime.now().atZone(zoneId));
 	}
 
 	public static Object fromJson(
@@ -222,11 +228,5 @@ public final class JSONDate
 		{
 			return fromObjectConverter.apply(valueObj);
 		}
-	}
-
-	public static String getCurrentTimeZoneAsJson()
-	{
-		final JSONDateConfig config = getConfig();
-		return config.getTimeZoneFormatter().format(SystemTime.asZonedDateTime());
 	}
 }

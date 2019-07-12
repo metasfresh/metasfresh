@@ -86,7 +86,7 @@ public final class ViewRowFieldNameAndJsonValues
 		}
 		else if (valueObj instanceof ITranslatableString)
 		{
-			return ((ITranslatableString)valueObj).translate(jsonOpts.getAD_Language());
+			return ((ITranslatableString)valueObj).translate(jsonOpts.getAdLanguage());
 		}
 		else
 		{

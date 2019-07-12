@@ -28,8 +28,9 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -89,10 +90,17 @@ public class WindowQuickInputRestController
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
-	private JSONOptions newJSONOptions()
+	private JSONDocumentLayoutOptions newJSONLayoutOptions()
 	{
-		return JSONOptions.builder(userSession)
-				.setNewRecordDescriptorsProvider(newRecordDescriptorsProvider)
+		return JSONDocumentLayoutOptions.prepareFrom(userSession)
+				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
+				.build();
+	}
+
+	private JSONDocumentOptions newJSONDocumentOptions()
+	{
+		return JSONDocumentOptions.builder()
+				.userSession(userSession)
 				.build();
 	}
 
@@ -140,7 +148,7 @@ public class WindowQuickInputRestController
 		}
 
 		final QuickInputLayoutDescriptor layout = quickInputDescriptor.getLayout();
-		return JSONQuickInputLayoutDescriptor.fromNullable(layout, newJSONOptions());
+		return JSONQuickInputLayoutDescriptor.fromNullable(layout, newJSONLayoutOptions());
 	}
 
 	@PostMapping
@@ -160,7 +168,7 @@ public class WindowQuickInputRestController
 			final QuickInput quickInput = createQuickInput(rootDocumentPath, detailId);
 			commit(quickInput);
 
-			return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions());
+			return JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONDocumentOptions());
 		});
 	}
 
@@ -239,7 +247,7 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
-		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions()));
+		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONDocumentOptions()));
 	}
 
 	@GetMapping("/{quickInputId}/field/{fieldName}/typeahead")
@@ -295,7 +303,7 @@ public class WindowQuickInputRestController
 			});
 
 			// Extract and send websocket events
-			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
+			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONDocumentOptions());
 			websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
 			return jsonDocumentEvents;
@@ -317,7 +325,7 @@ public class WindowQuickInputRestController
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			return forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
 				final Document document = quickInput.complete();
-				return JSONDocument.ofDocument(document, newJSONOptions());
+				return JSONDocument.ofDocument(document, newJSONDocumentOptions());
 			});
 		});
 	}

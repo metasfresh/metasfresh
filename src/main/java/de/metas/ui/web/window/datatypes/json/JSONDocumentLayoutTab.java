@@ -53,7 +53,7 @@ public final class JSONDocumentLayoutTab
 {
 	public static List<JSONDocumentLayoutTab> ofList(
 			@NonNull final Collection<DocumentLayoutDetailDescriptor> details,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		final Collection<DocumentFilterDescriptor> filters = null;
 
@@ -151,7 +151,7 @@ public final class JSONDocumentLayoutTab
 	private JSONDocumentLayoutTab(
 			@NonNull final DocumentLayoutDetailDescriptor includedTabLayout,
 			@Nullable final Collection<DocumentFilterDescriptor> filters,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
 		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
 
@@ -164,8 +164,8 @@ public final class JSONDocumentLayoutTab
 
 		internalName = includedTabLayout.getInternalName();
 
-		final String adLanguage = jsonOpts.getAD_Language();
-		if (jsonOpts.isDebugShowColumnNamesForCaption()
+		final String adLanguage = options.getAdLanguage();
+		if (options.isDebugShowColumnNamesForCaption()
 				&& tabId != null
 				&& gridLayout != null)
 		{
@@ -186,7 +186,7 @@ public final class JSONDocumentLayoutTab
 
 		if (includedTabLayout.isSingleRowDetailLayout())
 		{
-			this.sections = JSONDocumentLayoutSection.ofSectionsList(includedTabLayout.getSingleRowLayout().getSections(), jsonOpts);
+			this.sections = JSONDocumentLayoutSection.ofSectionsList(includedTabLayout.getSingleRowLayout().getSections(), options);
 			this.subTabs = ImmutableList.of();
 
 			this.emptyResultText = null;
@@ -197,13 +197,13 @@ public final class JSONDocumentLayoutTab
 		else
 		{
 			this.sections = ImmutableList.of();
-			this.subTabs = JSONDocumentLayoutTab.ofList(includedTabLayout.getSubTabLayouts(), jsonOpts);
+			this.subTabs = JSONDocumentLayoutTab.ofList(includedTabLayout.getSubTabLayouts(), options);
 
 			if (gridLayout != null)
 			{
 				this.emptyResultText = gridLayout.getEmptyResultText(adLanguage);
 				this.emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
-				this.elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
+				this.elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), options);
 				this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
 			}
 			else
@@ -218,7 +218,7 @@ public final class JSONDocumentLayoutTab
 		// false=>null; because true is a very special case, let's not clutter our JSON with another property that's false almost all the time
 		singleRowDetailLayout = includedTabLayout.isSingleRowDetailLayout() ? true : null;
 
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, options);
 	}
 
 	@Override

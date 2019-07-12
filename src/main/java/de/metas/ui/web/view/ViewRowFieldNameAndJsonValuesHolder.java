@@ -1,5 +1,7 @@
 package de.metas.ui.web.view;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
@@ -54,7 +56,7 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
 	private transient ImmutableSet<String> fieldNames;
-	private transient ViewRowFieldNameAndJsonValues values; // lazy
+	private final ConcurrentHashMap<JSONOptions, ViewRowFieldNameAndJsonValues> values;
 
 	@Builder(builderMethodName = "_builder")
 	private ViewRowFieldNameAndJsonValuesHolder(
@@ -71,7 +73,7 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 				? widgetTypesByFieldName
 				: ImmutableMap.of();
 
-		this.values = null;
+		this.values = new ConcurrentHashMap<>();
 	}
 
 	private ViewRowFieldNameAndJsonValuesHolder(final Class<RowType> rowType)
@@ -79,7 +81,7 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		this.rowType = rowType;
 		this.viewEditorRenderModeByFieldName = ImmutableMap.of();
 		this.widgetTypesByFieldName = ImmutableMap.of();
-		this.values = null;
+		this.values = new ConcurrentHashMap<>();
 	}
 
 	private ViewRowFieldNameAndJsonValuesHolder(final ViewRowFieldNameAndJsonValuesHolder<RowType> from)
@@ -87,7 +89,7 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		this.rowType = from.rowType;
 		this.viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
 		this.widgetTypesByFieldName = from.widgetTypesByFieldName;
-		this.values = from.values;
+		this.values = new ConcurrentHashMap<>(from.values);
 	}
 
 	public ImmutableSet<String> getFieldNames()
@@ -108,19 +110,12 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 			@NonNull final RowType row,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		// TODO: cache / jsonOpts
-
-		ViewRowFieldNameAndJsonValues values = this.values;
-		if (values == null)
-		{
-			values = this.values = ViewColumnHelper.extractJsonMap(row, jsonOpts);
-		}
-		return values;
+		return values.computeIfAbsent(jsonOpts, k -> ViewColumnHelper.extractJsonMap(row, jsonOpts));
 	}
 
 	public void clear()
 	{
-		this.values = null;
+		this.values.clear();
 	}
 
 	public ViewRowFieldNameAndJsonValuesHolder<RowType> copy()

@@ -49,12 +49,12 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayout implements Serializable
 {
-	public static final JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
+	public static JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONDocumentLayoutOptions options)
 	{
-		return new JSONDocumentLayout(layout, jsonOpts);
+		return new JSONDocumentLayout(layout, options);
 	}
 
-	public static final JSONDocumentLayout ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	public static JSONDocumentLayout ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDocumentLayout(detailLayout, jsonOpts);
 	}
@@ -117,7 +117,7 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(
 			@NonNull final DocumentLayoutDescriptor layout,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
 		this.windowId = layout.getWindowId();
 		type = windowId;
@@ -127,24 +127,24 @@ public final class JSONDocumentLayout implements Serializable
 
 		internalName = null;
 
-		caption = layout.getCaption(jsonOpts.getAD_Language());
+		caption = layout.getCaption(options.getAdLanguage());
 
-		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
-		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
+		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), options);
+		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), options);
 
 		final DocumentLayoutSingleRow singleRowLayout = layout.getSingleRowLayout();
-		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
+		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), options);
 
 		//
 		// Included tabs
-		if (jsonOpts.isShowAdvancedFields())
+		if (options.isShowAdvancedFields())
 		{
 			tabs = ImmutableList.of();
 			putDebugProperty("tabs-info", "not showing tabs when showing advanced fields");
 		}
 		else
 		{
-			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), jsonOpts);
+			tabs = JSONDocumentLayoutTab.ofList(layout.getDetails(), options);
 		}
 
 		filters = null;
@@ -155,14 +155,14 @@ public final class JSONDocumentLayout implements Serializable
 		if (WindowConstants.isProtocolDebugging())
 		{
 			putDebugProperties(layout.getDebugProperties());
-			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
+			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, options.toString());
 		}
 	}
 
 	/**
 	 * From detail tab constructor.
 	 */
-	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		this.windowId = detailLayout.getWindowId();
 		type = windowId;
@@ -173,7 +173,7 @@ public final class JSONDocumentLayout implements Serializable
 		internalName = detailLayout.getInternalName();
 
 		final DocumentLayoutSingleRow singleRowLayout = detailLayout.getSingleRowLayout();
-		caption = singleRowLayout.getCaption(jsonOpts.getAD_Language());
+		caption = singleRowLayout.getCaption(jsonOpts.getAdLanguage());
 
 		documentSummaryElement = null;
 		docActionElement = null;

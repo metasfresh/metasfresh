@@ -161,7 +161,7 @@ public final class JSONDocumentField implements Serializable
 			jsonField.setValidStatus(validStatus);
 		}
 
-		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAD_Language()));
+		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAdLanguage()));
 
 		jsonField.putDebugProperties(event.getDebugProperties());
 

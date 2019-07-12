@@ -19,6 +19,8 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -35,11 +37,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,6 +67,16 @@ public class ViewRowAttributesRestController
 		return JSONOptions.of(userSession);
 	}
 
+	private JSONDocumentLayoutOptions newJSONLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
+	}
+
+	private JSONDocumentOptions newJSONDocumentOptions()
+	{
+		return JSONDocumentOptions.of(userSession);
+	}
+
 	@GetMapping("/layout")
 	public JSONViewRowAttributesLayout getAttributesLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
@@ -80,7 +92,7 @@ public class ViewRowAttributesRestController
 				.getAttributes()
 				.getLayout();
 
-		return JSONViewRowAttributesLayout.of(layout, newJSONOptions());
+		return JSONViewRowAttributesLayout.of(layout, newJSONLayoutOptions());
 	}
 
 	@GetMapping
@@ -117,7 +129,7 @@ public class ViewRowAttributesRestController
 					.getById(rowId)
 					.getAttributes()
 					.processChanges(events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollectorOrNull(), newJSONOptions());
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollectorOrNull(), newJSONDocumentOptions());
 		});
 	}
 

@@ -51,6 +51,7 @@ import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -99,7 +100,11 @@ public class BoardRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
+	}
+	private JSONDocumentLayoutOptions newJSONLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
 	private void addActiveNewCardsView(final int boardId, final IView view)
@@ -266,14 +271,14 @@ public class BoardRestController
 
 		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list, ViewProfileId.NULL);
 
-		final JSONOptions jsonOpts = newJSONOptions();
-		final String adLanguage = jsonOpts.getAD_Language();
+		final JSONDocumentLayoutOptions options = newJSONLayoutOptions();
+		final String adLanguage = options.getAdLanguage();
 		return JSONNewCardsViewLayout.builder()
 				.caption(documentsViewLayout.getCaption(adLanguage))
 				.description(documentsViewLayout.getDescription(adLanguage))
 				.emptyResultHint(documentsViewLayout.getEmptyResultHint(adLanguage))
 				.emptyResultText(documentsViewLayout.getEmptyResultText(adLanguage))
-				.filters(JSONDocumentFilterDescriptor.ofCollection(documentsViewLayout.getFilters(), jsonOpts))
+				.filters(JSONDocumentFilterDescriptor.ofCollection(documentsViewLayout.getFilters(), options))
 				.orderBys(boardDescriptor.getCardFields().stream()
 						.map(cardField -> JSONBoardCardOrderBy.builder()
 								.fieldName(cardField.getFieldName())
@@ -358,7 +363,7 @@ public class BoardRestController
 			final JSONOptions jsonOpts, 
 			Predicate<Integer> cardIdFilter)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 		
 		final List<Integer> cardIds = viewResult.getRowIds()
 				.stream()

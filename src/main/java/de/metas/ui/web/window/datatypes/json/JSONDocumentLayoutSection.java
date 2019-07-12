@@ -41,7 +41,7 @@ import lombok.NonNull;
 @ApiModel("section")
 public final class JSONDocumentLayoutSection
 {
-	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONOptions jsonOpts)
+	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return sections.stream()
 				.map(section -> new JSONDocumentLayoutSection(section, jsonOpts))
@@ -90,28 +90,28 @@ public final class JSONDocumentLayoutSection
 
 	private JSONDocumentLayoutSection(
 			final DocumentLayoutSectionDescriptor section,
-			final JSONOptions jsonOpts)
+			final JSONDocumentLayoutOptions options)
 	{
-		this.title = exctractTitle(section, jsonOpts);
+		this.title = exctractTitle(section, options);
 
-		this.description = section.getDescription(jsonOpts.getAD_Language()).trim();
-		this.columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
+		this.description = section.getDescription(options.getAdLanguage()).trim();
+		this.columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), options);
 		this.closableMode = JSONClosableMode.ofClosableMode(section.getClosableMode());
 	}
 
 	private String exctractTitle(
 			@NonNull final DocumentLayoutSectionDescriptor section,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
 		if (CaptionMode.DISPLAY.equals(section.getCaptionMode()))
 		{
-			return section.getCaption(jsonOpts.getAD_Language()).trim();
+			return section.getCaption(options.getAdLanguage()).trim();
 		}
 		else if (CaptionMode.DISPLAY_IN_ADV_EDIT.equals(section.getCaptionMode()))
 		{
-			if (jsonOpts.isShowAdvancedFields())
+			if (options.isShowAdvancedFields())
 			{
-				return section.getCaption(jsonOpts.getAD_Language()).trim();
+				return section.getCaption(options.getAdLanguage()).trim();
 			}
 			else
 			{

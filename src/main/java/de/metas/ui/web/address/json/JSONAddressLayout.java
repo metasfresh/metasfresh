@@ -11,7 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.address.AddressLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 
 /*
  * #%L
@@ -26,11 +26,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,19 +39,19 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONAddressLayout implements Serializable
 {
-	public static JSONAddressLayout of(final AddressLayout layout, final JSONOptions jsonOpts)
+	public static JSONAddressLayout of(final AddressLayout layout, final JSONDocumentLayoutOptions options)
 	{
-		return new JSONAddressLayout(layout, jsonOpts);
+		return new JSONAddressLayout(layout, options);
 	}
 
 	@JsonProperty("elements")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	public JSONAddressLayout(final AddressLayout layout, final JSONOptions jsonOpts)
+	public JSONAddressLayout(final AddressLayout layout, final JSONDocumentLayoutOptions options)
 	{
 		super();
-		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
+		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), options);
 	}
 
 	@Override

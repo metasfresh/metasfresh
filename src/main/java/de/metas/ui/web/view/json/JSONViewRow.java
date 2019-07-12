@@ -136,7 +136,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		if (row.isSingleColumn())
 		{
 			jsonRow.colspan = true;
-			jsonRow.caption = row.getSingleColumnCaption().translate(jsonOpts.getAD_Language());
+			jsonRow.caption = row.getSingleColumnCaption().translate(jsonOpts.getAdLanguage());
 		}
 
 		return jsonRow;

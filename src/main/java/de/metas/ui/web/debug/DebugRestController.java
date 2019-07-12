@@ -138,7 +138,7 @@ public class DebugRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
 	}
 
 	@ApiResponses(value = { @ApiResponse(code = 200, message = "cache reset done") })
@@ -217,7 +217,7 @@ public class DebugRestController
 		userSession.assertLoggedIn();
 
 		final JSONOptions jsonOpts = newJSONOptions();
-		
+
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)

@@ -94,7 +94,7 @@ public final class JSONDocumentReference
 			@NonNull final DocumentReference documentReference, 
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 
 		id = documentReference.getId();
 		internalName = documentReference.getInternalName();

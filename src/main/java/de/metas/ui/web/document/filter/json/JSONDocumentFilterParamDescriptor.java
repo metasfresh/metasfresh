@@ -10,9 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.ToString;
@@ -43,14 +43,16 @@ import lombok.ToString;
 @ToString
 /* package */final class JSONDocumentFilterParamDescriptor
 {
-	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(final Collection<DocumentFilterParamDescriptor> params, final JSONOptions jsonOpts)
+	/* package */static List<JSONDocumentFilterParamDescriptor> ofCollection(
+			final Collection<DocumentFilterParamDescriptor> params,
+			final JSONDocumentLayoutOptions options)
 	{
 		return params.stream()
-				.map(filter -> of(filter, jsonOpts))
+				.map(filter -> of(filter, options))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
+	private static JSONDocumentFilterParamDescriptor of(final DocumentFilterParamDescriptor param, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDocumentFilterParamDescriptor(param, jsonOpts);
 	}
@@ -92,25 +94,25 @@ import lombok.ToString;
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean showIncrementDecrementButtons;
 
-	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONOptions jsonOpts)
+	private JSONDocumentFilterParamDescriptor(final DocumentFilterParamDescriptor param, final JSONDocumentLayoutOptions options)
 	{
 		parameterName = param.getParameterName();
 
-		if (jsonOpts.isDebugShowColumnNamesForCaption())
+		if (options.isDebugShowColumnNamesForCaption())
 		{
 			caption = parameterName;
 		}
 		else
 		{
-			final String adLanguage = jsonOpts.getAD_Language();
+			final String adLanguage = options.getAdLanguage();
 			caption = param.getDisplayName(adLanguage);
 		}
 
 		widgetType = JSONLayoutWidgetType.fromNullable(param.getWidgetType());
 		rangeParameter = param.isRange();
 
-		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted(), jsonOpts);
-		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueToConverted(), jsonOpts);
+		defaultValue = Values.valueToJsonObject(param.getDefaultValueConverted(), options.getJsonOpts());
+		defaultValueTo = Values.valueToJsonObject(param.getDefaultValueToConverted(), options.getJsonOpts());
 
 		mandatory = param.isMandatory();
 		displayed = true;

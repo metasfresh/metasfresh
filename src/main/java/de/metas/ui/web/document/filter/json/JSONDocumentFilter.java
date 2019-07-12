@@ -167,7 +167,7 @@ public final class JSONDocumentFilter
 				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONDocumentFilter(filterId, filter.getCaption(jsonOpts.getAD_Language()), jsonParameters);
+		return new JSONDocumentFilter(filterId, filter.getCaption(jsonOpts.getAdLanguage()), jsonParameters);
 	}
 
 	@JsonProperty("filterId")

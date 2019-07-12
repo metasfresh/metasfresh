@@ -500,7 +500,7 @@ public class SqlViewFactory implements IViewFactory
 			final Object fieldValue = fieldValueLoader.retrieveFieldValue(
 					rs, 
 					isDisplayColumnAvailable, 
-					jsonOpts.getAD_Language(), 
+					jsonOpts.getAdLanguage(), 
 					(LookupDescriptor)null);
 			return Values.valueToJsonObject(fieldValue, jsonOpts);
 		}

@@ -161,7 +161,7 @@ public final class JSONViewResult
 		parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
 		this.parentViewId = parentViewId == null ? null : parentViewId.getViewId();
 
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 		description = viewResult.getViewDescription(adLanguage);
 		headerProperties = JSONViewHeaderProperties.of(viewResult.getHeaderProperties(), adLanguage);
 

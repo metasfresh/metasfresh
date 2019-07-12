@@ -42,7 +42,7 @@ public class JsonKPI
 	{
 		return JsonKPI.builder()
 				.kpiId(kpi.getId())
-				.caption(kpi.getCaption(jsonOpts.getAD_Language()))
+				.caption(kpi.getCaption(jsonOpts.getAdLanguage()))
 				.chartType(kpi.getChartType())
 				.widgetTypes(ImmutableSet.copyOf(kpi.getSupportedWidgetTypes()))
 				.build();

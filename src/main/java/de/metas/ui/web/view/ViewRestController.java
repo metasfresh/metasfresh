@@ -48,6 +48,7 @@ import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -119,7 +120,12 @@ public class ViewRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
+	}
+
+	private JSONDocumentLayoutOptions newJSONLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
 	@PostMapping
@@ -149,8 +155,8 @@ public class ViewRestController
 		{
 			final JSONOptions jsonOpts = newJSONOptions();
 			result = view.getPage(
-					jsonRequest.getQueryFirstRow(), 
-					jsonRequest.getQueryPageLength(), 
+					jsonRequest.getQueryFirstRow(),
+					jsonRequest.getQueryPageLength(),
 					DocumentQueryOrderBys.emptyList(),
 					jsonOpts);
 		}
@@ -238,8 +244,8 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final JSONOptions jsonOpts = newJSONOptions();
 		final ViewResult result = view.getPage(
-				firstRow, 
-				pageLength, 
+				firstRow,
+				pageLength,
 				DocumentQueryOrderBy.parseOrderBysList(orderBysListStr),
 				jsonOpts);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
@@ -261,8 +267,8 @@ public class ViewRestController
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonOptions(() -> newJSONOptions())
-				.toJson(JSONViewLayout::of);
+				.jsonLayoutOptions(() -> newJSONLayoutOptions())
+				.toLayoutJson(JSONViewLayout::of);
 	}
 
 	@GetMapping("/availableProfiles")

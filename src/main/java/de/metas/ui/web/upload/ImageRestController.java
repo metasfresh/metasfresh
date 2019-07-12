@@ -57,7 +57,7 @@ public class ImageRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
 	}
 
 	@PostMapping

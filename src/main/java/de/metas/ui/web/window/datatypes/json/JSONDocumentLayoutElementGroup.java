@@ -46,7 +46,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 {
 	static List<JSONDocumentLayoutElementGroup> ofList(
 			@NonNull final List<DocumentLayoutElementGroupDescriptor> elementGroups,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return elementGroups.stream()
 				.map(elementGroup -> of(elementGroup, jsonOpts))
@@ -56,7 +56,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	public static JSONDocumentLayoutElementGroup of(
 			@NonNull final DocumentLayoutElementGroupDescriptor elementGroup,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
@@ -96,7 +96,7 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	private JSONDocumentLayoutElementGroup(
 			@NonNull final DocumentLayoutElementGroupDescriptor elementGroup,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		this.type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
 		this.columnCount = elementGroup.getColumnCount();

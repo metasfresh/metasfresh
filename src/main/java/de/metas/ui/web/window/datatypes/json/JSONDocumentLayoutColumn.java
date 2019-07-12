@@ -42,14 +42,14 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentLayoutColumn implements Serializable
 {
-	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONOptions jsonOpts)
+	static List<JSONDocumentLayoutColumn> ofList(final List<DocumentLayoutColumnDescriptor> columns, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return columns.stream()
 				.map(column -> of(column, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
+	private static JSONDocumentLayoutColumn of(final DocumentLayoutColumnDescriptor column, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
@@ -71,7 +71,7 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
 	}
 
-	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
 	}
