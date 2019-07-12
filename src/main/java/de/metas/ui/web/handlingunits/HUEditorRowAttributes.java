@@ -31,7 +31,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
@@ -260,7 +260,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final String attributeValueType = attributesStorage.getAttributeValueType(attribute);
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
-			return JSONDate.fromJson(jsonValue.toString(), DocumentFieldWidgetType.LocalDate);
+			return DateTimeConverters.fromJson(jsonValue.toString(), DocumentFieldWidgetType.LocalDate);
 		}
 
 		return jsonValue;

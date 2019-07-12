@@ -23,7 +23,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -251,7 +251,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 
 			try
 			{
-				final java.util.Date date = TimeUtil.asDate(JSONDate.fromObject(fieldValue, widgetType));
+				final java.util.Date date = TimeUtil.asDate(DateTimeConverters.fromObject(fieldValue, widgetType));
 				return DisplayType.getDateFormat(widgetType.getDisplayType())
 						.format(date);
 			}

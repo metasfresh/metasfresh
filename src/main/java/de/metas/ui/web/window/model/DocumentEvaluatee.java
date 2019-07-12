@@ -28,7 +28,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
@@ -198,7 +198,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			return TimeUtil.asDate(JSONDate.fromObject(valueObj, DocumentFieldWidgetType.ZonedDateTime));
+			return TimeUtil.asDate(DateTimeConverters.fromObject(valueObj, DocumentFieldWidgetType.ZonedDateTime));
 		}
 	}
 

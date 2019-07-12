@@ -41,10 +41,10 @@ public class JSONRange
 	public static final JSONRange of(final DateRangeValue range)
 	{
 		final LocalDate from = range.getFrom();
-		final String jsonFrom = from != null ? JSONDate.toJson(from) : null;
+		final String jsonFrom = from != null ? DateTimeConverters.toJson(from) : null;
 
 		final LocalDate to = range.getTo();
-		final String jsonTo = to != null ? JSONDate.toJson(to) : null;
+		final String jsonTo = to != null ? DateTimeConverters.toJson(to) : null;
 
 		return new JSONRange(jsonFrom, jsonTo);
 	}
@@ -52,10 +52,10 @@ public class JSONRange
 	public static DateRangeValue dateRangeFromJSONMap(final Map<String, String> map)
 	{
 		final String jsonFrom = map.get("value");
-		final LocalDate from = JSONDate.fromObjectToLocalDate(jsonFrom);
+		final LocalDate from = DateTimeConverters.fromObjectToLocalDate(jsonFrom);
 
 		final String jsonTo = map.get("valueTo");
-		final LocalDate to = JSONDate.fromObjectToLocalDate(jsonTo);
+		final LocalDate to = DateTimeConverters.fromObjectToLocalDate(jsonTo);
 
 		return DateRangeValue.of(from, to);
 	}

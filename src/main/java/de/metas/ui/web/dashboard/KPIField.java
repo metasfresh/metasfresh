@@ -20,7 +20,7 @@ import com.google.common.base.Splitter;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -135,13 +135,13 @@ public class KPIField
 			{
 				case Date:
 				{
-					final LocalDate date = JSONDate.fromObjectToLocalDate(value);
-					return JSONDate.toJson(date);
+					final LocalDate date = DateTimeConverters.fromObjectToLocalDate(value);
+					return DateTimeConverters.toJson(date);
 				}
 				case DateTime:
 				{
-					final ZonedDateTime date = JSONDate.fromObjectToZonedDateTime(value);
-					return JSONDate.toJson(date, jsonOpts.getZoneId());
+					final ZonedDateTime date = DateTimeConverters.fromObjectToZonedDateTime(value);
+					return DateTimeConverters.toJson(date, jsonOpts.getZoneId());
 				}
 				case Number:
 				{
@@ -211,7 +211,7 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					final Date date = TimeUtil.asDate(JSONDate.fromObjectToLocalDate(value));
+					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToLocalDate(value));
 					return DisplayType.getDateFormat(DisplayType.Date)
 							.format(date);
 				}
@@ -237,7 +237,7 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					final Date date = TimeUtil.asDate(JSONDate.fromObjectToZonedDateTime(value));
+					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
 					return DisplayType.getDateFormat(DisplayType.DateTime)
 							.format(date);
 				}

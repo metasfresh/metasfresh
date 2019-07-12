@@ -18,7 +18,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.Values;
 import io.swagger.annotations.ApiModel;
 import lombok.Value;
 
@@ -106,7 +105,11 @@ public class JSONDocumentChangedEvent
 
 	public int getValueAsInteger(final int defaultValueIfNull)
 	{
-		return Values.toInt(value, defaultValueIfNull);
+		if (value == null)
+		{
+			return defaultValueIfNull;
+		}
+		return Integer.parseInt(value.toString());
 	}
 
 	public List<Integer> getValueAsIntegersList()
@@ -134,22 +137,43 @@ public class JSONDocumentChangedEvent
 
 	public BigDecimal getValueAsBigDecimal()
 	{
-		return Values.toBigDecimal(value);
+		return toBigDecimal(value);
 	}
 
 	public BigDecimal getValueAsBigDecimal(final BigDecimal defaultValueIfNull)
 	{
-		return value != null ? Values.toBigDecimal(value) : defaultValueIfNull;
+		return value != null ? toBigDecimal(value) : defaultValueIfNull;
+	}
+
+	private static BigDecimal toBigDecimal(final Object value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return (BigDecimal)value;
+		}
+		else
+		{
+			final String valueStr = value.toString().trim();
+			if (valueStr.isEmpty())
+			{
+				return null;
+			}
+			return new BigDecimal(valueStr);
+		}
 	}
 
 	public LocalDateTime getValueAsLocalDateTime()
 	{
-		return JSONDate.fromObjectToLocalDateTime(value);
+		return DateTimeConverters.fromObjectToLocalDateTime(value);
 	}
-	
+
 	public ZonedDateTime getValueAsZonedDateTime()
 	{
-		return JSONDate.fromObjectToZonedDateTime(value);
+		return DateTimeConverters.fromObjectToZonedDateTime(value);
 	}
 
 	public LookupValue getValueAsIntegerLookupValue()

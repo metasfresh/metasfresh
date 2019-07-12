@@ -15,7 +15,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -212,7 +212,7 @@ public class DocumentFilterParam
 		}
 		else
 		{
-			return JSONDate.fromObjectToLocalDate(value);
+			return DateTimeConverters.fromObjectToLocalDate(value);
 		}
 	}
 
@@ -289,12 +289,12 @@ public class DocumentFilterParam
 
 	public LocalDateTime getValueAsLocalDateTime()
 	{
-		return JSONDate.fromObjectToLocalDateTime(value);
+		return DateTimeConverters.fromObjectToLocalDateTime(value);
 	}
 
 	public LocalDate getValueAsLocalDate()
 	{
-		return JSONDate.fromObjectToLocalDate(value);
+		return DateTimeConverters.fromObjectToLocalDate(value);
 	}
 
 	public Object getValueTo()

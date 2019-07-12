@@ -21,7 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
@@ -135,37 +135,37 @@ public final class DataTypes
 			else if (java.util.Date.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
-				return cast(TimeUtil.asDate(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asDate(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (Timestamp.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
-				return cast(TimeUtil.asTimestamp(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asTimestamp(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (ZonedDateTime.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
-				return cast(TimeUtil.asZonedDateTime(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asZonedDateTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalDateTime.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalDateTime;
-				return cast(TimeUtil.asLocalDateTime(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asLocalDateTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalDate.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalDate;
-				return cast(TimeUtil.asLocalDate(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asLocalDate(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalTime.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalTime;
-				return cast(TimeUtil.asLocalTime(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asLocalTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (Instant.class == targetType)
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.Timestamp;
-				return cast(TimeUtil.asInstant(JSONDate.fromObject(value, widgetTypeEffective)));
+				return cast(TimeUtil.asInstant(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (Integer.class == targetType || int.class == targetType)
 			{

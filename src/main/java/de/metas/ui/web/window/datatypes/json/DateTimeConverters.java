@@ -40,11 +40,11 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public final class JSONDate
+public final class DateTimeConverters
 {
 	public static void setConfig(@NonNull final JSONDateConfig config)
 	{
-		JSONDate._config = config;
+		DateTimeConverters._config = config;
 	}
 
 	private static JSONDateConfig getConfig()
@@ -132,7 +132,7 @@ public final class JSONDate
 	{
 		return fromObjectTo(valueObj,
 				LocalDate.class,
-				JSONDate::fromJsonToLocalDate,
+				DateTimeConverters::fromJsonToLocalDate,
 				TimeUtil::asLocalDate);
 	}
 
@@ -146,7 +146,7 @@ public final class JSONDate
 	{
 		return fromObjectTo(valueObj,
 				LocalTime.class,
-				JSONDate::fromJsonToLocalTime,
+				DateTimeConverters::fromJsonToLocalTime,
 				TimeUtil::asLocalTime);
 	}
 
@@ -160,7 +160,7 @@ public final class JSONDate
 	{
 		return fromObjectTo(valueObj,
 				LocalDateTime.class,
-				JSONDate::fromJsonToLocalDateTime,
+				DateTimeConverters::fromJsonToLocalDateTime,
 				TimeUtil::asLocalDateTime);
 	}
 
@@ -174,7 +174,7 @@ public final class JSONDate
 	{
 		return fromObjectTo(valueObj,
 				ZonedDateTime.class,
-				JSONDate::fromJsonToZonedDateTime,
+				DateTimeConverters::fromJsonToZonedDateTime,
 				TimeUtil::asZonedDateTime);
 	}
 
@@ -188,7 +188,7 @@ public final class JSONDate
 	{
 		return fromObjectTo(valueObj,
 				Instant.class,
-				JSONDate::fromJsonToInstant,
+				DateTimeConverters::fromJsonToInstant,
 				TimeUtil::asInstant);
 	}
 

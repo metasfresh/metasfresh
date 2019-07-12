@@ -11,7 +11,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.Password;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -126,7 +126,7 @@ final class SqlValueConverters
 			}
 			else
 			{
-				final Object valueDate = JSONDate.fromObject(value, widgetType);
+				final Object valueDate = DateTimeConverters.fromObject(value, widgetType);
 				return TimeUtil.asTimestamp(valueDate);
 			}
 		}

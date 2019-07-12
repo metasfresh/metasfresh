@@ -18,7 +18,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.currency.Amount;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
@@ -87,23 +87,23 @@ public final class Values
 		else if (value instanceof java.util.Date)
 		{
 			final ZonedDateTime valueDate = TimeUtil.asZonedDateTime(value);
-			return JSONDate.toJson(valueDate, jsonOpts.getZoneId());
+			return DateTimeConverters.toJson(valueDate, jsonOpts.getZoneId());
 		}
 		else if (value instanceof LocalDate)
 		{
-			return JSONDate.toJson((LocalDate)value);
+			return DateTimeConverters.toJson((LocalDate)value);
 		}
 		else if (value instanceof LocalTime)
 		{
-			return JSONDate.toJson((LocalTime)value);
+			return DateTimeConverters.toJson((LocalTime)value);
 		}
 		else if (value instanceof LocalDateTime)
 		{
-			return JSONDate.toJson((LocalDateTime)value);
+			return DateTimeConverters.toJson((LocalDateTime)value);
 		}
 		else if (value instanceof ZonedDateTime)
 		{
-			return JSONDate.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
+			return DateTimeConverters.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
 		}
 		else if (value instanceof DateRangeValue)
 		{
@@ -162,36 +162,6 @@ public final class Values
 	{
 		// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
 		// we need to provide the BigDecimals as Strings.
-		return value.toString();
-	}
-
-	public static BigDecimal toBigDecimal(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof BigDecimal)
-		{
-			return (BigDecimal)value;
-		}
-		else
-		{
-			final String valueStr = value.toString().trim();
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-			return new BigDecimal(valueStr);
-		}
-	}
-
-	public static int toInt(final Object value, final int defaultValueIfNull)
-	{
-		if (value == null)
-		{
-			return defaultValueIfNull;
-		}
-		return Integer.parseInt(value.toString());
+		return value.toPlainString();
 	}
 }

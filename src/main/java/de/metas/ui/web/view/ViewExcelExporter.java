@@ -24,7 +24,7 @@ import de.metas.impexp.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -172,7 +172,7 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = getWidgetType(columnIndex);
 		if (widgetType.isDateOrTime())
 		{
-			return CellValue.ofDate(JSONDate.fromJson(value.toString(), widgetType));
+			return CellValue.ofDate(DateTimeConverters.fromJson(value.toString(), widgetType));
 		}
 		else if (value instanceof JSONLookupValue)
 		{
