@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IADMessageDAO;
@@ -66,14 +67,12 @@ public class NotificationRepository implements INotificationRepository
 	/** AD_Message to be used when there was no AD_Message provided */
 	private static final String DEFAULT_AD_MESSAGE = "webui.window.notification.caption";
 
-	private final ObjectMapper jsonMapper;
+	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final AttachmentEntryService attachmentEntryService;
 
 	public NotificationRepository(@NonNull AttachmentEntryService attachmentEntryService)
 	{
-		this.jsonMapper = new ObjectMapper();
-		this.jsonMapper.findAndRegisterModules();
 		this.attachmentEntryService = attachmentEntryService;
 	}
 

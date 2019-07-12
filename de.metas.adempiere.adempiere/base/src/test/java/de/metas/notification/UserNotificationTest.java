@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.event.Event;
 
 /*
@@ -45,8 +46,7 @@ public class UserNotificationTest
 	{
 		AdempiereTestHelper.get().init();
 
-		jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
+		jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test

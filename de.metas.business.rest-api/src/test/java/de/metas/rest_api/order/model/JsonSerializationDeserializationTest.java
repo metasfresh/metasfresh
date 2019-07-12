@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.order.JsonSalesOrder;
 import de.metas.rest_api.order.JsonSalesOrderAttachment;
@@ -46,8 +47,7 @@ public class JsonSerializationDeserializationTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
-		jsonObjectMapper.findAndRegisterModules();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException

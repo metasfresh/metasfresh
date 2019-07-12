@@ -7,11 +7,9 @@ import java.time.ZonedDateTime;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 
 /*
@@ -48,19 +46,7 @@ public class JSONObjectMapper<T>
 		return new JSONObjectMapper<>(clazz);
 	}
 
-	private final static ObjectMapper jsonObjectMapper;
-
-	static
-	{
-		jsonObjectMapper = new ObjectMapper();
-
-		// important to register the jackson-datatype-jsr310 module which we have in our pom and
-		// which is needed to serialize/deserialize java.time.Instant
-
-		jsonObjectMapper.registerModule(new JavaTimeModule());
-		jsonObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-		jsonObjectMapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
-	}
+	private final static ObjectMapper jsonObjectMapper= JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final Class<T> clazz;
 
