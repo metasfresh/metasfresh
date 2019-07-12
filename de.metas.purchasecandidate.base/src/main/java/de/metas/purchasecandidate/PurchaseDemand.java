@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -70,7 +70,7 @@ public class PurchaseDemand
 	CurrencyId currencyIdOrNull;
 
 	@NonNull
-	LocalDateTime salesPreparationDate;
+	ZonedDateTime salesPreparationDate;
 
 	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;

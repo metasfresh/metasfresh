@@ -67,7 +67,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 		return new DateTimeTranslatableString(epochMillis, dateTime);
 	}
 
-	private static DateTimeTranslatableString ofDateTime(@NonNull final ZonedDateTime date)
+	public static DateTimeTranslatableString ofDateTime(@NonNull final ZonedDateTime date)
 	{
 		final long epochMillis = date.toInstant().toEpochMilli();
 		final boolean dateTime = true;

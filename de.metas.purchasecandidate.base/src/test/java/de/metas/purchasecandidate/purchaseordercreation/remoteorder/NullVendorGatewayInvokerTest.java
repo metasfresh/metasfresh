@@ -67,7 +67,7 @@ public class NullVendorGatewayInvokerTest
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
 				.warehouseId(WarehouseId.ofRepoId(60))
-				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(BPartnerId.ofRepoId(30))
 				.productId(ProductId.ofRepoId(20))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(21))

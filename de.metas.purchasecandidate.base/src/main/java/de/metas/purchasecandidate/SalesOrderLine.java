@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
@@ -67,7 +68,7 @@ public class SalesOrderLine
 		this.id = orderLineId != null ? OrderAndLineId.of(orderLine.getOrderId(), orderLineId) : null;
 	}
 
-	public LocalDateTime getPreparationDate()
+	public ZonedDateTime getPreparationDate()
 	{
 		return order.getPreparationDate();
 	}

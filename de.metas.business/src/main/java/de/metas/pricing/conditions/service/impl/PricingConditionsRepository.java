@@ -213,7 +213,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
 				//
-				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
+				.dateCreated(TimeUtil.asInstant(schemaBreakRecord.getCreated()))
 				.createdById(UserId.ofRepoIdOrNull(schemaBreakRecord.getCreatedBy()))
 				.hasChanges(false)
 				.build();

@@ -1,7 +1,7 @@
 package de.metas.vertical.pharma.msv3.protocol.order;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,7 +74,7 @@ public class OrderCreateResponseTest
 												.qty(Quantity.of(66))
 												.type(Type.KEINE_LIEFERUNG_ABER_DISPO_MOEGLICH)
 												.defectReason(OrderDefectReason.MANUFACTURER_NOT_AVAILABLE)
-												.deliveryDate(LocalDateTime.now())
+												.deliveryDate(ZonedDateTime.now())
 												.tour("tour")
 												.tourId("tourId")
 												.tourDeviation(true)

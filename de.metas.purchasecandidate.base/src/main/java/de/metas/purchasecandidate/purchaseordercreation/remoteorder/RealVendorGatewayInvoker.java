@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.remoteorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -125,7 +125,7 @@ public class RealVendorGatewayInvoker implements VendorGatewayInvoker
 
 				final I_C_UOM uom = uomsById.get(remotePurchaseOrderCreatedItem.getUomId());
 
-				LocalDateTime confirmedDeliveryDate = remotePurchaseOrderCreatedItem.getConfirmedDeliveryDateOrNull();
+				ZonedDateTime confirmedDeliveryDate = remotePurchaseOrderCreatedItem.getConfirmedDeliveryDateOrNull();
 				if (confirmedDeliveryDate == null)
 				{
 					Loggables

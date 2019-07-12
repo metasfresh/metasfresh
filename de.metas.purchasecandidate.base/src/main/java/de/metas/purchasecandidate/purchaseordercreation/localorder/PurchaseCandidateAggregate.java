@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +53,7 @@ public class PurchaseCandidateAggregate
 
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private LocalDateTime purchaseDatePromised;
+	private ZonedDateTime purchaseDatePromised;
 	private Quantity qtyToDeliver;
 	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
 	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
@@ -113,7 +113,7 @@ public class PurchaseCandidateAggregate
 		this.qtyToDeliver = qtyToDeliver;
 	}
 
-	public LocalDateTime getDatePromised()
+	public ZonedDateTime getDatePromised()
 	{
 		return purchaseDatePromised;
 	}

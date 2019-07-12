@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,6 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.calendar.NullBusinessDayMatcher;
-
 import lombok.NonNull;
 
 /*
@@ -323,10 +323,10 @@ public class PurchaseCandidateRepository
 		record.setM_Product_ID(purchaseCandidate.getProductId().getRepoId());
 
 		final Quantity qtyToPurchase = purchaseCandidate.getQtyToPurchase();
-		record.setC_UOM_ID(qtyToPurchase.getUOMId());
+		record.setC_UOM_ID(qtyToPurchase.getUomId().getRepoId());
 		record.setQtyToPurchase(qtyToPurchase.getAsBigDecimal());
 
-		final LocalDateTime purchaseDateOrdered = calculatePurchaseDateOrdered(purchaseCandidate);
+		final ZonedDateTime purchaseDateOrdered = calculatePurchaseDateOrdered(purchaseCandidate);
 		record.setPurchaseDatePromised(TimeUtil.asTimestamp(purchaseCandidate.getPurchaseDatePromised()));
 		record.setPurchaseDateOrdered(TimeUtil.asTimestamp(purchaseDateOrdered));
 		record.setReminderDate(TimeUtil.asTimestamp(calculateReminderDate(purchaseDateOrdered, purchaseCandidate)));
@@ -347,9 +347,9 @@ public class PurchaseCandidateRepository
 		return record;
 	}
 
-	private LocalDateTime calculatePurchaseDateOrdered(final PurchaseCandidate candidate)
+	private ZonedDateTime calculatePurchaseDateOrdered(final PurchaseCandidate candidate)
 	{
-		final LocalDateTime purchaseDatePromised = candidate.getPurchaseDatePromised();
+		final ZonedDateTime purchaseDatePromised = candidate.getPurchaseDatePromised();
 		final BPartnerId vendorId = candidate.getVendorId();
 		final BPPurchaseSchedule bpPurchaseSchedule = bpPurchaseScheduleService
 				.getBPPurchaseSchedule(vendorId, purchaseDatePromised.toLocalDate())
@@ -375,7 +375,7 @@ public class PurchaseCandidateRepository
 		return calendarNonBusinessDays.getPreviousBusinessDay(purchaseDatePromised, (int)leadTimeOffset.toDays());
 	}
 
-	private static LocalDateTime calculateReminderDate(final LocalDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
+	private static ZonedDateTime calculateReminderDate(final ZonedDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
 	{
 		final Duration reminderTime = candidate.getReminderTime();
 		if (reminderTime == null || purchaseDateOrdered == null)
@@ -403,7 +403,7 @@ public class PurchaseCandidateRepository
 
 		final boolean locked = lockManager.isLocked(record);
 
-		final LocalDateTime purchaseDatePromised = TimeUtil.asLocalDateTime(record.getPurchaseDatePromised());
+		final ZonedDateTime purchaseDatePromised = TimeUtil.asZonedDateTime(record.getPurchaseDatePromised());
 		final LocalDateTime dateReminder = TimeUtil.asLocalDateTime(record.getReminderDate());
 		final Duration reminderTime = purchaseDatePromised != null && dateReminder != null ? Duration.between(purchaseDatePromised, dateReminder) : null;
 

@@ -111,7 +111,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.groupReference(DemandGroupReference.EMPTY)
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
-				.purchaseDatePromised(TimeUtil.asLocalDateTime(materialDescriptor.getDate())) // dateRequired
+				.purchaseDatePromised(TimeUtil.asZonedDateTime(materialDescriptor.getDate())) // dateRequired
 
 				.orgId(orgId)
 				.processed(false)

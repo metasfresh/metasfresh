@@ -7,7 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -222,7 +222,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.qtyToDeliver(Quantity.of(SO_QTY_ORDERED_TEN, uomRecord))
 				.currencyIdOrNull(currencyId)
-				.salesPreparationDate(LocalDateTime.now())
+				.salesPreparationDate(ZonedDateTime.now())
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrderLineRecord.getC_Order_ID(), salesOrderLineRecord.getC_OrderLine_ID()))
 				.existingPurchaseCandidateId(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()))
 				.build();

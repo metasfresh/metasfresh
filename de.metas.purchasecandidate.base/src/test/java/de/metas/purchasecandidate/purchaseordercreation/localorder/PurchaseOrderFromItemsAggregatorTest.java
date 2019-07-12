@@ -128,7 +128,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(10))
-				.purchaseDatePromised(SystemTime.asLocalDateTime())
+				.purchaseDatePromised(SystemTime.asZonedDateTime())
 				.vendorId(vendorProductInfo.getVendorId())
 				.aggregatePOs(vendorProductInfo.isAggregatePOs())
 				.productId(vendorProductInfo.getProductId())
@@ -145,7 +145,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		Services.get(ITrxManager.class).run(() -> {
 			aggregator.add(PurchaseOrderItem.builder()
 					.purchaseCandidate(purchaseCandidate)
-					.datePromised(SystemTime.asLocalDateTime())
+					.datePromised(SystemTime.asZonedDateTime())
 					.purchasedQty(TEN)
 					.remotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID)
 					.build());

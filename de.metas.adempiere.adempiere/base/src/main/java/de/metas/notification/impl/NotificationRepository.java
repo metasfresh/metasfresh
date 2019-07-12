@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Note;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -173,7 +174,7 @@ public class NotificationRepository implements INotificationRepository
 	{
 		final UserNotificationBuilder builder = UserNotification.builder()
 				.id(notificationPO.getAD_Note_ID())
-				.timestamp(notificationPO.getCreated().getTime())
+				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())
 				.recipientUserId(notificationPO.getAD_User_ID())
 				.read(notificationPO.isProcessed());

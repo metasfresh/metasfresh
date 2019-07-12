@@ -4,7 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
@@ -106,7 +106,7 @@ public class PurchaseCandidatesGroupTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.qtyToPurchase(Quantity.zero(uom))
 				.purchasedQty(Quantity.zero(uom))
-				.purchaseDatePromised(LocalDateTime.now());
+				.purchaseDatePromised(ZonedDateTime.now());
 		if (allowPOAggregation != null)
 		{
 			builder.allowPOAggregation(allowPOAggregation);

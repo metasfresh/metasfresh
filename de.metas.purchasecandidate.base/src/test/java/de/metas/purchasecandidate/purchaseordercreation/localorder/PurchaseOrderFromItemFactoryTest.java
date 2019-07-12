@@ -6,7 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -76,7 +76,7 @@ import mockit.Verifications;
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, ProfitPriceActualFactory.class })
 public class PurchaseOrderFromItemFactoryTest
 {
-	private static final LocalDateTime PURCHASE_DATE_PROMISED = SystemTime.asLocalDateTime();
+	private static final ZonedDateTime PURCHASE_DATE_PROMISED = SystemTime.asZonedDateTime();
 
 	private I_C_UOM EACH;
 	private Quantity PURCHASE_CANDIDATE_QTY_TO_PURCHASE;
@@ -114,7 +114,7 @@ public class PurchaseOrderFromItemFactoryTest
 	@Test
 	public void deviatingDatePromised()
 	{
-		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
+		final ZonedDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, PURCHASE_CANDIDATE_QTY_TO_PURCHASE);
 
@@ -155,7 +155,7 @@ public class PurchaseOrderFromItemFactoryTest
 	public void deviatingPurchasedQtyAndDatePrmised()
 	{
 		final Quantity deviatingPurchasedQty = PURCHASE_CANDIDATE_QTY_TO_PURCHASE.subtract(BigDecimal.ONE);
-		final LocalDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
+		final ZonedDateTime deviatingDatePromised = PURCHASE_DATE_PROMISED.plusDays(1);
 
 		setAndRunMethodUnderTest(deviatingDatePromised, deviatingPurchasedQty);
 
@@ -172,7 +172,7 @@ public class PurchaseOrderFromItemFactoryTest
 		}};	// @formatter:on
 	}
 
-	private void setAndRunMethodUnderTest(final LocalDateTime deviatingDatePromised, final Quantity deviatingPurchasedQty)
+	private void setAndRunMethodUnderTest(final ZonedDateTime deviatingDatePromised, final Quantity deviatingPurchasedQty)
 	{
 		final PurchaseCandidate purchaseCandidate = createPurchaseCandidate();
 

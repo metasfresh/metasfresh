@@ -66,7 +66,7 @@ public final class PurchaseCandidateTestTool
 				.profitInfoOrNull(createPurchaseProfitInfo())
 				.vendorId(BPartnerId.ofRepoId(7))
 				.qtyToPurchase(qtyToPurchase)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
@@ -66,5 +66,5 @@ import lombok.Value;
 	private final OrgId orgId;
 	private final WarehouseId warehouseId;
 	private final BPartnerId vendorId;
-	private final LocalDateTime datePromised;
+	private final ZonedDateTime datePromised;
 }

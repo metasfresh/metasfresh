@@ -1,7 +1,7 @@
 package de.metas.purchasecandidate;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -134,7 +134,7 @@ public class PurchaseCandidatesGroup
 	Quantity purchasedQty;
 
 	@NonNull
-	LocalDateTime purchaseDatePromised;
+	ZonedDateTime purchaseDatePromised;
 	@Nullable
 	Duration reminderTime;
 
