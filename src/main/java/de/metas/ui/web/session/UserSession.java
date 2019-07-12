@@ -475,6 +475,17 @@ public class UserSession
 	}
 
 	/**
+	 * 
+	 * @deprecated avoid using this method; usually it's workaround-ish / quick and dirty fix
+	 */
+	@Deprecated
+	public static ZoneId getTimeZoneOrSystemDefault()
+	{
+		final UserSession userSession = getCurrentOrNull();
+		return userSession != null ? userSession.getTimeZone() : ZoneId.systemDefault();
+	}
+
+	/**
 	 * Event fired when the user language was changed.
 	 * Usually it is user triggered.
 	 *

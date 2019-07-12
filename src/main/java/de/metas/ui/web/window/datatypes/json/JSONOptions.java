@@ -66,7 +66,7 @@ public final class JSONOptions
 		return prepareFrom(userSession).build();
 	}
 
-	public static JSONOptions ofAdLanguage(final String adLanguage)
+	static JSONOptions ofAdLanguage(final String adLanguage)
 	{
 		return builder().adLanguage(adLanguage).build();
 	}

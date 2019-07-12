@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 
 import de.metas.ui.web.session.UserSession;
@@ -54,6 +55,8 @@ public class JSONDocumentLayoutOptions
 		return prepareFrom(userSession).build();
 	}
 
+	@VisibleForTesting
+	@Deprecated
 	public static JSONDocumentLayoutOptions ofAdLanguage(@NonNull final String adLanguage)
 	{
 		final JSONOptions jsonOpts = JSONOptions.ofAdLanguage(adLanguage);

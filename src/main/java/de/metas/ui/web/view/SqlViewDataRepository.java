@@ -267,7 +267,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			final ViewId viewId,
 			final int limit) throws SQLException
 	{
-		final JSONOptions jsonOpts = JSONOptions.ofAdLanguage(viewEvalCtx.getAdLanguage());
+		final JSONOptions jsonOpts = viewEvalCtx.toJSONOptions();
 		final Map<DocumentId, ViewRow.Builder> rowBuilders = new LinkedHashMap<>();
 		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
