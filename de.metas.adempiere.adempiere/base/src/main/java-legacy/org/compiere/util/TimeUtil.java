@@ -1835,4 +1835,16 @@ public class TimeUtil
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
 		return localDate.equals(lastDayOfMonth);
 	}
+
+	public static ZonedDateTime convertToTimeZone(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
+	{
+		if (date.getZone().equals(zoneId))
+		{
+			return date;
+		}
+		else
+		{
+			return date.toInstant().atZone(zoneId);
+		}
+	}
 }	// TimeUtil
