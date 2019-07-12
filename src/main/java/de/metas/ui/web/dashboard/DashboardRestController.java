@@ -230,7 +230,8 @@ public class DashboardRestController
 		final KPI kpi = dashboardItem.getKPI();
 		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(fromMillis, toMillis);
 
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi)
+		final JSONOptions jsonOptions = JSONOptions.of(userSession);
+		return KPIDataLoader.newInstance(elasticsearchClient, kpi, jsonOptions)
 				.setTimeRange(timeRange)
 				.setFormatValues(prettyValues)
 				.retrieveData()

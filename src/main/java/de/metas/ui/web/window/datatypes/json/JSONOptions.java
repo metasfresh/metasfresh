@@ -15,6 +15,7 @@ import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -83,13 +84,25 @@ public final class JSONOptions
 	private final String adLanguage;
 	private final ZoneId zoneId;
 
-	@lombok.Builder
+	@Builder(toBuilder = true)
 	private JSONOptions(
 			@NonNull final String adLanguage,
 			@Nullable final ZoneId zoneId)
 	{
 		this.adLanguage = adLanguage;
 		this.zoneId = zoneId != null ? zoneId : ZoneId.systemDefault();
+	}
+
+	public JSONOptions withAdLanguage(@NonNull final String adLanguage)
+	{
+		if (this.adLanguage.equals(adLanguage))
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder().adLanguage(adLanguage).build();
+		}
 	}
 
 	private static String extractAdLanguageFromUserSession(@NonNull final UserSession userSession)

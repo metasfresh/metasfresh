@@ -87,7 +87,7 @@ public final class Values
 		else if (value instanceof java.util.Date)
 		{
 			final ZonedDateTime valueDate = TimeUtil.asZonedDateTime(value);
-			return JSONDate.toJson(valueDate);
+			return JSONDate.toJson(valueDate, jsonOpts.getZoneId());
 		}
 		else if (value instanceof LocalDate)
 		{
@@ -103,7 +103,7 @@ public final class Values
 		}
 		else if (value instanceof ZonedDateTime)
 		{
-			return JSONDate.toJson((ZonedDateTime)value);
+			return JSONDate.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
 		}
 		else if (value instanceof DateRangeValue)
 		{

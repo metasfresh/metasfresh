@@ -66,9 +66,9 @@ public final class JSONDate
 		return config.getLocalDateTimeFormatter().format(date);
 	}
 
-	public static String toJson(@NonNull final Instant instant)
+	public static String toJson(@NonNull final Instant instant, @NonNull final ZoneId zoneId)
 	{
-		return toJson(TimeUtil.asZonedDateTime(instant));
+		return toJson(TimeUtil.asZonedDateTime(instant), zoneId);
 	}
 
 	public static String toJson(@NonNull final LocalTime time)
@@ -77,10 +77,12 @@ public final class JSONDate
 		return config.getLocalTimeFormatter().format(time);
 	}
 
-	public static String toJson(@NonNull final ZonedDateTime date)
+	public static String toJson(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
 	{
+		final ZonedDateTime dateConv = TimeUtil.convertToTimeZone(date, zoneId);
+
 		final JSONDateConfig config = getConfig();
-		return config.getZonedDateTimeFormatter().format(date);
+		return config.getZonedDateTimeFormatter().format(dateConv);
 	}
 
 	public static String toJson(@NonNull final ZoneId zoneId)

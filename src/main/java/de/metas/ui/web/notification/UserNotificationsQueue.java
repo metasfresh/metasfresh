@@ -16,6 +16,7 @@ import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -48,7 +49,7 @@ public class UserNotificationsQueue
 	private static final Logger logger = LogManager.getLogger(UserNotificationsQueue.class);
 
 	private final UserId userId;
-	private String adLanguage;
+	private JSONOptions jsonOptions;
 
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
 
@@ -60,12 +61,12 @@ public class UserNotificationsQueue
 	@Builder
 	private UserNotificationsQueue(
 			@NonNull final UserId userId,
-			@NonNull final String adLanguage,
+			@NonNull final JSONOptions jsonOptions,
 			@NonNull final INotificationRepository notificationsRepo,
 			@NonNull final WebsocketSender websocketSender)
 	{
 		this.userId = userId;
-		this.adLanguage = adLanguage;
+		this.jsonOptions = jsonOptions;
 		this.notificationsRepo = notificationsRepo;
 
 		this.websocketSender = websocketSender;
@@ -142,7 +143,7 @@ public class UserNotificationsQueue
 		final UserId adUserId = getUserId();
 		Check.assume(notification.getRecipientUserId() == adUserId.getRepoId(), "notification's recipient user ID shall be {}: {}", adUserId, notification);
 
-		final JSONNotification jsonNotification = JSONNotification.of(notification, adLanguage);
+		final JSONNotification jsonNotification = JSONNotification.of(notification, jsonOptions);
 		fireEventOnWebsocket(JSONNotificationEvent.eventNew(jsonNotification, getUnreadCount()));
 	}
 
@@ -166,7 +167,7 @@ public class UserNotificationsQueue
 
 	public void setLanguage(@NonNull final String adLanguage)
 	{
-		this.adLanguage = adLanguage;
+		this.jsonOptions = jsonOptions.withAdLanguage(adLanguage);
 	}
 
 	public void delete(final String notificationId)

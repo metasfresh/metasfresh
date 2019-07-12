@@ -87,6 +87,11 @@ public class JSONDocumentOptions
 		});
 	}
 
+	public String getAdLanguage()
+	{
+		return getJsonOpts().getAdLanguage();
+	}
+
 	public Predicate<IDocumentFieldView> documentFieldFilter()
 	{
 		if (_documentFieldFilter == null)

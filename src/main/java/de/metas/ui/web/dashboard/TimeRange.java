@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.datatypes.json.JSONDate;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -72,13 +70,13 @@ public final class TimeRange
 		this.toMillis = toMillis;
 		this.offsetMillis = offsetMillis;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("from", JSONDate.toJson(Instant.ofEpochMilli(fromMillis)))
-				.add("to", JSONDate.toJson(Instant.ofEpochMilli(toMillis)))
+				.add("from", Instant.ofEpochMilli(fromMillis))
+				.add("to", Instant.ofEpochMilli(toMillis))
 				.add("main", mainTimeRange)
 				.add("offset", Duration.ofMillis(offsetMillis))
 				.toString();

@@ -21,7 +21,9 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -120,7 +122,7 @@ public class KPIField
 		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
 	}
 
-	public final Object convertValueToJson(final Object value)
+	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -139,7 +141,7 @@ public class KPIField
 				case DateTime:
 				{
 					final ZonedDateTime date = JSONDate.fromObjectToZonedDateTime(value);
-					return JSONDate.toJson(date);
+					return JSONDate.toJson(date, jsonOpts.getZoneId());
 				}
 				case Number:
 				{
@@ -196,7 +198,7 @@ public class KPIField
 		}
 	}
 
-	public final Object convertValueToJsonUserFriendly(final Object value)
+	public final Object convertValueToJsonUserFriendly(final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -259,7 +261,7 @@ public class KPIField
 			}
 			else
 			{
-				return convertValueToJson(value);
+				return convertValueToJson(value, jsonOpts);
 			}
 		}
 		catch (Exception ex)

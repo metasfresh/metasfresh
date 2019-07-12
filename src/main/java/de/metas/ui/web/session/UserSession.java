@@ -466,9 +466,12 @@ public class UserSession
 		};
 	}
 
+	@NonNull
 	public ZoneId getTimeZone()
 	{
-		return ZoneId.systemDefault(); // TODO: get it from organization
+		// ZoneId.getAvailableZoneIds()
+		return ZoneId.of("Etc/GMT+9");
+		// return ZoneId.systemDefault(); // TODO: get it from organization
 	}
 
 	/**

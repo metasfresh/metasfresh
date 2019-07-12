@@ -18,6 +18,7 @@ import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.notification.json.JSONNotificationsList;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import io.swagger.annotations.Api;
 
@@ -74,7 +75,9 @@ public class NotificationRestController
 
 		final UserId adUserId = userSession.getLoggedUserId();
 		final UserNotificationsList notifications = userNotificationsService.getNotifications(adUserId, limit);
-		return JSONNotificationsList.of(notifications, userSession.getAD_Language());
+		
+		final JSONOptions jsonOpts = JSONOptions.of(userSession);
+		return JSONNotificationsList.of(notifications, jsonOpts);
 	}
 
 	@GetMapping("/unreadCount")

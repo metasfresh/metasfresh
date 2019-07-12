@@ -27,7 +27,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,16 +54,19 @@ import de.metas.util.Check;
 
 public class KPIDataLoader
 {
-	public static final KPIDataLoader newInstance(final Client elasticsearchClient, final KPI kpi)
+	public static final KPIDataLoader newInstance(
+			@NonNull final Client elasticsearchClient,
+			@NonNull final KPI kpi,
+			@NonNull final JSONOptions jsonOptions)
 	{
-		return new KPIDataLoader(elasticsearchClient, kpi);
+		return new KPIDataLoader(elasticsearchClient, kpi, jsonOptions);
 	}
 
 	private static final Logger logger = LogManager.getLogger(KPIDataLoader.class);
 
 	private final Client elasticsearchClient;
-
 	private final KPI kpi;
+	private final JSONOptions jsonOptions;
 
 	private TimeRange mainTimeRange;
 	private List<TimeRange> timeRanges;
@@ -72,13 +76,14 @@ public class KPIDataLoader
 	private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
 	private BiFunction<Bucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
 
-	private KPIDataLoader(final Client elasticsearchClient, final KPI kpi)
+	private KPIDataLoader(
+			@NonNull final Client elasticsearchClient,
+			@NonNull final KPI kpi,
+			@NonNull final JSONOptions jsonOptions)
 	{
-		Check.assumeNotNull(elasticsearchClient, "Parameter elasticsearchClient is not null");
 		this.elasticsearchClient = elasticsearchClient;
-
-		Check.assumeNotNull(kpi, "Parameter kpi is not null");
 		this.kpi = kpi;
+		this.jsonOptions = jsonOptions;
 	}
 
 	public KPIDataLoader setTimeRange(final TimeRange mainTimeRange)
@@ -305,7 +310,7 @@ public class KPIDataLoader
 							throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
 						}
 
-						final Object jsonValue = field.convertValueToJson(value);
+						final Object jsonValue = field.convertValueToJson(value, jsonOptions);
 						data.putValue(agg.getName(), key, field.getFieldName(), jsonValue);
 					}
 				}
@@ -330,11 +335,11 @@ public class KPIDataLoader
 	{
 		if (isFormatValues())
 		{
-			return field.convertValueToJsonUserFriendly(value);
+			return field.convertValueToJsonUserFriendly(value, jsonOptions);
 		}
 		else
 		{
-			return field.convertValueToJson(value);
+			return field.convertValueToJson(value, jsonOptions);
 		}
 	}
 

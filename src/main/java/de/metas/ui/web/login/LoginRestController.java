@@ -51,6 +51,7 @@ import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
@@ -320,7 +321,7 @@ public class LoginRestController
 		userNotificationsService.enableForSession(
 				userSession.getSessionId(),
 				userSession.getLoggedUserId(),
-				userSession.getAD_Language());
+				JSONOptions.of(userSession));
 	}
 
 	@GetMapping("/isLoggedIn")
