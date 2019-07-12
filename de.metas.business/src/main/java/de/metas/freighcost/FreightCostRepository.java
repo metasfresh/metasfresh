@@ -153,7 +153,7 @@ public class FreightCostRepository
 
 		final ImmutableListMultimap<FreightCostShipperId, FreightCostBreak> breaks = retrieveBreaks(fcShipperIds);
 
-		if(Check.isEmpty(breaks))
+		if (Check.isEmpty(breaks))
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -204,16 +204,18 @@ public class FreightCostRepository
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()), // keyFunction
 						record -> toFreightCostBreak(record)) // valueFunction
-				);
+		);
 	}
 
 	private FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)
 	{
 		final CountryId countryId = CountryId.ofRepoId(record.getC_Country_ID());
 
-		// TODO: Introduce M_FreightCostDetail.C_Currency_ID. In UI, by default, it can be set from country
-		final CurrencyId currencyId = countriesRepo.getCountryCurrencyId(countryId)
-				.orElseThrow(() -> new AdempiereException("No currency defined for " + countryId));
+		final CurrencyId recordCurrencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
+
+		final CurrencyId currencyId = recordCurrencyId != null ? recordCurrencyId
+				: countriesRepo.getCountryCurrencyId(countryId)
+						.orElseThrow(() -> new AdempiereException("No currency defined for " + countryId));
 
 		return FreightCostBreak.builder()
 				.freightCostShipperId(FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()))
