@@ -262,8 +262,9 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
+		final String adLanguage = userSession.getAD_Language();
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
-		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query));
+		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query, adLanguage));
 	}
 
 	@GetMapping("/{quickInputId}/field/{fieldName}/dropdown")
@@ -277,8 +278,9 @@ public class WindowQuickInputRestController
 	{
 		userSession.assertLoggedIn();
 
+		final String adLanguage = userSession.getAD_Language();
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
-		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldDropdownValues(fieldName));
+		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldDropdownValues(fieldName, adLanguage));
 	}
 
 	@PatchMapping("/{quickInputId}")

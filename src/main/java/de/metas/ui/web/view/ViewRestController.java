@@ -47,6 +47,7 @@ import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -318,7 +319,12 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -334,7 +340,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")

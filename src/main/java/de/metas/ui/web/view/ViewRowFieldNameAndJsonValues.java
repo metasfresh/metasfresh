@@ -69,11 +69,16 @@ public final class ViewRowFieldNameAndJsonValues
 		return map.keySet();
 	}
 
-	public Object get(@NonNull final String fieldName)
+	private Object get(@NonNull final String fieldName)
 	{
 		return map.get(fieldName);
 	}
 
+	public Object getAsJsonObject(@NonNull final String fieldName)
+	{
+		return get(fieldName);
+	}
+	
 	public Object convertAndGetValue(
 			@NonNull final String fieldName,
 			@NonNull final JSONOptions jsonOpts)
@@ -92,6 +97,11 @@ public final class ViewRowFieldNameAndJsonValues
 		{
 			return valueObj;
 		}
+	}
+
+	public JSONLookupValue getAsJSONLookupValue(@NonNull final String fieldName)
+	{
+		return (JSONLookupValue)get(fieldName);
 	}
 
 	public int getAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)

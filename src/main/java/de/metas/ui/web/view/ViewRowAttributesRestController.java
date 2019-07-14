@@ -17,6 +17,7 @@ import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.view.json.JSONViewRowAttributesLayout;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
@@ -150,7 +151,12 @@ public class ViewRowAttributesRestController
 				.getById(rowId)
 				.getAttributes()
 				.getAttributeTypeahead(attributeName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/attribute/{attributeName}/dropdown")
@@ -169,6 +175,6 @@ public class ViewRowAttributesRestController
 				.getById(rowId)
 				.getAttributes()
 				.getAttributeDropdown(attributeName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 }

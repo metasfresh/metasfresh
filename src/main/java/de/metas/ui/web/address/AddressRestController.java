@@ -16,6 +16,8 @@ import de.metas.ui.web.address.json.JSONCreateAddressRequest;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
@@ -128,7 +130,17 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValuesForQuery(attributeName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+	}
+
+	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
+	{
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
 	}
 
 	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)
@@ -141,7 +153,7 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValues(attributeName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	@PostMapping(value = "/{docId}/complete")
@@ -151,7 +163,6 @@ public class AddressRestController
 
 		return Execution.callInNewExecution("complete", () -> addressRepo
 				.complete(docId)
-				.transform(JSONLookupValue::ofLookupValue));
-
+				.transform(this::toJSONLookupValue));
 	}
 }

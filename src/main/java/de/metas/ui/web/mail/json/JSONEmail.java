@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.mail.WebuiEmail;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Getter;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -36,10 +37,9 @@ import lombok.Getter;
 @Getter
 public class JSONEmail
 {
-
-	public static JSONEmail of(final WebuiEmail email)
+	public static JSONEmail of(@NonNull final WebuiEmail email, @NonNull final String adLanguage)
 	{
-		return new JSONEmail(email);
+		return new JSONEmail(email, adLanguage);
 	}
 
 	private final String emailId;
@@ -49,19 +49,19 @@ public class JSONEmail
 	private final String message;
 	private final List<JSONLookupValue> attachments;
 
-	public JSONEmail(final WebuiEmail email)
+	private JSONEmail(@NonNull final WebuiEmail email, @NonNull final String adLanguage)
 	{
 		emailId = email.getEmailId();
-		from = JSONLookupValue.ofLookupValue(email.getFrom());
+		from = JSONLookupValue.ofLookupValue(email.getFrom(), adLanguage);
 		to = email.getTo()
 				.stream()
-				.map(JSONLookupValue::ofLookupValue)
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 		subject = email.getSubject();
 		message = email.getMessage();
 		attachments = email.getAttachments()
 				.stream()
-				.map(JSONLookupValue::ofLookupValue)
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 	}
 }

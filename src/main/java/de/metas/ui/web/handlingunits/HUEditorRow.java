@@ -302,7 +302,7 @@ public final class HUEditorRow implements IViewRow
 
 	Object getFieldValueAsJson(@NonNull final String fieldName, @NonNull final JSONOptions jsonOpts)
 	{
-		return getFieldNameAndJsonValues(jsonOpts).get(fieldName);
+		return getFieldNameAndJsonValues(jsonOpts).getAsJsonObject(fieldName);
 	}
 
 	@Override

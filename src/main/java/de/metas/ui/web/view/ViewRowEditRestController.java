@@ -16,6 +16,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -138,7 +139,12 @@ public class ViewRowEditRestController
 		final IEditableView view = getEditableView(viewId);
 		final RowEditingContext editingCtx = createRowEditingContext(rowId);
 		return view.getFieldTypeahead(editingCtx, fieldName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{fieldName}/dropdown")
@@ -156,6 +162,6 @@ public class ViewRowEditRestController
 		final IEditableView view = getEditableView(viewId);
 		final RowEditingContext editingCtx = createRowEditingContext(rowId);
 		return view.getFieldDropdown(editingCtx, fieldName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 }

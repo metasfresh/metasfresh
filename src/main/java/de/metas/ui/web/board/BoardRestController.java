@@ -50,6 +50,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -102,6 +103,7 @@ public class BoardRestController
 	{
 		return JSONOptions.of(userSession);
 	}
+
 	private JSONDocumentLayoutOptions newJSONLayoutOptions()
 	{
 		return JSONDocumentLayoutOptions.of(userSession);
@@ -300,7 +302,7 @@ public class BoardRestController
 
 		final JSONOptions jsonOpts = newJSONOptions();
 		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
-		
+
 		final ViewResult viewResult = viewsRepo.getView(viewIdStr)
 				.getPageWithRowIdsOnly(firstRow, pageLength, orderBys, jsonOpts);
 
@@ -321,7 +323,7 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
-		
+
 		final JSONOptions jsonOpts = newJSONOptions();
 		return toJSONCardsViewResult(boardId, newView, jsonOpts);
 	}
@@ -339,7 +341,12 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -354,17 +361,17 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	private final JSONViewResult toJSONCardsViewResult(
-			final int boardId, 
-			final ViewResult viewResult, 
-			final JSONOptions jsonOpts, 
+			final int boardId,
+			final ViewResult viewResult,
+			final JSONOptions jsonOpts,
 			Predicate<Integer> cardIdFilter)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
-		
+
 		final List<Integer> cardIds = viewResult.getRowIds()
 				.stream()
 				.filter(DocumentId::isInt).map(DocumentId::toInt)

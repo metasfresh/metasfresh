@@ -113,12 +113,12 @@ public final class Values
 		else if (value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
-			return JSONLookupValue.ofLookupValue(lookupValue);
+			return JSONLookupValue.ofLookupValue(lookupValue, jsonOpts.getAdLanguage());
 		}
 		else if (value instanceof LookupValuesList)
 		{
 			final LookupValuesList lookupValues = (LookupValuesList)value;
-			return JSONLookupValuesList.ofLookupValuesList(lookupValues);
+			return JSONLookupValuesList.ofLookupValuesList(lookupValues, jsonOpts.getAdLanguage());
 		}
 		else if (value instanceof NamePair)
 		{

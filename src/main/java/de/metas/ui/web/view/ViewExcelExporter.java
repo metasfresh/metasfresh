@@ -27,6 +27,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -163,8 +164,8 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Object value = row.getFieldNameAndJsonValues(jsonOpts).get(fieldName);
-		if (value == null)
+		final Object value = row.getFieldNameAndJsonValues(jsonOpts).getAsJsonObject(fieldName);
+		if (JSONNullValue.isNull(value))
 		{
 			return null;
 		}
@@ -172,7 +173,7 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = getWidgetType(columnIndex);
 		if (widgetType.isDateOrTime())
 		{
-			return CellValue.ofDate(DateTimeConverters.fromJson(value.toString(), widgetType));
+			return CellValue.ofDate(DateTimeConverters.fromObject(value, widgetType));
 		}
 		else if (value instanceof JSONLookupValue)
 		{
@@ -213,7 +214,7 @@ import lombok.NonNull;
 		private final int pageSize;
 		private final IView view;
 		private final JSONOptions jsonOpts;
-		
+
 		private LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
 				.maximumSize(2) // cache max 2 pages
 				.build(new CacheLoader<PageIndex, ViewResult>()
