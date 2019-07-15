@@ -1,8 +1,8 @@
 package de.metas.i18n;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -189,7 +189,7 @@ public final class TranslatableStringBuilder
 		return append(TranslatableStrings.dateAndTime(value));
 	}
 
-	public TranslatableStringBuilder appendDateTime(final LocalDateTime value)
+	public TranslatableStringBuilder appendDateTime(final Instant value)
 	{
 		return append(DateTimeTranslatableString.ofDateTime(value));
 	}

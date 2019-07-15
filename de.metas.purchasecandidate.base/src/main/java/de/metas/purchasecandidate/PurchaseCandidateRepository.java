@@ -504,7 +504,7 @@ public class PurchaseCandidateRepository
 				.stream()
 				.map(map -> PurchaseCandidateReminder.builder()
 						.vendorBPartnerId(BPartnerId.ofRepoId(NumberUtils.asInt(map.get(I_C_PurchaseCandidate.COLUMNNAME_Vendor_ID), -1)))
-						.notificationTime(TimeUtil.asLocalDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
+						.notificationTime(TimeUtil.asZonedDateTime(map.get(I_C_PurchaseCandidate.COLUMNNAME_ReminderDate)))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -517,7 +517,7 @@ public class PurchaseCandidateRepository
 			return null;
 		}
 
-		final LocalDateTime reminderDate = TimeUtil.asLocalDateTime(record.getReminderDate());
+		final ZonedDateTime reminderDate = TimeUtil.asZonedDateTime(record.getReminderDate());
 		if (reminderDate == null)
 		{
 			return null;

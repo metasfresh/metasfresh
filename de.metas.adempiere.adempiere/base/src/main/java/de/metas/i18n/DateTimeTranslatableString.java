@@ -1,8 +1,8 @@
 package de.metas.i18n;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -10,11 +10,9 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -45,39 +43,42 @@ final class DateTimeTranslatableString implements ITranslatableString
 {
 	static DateTimeTranslatableString ofDate(@NonNull final java.util.Date date)
 	{
-		return new DateTimeTranslatableString(date.getTime(), false);
+		return new DateTimeTranslatableString(date.toInstant(), false);
 	}
 
 	static DateTimeTranslatableString ofDate(@NonNull final LocalDate date)
 	{
-		final long epochMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+		final Instant instant = date.atStartOfDay(ZoneId.systemDefault()).toInstant();
 		final boolean dateTime = false;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
 	static DateTimeTranslatableString ofDateTime(@NonNull final java.util.Date date)
 	{
-		return new DateTimeTranslatableString(date.getTime(), true);
-	}
-
-	static DateTimeTranslatableString ofDateTime(@NonNull final LocalDateTime date)
-	{
-		final long epochMillis = date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		final boolean dateTime = true;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(date.toInstant(), true);
 	}
 
 	public static DateTimeTranslatableString ofDateTime(@NonNull final ZonedDateTime date)
 	{
-		final long epochMillis = date.toInstant().toEpochMilli();
+		final Instant instant = date.toInstant();
 		final boolean dateTime = true;
-		return new DateTimeTranslatableString(epochMillis, dateTime);
+		return new DateTimeTranslatableString(instant, dateTime);
+	}
+
+	public static DateTimeTranslatableString ofDateTime(@NonNull final Instant instant)
+	{
+		final boolean dateTime = true;
+		return new DateTimeTranslatableString(instant, dateTime);
 	}
 
 	private static DateTimeTranslatableString ofTime(@NonNull final LocalTime time)
 	{
-		final long epochMillis = TimeUtil.asLocalDateTime(time).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
-		return new DateTimeTranslatableString(epochMillis, DisplayType.Time);
+		final Instant instant = LocalDate.now()
+				.atTime(time)
+				.atZone(ZoneId.systemDefault())
+				.toInstant();
+
+		return new DateTimeTranslatableString(instant, DisplayType.Time);
 	}
 
 	static DateTimeTranslatableString ofObject(@NonNull final Object obj, final int displayType)
@@ -103,17 +104,13 @@ final class DateTimeTranslatableString implements ITranslatableString
 		{
 			return ofDate((LocalDate)obj);
 		}
-		else if (obj instanceof LocalDateTime)
-		{
-			return ofDateTime((LocalDateTime)obj);
-		}
-		else if (obj instanceof ZonedDateTime)
-		{
-			return ofDateTime((ZonedDateTime)obj);
-		}
 		else if (obj instanceof LocalTime)
 		{
 			return ofTime((LocalTime)obj);
+		}
+		else if (obj instanceof Instant)
+		{
+			return ofDateTime((Instant)obj);
 		}
 		else
 		{
@@ -121,19 +118,18 @@ final class DateTimeTranslatableString implements ITranslatableString
 		}
 	}
 
-	private final long epochMillis;
+	private final Instant instant;
 	private final int displayType;
 
-	private DateTimeTranslatableString(final long epochMillis, final boolean dateTime)
+	private DateTimeTranslatableString(@NonNull final Instant instant, final boolean dateTime)
 	{
-		this(epochMillis,
+		this(instant,
 				dateTime ? DisplayType.DateTime : DisplayType.Date);
 	}
 
-	private DateTimeTranslatableString(final long epochMillis, final int displayType)
+	private DateTimeTranslatableString(@NonNull final Instant instant, final int displayType)
 	{
-		Check.assumeGreaterThanZero(epochMillis, "epochMillis");
-		this.epochMillis = epochMillis;
+		this.instant = instant;
 		this.displayType = displayType;
 	}
 
@@ -155,7 +151,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 
 	private java.util.Date toDate()
 	{
-		return new java.util.Date(epochMillis);
+		return java.util.Date.from(instant);
 	}
 
 	@Override
