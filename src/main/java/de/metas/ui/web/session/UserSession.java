@@ -9,7 +9,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -22,6 +21,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
