@@ -19,7 +19,7 @@ describe('Create Sales order', function() {
   const productType = 'Item';
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
       productCategoryValue,

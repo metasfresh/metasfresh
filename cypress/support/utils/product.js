@@ -79,6 +79,12 @@ export class Product {
     return this;
   }
 
+  setCUTUAllocation(packingInstruction) {
+    cy.log(`Product - set packingInstruction = ${packingInstruction}`);
+    this.packingInstruction = packingInstruction;
+    return this;
+  }
+
   apply() {
     cy.log(`Product - apply - START (name=${this.name})`);
     Product.applyProduct(this);
@@ -119,7 +125,7 @@ export class Product {
       cy.getStringFieldValue('ProductType').then(productTypeValue => {
         const productType = getLanguageSpecific(product, 'productType');
 
-       if (productType != productTypeValue) {
+        if (productType != productTypeValue) {
           cy.resetListValue('ProductType');
           cy.selectInListField('ProductType', productType);
         }
@@ -132,6 +138,14 @@ export class Product {
           cy.selectInListField('C_UOM_ID', c_uom);
         }
       });
+      if (product.packingInstruction != null) {
+        cy.selectTab('M_HU_PI_Item_Product');
+        cy.pressAddNewButton();
+        cy.selectInListField('M_HU_PI_Item_ID', product.packingInstruction, true);
+        cy.writeIntoStringField('Qty', 10, true, null, true);
+        cy.selectDateViaPicker('ValidFrom');
+        cy.pressDoneButton();
+      }
 
       if (product.productPrices.length > 0) {
         product.productPrices.forEach(function(pp) {
@@ -148,8 +162,7 @@ export class Product {
   static applyProductPrice(productPrice) {
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
-
-    cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, false, true);
+    cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, true, true);
 
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
     cy.writeIntoStringField(
