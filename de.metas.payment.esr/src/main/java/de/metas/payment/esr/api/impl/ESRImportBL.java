@@ -1034,8 +1034,8 @@ public class ESRImportBL implements IESRImportBL
 		{
 			final Properties ctx = getCtx(importLine);
 			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-			final String invoiceOrgName = orgsRepo.retrieveOrgName(invoice.getAD_Org_ID());
-			final String importLineOrgName = orgsRepo.retrieveOrgName(importLine.getAD_Org_ID());
+			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
+			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
 					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
 							invoiceOrgName,

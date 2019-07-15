@@ -39,7 +39,7 @@ import lombok.NonNull;
 public interface IOrgDAO extends ISingletonService
 {
 	void save(I_AD_Org orgRecord);
-	
+
 	ClientId getClientIdByOrgId(OrgId orgId);
 
 	Optional<OrgId> retrieveOrgIdBy(OrgQuery orgQuery);
@@ -64,7 +64,7 @@ public interface IOrgDAO extends ISingletonService
 
 	default String retrieveOrgName(@Nullable final OrgId adOrgId)
 	{
-		if(adOrgId == null)
+		if (adOrgId == null)
 		{
 			return "?";
 		}
@@ -76,6 +76,28 @@ public interface IOrgDAO extends ISingletonService
 		{
 			final I_AD_Org orgRecord = getById(adOrgId);
 			return orgRecord != null ? orgRecord.getName() : "<" + adOrgId.getRepoId() + ">";
+		}
+	}
+
+	default String retrieveOrgValue(final int adOrgId)
+	{
+		return retrieveOrgValue(OrgId.ofRepoIdOrNull(adOrgId));
+	}
+
+	default String retrieveOrgValue(@Nullable final OrgId adOrgId)
+	{
+		if (adOrgId == null)
+		{
+			return "?";
+		}
+		else if (adOrgId.isAny())
+		{
+			return "*";
+		}
+		else
+		{
+			final I_AD_Org orgRecord = getById(adOrgId);
+			return orgRecord != null ? orgRecord.getValue() : "<" + adOrgId.getRepoId() + ">";
 		}
 	}
 
