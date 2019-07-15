@@ -1,5 +1,7 @@
 package de.metas.organization;
 
+import java.time.ZoneId;
+
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -51,7 +53,7 @@ public class OrgInfo
 	WarehouseId warehouseId;
 	WarehouseId purchaseWarehouseId;
 	WarehouseId dropShipWarehouseId;
-	
+
 	@NonNull
 	StoreCreditCardNumberMode storeCreditCardNumberMode;
 
@@ -59,4 +61,5 @@ public class OrgInfo
 	int workflowResponsibleId;
 	BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
+	ZoneId timeZone;
 }

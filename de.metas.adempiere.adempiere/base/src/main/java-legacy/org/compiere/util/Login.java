@@ -496,6 +496,7 @@ public class Login
 			ctx.setOrg(orgId, org.getName());
 			final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 			ctx.setProperty(Env.CTXNAME_StoreCreditCardData, orgInfo.getStoreCreditCardNumberMode().getCode());
+			ctx.setProperty(Env.CTXNAME_TimeZone, orgInfo.getTimeZone() != null ? orgInfo.getTimeZone().getId() : null);
 		}
 
 		//

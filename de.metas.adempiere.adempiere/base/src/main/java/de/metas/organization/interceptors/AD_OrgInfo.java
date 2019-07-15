@@ -37,8 +37,15 @@ import de.metas.organization.impl.OrgDAO;
 @Component
 public class AD_OrgInfo
 {
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_AD_OrgInfo orgInfoRecord)
+	{
+		// just to make sure everythig is OK
+		OrgDAO.toOrgInfo(orgInfoRecord);
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_AD_OrgInfo.COLUMNNAME_StoreCreditCardData)
-	public void afterStoreCreditCardData(final I_AD_OrgInfo orgInfoRecord)
+	public void afterStoreCreditCardDataChanged(final I_AD_OrgInfo orgInfoRecord)
 	{
 		final OrgInfo orgInfo = OrgDAO.toOrgInfo(orgInfoRecord);
 		final StoreCreditCardNumberMode ccStoreMode = orgInfo.getStoreCreditCardNumberMode();

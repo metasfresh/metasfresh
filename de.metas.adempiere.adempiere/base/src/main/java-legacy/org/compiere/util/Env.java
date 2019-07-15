@@ -270,6 +270,7 @@ public final class Env
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
+	public static final String CTXNAME_TimeZone = "#TimeZone";
 
 	public static final String CTXNAME_AD_Session_ID = "#AD_Session_ID";
 	public static final int CTXVALUE_AD_SESSION_ID_NONE = -1;

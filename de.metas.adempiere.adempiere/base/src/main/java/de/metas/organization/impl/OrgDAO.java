@@ -3,6 +3,8 @@ package de.metas.organization.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.time.ZoneId;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -56,6 +58,7 @@ import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PricingSystemId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -178,6 +181,9 @@ public class OrgDAO implements IOrgDAO
 				: null;
 
 		final UserId supervisorId = InterfaceWrapperHelper.isNull(record, I_AD_OrgInfo.COLUMNNAME_Supervisor_ID) ? null : UserId.ofRepoId(record.getSupervisor_ID());
+		final ZoneId timeZone = !Check.isEmpty(record.getTimeZone())
+				? ZoneId.of(record.getTimeZone().trim())
+				: null;
 
 		return OrgInfo.builder()
 				.clientId(ClientId.ofRepoIdOrSystem(record.getAD_Client_ID()))
@@ -199,6 +205,7 @@ public class OrgDAO implements IOrgDAO
 				.workflowResponsibleId(record.getAD_WF_Responsible_ID())
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
+				.timeZone(timeZone)
 				//
 				.build();
 	}
