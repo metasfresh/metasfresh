@@ -10,7 +10,7 @@ export class Builder {
    *
    * - Only the tests which need customised Price* types should create their own (by copying the contents of this method and modifying as needed).
    */
-  static createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName) {
+  static createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, isSalesPriceList) {
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
       Object.assign(
         new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
@@ -32,11 +32,11 @@ export class Builder {
       Object.assign(new PriceList(/* useless to set anything here since it's replaced by the fixture */), pricelistJson)
         .setName(priceListName)
         .setPriceSystem(priceSystemName)
+        .setIsSalesPriceList(isSalesPriceList)
         .addPriceListVersion(priceListVersion)
         .apply();
     });
   }
-
   /**
    * Use this when you aren't interested in configuring anything (except for the name) for the ProductCategory, ProductPrice or Product, but you only need them to exist.
    *

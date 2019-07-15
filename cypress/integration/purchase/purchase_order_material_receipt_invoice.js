@@ -28,7 +28,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const vendorName = `Vendor ${timestamp}`;
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)

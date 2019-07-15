@@ -64,7 +64,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
   let originalQuantity = 20;
 
   it('Prepare product and baprtner', function () {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
     Builder.createBasicProductEntities(
       productCategoryName,
