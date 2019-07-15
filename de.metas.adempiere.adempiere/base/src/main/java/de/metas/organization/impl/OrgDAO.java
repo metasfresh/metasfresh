@@ -109,6 +109,7 @@ public class OrgDAO implements IOrgDAO
 		{
 			record = newInstance(I_AD_OrgInfo.class);
 			record.setAD_Org_ID(request.getOrgId().getRepoId());
+			record.setStoreCreditCardData(StoreCreditCardNumberMode.LAST_4_DIGITS.getCode());
 		}
 
 		if (request.getOrgTypeId() != null)

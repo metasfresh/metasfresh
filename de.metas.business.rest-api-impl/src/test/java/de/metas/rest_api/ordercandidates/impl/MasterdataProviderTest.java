@@ -2,7 +2,6 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -136,15 +135,17 @@ public class MasterdataProviderTest
 	@Test
 	public void getCreateOrgId_createIfNotExists()
 	{
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+		
 		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
 
 		// verify AD_Org
-		final I_AD_Org orgRecord = load(orgId, I_AD_Org.class);
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 		assertThat(orgRecord.getValue()).isEqualTo("jsonOrganization.code");
 		assertThat(orgRecord.getName()).isEqualTo("jsonOrganization.name");
 
 		// verify AD_OrgInfo
-		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 		assertThat(orgInfo.getOrgBPartnerLocationId()).isNotNull();
 
 		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgInfo.getOrgBPartnerLocationId());
