@@ -75,4 +75,16 @@ const findByName = (dataArray, name) => {
   return dataObject;
 };
 
-export { getLanguageSpecific, wrapRequest, findByName };
+/**
+ * Human readable date and time with millis!
+ *
+ * The returned time format is: `15T11:32:17.211` `([day]T[HH]:[MM]:[SS].[millis])`
+ *
+ * @returns {string}
+ */
+const humanReadableNow = () => {
+  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
+  return date.slice(8, date.length - 1);
+};
+
+export {getLanguageSpecific, wrapRequest, findByName, humanReadableNow};

@@ -55,3 +55,11 @@ Cypress.Commands.add('selectReference', (refName, timeout) => {
     return cy.get(`.reference_${refName}`, options);
   });
 });
+
+
+Cypress.Commands.add('openReferencedDocuments', (referenceId) => {
+  cy.get('body').type('{alt}6');
+  if (referenceId) {
+    cy.selectReference(referenceId).click();
+  }
+});
