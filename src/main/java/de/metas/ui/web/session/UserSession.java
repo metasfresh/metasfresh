@@ -21,7 +21,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
@@ -469,9 +471,14 @@ public class UserSession
 	@NonNull
 	public ZoneId getTimeZone()
 	{
-		// ZoneId.getAvailableZoneIds()
-		return ZoneId.of("Etc/GMT+9");
-		// return ZoneId.systemDefault(); // TODO: get it from organization
+		final OrgId orgId = getOrgId();
+		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		if (orgInfo.getTimeZone() != null)
+		{
+			return orgInfo.getTimeZone();
+		}
+
+		return ZoneId.systemDefault();
 	}
 
 	/**
