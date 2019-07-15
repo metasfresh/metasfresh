@@ -1,5 +1,8 @@
 package org.adempiere.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -30,6 +33,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.service.OrgIdNotFoundException;
@@ -39,8 +43,16 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.calendar.CalendarId;
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.organization.OrgTypeId;
+import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.pricing.PricingSystemId;
 import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -51,12 +63,6 @@ public class OrgDAO implements IOrgDAO
 	public void save(@NonNull final I_AD_Org orgRecord)
 	{
 		InterfaceWrapperHelper.saveRecord(orgRecord);
-	}
-
-	@Override
-	public void save(@NonNull final I_AD_OrgInfo orgInfoRecord)
-	{
-		InterfaceWrapperHelper.saveRecord(orgInfoRecord);
 	}
 
 	@Override
@@ -82,55 +88,145 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	public I_AD_OrgInfo retrieveOrgInfo(final Properties ctx, final int adOrgId, final String trxName)
+	public OrgInfo createOrUpdateOrgInfo(@NonNull OrgInfoUpdateRequest request)
+	{
+		I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(request.getOrgId(), ITrx.TRXNAME_ThreadInherited);
+		if (record == null)
+		{
+			record = newInstance(I_AD_OrgInfo.class);
+			record.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+
+		if (request.getOrgTypeId() != null)
+		{
+			record.setAD_OrgType_ID(request.getOrgTypeId().map(OrgTypeId::getRepoId).orElse(-1));
+		}
+
+		if (request.getOrgBPartnerLocationId() != null)
+		{
+			BPartnerLocationId bpartnerLocationId = request.getOrgBPartnerLocationId().orElse(null);
+			record.setOrg_BPartner_ID(bpartnerLocationId != null ? bpartnerLocationId.getBpartnerId().getRepoId() : -1);
+			record.setOrgBP_Location_ID(bpartnerLocationId != null ? bpartnerLocationId.getRepoId() : -1);
+		}
+
+		if (request.getWarehouseId() != null)
+		{
+			record.setM_Warehouse_ID(request.getWarehouseId().map(WarehouseId::getRepoId).orElse(-1));
+		}
+
+		if (request.getLogoImageId() != null)
+		{
+			record.setLogo_ID(request.getLogoImageId().orElse(-1));
+		}
+
+		saveRecord(record);
+
+		return toOrgInfo(record);
+	}
+
+	@Override
+	public OrgInfo getOrgInfoById(final OrgId adOrgId)
+	{
+		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_None);
+	}
+
+	@Override
+	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
+	{
+		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private OrgInfo retrieveOrgInfo(@NonNull final OrgId adOrgId, final String trxName)
+	{
+		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(adOrgId, trxName);
+		if (record == null)
+		{
+			// NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
+			// throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + adOrgId);
+			return null;
+		}
+
+		return toOrgInfo(record);
+	}
+
+	private I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_OrgInfo.class, ctx, trxName)
+				.createQueryBuilder(I_AD_OrgInfo.class, Env.getCtx(), trxName)
 				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, adOrgId)
 				.create()
 				.firstOnly(I_AD_OrgInfo.class);
 	}
 
+	private static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
+	{
+		final OrgId parentOrgId = record.getParent_Org_ID() > 0
+				? OrgId.ofRepoId(record.getParent_Org_ID())
+				: null;
+
+		final UserId supervisorId = InterfaceWrapperHelper.isNull(record, I_AD_OrgInfo.COLUMNNAME_Supervisor_ID) ? null : UserId.ofRepoId(record.getSupervisor_ID());
+
+		return OrgInfo.builder()
+				.clientId(ClientId.ofRepoIdOrSystem(record.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				//
+				.parentOrgId(parentOrgId)
+				//
+				.supervisorId(supervisorId)
+				.calendarId(CalendarId.ofRepoIdOrNull(record.getC_Calendar_ID()))
+				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
+				//
+				.warehouseId(WarehouseId.ofRepoIdOrNull(record.getM_Warehouse_ID()))
+				.purchaseWarehouseId(WarehouseId.ofRepoIdOrNull(record.getM_WarehousePO_ID()))
+				.dropShipWarehouseId(WarehouseId.ofRepoIdOrNull(record.getDropShip_Warehouse_ID()))
+				//
+				.storeCreditCardNumberMode(StoreCreditCardNumberMode.ofCode(record.getStoreCreditCardData()))
+				//
+				.logoImageId(record.getLogo_ID())
+				.workflowResponsibleId(record.getAD_WF_Responsible_ID())
+				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
+				.reportsPathPrefix(record.getReportPrefix())
+				//
+				.build();
+	}
+
 	@Override
 	public WarehouseId getOrgWarehouseId(@NonNull final OrgId orgId)
 	{
-		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
 		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-
 		if (orgInfo == null)
 		{
 			return null;
 		}
 
-		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_Warehouse_ID());
+		return orgInfo.getWarehouseId();
 	}
 
 	@Override
 	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
 	{
-		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
 		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-
 		if (orgInfo == null)
 		{
 			return null;
 		}
 
-		return WarehouseId.ofRepoIdOrNull(orgInfo.getM_WarehousePO_ID());
+		return orgInfo.getPurchaseWarehouseId();
 	}
 
 	@Override
 	public WarehouseId getOrgDropshipWarehouseId(@NonNull final OrgId orgId)
 	{
-		final I_AD_OrgInfo orgInfo = retrieveOrgInfo(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
 		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-
 		if (orgInfo == null)
 		{
 			return null;
 		}
 
-		return WarehouseId.ofRepoIdOrNull(orgInfo.getDropShip_Warehouse_ID());
+		return orgInfo.getDropShipWarehouseId();
 	}
 
 	@Override

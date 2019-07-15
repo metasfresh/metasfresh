@@ -1,8 +1,7 @@
 package de.metas.report.engine;
 
-import java.util.Properties;
-
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.JasperClassLoader;
@@ -49,8 +48,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 			parentClassLoader = contextClassLoader;
 		}
 
-		final Properties ctx = reportContext.getCtx();
-		final int adOrgId = Env.getAD_Org_ID(ctx);
+		final OrgId adOrgId = Env.getOrgId(reportContext.getCtx());
 		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader);
 		return jasperLoader;
 	}

@@ -6,14 +6,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
-import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.ddorder.api.IHUDDOrderDAO;
@@ -108,13 +109,13 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
 
-		final org.compiere.model.I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(Env.getCtx(), org.getAD_Org_ID(), ITrx.TRXNAME_None);
+		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(OrgId.ofRepoId(org.getAD_Org_ID()));
 
 		HUs2DDOrderProducer.newProducer()
 				.setContext(getCtx())
 				.setM_Locator_To(locatorTo)
 				.setBpartnerId(orgBPartner.getC_BPartner_ID())
-				.setBpartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
+				.setBpartnerLocationId(BPartnerLocationId.toRepoId(orgBPLocationId))
 				.setHUs(retriveHUs())
 				.process();
 		return MSG_OK;

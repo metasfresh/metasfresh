@@ -1,32 +1,28 @@
 package de.metas.rest_api.ordercandidates.impl;
 
 import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -37,6 +33,7 @@ import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -447,7 +444,7 @@ public class BPartnerMasterDataProvider
 				context, jsonBPartnerLocation);
 
 		final BPartnerLocationId existingBPLocationId = context.getLocationId();
-		final int orgRepoId = context.getOrgId().getRepoId();
+		final OrgId orgId = context.getOrgId();
 
 		final I_C_BPartner_Location bpLocationRecord;
 		if (existingBPLocationId != null)
@@ -457,26 +454,23 @@ public class BPartnerMasterDataProvider
 		else
 		{
 			bpLocationRecord = newInstance(I_C_BPartner_Location.class);
-			bpLocationRecord.setAD_Org_ID(orgRepoId);
+			bpLocationRecord.setAD_Org_ID(orgId.getRepoId());
 		}
 
 		updateBPartnerLocationRecord(bpLocationRecord, bpartnerId, jsonBPartnerLocation);
 		permissionService.assertCanCreateOrUpdate(bpLocationRecord);
 		bpartnersRepo.save(bpLocationRecord);
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
 
 		if (context.isBPartnerIsOrgBP())
 		{
-			I_AD_OrgInfo orgInfoRecord = create(orgDAO.retrieveOrgInfo(Env.getCtx(), orgRepoId, ITrx.TRXNAME_ThreadInherited), I_AD_OrgInfo.class);
-			if (orgInfoRecord == null)
-			{
-				orgInfoRecord = newInstance(I_AD_OrgInfo.class);
-				orgInfoRecord.setAD_Org_ID(orgRepoId);
-			}
-			orgInfoRecord.setOrgBP_Location_ID(bpLocationRecord.getC_BPartner_Location_ID());
-			saveRecord(orgInfoRecord);
+			orgDAO.createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+					.orgId(orgId)
+					.orgBPartnerLocationId(Optional.of(bpartnerLocationId))
+					.build());
 		}
 
-		return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationRecord.getC_BPartner_Location_ID());
+		return bpartnerLocationId;
 	}
 
 	private void updateBPartnerLocationRecord(

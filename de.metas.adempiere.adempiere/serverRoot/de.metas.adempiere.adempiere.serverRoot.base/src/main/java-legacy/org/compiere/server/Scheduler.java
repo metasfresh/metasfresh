@@ -37,7 +37,6 @@ import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
@@ -65,6 +64,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.OrgInfo;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -304,10 +304,10 @@ public class Scheduler extends AdempiereServer
 		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Org_ID, orgId.getRepoId());
 		if (orgId.isRegular())
 		{
-			final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(schedulerCtx, orgId.getRepoId(), ITrx.TRXNAME_None);
-			if (schedOrg.getM_Warehouse_ID() > 0)
+			final OrgInfo schedOrg = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+			if (schedOrg.getWarehouseId() != null)
 			{
-				Env.setContext(schedulerCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getM_Warehouse_ID());
+				Env.setContext(schedulerCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getWarehouseId().getRepoId());
 			}
 		}
 
@@ -717,15 +717,10 @@ public class Scheduler extends AdempiereServer
 		if (cronPattern != null && cronPattern.trim().length() > 0 && SchedulingPattern.validate(cronPattern))
 		{
 			cronScheduler = new it.sauronsoftware.cron4j.Scheduler();
-			cronScheduler.schedule(cronPattern, new Runnable()
-			{
-				@Override
-				public void run()
-				{
-					runNow();
-					final long next = predictor.nextMatchingTime();
-					setDateNextRun(new Timestamp(next));
-				}
+			cronScheduler.schedule(cronPattern, () -> {
+				runNow();
+				final long next = predictor.nextMatchingTime();
+				setDateNextRun(new Timestamp(next));
 			});
 			predictor = new Predictor(cronPattern);
 			final long next = predictor.nextMatchingTime();

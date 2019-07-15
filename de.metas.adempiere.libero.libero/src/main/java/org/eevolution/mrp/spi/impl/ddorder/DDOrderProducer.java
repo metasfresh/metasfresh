@@ -41,6 +41,7 @@ import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -105,8 +106,7 @@ public class DDOrderProducer
 	{
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
 
-		final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(Env.getCtx(), pojo.getOrgId());
-		final int orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(Env.getCtx(), pojo.getOrgId());
+		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(OrgId.ofRepoId(pojo.getOrgId()));
 
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, pojo.getMaterialDispoGroupId());
@@ -116,8 +116,8 @@ public class DDOrderProducer
 		ddOrderRecord.setMRP_AllowCleanup(true);
 		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
 		ddOrderRecord.setPP_Plant_ID(pojo.getPlantId());
-		ddOrderRecord.setC_BPartner_ID(orgBPartnerId);
-		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId);
+		ddOrderRecord.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
+		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
 		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
 		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
 

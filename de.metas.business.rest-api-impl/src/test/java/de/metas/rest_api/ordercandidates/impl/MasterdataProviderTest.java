@@ -2,7 +2,6 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -24,8 +23,8 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.organization.OrgInfo;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
@@ -145,10 +144,10 @@ public class MasterdataProviderTest
 		assertThat(orgRecord.getName()).isEqualTo("jsonOrganization.name");
 
 		// verify AD_OrgInfo
-		final I_AD_OrgInfo orgInfoRecord = create(Services.get(IOrgDAO.class).retrieveOrgInfo(orgId.getRepoId()), I_AD_OrgInfo.class);
-		assertThat(orgInfoRecord.getOrgBP_Location_ID()).isGreaterThan(0);
+		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		assertThat(orgInfo.getOrgBPartnerLocationId()).isNotNull();
 
-		final I_C_BPartner_Location orgBPLocation = orgInfoRecord.getOrgBP_Location();
+		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgInfo.getOrgBPartnerLocationId());
 		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId().getValue());
 		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
 

@@ -16,16 +16,15 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Role_OrgAccess;
@@ -34,9 +33,11 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MOrg;
 import org.compiere.model.MWarehouse;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.organization.OrgTypeId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -57,9 +58,9 @@ public class BPartnerOrgLink extends JavaProcess
 	private final transient IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private OrgId p_AD_Org_ID = OrgId.ANY;
-	private int p_AD_OrgType_ID;
+	private OrgTypeId p_AD_OrgType_ID;
 	private BPartnerId p_C_BPartner_ID;
-	private int p_C_BPartner_Location_ID;
+	private BPartnerLocationId p_C_BPartner_Location_ID;
 	private int p_AD_Role_ID;
 
 	/**
@@ -68,13 +69,15 @@ public class BPartnerOrgLink extends JavaProcess
 	@Override
 	protected void prepare()
 	{
+		int bpartnerLocationRepoId = -1;
+
 		final ProcessInfoParameter[] para = getParametersAsArray();
 		for (final ProcessInfoParameter element : para)
 		{
 			final String name = element.getParameterName();
 			if (element.getParameter() == null)
 			{
-				;
+
 			}
 			else if (name.equals("AD_Org_ID"))
 			{
@@ -82,7 +85,7 @@ public class BPartnerOrgLink extends JavaProcess
 			}
 			else if (name.equals("AD_OrgType_ID"))
 			{
-				p_AD_OrgType_ID = element.getParameterAsInt();
+				p_AD_OrgType_ID = OrgTypeId.ofRepoIdOrNull(element.getParameterAsInt());
 			}
 			else if (name.equals("AD_Role_ID"))
 			{
@@ -90,14 +93,16 @@ public class BPartnerOrgLink extends JavaProcess
 			}
 			else if (name.equals("C_BPartner_Location_ID"))
 			{
-				p_C_BPartner_Location_ID = element.getParameterAsInt();
+				bpartnerLocationRepoId = element.getParameterAsInt();
 			}
 			else
 			{
-				log.error("prepare - Unknown Parameter: " + name);
+				log.error("prepare - Unknown Parameter: {}", name);
 			}
 		}
+
 		p_C_BPartner_ID = BPartnerId.ofRepoId(getRecord_ID());
+		p_C_BPartner_Location_ID = BPartnerLocationId.ofRepoIdOrNull(p_C_BPartner_ID, bpartnerLocationRepoId);
 	}	// prepare
 
 	@Override
@@ -134,16 +139,6 @@ public class BPartnerOrgLink extends JavaProcess
 			}
 		}
 
-		// Update Org Info
-		final I_AD_OrgInfo oInfo = create(org.getInfo(), I_AD_OrgInfo.class);
-		oInfo.setOrgBP_Location_ID(p_C_BPartner_Location_ID);
-		oInfo.setAD_OrgType_ID(p_AD_OrgType_ID);
-
-		// metas: 03084: We are no longer setting the location to AD_OrgInfo.
-		// Location is contained in linked bpartner's location
-		// if (newOrg)
-		// oInfo.setC_Location_ID(C_Location_ID);
-
 		// Create Warehouse
 		I_M_Warehouse wh = null;
 		if (!newOrg)
@@ -158,17 +153,22 @@ public class BPartnerOrgLink extends JavaProcess
 		if (wh == null)
 		{
 			wh = new MWarehouse(org);
-			configureWarehouse(wh, bp, p_C_BPartner_Location_ID); // metas: 03084
+			configureWarehouse(wh, p_C_BPartner_Location_ID); // metas: 03084
 			InterfaceWrapperHelper.save(wh);
 		}
 
 		// Get/Create Locator
 		Services.get(IWarehouseBL.class).getDefaultLocator(wh);
 
-		// Update/Save Org Info
-
-		oInfo.setM_Warehouse_ID(wh.getM_Warehouse_ID());
-		save(oInfo, get_TrxName());
+		//
+		// Update Org Info
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(p_AD_Org_ID)
+				.orgTypeId(Optional.ofNullable(p_AD_OrgType_ID))
+				.orgBPartnerLocationId(Optional.ofNullable(p_C_BPartner_Location_ID))
+				// NOTE (task 03084): We are no longer setting the location to AD_OrgInfo. Location is contained in linked bpartner's location if (newOrg).
+				.warehouseId(Optional.of(WarehouseId.ofRepoId(wh.getM_Warehouse_ID())))
+				.build());
 
 		// Update BPartner
 		bp.setAD_OrgBP_ID(p_AD_Org_ID.getRepoId());
@@ -214,8 +214,8 @@ public class BPartnerOrgLink extends JavaProcess
 	 * @param bpartner
 	 * @task http://dewiki908/mediawiki/index.php/03084:_Move_Org-Infos_to_related_BPartners_%282012080310000055%29
 	 */
-	private void configureWarehouse(final I_M_Warehouse warehouse, final I_C_BPartner bpartner, final int bPartnerLocationID)
+	private void configureWarehouse(final I_M_Warehouse warehouse, final BPartnerLocationId bpartnerLocationId)
 	{
-		warehouse.setC_BPartner_Location_ID(bPartnerLocationID);
+		warehouse.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 	}
 }	// BPartnerOrgLink

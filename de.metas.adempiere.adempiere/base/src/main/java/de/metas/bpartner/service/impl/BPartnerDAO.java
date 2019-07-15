@@ -1,7 +1,6 @@
 package de.metas.bpartner.service.impl;
 
 import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -72,7 +71,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -90,6 +88,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -541,13 +540,13 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		final int adOrgId = bPartner.getAD_Org_ID();
-		if (adOrgId > 0 && soTrx.isSales())
+		final OrgId adOrgId = OrgId.ofRepoIdOrAny(bPartner.getAD_Org_ID());
+		if (adOrgId.isRegular() && soTrx.isSales())
 		{
-			final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
-			if (orgInfo.getM_PricingSystem_ID() > 0)
+			final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+			if (orgInfo.getPricingSystemId() != null)
 			{
-				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
+				return orgInfo.getPricingSystemId();
 			}
 		}
 

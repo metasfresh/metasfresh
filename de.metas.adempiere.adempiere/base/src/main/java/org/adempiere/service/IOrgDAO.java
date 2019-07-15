@@ -31,12 +31,12 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
+import de.metas.organization.OrgInfo;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,8 +45,6 @@ import lombok.Value;
 public interface IOrgDAO extends ISingletonService
 {
 	void save(I_AD_Org orgRecord);
-
-	void save(I_AD_OrgInfo orgInfoRecord);
 
 	Optional<OrgId> retrieveOrgIdBy(OrgQuery orgQuery);
 
@@ -102,12 +100,11 @@ public interface IOrgDAO extends ISingletonService
 		return org != null ? org.getName() : "<" + adOrgId.getRepoId() + ">";
 	}
 
-	I_AD_OrgInfo retrieveOrgInfo(Properties ctx, int adOrgId, String trxName);
+	OrgInfo createOrUpdateOrgInfo(OrgInfoUpdateRequest request);
 
-	default I_AD_OrgInfo retrieveOrgInfo(int adOrgId)
-	{
-		return retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
-	}
+	OrgInfo getOrgInfoById(OrgId adOrgId);
+
+	OrgInfo getOrgInfoByIdInTrx(OrgId adOrgId);
 
 	WarehouseId getOrgWarehouseId(OrgId orgId);
 

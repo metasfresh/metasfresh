@@ -150,7 +150,7 @@ public class FlatrateTermTestHelper
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, adOrg.getAD_Org_ID());
 
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		orgInfo.setAD_Org(adOrg);
+		orgInfo.setAD_Org_ID(adOrg.getAD_Org_ID());
 		save(orgInfo);
 
 		addPricingRules();

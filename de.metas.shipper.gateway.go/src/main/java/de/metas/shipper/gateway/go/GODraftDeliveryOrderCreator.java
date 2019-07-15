@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -62,7 +63,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
 		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();

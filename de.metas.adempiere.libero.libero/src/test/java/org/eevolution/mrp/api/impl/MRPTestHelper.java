@@ -46,6 +46,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_BP_Group;
@@ -85,7 +86,6 @@ import org.junit.Assume;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -347,7 +347,7 @@ public class MRPTestHelper
 		InterfaceWrapperHelper.save(bpartner);
 		//
 		final I_C_BPartner_Location bpLocation = createBPLocation(bpartner);
-		orgInfo.setOrgBP_Location(bpLocation);
+		orgInfo.setOrgBP_Location_ID(bpLocation.getC_BPartner_Location_ID());
 		InterfaceWrapperHelper.save(orgInfo);
 
 		return org;

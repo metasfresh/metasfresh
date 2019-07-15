@@ -24,9 +24,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Set;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.IOrgDAO;
-import org.compiere.model.I_AD_OrgInfo;
+import org.adempiere.service.OrgId;
 import org.compiere.model.MClient;
 import org.compiere.model.PO;
 import org.compiere.process.StateEngine;
@@ -42,6 +41,7 @@ import org.compiere.wf.MWorkflowProcessorLog;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
@@ -163,7 +163,9 @@ public class WorkflowProcessor extends AdempiereServer
 			{
 				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
 				if (activity.getDynPriorityStart() == 0)
+				{
 					activity.setDynPriorityStart(activity.getPriority());
+				}
 				long ms = System.currentTimeMillis() - activity.getCreated().getTime();
 				MWFNode node = activity.getNode();
 				int prioDiff = node.calculateDynamicPriority((int)(ms / 1000));
@@ -199,8 +201,10 @@ public class WorkflowProcessor extends AdempiereServer
 					+ " AND Priority >= ?"				// ##1
 					+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
+			{
 				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 						+ ") < now()";
+			}
 			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
 					+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
@@ -237,7 +241,9 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 			m_summary.append("OverPriority #").append(count);
 			if (countEMails > 0)
+			{
 				m_summary.append(" (").append(countEMails).append(" EMail)");
+			}
 			m_summary.append(" - ");
 		}	// Alert over Priority
 
@@ -250,8 +256,10 @@ public class WorkflowProcessor extends AdempiereServer
 				+ " AND EndWaitTime > now()"
 				+ " AND (DateLastAlert IS NULL";
 		if (m_model.getRemindDays() > 0)
+		{
 			sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 					+ ") < now()";
+		}
 		sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 				+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
 				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
@@ -288,7 +296,9 @@ public class WorkflowProcessor extends AdempiereServer
 
 		m_summary.append("EndWaitTime #").append(count);
 		if (countEMails > 0)
+		{
 			m_summary.append(" (").append(countEMails).append(" EMail)");
+		}
 		m_summary.append(" - ");
 
 		/**
@@ -302,8 +312,10 @@ public class WorkflowProcessor extends AdempiereServer
 					+ " AND (Updated+" + m_model.getInactivityAlertDays() + ") < now()"
 					+ " AND (DateLastAlert IS NULL";
 			if (m_model.getRemindDays() > 0)
+			{
 				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
 						+ ") < now()";
+			}
 			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
 					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
 					+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
@@ -338,7 +350,9 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 			m_summary.append("Inactivity #").append(count);
 			if (countEMails > 0)
+			{
 				m_summary.append(" (").append(countEMails).append(" EMail)");
+			}
 			m_summary.append(" - ");
 		}	// Inactivity
 	}	// sendAlerts
@@ -356,14 +370,18 @@ public class WorkflowProcessor extends AdempiereServer
 			boolean toProcess, boolean toSupervisor)
 	{
 		if (m_client == null || m_client.getAD_Client_ID() != activity.getAD_Client_ID())
+		{
 			m_client = MClient.get(getCtx(), activity.getAD_Client_ID());
+		}
 
 		MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID(), null);
 
 		String subjectVar = activity.getNode().getName();
 		String message = activity.getTextMsg();
 		if (message == null || message.length() == 0)
+		{
 			message = process.getTextMsg();
+		}
 		File pdf = null;
 		final PO po = activity.getPO();
 		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
@@ -385,7 +403,9 @@ public class WorkflowProcessor extends AdempiereServer
 		if (activityUserId != null)
 		{
 			if (m_client.sendEMail(activity.getAD_User_ID(), subject, message, pdf))
+			{
 				counter++;
+			}
 			list.add(activityUserId);
 		}
 
@@ -394,7 +414,9 @@ public class WorkflowProcessor extends AdempiereServer
 		if (toProcess && processUserId != null && !list.contains(processUserId))
 		{
 			if (m_client.sendEMail(processUserId, subject, message, pdf))
+			{
 				counter++;
+			}
 			list.add(processUserId);
 		}
 
@@ -417,7 +439,9 @@ public class WorkflowProcessor extends AdempiereServer
 		if (toSupervisor && supervisorId != null && !list.contains(supervisorId))
 		{
 			if (m_client.sendEMail(supervisorId, subject, message, pdf))
+			{
 				counter++;
+			}
 			list.add(supervisorId);
 		}
 
@@ -457,7 +481,9 @@ public class WorkflowProcessor extends AdempiereServer
 				&& !alreadyNotifiedUserIds.contains(responsibleUserId))
 		{
 			if (m_client.sendEMail(responsibleUserId, subject, message, pdf))
+			{
 				counter++;
+			}
 			alreadyNotifiedUserIds.add(responsibleUserId);
 		}
 		// Org of the Document
@@ -466,12 +492,15 @@ public class WorkflowProcessor extends AdempiereServer
 			PO document = process.getPO();
 			if (document != null)
 			{
-				final I_AD_OrgInfo org = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), document.getAD_Org_ID(), ITrx.TRXNAME_None);
-				final UserId supervisorId = org.getSupervisor_ID() > 0 ? UserId.ofRepoId(org.getSupervisor_ID()) : null;
+				final OrgId orgId = OrgId.ofRepoId(document.getAD_Org_ID());
+				final OrgInfo org = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+				final UserId supervisorId = org.getSupervisorId();
 				if (supervisorId != null && !alreadyNotifiedUserIds.contains(supervisorId))
 				{
 					if (m_client.sendEMail(supervisorId, subject, message, pdf))
+					{
 						counter++;
+					}
 					alreadyNotifiedUserIds.add(supervisorId);
 				}
 			}
@@ -487,7 +516,9 @@ public class WorkflowProcessor extends AdempiereServer
 				if (!alreadyNotifiedUserIds.contains(adUserId))
 				{
 					if (m_client.sendEMail(adUserId, subject, message, pdf))
+					{
 						counter++;
+					}
 					alreadyNotifiedUserIds.add(adUserId);
 				}
 			}

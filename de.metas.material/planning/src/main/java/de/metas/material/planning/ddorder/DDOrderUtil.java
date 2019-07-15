@@ -12,10 +12,10 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.util.Check;
@@ -48,12 +48,10 @@ public class DDOrderUtil
 		return orgBPartner.getC_BPartner_ID();
 	}
 
-	public int retrieveOrgBPartnerLocationId(@NonNull final Properties ctx, final int orgId)
+	public BPartnerLocationId retrieveOrgBPartnerLocationId(@NonNull final OrgId orgId)
 	{
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-		final I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(ctx, orgId, ITrx.TRXNAME_None);
-
-		return orgBPLocation.getC_BPartner_Location_ID();
+		return bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 	}
 
 	/**
