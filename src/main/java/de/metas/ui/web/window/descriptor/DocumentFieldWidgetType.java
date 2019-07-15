@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -54,7 +53,6 @@ public enum DocumentFieldWidgetType
 	// Dates
 	, LocalDate(LayoutAlign.Right, LocalDate.class, DisplayType.Date) //
 	, LocalTime(LayoutAlign.Right, LocalTime.class, DisplayType.Time) //
-	, LocalDateTime(LayoutAlign.Right, LocalDateTime.class, DisplayType.DateTime) //
 	, ZonedDateTime(LayoutAlign.Right, ZonedDateTime.class, DisplayType.DateTime) //
 	, Timestamp(LayoutAlign.Right, Instant.class, DisplayType.DateTime) //
 	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
@@ -95,7 +93,7 @@ public enum DocumentFieldWidgetType
 	//
 	;
 
-	private static final Set<DocumentFieldWidgetType> TYPES_ALL_DATES = Sets.immutableEnumSet(LocalDate, LocalTime, LocalDateTime, ZonedDateTime, Timestamp);
+	private static final Set<DocumentFieldWidgetType> TYPES_ALL_DATES = Sets.immutableEnumSet(LocalDate, LocalTime, ZonedDateTime, Timestamp);
 	private static final Set<DocumentFieldWidgetType> TYPES_ALL_NUMERIC = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
 
 	private final LayoutAlign gridAlign;
@@ -142,8 +140,7 @@ public enum DocumentFieldWidgetType
 
 	public final boolean isDateWithTime()
 	{
-		return this == LocalDateTime
-				|| this == ZonedDateTime
+		return this == ZonedDateTime
 				|| this == Timestamp;
 	}
 

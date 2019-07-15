@@ -5,8 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -59,22 +59,22 @@ import lombok.NonNull;
 @JsonSerialize(using = JsonStringExpressionSerializer.class)
 public final class SqlDefaultValueExpression<V> implements IExpression<V>
 {
-	public static final <V> SqlDefaultValueExpression<?> of(
+	public static <V> SqlDefaultValueExpression<?> of(
 			@NonNull final IStringExpression stringExpression,
 			@NonNull final Class<V> valueClass)
 	{
 		if (Integer.class.equals(valueClass)
 				|| IntegerLookupValue.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<Integer>(stringExpression, Integer.class, (rs) -> rs.getInt(1));
+			return new SqlDefaultValueExpression<>(stringExpression, Integer.class, (rs) -> rs.getInt(1));
 		}
 		else if (BigDecimal.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<BigDecimal>(stringExpression, BigDecimal.class, (rs) -> rs.getBigDecimal(1));
+			return new SqlDefaultValueExpression<>(stringExpression, BigDecimal.class, (rs) -> rs.getBigDecimal(1));
 		}
 		else if (Boolean.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<Boolean>(stringExpression, Boolean.class, (rs) -> {
+			return new SqlDefaultValueExpression<>(stringExpression, Boolean.class, (rs) -> {
 				final String valueStr = rs.getString(1);
 				return DisplayType.toBoolean(valueStr, null);
 			});
@@ -82,33 +82,33 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		//
 		else if (java.util.Date.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<java.util.Date>(stringExpression, java.util.Date.class, rs -> rs.getTimestamp(1));
+			return new SqlDefaultValueExpression<>(stringExpression, java.util.Date.class, rs -> rs.getTimestamp(1));
 		}
 		else if (Timestamp.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<Timestamp>(stringExpression, Timestamp.class, rs -> rs.getTimestamp(1));
+			return new SqlDefaultValueExpression<>(stringExpression, Timestamp.class, rs -> rs.getTimestamp(1));
 		}
 		else if (ZonedDateTime.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<ZonedDateTime>(stringExpression, ZonedDateTime.class, rs -> retrieveZonedDateTime(rs));
+			return new SqlDefaultValueExpression<>(stringExpression, ZonedDateTime.class, rs -> retrieveZonedDateTime(rs));
 		}
-		else if (LocalDateTime.class.equals(valueClass))
+		else if (Instant.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<LocalDateTime>(stringExpression, LocalDateTime.class, rs -> retrieveLocalDateTime(rs));
+			return new SqlDefaultValueExpression<>(stringExpression, Instant.class, rs -> retrieveInstant(rs));
 		}
 		else if (LocalDate.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<LocalDate>(stringExpression, LocalDate.class, rs -> retrieveLocalDate(rs));
+			return new SqlDefaultValueExpression<>(stringExpression, LocalDate.class, rs -> retrieveLocalDate(rs));
 		}
 		else if (LocalTime.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<LocalTime>(stringExpression, LocalTime.class, rs -> retrieveLocalTime(rs));
+			return new SqlDefaultValueExpression<>(stringExpression, LocalTime.class, rs -> retrieveLocalTime(rs));
 		}
 		//
 		else if (String.class.equals(valueClass)
 				|| StringLookupValue.class.equals(valueClass))
 		{
-			return new SqlDefaultValueExpression<String>(stringExpression, String.class, (rs) -> rs.getString(1));
+			return new SqlDefaultValueExpression<>(stringExpression, String.class, (rs) -> rs.getString(1));
 		}
 
 		throw new ExpressionCompileException("Value type " + valueClass + " is not supported by " + SqlDefaultValueExpression.class);
@@ -119,9 +119,9 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 		return TimeUtil.asZonedDateTime(rs.getTimestamp(1));
 	}
 
-	private static LocalDateTime retrieveLocalDateTime(final ResultSet rs) throws SQLException
+	private static Instant retrieveInstant(final ResultSet rs) throws SQLException
 	{
-		return TimeUtil.asLocalDateTime(rs.getTimestamp(1));
+		return TimeUtil.asInstant(rs.getTimestamp(1));
 	}
 
 	private static LocalDate retrieveLocalDate(final ResultSet rs) throws SQLException
@@ -142,7 +142,7 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 	private final ValueLoader<V> valueRetriever;
 
 	@FunctionalInterface
-	private static interface ValueLoader<V>
+	private interface ValueLoader<V>
 	{
 		V get(final ResultSet rs) throws SQLException;
 	}

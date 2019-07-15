@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -97,13 +97,13 @@ public final class Values
 		{
 			return DateTimeConverters.toJson((LocalTime)value);
 		}
-		else if (value instanceof LocalDateTime)
-		{
-			return DateTimeConverters.toJson((LocalDateTime)value);
-		}
 		else if (value instanceof ZonedDateTime)
 		{
 			return DateTimeConverters.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
+		}
+		else if (value instanceof Instant)
+		{
+			return DateTimeConverters.toJson((Instant)value, jsonOpts.getZoneId());
 		}
 		else if (value instanceof DateRangeValue)
 		{

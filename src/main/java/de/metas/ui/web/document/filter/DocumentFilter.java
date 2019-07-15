@@ -1,7 +1,6 @@
 package de.metas.ui.web.document.filter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -233,17 +232,6 @@ public final class DocumentFilter
 		}
 
 		return param.getValueAsLocalDate();
-	}
-
-	public LocalDateTime getParameterValueAsLocalDateTime(@NonNull final String parameterName)
-	{
-		final DocumentFilterParam param = getParameterOrNull(parameterName);
-		if (param == null)
-		{
-			return null;
-		}
-
-		return param.getValueAsLocalDateTime();
 	}
 
 	public <T> T getParameterValueAs(@NonNull final String parameterName)

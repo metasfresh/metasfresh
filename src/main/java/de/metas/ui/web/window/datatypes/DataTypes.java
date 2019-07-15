@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -146,11 +145,6 @@ public final class DataTypes
 			{
 				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
 				return cast(TimeUtil.asZonedDateTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
-			}
-			else if (LocalDateTime.class == targetType)
-			{
-				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalDateTime;
-				return cast(TimeUtil.asLocalDateTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalDate.class == targetType)
 			{

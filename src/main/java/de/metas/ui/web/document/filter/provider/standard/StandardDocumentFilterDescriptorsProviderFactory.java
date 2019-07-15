@@ -142,8 +142,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory
 	private static DocumentFieldWidgetType extractFilterWidgetType(final DocumentFieldDescriptor field)
 	{
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
-		if (widgetType == DocumentFieldWidgetType.LocalDateTime
-				|| widgetType == DocumentFieldWidgetType.ZonedDateTime)
+		if (widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
 			return DocumentFieldWidgetType.LocalDate;
 		}

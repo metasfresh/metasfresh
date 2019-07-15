@@ -64,9 +64,16 @@ public enum JSONLayoutWidgetType
 		{
 			throw new IllegalArgumentException("Cannot convert " + widgetType + " to " + JSONLayoutWidgetType.class);
 		}
+		
+		if(DateTimeConverters.isLegacyDateTimeFormats()
+				&& (ZonedDateTime.equals(jsonWidgetType) || Timestamp.equals(jsonWidgetType)))
+		{
+			return DateTime; 
+		}
+		
 		return jsonWidgetType;
 	}
-
+	
 	private static final Map<DocumentFieldWidgetType, JSONLayoutWidgetType> widgetType2json = ImmutableMap.<DocumentFieldWidgetType, JSONLayoutWidgetType> builder()
 			.put(DocumentFieldWidgetType.Text, JSONLayoutWidgetType.Text)
 			.put(DocumentFieldWidgetType.LongText, JSONLayoutWidgetType.LongText)
@@ -74,7 +81,6 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Password, JSONLayoutWidgetType.Password)
 			.put(DocumentFieldWidgetType.LocalDate, JSONLayoutWidgetType.Date)
 			.put(DocumentFieldWidgetType.LocalTime, JSONLayoutWidgetType.Time)
-			.put(DocumentFieldWidgetType.LocalDateTime, JSONLayoutWidgetType.DateTime)
 			.put(DocumentFieldWidgetType.ZonedDateTime, JSONLayoutWidgetType.ZonedDateTime)
 			.put(DocumentFieldWidgetType.Timestamp, JSONLayoutWidgetType.Timestamp)
 			.put(DocumentFieldWidgetType.DateRange, JSONLayoutWidgetType.DateRange)

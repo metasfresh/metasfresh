@@ -8,8 +8,9 @@ import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 
 import org.compiere.util.DisplayType;
@@ -110,14 +111,19 @@ public final class DocumentFieldValueLoaders
 		return new ZonedDateTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
-	public static DocumentFieldValueLoader toLocalDateTime(final String sqlColumnName, final boolean encrypted)
+	public static DocumentFieldValueLoader toInstant(final String sqlColumnName, final boolean encrypted)
 	{
-		return new LocalDateTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
+		return new InstantDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
 	public static DocumentFieldValueLoader toLocalDate(final String sqlColumnName, final boolean encrypted)
 	{
 		return new LocalDateDocumentFieldValueLoader(sqlColumnName, encrypted);
+	}
+
+	public static DocumentFieldValueLoader toLocalTime(final String sqlColumnName, final boolean encrypted)
+	{
+		return new LocalTimeDocumentFieldValueLoader(sqlColumnName, encrypted);
 	}
 
 	public static DocumentFieldValueLoader toBigDecimal(final String sqlColumnName, final boolean encrypted, final Integer precision)
@@ -340,7 +346,7 @@ public final class DocumentFieldValueLoaders
 	}
 
 	@Value
-	private static final class LocalDateTimeDocumentFieldValueLoader implements DocumentFieldValueLoader
+	private static final class InstantDocumentFieldValueLoader implements DocumentFieldValueLoader
 	{
 		private final String sqlColumnName;
 		private final boolean encrypted;
@@ -348,7 +354,7 @@ public final class DocumentFieldValueLoaders
 		@Override
 		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
-			final LocalDateTime value = TimeUtil.asLocalDateTime(rs.getTimestamp(sqlColumnName));
+			final Instant value = TimeUtil.asInstant(rs.getTimestamp(sqlColumnName));
 			return encrypted ? decrypt(value) : value;
 		}
 	}
@@ -363,6 +369,20 @@ public final class DocumentFieldValueLoaders
 		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
 		{
 			final LocalDate value = TimeUtil.asLocalDate(rs.getTimestamp(sqlColumnName));
+			return encrypted ? decrypt(value) : value;
+		}
+	}
+
+	@Value
+	private static final class LocalTimeDocumentFieldValueLoader implements DocumentFieldValueLoader
+	{
+		private final String sqlColumnName;
+		private final boolean encrypted;
+
+		@Override
+		public Object retrieveFieldValue(final ResultSet rs, final boolean isDisplayColumnAvailable, final String adLanguage, final LookupDescriptor lookupDescriptor_NOTUSED) throws SQLException
+		{
+			final LocalTime value = TimeUtil.asLocalTime(rs.getTimestamp(sqlColumnName));
 			return encrypted ? decrypt(value) : value;
 		}
 	}

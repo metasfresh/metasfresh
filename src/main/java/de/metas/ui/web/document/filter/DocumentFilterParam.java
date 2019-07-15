@@ -1,7 +1,6 @@
 package de.metas.ui.web.document.filter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -285,11 +284,6 @@ public class DocumentFilterParam
 			return null;
 		}
 		return repoIdMapper.apply(idInt);
-	}
-
-	public LocalDateTime getValueAsLocalDateTime()
-	{
-		return DateTimeConverters.fromObjectToLocalDateTime(value);
 	}
 
 	public LocalDate getValueAsLocalDate()

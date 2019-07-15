@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -164,11 +163,6 @@ public class JSONDocumentChangedEvent
 			}
 			return new BigDecimal(valueStr);
 		}
-	}
-
-	public LocalDateTime getValueAsLocalDateTime()
-	{
-		return DateTimeConverters.fromObjectToLocalDateTime(value);
 	}
 
 	public ZonedDateTime getValueAsZonedDateTime()

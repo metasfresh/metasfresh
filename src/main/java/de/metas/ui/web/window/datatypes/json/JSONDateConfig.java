@@ -37,7 +37,6 @@ public class JSONDateConfig
 	public static final JSONDateConfig DEFAULT = JSONDateConfig.builder()
 			.zonedDateTimeFormatter(Env.DATE_FORMAT)
 			.timestampFormatter(Env.DATE_FORMAT)
-			.localDateTimeFormatter(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm"))
 			.localDateFormatter(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
 			.localTimeFormatter(DateTimeFormatter.ofPattern("HH:mm"))
 			.timeZoneFormatter(DateTimeFormatter.ofPattern("XXX"))
@@ -46,7 +45,6 @@ public class JSONDateConfig
 	public static final JSONDateConfig LEGACY = JSONDateConfig.builder()
 			.zonedDateTimeFormatter(Env.DATE_FORMAT)
 			.timestampFormatter(Env.DATE_FORMAT)
-			.localDateTimeFormatter(Env.DATE_FORMAT)
 			.localDateFormatter(Env.DATE_FORMAT)
 			.localTimeFormatter(Env.DATE_FORMAT)
 			.timeZoneFormatter(Env.DATE_FORMAT)
@@ -54,13 +52,9 @@ public class JSONDateConfig
 
 	@NonNull
 	DateTimeFormatter zonedDateTimeFormatter;
-	
-	@NonNull
-	DateTimeFormatter timestampFormatter;
-	
 
 	@NonNull
-	DateTimeFormatter localDateTimeFormatter;
+	DateTimeFormatter timestampFormatter;
 
 	@NonNull
 	DateTimeFormatter localDateFormatter;

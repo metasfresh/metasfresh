@@ -2,7 +2,6 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -52,6 +51,11 @@ public final class DateTimeConverters
 		return _config;
 	}
 
+	public static boolean isLegacyDateTimeFormats()
+	{
+		return getConfig().isLegacy();
+	}
+
 	private static JSONDateConfig _config = JSONDateConfig.DEFAULT;
 
 	public static String toJson(@NonNull final LocalDate date)
@@ -60,15 +64,12 @@ public final class DateTimeConverters
 		return config.getLocalDateFormatter().format(date);
 	}
 
-	public static String toJson(@NonNull final LocalDateTime date)
-	{
-		final JSONDateConfig config = getConfig();
-		return config.getLocalDateTimeFormatter().format(date);
-	}
-
 	public static String toJson(@NonNull final Instant instant, @NonNull final ZoneId zoneId)
 	{
-		return toJson(TimeUtil.asZonedDateTime(instant), zoneId);
+		final ZonedDateTime dateConv = instant.atZone(zoneId);
+
+		final JSONDateConfig config = getConfig();
+		return config.getZonedDateTimeFormatter().format(dateConv);
 	}
 
 	public static String toJson(@NonNull final LocalTime time)
@@ -88,7 +89,7 @@ public final class DateTimeConverters
 	public static String toJson(@NonNull final ZoneId zoneId)
 	{
 		final JSONDateConfig config = getConfig();
-		return config.getTimeZoneFormatter().format(LocalDateTime.now().atZone(zoneId));
+		return config.getTimeZoneFormatter().format(Instant.now().atZone(zoneId));
 	}
 
 	public static Object fromJson(
@@ -109,10 +110,6 @@ public final class DateTimeConverters
 		else if (widgetType == DocumentFieldWidgetType.LocalTime)
 		{
 			return fromObjectToLocalTime(valueObj);
-		}
-		else if (widgetType == DocumentFieldWidgetType.LocalDateTime)
-		{
-			return fromObjectToLocalDateTime(valueObj);
 		}
 		else if (widgetType == DocumentFieldWidgetType.ZonedDateTime)
 		{
@@ -154,20 +151,6 @@ public final class DateTimeConverters
 	{
 		final JSONDateConfig config = getConfig();
 		return LocalTime.parse(valueStr, config.getLocalTimeFormatter());
-	}
-
-	public static LocalDateTime fromObjectToLocalDateTime(final Object valueObj)
-	{
-		return fromObjectTo(valueObj,
-				LocalDateTime.class,
-				DateTimeConverters::fromJsonToLocalDateTime,
-				TimeUtil::asLocalDateTime);
-	}
-
-	private static LocalDateTime fromJsonToLocalDateTime(final String valueStr)
-	{
-		final JSONDateConfig config = getConfig();
-		return LocalDateTime.parse(valueStr, config.getLocalDateTimeFormatter());
 	}
 
 	public static ZonedDateTime fromObjectToZonedDateTime(final Object valueObj)
