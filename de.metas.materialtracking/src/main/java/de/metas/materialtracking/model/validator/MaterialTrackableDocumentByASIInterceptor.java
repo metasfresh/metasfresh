@@ -31,6 +31,7 @@ import org.compiere.model.ModelValidator;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Services;
 
@@ -72,16 +73,15 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 			if (materialTracking == null)
 			{
 				// the line has no material tracking-ASI, so make sure that it is not linked to any material tracking
-				materialTrackingBL.unlinkModelFromMaterialTracking(documentLine);
+				materialTrackingBL.unlinkModelFromMaterialTrackings(documentLine);
 			}
 			else
 			{
-				final boolean assumeNotAlreadyAssigned = false; // unlink from another material tracking if necessary
 				materialTrackingBL.linkModelToMaterialTracking(
 						MTLinkRequest.builder()
-								.setModel(documentLine)
-								.setMaterialTracking(materialTracking)
-								.setAssumeNotAlreadyAssigned(assumeNotAlreadyAssigned)
+								.model(documentLine)
+								.materialTrackingRecord(materialTracking)
+								.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
 								.build());
 			}
 		}
@@ -100,14 +100,14 @@ public abstract class MaterialTrackableDocumentByASIInterceptor<DocumentType, Do
 
 		//
 		// Unlink document header from any material tracking
-		materialTrackingBL.unlinkModelFromMaterialTracking(document);
+		materialTrackingBL.unlinkModelFromMaterialTrackings(document);
 
 		//
 		// Iterate lines and unlink them from any material tracking
 		final List<DocumentLineType> documentLines = retrieveDocumentLines(document);
 		for (final DocumentLineType documentLine : documentLines)
 		{
-			materialTrackingBL.unlinkModelFromMaterialTracking(documentLine);
+			materialTrackingBL.unlinkModelFromMaterialTrackings(documentLine);
 		}
 	}
 

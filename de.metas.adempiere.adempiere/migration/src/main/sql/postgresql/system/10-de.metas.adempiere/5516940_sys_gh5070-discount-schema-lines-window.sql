@@ -776,7 +776,7 @@ INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, Is
 
 -- 2019-03-25T12:08:24.053
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,552283,578072,1003093,0,541683,0,TO_TIMESTAMP('2019-03-25 12:08:24','YYYY-MM-DD HH24:MI:SS'),100,'Product Attribute Value',26,'D','Individual value of a product attribute (e.g. green, large, ..)',0,'Y','Y','Y','N','N','N','N','Y','Merkmals-Wert',90,90,1,1,TO_TIMESTAMP('2019-03-25 12:08:24','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,552283,578072,326,0,541683,0,TO_TIMESTAMP('2019-03-25 12:08:24','YYYY-MM-DD HH24:MI:SS'),100,'Product Attribute Value',26,'D','Individual value of a product attribute (e.g. green, large, ..)',0,'Y','Y','Y','N','N','N','N','Y','Merkmals-Wert',90,90,1,1,TO_TIMESTAMP('2019-03-25 12:08:24','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2019-03-25T12:08:24.055

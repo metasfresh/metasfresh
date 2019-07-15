@@ -51,6 +51,11 @@ public class ReferenceListAwareEnums
 		return Maps.uniqueIndex(Arrays.asList(values), ReferenceListAwareEnum::getCode);
 	}
 
+	public static <T extends ReferenceListAwareEnum> T ofNullableCode(final String code, final Class<T> clazz)
+	{
+		return !Check.isEmpty(code) ? ofCode(code, clazz) : null;
+	}
+
 	public static <T extends ReferenceListAwareEnum> T ofCode(final String code, final Class<T> clazz)
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);

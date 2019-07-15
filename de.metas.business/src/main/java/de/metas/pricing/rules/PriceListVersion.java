@@ -6,7 +6,8 @@ import org.compiere.model.I_M_ProductPrice;
 import org.slf4j.Logger;
 
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.IPricingContext;
@@ -92,11 +93,15 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 
 	private BooleanWithReason extractEnforcePriceLimit(final I_M_PriceList priceList)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final ITranslatableString reason = TranslatableStrings.builder()
+				.appendADElement("M_PriceList_ID")
+				.append(": ")
+				.append(priceList.getName())
+				.build();
 
 		return priceList.isEnforcePriceLimit()
-				? BooleanWithReason.trueBecause(msgBL.translatable("M_PriceList_ID"))
-				: BooleanWithReason.falseBecause(msgBL.translatable("M_PriceList_ID"));
+				? BooleanWithReason.trueBecause(reason)
+				: BooleanWithReason.falseBecause(reason);
 	}
 
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId, final I_M_PriceList_Version ctxPriceListVersion)

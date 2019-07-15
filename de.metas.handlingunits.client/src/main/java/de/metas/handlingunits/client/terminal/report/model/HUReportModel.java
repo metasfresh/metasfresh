@@ -52,6 +52,7 @@ import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.process.AdProcessId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -174,7 +175,7 @@ public class HUReportModel implements IDisposable
 	protected final void finalize() throws Throwable
 	{
 		dispose();
-	};
+	}
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
@@ -218,7 +219,7 @@ public class HUReportModel implements IDisposable
 			throw new TerminalException("@" + HUReportModel.MSG_NoReportProcessSelected + "@");
 		}
 
-		final int adProcessId = selectedKey.getAD_Process_ID();
+		final AdProcessId adProcessId = selectedKey.getAdProcessId();
 
 		HUReportExecutor.newInstance(getCtx())
 				.windowNo(getTerminalContext().getWindowNo())

@@ -32,11 +32,13 @@ import java.time.Duration;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery.Aggregate;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Cost_Collector;
 
 import de.metas.document.engine.IDocument;
@@ -126,6 +128,15 @@ public class PPCostCollectorDAO implements IPPCostCollectorDAO
 		return computeDuration(activity, costCollectorType, I_PP_Cost_Collector.COLUMNNAME_SetupTimeReal);
 	}
 
+	public List<I_PP_Cost_Collector> retrieveNotReversedForOrder(@NonNull final I_PP_Order order)
+	{
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_PP_Cost_Collector.class, order)
+			.addEqualsFilter(I_PP_Cost_Collector.COLUMN_PP_Order_ID, order.getPP_Order_ID())
+			.addInArrayOrAllFilter(I_PP_Cost_Collector.COLUMN_DocStatus, IDocument.STATUS_Completed, IDocument.STATUS_Closed);
+		queryBuilder.orderBy()
+			.addColumn(I_PP_Cost_Collector.COLUMN_PP_Cost_Collector_ID);
+		return queryBuilder.create().list();
+	}
 	@Override
 	public Duration getDurationReal(@NonNull final PPOrderRoutingActivity activity, @NonNull final CostCollectorType costCollectorType)
 	{
