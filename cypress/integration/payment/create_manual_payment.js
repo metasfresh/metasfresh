@@ -37,7 +37,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   const bPartnerName = `BPartner ${timestamp}`;
 
   it('Prepare product and pricing', function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
     Builder.createBasicProductEntities(
       productCategoryName,

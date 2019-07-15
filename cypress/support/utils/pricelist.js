@@ -34,10 +34,15 @@ export class PriceList {
     return this;
   }
 
-
   setPriceSystem(priceSystem) {
     cy.log(`PriceList - set priceSystem = ${priceSystem}`);
     this.priceSystem = priceSystem;
+    return this;
+  }
+
+  setIsSalesPriceList(isSalesPriceList) {
+    cy.log(`PriceList - set isSalesPriceList = ${isSalesPriceList}`);
+    this.isSalesPriceList = isSalesPriceList;
     return this;
   }
 
@@ -54,9 +59,8 @@ export class PriceList {
     return this;
   }
 
-
   static applyPriceList(priceList) {
-    describe(`Create new PriceList ${priceList.name}`, function () {
+    describe(`Create new PriceList ${priceList.name}`, function() {
       cy.visitWindow('540321', 'NEW', 'priceListObj');
       cy.writeIntoStringField('Name', priceList.name);
       cy.selectInListField('C_Country_ID', priceList.country);
@@ -67,7 +71,7 @@ export class PriceList {
         .type(priceList.pricePrecision);
       cy.selectInListField('M_PricingSystem_ID', priceList.priceSystem);
       cy.writeIntoStringField('Description', priceList.description);
-
+      cy.setCheckBoxValue('IsSOPriceList', priceList.isSalesPriceList);
 
       priceList.priceListVersions.forEach(version => {
         PriceList.applyPriceListVersion(version);
@@ -75,9 +79,8 @@ export class PriceList {
     });
   }
 
-
   static applyPriceListVersion(priceListVersion) {
-    describe(`Create new PriceListVersion ${priceListVersion.name}`, function () {
+    describe(`Create new PriceListVersion ${priceListVersion.name}`, function() {
       cy.selectTab('M_PriceList_Version');
       cy.pressAddNewButton();
       cy.writeIntoStringField('Name', `${priceListVersion.name} ${priceListVersion.validFrom}`, true, null, true);
