@@ -171,7 +171,7 @@ public class OrgDAO implements IOrgDAO
 				.firstOnly(I_AD_OrgInfo.class);
 	}
 
-	private static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
+	public static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
 	{
 		final OrgId parentOrgId = record.getParent_Org_ID() > 0
 				? OrgId.ofRepoId(record.getParent_Org_ID())

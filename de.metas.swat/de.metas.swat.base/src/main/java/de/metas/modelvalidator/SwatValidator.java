@@ -79,7 +79,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.modelvalidator.AD_User;
 import de.metas.adempiere.modelvalidator.Order;
 import de.metas.adempiere.modelvalidator.OrderLine;
-import de.metas.adempiere.modelvalidator.AD_OrgInfo;
 import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.bpartner.interceptor.C_BPartner_Location;
 import de.metas.cache.CCache.CacheMapType;
@@ -169,7 +168,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new Order(), client);
 		engine.addModelValidator(new OrderLine(), client);
 		engine.addModelValidator(new M_InOut(), client); // 03771
-		engine.addModelValidator(new AD_OrgInfo(), client);
 		engine.addModelValidator(new Payment(), client);
 		// 04359 this MV cripples the processing performance of Sales Orders
 		// the MV has been added to AD_ModelValidator, so that it can be enabled for certain customers *if* required.
