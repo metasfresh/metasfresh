@@ -34,6 +34,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 
@@ -96,6 +97,9 @@ public class MasterdataProviderTest
 		MockitoAnnotations.initMocks(this);
 
 		AdempiereTestHelper.get().init();
+
+		UserId loggedUserId = UserId.ofRepoId(1234567);
+		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 
 		countryRecord = newInstance(I_C_Country.class);
 		countryRecord.setCountryCode("DE");
