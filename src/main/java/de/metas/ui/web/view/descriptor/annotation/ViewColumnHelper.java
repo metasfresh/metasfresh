@@ -364,19 +364,19 @@ public final class ViewColumnHelper
 		final Class<? extends IViewRow> rowClass = row.getClass();
 		final ImmutableMap<String, Object> map = getDescriptor(rowClass)
 				.streamColumns()
-				.map(column -> extractFieldNameAndValueAsJson(row, column, jsonOpts))
+				.map(column -> extractFieldNameAndValueAsJsonObject(row, column, jsonOpts))
 				.filter(Predicates.notNull())
 				.collect(GuavaCollectors.toImmutableMap());
 
 		return ViewRowFieldNameAndJsonValues.ofMap(map);
 	}
 
-	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJson(
+	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJsonObject(
 			@NonNull final T row,
 			@NonNull final ClassViewColumnDescriptor column,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final Object value = extractFieldValueAsJson(row, column, jsonOpts);
+		final Object value = extractFieldValueAsJsonObject(row, column, jsonOpts);
 		if (JSONNullValue.isNull(value))
 		{
 			return null;
@@ -385,7 +385,7 @@ public final class ViewColumnHelper
 		return GuavaCollectors.entry(column.getFieldName(), value);
 	}
 
-	private static <T extends IViewRow> Object extractFieldValueAsJson(
+	private static <T extends IViewRow> Object extractFieldValueAsJsonObject(
 			@NonNull final T row,
 			@NonNull final ClassViewColumnDescriptor column,
 			@NonNull final JSONOptions jsonOpts)

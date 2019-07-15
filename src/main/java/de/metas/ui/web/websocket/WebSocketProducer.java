@@ -1,5 +1,7 @@
 package de.metas.ui.web.websocket;
 
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -37,5 +39,5 @@ public interface WebSocketProducer
 	 * 
 	 * @return event (JSON friendly)
 	 */
-	Object produceEvent();
+	Object produceEvent(JSONOptions jsonOpts);
 }
