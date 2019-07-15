@@ -10,7 +10,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -29,8 +28,8 @@ import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.Percent;
-
 import lombok.NonNull;
 
 /*
@@ -159,12 +158,12 @@ public class VendorProductInfoService
 		final PricingConditions pricingConditions = pricingConditionsRepo.getPricingConditionsById(pricingConditionsId);
 
 		final ProductId productId = product.getProductId();
-		final String vendorProductNo = Util.coalesceSuppliers(
+		final String vendorProductNo = CoalesceUtil.coalesceSuppliers(
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getVendorProductNo() : null,
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductNo() : null,
 				() -> productBL.getProductValue(productId));
 
-		final String vendorProductName = Util.coalesceSuppliers(
+		final String vendorProductName = CoalesceUtil.coalesceSuppliers(
 				() -> bpartnerProductRecord != null ? bpartnerProductRecord.getProductName() : null,
 				() -> productBL.getProductName(productId));
 
