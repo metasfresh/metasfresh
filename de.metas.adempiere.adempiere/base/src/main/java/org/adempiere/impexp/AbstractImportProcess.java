@@ -33,6 +33,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LoggerLoggable;
@@ -196,7 +197,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		// Delete old imported records (out of trx)
 		if (isDeleteOldImported())
 		{
-			deleteOldImported();
+			final int deletedCount = deleteImportRecords(ImportDataDeleteRequest.builder()
+					.mode(ImportDataDeleteMode.ONLY_IMPORTED)
+					.build());
+			loggable.addLog("Deleted Old Imported =" + deletedCount);
 		}
 
 		//
@@ -231,11 +235,53 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		return importResult;
 	}
 
-	protected final void deleteOldImported()
+	@Override
+	public final int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
 	{
-		final String sql = "DELETE FROM " + getImportTableName() + " WHERE " + COLUMNNAME_I_IsImported + "='Y' " + getWhereClause();
-		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
-		loggable.addLog("Deleted Old Imported =" + no);
+		final StringBuilder sql = new StringBuilder("DELETE FROM " + getImportTableName() + " WHERE 1=1");
+
+		//
+		sql.append("\n /* standard import filter */ ").append(getWhereClause());
+
+		//
+		// Delete mode filters
+		final boolean appendViewSqlWhereClause;
+		final ImportDataDeleteMode mode = request.getMode();
+		if (ImportDataDeleteMode.ONLY_SELECTED.equals(mode))
+		{
+			appendViewSqlWhereClause = false;
+			if (!Check.isEmpty(request.getSelectionSqlWhereClause(), true))
+			{
+				sql.append("\n /* selection */ AND ").append(request.getSelectionSqlWhereClause());
+			}
+		}
+		else if (ImportDataDeleteMode.ALL.equals(mode))
+		{
+			// allow to delete ALL for current selection
+			appendViewSqlWhereClause = true;
+		}
+		else if (ImportDataDeleteMode.ONLY_IMPORTED.equals(mode))
+		{
+			appendViewSqlWhereClause = true;
+			sql.append("\n /* only imported */ AND ").append(COLUMNNAME_I_IsImported).append("='Y'");
+		}
+		else
+		{
+			throw new AdempiereException("Unknown mode: " + mode);
+		}
+
+		//
+		// View filter
+		if (appendViewSqlWhereClause
+				&& !Check.isEmpty(request.getViewSqlWhereClause(), true))
+		{
+			sql.append("\n /* view */ AND (").append(request.getViewSqlWhereClause()).append(")");
+		}
+
+		//
+		// Delete
+		final int deletedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		return deletedCount;
 	}
 
 	/** @return a map of ImportTable_ColumnName to DefaultValue, to be used when the value is null */

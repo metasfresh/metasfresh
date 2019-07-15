@@ -9,7 +9,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.Mutable;
+import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
@@ -63,19 +63,20 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 	}
 
 	@Override
-	public I_C_Dunning getDunningForInvoiceOrNull(final I_C_Invoice invoice)
+	public I_C_Dunning getDunningForInvoiceOrNull(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
-		I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(invoice.getC_BPartner());
+		final I_C_Dunning dunning = dunningDAO.retrieveDunningForBPartner(invoiceRecord.getC_BPartner());
 		if (dunning != null)
 		{
 			return dunning;
 		}
 
-		dunning = dunningDAO.retrieveDunningByOrg(ctx, invoice.getAD_Org_ID());
-		return dunning;
+		final OrgId orgId = OrgId.ofRepoId(invoiceRecord.getAD_Org_ID());
+		Check.assume(orgId.isRegular(), "Param 'invoiceRecord' needs have AD_Org_ID > 0; invoiceRecord={}", invoiceRecord); // outside of unit tests this is always the case
+
+		return dunningDAO.retrieveDunningByOrg(orgId);
 	}
 
 	@Override

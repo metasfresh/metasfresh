@@ -89,7 +89,7 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 
 		//
 		// Generate dunning candidates
-		for (final I_C_Dunning dunning : dunningDAO.retrieveDunnings(getCtx()))
+		for (final I_C_Dunning dunning : dunningDAO.retrieveDunnings())
 		{
 			for (final I_C_DunningLevel dunningLevel : dunningDAO.retrieveDunningLevels(dunning))
 			{

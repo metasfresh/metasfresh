@@ -10,6 +10,12 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.113
+
+## Features
+
+## Fixes
+
 # metasfresh 5.112
 
 ## Features
