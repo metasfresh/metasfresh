@@ -33,6 +33,7 @@ describe('Create a Credit memo for Purchase Invoice', function() {
   const quantity = 200;
 
   it(`Ensure ${creditMemoVendor} is Number Controlled`, function() {
+    // very bold assumption that this document type always has recordId=1000006
     cy.visitWindow('135', '1000006');
     cy.setCheckBoxValue('IsDocNoControlled', true);
   });
