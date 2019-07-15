@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -69,23 +71,13 @@ public final class ViewRowFieldNameAndJsonValues
 		return map.keySet();
 	}
 
-	private Object get(@NonNull final String fieldName)
-	{
-		return map.get(fieldName);
-	}
-
-	public Object getAsJsonObject(@NonNull final String fieldName)
-	{
-		return get(fieldName);
-	}
-	
-	public Object convertAndGetValue(
+	public Object getAsJsonObject(
 			@NonNull final String fieldName,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final Object valueObj = get(fieldName);
+		final Object valueObj = map.get(fieldName);
 
-		if (valueObj == null)
+		if (JSONNullValue.isNull(valueObj))
 		{
 			return null;
 		}
@@ -95,46 +87,47 @@ public final class ViewRowFieldNameAndJsonValues
 		}
 		else
 		{
-			return valueObj;
+			return Values.valueToJsonObject(valueObj, jsonOpts);
 		}
 	}
 
-	public JSONLookupValue getAsJSONLookupValue(@NonNull final String fieldName)
+	public int getAsInt(@NonNull final String fieldName, final int defaultValueIfNotFoundOrError)
 	{
-		return (JSONLookupValue)get(fieldName);
-	}
+		final Object valueObj = map.get(fieldName);
 
-	public int getAsInt(@NonNull final String fieldName, final int defaultValueIfNotFound)
-	{
-		final Object jsonValueObj = get(fieldName);
-		if (JSONNullValue.toNullIfInstance(jsonValueObj) == null)
+		if (JSONNullValue.toNullIfInstance(valueObj) == null)
 		{
-			return defaultValueIfNotFound;
+			return defaultValueIfNotFoundOrError;
 		}
-		else if (jsonValueObj instanceof Number)
+		else if (valueObj instanceof Number)
 		{
-			return ((Number)jsonValueObj).intValue();
+			return ((Number)valueObj).intValue();
 		}
-		else if (jsonValueObj instanceof JSONLookupValue)
+		else if (valueObj instanceof LookupValue)
 		{
-			return ((JSONLookupValue)jsonValueObj).getKeyAsInt();
+			return ((LookupValue)valueObj).getIdAsInt();
+		}
+		else if (valueObj instanceof JSONLookupValue)
+		{
+			return ((JSONLookupValue)valueObj).getKeyAsInt();
 		}
 		else
 		{
-			return Integer.parseInt(jsonValueObj.toString());
+			return NumberUtils.asInt(valueObj, defaultValueIfNotFoundOrError);
 		}
 	}
 
 	public BigDecimal getAsBigDecimal(@NonNull final String fieldName, final BigDecimal defaultValueIfNotFoundOrError)
 	{
-		final Object jsonValueObj = get(fieldName);
-		if (JSONNullValue.isNull(jsonValueObj))
+		final Object valueObj = map.get(fieldName);
+
+		if (JSONNullValue.isNull(valueObj))
 		{
 			return defaultValueIfNotFoundOrError;
 		}
 		else
 		{
-			return NumberUtils.asBigDecimal(jsonValueObj, defaultValueIfNotFoundOrError);
+			return NumberUtils.asBigDecimal(valueObj, defaultValueIfNotFoundOrError);
 		}
 	}
 }

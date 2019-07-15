@@ -1,14 +1,11 @@
 package de.metas.ui.web.view;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.Builder;
@@ -55,8 +52,8 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 	@Getter
 	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
 
-	private transient ImmutableSet<String> fieldNames;
-	private final ConcurrentHashMap<JSONOptions, ViewRowFieldNameAndJsonValues> values;
+	private transient ImmutableSet<String> fieldNames; // lazy
+	private transient ViewRowFieldNameAndJsonValues values; // lazy
 
 	@Builder(builderMethodName = "_builder")
 	private ViewRowFieldNameAndJsonValuesHolder(
@@ -72,8 +69,6 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		this.widgetTypesByFieldName = widgetTypesByFieldName != null
 				? widgetTypesByFieldName
 				: ImmutableMap.of();
-
-		this.values = new ConcurrentHashMap<>();
 	}
 
 	private ViewRowFieldNameAndJsonValuesHolder(final Class<RowType> rowType)
@@ -81,7 +76,6 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		this.rowType = rowType;
 		this.viewEditorRenderModeByFieldName = ImmutableMap.of();
 		this.widgetTypesByFieldName = ImmutableMap.of();
-		this.values = new ConcurrentHashMap<>();
 	}
 
 	private ViewRowFieldNameAndJsonValuesHolder(final ViewRowFieldNameAndJsonValuesHolder<RowType> from)
@@ -89,7 +83,9 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		this.rowType = from.rowType;
 		this.viewEditorRenderModeByFieldName = from.viewEditorRenderModeByFieldName;
 		this.widgetTypesByFieldName = from.widgetTypesByFieldName;
-		this.values = new ConcurrentHashMap<>(from.values);
+
+		this.fieldNames = from.fieldNames;
+		this.values = from.values;
 	}
 
 	public ImmutableSet<String> getFieldNames()
@@ -106,21 +102,23 @@ public final class ViewRowFieldNameAndJsonValuesHolder<RowType extends IViewRow>
 		return fieldNames;
 	}
 
-	public ViewRowFieldNameAndJsonValues get(
-			@NonNull final RowType row,
-			@NonNull final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues get(@NonNull final RowType row)
 	{
-		return values.computeIfAbsent(jsonOpts, k -> ViewColumnHelper.extractJsonMap(row, jsonOpts));
+		ViewRowFieldNameAndJsonValues values = this.values;
+		if (values == null)
+		{
+			values = this.values = ViewColumnHelper.extractJsonMap(row);
+		}
+		return values;
 	}
 
-	public void clear()
+	public void clearValues()
 	{
-		this.values.clear();
+		this.values = null;
 	}
 
 	public ViewRowFieldNameAndJsonValuesHolder<RowType> copy()
 	{
 		return new ViewRowFieldNameAndJsonValuesHolder<>(this);
 	}
-
 }

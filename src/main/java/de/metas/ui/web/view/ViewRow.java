@@ -16,7 +16,6 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -149,7 +148,7 @@ public final class ViewRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts_NOTUSED)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
 		return values;
 	}

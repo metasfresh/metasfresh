@@ -13,7 +13,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.util.Services;
 
 /*
@@ -85,10 +84,9 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 
 	private DocumentToRepost extractDocumentToRepostFromTableAndRecordIdRow(final IViewRow row)
 	{
-		final ViewRowFieldNameAndJsonValues rowValues = row.getFieldNameAndJsonValues(getJSONOptions());
-		final int adTableId = rowValues.getAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
-		final int recordId = rowValues.getAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
-		final ClientId adClientId = ClientId.ofRepoId(rowValues.getAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+		final int adTableId = row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
+		final int recordId = row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
 				.recordId(recordId)
@@ -100,10 +98,9 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	{
 		final int adTableId = adTablesRepo.retrieveTableId(getTableName());
 		final int recordId = row.getId().toInt();
-		
-		final ViewRowFieldNameAndJsonValues rowValues = row.getFieldNameAndJsonValues(getJSONOptions());
-		final ClientId adClientId = ClientId.ofRepoId(rowValues.getAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
-		
+
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
 				.recordId(recordId)

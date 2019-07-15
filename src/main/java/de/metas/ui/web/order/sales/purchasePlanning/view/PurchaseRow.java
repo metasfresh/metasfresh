@@ -43,7 +43,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import lombok.AccessLevel;
@@ -377,9 +376,9 @@ public final class PurchaseRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return values.get(this, jsonOpts);
+		return values.get(this);
 	}
 
 	@Override
@@ -394,9 +393,9 @@ public final class PurchaseRow implements IViewRow
 		return values.getViewEditorRenderModeByFieldName();
 	}
 
-	private void resetFieldNameAndJsonValues()
+	private void resetFieldNamesAndValues()
 	{
-		values.clear();
+		values.clearValues();
 	}
 
 	@Override
@@ -454,7 +453,7 @@ public final class PurchaseRow implements IViewRow
 		this.qtyToPurchase = qtyToPurchase;
 		uomOrAvailablility = qtyToPurchase != null ? lookups.createUOMLookupValue(qtyToPurchase.getUOM()) : null;
 
-		resetFieldNameAndJsonValues();
+		resetFieldNamesAndValues();
 	}
 
 	private void setPurchasedQty(final Quantity purchasedQty)
@@ -465,7 +464,7 @@ public final class PurchaseRow implements IViewRow
 		}
 
 		this.purchasedQty = purchasedQty;
-		resetFieldNameAndJsonValues();
+		resetFieldNamesAndValues();
 	}
 
 	private void setDatePromised(final ZonedDateTime datePromised)
@@ -476,7 +475,7 @@ public final class PurchaseRow implements IViewRow
 		}
 
 		this.datePromised = datePromised;
-		resetFieldNameAndJsonValues();
+		resetFieldNamesAndValues();
 	}
 
 	private void setProfitInfo(@Nullable final PurchaseProfitInfo profitInfo)
@@ -496,7 +495,7 @@ public final class PurchaseRow implements IViewRow
 			profitPercent = null;
 		}
 
-		resetFieldNameAndJsonValues();
+		resetFieldNamesAndValues();
 	}
 
 	private void updateQtysFromIncludedRows()

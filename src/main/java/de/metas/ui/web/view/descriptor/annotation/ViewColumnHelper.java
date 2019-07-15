@@ -41,9 +41,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -357,14 +355,12 @@ public final class ViewColumnHelper
 	 * Note that the individual fields maybe be {@code instanceof} {@link Supplier}.
 	 * Useful because if a field is configured not to be shown at all, then the respective supplier won't be invoked.
 	 */
-	public static <T extends IViewRow> ViewRowFieldNameAndJsonValues extractJsonMap(
-			@NonNull final T row,
-			@NonNull final JSONOptions jsonOpts)
+	public static <T extends IViewRow> ViewRowFieldNameAndJsonValues extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
 		final ImmutableMap<String, Object> map = getDescriptor(rowClass)
 				.streamColumns()
-				.map(column -> extractFieldNameAndValueAsJsonObject(row, column, jsonOpts))
+				.map(column -> extractFieldNameAndValueAsJsonObject(row, column))
 				.filter(Predicates.notNull())
 				.collect(GuavaCollectors.toImmutableMap());
 
@@ -373,10 +369,9 @@ public final class ViewColumnHelper
 
 	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJsonObject(
 			@NonNull final T row,
-			@NonNull final ClassViewColumnDescriptor column,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final ClassViewColumnDescriptor column)
 	{
-		final Object value = extractFieldValueAsJsonObject(row, column, jsonOpts);
+		final Object value = extractFieldValueAsJsonObject(row, column);
 		if (JSONNullValue.isNull(value))
 		{
 			return null;
@@ -387,8 +382,7 @@ public final class ViewColumnHelper
 
 	private static <T extends IViewRow> Object extractFieldValueAsJsonObject(
 			@NonNull final T row,
-			@NonNull final ClassViewColumnDescriptor column,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final ClassViewColumnDescriptor column)
 	{
 		try
 		{
@@ -402,11 +396,11 @@ public final class ViewColumnHelper
 			if (value instanceof Supplier<?>)
 			{
 				final Supplier<?> supplier = (Supplier<?>)value;
-				return convertValueToJson(supplier.get(), column, jsonOpts);
+				return normalizeAndResolveValue(supplier.get(), column);
 			}
 			else
 			{
-				return convertValueToJson(value, column, jsonOpts);
+				return normalizeAndResolveValue(value, column);
 			}
 		}
 		catch (final Exception ex)
@@ -417,10 +411,9 @@ public final class ViewColumnHelper
 		}
 	}
 
-	private static Object convertValueToJson(
+	private static Object normalizeAndResolveValue(
 			@Nullable final Object valueParam,
-			@NonNull final ClassViewColumnDescriptor column,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final ClassViewColumnDescriptor column)
 	{
 		Object result = valueParam;
 
@@ -432,7 +425,12 @@ public final class ViewColumnHelper
 			}
 		}
 
-		return Values.valueToJsonObject(result, jsonOpts);
+		if (result == null)
+		{
+			return JSONNullValue.instance;
+		}
+
+		return result;
 	}
 
 	private static LookupValue resolveListValueByCode(final int listReferenceId, final Object code)

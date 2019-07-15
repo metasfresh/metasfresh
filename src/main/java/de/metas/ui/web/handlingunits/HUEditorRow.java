@@ -46,7 +46,6 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.util.Check;
@@ -300,15 +299,10 @@ public final class HUEditorRow implements IViewRow
 		return values.getFieldNames();
 	}
 
-	Object getFieldValueAsJson(@NonNull final String fieldName, @NonNull final JSONOptions jsonOpts)
-	{
-		return getFieldNameAndJsonValues(jsonOpts).getAsJsonObject(fieldName);
-	}
-
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return values.get(this, jsonOpts);
+		return values.get(this);
 	}
 
 	@Override

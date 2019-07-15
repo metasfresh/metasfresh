@@ -42,6 +42,7 @@ import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoa
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
@@ -352,7 +353,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			final String fieldName = fieldNameAndLoader.getKey();
 			final SqlViewRowFieldLoader fieldLoader = fieldNameAndLoader.getValue();
-			final Object value = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
+			final Object value = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
 
@@ -372,7 +373,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 		else
 		{
-			return retrieveRowId_MultiKey(rs, jsonOpts);
+			return retrieveRowId_MultiKey(rs, jsonOpts.getAdLanguage());
 		}
 	}
 
@@ -380,36 +381,47 @@ class SqlViewDataRepository implements IViewDataRepository
 	{
 		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
-		final Object jsonRowIdObj = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
-		if (JSONNullValue.isNull(jsonRowIdObj))
+		final Object rowIdObj = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
+		return convertToRowId(rowIdObj);
+	}
+
+	private static DocumentId convertToRowId(final Object rowIdObj)
+	{
+		if (JSONNullValue.isNull(rowIdObj))
 		{
 			return null;
 		}
-		else if (jsonRowIdObj instanceof DocumentId)
+		else if (rowIdObj instanceof DocumentId)
 		{
-			return (DocumentId)jsonRowIdObj;
+			return (DocumentId)rowIdObj;
 		}
-		else if (jsonRowIdObj instanceof Integer)
+		else if (rowIdObj instanceof Integer)
 		{
-			return DocumentId.of((Integer)jsonRowIdObj);
+			return DocumentId.of((Integer)rowIdObj);
 		}
-		else if (jsonRowIdObj instanceof String)
+		else if (rowIdObj instanceof String)
 		{
-			return DocumentId.of(jsonRowIdObj.toString());
+			return DocumentId.of(rowIdObj.toString());
 		}
-		else if (jsonRowIdObj instanceof JSONLookupValue)
+		else if (rowIdObj instanceof LookupValue)
 		{
 			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
+			return DocumentId.of(jsonLookupValue.getKey());
+		}
+		else if (rowIdObj instanceof JSONLookupValue)
+		{
+			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
 			return DocumentId.of(jsonLookupValue.getKey());
 		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
+			throw new IllegalArgumentException("Cannot convert id '" + rowIdObj + "' (" + rowIdObj.getClass() + ") to " + DocumentId.class);
 		}
 	}
 
-	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
+	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final String adLanguage) throws SQLException
 	{
 		final List<Object> rowIdParts = new ArrayList<>(keyColumnNamesMap.getKeyPartsCount());
 		boolean onlyNullValues = true;
@@ -419,11 +431,12 @@ class SqlViewDataRepository implements IViewDataRepository
 			final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
 			// Check.assumeNotNull(fieldLoader, "fieldLoader shall exist for {}", keyColumnName);
 
-			final Object rowIdPartObj = fieldLoader.retrieveValueAsJson(rs, jsonOpts);
+			final Object rowIdPartObj = fieldLoader.retrieveValue(rs, adLanguage);
 			if (JSONNullValue.isNull(rowIdPartObj))
 			{
 				rowIdParts.add(null);
 			}
+			else
 			{
 				rowIdParts.add(convertToRowIdPart(rowIdPartObj));
 				onlyNullValues = false;
@@ -447,6 +460,10 @@ class SqlViewDataRepository implements IViewDataRepository
 		else if (rowIdPartObj instanceof String)
 		{
 			return rowIdPartObj.toString();
+		}
+		else if (rowIdPartObj instanceof LookupValue)
+		{
+			return ((LookupValue)rowIdPartObj).getIdAsString();
 		}
 		else if (rowIdPartObj instanceof JSONLookupValue)
 		{

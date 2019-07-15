@@ -164,7 +164,7 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Object value = row.getFieldNameAndJsonValues(jsonOpts).getAsJsonObject(fieldName);
+		final Object value = row.getFieldValueAsJsonObject(fieldName, jsonOpts);
 		if (JSONNullValue.isNull(value))
 		{
 			return null;

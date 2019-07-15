@@ -421,7 +421,7 @@ public final class DefaultView implements IEditableView
 		else if (widgetType.isNumeric())
 		{
 			final int maxPrecision = rows.stream()
-					.map(row -> row.getFieldNameAndJsonValues(jsonOpts).getAsBigDecimal(fieldName, BigDecimal.ZERO))
+					.map(row -> row.getFieldValueAsBigDecimal(fieldName, BigDecimal.ZERO))
 					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
 					.max()
 					.orElse(0);

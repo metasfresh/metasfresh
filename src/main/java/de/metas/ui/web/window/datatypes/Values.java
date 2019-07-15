@@ -80,7 +80,7 @@ public final class Values
 			@NonNull final JSONOptions jsonOpts,
 			@NonNull final UnaryOperator<Object> fallbackMapper)
 	{
-		if (value == null)
+		if (JSONNullValue.isNull(value))
 		{
 			return JSONNullValue.instance;
 		}

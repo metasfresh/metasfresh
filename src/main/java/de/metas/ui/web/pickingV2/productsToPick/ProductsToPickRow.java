@@ -24,7 +24,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
@@ -208,9 +207,9 @@ public class ProductsToPickRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return values.get(this, jsonOpts);
+		return values.get(this);
 	}
 
 	public HuId getHuId()

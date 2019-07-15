@@ -23,7 +23,6 @@ import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -181,9 +180,9 @@ public final class PackageableRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return values.get(this, jsonOpts);
+		return values.get(this);
 	}
 
 	public boolean isLocked()

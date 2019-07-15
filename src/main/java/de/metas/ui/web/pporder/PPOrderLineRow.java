@@ -33,7 +33,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -377,9 +376,9 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return values.get(this, jsonOpts);
+		return values.get(this);
 	}
 
 	@Override

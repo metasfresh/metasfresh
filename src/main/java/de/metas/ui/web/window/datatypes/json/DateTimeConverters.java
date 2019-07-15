@@ -41,12 +41,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class DateTimeConverters
 {
-	public static void setConfig(@NonNull final JSONDateConfig config)
+	public static void setEnableLegacyDateTimeWidgets(final boolean enable)
 	{
-		DateTimeConverters._config = config;
+		DateTimeConverters._config = enable ? JSONDateConfig.LEGACY : JSONDateConfig.DEFAULT;
 	}
 
-	private static JSONDateConfig getConfig()
+	public static JSONDateConfig getConfig()
 	{
 		return _config;
 	}

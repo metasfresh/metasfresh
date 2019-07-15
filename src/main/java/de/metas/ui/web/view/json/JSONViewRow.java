@@ -15,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -144,12 +143,11 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
 	{
-		final ViewRowFieldNameAndJsonValues valuesByFieldName = row.getFieldNameAndJsonValues(jsonOpts);
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
 
 		return fieldName -> {
-			final Object value = valuesByFieldName.convertAndGetValue(fieldName, jsonOpts);
+			final Object value = row.getFieldValueAsJsonObject(fieldName, jsonOpts);
 			return JSONDocumentField.ofNameAndValue(fieldName, value)
 					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
 					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));

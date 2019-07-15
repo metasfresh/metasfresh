@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -70,7 +72,22 @@ public interface IViewRow
 	 * @return a map with an entry for each of this row's fields.<br>
 	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
 	 */
-	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts);
+	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
+
+	default BigDecimal getFieldValueAsBigDecimal(@NonNull final String fieldName, final BigDecimal defaultValueIfNotFoundOrError)
+	{
+		return getFieldNameAndJsonValues().getAsBigDecimal(fieldName, defaultValueIfNotFoundOrError);
+	}
+
+	default int getFieldValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFoundOrError)
+	{
+		return getFieldNameAndJsonValues().getAsInt(fieldName, defaultValueIfNotFoundOrError);
+	}
+
+	default Object getFieldValueAsJsonObject(@NonNull final String fieldName, final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);
+	}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{

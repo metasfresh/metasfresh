@@ -188,7 +188,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return null;
 		}
 
-		final FieldValueExtractor<HUEditorRow> fieldValueExtractor = (row, fieldName) -> row.getFieldValueAsJson(fieldName, jsonOpts);
+		final FieldValueExtractor<HUEditorRow> fieldValueExtractor = (row, fieldName) -> row.getFieldValueAsJsonObject(fieldName, jsonOpts);
 		return orderBys.stream()
 				.map(orderBy -> orderBy.asComparator(fieldValueExtractor))
 				.reduce((cmp1, cmp2) -> cmp1.thenComparing(cmp2))

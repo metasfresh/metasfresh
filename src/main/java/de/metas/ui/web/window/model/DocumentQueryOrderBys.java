@@ -45,9 +45,7 @@ public class DocumentQueryOrderBys
 			@NonNull final List<DocumentQueryOrderBy> orderBys,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final FieldValueExtractor<T> fieldValueExtractor = (row, fieldName) -> row
-				.getFieldNameAndJsonValues(jsonOpts)
-				.getAsJsonObject(fieldName);
+		final FieldValueExtractor<T> fieldValueExtractor = (row, fieldName) -> row.getFieldValueAsJsonObject(fieldName, jsonOpts);
 
 		// used in case orderBys is empty or whatever else goes wrong
 		final Comparator<T> noopComparator = (o1, o2) -> 0;

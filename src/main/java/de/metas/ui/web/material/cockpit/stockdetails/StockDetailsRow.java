@@ -25,7 +25,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import lombok.NonNull;
@@ -190,9 +189,9 @@ public class StockDetailsRow implements IViewRow
 	}
 
 	@Override
-	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues(final JSONOptions jsonOpts)
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
 	{
-		return ViewColumnHelper.extractJsonMap(this, jsonOpts);
+		return ViewColumnHelper.extractJsonMap(this);
 	}
 
 	@Override

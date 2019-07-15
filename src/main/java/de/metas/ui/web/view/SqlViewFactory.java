@@ -37,9 +37,7 @@ import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoa
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -495,14 +493,13 @@ public class SqlViewFactory implements IViewFactory
 		private final boolean isDisplayColumnAvailable;
 
 		@Override
-		public Object retrieveValueAsJson(@NonNull final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
+		public Object retrieveValue(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
 		{
-			final Object fieldValue = fieldValueLoader.retrieveFieldValue(
+			return fieldValueLoader.retrieveFieldValue(
 					rs, 
 					isDisplayColumnAvailable, 
-					jsonOpts.getAdLanguage(), 
+					adLanguage, 
 					(LookupDescriptor)null);
-			return Values.valueToJsonObject(fieldValue, jsonOpts);
 		}
 
 	}
