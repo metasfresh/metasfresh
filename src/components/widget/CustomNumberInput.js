@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-const FLOAT_NUMBER_REGEX_FORMAT = /^-?[0-9]+[.,]?[0-9]*$/;
+const FLOAT_NUMBER_REGEX_FORMAT = /^-?[0-9]*[.,]?[0-9]*$/;
 
 /*
  * This component was created because we want to accept both dot and comma (regarding which browser and locale

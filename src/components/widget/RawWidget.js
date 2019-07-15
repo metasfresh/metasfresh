@@ -148,13 +148,17 @@ export class RawWidget extends Component {
         clearedFieldWarning: false,
       });
 
-      return handlePatch(
-        property,
-        // for CostPrice inputs we replace commas with dots before patching
-        isCostPriceInput ? value.replace(',', '.') : value,
-        id,
-        valueTo
-      );
+      // for CostPrice inputs we replace commas with dots before patching
+      // and prepend value with 0 if needed
+      if (isCostPriceInput) {
+        value = value.replace(`,`, `.`);
+
+        if (value.match(/^[.,]+/)) {
+          value = `0${value}`;
+        }
+      }
+
+      return handlePatch(property, value, id, valueTo);
     }
 
     return Promise.resolve(null);

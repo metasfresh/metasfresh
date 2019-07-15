@@ -511,5 +511,59 @@ describe('RawWidget component', () => {
       expect(spy).toHaveBeenCalled();
       expect(handlePatchSpy).toHaveBeenCalledWith('PriceList', '14.50', undefined, undefined);
     });
+
+    it('comma is replaced, and 0 is added when patching field', () => {
+      const handlePatchSpy = jest.fn()
+      const props = createDummyProps(
+        {
+          ...fixtures.costPrice.layout1,
+          widgetData: [{ ...fixtures.costPrice.data1 }],
+          handlePatch: handlePatchSpy,
+        },
+      );
+
+      const wrapper = shallow(<RawWidget {...props} />);
+      const numberInput = wrapper.find('NumberInput').dive();
+      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+
+      numberInput.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Enter',
+          target: { value: ',50' },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).toHaveBeenCalledWith('PriceList', '0.50', undefined, undefined);
+    });
+
+    it('0 is added when patching field 2', () => {
+      const handlePatchSpy = jest.fn()
+      const props = createDummyProps(
+        {
+          ...fixtures.costPrice.layout1,
+          widgetData: [{ ...fixtures.costPrice.data1 }],
+          handlePatch: handlePatchSpy,
+        },
+      );
+
+      const wrapper = shallow(<RawWidget {...props} />);
+      const numberInput = wrapper.find('NumberInput').dive();
+      const spy = jest.spyOn(wrapper.instance(), 'handleKeyDown');
+
+      numberInput.find('input').simulate(
+        'keyDown',
+        {
+          key: 'Enter',
+          target: { value: '.5' },
+          preventDefault: jest.fn(),
+        },
+      );
+
+      expect(spy).toHaveBeenCalled();
+      expect(handlePatchSpy).toHaveBeenCalledWith('PriceList', '0.5', undefined, undefined);
+    });
   });
 });
