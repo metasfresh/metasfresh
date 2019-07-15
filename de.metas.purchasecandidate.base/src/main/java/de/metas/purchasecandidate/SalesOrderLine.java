@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -88,7 +87,7 @@ public class SalesOrderLine
 		return orderLine.getLine();
 	}
 
-	public LocalDateTime getDatePromised()
+	public ZonedDateTime getDatePromised()
 	{
 		return orderLine.getDatePromised();
 	}

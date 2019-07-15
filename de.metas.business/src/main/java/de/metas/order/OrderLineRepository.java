@@ -2,7 +2,7 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.OrgId;
@@ -65,10 +65,10 @@ public class OrderLineRepository
 
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
 
-		final LocalDateTime datePromised = CoalesceUtil.firstValidValue(
+		final ZonedDateTime datePromised = CoalesceUtil.firstValidValue(
 				date -> date != null,
-				() -> TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()),
-				() -> TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getDatePromised()));
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getDatePromised()),
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getDatePromised()));
 
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))

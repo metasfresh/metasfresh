@@ -1,6 +1,6 @@
 package de.metas.order;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -79,7 +79,7 @@ public class OrderLine
 
 	/** note: besides the name "datePromised", it's also in the application dictionary declared as date+time, and some businesses need it that way. */
 	@NonNull
-	LocalDateTime datePromised;
+	ZonedDateTime datePromised;
 
 	@NonNull
 	SOTrx soTrx;
