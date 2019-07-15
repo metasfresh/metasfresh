@@ -60,7 +60,6 @@ import lombok.NonNull;
 public class OrderFreightCostsService
 {
 
-
 	private static final Logger logger = LogManager.getLogger(OrderFreightCostsService.class);
 
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -76,8 +75,13 @@ public class OrderFreightCostsService
 
 	public void addFreightRateLineIfNeeded(final I_C_Order order)
 	{
-		updateFreightAmt(order);
-		final BigDecimal freightAmt = order.getFreightAmt();
+		final DeliveryViaRule deliveryViaRule = DeliveryViaRule.ofCode(order.getDeliveryViaRule());
+		final boolean isFreightCostNeeded = !deliveryViaRule.equals(DeliveryViaRule.Pickup);
+
+		if(!isFreightCostNeeded)
+		{
+			return;
+		}
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
 		final boolean isCustomFreightCost = freightCostRule.isFixPrice()
@@ -86,6 +90,8 @@ public class OrderFreightCostsService
 		{
 			return;
 		}
+
+		final Money freightAmt = computeFreightRate(order).orElse(null);
 
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 		if (hasFreightCostLine(orderId))
@@ -107,8 +113,8 @@ public class OrderFreightCostsService
 
 		freightRateOrderLine.setIsManualPrice(true);
 		freightRateOrderLine.setIsPriceEditable(false);
-		freightRateOrderLine.setPriceEntered(freightAmt);
-		freightRateOrderLine.setPriceActual(freightAmt);
+		freightRateOrderLine.setPriceEntered(freightAmt.getAsBigDecimal());
+		freightRateOrderLine.setPriceActual(freightAmt.getAsBigDecimal());
 
 		freightRateOrderLine.setIsManualDiscount(true);
 		freightRateOrderLine.setDiscount(BigDecimal.ZERO);
@@ -262,12 +268,10 @@ public class OrderFreightCostsService
 		final int bpartnerRecordId = salesOrder.getC_BPartner_ID();
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpartnerRecordId, locationRecordId);
 
-
 		final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocationId);
 
 		return countryId;
 	}
-
 
 	private Optional<Money> computeShipmentValueAmt(@NonNull final OrderId orderId)
 	{

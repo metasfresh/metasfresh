@@ -28,7 +28,6 @@ import de.metas.cache.CCache;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -67,7 +66,6 @@ public class FreightCostRepository
 {
 	private static final Logger logger = LogManager.getLogger(FreightCostRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
 
 	private static final String MSG_NO_FREIGHT_COST_DETAIL = "freightCost.Order.noFreightCostDetail";
 
@@ -209,13 +207,8 @@ public class FreightCostRepository
 
 	private FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)
 	{
-		final CountryId countryId = CountryId.ofRepoId(record.getC_Country_ID());
-
-		final CurrencyId recordCurrencyId = CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID());
-
-		final CurrencyId currencyId = recordCurrencyId != null ? recordCurrencyId
-				: countriesRepo.getCountryCurrencyId(countryId)
-						.orElseThrow(() -> new AdempiereException("No currency defined for " + countryId));
+		final CountryId countryId = CountryId.ofRepoIdOrNull(record.getC_Country_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(record.getC_Currency_ID());
 
 		return FreightCostBreak.builder()
 				.freightCostShipperId(FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()))

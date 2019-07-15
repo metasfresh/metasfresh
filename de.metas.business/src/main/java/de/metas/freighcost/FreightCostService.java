@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -42,7 +44,7 @@ public class FreightCostService
 
 	private final FreightCostRepository freightCostRepo;
 
-
+	private final static String MSG_Order_No_Shipper = "C_Order_NoShipper";
 
 	public FreightCostService(
 			@NonNull final FreightCostRepository freightCostRepo)
@@ -98,6 +100,7 @@ public class FreightCostService
 	 */
 	public FreightCost findBestMatchingFreightCost(final FreightCostContext context)
 	{
+
 		final BPartnerId shipToBPartnerId = context.getShipToBPartnerId();
 		if (shipToBPartnerId == null)
 		{
@@ -113,9 +116,10 @@ public class FreightCostService
 		final ShipperId shipperId = context.getShipperId();
 		if (shipperId == null)
 		{
-			// TODO -> AD_Message
-			throw new AdempiereException("Shipper not set");
-			// throw new AdempiereException("Beleg " + documentNo + " hat keinen Lieferweg (M_Shipper_ID=0)");
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_Order_No_Shipper);
+			throw new AdempiereException(message);
 		}
 
 		//
@@ -132,7 +136,7 @@ public class FreightCostService
 
 	public FreightCost getFreightCostByBPartnerId(final BPartnerId bpartnerId)
 	{
-		 final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 		final FreightCostId bpFreightCostId = FreightCostId.ofRepoIdOrNull(bpartnerBL.getFreightCostIdByBPartnerId(bpartnerId));
 		if (bpFreightCostId != null)
