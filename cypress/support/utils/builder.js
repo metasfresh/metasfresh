@@ -75,6 +75,41 @@ export class Builder {
     });
   }
 
+  static createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocation(
+    productCategoryName,
+    productCategoryValue,
+    priceListName,
+    productName,
+    productValue,
+    productType,
+    packingInstructionsName,
+    businessPartner
+  ) {
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
+    let productPrice;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductType(productType)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice)
+        .setCUTUAllocation(packingInstructionsName)
+        .setBusinessPartner(businessPartner)
+        .apply();
+    });
+  }
+
   static createBasicProductEntitiesWithCUTUAllocation(
     productCategoryName,
     productCategoryValue,
