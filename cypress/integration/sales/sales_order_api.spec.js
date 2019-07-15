@@ -2,12 +2,13 @@ import { salesOrders } from '../../page_objects/sales_orders';
 
 import { SalesOrder } from '../../support/utils/sales_order_api';
 import { BPartner } from '../../support/utils/bpartner';
+import {humanReadableNow} from "../../support/utils/utils";
 
-const timestamp = new Date().getTime();
-const customer1Name = `Customer1-${timestamp}`;
+const date = humanReadableNow();
+const customer1Name = `Customer1-${date}`;
 
 describe('New sales order test', function() {
-  const salesOrder1Name = `SalesOrder1-${timestamp}`;
+  const salesOrder1Name = `SalesOrder1-${date}`;
   let salesOrder1ID = null;
 
   before(function() {

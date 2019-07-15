@@ -22,7 +22,7 @@
 
 /// <reference types="Cypress" />
 
-import {getLanguageSpecific} from '../../support/utils/utils';
+import {getLanguageSpecific, humanReadableNow} from '../../support/utils/utils';
 import {salesInvoices} from '../../page_objects/sales_invoices';
 import {Builder} from '../../support/utils/builder';
 import {DiscountSchema} from '../../support/utils/discountschema';
@@ -31,8 +31,8 @@ import {BPartner} from '../../support/utils/bpartner';
 import {SalesInvoice, SalesInvoiceLine} from '../../support/utils/sales_invoice';
 import {DocumentActionKey, DocumentStatusKey, RewriteURL} from '../../support/utils/constants';
 
-describe('Create a Credit memo for Sales Invoice', function () {
-  const timestamp = new Date().getTime();
+describe('Create a Credit memo for Sales Invoice', function() {
+  const date = humanReadableNow();
 
   const creditMemo = 'Credit Memo';
   let originalSalesInvoiceNumber;
@@ -44,26 +44,26 @@ describe('Create a Credit memo for Sales Invoice', function () {
 
   // data for "before" section
   // priceList
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
 
   // product
-  const productCategoryName = `ProductCategory ${timestamp}`;
+  const productCategoryName = `ProductCategory ${date}`;
   const productCategoryValue = productCategoryName;
-  const productName = `Product ${timestamp}`;
+  const productName = `Product ${date}`;
   const productValue = productName;
   const productType = 'Item';
 
   // BPartner
-  const discountSchemaName = `DiscountSchema ${timestamp}`;
-  const bPartnerName = `bPartner ${timestamp}`;
+  const discountSchemaName = `DiscountSchema ${date}`;
+  const bPartnerName = `bPartner ${date}`;
 
   // Sales Invoice
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-  it('Prepare product and baprtner', function () {
+  it('Prepare product and baprtner', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
     Builder.createBasicProductEntities(
@@ -90,7 +90,7 @@ describe('Create a Credit memo for Sales Invoice', function () {
     });
   });
 
-  it('Prepare sales invoice', function () {
+  it('Prepare sales invoice', function() {
     cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
         .addLine(
