@@ -24,8 +24,6 @@ import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -50,6 +48,8 @@ import org.eevolution.model.MDDOrderLine;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Msg;
 import de.metas.order.IOrderBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;

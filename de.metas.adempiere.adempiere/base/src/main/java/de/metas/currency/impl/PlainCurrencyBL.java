@@ -1,12 +1,12 @@
 package de.metas.currency.impl;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 public class PlainCurrencyBL extends CurrencyBL

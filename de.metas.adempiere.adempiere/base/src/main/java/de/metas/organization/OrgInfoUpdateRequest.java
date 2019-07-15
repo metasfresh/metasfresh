@@ -3,7 +3,6 @@ package de.metas.organization;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerLocationId;

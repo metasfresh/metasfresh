@@ -1,8 +1,7 @@
 package de.metas.customs;
 
-import org.adempiere.service.OrgId;
-
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;

@@ -8,8 +8,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -24,6 +22,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;

@@ -1,7 +1,6 @@
 package de.metas.organization;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.bpartner.BPartnerLocationId;

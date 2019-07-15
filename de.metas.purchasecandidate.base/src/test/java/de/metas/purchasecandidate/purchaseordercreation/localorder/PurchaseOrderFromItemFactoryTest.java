@@ -10,7 +10,6 @@ import java.time.ZonedDateTime;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -35,6 +34,7 @@ import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.order.model.I_C_Order;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;

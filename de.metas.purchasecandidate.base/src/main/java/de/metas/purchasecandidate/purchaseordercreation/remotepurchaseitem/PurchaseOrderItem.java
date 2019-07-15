@@ -4,7 +4,6 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -13,6 +12,7 @@ import com.google.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;

@@ -2,7 +2,6 @@ package de.metas.rest_api.invoice.impl;
 
 import java.time.LocalDate;
 
-import org.adempiere.service.OrgIdNotFoundException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -16,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.organization.OrgIdNotFoundException;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatus;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatusResponse;
 import de.metas.rest_api.invoice.impl.SalesInvoicePaymentStatusRepository.PaymentStatusQuery;

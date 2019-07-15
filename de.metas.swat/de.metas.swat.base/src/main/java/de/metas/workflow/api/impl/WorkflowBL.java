@@ -28,14 +28,14 @@ import java.util.Properties;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Responsible;
 import org.compiere.model.X_AD_WF_Responsible;
 import org.compiere.util.Env;
 import org.compiere.wf.MWFResponsible;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;

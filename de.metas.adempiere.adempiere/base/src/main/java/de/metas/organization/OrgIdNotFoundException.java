@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.organization;
 
 import org.adempiere.exceptions.AdempiereException;
 

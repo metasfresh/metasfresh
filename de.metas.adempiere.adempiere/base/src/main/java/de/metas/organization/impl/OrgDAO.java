@@ -1,4 +1,4 @@
-package org.adempiere.service.impl;
+package de.metas.organization.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -32,11 +32,9 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
-import org.adempiere.service.OrgIdNotFoundException;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -44,10 +42,15 @@ import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.calendar.CalendarId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgIdNotFoundException;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.organization.OrgQuery;
 import de.metas.organization.OrgTypeId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PricingSystemId;
@@ -59,6 +62,17 @@ import lombok.NonNull;
 
 public class OrgDAO implements IOrgDAO
 {
+	private final CCache<OrgId, OrgInfo> orgInfosCache = CCache.<OrgId, OrgInfo> builder()
+			.tableName(I_AD_OrgInfo.Table_Name)
+			.build();
+
+	@Override
+	public ClientId getClientIdByOrgId(@NonNull final OrgId orgId)
+	{
+		final I_AD_Org orgRecord = getById(orgId);
+		return ClientId.ofRepoId(orgRecord.getAD_Client_ID());
+	}
+
 	@Override
 	public void save(@NonNull final I_AD_Org orgRecord)
 	{
@@ -127,7 +141,7 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public OrgInfo getOrgInfoById(final OrgId adOrgId)
 	{
-		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_None);
+		return orgInfosCache.getOrLoad(adOrgId, k -> retrieveOrgInfo(adOrgId, ITrx.TRXNAME_None));
 	}
 
 	@Override
@@ -141,9 +155,7 @@ public class OrgDAO implements IOrgDAO
 		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(adOrgId, trxName);
 		if (record == null)
 		{
-			// NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-			// throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + adOrgId);
-			return null;
+			throw new AdempiereException("@NotFound@ @AD_OrgInfo@: " + adOrgId);
 		}
 
 		return toOrgInfo(record);
@@ -193,40 +205,19 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public WarehouseId getOrgWarehouseId(@NonNull final OrgId orgId)
 	{
-		final OrgInfo orgInfo = getOrgInfoById(orgId);
-		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-		if (orgInfo == null)
-		{
-			return null;
-		}
-
-		return orgInfo.getWarehouseId();
+		return getOrgInfoById(orgId).getWarehouseId();
 	}
 
 	@Override
 	public WarehouseId getOrgPOWarehouseId(@NonNull final OrgId orgId)
 	{
-		final OrgInfo orgInfo = getOrgInfoById(orgId);
-		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-		if (orgInfo == null)
-		{
-			return null;
-		}
-
-		return orgInfo.getPurchaseWarehouseId();
+		return getOrgInfoById(orgId).getPurchaseWarehouseId();
 	}
 
 	@Override
 	public WarehouseId getOrgDropshipWarehouseId(@NonNull final OrgId orgId)
 	{
-		final OrgInfo orgInfo = getOrgInfoById(orgId);
-		// Check.assumeNotNull(orgInfo, "OrgInfo not null"); // NOTE: commented out because it fails some JUnit test in case there is not OrgInfo
-		if (orgInfo == null)
-		{
-			return null;
-		}
-
-		return orgInfo.getDropShipWarehouseId();
+		return getOrgInfoById(orgId).getDropShipWarehouseId();
 	}
 
 	@Override

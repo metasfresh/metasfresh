@@ -2,8 +2,7 @@ package de.metas.product;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;

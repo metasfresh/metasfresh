@@ -20,12 +20,12 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.util.Services;
 
@@ -59,12 +59,7 @@ public class MOrg extends X_AD_Org
 		return LegacyAdapters.convertToPOArray(clientOrgs, MOrg.class);
 	}	//	getOfClient
 
-	/**
-	 * 	Get Org from Cache
-	 *	@param ctx context
-	 *	@param AD_Org_ID id
-	 *	@return MOrg
-	 */
+	@Deprecated
 	public static MOrg get (Properties ctx, int AD_Org_ID)
 	{
 		if (AD_Org_ID < 0)

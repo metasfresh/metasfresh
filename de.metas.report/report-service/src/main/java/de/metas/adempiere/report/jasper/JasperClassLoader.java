@@ -32,8 +32,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
@@ -44,6 +42,8 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;

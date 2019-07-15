@@ -9,11 +9,11 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;

@@ -28,7 +28,6 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Warehouse;
@@ -37,6 +36,7 @@ import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;

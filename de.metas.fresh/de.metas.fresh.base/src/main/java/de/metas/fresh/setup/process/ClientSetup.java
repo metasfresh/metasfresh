@@ -8,8 +8,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -34,6 +32,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.location.ILocationBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.service.IPriceListDAO;
@@ -124,7 +124,7 @@ class ClientSetup
 			adClientInfo = clientDAO.retrieveClientInfo(getCtx(), adClient.getAD_Client_ID());
 			InterfaceWrapperHelper.setTrxName(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 			//
-			adOrg = orgDAO.retrieveOrg(getCtx(), AD_Org_ID_Main.getRepoId());
+			adOrg = orgDAO.getById(AD_Org_ID_Main);
 			InterfaceWrapperHelper.setTrxName(adOrg, ITrx.TRXNAME_ThreadInherited);
 			//
 			final OrgInfo adOrgInfo = orgDAO.getOrgInfoByIdInTrx(AD_Org_ID_Main);

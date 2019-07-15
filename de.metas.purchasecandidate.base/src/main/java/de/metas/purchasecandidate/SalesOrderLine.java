@@ -3,13 +3,13 @@ package de.metas.purchasecandidate;
 import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;

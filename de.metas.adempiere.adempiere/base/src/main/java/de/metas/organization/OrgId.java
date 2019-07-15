@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.organization;
 
 import java.util.Objects;
 import java.util.Optional;

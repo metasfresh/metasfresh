@@ -31,7 +31,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -45,6 +44,7 @@ import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;

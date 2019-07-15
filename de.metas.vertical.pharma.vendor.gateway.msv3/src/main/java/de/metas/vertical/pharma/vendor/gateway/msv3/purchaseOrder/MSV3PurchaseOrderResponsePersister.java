@@ -5,9 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Optional;
 
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
+import de.metas.organization.OrgId;
 import de.metas.vendor.gateway.api.order.MSV3OrderResponsePackageItemPartRepoId;
 import de.metas.vertical.pharma.msv3.protocol.order.MSV3PurchaseCandidateId;
 import de.metas.vertical.pharma.msv3.protocol.order.OrderDefectReason;

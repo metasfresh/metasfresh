@@ -24,8 +24,6 @@ package de.metas.adempiere.modelvalidator;
 
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
@@ -33,7 +31,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MOrg;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -43,6 +40,8 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.modelvalidator.SwatValidator;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -177,7 +176,7 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 									new Object[] {
 											io.getDocumentNo(),
 											io.getM_Warehouse().getName(),
-											MOrg.get(io.getCtx(), io.getAD_Org_ID()).getName()
+											Services.get(IOrgDAO.class).retrieveOrgName(io.getAD_Org_ID())
 									}));
 						}
 						else
@@ -187,7 +186,7 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 									new Object[] {
 											io.getDocumentNo(),
 											io.getM_Warehouse().getName(),
-											MOrg.get(io.getCtx(), io.getAD_Org_ID()).getName()
+											Services.get(IOrgDAO.class).retrieveOrgName(io.getAD_Org_ID())
 									}));
 						}
 					}
@@ -272,7 +271,8 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 								new Object[] {
 										o.getDocumentNo(),
 										o.getM_Warehouse().getName(),
-										MOrg.get(o.getCtx(), o.getAD_Org_ID()).getName() }));
+										Services.get(IOrgDAO.class).retrieveOrgName(o.getAD_Org_ID())
+								}));
 					}
 					else
 					{
@@ -282,7 +282,8 @@ public class ProhibitInconsistentDropshipValues implements ModelValidator
 								new Object[] {
 										o.getDocumentNo(),
 										o.getM_Warehouse().getName(),
-										MOrg.get(o.getCtx(), o.getAD_Org_ID()).getName() }));
+										Services.get(IOrgDAO.class).retrieveOrgName(o.getAD_Org_ID())
+								}));
 					}
 				}
 			}

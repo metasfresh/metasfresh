@@ -11,10 +11,10 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.MOrg;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Services;
 
 /*
@@ -53,7 +53,8 @@ public class M_ForecastLine
 		final int adOrgId = forecastLine.getAD_Org_ID();
 		if (wh.getAD_Org_ID() != adOrgId)
 		{
-			throw new WarehouseInvalidForOrgException(wh.getName(), MOrg.get(ctx, adOrgId).getName());
+			final String orgName = Services.get(IOrgDAO.class).retrieveOrgName(adOrgId);
+			throw new WarehouseInvalidForOrgException(wh.getName(), orgName);
 		}
 	}
 

@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderBL;
@@ -45,6 +44,7 @@ import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;

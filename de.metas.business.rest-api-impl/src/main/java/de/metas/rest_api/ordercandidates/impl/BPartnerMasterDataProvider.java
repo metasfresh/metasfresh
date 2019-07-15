@@ -12,8 +12,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -33,6 +31,8 @@ import de.metas.cache.CCache;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;

@@ -32,8 +32,6 @@ import java.util.concurrent.Callable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
@@ -44,6 +42,8 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -130,11 +130,6 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		//
 		// Get Org Logo
 		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
-		if (orgInfo == null)
-		{
-			return null;
-		}
-		//
 		final int logoImageId = orgInfo.getLogoImageId();
 		if (logoImageId > 0)
 		{

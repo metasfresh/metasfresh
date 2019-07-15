@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Currency;
@@ -46,6 +45,7 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.organization.OrgId;
 import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;

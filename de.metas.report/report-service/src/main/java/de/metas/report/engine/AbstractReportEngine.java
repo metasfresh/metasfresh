@@ -1,11 +1,11 @@
 package de.metas.report.engine;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.report.jasper.JasperClassLoader;
 import de.metas.adempiere.report.jasper.JasperCompileClassLoader;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*

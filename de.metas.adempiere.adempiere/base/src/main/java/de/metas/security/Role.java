@@ -2,9 +2,9 @@ package de.metas.security;
 
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.menu.AdMenuId;
+import de.metas.organization.OrgId;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.GenericPermissions;
 import de.metas.user.UserId;

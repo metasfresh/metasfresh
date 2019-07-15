@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_OrgInfo;
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

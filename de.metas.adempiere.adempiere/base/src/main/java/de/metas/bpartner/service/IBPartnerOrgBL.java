@@ -25,7 +25,6 @@ package de.metas.bpartner.service;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
@@ -33,6 +32,7 @@ import org.compiere.model.I_C_Location;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;

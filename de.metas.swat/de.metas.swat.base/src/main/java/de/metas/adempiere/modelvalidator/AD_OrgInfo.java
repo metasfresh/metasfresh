@@ -25,8 +25,6 @@ package de.metas.adempiere.modelvalidator;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
@@ -36,6 +34,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.util.Services;
@@ -65,13 +65,7 @@ public class AD_OrgInfo implements ModelValidator
 
 		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
 		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
-		if (orgInfo == null)
-		{
-			logger.warn("Unable to retrieve AD_OrgInfo for AD_Org_ID={}; AD_Role_ID={}; AD_User_ID={}", orgId, AD_Role_ID, AD_User_ID);
-			return null;
-		}
 		final StoreCreditCardNumberMode ccStoreMode = orgInfo.getStoreCreditCardNumberMode();
-
 		Env.setContext(ctx, ENV_ORG_INFO_STORE_CC_DATA, ccStoreMode.getCode());
 
 		return null;

@@ -5,7 +5,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
 import de.metas.document.DocTypeId;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 

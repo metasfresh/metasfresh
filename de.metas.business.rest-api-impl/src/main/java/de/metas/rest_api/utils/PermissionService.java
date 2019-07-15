@@ -13,9 +13,9 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;

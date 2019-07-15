@@ -5,13 +5,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.time.LocalDate;
 import java.util.Set;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;

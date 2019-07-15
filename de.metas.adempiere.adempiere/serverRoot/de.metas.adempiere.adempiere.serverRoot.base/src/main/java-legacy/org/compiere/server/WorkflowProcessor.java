@@ -24,8 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Set;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.MClient;
 import org.compiere.model.PO;
 import org.compiere.process.StateEngine;
@@ -41,6 +39,8 @@ import org.compiere.wf.MWorkflowProcessorLog;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;

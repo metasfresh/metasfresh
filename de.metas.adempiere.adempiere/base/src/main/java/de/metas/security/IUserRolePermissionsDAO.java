@@ -6,12 +6,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Role_OrgAccess;
 
 import com.google.common.base.Optional;
 
+import de.metas.organization.OrgId;
 import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;

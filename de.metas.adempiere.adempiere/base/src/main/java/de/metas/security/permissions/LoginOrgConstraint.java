@@ -5,8 +5,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.service.OrgId;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -32,6 +30,7 @@ import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 
 @Immutable
 public final class LoginOrgConstraint extends Constraint

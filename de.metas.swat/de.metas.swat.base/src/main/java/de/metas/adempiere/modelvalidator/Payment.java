@@ -1,7 +1,5 @@
 package de.metas.adempiere.modelvalidator;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MClient;
 import org.compiere.model.MPayment;
@@ -11,6 +9,8 @@ import org.compiere.model.Obscure;
 import org.compiere.model.PO;
 import org.compiere.model.X_AD_Field;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.util.Services;
