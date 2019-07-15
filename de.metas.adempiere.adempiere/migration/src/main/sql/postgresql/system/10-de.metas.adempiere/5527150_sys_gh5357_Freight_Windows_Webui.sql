@@ -1388,7 +1388,91 @@ UPDATE AD_UI_Element SET SeqNo=50,Updated=TO_TIMESTAMP('2019-07-12 17:12:28','YY
 
 
 
+-- 2019-07-15T17:43:51.888
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2019-07-15 17:43:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560147
+;
+
+-- 2019-07-15T17:43:51.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2019-07-15 17:43:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560131
+;
 
 
+
+
+
+
+
+
+-- 2019-07-15T18:13:04.776
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,544932,0,TO_TIMESTAMP('2019-07-15 18:13:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','"Beleg {0} hat keinen Lieferweg."','E',TO_TIMESTAMP('2019-07-15 18:13:04','YYYY-MM-DD HH24:MI:SS'),100,'C_Order_NoShipper')
+;
+
+-- 2019-07-15T18:13:04.781
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Message_ID=544932 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
+;
+
+-- 2019-07-15T18:13:11.823
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Beleg {0} hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:13:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:13:15.478
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Beleg {0} hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:13:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:13:23.086
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Beleg {0} hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:13:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:13:40.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='The Sales Order {0} has no shipper set.',Updated=TO_TIMESTAMP('2019-07-15 18:13:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:16:32.877
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Beleg hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:16:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:16:39.221
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Beleg hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:16:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:16:51.196
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='Beleg hat keinen Lieferweg.',Updated=TO_TIMESTAMP('2019-07-15 18:16:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:16:55.845
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET MsgText='The Sales Order has no shipper set.',Updated=TO_TIMESTAMP('2019-07-15 18:16:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=544932
+;
+
+-- 2019-07-15T18:31:46.042
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-07-15 18:31:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560130
+;
+
+-- 2019-07-15T18:31:46.907
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-07-15 18:31:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560131
+;
+
+-- 2019-07-15T18:31:47.475
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-07-15 18:31:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560129
+;
+
+-- 2019-07-15T18:31:48.911
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2019-07-15 18:31:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=560128
+;
 
 
