@@ -45,7 +45,9 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;
@@ -59,6 +61,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -164,6 +167,9 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(vendorRecord);
 
 		orgId = OrgId.ofRepoId(1000000);
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(orgId)
+				.build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
