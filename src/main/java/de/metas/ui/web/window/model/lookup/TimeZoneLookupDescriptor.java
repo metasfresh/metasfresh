@@ -53,7 +53,6 @@ public final class TimeZoneLookupDescriptor extends SimpleLookupDescriptorTempla
 
 	private LookupValuesList getAll()
 	{
-		this.all = null; // FIXME DEBUG
 		LookupValuesList all = this.all;
 		if (all == null)
 		{
