@@ -1,6 +1,6 @@
 package de.metas.ui.web.view;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -52,9 +52,10 @@ public class ViewHeaderProperty
 			return value(TranslatableStrings.anyLanguage(value));
 		}
 
-		public ViewHeaderPropertyBuilder value(final LocalDateTime value)
+		public ViewHeaderPropertyBuilder value(final ZonedDateTime value)
 		{
 			return value(TranslatableStrings.dateAndTime(value));
 		}
+
 	}
 }

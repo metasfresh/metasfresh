@@ -2,10 +2,13 @@ package de.metas.ui.web.dashboard;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.slf4j.Logger;
 
@@ -17,9 +20,10 @@ import com.google.common.base.Splitter;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -118,7 +122,7 @@ public class KPIField
 		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
 	}
 
-	public final Object convertValueToJson(final Object value)
+	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -131,45 +135,13 @@ public class KPIField
 			{
 				case Date:
 				{
-					if (value instanceof String)
-					{
-						final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
-						return JSONDate.toJson(date);
-					}
-					else if (value instanceof Date)
-					{
-						return JSONDate.toJson((Date)value);
-					}
-					else if (value instanceof Number)
-					{
-						final long millis = ((Number)value).longValue();
-						return JSONDate.toJson(millis);
-					}
-					else
-					{
-						return value;
-					}
+					final LocalDate date = DateTimeConverters.fromObjectToLocalDate(value);
+					return DateTimeConverters.toJson(date);
 				}
 				case DateTime:
 				{
-					if (value instanceof String)
-					{
-						final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
-						return JSONDate.toJson(date);
-					}
-					else if (value instanceof Date)
-					{
-						return JSONDate.toJson((Date)value);
-					}
-					else if (value instanceof Number)
-					{
-						final long millis = ((Number)value).longValue();
-						return JSONDate.toJson(millis);
-					}
-					else
-					{
-						return value;
-					}
+					final ZonedDateTime date = DateTimeConverters.fromObjectToZonedDateTime(value);
+					return DateTimeConverters.toJson(date, jsonOpts.getZoneId());
 				}
 				case Number:
 				{
@@ -226,7 +198,7 @@ public class KPIField
 		}
 	}
 
-	public final Object convertValueToJsonUserFriendly(final Object value)
+	public final Object convertValueToJsonUserFriendly(final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -239,7 +211,7 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.Date);
+					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToLocalDate(value));
 					return DisplayType.getDateFormat(DisplayType.Date)
 							.format(date);
 				}
@@ -265,7 +237,7 @@ public class KPIField
 			{
 				if (value instanceof String)
 				{
-					final Date date = JSONDate.fromJson(value.toString(), DocumentFieldWidgetType.DateTime);
+					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
 					return DisplayType.getDateFormat(DisplayType.DateTime)
 							.format(date);
 				}
@@ -289,7 +261,7 @@ public class KPIField
 			}
 			else
 			{
-				return convertValueToJson(value);
+				return convertValueToJson(value, jsonOpts);
 			}
 		}
 		catch (Exception ex)

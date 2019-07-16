@@ -9,7 +9,7 @@ public class JSONLookupValuesListTest
 	@Test
 	public void test_EMPTY_toString()
 	{
-		JSONLookupValuesList lookupValuesList = JSONLookupValuesList.ofLookupValuesList(LookupValuesList.EMPTY);
+		JSONLookupValuesList lookupValuesList = JSONLookupValuesList.ofLookupValuesList(LookupValuesList.EMPTY, "en_US");
 		lookupValuesList.toString();
 	}
 }

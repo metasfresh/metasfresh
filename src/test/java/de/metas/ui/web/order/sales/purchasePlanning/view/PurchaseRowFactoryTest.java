@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
@@ -29,6 +28,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.purchasecandidate.DemandGroupReference;
@@ -131,7 +131,7 @@ public class PurchaseRowFactoryTest
 				.productId(vendorProductInfo.getProductId())
 				.attributeSetInstanceId(vendorProductInfo.getAttributeSetInstanceId())
 				.qtyToPurchase(ONE)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.profitInfoOrNull(profitInfo)
 				.processed(true) // important in case we expect purchaseRowId.getProcessedPurchaseCandidateId() to be > 0
 				.locked(false)

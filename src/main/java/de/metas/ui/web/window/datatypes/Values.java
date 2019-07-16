@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -10,16 +10,21 @@ import java.util.Collection;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.Amount;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -56,9 +61,11 @@ public final class Values
 	/**
 	 * Invokes {@link #valueToJsonObject(Object, UnaryOperator)} with {@link UnaryOperator#identity()}.
 	 */
-	public static final Object valueToJsonObject(final Object value)
+	public static Object valueToJsonObject(
+			@Nullable final Object value,
+			@NonNull final JSONOptions jsonOpts)
 	{
-		return valueToJsonObject(value, UnaryOperator.identity());
+		return valueToJsonObject(value, jsonOpts, UnaryOperator.identity());
 	}
 
 	/**
@@ -68,32 +75,35 @@ public final class Values
 	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
 	 * @return JSON value
 	 */
-	public static final Object valueToJsonObject(final Object value, final UnaryOperator<Object> fallbackMapper)
+	public static Object valueToJsonObject(
+			@Nullable final Object value,
+			@NonNull final JSONOptions jsonOpts,
+			@NonNull final UnaryOperator<Object> fallbackMapper)
 	{
-		if (value == null)
+		if (JSONNullValue.isNull(value))
 		{
 			return JSONNullValue.instance;
 		}
 		else if (value instanceof java.util.Date)
 		{
-			final java.util.Date valueDate = (java.util.Date)value;
-			return JSONDate.toJson(valueDate);
+			final ZonedDateTime valueDate = TimeUtil.asZonedDateTime(value);
+			return DateTimeConverters.toJson(valueDate, jsonOpts.getZoneId());
 		}
 		else if (value instanceof LocalDate)
 		{
-			return JSONDate.toJson((LocalDate)value);
+			return DateTimeConverters.toJson((LocalDate)value);
 		}
 		else if (value instanceof LocalTime)
 		{
-			return JSONDate.toJson((LocalTime)value);
-		}
-		else if (value instanceof LocalDateTime)
-		{
-			return JSONDate.toJson((LocalDateTime)value);
+			return DateTimeConverters.toJson((LocalTime)value);
 		}
 		else if (value instanceof ZonedDateTime)
 		{
-			return JSONDate.toJson((ZonedDateTime)value);
+			return DateTimeConverters.toJson((ZonedDateTime)value, jsonOpts.getZoneId());
+		}
+		else if (value instanceof Instant)
+		{
+			return DateTimeConverters.toJson((Instant)value, jsonOpts.getZoneId());
 		}
 		else if (value instanceof DateRangeValue)
 		{
@@ -103,12 +113,12 @@ public final class Values
 		else if (value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
-			return JSONLookupValue.ofLookupValue(lookupValue);
+			return JSONLookupValue.ofLookupValue(lookupValue, jsonOpts.getAdLanguage());
 		}
 		else if (value instanceof LookupValuesList)
 		{
 			final LookupValuesList lookupValues = (LookupValuesList)value;
-			return JSONLookupValuesList.ofLookupValuesList(lookupValues);
+			return JSONLookupValuesList.ofLookupValuesList(lookupValues, jsonOpts.getAdLanguage());
 		}
 		else if (value instanceof NamePair)
 		{
@@ -139,7 +149,7 @@ public final class Values
 		{
 			final Collection<?> valuesList = (Collection<?>)value;
 			return valuesList.stream()
-					.map(v -> valueToJsonObject(v, fallbackMapper))
+					.map(v -> valueToJsonObject(v, jsonOpts, fallbackMapper))
 					.collect(Collectors.toCollection(ArrayList::new)); // don't use ImmutableList because we might get null values
 		}
 		else
@@ -148,40 +158,10 @@ public final class Values
 		}
 	}
 
-	private static final String bigDecimalToJson(final BigDecimal value)
+	private static String bigDecimalToJson(final BigDecimal value)
 	{
 		// NOTE: because javascript cannot distinguish between "1.00" and "1.0" as number,
 		// we need to provide the BigDecimals as Strings.
-		return value.toString();
-	}
-
-	public static BigDecimal toBigDecimal(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof BigDecimal)
-		{
-			return (BigDecimal)value;
-		}
-		else
-		{
-			final String valueStr = value.toString().trim();
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-			return new BigDecimal(valueStr);
-		}
-	}
-
-	public static int toInt(final Object value, final int defaultValueIfNull)
-	{
-		if (value == null)
-		{
-			return defaultValueIfNull;
-		}
-		return Integer.parseInt(value.toString());
+		return value.toPlainString();
 	}
 }

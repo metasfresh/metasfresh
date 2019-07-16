@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -287,7 +288,8 @@ public final class WebSocketProducersRegistry
 		{
 			try
 			{
-				final Object event = producer.produceEvent();
+				final JSONOptions jsonOpts = JSONOptions.newInstance();
+				final Object event = producer.produceEvent(jsonOpts);
 				websocketSender.convertAndSend(topicName, event);
 
 				logger.trace("Event sent to {}: {}", topicName, event);

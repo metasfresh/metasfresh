@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 
 /*
  * #%L
@@ -37,9 +37,9 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDashboardItem implements Serializable
 {
-	public static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
+	public static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONDocumentLayoutOptions options)
 	{
-		return new JSONDashboardItem(dashboardItem, jsonOpts);
+		return new JSONDashboardItem(dashboardItem, options);
 	}
 
 	@JsonProperty("id")
@@ -57,7 +57,7 @@ public class JSONDashboardItem implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonKPILayout kpi;
 
-	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
+	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONDocumentLayoutOptions options)
 	{
 		super();
 		id = dashboardItem.getId();
@@ -65,10 +65,10 @@ public class JSONDashboardItem implements Serializable
 		seqNo = dashboardItem.getSeqNo();
 
 		final KPI kpi = dashboardItem.getKPI();
-		this.kpi = kpi == null ? null : JsonKPILayout.of(kpi, jsonOpts);
+		this.kpi = kpi == null ? null : JsonKPILayout.of(kpi, options.getJsonOpts());
 
-		final String caption = dashboardItem.getCaption(jsonOpts.getAD_Language());
-		if (jsonOpts.isDebugShowColumnNamesForCaption())
+		final String caption = dashboardItem.getCaption(options.getAdLanguage());
+		if (options.isDebugShowColumnNamesForCaption())
 		{
 			this.caption = caption + " (" + id + ", kpiId=" + (kpi != null ? kpi.getId() : "-") + ")";
 		}

@@ -47,11 +47,12 @@ import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import lombok.Builder;
@@ -118,7 +119,12 @@ public class ViewRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
+	}
+
+	private JSONDocumentLayoutOptions newJSONLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
 	@PostMapping
@@ -146,8 +152,11 @@ public class ViewRestController
 		final ViewResult result;
 		if (jsonRequest.getQueryPageLength() > 0)
 		{
-			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
-			result = view.getPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength(), orderBys);
+			final JSONOptions jsonOpts = newJSONOptions();
+			result = view.getPage(
+					jsonRequest.getQueryFirstRow(),
+					jsonRequest.getQueryPageLength(),
+					ViewRowsOrderBy.empty(jsonOpts));
 		}
 		else
 		{
@@ -155,7 +164,8 @@ public class ViewRestController
 		}
 
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(result, rowOverrides, userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return JSONViewResult.of(result, rowOverrides, jsonOpts);
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -187,7 +197,8 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
 	}
 
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
@@ -199,7 +210,8 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.deleteStickyFilter(viewId, filterId);
-		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return JSONViewResult.of(ViewResult.ofView(newView), ViewRowOverridesHelper.getViewRowOverrides(newView), jsonOpts);
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -228,9 +240,13 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
-		final ViewResult result = view.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
+		final JSONOptions jsonOpts = newJSONOptions();
+		final ViewResult result = view.getPage(
+				firstRow,
+				pageLength,
+				ViewRowsOrderBy.parseString(orderBysListStr, jsonOpts));
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewResult.of(result, rowOverrides, userSession.getAD_Language());
+		return JSONViewResult.of(result, rowOverrides, jsonOpts);
 	}
 
 	@GetMapping("/layout")
@@ -248,8 +264,8 @@ public class ViewRestController
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonOptions(() -> newJSONOptions())
-				.toJson(JSONViewLayout::of);
+				.jsonLayoutOptions(() -> newJSONLayoutOptions())
+				.toLayoutJson(JSONViewLayout::of);
 	}
 
 	@GetMapping("/availableProfiles")
@@ -281,7 +297,8 @@ public class ViewRestController
 		final IView view = viewsRepo.getView(viewId);
 		final List<? extends IViewRow> result = view.streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		return JSONViewRow.ofViewRows(result, rowOverrides, userSession.getAD_Language());
+		final JSONOptions jsonOpts = newJSONOptions();
+		return JSONViewRow.ofViewRows(result, rowOverrides, jsonOpts);
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
@@ -298,7 +315,12 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -314,7 +336,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	@Builder(builderMethodName = "newPreconditionsContextBuilder")

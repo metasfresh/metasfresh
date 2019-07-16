@@ -5,8 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
@@ -470,7 +470,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 
-	private static Date extractBestBeforeDate(final HUEditorRowAttributesProvider attributesProvider, final HUEditorRowId rowId)
+	private static LocalDate extractBestBeforeDate(final HUEditorRowAttributesProvider attributesProvider, final HUEditorRowId rowId)
 	{
 		if (attributesProvider == null)
 		{

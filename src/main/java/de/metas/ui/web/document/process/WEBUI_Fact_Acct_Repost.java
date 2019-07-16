@@ -84,9 +84,9 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 
 	private DocumentToRepost extractDocumentToRepostFromTableAndRecordIdRow(final IViewRow row)
 	{
-		final int adTableId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
-		final int recordId = row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
-		final ClientId adClientId = ClientId.ofRepoId(row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+		final int adTableId = row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Table_ID, -1);
+		final int recordId = row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_Record_ID, -1);
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
 				.recordId(recordId)
@@ -98,7 +98,9 @@ public class WEBUI_Fact_Acct_Repost extends ViewBasedProcessTemplate implements 
 	{
 		final int adTableId = adTablesRepo.retrieveTableId(getTableName());
 		final int recordId = row.getId().toInt();
-		final ClientId adClientId = ClientId.ofRepoId(row.getFieldJsonValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+
+		final ClientId adClientId = ClientId.ofRepoId(row.getFieldValueAsInt(I_Fact_Acct.COLUMNNAME_AD_Client_ID, -1));
+
 		return DocumentToRepost.builder()
 				.adTableId(adTableId)
 				.recordId(recordId)

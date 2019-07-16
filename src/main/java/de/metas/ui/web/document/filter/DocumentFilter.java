@@ -1,10 +1,8 @@
 package de.metas.ui.web.document.filter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -203,7 +201,7 @@ public final class DocumentFilter
 		return param.getValueAsBoolean(defaultValue);
 	}
 
-	public Date getParameterValueAsDate(@NonNull final String parameterName, final Date defaultValue)
+	public LocalDate getParameterValueAsLocalDate(@NonNull final String parameterName, final LocalDate defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
@@ -211,7 +209,7 @@ public final class DocumentFilter
 			return defaultValue;
 		}
 
-		return param.getValueAsDate(defaultValue);
+		return param.getValueAsLocalDate(defaultValue);
 	}
 
 	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull IntFunction<T> repoIdMapper)
@@ -234,17 +232,6 @@ public final class DocumentFilter
 		}
 
 		return param.getValueAsLocalDate();
-	}
-
-	public LocalDateTime getParameterValueAsLocalDateTime(@NonNull final String parameterName)
-	{
-		final DocumentFilterParam param = getParameterOrNull(parameterName);
-		if (param == null)
-		{
-			return null;
-		}
-
-		return param.getValueAsLocalDateTime();
 	}
 
 	public <T> T getParameterValueAs(@NonNull final String parameterName)

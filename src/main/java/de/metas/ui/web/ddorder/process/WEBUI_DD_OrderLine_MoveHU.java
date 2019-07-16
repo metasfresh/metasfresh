@@ -84,24 +84,24 @@ public class WEBUI_DD_OrderLine_MoveHU extends ViewBasedProcessTemplate implemen
 		if (PARAM_M_LocatorTo_ID.equals(parameterName))
 		{
 			final IViewRow row = getSingleSelectedRow();
-			return row.getFieldJsonValueAsInt(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, -1);
+			return row.getFieldValueAsInt(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, -1);
 		}
 		else if (PARAM_M_HU_ID.equals(parameterName))
 		{
 			final int ddOrderLineId = getSingleSelectedRow().getId().toInt();
-			
+
 			final List<Integer> huIds = Services.get(IHUDDOrderDAO.class).retrieveHUIdsScheduledToMove(getCtx(), ImmutableSet.of(ddOrderLineId));
-		
-			if(Check.isEmpty(huIds))
+
+			if (Check.isEmpty(huIds))
 			{
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 			}
-			
+
 			final int huId = huIds.get(0);
 			final I_M_HU hu = load(huId, I_M_HU.class);
-			
+
 			return IntegerLookupValue.of(huIds.get(0), hu.getValue());
-		
+
 		}
 		else
 		{

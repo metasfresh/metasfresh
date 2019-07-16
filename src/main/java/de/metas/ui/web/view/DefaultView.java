@@ -363,13 +363,16 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPage(
+			final int firstRow,
+			final int pageLength,
+			final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
 		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
 
 		final List<IViewRow> rows = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
 
@@ -386,7 +389,7 @@ public final class DefaultView implements IEditableView
 				.build();
 	}
 
-	private List<ViewResultColumn> extractViewResultColumns(final List<IViewRow> rows)
+	private List<ViewResultColumn> extractViewResultColumns(@NonNull final List<IViewRow> rows)
 	{
 		if (rows.isEmpty())
 		{
@@ -401,7 +404,10 @@ public final class DefaultView implements IEditableView
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private ViewResultColumn extractViewResultColumnOrNull(final String fieldName, final DocumentFieldWidgetType widgetType, final List<IViewRow> rows)
+	private ViewResultColumn extractViewResultColumnOrNull(
+			@NonNull final String fieldName,
+			@NonNull final DocumentFieldWidgetType widgetType,
+			@NonNull final List<IViewRow> rows)
 	{
 		if (widgetType == DocumentFieldWidgetType.Integer)
 		{
@@ -410,7 +416,7 @@ public final class DefaultView implements IEditableView
 		else if (widgetType.isNumeric())
 		{
 			final int maxPrecision = rows.stream()
-					.map(row -> row.getFieldJsonValueAsBigDecimal(fieldName, BigDecimal.ZERO))
+					.map(row -> row.getFieldValueAsBigDecimal(fieldName, BigDecimal.ZERO))
 					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
 					.max()
 					.orElse(0);
@@ -428,13 +434,16 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public ViewResult getPageWithRowIdsOnly(
+			final int firstRow,
+			final int pageLength,
+			@NonNull final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
 		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
 
 		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
 

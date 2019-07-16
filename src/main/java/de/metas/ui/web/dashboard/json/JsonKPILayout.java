@@ -67,7 +67,7 @@ public class JsonKPILayout
 
 	public JsonKPILayout(final KPI kpi, final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 
 		// id = kpi.getId();
 		// caption = kpi.getCaption(adLanguage);

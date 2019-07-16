@@ -42,9 +42,11 @@ import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoa
 import de.metas.ui.web.view.descriptor.SqlViewSelectData;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -266,11 +268,12 @@ class SqlViewDataRepository implements IViewDataRepository
 			final ViewId viewId,
 			final int limit) throws SQLException
 	{
+		final JSONOptions jsonOpts = viewEvalCtx.toJSONOptions();
 		final Map<DocumentId, ViewRow.Builder> rowBuilders = new LinkedHashMap<>();
 		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
 		{
-			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAdLanguage());
+			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), jsonOpts);
 			if (rowBuilder == null)
 			{
 				continue;
@@ -317,7 +320,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private ViewRow.Builder loadViewRow(
 			@NonNull final ResultSet rs,
 			final WindowId windowId,
-			final String adLanguage) throws SQLException
+			final JSONOptions jsonOpts) throws SQLException
 	{
 		final boolean isRecordMissing = DisplayType.toBoolean(rs.getString(SqlViewSelectData.COLUMNNAME_IsRecordMissing));
 		if (isRecordMissing)
@@ -338,7 +341,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			viewRowBuilder.setType(DefaultRowType.Row);
 		}
 
-		final DocumentId rowId = retrieveRowId(rs, adLanguage);
+		final DocumentId rowId = retrieveRowId(rs, jsonOpts);
 		if (rowId == null)
 		{
 			logger.warn("No ID found for current row. Skipping the row.");
@@ -350,7 +353,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			final String fieldName = fieldNameAndLoader.getKey();
 			final SqlViewRowFieldLoader fieldLoader = fieldNameAndLoader.getValue();
-			final Object value = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+			final Object value = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
 
@@ -362,48 +365,59 @@ class SqlViewDataRepository implements IViewDataRepository
 		return viewRowBuilder;
 	}
 
-	private DocumentId retrieveRowId(final ResultSet rs, final String adLanguage) throws SQLException
+	private DocumentId retrieveRowId(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		if (keyColumnNamesMap.isSingleKey())
 		{
-			return retrieveRowId_SingleKey(rs, adLanguage);
+			return retrieveRowId_SingleKey(rs, jsonOpts);
 		}
 		else
 		{
-			return retrieveRowId_MultiKey(rs, adLanguage);
+			return retrieveRowId_MultiKey(rs, jsonOpts.getAdLanguage());
 		}
 	}
 
-	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final String adLanguage) throws SQLException
+	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
 		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
-		final Object jsonRowIdObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
-		if (JSONNullValue.isNull(jsonRowIdObj))
+		final Object rowIdObj = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
+		return convertToRowId(rowIdObj);
+	}
+
+	private static DocumentId convertToRowId(final Object rowIdObj)
+	{
+		if (JSONNullValue.isNull(rowIdObj))
 		{
 			return null;
 		}
-		else if (jsonRowIdObj instanceof DocumentId)
+		else if (rowIdObj instanceof DocumentId)
 		{
-			return (DocumentId)jsonRowIdObj;
+			return (DocumentId)rowIdObj;
 		}
-		else if (jsonRowIdObj instanceof Integer)
+		else if (rowIdObj instanceof Integer)
 		{
-			return DocumentId.of((Integer)jsonRowIdObj);
+			return DocumentId.of((Integer)rowIdObj);
 		}
-		else if (jsonRowIdObj instanceof String)
+		else if (rowIdObj instanceof String)
 		{
-			return DocumentId.of(jsonRowIdObj.toString());
+			return DocumentId.of(rowIdObj.toString());
 		}
-		else if (jsonRowIdObj instanceof JSONLookupValue)
+		else if (rowIdObj instanceof LookupValue)
 		{
 			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
+			return DocumentId.of(jsonLookupValue.getKey());
+		}
+		else if (rowIdObj instanceof JSONLookupValue)
+		{
+			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
 			return DocumentId.of(jsonLookupValue.getKey());
 		}
 		else
 		{
-			throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
+			throw new IllegalArgumentException("Cannot convert id '" + rowIdObj + "' (" + rowIdObj.getClass() + ") to " + DocumentId.class);
 		}
 	}
 
@@ -417,11 +431,12 @@ class SqlViewDataRepository implements IViewDataRepository
 			final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
 			// Check.assumeNotNull(fieldLoader, "fieldLoader shall exist for {}", keyColumnName);
 
-			final Object rowIdPartObj = fieldLoader.retrieveValueAsJson(rs, adLanguage);
+			final Object rowIdPartObj = fieldLoader.retrieveValue(rs, adLanguage);
 			if (JSONNullValue.isNull(rowIdPartObj))
 			{
 				rowIdParts.add(null);
 			}
+			else
 			{
 				rowIdParts.add(convertToRowIdPart(rowIdPartObj));
 				onlyNullValues = false;
@@ -445,6 +460,10 @@ class SqlViewDataRepository implements IViewDataRepository
 		else if (rowIdPartObj instanceof String)
 		{
 			return rowIdPartObj.toString();
+		}
+		else if (rowIdPartObj instanceof LookupValue)
+		{
+			return ((LookupValue)rowIdPartObj).getIdAsString();
 		}
 		else if (rowIdPartObj instanceof JSONLookupValue)
 		{
@@ -530,11 +549,11 @@ class SqlViewDataRepository implements IViewDataRepository
 			rs = pstmt.executeQuery();
 
 			final ImmutableList.Builder<DocumentId> rowIds = ImmutableList.builder();
-			final String adLanguage = null; // N/A, not important
+			final JSONOptions jsonOpts = JSONOptions.newInstance(); // not important
 
 			while (rs.next())
 			{
-				final DocumentId rowId = retrieveRowId(rs, adLanguage);
+				final DocumentId rowId = retrieveRowId(rs, jsonOpts);
 				if (rowId == null)
 				{
 					continue;

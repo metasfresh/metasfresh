@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +57,7 @@ public class MaterialCockpitRowFactory
 	public static class CreateRowsRequest
 	{
 		@NonNull
-		Timestamp date;
+		LocalDate date;
 
 		@NonNull
 		ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
@@ -94,7 +94,7 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 			@NonNull final ImmutableSet<ProductId> productIds,
-			@NonNull final Timestamp timestamp,
+			@NonNull final LocalDate timestamp,
 			final boolean includePerPlantDetailRows)
 	{
 		final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();

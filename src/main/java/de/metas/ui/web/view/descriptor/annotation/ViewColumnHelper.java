@@ -33,6 +33,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout.Displayed;
@@ -40,7 +41,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.MediaType;
-import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -338,25 +338,40 @@ public final class ViewColumnHelper
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
+	public static <T extends IViewRow> ImmutableSet<String> extractFieldNames(@NonNull final T row)
+	{
+		final Class<? extends IViewRow> rowClass = row.getClass();
+		return extractFieldNames(rowClass);
+	}
+
+	public static <T extends IViewRow> ImmutableSet<String> extractFieldNames(@NonNull final Class<T> rowType)
+	{
+		return getDescriptor(rowType).getFieldNames();
+	}
+
 	/**
 	 * This helper method is intended to support individual implementations of {@link IViewRow#getFieldNameAndJsonValues()}.
 	 * <b>
 	 * Note that the individual fields maybe be {@code instanceof} {@link Supplier}.
 	 * Useful because if a field is configured not to be shown at all, then the respective supplier won't be invoked.
 	 */
-	public static <T extends IViewRow> ImmutableMap<String, Object> extractJsonMap(@NonNull final T row)
+	public static <T extends IViewRow> ViewRowFieldNameAndJsonValues extractJsonMap(@NonNull final T row)
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
-		return getDescriptor(rowClass)
+		final ImmutableMap<String, Object> map = getDescriptor(rowClass)
 				.streamColumns()
-				.map(column -> extractFieldNameAndValueAsJson(row, column))
+				.map(column -> extractFieldNameAndValueAsJsonObject(row, column))
 				.filter(Predicates.notNull())
 				.collect(GuavaCollectors.toImmutableMap());
+
+		return ViewRowFieldNameAndJsonValues.ofMap(map);
 	}
 
-	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJson(final T row, final ClassViewColumnDescriptor column)
+	private static <T extends IViewRow> Map.Entry<String, Object> extractFieldNameAndValueAsJsonObject(
+			@NonNull final T row,
+			@NonNull final ClassViewColumnDescriptor column)
 	{
-		final Object value = extractFieldValueAsJson(row, column);
+		final Object value = extractFieldValueAsJsonObject(row, column);
 		if (JSONNullValue.isNull(value))
 		{
 			return null;
@@ -365,7 +380,9 @@ public final class ViewColumnHelper
 		return GuavaCollectors.entry(column.getFieldName(), value);
 	}
 
-	private static <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnDescriptor column)
+	private static <T extends IViewRow> Object extractFieldValueAsJsonObject(
+			@NonNull final T row,
+			@NonNull final ClassViewColumnDescriptor column)
 	{
 		try
 		{
@@ -379,11 +396,11 @@ public final class ViewColumnHelper
 			if (value instanceof Supplier<?>)
 			{
 				final Supplier<?> supplier = (Supplier<?>)value;
-				return convertValueToJson(supplier.get(), column);
+				return normalizeAndResolveValue(supplier.get(), column);
 			}
 			else
 			{
-				return convertValueToJson(value, column);
+				return normalizeAndResolveValue(value, column);
 			}
 		}
 		catch (final Exception ex)
@@ -394,7 +411,9 @@ public final class ViewColumnHelper
 		}
 	}
 
-	private static Object convertValueToJson(final Object valueParam, final ClassViewColumnDescriptor column)
+	private static Object normalizeAndResolveValue(
+			@Nullable final Object valueParam,
+			@NonNull final ClassViewColumnDescriptor column)
 	{
 		Object result = valueParam;
 
@@ -406,7 +425,12 @@ public final class ViewColumnHelper
 			}
 		}
 
-		return Values.valueToJsonObject(result);
+		if (result == null)
+		{
+			return JSONNullValue.instance;
+		}
+
+		return result;
 	}
 
 	private static LookupValue resolveListValueByCode(final int listReferenceId, final Object code)
@@ -448,6 +472,11 @@ public final class ViewColumnHelper
 			columnsByName = Maps.uniqueIndex(columns, ClassViewColumnDescriptor::getFieldName);
 			widgetTypesByFieldName = columns.stream()
 					.collect(ImmutableMap.toImmutableMap(ClassViewColumnDescriptor::getFieldName, ClassViewColumnDescriptor::getWidgetType));
+		}
+
+		public ImmutableSet<String> getFieldNames()
+		{
+			return columnsByName.keySet();
 		}
 
 		public Stream<ClassViewColumnDescriptor> streamColumns()

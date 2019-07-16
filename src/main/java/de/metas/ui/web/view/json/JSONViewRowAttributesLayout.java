@@ -9,7 +9,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 
 /*
  * #%L
@@ -37,14 +37,14 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONViewRowAttributesLayout implements Serializable
 {
-	public static JSONViewRowAttributesLayout of(final ViewRowAttributesLayout layout, final JSONOptions jsonOpts)
+	public static JSONViewRowAttributesLayout of(final ViewRowAttributesLayout layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONViewRowAttributesLayout(layout, jsonOpts);
 	}
 
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONViewRowAttributesLayout(final ViewRowAttributesLayout layout, final JSONOptions jsonOpts)
+	private JSONViewRowAttributesLayout(final ViewRowAttributesLayout layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		super();
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);

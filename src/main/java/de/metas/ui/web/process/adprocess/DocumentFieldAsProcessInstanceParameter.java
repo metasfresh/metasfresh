@@ -3,6 +3,7 @@ package de.metas.ui.web.process.adprocess;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.process.IProcessInstanceParameter;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -34,7 +35,7 @@ import lombok.ToString;
 @ToString
 public final class DocumentFieldAsProcessInstanceParameter implements IProcessInstanceParameter
 {
-	public static final DocumentFieldAsProcessInstanceParameter of(final IDocumentFieldView documentField)
+	public static DocumentFieldAsProcessInstanceParameter of(final IDocumentFieldView documentField)
 	{
 		return new DocumentFieldAsProcessInstanceParameter(documentField);
 	}
@@ -59,9 +60,9 @@ public final class DocumentFieldAsProcessInstanceParameter implements IProcessIn
 	}
 
 	@Override
-	public Object getValueAsJsonObject(final String adLanguage)
+	public Object getValueAsJsonObject(final JSONOptions jsonOpts)
 	{
-		return documentField.getValueAsJsonObject(adLanguage);
+		return documentField.getValueAsJsonObject(jsonOpts);
 	}
 
 	@Override

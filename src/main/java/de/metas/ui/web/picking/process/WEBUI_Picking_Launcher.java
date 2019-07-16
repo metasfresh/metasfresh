@@ -21,7 +21,6 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 
 /*
@@ -116,10 +115,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 
 	private int getBPartnerLocationId(@NonNull final IViewRow row)
 	{
-		final JSONLookupValue jsonLookupValue = (JSONLookupValue)row
-				.getFieldNameAndJsonValues()
-				.get(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
-		return jsonLookupValue.getKeyAsInt();
+		return row.getFieldValueAsInt(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, -1);
 	}
 
 	private long getSelectionSize(final DocumentIdsSelection rowIds)

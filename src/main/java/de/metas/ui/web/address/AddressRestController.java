@@ -16,11 +16,14 @@ import de.metas.ui.web.address.json.JSONCreateAddressRequest;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import io.swagger.annotations.Api;
@@ -38,11 +41,11 @@ import io.swagger.annotations.Api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -60,9 +63,14 @@ public class AddressRestController
 	@Autowired
 	AddressRepository addressRepo;
 
-	private JSONOptions newJsonOpts()
+	private JSONDocumentOptions newJsonDocumentOpts()
 	{
-		return JSONOptions.of(userSession);
+		return JSONDocumentOptions.of(userSession);
+	}
+
+	private JSONDocumentLayoutOptions newJsonDocumentLayoutOpts()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
 	@RequestMapping(value = { "", "/" }, method = RequestMethod.POST)
@@ -72,7 +80,7 @@ public class AddressRestController
 
 		return Execution.callInNewExecution("createAddressDocument", () -> {
 			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
-			return JSONDocument.ofDocument(addressDoc, newJsonOpts());
+			return JSONDocument.ofDocument(addressDoc, newJsonDocumentOpts());
 		});
 	}
 
@@ -84,7 +92,7 @@ public class AddressRestController
 	{
 		userSession.assertLoggedIn();
 
-		return JSONAddressLayout.of(addressRepo.getLayout(), newJsonOpts());
+		return JSONAddressLayout.of(addressRepo.getLayout(), newJsonDocumentLayoutOpts());
 	}
 
 	@RequestMapping(value = "/{docId}", method = RequestMethod.GET)
@@ -93,7 +101,7 @@ public class AddressRestController
 		userSession.assertLoggedIn();
 
 		final Document addressDoc = addressRepo.getAddressDocumentForReading(docId);
-		return JSONDocument.ofDocument(addressDoc, newJsonOpts());
+		return JSONDocument.ofDocument(addressDoc, newJsonDocumentOpts());
 	}
 
 	@RequestMapping(value = "/{docId}", method = RequestMethod.PATCH)
@@ -107,7 +115,7 @@ public class AddressRestController
 		return Execution.callInNewExecution("processChanges", () -> {
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 			addressRepo.processAddressDocumentChanges(docId, events, changesCollector);
-			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJsonDocumentOpts());
 		});
 	}
 
@@ -122,7 +130,17 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValuesForQuery(attributeName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+	}
+
+	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
+	{
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
 	}
 
 	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)
@@ -135,7 +153,7 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValues(attributeName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	@PostMapping(value = "/{docId}/complete")
@@ -145,7 +163,6 @@ public class AddressRestController
 
 		return Execution.callInNewExecution("complete", () -> addressRepo
 				.complete(docId)
-				.transform(JSONLookupValue::ofLookupValue));
-		
+				.transform(this::toJSONLookupValue));
 	}
 }

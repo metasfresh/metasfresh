@@ -11,7 +11,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
@@ -34,6 +33,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ILanguageBL;
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.config.WebConfig;
@@ -51,6 +51,7 @@ import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.upload.WebuiImageService;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
@@ -320,7 +321,7 @@ public class LoginRestController
 		userNotificationsService.enableForSession(
 				userSession.getSessionId(),
 				userSession.getLoggedUserId(),
-				userSession.getAD_Language());
+				JSONOptions.of(userSession));
 	}
 
 	@GetMapping("/isLoggedIn")

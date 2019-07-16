@@ -18,8 +18,10 @@ import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -74,14 +76,17 @@ public class UserNotificationsService
 		}
 	}
 
-	public synchronized void enableForSession(final String sessionId, final UserId adUserId, final String adLanguage)
+	public synchronized void enableForSession(
+			@NonNull final String sessionId,
+			@NonNull final UserId adUserId,
+			@NonNull final JSONOptions jsonOptions)
 	{
-		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
+		logger.trace("Enabling for sessionId={}, adUserId={}, jsonOptions={}", sessionId, adUserId, jsonOptions);
 
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> UserNotificationsQueue.builder()
 
 				.userId(adUserId)
-				.adLanguage(adLanguage)
+				.jsonOptions(jsonOptions)
 				.notificationsRepo(Services.get(INotificationRepository.class))
 				.websocketSender(websocketSender)
 				.build());

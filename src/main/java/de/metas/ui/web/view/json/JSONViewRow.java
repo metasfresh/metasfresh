@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewId;
@@ -22,10 +21,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.util.GuavaCollectors;
-
 import lombok.Value;
 
 /*
@@ -58,14 +57,14 @@ import lombok.Value;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final String adLanguage)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts)
 	{
 		return rows.stream()
-				.map(row -> ofRow(row, rowOverrides, adLanguage))
+				.map(row -> ofRow(row, rowOverrides, jsonOpts))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(final IViewRow row, final IViewRowOverrides rowOverrides, final String adLanguage)
+	public static JSONViewRow ofRow(final IViewRow row, final IViewRowOverrides rowOverrides, final JSONOptions jsonOpts)
 	{
 		//
 		// Document view record
@@ -95,7 +94,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			// Append the other fields
 			row.getFieldNames()
 					.stream()
-					.map(createJSONDocumentField(row, adLanguage))
+					.map(createJSONDocumentField(row, jsonOpts))
 					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
@@ -109,7 +108,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(includedRow -> ofRow(includedRow, rowOverrides, adLanguage))
+						.map(includedRow -> ofRow(includedRow, rowOverrides, jsonOpts))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -136,40 +135,23 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		if (row.isSingleColumn())
 		{
 			jsonRow.colspan = true;
-			jsonRow.caption = row.getSingleColumnCaption().translate(adLanguage);
+			jsonRow.caption = row.getSingleColumnCaption().translate(jsonOpts.getAdLanguage());
 		}
 
 		return jsonRow;
 	}
 
-	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final String adLanguage)
+	private static final Function<String, JSONDocumentField> createJSONDocumentField(final IViewRow row, final JSONOptions jsonOpts)
 	{
-		final Map<String, Object> valuesByFieldName = row.getFieldNameAndJsonValues();
 		final Map<String, DocumentFieldWidgetType> widgetTypesByFieldName = row.getWidgetTypesByFieldName();
 		final Map<String, ViewEditorRenderMode> viewEditorRenderModeByFieldName = row.getViewEditorRenderModeByFieldName();
 
 		return fieldName -> {
-			final Object value = toJsonValue(valuesByFieldName.get(fieldName), adLanguage);
+			final Object value = row.getFieldValueAsJsonObject(fieldName, jsonOpts);
 			return JSONDocumentField.ofNameAndValue(fieldName, value)
 					.setWidgetType(JSONLayoutWidgetType.fromNullable(widgetTypesByFieldName.get(fieldName)))
 					.setViewEditorRenderMode(viewEditorRenderModeByFieldName.get(fieldName));
 		};
-	}
-
-	private static final Object toJsonValue(final Object valueObj, final String adLanguage)
-	{
-		if (valueObj == null)
-		{
-			return null;
-		}
-		else if (valueObj instanceof ITranslatableString)
-		{
-			return ((ITranslatableString)valueObj).translate(adLanguage);
-		}
-		else
-		{
-			return valueObj;
-		}
 	}
 
 	/**

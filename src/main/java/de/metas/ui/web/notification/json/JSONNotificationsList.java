@@ -9,6 +9,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.notification.UserNotificationsList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 
 /*
@@ -38,14 +39,14 @@ public class JSONNotificationsList
 {
 	public static final JSONNotificationsList EMPTY = new JSONNotificationsList();
 
-	public static final JSONNotificationsList of(final UserNotificationsList notifications, final String adLanguage)
+	public static final JSONNotificationsList of(final UserNotificationsList notifications, final JSONOptions jsonOpts)
 	{
 		if (notifications.isEmpty())
 		{
 			return EMPTY;
 		}
 
-		return new JSONNotificationsList(notifications, adLanguage);
+		return new JSONNotificationsList(notifications, jsonOpts);
 	}
 
 	@JsonProperty("totalCount")
@@ -55,14 +56,14 @@ public class JSONNotificationsList
 	@JsonProperty("notifications")
 	private final List<JSONNotification> notifications;
 
-	private JSONNotificationsList(final UserNotificationsList notifications, final String adLanguage)
+	private JSONNotificationsList(final UserNotificationsList notifications, final JSONOptions jsonOpts)
 	{
 		super();
 		totalCount = notifications.getTotalCount();
 		unreadCount = notifications.getTotalUnreadCount();
 		this.notifications = notifications.getNotifications()
 				.stream()
-				.map(notification -> JSONNotification.of(notification, adLanguage))
+				.map(notification -> JSONNotification.of(notification, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

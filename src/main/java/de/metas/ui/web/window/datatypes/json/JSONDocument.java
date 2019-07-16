@@ -65,11 +65,11 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
-	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
+	public static JSONDocument ofDocument(final Document document, final JSONDocumentOptions options)
 	{
 		final JSONDocument jsonDocument = new JSONDocument(document.getDocumentPath());
 
-		//fieldsBy
+		// fieldsBy
 		// Fields
 		{
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
@@ -80,9 +80,9 @@ public final class JSONDocument extends JSONDocumentBase
 			// Append the other fields
 			document.getFieldViews()
 					.stream()
-					.filter(jsonOpts.documentFieldFilter())
-					.map(field -> JSONDocumentField.ofDocumentField(field, jsonOpts.getAD_Language()))
-					.peek(jsonField -> jsonOpts.getDocumentPermissions().apply(document, jsonField)) // apply permissions
+					.filter(options.documentFieldFilter())
+					.map(field -> JSONDocumentField.ofDocumentField(field, options.getJsonOpts()))
+					.peek(jsonField -> options.getDocumentPermissions().apply(document, jsonField)) // apply permissions
 					.forEach(jsonFields::add);
 
 			jsonDocument.setFields(jsonFields);
@@ -109,20 +109,19 @@ public final class JSONDocument extends JSONDocumentBase
 		document.getIncludedDocumentsCollections()
 				.stream()
 				.map(JSONDocument::createIncludedTabInfo)
-				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
+				.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 
 		//
 		// Available standard actions
 		jsonDocument.setStandardActions(document.getStandardActions());
 
-
 		//
 		// Set debugging info
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonDocument.putDebugProperty("tablename", document.getEntityDescriptor().getTableNameOrNull());
-			jsonDocument.putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
+			jsonDocument.putDebugProperty(JSONOptions.DEBUG_ATTRNAME, options.toString());
 			jsonDocument.putDebugProperty("fields-count", jsonDocument.getFieldsCount());
 		}
 
@@ -132,7 +131,7 @@ public final class JSONDocument extends JSONDocumentBase
 	private static JSONIncludedTabInfo createIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDocumentsCollection.getDetailId());
-		if(includedDocumentsCollection.isStale())
+		if (includedDocumentsCollection.isStale())
 		{
 			tabInfo.setStale();
 		}
@@ -157,19 +156,19 @@ public final class JSONDocument extends JSONDocumentBase
 	 * @param includeFieldsList
 	 * @return list of {@link JSONDocument}s
 	 */
-	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONOptions jsonOpts)
+	public static List<JSONDocument> ofDocumentsList(final Collection<Document> documents, final JSONDocumentOptions options)
 	{
 		return documents.stream()
-				.map(document -> ofDocument(document, jsonOpts))
+				.map(document -> ofDocument(document, options))
 				.collect(Collectors.toList());
 	}
 
-	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONOptions jsonOpts)
+	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONDocumentOptions options)
 	{
 		final int MAX_SIZE = 100;
 
 		final List<JSONDocument> jsonChanges = documentChangesCollector.streamOrderedDocumentChanges()
-				.map(documentChanges -> ofEventOrNull(documentChanges, jsonOpts))
+				.map(documentChanges -> ofEventOrNull(documentChanges, options))
 				.filter(jsonDocument -> jsonDocument != null)
 				.limit(MAX_SIZE + 1)
 				.collect(ImmutableList.toImmutableList());
@@ -187,7 +186,7 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonChanges;
 	}
 
-	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)
+	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONDocumentOptions options)
 	{
 		if (documentChangedEvents.isEmpty())
 		{
@@ -210,17 +209,17 @@ public final class JSONDocument extends JSONDocumentBase
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 			documentChangedEvents.getFieldChangesList()
 					.stream()
-					.filter(jsonOpts.documentFieldChangeFilter())
+					.filter(options.documentFieldChangeFilter())
 					.forEach((field) -> {
 						// Add the pseudo-field "ID" first
 						if (field.isKey())
 						{
-							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject()));
+							jsonFields.add(0, JSONDocumentField.idField(field.getValueAsJsonObject(options.getJsonOpts())));
 						}
 
 						// Append the other fields
-						final JSONDocumentField jsonField = JSONDocumentField.ofDocumentFieldChangedEvent(field, jsonOpts);
-						jsonOpts.getDocumentPermissions().apply(documentPath, jsonField); // apply permissions
+						final JSONDocumentField jsonField = JSONDocumentField.ofDocumentFieldChangedEvent(field, options.getJsonOpts());
+						options.getDocumentPermissions().apply(documentPath, jsonField); // apply permissions
 						jsonFields.add(jsonField);
 					});
 			jsonDocument.setFields(jsonFields);
@@ -247,7 +246,7 @@ public final class JSONDocument extends JSONDocumentBase
 		documentChangedEvents.getIncludedDetailInfos()
 				.stream()
 				.map(JSONDocument::createIncludedTabInfo)
-				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
+				.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
 
 		return jsonDocument;
@@ -256,7 +255,7 @@ public final class JSONDocument extends JSONDocumentBase
 	private static JSONIncludedTabInfo createIncludedTabInfo(final DocumentChanges.IncludedDetailInfo includedDetailInfo)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDetailInfo.getDetailId());
-		if(includedDetailInfo.isStale())
+		if (includedDetailInfo.isStale())
 		{
 			tabInfo.setStale();
 		}
@@ -317,7 +316,7 @@ public final class JSONDocument extends JSONDocumentBase
 		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 
-	private static final String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
+	private static String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
 	{
 		if (windowId != null && documentId != null)
 		{

@@ -4,7 +4,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -81,14 +80,14 @@ public final class JSONLookupValue
 		return new JSONLookupValue(key, caption, description, attributes, active);
 	}
 
-	public static JSONLookupValue ofLookupValue(final LookupValue lookupValue)
+	public static JSONLookupValue ofLookupValue(@NonNull final LookupValue lookupValue, @NonNull final String adLanguage)
 	{
 		final String id = lookupValue.getIdAsString();
 
 		final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 		final ITranslatableString descriptionTrl = lookupValue.getDescriptionTrl();
 
-		final String adLanguage = Env.getAD_Language(Env.getCtx()); // FIXME add it as parameter!
+		// final String adLanguage = Env.getAD_Language(Env.getCtx());
 		final String displayName = displayNameTrl.translate(adLanguage);
 		final String description = descriptionTrl.translate(adLanguage);
 

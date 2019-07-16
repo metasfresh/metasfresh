@@ -16,6 +16,7 @@ import org.compiere.util.CtxName;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee2;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -27,7 +28,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
@@ -99,7 +100,7 @@ import lombok.NonNull;
 		return new DocumentEvaluatee(_document, fieldNameInScope, ImmutableSet.of());
 	}
 
-	private final boolean isFieldInScope(final String fieldName)
+	private boolean isFieldInScope(final String fieldName)
 	{
 		return Objects.equals(_fieldNameInScope, fieldName);
 	}
@@ -132,7 +133,7 @@ import lombok.NonNull;
 		return _document;
 	}
 
-	private final IDocumentFieldView getDocumentFieldOrNull(final String name)
+	private IDocumentFieldView getDocumentFieldOrNull(final String name)
 	{
 		return _document.getFieldViewOrNull(name);
 	}
@@ -197,8 +198,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final DocumentFieldWidgetType widgetType = null; // N/A
-			return JSONDate.fromJson(valueObj.toString(), widgetType);
+			return TimeUtil.asDate(DateTimeConverters.fromObject(valueObj, DocumentFieldWidgetType.ZonedDateTime));
 		}
 	}
 
@@ -350,7 +350,7 @@ import lombok.NonNull;
 		return Optional.empty();
 	}
 
-	private final Optional<Object> getDefaultValue(final String variableName)
+	private Optional<Object> getDefaultValue(final String variableName)
 	{
 		// FIXME: hardcoded default to avoid a lot of warnings
 		if (variableName.endsWith("_ID"))
@@ -369,7 +369,7 @@ import lombok.NonNull;
 	 * @param targetType
 	 * @return value or <code>null</code> if does not apply
 	 */
-	private final Object getGlobalContext(final String variableName, final Class<?> targetType)
+	private Object getGlobalContext(final String variableName, final Class<?> targetType)
 	{
 		if (Integer.class.equals(targetType))
 		{

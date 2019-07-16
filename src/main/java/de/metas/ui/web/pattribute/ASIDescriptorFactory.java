@@ -162,7 +162,7 @@ public class ASIDescriptorFactory
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			valueClass = java.util.Date.class;
-			widgetType = DocumentFieldWidgetType.Date;
+			widgetType = DocumentFieldWidgetType.LocalDate;
 			readMethod = I_M_AttributeInstance::getValueDate;
 			writeMethod = (aiRecord, field) -> aiRecord.setValueDate(TimeUtil.asTimestamp(field.getValueAs(java.util.Date.class)));
 		}
@@ -325,7 +325,7 @@ public class ASIDescriptorFactory
 			writeMethod.accept(ai, field);
 		}
 
-		private static final void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
+		private static void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
 		{
 			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
 			final int attributeValueId = field.getDescriptor().getLookupDescriptor()

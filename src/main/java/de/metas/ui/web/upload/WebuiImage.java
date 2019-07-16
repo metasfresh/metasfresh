@@ -1,7 +1,6 @@
 package de.metas.ui.web.upload;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.MImage;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.organization.OrgId;
 import de.metas.ui.web.cache.ETag;
 import de.metas.ui.web.cache.ETagAware;
 import lombok.NonNull;

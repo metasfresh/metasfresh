@@ -106,7 +106,7 @@ class ASIViewRowAttributes implements IViewRowAttributes
 	private final JSONDocumentField toJSONDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
 	{
 		final String fieldName = field.getFieldName();
-		final Object jsonValue = field.getValueAsJsonObject(jsonOpts.getAD_Language());
+		final Object jsonValue = field.getValueAsJsonObject(jsonOpts);
 		final DocumentFieldWidgetType widgetType = field.getWidgetType();
 		return JSONDocumentField.ofNameAndValue(fieldName, jsonValue)
 				.setDisplayed(true)

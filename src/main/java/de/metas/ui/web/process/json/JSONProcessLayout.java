@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONProcessLayout implements Serializable
 {
-	public static JSONProcessLayout of(final ProcessLayout layout, final JSONOptions jsonOpts)
+	public static JSONProcessLayout of(final ProcessLayout layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONProcessLayout(layout, jsonOpts);
 	}
@@ -56,13 +56,13 @@ public class JSONProcessLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONProcessLayout(final ProcessLayout layout, final JSONOptions jsonOpts)
+	private JSONProcessLayout(final ProcessLayout layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		super();
 		
 		layoutType = layout.getLayoutType();
 		
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
 

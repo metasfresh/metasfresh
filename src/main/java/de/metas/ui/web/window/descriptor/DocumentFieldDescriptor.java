@@ -332,7 +332,7 @@ public final class DocumentFieldDescriptor
 		return dependencies;
 	}
 
-	public Object convertToValueClass(final Object value, final LookupValueByIdSupplier lookupDataSource)
+	public Object convertToValueClass(@Nullable final Object value, @Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		return DataTypes.convertToValueClass(fieldName, value, widgetType, valueClass, lookupDataSource);
 	}
@@ -346,7 +346,11 @@ public final class DocumentFieldDescriptor
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
-	public <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType, final LookupValueByIdSupplier lookupDataSource)
+	public <T> T convertToValueClass(
+			@Nullable final Object value, 
+			@Nullable final DocumentFieldWidgetType widgetType, 
+			@NonNull final Class<T> targetType, 
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		return DataTypes.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
 	}

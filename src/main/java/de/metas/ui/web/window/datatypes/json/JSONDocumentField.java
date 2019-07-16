@@ -59,11 +59,11 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public final class JSONDocumentField implements Serializable
 {
-	public static final JSONDocumentField ofDocumentField(final IDocumentFieldView field, final String adLanguage)
+	public static JSONDocumentField ofDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
 	{
 		final String name = field.getFieldName();
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
-		final Object valueJSON = field.getValueAsJsonObject(adLanguage);
+		final Object valueJSON = field.getValueAsJsonObject(jsonOpts);
 		final String reason = null; // N/A
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
@@ -85,11 +85,11 @@ public final class JSONDocumentField implements Serializable
 		return jsonField;
 	}
 
-	public static final JSONDocumentField ofProcessParameter(final IProcessInstanceParameter parameter, final String adLanguage)
+	public static JSONDocumentField ofProcessParameter(final IProcessInstanceParameter parameter, final JSONOptions jsonOpts)
 	{
 		final String name = parameter.getParameterName();
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(parameter.getWidgetType());
-		final Object valueJSON = parameter.getValueAsJsonObject(adLanguage);
+		final Object valueJSON = parameter.getValueAsJsonObject(jsonOpts);
 		final String reason = null; // N/A
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
@@ -106,14 +106,14 @@ public final class JSONDocumentField implements Serializable
 		return jsonField;
 	}
 
-	public static final JSONDocumentField idField(final Object jsonValue)
+	public static JSONDocumentField idField(final Object jsonValue)
 	{
 		final String reason = null; // N/A
 		return new JSONDocumentField(FIELD_VALUE_ID, JSONLayoutWidgetType.Integer)
 				.setValue(jsonValue, reason);
 	}
 
-	public static final JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
+	public static JSONDocumentField ofNameAndValue(final String fieldName, final Object jsonValue)
 	{
 		final String reason = null; // N/A
 		final JSONLayoutWidgetType widgetType = null; // N/A
@@ -128,7 +128,7 @@ public final class JSONDocumentField implements Serializable
 
 		if (event.isValueSet())
 		{
-			jsonField.setValue(event.getValueAsJsonObject(), ReasonSupplier.toDebugString(event.getValueReason()));
+			jsonField.setValue(event.getValueAsJsonObject(jsonOpts), ReasonSupplier.toDebugString(event.getValueReason()));
 		}
 
 		final LogicExpressionResult readonly = event.getReadonly();
@@ -161,7 +161,7 @@ public final class JSONDocumentField implements Serializable
 			jsonField.setValidStatus(validStatus);
 		}
 
-		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAD_Language()));
+		jsonField.setFieldWarning(JSONDocumentFieldWarning.ofNullable(event.getFieldWarning(), jsonOpts.getAdLanguage()));
 
 		jsonField.putDebugProperties(event.getDebugProperties());
 

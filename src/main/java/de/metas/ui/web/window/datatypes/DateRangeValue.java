@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.datatypes;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import lombok.Value;
 
@@ -29,6 +29,6 @@ import lombok.Value;
 @Value(staticConstructor = "of")
 public final class DateRangeValue
 {
-	private final Date from;
-	private final Date to;
+	private final LocalDate from;
+	private final LocalDate to;
 }

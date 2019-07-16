@@ -23,9 +23,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
 
 /*
  * #%L
@@ -57,12 +57,12 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
  */
 public final class QuickInput
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final QuickInput getQuickInputOrNull(final ICalloutField calloutField)
+	public static QuickInput getQuickInputOrNull(final ICalloutField calloutField)
 	{
 		final Object documentObj = calloutField.getModel(Object.class);
 		final QuickInput quickInput = InterfaceWrapperHelper.getDynAttribute(documentObj, DYNATTR_QuickInput);
@@ -97,7 +97,7 @@ public final class QuickInput
 		quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
 
 		rootDocument = null;
-		
+
 		// State
 		readwriteLock = new ReentrantReadWriteLock();
 		completed = false;
@@ -121,7 +121,7 @@ public final class QuickInput
 		}
 
 		rootDocument = null; // we are not copying it on purpose
-		
+
 		// State
 		readwriteLock = from.readwriteLock; // always shared
 		completed = from.completed;
@@ -138,12 +138,12 @@ public final class QuickInput
 				.add("quickInputDocument", quickInputDocument)
 				.toString();
 	}
-	
+
 	public DocumentPath getDocumentPath()
 	{
 		return quickInputDocument.getDocumentPath();
 	}
-	
+
 	public IAutoCloseable lockForReading()
 	{
 		final ReadLock readLock = readwriteLock.readLock();
@@ -169,7 +169,6 @@ public final class QuickInput
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-
 
 	public DocumentId getId()
 	{
@@ -252,24 +251,24 @@ public final class QuickInput
 		this.completed = true;
 		return includedDocumentJustCreated;
 	}
-	
+
 	public boolean isCompleted()
 	{
 		return completed;
 	}
 
-	public JSONLookupValuesList getFieldDropdownValues(final String fieldName)
+	public JSONLookupValuesList getFieldDropdownValues(final String fieldName, final String adLanguage)
 	{
 		return getQuickInputDocument()
 				.getFieldLookupValues(fieldName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(lookupValuesList -> JSONLookupValuesList.ofLookupValuesList(lookupValuesList, adLanguage));
 	}
 
-	public JSONLookupValuesList getFieldTypeaheadValues(final String fieldName, final String query)
+	public JSONLookupValuesList getFieldTypeaheadValues(final String fieldName, final String query, final String adLanguage)
 	{
 		return getQuickInputDocument()
 				.getFieldLookupValuesForQuery(fieldName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(lookupValuesList -> JSONLookupValuesList.ofLookupValuesList(lookupValuesList, adLanguage));
 	}
 
 	public static final class Builder

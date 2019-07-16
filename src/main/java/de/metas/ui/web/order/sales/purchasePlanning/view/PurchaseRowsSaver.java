@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -139,7 +139,7 @@ class PurchaseRowsSaver
 		}
 
 		final PurchaseProfitInfo profitInfo = candidatesGroup.getProfitInfoOrNull();
-		final LocalDateTime purchaseDatePromised = candidatesGroup.getPurchaseDatePromised();
+		final ZonedDateTime purchaseDatePromised = candidatesGroup.getPurchaseDatePromised();
 		final Duration reminderTime = candidatesGroup.getReminderTime();
 		final List<PurchaseCandidate> allCandidates = getPurchaseCandidates(candidatesGroup, existingPurchaseCandidatesById);
 

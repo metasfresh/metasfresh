@@ -18,11 +18,14 @@ import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import io.swagger.annotations.Api;
 
@@ -61,9 +64,14 @@ public class ASIRestController
 	@Autowired
 	private ASIRepository asiRepo;
 
-	private JSONOptions newJsonOpts()
+	private JSONDocumentOptions newJsonDocumentOpts()
 	{
-		return JSONOptions.of(userSession);
+		return JSONDocumentOptions.of(userSession);
+	}
+
+	private JSONDocumentLayoutOptions newJsonDocumentLayoutOpts()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
 	}
 
 	@PostMapping({ "", "/" })
@@ -71,7 +79,7 @@ public class ASIRestController
 	{
 		userSession.assertLoggedIn();
 
-		return Execution.callInNewExecution("createASI", () -> asiRepo.createNewFrom(request).toJSONDocument(newJsonOpts()));
+		return Execution.callInNewExecution("createASI", () -> asiRepo.createNewFrom(request).toJSONDocument(newJsonDocumentOpts()));
 	}
 
 	@GetMapping("/{asiDocId}/layout")
@@ -81,7 +89,7 @@ public class ASIRestController
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		final ASILayout asiLayout = asiRepo.getLayout(asiDocId);
-		return JSONASILayout.of(asiLayout, newJsonOpts());
+		return JSONASILayout.of(asiLayout, newJsonDocumentLayoutOpts());
 	}
 
 	@GetMapping("/{asiDocId}")
@@ -90,7 +98,7 @@ public class ASIRestController
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
-		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonOpts()));
+		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.toJSONDocument(newJsonDocumentOpts()));
 	}
 
 	@PatchMapping("/{asiDocId}")
@@ -106,7 +114,7 @@ public class ASIRestController
 		return Execution.callInNewExecution("processChanges", () -> {
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 			asiRepo.processASIDocumentChanges(asiDocId, events, changesCollector);
-			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJsonDocumentOpts());
 		});
 	}
 
@@ -121,7 +129,17 @@ public class ASIRestController
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValuesForQuery(attributeName, query))
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+	}
+
+	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
+	{
+		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")
@@ -134,7 +152,7 @@ public class ASIRestController
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return asiRepo.forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValues(attributeName))
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	@PostMapping(value = "/{asiDocId}/complete")
@@ -145,6 +163,6 @@ public class ASIRestController
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
 		return Execution.callInNewExecution("complete", () -> asiRepo.complete(asiDocId))
-				.transform(JSONLookupValue::ofLookupValue);
+				.transform(this::toJSONLookupValue);
 	}
 }

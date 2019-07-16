@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -216,7 +216,7 @@ public final class DocumentLayoutDescriptor
 			//
 			// Debug informations:
 			putDebugProperty("generator-thread", Thread.currentThread().getName());
-			putDebugProperty("generator-timestamp", LocalDateTime.now().toString());
+			putDebugProperty("generator-timestamp", Instant.now().toString());
 			if (stopwatch != null)
 			{
 				putDebugProperty("generator-duration", stopwatch.toString());

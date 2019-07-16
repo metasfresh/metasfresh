@@ -145,22 +145,22 @@ public final class DescriptorsFactoryHelper
 		//
 		else if (displayType == DisplayType.Date)
 		{
-			return DocumentFieldWidgetType.Date;
+			return DocumentFieldWidgetType.LocalDate;
 		}
 		else if (displayType == DisplayType.Time)
 		{
-			return DocumentFieldWidgetType.Time;
+			return DocumentFieldWidgetType.LocalTime;
 		}
 		else if (displayType == DisplayType.DateTime)
 		{
 			if (WindowConstants.FIELDNAME_Created.equals(columnName)
 					|| WindowConstants.FIELDNAME_Updated.equals(columnName))
 			{
-				return DocumentFieldWidgetType.ZonedDateTime;
+				return DocumentFieldWidgetType.Timestamp;
 			}
 			else
 			{
-				return DocumentFieldWidgetType.DateTime;
+				return DocumentFieldWidgetType.ZonedDateTime;
 			}
 		}
 		//
@@ -261,7 +261,7 @@ public final class DescriptorsFactoryHelper
 		return widgetType;
 	}
 
-	private static final DocumentFieldWidgetType extractWidgetType(final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource)
+	private static DocumentFieldWidgetType extractWidgetType(final DocumentLayoutElementFieldDescriptor.LookupSource lookupSource)
 	{
 		Check.assumeNotNull(lookupSource, "Parameter lookupSource is not null");
 		switch (lookupSource)

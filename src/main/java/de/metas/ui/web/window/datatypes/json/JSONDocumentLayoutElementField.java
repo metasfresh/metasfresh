@@ -55,14 +55,16 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentLayoutElementField implements Serializable
 {
-	public static Set<JSONDocumentLayoutElementField> ofSet(final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors, final JSONOptions jsonOpts)
+	public static Set<JSONDocumentLayoutElementField> ofSet(
+			final Set<DocumentLayoutElementFieldDescriptor> fieldDescriptors,
+			final JSONDocumentLayoutOptions options)
 	{
 		return fieldDescriptors.stream()
-				.map(fieldDescriptor -> of(fieldDescriptor, jsonOpts))
+				.map(fieldDescriptor -> of(fieldDescriptor, options))
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONOptions jsonOpts)
+	private static JSONDocumentLayoutElementField of(final DocumentLayoutElementFieldDescriptor fieldDescriptor, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementField(fieldDescriptor, jsonOpts);
 	}
@@ -73,7 +75,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	 * Please keep in sync with {@link FieldType}
 	 */
 	@ApiModel("field-type")
-	public static enum JSONFieldType
+	public enum JSONFieldType
 	{
 		/**
 		 * For the docstatus/docaction widget, the two fields @{@code DocStatus} and {@code DocAction} are mashed together.
@@ -119,7 +121,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 	 * Please keep in sync with {@link LookupSource}.
 	 */
 	@ApiModel("lookup-source")
-	public static enum JSONLookupSource
+	public enum JSONLookupSource
 	{
 		lookup, list,
 
@@ -196,19 +198,19 @@ public final class JSONDocumentLayoutElementField implements Serializable
 
 	private JSONDocumentLayoutElementField(
 			@NonNull final DocumentLayoutElementFieldDescriptor fieldDescriptor,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		field = fieldDescriptor.getField();
 		type = JSONFieldType.fromNullable(fieldDescriptor.getFieldType());
 		tooltipIconName = fieldDescriptor.getTooltipIconName();
-		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAD_Language());
+		emptyText = fieldDescriptor.getEmptyText(jsonOpts.getAdLanguage());
 		devices = fieldDescriptor.getDevices();
 
 		final DocumentEntityDescriptor newRecordEntityDescriptor = findNewRecordEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
 		if (newRecordEntityDescriptor != null)
 		{
 			newRecordWindowId = newRecordEntityDescriptor.getDocumentTypeId().toJson();
-			newRecordCaption = newRecordEntityDescriptor.getCaption().translate(jsonOpts.getAD_Language());
+			newRecordCaption = newRecordEntityDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
 		}
 		else
 		{
@@ -285,7 +287,7 @@ public final class JSONDocumentLayoutElementField implements Serializable
 				.toString();
 	}
 
-	private static final DocumentEntityDescriptor findNewRecordEntityDescriptor(final String lookupTableName, final JSONOptions jsonOpts)
+	private static DocumentEntityDescriptor findNewRecordEntityDescriptor(final String lookupTableName, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		if (lookupTableName == null)
 		{

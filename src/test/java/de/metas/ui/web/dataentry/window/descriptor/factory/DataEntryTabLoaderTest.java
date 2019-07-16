@@ -35,8 +35,8 @@ import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.user.UserRepository;
@@ -66,7 +66,7 @@ import de.metas.user.UserRepository;
 public class DataEntryTabLoaderTest
 {
 
-	private JSONOptions jsonOptions;
+	private JSONDocumentLayoutOptions jsonLayoutOptions;
 	private DataEntryTabLoader dataEntryTabLoader;
 
 	@Before
@@ -74,7 +74,7 @@ public class DataEntryTabLoaderTest
 	{
 		AdempiereTestHelper.get().init(); // ..because at one point in the code under test, we use IMsgBL
 
-		jsonOptions = JSONOptions.builder(null/* userSession */).setAD_LanguageIfNotEmpty("en_US").build();
+		jsonLayoutOptions = JSONDocumentLayoutOptions.ofAdLanguage("en_US");
 
 		dataEntryTabLoader = createDataEntryTabLoader();
 	}
@@ -141,7 +141,7 @@ public class DataEntryTabLoaderTest
 						.tab(dataEntryTab)
 						.build());
 
-		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonOptions);
+		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonLayoutOptions);
 		expect(jsonTabs).toMatchSnapshot();
 	}
 

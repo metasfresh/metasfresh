@@ -55,7 +55,7 @@ public final class JSONDocumentLayoutElement
 {
 	public static List<JSONDocumentLayoutElement> ofList(
 			@NonNull final List<DocumentLayoutElementDescriptor> elements,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
@@ -66,7 +66,7 @@ public final class JSONDocumentLayoutElement
 
 	static JSONDocumentLayoutElement fromNullable(
 			@Nullable final DocumentLayoutElementDescriptor element,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
 	{
 		if (element == null)
 		{
@@ -138,12 +138,12 @@ public final class JSONDocumentLayoutElement
 
 	private JSONDocumentLayoutElement(
 			@NonNull final DocumentLayoutElementDescriptor element,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = options.getAdLanguage();
 
 		final String caption = element.getCaption(adLanguage);
-		if (jsonOpts.isDebugShowColumnNamesForCaption())
+		if (options.isDebugShowColumnNamesForCaption())
 		{
 			this.caption = element.getCaptionAsFieldNames();
 		}
@@ -188,7 +188,7 @@ public final class JSONDocumentLayoutElement
 
 		restrictToMediaTypes = ImmutableSet.copyOf(element.getRestrictToMediaTypes());
 
-		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
+		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), options);
 	}
 
 	/** Debugging field constructor */

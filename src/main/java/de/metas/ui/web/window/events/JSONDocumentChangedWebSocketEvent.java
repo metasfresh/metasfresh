@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.events;
 
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketEndpointAware;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONIncludedTabInfo;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.util.time.SystemTime;
@@ -116,7 +117,7 @@ final class JSONDocumentChangedWebSocketEvent implements WebsocketEndpointAware
 		tabid = tabId;
 		this.rowId = rowId;
 
-		timestamp = JSONDate.toJson(SystemTime.millis());
+		timestamp = DateTimeConverters.toJson(SystemTime.asInstant(), ZoneId.systemDefault());
 	}
 
 	private JSONDocumentChangedWebSocketEvent(JSONDocumentChangedWebSocketEvent from)

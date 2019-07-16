@@ -1,6 +1,6 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import lombok.Builder;
@@ -37,5 +37,5 @@ class DateFilterVO
 	public static final String FILTER_ID = "materialCockpitDateOnlyFilter";
 
 	public static final String PARAM_Date = I_MD_Cockpit.COLUMNNAME_DateGeneral;
-	Date date;
+	LocalDate date;
 }

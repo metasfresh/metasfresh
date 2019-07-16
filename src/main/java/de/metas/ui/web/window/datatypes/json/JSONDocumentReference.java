@@ -45,7 +45,7 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentReference
 {
-	static final JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
+	static JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		try
 		{
@@ -58,7 +58,7 @@ public final class JSONDocumentReference
 		}
 	}
 
-	public static final List<JSONDocumentReference> ofList(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
+	public static List<JSONDocumentReference> ofList(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
 	{
 		if (documentReferences.isEmpty())
 		{
@@ -94,7 +94,7 @@ public final class JSONDocumentReference
 			@NonNull final DocumentReference documentReference, 
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 
 		id = documentReference.getId();
 		internalName = documentReference.getInternalName();
@@ -103,13 +103,13 @@ public final class JSONDocumentReference
 		documentsCount = documentReference.getDocumentsCount();
 
 		final DocumentFilter filter = documentReference.getFilter();
-		this.filter = JSONDocumentFilter.of(filter, adLanguage);
+		this.filter = JSONDocumentFilter.of(filter, jsonOpts);
 
 		final Duration loadDuration = documentReference.getLoadDuration();
 		this.loadDurationStr = loadDuration != null ? formatDuration(loadDuration) : null;
 	}
 
-	private static final String formatDuration(final Duration loadDuration)
+	private static String formatDuration(final Duration loadDuration)
 	{
 		return TimeUtil.formatElapsed(loadDuration);
 	}

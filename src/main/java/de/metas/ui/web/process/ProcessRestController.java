@@ -44,8 +44,11 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -108,9 +111,19 @@ public class ProcessRestController
 		this.documentsCollection = documentsCollection;
 	}
 
-	private JSONOptions newJSONOptions()
+	private JSONOptions newJsonOptions()
 	{
-		return JSONOptions.builder(userSession).build();
+		return JSONOptions.of(userSession);
+	}
+
+	private JSONDocumentLayoutOptions newJsonLayoutOptions()
+	{
+		return JSONDocumentLayoutOptions.of(userSession);
+	}
+
+	private JSONDocumentOptions newJsonDocumentOptions()
+	{
+		return JSONDocumentOptions.of(userSession);
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext)
@@ -151,8 +164,8 @@ public class ProcessRestController
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(ProcessDescriptor::getLayout)
-				.jsonOptions(() -> newJSONOptions())
-				.toJson(JSONProcessLayout::of);
+				.jsonLayoutOptions(() -> newJsonLayoutOptions())
+				.toLayoutJson(JSONProcessLayout::of);
 	}
 
 	@PostMapping("/{processId}")
@@ -192,7 +205,7 @@ public class ProcessRestController
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
 			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
-			return JSONProcessInstance.of(processInstance, newJSONOptions());
+			return JSONProcessInstance.of(processInstance, newJsonOptions());
 		});
 	}
 
@@ -208,7 +221,7 @@ public class ProcessRestController
 
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJSONOptions()));
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOptions()));
 	}
 
 	@PatchMapping("/{processId}/{pinstanceId}")
@@ -235,7 +248,7 @@ public class ProcessRestController
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
-			return JSONDocument.ofEvents(changesCollector, newJSONOptions());
+			return JSONDocument.ofEvents(changesCollector, newJsonDocumentOptions());
 		});
 	}
 
@@ -313,7 +326,12 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{processId}/{pinstanceId}/field/{parameterName}/dropdown")
@@ -331,7 +349,7 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValues(parameterName))
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+				.transform(this::toJSONLookupValuesList);
 	}
 
 	public void cacheReset()
