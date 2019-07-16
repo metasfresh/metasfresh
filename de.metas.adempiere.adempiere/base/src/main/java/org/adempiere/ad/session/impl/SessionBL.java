@@ -208,8 +208,8 @@ public class SessionBL implements ISessionBL
 
 		//
 		// Check if role allows us to create the change log
-		final IUserRolePermissions role = Env.getUserRolePermissions();
-		if (role == null || !role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog))
+		final IUserRolePermissions role = Env.getUserRolePermissionsOrNull();
+		if (role != null && !role.hasPermission(IUserRolePermissions.PERMISSION_ChangeLog))
 		{
 			return false;
 		}
