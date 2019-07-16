@@ -5,7 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
@@ -124,7 +124,7 @@ public class PurchaseCandidateTest
 		assertThat(candidate.hasChanges()).isFalse();
 		assertThat(candidate.copy().hasChanges()).isFalse();
 
-		final LocalDateTime newDatePromised = candidate.getPurchaseDatePromised().plusDays(1);
+		final ZonedDateTime newDatePromised = candidate.getPurchaseDatePromised().plusDays(1);
 		candidate.setPurchaseDatePromised(newDatePromised);
 
 		assertThat(candidate.hasChanges()).isTrue();
@@ -164,14 +164,14 @@ public class PurchaseCandidateTest
 
 		candidate1.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asLocalDateTime())
+				.datePromised(SystemTime.asZonedDateTime())
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
 				.buildAndAddToParent();
 
 		candidate1.createOrderItem()
 				.purchasedQty(ONE)
-				.datePromised(SystemTime.asLocalDateTime())
+				.datePromised(SystemTime.asZonedDateTime())
 				.remotePurchaseOrderId("remotePurchaseOrderId-2")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 40))
 				.buildAndAddToParent();

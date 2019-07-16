@@ -31,7 +31,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -54,10 +53,12 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -465,11 +466,11 @@ public final class MPayment extends X_C_Payment
 		{
 			if (getC_Invoice_ID() != 0)
 			{
-				;
+				
 			}
 			else if (getC_Order_ID() != 0)
 			{
-				;
+				
 			}
 			else
 			{
@@ -676,7 +677,7 @@ public final class MPayment extends X_C_Payment
 	{
 		if (CreditCardExpMM < 1 || CreditCardExpMM > 12)
 		{
-			;
+			
 		}
 		else
 		{
@@ -1184,7 +1185,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1213,7 +1214,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1252,14 +1253,14 @@ public final class MPayment extends X_C_Payment
 						{
 							if (documentSO != null)
 							{ // already set, compare with current
-								if (documentSO.booleanValue() != ("Y".equals(rs.getString(1))))
+								if (documentSO.booleanValue() != (StringUtils.toBoolean(rs.getString(1))))
 								{
 									return false;
 								}
 							}
 							else
 							{
-								documentSO = new Boolean("Y".equals(rs.getString(1)));
+								documentSO = StringUtils.toBoolean(rs.getString(1));
 							}
 						}
 					}
@@ -1291,7 +1292,7 @@ public final class MPayment extends X_C_Payment
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				paymentSO = new Boolean("Y".equals(rs.getString(1)));
+				paymentSO = StringUtils.toBoolean(rs.getString(1));
 			}
 		}
 		catch (final Exception e)
@@ -2180,9 +2181,9 @@ public final class MPayment extends X_C_Payment
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
 				getC_Payment_ID(), get_TrxName());
 		log.debug("#" + allocations.length);
-		for (int i = 0; i < allocations.length; i++)
+		for (MAllocationHdr allocation : allocations)
 		{
-			final String docStatus = allocations[i].getDocStatus();
+			final String docStatus = allocation.getDocStatus();
 
 			// 07570: Skip allocations which were already Reversed or Voided
 			if (IDocument.STATUS_Reversed.equals(docStatus)
@@ -2191,13 +2192,13 @@ public final class MPayment extends X_C_Payment
 				continue;
 			}
 
-			allocations[i].set_TrxName(get_TrxName());
-			allocations[i].setDocAction(IDocument.ACTION_Reverse_Correct);
-			if (!allocations[i].processIt(IDocument.ACTION_Reverse_Correct))
+			allocation.set_TrxName(get_TrxName());
+			allocation.setDocAction(IDocument.ACTION_Reverse_Correct);
+			if (!allocation.processIt(IDocument.ACTION_Reverse_Correct))
 			{
-				throw new AdempiereException(allocations[i].getProcessMsg());
+				throw new AdempiereException(allocation.getProcessMsg());
 			}
-			allocations[i].saveEx();
+			allocation.saveEx();
 		}
 
 		// Unlink (in case allocation did not get it)

@@ -2,7 +2,6 @@ package de.metas.request.api.impl;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
@@ -22,6 +21,7 @@ import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
 import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;

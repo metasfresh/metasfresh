@@ -24,13 +24,13 @@ package de.metas.dunning.api.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.dunning.DunningTestBase;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.interfaces.I_C_Dunning;
+import de.metas.organization.OrgId;
 
 public class DunningDAOTest extends DunningTestBase
 {

@@ -26,13 +26,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;

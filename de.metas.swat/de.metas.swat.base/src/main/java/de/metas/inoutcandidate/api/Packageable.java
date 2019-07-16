@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.api;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
@@ -72,8 +72,8 @@ public class Packageable
 
 	boolean displayed;
 
-	LocalDateTime deliveryDate;
-	LocalDateTime preparationDate;
+	ZonedDateTime deliveryDate;
+	ZonedDateTime preparationDate;
 
 	String freightCostRule;
 

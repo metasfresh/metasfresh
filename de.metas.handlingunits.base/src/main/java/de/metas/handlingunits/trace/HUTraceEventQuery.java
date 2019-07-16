@@ -5,13 +5,12 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.adempiere.service.OrgId;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;

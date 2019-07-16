@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
 import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
+import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.ElementPermission;

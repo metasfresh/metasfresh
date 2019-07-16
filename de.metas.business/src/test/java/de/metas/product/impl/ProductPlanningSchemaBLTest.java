@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
@@ -18,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.material.planning.ddorder.DistributionNetworkId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
 import de.metas.product.OnMaterialReceiptWithDestWarehouse;

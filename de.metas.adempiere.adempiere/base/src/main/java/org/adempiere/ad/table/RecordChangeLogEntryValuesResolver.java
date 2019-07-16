@@ -94,7 +94,7 @@ final class RecordChangeLogEntryValuesResolver
 			else if (displayType == DisplayType.DateTime)
 			{
 				final Timestamp valueTS = Timestamp.valueOf(valueStr);
-				return TimeUtil.asLocalDateTime(valueTS);
+				return TimeUtil.asZonedDateTime(valueTS);
 			}
 			else if (displayType == DisplayType.Date)
 			{

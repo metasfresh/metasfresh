@@ -7,13 +7,13 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.adempiere.ad.service.IErrorManager;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQuery;
 import de.metas.vertical.pharma.msv3.protocol.stockAvailability.StockAvailabilityQueryItem;

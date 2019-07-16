@@ -13,6 +13,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.util.Check;
 import lombok.NonNull;
 
@@ -43,7 +44,7 @@ public class ClasspathRepoIdAwaresTester
 {
 	private static final String ALL = "*";
 
-	private final ObjectMapper jsonMapper = new ObjectMapper();
+	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	private int exceptionsCount = 0;
 
 	private final HashSet<String> skip_ofRepoId_classNames = new HashSet<>();

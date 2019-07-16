@@ -1,9 +1,9 @@
 package de.metas.acct.api.impl;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
 
 /*
  * #%L

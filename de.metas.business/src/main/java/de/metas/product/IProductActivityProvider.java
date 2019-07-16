@@ -1,8 +1,8 @@
 package de.metas.product;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
+import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.ISingletonService;
 

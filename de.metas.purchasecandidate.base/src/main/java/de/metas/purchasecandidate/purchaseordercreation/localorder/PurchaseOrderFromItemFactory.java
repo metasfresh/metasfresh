@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
@@ -148,9 +148,9 @@ import lombok.NonNull;
 		boolean deviatingQuantity = false;
 		for (final PurchaseOrderItem purchaseOrderItem : purchaseItem2OrderLine.keySet())
 		{
-			final LocalDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
+			final ZonedDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
 
-			if (!Objects.equals(purchaseDatePromised, TimeUtil.asLocalDateTime(order.getDatePromised())))
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised())))
 			{
 				deviatingDatePromised = true;
 			}

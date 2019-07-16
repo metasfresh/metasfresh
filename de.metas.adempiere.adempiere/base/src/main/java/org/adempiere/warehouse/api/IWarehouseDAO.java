@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
@@ -38,6 +37,7 @@ import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 
 public interface IWarehouseDAO extends ISingletonService

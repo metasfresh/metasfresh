@@ -31,6 +31,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -85,7 +86,7 @@ import org.junit.Assume;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_OrgInfo;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -95,6 +96,9 @@ import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.impl.MRPContext;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -330,9 +334,6 @@ public class MRPTestHelper
 		org.setName(name);
 		InterfaceWrapperHelper.save(org);
 
-		final I_AD_OrgInfo orgInfo = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class, org);
-		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
-
 		//
 		// InTransit Warehouse
 		final I_M_Warehouse warehouseInTransit = createWarehouse(name + "_InTransit", org);
@@ -346,9 +347,12 @@ public class MRPTestHelper
 		bpartner.setAD_OrgBP_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(bpartner);
 		//
-		final I_C_BPartner_Location bpLocation = createBPLocation(bpartner);
-		orgInfo.setOrgBP_Location(bpLocation);
-		InterfaceWrapperHelper.save(orgInfo);
+		final BPartnerLocationId bpLocationId = createBPLocation(bpartner);
+		
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgBPartnerLocationId(Optional.of(bpLocationId))
+				.build());
 
 		return org;
 	}
@@ -616,7 +620,7 @@ public class MRPTestHelper
 		return bpartner;
 	}
 
-	public I_C_BPartner_Location createBPLocation(final I_C_BPartner bpartner)
+	private BPartnerLocationId createBPLocation(final I_C_BPartner bpartner)
 	{
 		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
 		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -625,7 +629,7 @@ public class MRPTestHelper
 		bpLocation.setIsShipToDefault(true);
 		bpLocation.setIsShipTo(true);
 		InterfaceWrapperHelper.save(bpLocation);
-		return bpLocation;
+		return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 	}
 
 	public DDNetworkBuilder newDDNetwork()

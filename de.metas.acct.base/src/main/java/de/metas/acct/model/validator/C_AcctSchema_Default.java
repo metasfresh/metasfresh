@@ -2,9 +2,10 @@ package de.metas.acct.model.validator;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.ModelValidator;
+
+import de.metas.organization.OrgId;
 
 /*
  * #%L

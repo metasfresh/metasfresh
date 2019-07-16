@@ -31,13 +31,13 @@ import org.adempiere.process.rpl.requesthandler.api.IReplRequestHandlerResult;
 import org.adempiere.process.rpl.requesthandler.spi.ReplRequestHandlerAdapter;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
 

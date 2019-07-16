@@ -18,6 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.process.ProcessExecutionResult.DisplayQRCode;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
@@ -53,7 +54,7 @@ public class ProcessExecutionResultTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		jsonMapper = new ObjectMapper();
+		jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	private String toJson(final ProcessExecutionResult result) throws JsonProcessingException

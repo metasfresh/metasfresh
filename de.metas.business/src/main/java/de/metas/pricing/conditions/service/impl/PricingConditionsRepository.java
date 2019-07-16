@@ -44,7 +44,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
@@ -68,6 +67,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
@@ -213,7 +213,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
 				//
-				.dateCreated(TimeUtil.asLocalDateTime(schemaBreakRecord.getCreated()))
+				.dateCreated(TimeUtil.asInstant(schemaBreakRecord.getCreated()))
 				.createdById(UserId.ofRepoIdOrNull(schemaBreakRecord.getCreatedBy()))
 				.hasChanges(false)
 				.build();

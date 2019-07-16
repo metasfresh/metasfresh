@@ -2,7 +2,6 @@ package de.metas.order.process.impl;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_C_BPartner;
@@ -14,6 +13,7 @@ import org.compiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
