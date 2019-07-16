@@ -339,6 +339,9 @@ import lombok.NonNull;
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, ic);
 
+		BigDecimal qtyToInvoiceInPriceUOM_Override = invoiceCandBL.computeQtyToInvoiceInPriceUOM_Override(ic);
+		ic.setQtyToInvoiceInPriceUOM_Override(qtyToInvoiceInPriceUOM_Override);
+
 		//
 		// Save it
 		invoiceCandDAO.save(ic);

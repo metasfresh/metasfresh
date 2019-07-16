@@ -32,8 +32,6 @@ public interface I_M_InOutLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Client>(I_M_InOutLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -59,10 +57,6 @@ public interface I_M_InOutLine
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org>(I_M_InOutLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -87,10 +81,6 @@ public interface I_M_InOutLine
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_OrgTrx_ID();
-
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
     /** Column definition for AD_OrgTrx_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_Org>(I_M_InOutLine.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
@@ -346,10 +336,6 @@ public interface I_M_InOutLine
 	 * <br>Virtual Column: false
 	 */
 	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
     /** Column definition for C_UOM_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
@@ -637,10 +623,6 @@ public interface I_M_InOutLine
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
     /** Column definition for M_Locator_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Locator>(I_M_InOutLine.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
     /** Column name M_Locator_ID */
@@ -665,10 +647,6 @@ public interface I_M_InOutLine
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
-
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
     /** Column definition for M_Product_ID */
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_M_Product>(I_M_InOutLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
@@ -801,6 +779,29 @@ public interface I_M_InOutLine
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ProductDescription = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ProductDescription", null);
     /** Column name ProductDescription */
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
+
+	/**
+	 * Set Gelieferte Menge in Preiseinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInPriceUOM (java.math.BigDecimal QtyDeliveredInPriceUOM);
+
+	/**
+	 * Get Gelieferte Menge in Preiseinheit.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInPriceUOM();
+
+    /** Column definition for QtyDeliveredInPriceUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInPriceUOM = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInPriceUOM", null);
+    /** Column name QtyDeliveredInPriceUOM */
+    public static final String COLUMNNAME_QtyDeliveredInPriceUOM = "QtyDeliveredInPriceUOM";
 
 	/**
 	 * Set Menge.

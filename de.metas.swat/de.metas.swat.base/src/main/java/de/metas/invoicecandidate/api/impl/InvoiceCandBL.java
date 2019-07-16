@@ -2126,4 +2126,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		save(cand);
 	}
 
+	BigDecimal computeQtyToInvoiceInPriceUOM_Override(final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final List<I_C_InvoiceCandidate_InOutLine> icInOutLines = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
+		BigDecimal qtyToInvoiceInPriceUOMSum = icInOutLines.stream()
+				.map(inOutLine -> inOutLine.getM_InOutLine().getQtyDeliveredInPriceUOM() != null ? inOutLine.getM_InOutLine().getQtyDeliveredInPriceUOM() : BigDecimal.ZERO)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		return qtyToInvoiceInPriceUOMSum;
+	}
+
 }
