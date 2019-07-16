@@ -228,7 +228,7 @@ public class CustomsInvoiceService
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
 				Env.getCtx(),
-				priceActual.getValue(),
+				priceActual.getAsBigDecimal(),
 				priceActual.getCurrencyId().getRepoId(),
 				currencyId.getRepoId(),
 				Env.getAD_Client_ID(),
@@ -236,7 +236,7 @@ public class CustomsInvoiceService
 
 		if (shipmentLinePriceConverted == null)
 		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyBL);
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
 		}
 
 		return Money.of(shipmentLinePriceConverted, currencyId);

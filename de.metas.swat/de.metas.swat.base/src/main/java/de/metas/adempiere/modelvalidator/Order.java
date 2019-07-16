@@ -1,7 +1,7 @@
 package de.metas.adempiere.modelvalidator;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MFreightCost;
+import org.compiere.Adempiere;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -9,16 +9,17 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.impl.OrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -200,22 +201,16 @@ public class Order implements ModelValidator
 			// the prices in the order lines need to be updated.
 			if (po.is_ValueChanged(I_C_Order.COLUMNNAME_M_PriceList_ID))
 			{
-				MOrder mOrder = (MOrder)po;
-
+				final MOrder mOrder = (MOrder)po;
 				for (final MOrderLine ol : mOrder.getLines())
 				{
-					if (!MFreightCost.retriveFor(po.getCtx(), ol.getM_Product_ID(), po.get_TrxName()).isEmpty())
-					{
-						// Freight costs are not calculated by Price List.
-						continue;
-					}
 					ol.setPrice();
 					ol.saveEx();
 				}
 			}
+			
 			//
 			// checking if all is okay with this order
-			orderBL.checkFreightCost(order);
 			orderBL.checkForPriceList(order);
 		}
 		else if (type == TYPE_BEFORE_CHANGE || type == TYPE_BEFORE_NEW)
@@ -230,11 +225,11 @@ public class Order implements ModelValidator
 			//
 			// updating the freight cost amount, if necessary
 			final boolean freightCostRuleChanged = po.is_ValueChanged(I_C_Order.COLUMNNAME_FreightCostRule);
-			final boolean notFixPrice = !X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule());
-
-			if (freightCostRuleChanged && notFixPrice)
+			final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
+			if (freightCostRuleChanged && freightCostRule.isNotFixPrice())
 			{
-				orderBL.updateFreightAmt(po.getCtx(), InterfaceWrapperHelper.create(po, I_C_Order.class), po.get_TrxName());
+				final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+				orderFreightCostService.updateFreightAmt(order);
 			}
 
 			//

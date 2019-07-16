@@ -32,8 +32,8 @@ import java.util.function.Consumer;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.apps.search.IGridTabRowBuilder;
 import org.compiere.apps.search.IInfoWindowGridRowBuilders;
 import org.compiere.apps.search.NullInfoWindowGridRowBuilders;
@@ -42,7 +42,6 @@ import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_Order;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -54,10 +53,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderFreightCostsService;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
@@ -241,18 +242,18 @@ public class OrderFastInput extends CalloutEngine
 		for (final int recordId : recordIds)
 		{
 			final IGridTabRowBuilder builder = orderLineBuilders.getGridTabRowBuilder(recordId);
-			log.info("Calling addOrderLine for recordId=" + recordId + " and with builder=" + builder);
+			log.debug("Calling addOrderLine for recordId={} and with builder={}", recordId, builder);
 
 			addOrderLine(calloutField.getCtx(), order, builder::apply);
 		}
 		calloutField.getCalloutRecord().dataRefreshRecursively();
 
 		// make sure that the freight amount is up to date
-		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		final boolean fixPrice = X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule());
-		if (!fixPrice)
+		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCode(order.getFreightCostRule());
+		if (freightCostRule.isNotFixPrice())
 		{
-			orderBL.updateFreightAmt(calloutField.getCtx(), order, ITrx.TRXNAME_None);
+			final OrderFreightCostsService orderFreightCostService = Adempiere.getBean(OrderFreightCostsService.class);
+			orderFreightCostService.updateFreightAmt(order);
 		}
 
 		return NO_ERROR;

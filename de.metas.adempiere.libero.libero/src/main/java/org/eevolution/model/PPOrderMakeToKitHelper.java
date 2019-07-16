@@ -16,7 +16,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
@@ -27,6 +26,7 @@ import org.eevolution.api.ReceiptCostCollectorCandidate;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -101,9 +101,9 @@ public class PPOrderMakeToKitHelper
 
 		boolean forceIssue = false;
 		final I_C_OrderLine oline = ppOrder.getC_OrderLine();
-		final String orderDeliveryRule = oline.getC_Order().getDeliveryRule();
-		if (X_C_Order.DELIVERYRULE_CompleteLine.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_CompleteOrder.equals(orderDeliveryRule))
+		final DeliveryRule orderDeliveryRule = DeliveryRule.ofCode(oline.getC_Order().getDeliveryRule());
+		if (DeliveryRule.COMPLETE_LINE.equals(orderDeliveryRule) ||
+				DeliveryRule.COMPLETE_ORDER.equals(orderDeliveryRule))
 		{
 			final boolean isCompleteQtyDeliver = isQtyAvailable(ppOrder, issue, today);
 			if (!isCompleteQtyDeliver)
@@ -111,13 +111,13 @@ public class PPOrderMakeToKitHelper
 				throw new LiberoException("@NoQtyAvailable@");
 			}
 		}
-		else if (X_C_Order.DELIVERYRULE_Availability.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_AfterReceipt.equals(orderDeliveryRule) ||
-				X_C_Order.DELIVERYRULE_Manual.equals(orderDeliveryRule))
+		else if (DeliveryRule.AVAILABILITY.equals(orderDeliveryRule) ||
+				DeliveryRule.AFTER_RECEIPT.equals(orderDeliveryRule) ||
+				DeliveryRule.MANUAL.equals(orderDeliveryRule))
 		{
 			throw new LiberoException("@ActionNotSupported@");
 		}
-		else if (X_C_Order.DELIVERYRULE_Force.equals(orderDeliveryRule))
+		else if (DeliveryRule.FORCE.equals(orderDeliveryRule))
 		{
 			forceIssue = true;
 		}
@@ -238,11 +238,15 @@ public class PPOrderMakeToKitHelper
 					{
 						// TODO Selection of ASI
 						if (storage.getQtyOnHand().signum() == 0)
+						{
 							continue;
+						}
 						BigDecimal issueActual = toIssue.min(storage.getQtyOnHand());
 						toIssue = toIssue.subtract(issueActual);
 						if (toIssue.signum() <= 0)
+						{
 							break;
+						}
 					}
 				}
 				else
@@ -260,7 +264,9 @@ public class PPOrderMakeToKitHelper
 
 				isCompleteQtyDeliver = onHand.compareTo(qtyToDeliver.add(qtyScrapComponent)) >= 0;
 				if (!isCompleteQtyDeliver)
+				{
 					break;
+				}
 
 			}
 		} // for each line

@@ -8,6 +8,7 @@ import org.compiere.model.X_C_Order;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -33,7 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public enum DeliveryRule
+public enum DeliveryRule implements ReferenceListAwareEnum
 {
 	AFTER_RECEIPT(X_C_Order.DELIVERYRULE_AfterReceipt), //
 	AVAILABILITY(X_C_Order.DELIVERYRULE_Availability), //

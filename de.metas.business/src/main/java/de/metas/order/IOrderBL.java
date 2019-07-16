@@ -2,8 +2,6 @@ package de.metas.order;
 
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_M_FreightCostDetail;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -21,19 +19,6 @@ import de.metas.util.ISingletonService;
 
 public interface IOrderBL extends ISingletonService
 {
-
-	/**
-	 * Checks if {@link I_C_Order#FREIGHTCOSTRULE_Versandkostenpauschale} is selected as the order's freight cost rule. If yes, it checks if there are {@link I_M_FreightCostDetail} records for the
-	 * given BPartner, Location and Shipper.
-	 *
-	 * @param order
-	 *
-	 * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
-	 *
-	 * @throws AdempiereException in case of failure
-	 */
-	void checkFreightCost(I_C_Order order);
-
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
 	 *
@@ -105,14 +90,12 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void checkForPriceList(I_C_Order order);
 
-	boolean updateFreightAmt(Properties ctx, I_C_Order order, String trxName);
-
 	/**
 	 * Retrieve and set Bill_User_ID
 	 *
 	 * @return true if set
 	 */
-	public boolean setBill_User_ID(org.compiere.model.I_C_Order order);
+	boolean setBill_User_ID(I_C_Order order);
 
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
@@ -187,7 +170,7 @@ public interface IOrderBL extends ISingletonService
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
 
 	CurrencyPrecision getPricePrecision(I_C_Order order);
-	
+
 	CurrencyPrecision getAmountPrecision(I_C_Order order);
 
 	CurrencyPrecision getTaxPrecision(I_C_Order order);
@@ -245,4 +228,6 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if the order is a quotation, i.e. C_Order's (target-)docType's DocBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
 	 */
 	boolean isQuotation(I_C_Order order);
+
+	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 }

@@ -37,6 +37,8 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
@@ -801,7 +803,6 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		// Product
 		else
-		// Set/check Product Price
 		{
 			// Set Price if Actual = 0
 			if (getPriceActual().signum() == 0
@@ -892,7 +893,7 @@ public class MOrderLine extends X_C_OrderLine
 				saveEx(get_TrxName());
 			}
 
-			if (!getParent().reserveStock(null, new MOrderLine[] { this }))
+			if (!getParent().reserveStock(null, ImmutableList.of(this)))
 			{
 				throw new AdempiereException("@DeleteError@ @QtyReserved@=" + getQtyReserved());
 			}

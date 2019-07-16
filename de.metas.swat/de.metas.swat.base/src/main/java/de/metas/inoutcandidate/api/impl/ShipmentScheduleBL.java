@@ -59,7 +59,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -73,6 +72,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -901,8 +901,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 	private boolean isCustomFreightCostRule(final I_C_Order order)
 	{
-		return X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule())
-		// || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule()) // 07973: included freight cost rule shall no longer be considered "custom"
+		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
+		return FreightCostRule.FixPrice.equals(freightCostRule)
+		// || FreightCostRule.FreightIncluded.equals(freightCostRule) // 07973: included freight cost rule shall no longer be considered "custom"
 		;
 	}
 
