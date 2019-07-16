@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -90,6 +90,9 @@
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="c_order_id">
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id} == null ? $F{c_order_id} : null]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup_with_barcode/report_description.jasper"]]></subreportExpression>
 			</subreport>
@@ -136,6 +139,9 @@
 				</subreportParameter>
 				<subreportParameter name="barcodeURL">
 					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="c_order_id">
+					<subreportParameterExpression><![CDATA[$F{c_order_mfgwarehouse_report_id} == null ? $F{c_order_id} : null]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup_with_barcode/report_details.jasper"]]></subreportExpression>

@@ -21,15 +21,26 @@ SELECT
   r.C_Order_MFGWarehouse_Report_ID :: int
 FROM report.RV_C_Order_MFGWarehouse_Report_Header r
 WHERE
-  CASE
-  WHEN record_id IS NOT NULL
-    THEN r.C_Order_MFGWarehouse_Report_ID = record_id
-  WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
-    THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date
-  ELSE false -- shall never nappen
-  END
+  r.C_Order_MFGWarehouse_Report_ID = record_id
+  
+UNION 
+
+
+SELECT
+	o.AD_Org_ID,
+	o.DocStatus,
+	dt.PrintName,
+	o.C_Order_ID :: int,
+   null as C_Order_MFGWarehouse_Report_ID
+FROM C_Order o
+	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+WHERE o.C_BPartner_ID = bPartnerId AND o.DatePromised :: date = p_datePromised :: date
+  
+  
 LIMIT 1
 
 $$
 LANGUAGE sql
 STABLE;
+
+
