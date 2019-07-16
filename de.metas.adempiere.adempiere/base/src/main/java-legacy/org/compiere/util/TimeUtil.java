@@ -1309,21 +1309,24 @@ public class TimeUtil
 		}
 	}
 
-	public static boolean isDateOrTimeObject(final Object value)
+	public static boolean isDateOrTimeObject(@Nullable final Object value)
 	{
-		if (value == null)
-		{
-			return false;
-		}
-
-		return value instanceof Date
-				|| value instanceof Instant
-				|| value instanceof LocalDateTime
-				|| value instanceof LocalDate
-				|| value instanceof LocalTime
-				|| value instanceof ZonedDateTime
-				|| value instanceof XMLGregorianCalendar;
+		return value != null
+				? isDateOrTimeClass(value.getClass())
+				: false;
 	}
+	
+	public static boolean isDateOrTimeClass(@NonNull final Class<?> clazz)
+	{
+		return java.util.Date.class.isAssignableFrom(clazz)
+				|| Instant.class.isAssignableFrom(clazz)
+				|| ZonedDateTime.class.isAssignableFrom(clazz)
+				|| LocalDateTime.class.isAssignableFrom(clazz)
+				|| LocalDate.class.isAssignableFrom(clazz)
+				|| LocalTime.class.isAssignableFrom(clazz)
+				|| XMLGregorianCalendar.class.isAssignableFrom(clazz);
+	}
+
 
 	/** @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method. */
 	@Deprecated
