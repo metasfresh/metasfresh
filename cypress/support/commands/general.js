@@ -340,7 +340,7 @@ Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) =>
 });
 
 Cypress.Commands.add('getDOMNotificationsNumber', () => {
-  describe('Get the number of notifications displayed in the header alert element', function () {
+  describe('Get the number of notifications displayed in the header alert element', function() {
     return cy
       .get('.header-item-badge')
       .find('.notification-number')
@@ -353,13 +353,13 @@ Cypress.Commands.add('getDOMNotificationsNumber', () => {
 });
 
 Cypress.Commands.add('getNotificationsInbox', () => {
-  describe('Get the notifications inbox in the app state', function () {
+  describe('Get the notifications inbox in the app state', function() {
     return cy
       .window()
       .its('store')
       .invoke('getState')
       .then(state => {
-        return state.appHandler.inbox;
+        return cy.wrap(state.appHandler.inbox);
       });
   });
 });
@@ -368,7 +368,7 @@ Cypress.Commands.add('getNotificationsInbox', () => {
  * if `optionalText` is given it will look for it inside the notification element
  */
 Cypress.Commands.add('getNotificationModal', optionalText => {
-  describe('Get the number of notifications displayed in the header alert element', function () {
+  describe('Get the number of notifications displayed in the header alert element', function() {
     if (!optionalText) {
       return cy.get('.notification-handler').find('.notification-content');
     } else {
@@ -383,7 +383,7 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue, expectEmptyRequest = false) => {
-  cy.wait(alias).then(function (xhr) {
+  cy.wait(alias).then(function(xhr) {
     const responseBody = xhr.responseBody;
 
     if (!expectEmptyRequest) {
@@ -433,9 +433,8 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
   }
 });
 
-
 Cypress.Commands.add('getCurrentWindowRecordId', () => {
-  describe('Select the current record ID from the url', function () {
+  describe('Select the current record ID from the url', function() {
     return cy.url().then(ulrr => {
       // noinspection UnnecessaryLocalVariableJS
       const currentRecordId = ulrr.split('/').pop();
@@ -444,10 +443,9 @@ Cypress.Commands.add('getCurrentWindowRecordId', () => {
   });
 });
 
-
 Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
-  describe('Reading the total amount', function () {
-    return cy.get('.header-breadcrumb-sitename').then(function (si) {
+  describe('Reading the total amount', function() {
+    return cy.get('.header-breadcrumb-sitename').then(function(si) {
       // noinspection UnnecessaryLocalVariableJS
       const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
       return newTotalAmount;
