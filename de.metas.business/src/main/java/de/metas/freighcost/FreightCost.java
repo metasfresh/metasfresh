@@ -6,12 +6,12 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.location.CountryId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
 import lombok.AccessLevel;

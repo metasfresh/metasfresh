@@ -4,12 +4,11 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
+import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
