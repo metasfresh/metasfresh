@@ -24,11 +24,10 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const priceListVersionName = `PriceListVersion ${timestamp}`;
   const productType = 'Item';
   const vendorName = `Vendor ${timestamp}`;
-
   const customerName = `Customer ${timestamp}`;
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
@@ -80,28 +79,21 @@ describe('Create Purchase order - material receipt - invoice', function() {
       vendorName
     );
     /**A customer is needed for sales order */
-    // new BPartner({ name: customerName })
-    //   .setVendor(true)
-    //   .setVendorPricingSystem(priceSystemName)
-    //   .setVendorDiscountSchema(discountSchemaName)
-    //   .setPaymentTerm('30 days net')
-    //   .addLocation(new BPartnerLocation('Address2').setCity('Cologne').setCountry('Deutschland'))
-    //   .apply();
-    cy.fixture('sales/simple_customer.json').then(customerJson => {
-      const bpartner = new BPartner({ ...customerJson, name: customerName })
-        .setCustomerDiscountSchema(discountSchemaName)
-        .setBank(undefined);
-
-      bpartner.apply();
-    });
+    new BPartner({ name: customerName })
+      .setCustomer(true)
+      .setCustomerPricingSystem(priceSystemName)
+      .setCustomerDiscountSchema(discountSchemaName)
+      .setPaymentTerm('30 days net')
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+      .apply();
     cy.readAllNotifications();
   });
   it('Create a sales order', function() {
     cy.visitWindow('143', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
-      .type(customerName)
+      .type(vendorName)
       .type('\n');
-    cy.contains('.input-dropdown-list-option', customerName).click();
+    cy.contains('.input-dropdown-list-option', vendorName).click();
 
     cy.selectInListField('M_PricingSystem_ID', priceSystemName);
 
@@ -128,9 +120,9 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
+      .clear()
       .type('1{enter}');
-    // cy.wait('@resetQuickInputFields');
-    cy.wait(5000);
+    cy.wait(8000);
     /**Complete sales order */
     cy.get('.form-field-DocAction ul')
       .click({ force: true })
@@ -138,5 +130,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .eq('1')
       .click({ force: true });
     cy.wait(8000);
+    cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
+    cy.pressStartButton();
   });
 });
