@@ -3,8 +3,10 @@ package de.metas.ui.web.window.datatypes.json;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -12,6 +14,9 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -56,40 +61,99 @@ public final class DateTimeConverters
 		return getConfig().isLegacy();
 	}
 
-	private static JSONDateConfig _config = JSONDateConfig.DEFAULT;
+	private static JSONDateConfig _config = JSONDateConfig.LEGACY;
 
-	public static String toJson(@NonNull final LocalDate date)
+	private static final LocalDate LOCALDATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
+	private static final Instant INSTANT_0 = Instant.ofEpochMilli(0);
+
+	public static String toJson(@NonNull final LocalDate localDate)
 	{
 		final JSONDateConfig config = getConfig();
-		return config.getLocalDateFormatter().format(date);
+		return toJson(localDate, config);
+	}
+
+	@VisibleForTesting
+	static String toJson(@NonNull final LocalDate localDate, @NonNull final JSONDateConfig config)
+	{
+		final DateTimeFormatter formatter = config.getLocalDateFormatter();
+
+		if (config.isConvertToZonedDateTimeBeforeFormatting())
+		{
+			final ZoneId timeZone = config.getFixedTimeZone() != null
+					? config.getFixedTimeZone()
+					: UserSession.getTimeZoneOrSystemDefault();
+
+			final ZonedDateTime zonedDateTime = localDate.atStartOfDay(timeZone);
+			return formatter.format(zonedDateTime);
+		}
+		else
+		{
+			return formatter.format(localDate);
+		}
 	}
 
 	public static String toJson(@NonNull final Instant instant, @NonNull final ZoneId zoneId)
 	{
-		final ZonedDateTime dateConv = instant.atZone(zoneId);
-
 		final JSONDateConfig config = getConfig();
+		return toJson(instant, zoneId, config);
+	}
+
+	@VisibleForTesting
+	static String toJson(@NonNull final Instant instant, @NonNull final ZoneId zoneId, @NonNull final JSONDateConfig config)
+	{
+		final ZonedDateTime dateConv = instant.atZone(zoneId);
 		return config.getZonedDateTimeFormatter().format(dateConv);
 	}
 
-	public static String toJson(@NonNull final LocalTime time)
+	public static String toJson(@NonNull final LocalTime localTime)
 	{
 		final JSONDateConfig config = getConfig();
-		return config.getLocalTimeFormatter().format(time);
+		return toJson(localTime, config);
 	}
 
-	public static String toJson(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
+	public static String toJson(@NonNull final LocalTime localTime, @NonNull final JSONDateConfig config)
 	{
-		final ZonedDateTime dateConv = TimeUtil.convertToTimeZone(date, zoneId);
+		final DateTimeFormatter formatter = config.getLocalTimeFormatter();
 
+		if (config.isConvertToZonedDateTimeBeforeFormatting())
+		{
+			final ZoneId timeZone = config.getFixedTimeZone() != null
+					? config.getFixedTimeZone()
+					: UserSession.getTimeZoneOrSystemDefault();
+
+			final ZonedDateTime zonedDateTime = LOCALDATE_1970_01_01
+					.atTime(localTime)
+					.atZone(timeZone);
+			return formatter.format(zonedDateTime);
+		}
+		else
+		{
+			return formatter.format(localTime);
+		}
+	}
+
+	public static String toJson(@NonNull final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
+	{
 		final JSONDateConfig config = getConfig();
+		return toJson(zonedDateTime, zoneId, config);
+	}
+
+	@VisibleForTesting
+	static String toJson(@NonNull final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId, @NonNull final JSONDateConfig config)
+	{
+		final ZonedDateTime dateConv = TimeUtil.convertToTimeZone(zonedDateTime, zoneId);
 		return config.getZonedDateTimeFormatter().format(dateConv);
 	}
 
 	public static String toJson(@NonNull final ZoneId zoneId)
 	{
 		final JSONDateConfig config = getConfig();
-		return config.getTimeZoneFormatter().format(Instant.now().atZone(zoneId));
+		return toJson(zoneId, config);
+	}
+
+	public static String toJson(@NonNull final ZoneId zoneId, @NonNull final JSONDateConfig config)
+	{
+		return config.getTimeZoneFormatter().format(INSTANT_0.atZone(zoneId));
 	}
 
 	public static Object fromJson(
