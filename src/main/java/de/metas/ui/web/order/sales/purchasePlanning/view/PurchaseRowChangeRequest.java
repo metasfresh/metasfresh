@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -47,13 +47,13 @@ public class PurchaseRowChangeRequest
 	@Getter(AccessLevel.PRIVATE)
 	BigDecimal qtyToPurchaseWithoutUOM;
 
-	LocalDateTime purchaseDatePromised;
+	ZonedDateTime purchaseDatePromised;
 
 	@Builder
 	private PurchaseRowChangeRequest(
 			final BigDecimal qtyToPurchaseWithoutUOM,
 			final Quantity qtyToPurchase,
-			final LocalDateTime purchaseDatePromised)
+			final ZonedDateTime purchaseDatePromised)
 	{
 		if (qtyToPurchase != null && qtyToPurchaseWithoutUOM != null)
 		{
@@ -83,7 +83,7 @@ public class PurchaseRowChangeRequest
 			}
 			else if (PurchaseRow.FIELDNAME_DatePromised.equals(fieldName))
 			{
-				final LocalDateTime datePromised = fieldChangeRequest.getValueAsLocalDateTime();
+				final ZonedDateTime datePromised = fieldChangeRequest.getValueAsZonedDateTime();
 				Check.assumeNotNull(datePromised, "Parameter datePromised is not null for {}", fieldChangeRequest);
 				builder.purchaseDatePromised(datePromised);
 			}

@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -7,7 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import de.metas.i18n.Language;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.cache.CacheBuilder;
@@ -15,6 +15,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.Language;
 import de.metas.impexp.excel.AbstractExcelExporter;
 import de.metas.impexp.excel.CellValue;
 import de.metas.impexp.excel.CellValues;
@@ -23,12 +24,13 @@ import de.metas.impexp.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,6 +61,7 @@ import lombok.NonNull;
 {
 	private final RowsSupplier rows;
 	private final ViewLayout layout;
+	private final JSONOptions jsonOpts;
 
 	@Builder
 	private ViewExcelExporter(
@@ -67,17 +70,23 @@ import lombok.NonNull;
 			@NonNull final IView view,
 			@NonNull final DocumentIdsSelection rowIds,
 			@NonNull final ViewLayout layout,
-			@NonNull final Language language)
+			@NonNull final Language language,
+			@Nullable final ZoneId zoneId)
 	{
 		super(excelFormat, constants);
 		this.layout = layout;
 		setLanguage(language);
+		jsonOpts = JSONOptions.builder()
+				.adLanguage(language.getAD_Language())
+				.zoneId(zoneId != null ? zoneId : ZoneId.systemDefault())
+				.build();
 
 		if (rowIds.isAll())
 		{
 			this.rows = new AllRowsSupplier(
 					view,
-					getConstants().getAllRowsPageSize());
+					getConstants().getAllRowsPageSize(),
+					jsonOpts);
 		}
 		else if (rowIds.isEmpty())
 		{
@@ -154,8 +163,8 @@ import lombok.NonNull;
 			return null;
 		}
 
-		final Object value = row.getFieldNameAndJsonValues().get(fieldName);
-		if (value == null)
+		final Object value = row.getFieldValueAsJsonObject(fieldName, jsonOpts);
+		if (JSONNullValue.isNull(value))
 		{
 			return null;
 		}
@@ -163,7 +172,7 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = getWidgetType(columnIndex);
 		if (widgetType.isDateOrTime())
 		{
-			return CellValue.ofDate(JSONDate.fromJson(value.toString(), widgetType));
+			return CellValue.ofDate(DateTimeConverters.fromObject(value, widgetType));
 		}
 		else if (value instanceof JSONLookupValue)
 		{
@@ -203,6 +212,8 @@ import lombok.NonNull;
 	{
 		private final int pageSize;
 		private final IView view;
+		private final JSONOptions jsonOpts;
+
 		private LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
 				.maximumSize(2) // cache max 2 pages
 				.build(new CacheLoader<PageIndex, ViewResult>()
@@ -210,16 +221,20 @@ import lombok.NonNull;
 					@Override
 					public ViewResult load(final PageIndex pageIndex)
 					{
-						final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
+						final ViewRowsOrderBy orderBys = ViewRowsOrderBy.empty(jsonOpts); // default
 						return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys);
 					}
 
 				});
 
-		private AllRowsSupplier(@NonNull final IView view, final int pageSize)
+		private AllRowsSupplier(
+				@NonNull final IView view,
+				final int pageSize,
+				@NonNull final JSONOptions jsonOpts)
 		{
 			this.view = view;
 			this.pageSize = pageSize;
+			this.jsonOpts = jsonOpts;
 		}
 
 		private ViewResult getPage(final PageIndex pageIndex)

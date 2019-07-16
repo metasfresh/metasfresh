@@ -71,7 +71,7 @@ public class JsonKPIFieldLayout
 
 	public JsonKPIFieldLayout(final KPIField kpiField, final boolean isOffsetField, final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 
 		// Caption
 		if (isOffsetField)

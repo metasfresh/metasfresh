@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.reminder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -83,7 +83,7 @@ public class PurchaseCandidateReminderSchedulerRestController
 	}
 
 	@GetMapping("/nextDispatchTime")
-	public LocalDateTime getNextDispatchTime()
+	public ZonedDateTime getNextDispatchTime()
 	{
 		assertAuth();
 

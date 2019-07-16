@@ -1,6 +1,7 @@
 package de.metas.ui.web.session;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
@@ -8,7 +9,6 @@ import java.util.function.Supplier;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -21,6 +21,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
@@ -463,6 +466,30 @@ public class UserSession
 			final int defaultLookupSearchStartDelayMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DefaultLookupSearchStartDelayMillis, 0);
 			return defaultLookupSearchStartDelayMillis > 0 ? Duration.ofMillis(defaultLookupSearchStartDelayMillis) : Duration.ZERO;
 		};
+	}
+
+	@NonNull
+	public ZoneId getTimeZone()
+	{
+		final OrgId orgId = getOrgId();
+		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+		if (orgInfo.getTimeZone() != null)
+		{
+			return orgInfo.getTimeZone();
+		}
+
+		return ZoneId.systemDefault();
+	}
+
+	/**
+	 * 
+	 * @deprecated avoid using this method; usually it's workaround-ish / quick and dirty fix
+	 */
+	@Deprecated
+	public static ZoneId getTimeZoneOrSystemDefault()
+	{
+		final UserSession userSession = getCurrentOrNull();
+		return userSession != null ? userSession.getTimeZone() : ZoneId.systemDefault();
 	}
 
 	/**

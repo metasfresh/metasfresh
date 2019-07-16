@@ -25,6 +25,7 @@ import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.util.Check;
@@ -89,7 +90,7 @@ class ProductsToPickRowsData implements IEditableRowsData<ProductsToPickRow>
 
 	private static Comparator<ProductsToPickRow> createComparator(final List<DocumentQueryOrderBy> orderBys)
 	{
-		return DocumentQueryOrderBys.<ProductsToPickRow> asComparator(orderBys)
+		return DocumentQueryOrderBys.<ProductsToPickRow> asComparator(orderBys, JSONOptions.newInstance())
 				.thenComparing(ProductsToPickRow::getShipmentScheduleId);
 	}
 

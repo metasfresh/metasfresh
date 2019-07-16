@@ -11,6 +11,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -25,6 +27,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -52,7 +55,7 @@ import io.swagger.annotations.ApiModel;
 @SuppressWarnings("serial")
 public class JSONLookupValuesList implements Serializable
 {
-	public static final JSONLookupValuesList ofLookupValuesList(final LookupValuesList lookupValues)
+	public static final JSONLookupValuesList ofLookupValuesList(@Nullable final LookupValuesList lookupValues, @NonNull final String adLanguage)
 	{
 		if (lookupValues == null || lookupValues.isEmpty())
 		{
@@ -61,7 +64,7 @@ public class JSONLookupValuesList implements Serializable
 
 		final ImmutableList<JSONLookupValue> values = lookupValues.getValues()
 				.stream()
-				.map(JSONLookupValue::ofLookupValue)
+				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
 
 		final Map<String, String> otherProperties = lookupValues.getDebugProperties();

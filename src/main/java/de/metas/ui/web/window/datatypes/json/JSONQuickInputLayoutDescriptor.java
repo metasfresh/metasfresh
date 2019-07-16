@@ -37,7 +37,7 @@ import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONQuickInputLayoutDescriptor implements Serializable
 {
-	public static JSONQuickInputLayoutDescriptor fromNullable(final QuickInputLayoutDescriptor layout, final JSONOptions jsonOpts)
+	public static JSONQuickInputLayoutDescriptor fromNullable(final QuickInputLayoutDescriptor layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		if(layout == null)
 		{
@@ -50,9 +50,8 @@ public class JSONQuickInputLayoutDescriptor implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutElement> elements;
 
-	private JSONQuickInputLayoutDescriptor(final QuickInputLayoutDescriptor layout, final JSONOptions jsonOpts)
+	private JSONQuickInputLayoutDescriptor(final QuickInputLayoutDescriptor layout, final JSONDocumentLayoutOptions jsonOpts)
 	{
-		super();
 		elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
 	}
 

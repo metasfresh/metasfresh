@@ -2,16 +2,17 @@ package de.metas.ui.web.devices;
 
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.MoreObjects;
-
 import de.metas.device.adempiere.AttributesDevicesHub.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -26,11 +27,11 @@ import de.metas.util.Services;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -81,27 +82,19 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 		return new DeviceWebSocketProducer(deviceId);
 	}
 
+	@ToString
 	private static final class DeviceWebSocketProducer implements WebSocketProducer
 	{
 		private final String deviceId;
 
 		public DeviceWebSocketProducer(final String deviceId)
 		{
-			super();
 			Check.assumeNotEmpty(deviceId, "deviceId is not empty");
 			this.deviceId = deviceId;
 		}
 
 		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("deviceId", deviceId)
-					.toString();
-		}
-
-		@Override
-		public Object produceEvent()
+		public Object produceEvent(@NonNull final JSONOptions jsonOpts)
 		{
 			final AttributeDeviceAccessor deviceAccessor = Services.get(IDevicesHubFactory.class)
 					.getDefaultAttributesDevicesHub()
@@ -112,10 +105,9 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 			}
 
 			final Object valueObj = deviceAccessor.acquireValue();
-			final Object valueJson = Values.valueToJsonObject(valueObj);
+			final Object valueJson = Values.valueToJsonObject(valueObj, jsonOpts);
 
-			final JSONDeviceValueChangedEvent event = JSONDeviceValueChangedEvent.of(deviceId, valueJson);
-			return event;
+			return JSONDeviceValueChangedEvent.of(deviceId, valueJson);
 		}
 	}
 }

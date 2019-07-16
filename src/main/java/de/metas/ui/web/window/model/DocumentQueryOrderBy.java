@@ -9,9 +9,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 
@@ -40,14 +42,14 @@ import lombok.Value;
 @Value
 public final class DocumentQueryOrderBy
 {
-	public static final DocumentQueryOrderBy byFieldName(final String fieldName)
+	public static DocumentQueryOrderBy byFieldName(final String fieldName)
 	{
 		final boolean ascending = true;
 		final boolean nullsLast = getDefaultNullsLastByAscending(ascending);
 		return new DocumentQueryOrderBy(fieldName, ascending, nullsLast);
 	}
 
-	public static final DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
+	public static DocumentQueryOrderBy byFieldName(final String fieldName, final boolean ascending)
 	{
 		final boolean nullsLast = getDefaultNullsLastByAscending(ascending);
 		return new DocumentQueryOrderBy(fieldName, ascending, nullsLast);
@@ -56,7 +58,7 @@ public final class DocumentQueryOrderBy
 	/**
 	 * @param orderBysListStr Command separated field names. Use +/- prefix for ascending/descending. e.g. +C_BPartner_ID,-DateOrdered
 	 */
-	public static final List<DocumentQueryOrderBy> parseOrderBysList(final String orderBysListStr)
+	public static List<DocumentQueryOrderBy> parseOrderBysList(final String orderBysListStr)
 	{
 		if (Check.isEmpty(orderBysListStr, true))
 		{
@@ -75,7 +77,7 @@ public final class DocumentQueryOrderBy
 	/**
 	 * @param orderByStr field name with optional +/- prefix for ascending/descending. e.g. +C_BPartner_ID
 	 */
-	private static final DocumentQueryOrderBy parseOrderBy(final String orderByStr)
+	private static DocumentQueryOrderBy parseOrderBy(final String orderByStr)
 	{
 		if (orderByStr.charAt(0) == '+')
 		{
@@ -100,7 +102,7 @@ public final class DocumentQueryOrderBy
 		}
 	}
 
-	private static final boolean getDefaultNullsLastByAscending(final boolean ascending)
+	private static boolean getDefaultNullsLastByAscending(final boolean ascending)
 	{
 		return true; // always nulls last
 	}
@@ -127,23 +129,23 @@ public final class DocumentQueryOrderBy
 		return new DocumentQueryOrderBy(fieldName, ascending, nullsLast);
 	}
 
-	public <T> Comparator<T> asComparator(final FieldValueExtractor<T> fieldValueExtractor)
+	public <T> Comparator<T> asComparator(@NonNull final FieldValueExtractor<T> fieldValueExtractor, @NonNull final JSONOptions jsonOpts)
 	{
-		final Function<T, Object> keyExtractor = obj -> fieldValueExtractor.getFieldValue(obj, fieldName);
+		final Function<T, Object> keyExtractor = obj -> fieldValueExtractor.getFieldValue(obj, fieldName, jsonOpts);
 		Comparator<? super Object> keyComparator = ValueComparator.ofAscendingAndNullsLast(ascending, nullsLast);
 		return Comparator.comparing(keyExtractor, keyComparator);
 	}
 
 	@FunctionalInterface
-	public static interface FieldValueExtractor<T>
+	public interface FieldValueExtractor<T>
 	{
-		Object getFieldValue(T object, String fieldName);
+		Object getFieldValue(T object, String fieldName, JSONOptions jsonOpts);
 	}
 
 	@ToString
 	private static final class ValueComparator implements Comparator<Object>
 	{
-		public static final ValueComparator ofAscendingAndNullsLast(final boolean ascending, final boolean nullsLast)
+		public static ValueComparator ofAscendingAndNullsLast(final boolean ascending, final boolean nullsLast)
 		{
 			if (ascending)
 			{

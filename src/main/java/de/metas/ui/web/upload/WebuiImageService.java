@@ -1,7 +1,7 @@
 package de.metas.ui.web.upload;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -69,7 +69,7 @@ public class WebuiImageService
 				|| "blob".equals(name) // HARDCODED: this happens when the image is taken from webcam
 		)
 		{
-			nameNormalized = DATE_FORMAT.format(LocalDateTime.now());
+			nameNormalized = DATE_FORMAT.format(Instant.now());
 		}
 		else
 		{

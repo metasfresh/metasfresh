@@ -45,18 +45,18 @@ public class JSONDocumentLayoutElementLine implements Serializable
 {
 	static List<JSONDocumentLayoutElementLine> ofList(
 			@NonNull final List<DocumentLayoutElementLineDescriptor> elementsLines,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
 		return elementsLines.stream()
-				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, jsonOpts))
+				.map(elementsLine -> ofDocumentLayoutElementLineDescriptor(elementsLine, options))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
 	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(
 			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
-		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
+		return new JSONDocumentLayoutElementLine(elementLine, options);
 	}
 
 	@JsonProperty("elements")
@@ -65,9 +65,9 @@ public class JSONDocumentLayoutElementLine implements Serializable
 
 	private JSONDocumentLayoutElementLine(
 			@NonNull final DocumentLayoutElementLineDescriptor elementLine,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final JSONDocumentLayoutOptions options)
 	{
-		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), jsonOpts);
+		final List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(elementLine.getElements(), options);
 		this.elements = ImmutableList.copyOf(elements);
 	}
 

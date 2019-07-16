@@ -2,12 +2,11 @@ package de.metas.ui.web.pickingV2.productsToPick;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -18,9 +17,10 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.TranslationSource;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -54,7 +54,7 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = "_fieldNameAndJsonValues")
+@ToString(exclude = "values")
 public class ProductsToPickRow implements IViewRow
 {
 	static final String FIELD_ProductValue = "productValue";
@@ -86,7 +86,7 @@ public class ProductsToPickRow implements IViewRow
 	private final String lotNumber;
 
 	static final String FIELD_ExpiringDate = "expiringDate";
-	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.Date, //
+	@ViewColumn(fieldName = FIELD_ExpiringDate, widgetType = DocumentFieldWidgetType.LocalDate, //
 			captionKey = ProductsToPickRowsDataFactory.ATTR_BestBeforeDate, captionTranslationSource = TranslationSource.ATTRIBUTE_NAME, //
 			widgetSize = WidgetSize.Small)
 	@Getter
@@ -130,7 +130,7 @@ public class ProductsToPickRow implements IViewRow
 	private final PickingCandidateId pickingCandidateId;
 
 	//
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private final ViewRowFieldNameAndJsonValuesHolder<ProductsToPickRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(ProductsToPickRow.class);
 
 	@Builder(toBuilder = true)
 	private ProductsToPickRow(
@@ -162,7 +162,7 @@ public class ProductsToPickRow implements IViewRow
 		this.productName = productInfo.getName();
 		this.productPackageSize = productInfo.getPackageSize();
 		this.productPackageSizeUOM = productInfo.getPackageSizeUOM();
-		
+
 		this.huReservedForThisRow = huReservedForThisRow;
 
 		this.locator = locator;
@@ -201,13 +201,15 @@ public class ProductsToPickRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
 	{
-		if (_fieldNameAndJsonValues == null)
-		{
-			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
-		}
-		return _fieldNameAndJsonValues;
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
+	{
+		return values.get(this);
 	}
 
 	public HuId getHuId()

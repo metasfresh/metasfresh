@@ -8,7 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
 import de.metas.notification.UserNotification;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -23,11 +24,11 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,9 +37,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDate;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONNotification implements Serializable
 {
-	public static final JSONNotification of(final UserNotification notification, final String adLanguage)
+	public static JSONNotification of(final UserNotification notification, final JSONOptions jsonOpts)
 	{
-		return new JSONNotification(notification, adLanguage);
+		return new JSONNotification(notification, jsonOpts);
 	}
 
 	@JsonProperty("id")
@@ -51,20 +52,20 @@ public final class JSONNotification implements Serializable
 	private final boolean important;
 	@JsonProperty("read")
 	private final boolean read;
-	
+
 	@JsonProperty("target")
 	private final JSONNotificationTarget target;
 
-	private JSONNotification(final UserNotification notification, final String adLanguage)
+	private JSONNotification(
+			final UserNotification notification,
+			final JSONOptions jsonOpts)
 	{
-		super();
-
 		id = String.valueOf(notification.getId());
-		message = notification.getMessage(adLanguage);
-		timestamp = JSONDate.toJson(notification.getTimestamp());
+		message = notification.getMessage(jsonOpts.getAdLanguage());
+		timestamp = DateTimeConverters.toJson(notification.getTimestamp(), jsonOpts.getZoneId());
 		important = notification.isImportant();
 		read = notification.isRead();
-		
+
 		target = JSONNotificationTarget.of(notification);
 	}
 

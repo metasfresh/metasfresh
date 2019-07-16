@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
@@ -20,6 +19,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.user.UserId;

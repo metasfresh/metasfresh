@@ -67,10 +67,10 @@ final class PackageableViewFilters
 
 		final DocumentFilterParamDescriptor.Builder deliveryDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_DeliveryDate)
 				.setDisplayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
-				.setWidgetType(DocumentFieldWidgetType.Date);
+				.setWidgetType(DocumentFieldWidgetType.LocalDate);
 
 		final DocumentFilterParamDescriptor.Builder preparationDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_PreparationDate)
-				.setWidgetType(DocumentFieldWidgetType.Date);
+				.setWidgetType(DocumentFieldWidgetType.LocalDate);
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)

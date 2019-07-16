@@ -23,7 +23,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -182,9 +182,9 @@ public class ASIDocument
 		return data.getFieldViews();
 	}
 
-	public JSONDocument toJSONDocument(final JSONOptions jsonOpts)
+	public JSONDocument toJSONDocument(final JSONDocumentOptions options)
 	{
-		return JSONDocument.ofDocument(data, jsonOpts);
+		return JSONDocument.ofDocument(data, options);
 	}
 
 	public LookupValuesList getFieldLookupValuesForQuery(final String attributeName, final String query)

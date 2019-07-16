@@ -55,7 +55,7 @@ public class JSONProcessInstance implements Serializable
 
 		parametersByName = pinstance.getParameters()
 				.stream()
-				.map(param -> JSONDocumentField.ofProcessParameter(param, jsonOpts.getAD_Language()))
+				.map(param -> JSONDocumentField.ofProcessParameter(param, jsonOpts))
 				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
 
 		startProcessDirectly = pinstance.isStartProcessDirectly();

@@ -41,9 +41,9 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	 * Retrieves a particular field from given {@link ResultSet}.
 	 */
 	@FunctionalInterface
-	public static interface SqlViewRowFieldLoader
+	public interface SqlViewRowFieldLoader
 	{
-		Object retrieveValueAsJson(ResultSet rs, String adLanguage) throws SQLException;
+		Object retrieveValue(ResultSet rs, String adLanguage) throws SQLException;
 	}
 
 	private final String fieldName;

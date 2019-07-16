@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -39,6 +38,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
@@ -289,7 +289,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(20))
-				.purchaseDatePromised(TimeUtil.asLocalDateTime(orderLine.getDatePromised()))
+				.purchaseDatePromised(TimeUtil.asZonedDateTime(orderLine.getDatePromised()))
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID()))
 				.qtyToPurchase(Quantity.of(orderLine.getQtyOrdered(), productStockingUOM))

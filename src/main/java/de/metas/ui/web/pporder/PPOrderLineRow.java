@@ -2,7 +2,6 @@ package de.metas.ui.web.pporder;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -12,7 +11,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -26,9 +25,10 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -111,7 +111,7 @@ public class PPOrderLineRow implements IViewRow
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80))
 	private final JSONLookupValue huStatus;
 
-	private transient ImmutableMap<String, Object> _values;
+	private final ViewRowFieldNameAndJsonValuesHolder<PPOrderLineRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PPOrderLineRow.class);
 
 	public static final PPOrderLineRow cast(final IViewRow viewRecord)
 	{
@@ -370,14 +370,15 @@ public class PPOrderLineRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
 	{
-		ImmutableMap<String, Object> values = _values;
-		if (values == null)
-		{
-			values = _values = ViewColumnHelper.extractJsonMap(this);
-		}
-		return values;
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
+	{
+		return values.get(this);
 	}
 
 	@Override

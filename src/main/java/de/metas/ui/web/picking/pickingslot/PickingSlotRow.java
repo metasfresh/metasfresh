@@ -2,7 +2,6 @@ package de.metas.ui.web.picking.pickingslot;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -11,6 +10,7 @@ import org.adempiere.warehouse.WarehouseId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.handlingunits.HuId;
@@ -23,9 +23,10 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
+import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -78,7 +79,7 @@ public final class PickingSlotRow implements IViewRow
 	private final DocumentPath documentPath;
 	private final boolean processed;
 	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> includedHURows;
-	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues; // lazy
+	private final ViewRowFieldNameAndJsonValuesHolder<PickingSlotRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(PickingSlotRow.class);
 
 	private final ViewId includedViewId;
 
@@ -305,13 +306,15 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	@Override
-	public Map<String, Object> getFieldNameAndJsonValues()
+	public ImmutableSet<String> getFieldNames()
 	{
-		if (_fieldNameAndJsonValues == null)
-		{
-			_fieldNameAndJsonValues = ViewColumnHelper.extractJsonMap(this);
-		}
-		return _fieldNameAndJsonValues;
+		return values.getFieldNames();
+	}
+
+	@Override
+	public ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues()
+	{
+		return values.get(this);
 	}
 
 	@Override

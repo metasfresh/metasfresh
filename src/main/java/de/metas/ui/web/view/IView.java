@@ -132,11 +132,14 @@ public interface IView
 		invalidateAll();
 	}
 
-	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
+	ViewResult getPage(int firstRow, int pageLength, ViewRowsOrderBy orderBy);
 
-	default ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	default ViewResult getPageWithRowIdsOnly(
+			final int firstRow,
+			final int pageLength,
+			final ViewRowsOrderBy orderBy)
 	{
-		return getPage(firstRow, pageLength, orderBys);
+		return getPage(firstRow, pageLength, orderBy);
 	}
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;

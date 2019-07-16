@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 
@@ -101,7 +102,7 @@ public final class JSONDocumentAction implements Serializable
 			@NonNull final WebuiRelatedProcessDescriptor relatedProcessDescriptor,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = jsonOpts.getAdLanguage();
 
 		processId = relatedProcessDescriptor.getProcessId().toJson();
 		caption = relatedProcessDescriptor.getCaption(adLanguage);
@@ -126,7 +127,7 @@ public final class JSONDocumentAction implements Serializable
 
 		//
 		// Debug properties
-		if (jsonOpts.isProtocolDebugging())
+		if (WindowConstants.isProtocolDebugging())
 		{
 			debugProperties = relatedProcessDescriptor.getDebugProperties();
 		}

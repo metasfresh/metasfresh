@@ -8,7 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +28,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_M_Attribute;
-import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -236,7 +235,7 @@ public class MaterialCockpitRowFactoryTest
 		stockRecordWithEmptyAttributesKey.setQtyOnHand(TWELVE);
 		save(stockRecordWithEmptyAttributesKey);
 
-		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
+		final LocalDate today = SystemTime.asLocalDate();
 
 		final CreateRowsRequest request = CreateRowsRequest.builder()
 				.date(today)
@@ -318,7 +317,7 @@ public class MaterialCockpitRowFactoryTest
 	@Test
 	public void createEmptyRowBuckets()
 	{
-		final Timestamp today = TimeUtil.getDay(SystemTime.asTimestamp());
+		final LocalDate today = SystemTime.asLocalDate();
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// invoke method under test

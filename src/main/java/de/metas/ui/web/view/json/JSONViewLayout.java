@@ -17,7 +17,7 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.Value;
@@ -47,9 +47,9 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONViewLayout
 {
-	public static JSONViewLayout of(final ViewLayout gridLayout, final JSONOptions jsonOpts)
+	public static JSONViewLayout of(final ViewLayout gridLayout, final JSONDocumentLayoutOptions options)
 	{
-		return new JSONViewLayout(gridLayout, jsonOpts);
+		return new JSONViewLayout(gridLayout, options);
 	}
 
 	@JsonProperty("viewId")
@@ -134,14 +134,14 @@ public final class JSONViewLayout
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean supportOpenRecord;
 
-	private JSONViewLayout(final ViewLayout layout, final JSONOptions jsonOpts)
+	private JSONViewLayout(final ViewLayout layout, final JSONDocumentLayoutOptions options)
 	{
 		windowId = layout.getWindowId();
 		type = windowId;
 
 		profileId = layout.getProfileId();
 
-		final String adLanguage = jsonOpts.getAD_Language();
+		final String adLanguage = options.getAdLanguage();
 		caption = layout.getCaption(adLanguage);
 		description = layout.getDescription(adLanguage);
 		emptyResultText = layout.getEmptyResultText(adLanguage);
@@ -149,9 +149,9 @@ public final class JSONViewLayout
 
 		//
 		// Elements
-		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(layout.getElements(), jsonOpts);
+		List<JSONDocumentLayoutElement> elements = JSONDocumentLayoutElement.ofList(layout.getElements(), options);
 		final String idFieldName = layout.getIdFieldName();
-		if (jsonOpts.isDebugShowColumnNamesForCaption() && idFieldName != null)
+		if (options.isDebugShowColumnNamesForCaption() && idFieldName != null)
 		{
 			elements = ImmutableList.<JSONDocumentLayoutElement> builder()
 					.add(JSONDocumentLayoutElement.debuggingField(idFieldName, DocumentFieldWidgetType.Text))
@@ -160,7 +160,7 @@ public final class JSONViewLayout
 		}
 		this.elements = elements;
 
-		filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
+		filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), options);
 
 		supportAttributes = layout.isAttributesSupport();
 

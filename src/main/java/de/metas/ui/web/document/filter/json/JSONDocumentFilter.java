@@ -17,6 +17,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 
@@ -59,7 +60,7 @@ public final class JSONDocumentFilter
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final DocumentFilter unwrap(final JSONDocumentFilter jsonFilter, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
+	public static DocumentFilter unwrap(final JSONDocumentFilter jsonFilter, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
 	{
 		final String filterId = jsonFilter.getFilterId();
 		final DocumentFilterDescriptor filterDescriptor = filterDescriptorProvider.getByFilterIdOrNull(filterId);
@@ -143,7 +144,7 @@ public final class JSONDocumentFilter
 		return filter.build();
 	}
 
-	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters, final String adLanguage)
+	public static List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters, final JSONOptions jsonOpts)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -151,22 +152,22 @@ public final class JSONDocumentFilter
 		}
 
 		return filters.stream()
-				.map(filter -> of(filter, adLanguage))
+				.map(filter -> of(filter, jsonOpts))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final JSONDocumentFilter of(final DocumentFilter filter, final String adLanguage)
+	public static JSONDocumentFilter of(final DocumentFilter filter, final JSONOptions jsonOpts)
 	{
 		final String filterId = filter.getFilterId();
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
 				.filter(filterParam -> !filter.isInternalParameter(filterParam.getFieldName()))
-				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
+				.map(filterParam -> JSONDocumentFilterParam.of(filterParam, jsonOpts))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), jsonParameters);
+		return new JSONDocumentFilter(filterId, filter.getCaption(jsonOpts.getAdLanguage()), jsonParameters);
 	}
 
 	@JsonProperty("filterId")

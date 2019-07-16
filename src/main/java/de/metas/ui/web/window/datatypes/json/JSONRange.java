@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -8,9 +8,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DateRangeValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.Value;
 
@@ -42,11 +40,11 @@ public class JSONRange
 {
 	public static final JSONRange of(final DateRangeValue range)
 	{
-		final Date from = range.getFrom();
-		final String jsonFrom = from != null ? JSONDate.toJson(from) : null;
+		final LocalDate from = range.getFrom();
+		final String jsonFrom = from != null ? DateTimeConverters.toJson(from) : null;
 
-		final Date to = range.getTo();
-		final String jsonTo = to != null ? JSONDate.toJson(to) : null;
+		final LocalDate to = range.getTo();
+		final String jsonTo = to != null ? DateTimeConverters.toJson(to) : null;
 
 		return new JSONRange(jsonFrom, jsonTo);
 	}
@@ -54,10 +52,10 @@ public class JSONRange
 	public static DateRangeValue dateRangeFromJSONMap(final Map<String, String> map)
 	{
 		final String jsonFrom = map.get("value");
-		final Date from = Check.isEmpty(jsonFrom) ? null : JSONDate.fromJson(jsonFrom, DocumentFieldWidgetType.Date);
+		final LocalDate from = DateTimeConverters.fromObjectToLocalDate(jsonFrom);
 
 		final String jsonTo = map.get("valueTo");
-		final Date to = Check.isEmpty(jsonTo) ? null : JSONDate.fromJson(jsonTo, DocumentFieldWidgetType.Date);
+		final LocalDate to = DateTimeConverters.fromObjectToLocalDate(jsonTo);
 
 		return DateRangeValue.of(from, to);
 	}

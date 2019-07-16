@@ -66,6 +66,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 	public static final String FIELDNAME_Line = "Line";
 	public static final String FIELDNAME_C_Currency_ID = "C_Currency_ID";
+	public static final String FIELDNAME_TimeZone = "TimeZone";
 	
 
 	public static final String FIELDNAME_AD_Client_ID = "AD_Client_ID";

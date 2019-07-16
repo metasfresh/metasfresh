@@ -2,12 +2,14 @@ package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Objects;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
@@ -18,7 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONDate;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONRange;
@@ -26,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -65,7 +68,7 @@ public final class DataTypes
 	 * @param value2
 	 * @return
 	 */
-	public static final <T> boolean equals(final T value1, final T value2)
+	public static <T> boolean equals(final T value1, final T value2)
 	{
 		if (value1 == value2)
 		{
@@ -98,11 +101,11 @@ public final class DataTypes
 	 * @return converted value
 	 */
 	public static <T> T convertToValueClass(
-			final String fieldName,
-			final Object value,
-			final DocumentFieldWidgetType widgetType,
-			final Class<T> targetType,
-			final LookupValueByIdSupplier lookupDataSource)
+			@NonNull final String fieldName,
+			@Nullable final Object value,
+			@Nullable final DocumentFieldWidgetType widgetType,
+			@NonNull final Class<T> targetType,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
 	{
 		if (value == null)
 		{
@@ -130,27 +133,33 @@ public final class DataTypes
 			}
 			else if (java.util.Date.class == targetType)
 			{
-				return cast(convertToJULDate(value, widgetType));
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
+				return cast(TimeUtil.asDate(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (Timestamp.class == targetType)
 			{
-				return cast(convertToTimestamp(value, widgetType));
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
+				return cast(TimeUtil.asTimestamp(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (ZonedDateTime.class == targetType)
 			{
-				return cast(convertToZonedDateTime(value));
-			}
-			else if (LocalDateTime.class == targetType)
-			{
-				return cast(convertToLocalDateTime(value));
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.ZonedDateTime;
+				return cast(TimeUtil.asZonedDateTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalDate.class == targetType)
 			{
-				return cast(convertToLocalDate(value));
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalDate;
+				return cast(TimeUtil.asLocalDate(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (LocalTime.class == targetType)
 			{
-				return cast(convertToLocalTime(value));
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.LocalTime;
+				return cast(TimeUtil.asLocalTime(DateTimeConverters.fromObject(value, widgetTypeEffective)));
+			}
+			else if (Instant.class == targetType)
+			{
+				final DocumentFieldWidgetType widgetTypeEffective = widgetType != null ? widgetType : DocumentFieldWidgetType.Timestamp;
+				return cast(TimeUtil.asInstant(DateTimeConverters.fromObject(value, widgetTypeEffective)));
 			}
 			else if (Integer.class == targetType || int.class == targetType)
 			{
@@ -233,7 +242,7 @@ public final class DataTypes
 	}
 
 	@SuppressWarnings("unchecked")
-	private static final <T> T cast(final Object value)
+	private static <T> T cast(final Object value)
 	{
 		return (T)value;
 	}
@@ -605,120 +614,6 @@ public final class DataTypes
 		else
 		{
 			throw new ValueConversionException();
-		}
-	}
-
-	private static ZonedDateTime convertToZonedDateTime(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof ZonedDateTime)
-		{
-			return (ZonedDateTime)value;
-		}
-		else if (value instanceof String)
-		{
-			final String valueStr = value.toString().trim();
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-			else
-			{
-				return JSONDate.zonedDateTimeFromJson(valueStr);
-			}
-		}
-		else
-		{
-			return TimeUtil.asZonedDateTime(value);
-		}
-	}
-
-	private static LocalDateTime convertToLocalDateTime(final Object value)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof LocalDateTime)
-		{
-			return (LocalDateTime)value;
-		}
-		else if (value instanceof String)
-		{
-			final String valueStr = value.toString().trim();
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-			else
-			{
-				return JSONDate.localDateTimeFromJson(valueStr);
-			}
-		}
-		else
-		{
-			return TimeUtil.asLocalDateTime(value);
-		}
-	}
-
-	private static LocalDate convertToLocalDate(final Object value)
-	{
-		final LocalDateTime localDateTime = convertToLocalDateTime(value);
-		return localDateTime != null ? localDateTime.toLocalDate() : null;
-	}
-
-	private static LocalTime convertToLocalTime(final Object value)
-	{
-		final LocalDateTime localDateTime = convertToLocalDateTime(value);
-		return localDateTime != null ? localDateTime.toLocalTime() : null;
-	}
-
-	private static Timestamp convertToTimestamp(final Object value, final DocumentFieldWidgetType widgetType)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof Timestamp)
-		{
-			return (Timestamp)value;
-		}
-		else if (value instanceof String)
-		{
-			final java.util.Date date = JSONDate.fromJson((String)value, widgetType);
-			return TimeUtil.asTimestamp(date);
-		}
-		else
-		{
-			return TimeUtil.asTimestamp(value);
-		}
-	}
-
-	private static java.util.Date convertToJULDate(final Object value, final DocumentFieldWidgetType widgetType)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof Timestamp)
-		{
-			// Corner case: we need to convert Timestamp(which extends Date) to strict Date because else all value changed comparing methods will fail
-			return JSONDate.fromTimestamp((Timestamp)value);
-		}
-		else if (value instanceof java.util.Date)
-		{
-			return (java.util.Date)value;
-		}
-		else if (value instanceof String)
-		{
-			return JSONDate.fromJson((String)value, widgetType);
-		}
-		else
-		{
-			return TimeUtil.asDate(value);
 		}
 	}
 

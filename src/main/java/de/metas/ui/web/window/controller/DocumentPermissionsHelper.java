@@ -7,10 +7,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.service.IRolePermLoggingBL.NoSuchForeignKeyException;
-import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.ui.web.session.UserSession;

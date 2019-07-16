@@ -174,7 +174,7 @@ public class MailRestController
 			}
 		}
 
-		return JSONEmail.of(mailRepo.getEmail(emailId));
+		return JSONEmail.of(mailRepo.getEmail(emailId), userSession.getAD_Language());
 	}
 
 	@GetMapping("/{emailId}")
@@ -184,7 +184,7 @@ public class MailRestController
 		userSession.assertLoggedIn();
 		final WebuiEmail email = mailRepo.getEmail(emailId);
 		assertReadable(email);
-		return JSONEmail.of(email);
+		return JSONEmail.of(email, userSession.getAD_Language());
 	}
 
 	@PostMapping("/{emailId}/send")
@@ -286,7 +286,7 @@ public class MailRestController
 		userSession.assertLoggedIn();
 
 		final WebuiEmailChangeResult result = changeEmail(emailId, emailOld -> changeEmail(emailOld, events));
-		return JSONEmail.of(result.getEmail());
+		return JSONEmail.of(result.getEmail(), userSession.getAD_Language());
 	}
 
 	private WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
@@ -385,7 +385,12 @@ public class MailRestController
 	public JSONLookupValuesList getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
-		return JSONLookupValuesList.ofLookupValuesList(mailRepo.getToTypeahead(emailId, query));
+		return toJSONLookupValuesList(mailRepo.getToTypeahead(emailId, query));
+	}
+
+	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	{
+		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
 	}
 
 	@PostMapping("/{emailId}/field/attachments")
@@ -395,7 +400,7 @@ public class MailRestController
 		userSession.assertLoggedIn();
 
 		final WebuiEmail email = attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, file));
-		return JSONEmail.of(email);
+		return JSONEmail.of(email, userSession.getAD_Language());
 	}
 
 	private WebuiEmail attachFile(final String emailId, final Supplier<LookupValue> attachmentProducer)

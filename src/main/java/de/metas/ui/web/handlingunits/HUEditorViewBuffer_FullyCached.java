@@ -24,6 +24,7 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -155,34 +156,28 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, @NonNull final HUEditorRowFilter filter, final List<DocumentQueryOrderBy> orderBys)
+	public Stream<HUEditorRow> streamPage(
+			final int firstRow,
+			final int pageLength,
+			@NonNull final HUEditorRowFilter filter,
+			@NonNull final ViewRowsOrderBy orderBys)
 	{
-		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : defaultOrderBys;
+		final ViewRowsOrderBy orderBysEffective = !orderBys.isEmpty()
+				? orderBys
+				: orderBys.withOrderBys(defaultOrderBys);
+
 		Stream<HUEditorRow> stream = getRows().stream()
 				.skip(firstRow)
 				.limit(pageLength)
 				.filter(HUEditorRowFilters.toPredicate(filter));
 
-		final Comparator<HUEditorRow> comparator = createComparatorOrNull(orderBysEffective);
+		final Comparator<HUEditorRow> comparator = orderBysEffective.toComparatorOrNull();
 		if (comparator != null)
 		{
 			stream = stream.sorted(comparator);
 		}
 
 		return stream;
-	}
-
-	private static final Comparator<HUEditorRow> createComparatorOrNull(final List<DocumentQueryOrderBy> orderBys)
-	{
-		if (orderBys == null || orderBys.isEmpty())
-		{
-			return null;
-		}
-
-		return orderBys.stream()
-				.map(orderBy -> orderBy.asComparator(HUEditorRow::getFieldValueAsJson))
-				.reduce((cmp1, cmp2) -> cmp1.thenComparing(cmp2))
-				.orElse(null);
 	}
 
 	@Override
@@ -307,7 +302,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		}
 
 		/** @return true if given <code>childRowId</code> is a direct or indirect child of any of <code>parentRowIds</code> */
-		private final boolean isRowIdIncluded(final Set<HUEditorRowId> parentRowIds, final HUEditorRowId childRowId)
+		private boolean isRowIdIncluded(final Set<HUEditorRowId> parentRowIds, final HUEditorRowId childRowId)
 		{
 			if (parentRowIds == null || parentRowIds.isEmpty())
 			{
@@ -366,14 +361,14 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return rowsById.build();
 		}
 
-		private static final void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, HUEditorRow> collector, final HUEditorRow row)
+		private static void indexByIdRecursively(final ImmutableMap.Builder<DocumentId, HUEditorRow> collector, final HUEditorRow row)
 		{
 			collector.put(row.getId(), row);
 			row.getIncludedRows()
 					.forEach(includedRow -> indexByIdRecursively(collector, includedRow));
 		}
 
-		private static final ImmutableMap<HUEditorRowId, HUEditorRowId> buildRowId2ParentIdMap(final List<HUEditorRow> rows)
+		private static ImmutableMap<HUEditorRowId, HUEditorRowId> buildRowId2ParentIdMap(final List<HUEditorRow> rows)
 		{
 			if (rows.isEmpty())
 			{
@@ -385,7 +380,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return rowId2parentId.build();
 		}
 
-		private static final void buildRowId2ParentIdMap(final ImmutableMap.Builder<HUEditorRowId, HUEditorRowId> rowId2parentId, final HUEditorRow parentRow)
+		private static void buildRowId2ParentIdMap(final ImmutableMap.Builder<HUEditorRowId, HUEditorRowId> rowId2parentId, final HUEditorRow parentRow)
 		{
 			final HUEditorRowId parentId = parentRow.getHURowId();
 			parentRow.getIncludedRows()

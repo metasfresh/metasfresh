@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.util.GuavaCollectors;
 import lombok.Value;
 
@@ -40,7 +40,7 @@ import lombok.Value;
 @Value
 public class JSONDashboard
 {
-	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONOptions jsonOpts)
+	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDashboard(items, websocketEndpoint, jsonOpts);
 	}
@@ -50,7 +50,7 @@ public class JSONDashboard
 	private final List<JSONDashboardItem> items;
 	private final String websocketEndpoint;
 
-	private JSONDashboard(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONOptions jsonOpts)
+	private JSONDashboard(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
 	{
 		super();
 
