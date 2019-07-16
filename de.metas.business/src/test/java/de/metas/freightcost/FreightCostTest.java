@@ -220,12 +220,10 @@ public class FreightCostTest
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
 		createProductPrice(
-				pricingSystem.getM_PricingSystem_ID(),
 				pricelist.getM_PriceList_ID(),
 				freightCostProduct.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N123,
-				currency1.getC_Currency_ID(),
 				taxCategory1.getC_TaxCategory_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
@@ -307,12 +305,10 @@ public class FreightCostTest
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
 		createProductPrice(
-				pricingSystem.getM_PricingSystem_ID(),
 				pricelist.getM_PriceList_ID(),
 				freightCostProduct.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N123,
-				currency1.getC_Currency_ID(),
 				taxCategory1.getC_TaxCategory_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
@@ -389,12 +385,10 @@ public class FreightCostTest
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
 		createProductPrice(
-				pricingSystem.getM_PricingSystem_ID(),
 				pricelist.getM_PriceList_ID(),
 				freightCostProduct.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N123,
-				currency1.getC_Currency_ID(),
 				taxCategory1.getC_TaxCategory_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
@@ -471,12 +465,10 @@ public class FreightCostTest
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
 		createProductPrice(
-				pricingSystem.getM_PricingSystem_ID(),
 				pricelist.getM_PriceList_ID(),
 				freightCostProduct.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N123,
-				currency1.getC_Currency_ID(),
 				taxCategory1.getC_TaxCategory_ID());
 
 		final I_M_FreightCost freightCost = createFreightCost(freightCostProduct.getM_Product_ID(), "FreightCost1");
@@ -509,7 +501,7 @@ public class FreightCostTest
 	}
 
 	@Test
-	public void orderWithFreightCost_FreightCostRule_FlatShippingFee_1break()
+	public void orderWithFreightCost_FlatShippingFee_1break()
 	{
 
 		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
@@ -580,7 +572,7 @@ public class FreightCostTest
 	}
 
 	@Test
-	public void orderWithFreightCost_FreightCostRule_FlatShippingFee_2breaks()
+	public void orderWithFreightCost_FlatShippingFee_2breaks()
 	{
 
 		final I_C_BP_Group bpGroup = createBPGroup("BPGroup");
@@ -1009,12 +1001,11 @@ public class FreightCostTest
 		return taxCateogry;
 	}
 
-	private I_M_ProductPrice createProductPrice(final int pricingSystemId,
+	private I_M_ProductPrice createProductPrice(
 			final int priceListId,
 			final int productId,
 			final int uomId,
 			final BigDecimal price,
-			final int currencyId,
 			final int taxCategoryId)
 	{
 

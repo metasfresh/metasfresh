@@ -95,7 +95,7 @@ public interface IOrderBL extends ISingletonService
 	 *
 	 * @return true if set
 	 */
-	boolean setBill_User_ID(org.compiere.model.I_C_Order order);
+	boolean setBill_User_ID(I_C_Order order);
 
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
