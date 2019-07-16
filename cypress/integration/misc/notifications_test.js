@@ -7,7 +7,7 @@ describe('Test notifications', function() {
     cy.newNotification(null, 1).then(notifObj => {
       cy.getDOMNotificationsNumber().should('equal', 1);
 
-      cy.getNotificationsInbox(state => {
+      cy.getNotificationsInbox().then(state => {
         assert.equal(state.unreadCount, 1);
         const notificationsInboxString = JSON.stringify(state.notifications);
 

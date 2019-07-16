@@ -359,7 +359,7 @@ Cypress.Commands.add('getNotificationsInbox', () => {
       .its('store')
       .invoke('getState')
       .then(state => {
-        return state.appHandler.inbox;
+        return cy.wrap(state.appHandler.inbox);
       });
   });
 });
