@@ -3,9 +3,13 @@ package de.metas.order;
 import java.math.BigDecimal;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyBL;
 import de.metas.freighcost.FreightCost;
 import de.metas.freighcost.FreightCostContext;
 import de.metas.freighcost.FreightCostRule;
@@ -75,10 +80,11 @@ public class OrderFreightCostsService
 
 	public void addFreightRateLineIfNeeded(final I_C_Order order)
 	{
+
 		final DeliveryViaRule deliveryViaRule = DeliveryViaRule.ofCode(order.getDeliveryViaRule());
 		final boolean isFreightCostNeeded = !deliveryViaRule.equals(DeliveryViaRule.Pickup);
 
-		if(!isFreightCostNeeded)
+		if (!isFreightCostNeeded)
 		{
 			return;
 		}
@@ -113,13 +119,53 @@ public class OrderFreightCostsService
 
 		freightRateOrderLine.setIsManualPrice(true);
 		freightRateOrderLine.setIsPriceEditable(false);
-		freightRateOrderLine.setPriceEntered(freightAmt.getAsBigDecimal());
-		freightRateOrderLine.setPriceActual(freightAmt.getAsBigDecimal());
+
+		final CurrencyId orderCurrencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+
+		final Money convertedFreightAmt = convertFreightRate(freightAmt, orderCurrencyId);
+
+		freightRateOrderLine.setPriceEntered(convertedFreightAmt.getAsBigDecimal());
+		freightRateOrderLine.setPriceActual(convertedFreightAmt.getAsBigDecimal());
 
 		freightRateOrderLine.setIsManualDiscount(true);
 		freightRateOrderLine.setDiscount(BigDecimal.ZERO);
 
 		ordersRepo.save(freightRateOrderLine);
+	}
+
+	private Money convertFreightRate(@Nullable final Money freightAmt, @NonNull final CurrencyId orderCurrencyId)
+	{
+		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+
+		if (freightAmt == null)
+		{
+			return Money.zero(orderCurrencyId);
+		}
+
+		final CurrencyId freightCostCurrencyId = freightAmt.getCurrencyId();
+
+		if (freightCostCurrencyId.equals(orderCurrencyId))
+		{
+			return freightAmt;
+		}
+
+		final BigDecimal freightAmtConverted = currencyBL.convert(
+				Env.getCtx(),
+				freightAmt.getAsBigDecimal(),
+				freightAmt.getCurrencyId().getRepoId(),
+				orderCurrencyId.getRepoId(),
+				Env.getAD_Client_ID(),
+				Env.getOrgId().getRepoId());
+
+		if (freightAmtConverted == null)
+		{
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + freightCostCurrencyId + ", " + orderCurrencyId);
+		}
+
+		final Money convertedFreightAmt = Money.of(freightAmtConverted, orderCurrencyId);
+
+		return convertedFreightAmt;
+
 	}
 
 	public boolean hasFreightCostLine(@NonNull final OrderId orderId)
