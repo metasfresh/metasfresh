@@ -3,7 +3,7 @@ package de.metas.dunning.export.process;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -37,7 +37,7 @@ import de.metas.util.Services;
 
 public class C_DunningDoc_CreateExportData extends JavaProcess
 {
-	private final transient DunningExportService dunningExportService = Adempiere.getBean(DunningExportService.class);
+	private final transient DunningExportService dunningExportService = SpringContextHolder.instance.getBean(DunningExportService.class);
 
 	@Override
 	protected String doIt() throws Exception

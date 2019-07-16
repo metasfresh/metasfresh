@@ -10,7 +10,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable2;
@@ -53,7 +53,7 @@ public class InvoiceSourceBL implements IInvoiceSourceBL
 			return false;
 		}
 
-		final InvoiceDueDateProviderService invoiceDueDateProviderService = Adempiere.getBean(InvoiceDueDateProviderService.class);
+		final InvoiceDueDateProviderService invoiceDueDateProviderService = SpringContextHolder.instance.getBean(InvoiceDueDateProviderService.class);
 
 		final LocalDate dueDate = invoiceDueDateProviderService.provideDueDateFor(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		final LocalDate dunningGraceDate = dueDate.plusDays(dunning.getGraceDays());
