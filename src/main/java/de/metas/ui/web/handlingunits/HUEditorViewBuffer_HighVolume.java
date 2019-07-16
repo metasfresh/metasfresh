@@ -27,6 +27,7 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -213,8 +214,9 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		}
 
 		final JSONOptions jsonOpts = JSONOptions.newInstance();
-		
-		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, defaultSelection.getOrderBys(), jsonOpts)
+
+		final ViewRowsOrderBy orderBys = ViewRowsOrderBy.of(defaultSelection.getOrderBys(), jsonOpts);
+		return streamPage(0, STREAM_ALL_MAX_SIZE_ALLOWED, filter, orderBys)
 				.flatMap(HUEditorRow::streamRecursive)
 				.map(HUEditorRow::cast)
 				.filter(HUEditorRowFilters.toPredicate(filter));
@@ -255,10 +257,9 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final int firstRow,
 			final int pageLength,
 			@NonNull final HUEditorRowFilter filter,
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull JSONOptions jsonOpts)
+			@NonNull final ViewRowsOrderBy orderBys)
 	{
-		final Iterator<HUEditorRowId> rowIds = streamHUIdsByPage(firstRow, pageLength, orderBys)
+		final Iterator<HUEditorRowId> rowIds = streamHUIdsByPage(firstRow, pageLength, orderBys.toDocumentQueryOrderByList())
 				.map(HUEditorRowId::ofTopLevelHU)
 				.iterator();
 

@@ -45,7 +45,6 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -367,14 +366,13 @@ public final class DefaultView implements IEditableView
 	public ViewResult getPage(
 			final int firstRow,
 			final int pageLength,
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull final JSONOptions jsonOpts)
+			final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
 		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
 
 		final List<IViewRow> rows = viewDataRepository.retrievePage(evalCtx, orderedSelection, firstRow, pageLength);
 
@@ -387,13 +385,11 @@ public final class DefaultView implements IEditableView
 				.pageLength(pageLength)
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
-				.columnInfos(extractViewResultColumns(rows, jsonOpts))
+				.columnInfos(extractViewResultColumns(rows))
 				.build();
 	}
 
-	private List<ViewResultColumn> extractViewResultColumns(
-			@NonNull final List<IViewRow> rows,
-			@NonNull final JSONOptions jsonOpts)
+	private List<ViewResultColumn> extractViewResultColumns(@NonNull final List<IViewRow> rows)
 	{
 		if (rows.isEmpty())
 		{
@@ -403,7 +399,7 @@ public final class DefaultView implements IEditableView
 		return viewDataRepository.getWidgetTypesByFieldName()
 				.entrySet()
 				.stream()
-				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows, jsonOpts))
+				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows))
 				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -411,8 +407,7 @@ public final class DefaultView implements IEditableView
 	private ViewResultColumn extractViewResultColumnOrNull(
 			@NonNull final String fieldName,
 			@NonNull final DocumentFieldWidgetType widgetType,
-			@NonNull final List<IViewRow> rows,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final List<IViewRow> rows)
 	{
 		if (widgetType == DocumentFieldWidgetType.Integer)
 		{
@@ -442,14 +437,13 @@ public final class DefaultView implements IEditableView
 	public ViewResult getPageWithRowIdsOnly(
 			final int firstRow,
 			final int pageLength,
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
 		checkChangedRows();
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
-		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
 
 		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
 

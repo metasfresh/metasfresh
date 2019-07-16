@@ -24,11 +24,10 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy.FieldValueExtractor;
 import lombok.NonNull;
 
 /*
@@ -161,38 +160,24 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			final int firstRow,
 			final int pageLength,
 			@NonNull final HUEditorRowFilter filter,
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull JSONOptions jsonOpts)
+			@NonNull final ViewRowsOrderBy orderBys)
 	{
-		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : defaultOrderBys;
+		final ViewRowsOrderBy orderBysEffective = !orderBys.isEmpty()
+				? orderBys
+				: orderBys.withOrderBys(defaultOrderBys);
+
 		Stream<HUEditorRow> stream = getRows().stream()
 				.skip(firstRow)
 				.limit(pageLength)
 				.filter(HUEditorRowFilters.toPredicate(filter));
 
-		final Comparator<HUEditorRow> comparator = createComparatorOrNull(orderBysEffective, jsonOpts);
+		final Comparator<HUEditorRow> comparator = orderBysEffective.toComparatorOrNull();
 		if (comparator != null)
 		{
 			stream = stream.sorted(comparator);
 		}
 
 		return stream;
-	}
-
-	private static final Comparator<HUEditorRow> createComparatorOrNull(
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull final JSONOptions jsonOpts)
-	{
-		if (orderBys == null || orderBys.isEmpty())
-		{
-			return null;
-		}
-
-		final FieldValueExtractor<HUEditorRow> fieldValueExtractor = (row, fieldName) -> row.getFieldValueAsJsonObject(fieldName, jsonOpts);
-		return orderBys.stream()
-				.map(orderBy -> orderBy.asComparator(fieldValueExtractor))
-				.reduce((cmp1, cmp2) -> cmp1.thenComparing(cmp2))
-				.orElse(null);
 	}
 
 	@Override

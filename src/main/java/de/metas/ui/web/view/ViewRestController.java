@@ -53,8 +53,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import lombok.Builder;
@@ -158,8 +156,7 @@ public class ViewRestController
 			result = view.getPage(
 					jsonRequest.getQueryFirstRow(),
 					jsonRequest.getQueryPageLength(),
-					DocumentQueryOrderBys.emptyList(),
-					jsonOpts);
+					ViewRowsOrderBy.empty(jsonOpts));
 		}
 		else
 		{
@@ -247,8 +244,7 @@ public class ViewRestController
 		final ViewResult result = view.getPage(
 				firstRow,
 				pageLength,
-				DocumentQueryOrderBy.parseOrderBysList(orderBysListStr),
-				jsonOpts);
+				ViewRowsOrderBy.parseString(orderBysListStr, jsonOpts));
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
 		return JSONViewResult.of(result, rowOverrides, jsonOpts);
 	}

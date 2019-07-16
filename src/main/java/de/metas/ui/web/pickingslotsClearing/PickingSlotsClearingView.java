@@ -33,13 +33,13 @@ import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.ViewCloseReason;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
@@ -177,12 +177,11 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	public ViewResult getPage(
 			final int firstRow, 
 			final int pageLength, 
-			final List<DocumentQueryOrderBy> orderBys,
-			@NonNull final JSONOptions jsonOpts_NOTUSED)
+			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		final List<PickingSlotRow> pageRows = rows.getPage(firstRow, pageLength);
 
-		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys, pageRows);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBys.toDocumentQueryOrderByList(), pageRows);
 	}
 
 	@Override

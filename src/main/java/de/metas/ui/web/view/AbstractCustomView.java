@@ -30,9 +30,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderBys;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -235,19 +233,20 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	public final ViewResult getPage(
 			final int firstRow, 
 			final int pageLength, 
-			@NonNull final List<DocumentQueryOrderBy> orderBys,
-			@NonNull final JSONOptions jsonOpts)
+			@NonNull final ViewRowsOrderBy orderBys)
 	{
-		final List<DocumentQueryOrderBy> orderBysEffective = !orderBys.isEmpty() ? orderBys : getDefaultOrderBys();
+		final ViewRowsOrderBy orderBysEffective = !orderBys.isEmpty()
+				? orderBys
+				: orderBys.withOrderBys(getDefaultOrderBys());
 
 		final List<IViewRow> pageRows = getRows()
 				.stream()
-				.sorted(DocumentQueryOrderBys.asComparator(orderBysEffective, jsonOpts))
+				.sorted(orderBysEffective.toComparator())
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
 
-		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBysEffective, pageRows);
+		return ViewResult.ofViewAndPage(this, firstRow, pageLength, orderBysEffective.toDocumentQueryOrderByList(), pageRows);
 	}
 
 	@Override

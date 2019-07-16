@@ -31,7 +31,6 @@ import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -222,8 +221,8 @@ import lombok.NonNull;
 					@Override
 					public ViewResult load(final PageIndex pageIndex)
 					{
-						final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
-						return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys, jsonOpts);
+						final ViewRowsOrderBy orderBys = ViewRowsOrderBy.empty(jsonOpts); // default
+						return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys);
 					}
 
 				});

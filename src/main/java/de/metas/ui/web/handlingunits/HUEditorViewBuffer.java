@@ -9,10 +9,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -88,8 +88,7 @@ interface HUEditorViewBuffer
 			int firstRow, 
 			int pageLength,
 			HUEditorRowFilter filter,
-			List<DocumentQueryOrderBy> orderBys,
-			JSONOptions jsonOpts);
+			@NonNull final ViewRowsOrderBy orderBys);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 

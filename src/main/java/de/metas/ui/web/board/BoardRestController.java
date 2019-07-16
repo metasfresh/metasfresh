@@ -43,6 +43,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowOverridesHelper;
+import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -55,7 +56,6 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -301,10 +301,10 @@ public class BoardRestController
 		userSession.assertLoggedIn();
 
 		final JSONOptions jsonOpts = newJSONOptions();
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		final ViewRowsOrderBy orderBys = ViewRowsOrderBy.parseString(orderBysListStr, jsonOpts);
 
 		final ViewResult viewResult = viewsRepo.getView(viewIdStr)
-				.getPageWithRowIdsOnly(firstRow, pageLength, orderBys, jsonOpts);
+				.getPageWithRowIdsOnly(firstRow, pageLength, orderBys);
 
 		final List<Integer> boardCardIds = boardsRepo.retrieveCardIds(boardId);
 

@@ -40,18 +40,18 @@ public class DocumentQueryOrderBys
 	{
 		return ImmutableList.of();
 	}
-	
+
 	public static <T extends IViewRow> Comparator<T> asComparator(
 			@NonNull final List<DocumentQueryOrderBy> orderBys,
 			@NonNull final JSONOptions jsonOpts)
 	{
-		final FieldValueExtractor<T> fieldValueExtractor = (row, fieldName) -> row.getFieldValueAsJsonObject(fieldName, jsonOpts);
+		final FieldValueExtractor<T> fieldValueExtractor = IViewRow::getFieldValueAsJsonObject;
 
 		// used in case orderBys is empty or whatever else goes wrong
 		final Comparator<T> noopComparator = (o1, o2) -> 0;
 
 		return orderBys.stream()
-				.map(orderBy -> orderBy.<T> asComparator(fieldValueExtractor))
+				.map(orderBy -> orderBy.<T> asComparator(fieldValueExtractor, jsonOpts))
 				.reduce(Comparator::thenComparing)
 				.orElse(noopComparator);
 	}
