@@ -33,7 +33,7 @@ import de.metas.organization.impl.OrgDAO;
  * #L%
  */
 
-@Interceptor(AD_OrgInfo.class)
+@Interceptor(I_AD_OrgInfo.class)
 @Component
 public class AD_OrgInfo
 {
