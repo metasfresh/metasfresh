@@ -60,6 +60,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
+import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -341,22 +342,27 @@ import lombok.NonNull;
 		}
 		else
 		{
-			final int displayType = gridFieldVO.getDisplayType();
-			widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
+			if (WindowConstants.FIELDNAME_TimeZone.contentEquals(sqlColumnName))
+			{
+				lookupDescriptorProvider = TimeZoneLookupDescriptor.provider;
+				widgetType = DocumentFieldWidgetType.Lookup;
+			}
+			else
+			{
+				final int displayType = gridFieldVO.getDisplayType();
+				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
+				final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
+				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
+						SqlLookupDescriptor.builder()
+								.setCtxTableName(ctxTableName)
+								.setCtxColumnName(sqlColumnName)
+								.setWidgetType(widgetType)
+								.setDisplayType(displayType)
+								.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
+								.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
+								.buildProvider());
+			}
 
-			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
-
-			final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
-
-			lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
-					SqlLookupDescriptor.builder()
-							.setCtxTableName(ctxTableName)
-							.setCtxColumnName(sqlColumnName)
-							.setWidgetType(widgetType)
-							.setDisplayType(displayType)
-							.setAD_Reference_Value_ID(gridFieldVO.getAD_Reference_Value_ID())
-							.setAD_Val_Rule_ID(gridFieldVO.getAD_Val_Rule_ID())
-							.buildProvider());
 			lookupDescriptor = lookupDescriptorProvider.provide();
 			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
@@ -369,6 +375,7 @@ import lombok.NonNull;
 					gridFieldVO.isUseDocSequence());
 
 			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
+			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 		}
 
 		//
@@ -862,7 +869,7 @@ import lombok.NonNull;
 
 	private static ILogicExpression extractMandatoryLogic(@NonNull final GridFieldVO gridFieldVO)
 	{
-		if(gridFieldVO.isMandatoryLogicExpression())
+		if (gridFieldVO.isMandatoryLogicExpression())
 		{
 			return gridFieldVO.getMandatoryLogic();
 		}

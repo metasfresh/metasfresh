@@ -305,7 +305,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			// Display column
 			final String sqlColumnName = getColumnName();
 			if (_lookupDescriptor != null
-					&& sqlColumnName != null) // in case of Labels, sqlColumnName is null
+					&& sqlColumnName != null // in case of Labels, sqlColumnName is null
+					&& _lookupDescriptor instanceof ISqlLookupDescriptor)
 			{
 				_usingDisplayColumn = true;
 
@@ -421,7 +422,6 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private static DocumentFieldValueLoader createDocumentFieldValueLoader(
 				final String sqlColumnName,
 				final String displayColumnName,
-				// final String descriptionColumnName,
 				final Class<?> valueClass,
 				final DocumentFieldWidgetType widgetType,
 				final boolean encrypted,
