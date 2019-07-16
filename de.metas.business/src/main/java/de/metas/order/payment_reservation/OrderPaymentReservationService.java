@@ -2,13 +2,13 @@ package de.metas.order.payment_reservation;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.reservation.PaymentReservation;
 import de.metas.payment.reservation.PaymentReservationCreateRequest;

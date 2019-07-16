@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -53,6 +52,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 

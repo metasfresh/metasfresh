@@ -3,10 +3,10 @@ package de.metas.email.mailboxes;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.email.EMailCustomType;
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.NonNull;

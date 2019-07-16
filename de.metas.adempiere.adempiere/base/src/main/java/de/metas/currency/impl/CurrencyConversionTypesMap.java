@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -14,6 +13,7 @@ import com.google.common.collect.Maps;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyConversionType;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 

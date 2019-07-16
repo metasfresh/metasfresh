@@ -7,7 +7,6 @@ import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.email.EmailValidator;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import de.metas.email.templates.MailTemplateRepository;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;

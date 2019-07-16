@@ -28,7 +28,6 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.MoreObjects;
@@ -39,6 +38,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

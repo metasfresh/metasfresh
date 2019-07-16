@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_C_BPartner;
@@ -30,6 +29,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paypal.client.PayPalClientService;
 import de.metas.payment.paypal.client.PayPalOrderId;

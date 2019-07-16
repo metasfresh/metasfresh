@@ -49,7 +49,6 @@ import javax.swing.SwingConstants;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.apps.ADialog;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -63,6 +62,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**

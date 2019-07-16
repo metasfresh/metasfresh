@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -34,6 +33,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;

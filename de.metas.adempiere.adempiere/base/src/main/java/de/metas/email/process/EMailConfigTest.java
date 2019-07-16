@@ -28,7 +28,6 @@ import org.adempiere.service.ClientId;
  */
 
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_MailConfig;
 
@@ -40,6 +39,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;

@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.Comparator;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

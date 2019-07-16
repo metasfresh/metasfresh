@@ -7,7 +7,6 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableList;
 
@@ -16,6 +15,7 @@ import de.metas.currency.Amount;
 import de.metas.email.EMailAddress;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import lombok.AccessLevel;
 import lombok.Builder;

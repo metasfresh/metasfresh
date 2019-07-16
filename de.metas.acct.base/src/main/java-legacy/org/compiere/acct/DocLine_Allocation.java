@@ -27,7 +27,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;

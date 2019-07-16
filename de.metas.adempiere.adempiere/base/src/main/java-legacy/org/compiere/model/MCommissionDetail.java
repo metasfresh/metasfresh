@@ -22,13 +22,13 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
