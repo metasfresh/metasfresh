@@ -3,6 +3,7 @@ package de.metas.payment.paypal.client;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Service;
 
 import de.metas.payment.reservation.PaymentReservationId;
 import lombok.NonNull;
@@ -29,6 +30,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@Service
 public class PayPalOrderService
 {
 	private final PayPalOrderRepository payPalOrderRepo;
