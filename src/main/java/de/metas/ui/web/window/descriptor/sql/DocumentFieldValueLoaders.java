@@ -146,7 +146,6 @@ public final class DocumentFieldValueLoaders
 	public static DocumentFieldValueLoader toLookupValue(
 			@NonNull final String sqlColumnName,
 			@NonNull final String sqlDisplayColumnName,
-			// @Nullable final String sqlDescriptionColumnName,
 			final boolean numericKey)
 	{
 		if (Check.isEmpty(sqlDisplayColumnName, true))
