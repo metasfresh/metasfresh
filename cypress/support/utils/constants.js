@@ -3,6 +3,9 @@ export class DocumentStatusKey {
   // noinspection JSUnusedGlobalSymbols
   static _tag_docStatusCompleted = '.tag-success';
 
+  static Reversed = 'docStatusReversed';
+  // noinspection JSUnusedGlobalSymbols
+  static _tag_docStatusReversed = '.tag-default';
 
   static InProgress = 'docStatusInProgress';
   // noinspection JSUnusedGlobalSymbols
@@ -15,6 +18,7 @@ export class DocumentStatusKey {
 
 export class DocumentActionKey {
   static Complete = 'docActionComplete';
+  static Void = 'docActionVoid';
 }
 
 /**
