@@ -40,7 +40,7 @@ public class AD_OrgInfo
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_AD_OrgInfo orgInfoRecord)
 	{
-		// just to make sure everythig is OK
+		// just to make sure everything is OK
 		OrgDAO.toOrgInfo(orgInfoRecord);
 	}
 
