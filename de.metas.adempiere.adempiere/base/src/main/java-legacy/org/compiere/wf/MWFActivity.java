@@ -1366,10 +1366,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 
 		// Set Value
-		Object dbValue = null;
+		final Object dbValue;
 		if (valueStr == null)
 		{
-			
+			dbValue = null;
 		}
 		else if (displayType == DisplayType.YesNo)
 		{

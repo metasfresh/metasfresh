@@ -1,11 +1,8 @@
 package de.metas.mforecast.interceptors;
 
-import java.util.Properties;
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.WarehouseInvalidForOrgException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Forecast;
@@ -47,7 +44,6 @@ public class M_ForecastLine
 			ifColumnsChanged = { I_M_ForecastLine.COLUMNNAME_AD_Org_ID, I_M_ForecastLine.COLUMNNAME_M_Warehouse_ID })
 	public void beforeSave(final I_M_ForecastLine forecastLine)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(forecastLine);
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(forecastLine.getM_Warehouse_ID());
 		final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(warehouseId);
 		final int adOrgId = forecastLine.getAD_Org_ID();

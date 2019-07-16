@@ -77,7 +77,7 @@ public class BPartnerOrgLink extends JavaProcess
 			final String name = element.getParameterName();
 			if (element.getParameter() == null)
 			{
-
+				// nothing
 			}
 			else if (name.equals("AD_Org_ID"))
 			{

@@ -79,7 +79,7 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public void save(@NonNull final I_AD_Org orgRecord)
 	{
-		InterfaceWrapperHelper.saveRecord(orgRecord);
+		saveRecord(orgRecord);
 	}
 
 	@Override
