@@ -21,7 +21,6 @@ package de.metas.currency;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Properties;
@@ -29,11 +28,11 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 

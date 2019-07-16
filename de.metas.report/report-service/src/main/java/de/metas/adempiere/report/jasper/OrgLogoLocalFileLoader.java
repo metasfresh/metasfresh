@@ -25,27 +25,29 @@ package de.metas.adempiere.report.jasper;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_AD_Image;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MImage;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.util.Services;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
-import org.compiere.model.I_AD_ClientInfo;
-import org.compiere.model.I_AD_Image;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
+import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Builds and returns the local organization logo {@link File}.
@@ -53,27 +55,21 @@ import com.google.common.base.Optional;
  * @author tsa
  *
  */
+@ToString
 class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 {
-	public static final OrgLogoLocalFileLoader forAD_Org_ID(final int adOrgId)
+	public static final OrgLogoLocalFileLoader ofOrgId(@NonNull final OrgId adOrgId)
 	{
 		return new OrgLogoLocalFileLoader(adOrgId);
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
+	
+	private final OrgId adOrgId;
 
-	private final int _adOrgId;
-
-	private OrgLogoLocalFileLoader(final int adOrgId)
+	private OrgLogoLocalFileLoader(@NonNull final OrgId adOrgId)
 	{
-		super();
-		this._adOrgId = adOrgId;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this).add("AD_Org_ID", _adOrgId).toString();
+		this.adOrgId = adOrgId;
 	}
 
 	@Override
@@ -84,12 +80,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		{
 			new AdempiereException("Cannot find logo for " + this + ", please add a logo file to the organization.").throwIfDeveloperModeOrLogWarningElse(logger);
 		}
-		return Optional.fromNullable(logoFile);
-	}
-
-	private final int getAD_Org_ID()
-	{
-		return _adOrgId;
+		return Optional.ofNullable(logoFile);
 	}
 
 	private File createAndGetLocalLogoFile()
@@ -110,8 +101,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 
 	private final I_AD_Image retrieveLogoImage()
 	{
-		final int adOrgId = getAD_Org_ID();
-		if (adOrgId <= 0)
+		if (adOrgId.isAny())
 		{
 			return null;
 		}
@@ -122,7 +112,7 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 		// Get Logo from Org's BPartner
 		// task FRESH-356: get logo also from org's bpartner if is set
 		{
-			final I_AD_Org org = Services.get(IOrgDAO.class).retrieveOrg(ctx, adOrgId);
+			final I_AD_Org org = Services.get(IOrgDAO.class).getById(adOrgId);
 			if (org != null)
 			{
 				final I_C_BPartner orgBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
@@ -139,22 +129,17 @@ class OrgLogoLocalFileLoader implements Callable<Optional<File>>
 
 		//
 		// Get Org Logo
-		final I_AD_OrgInfo orgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None);
-		if (orgInfo == null)
+		final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+		final int logoImageId = orgInfo.getLogoImageId();
+		if (logoImageId > 0)
 		{
-			return null;
-		}
-		//
-		final I_AD_Image orgLogo = orgInfo.getLogo();
-		if (orgLogo != null && orgLogo.getAD_Image_ID() > 0)
-		{
-			return orgLogo;
+			return MImage.get(Env.getCtx(), logoImageId);
 		}
 
 		//
 		// Get Tenant level Logo
-		final int adClientId = orgInfo.getAD_Client_ID();
-		final I_AD_ClientInfo clientInfo = Services.get(IClientDAO.class).retrieveClientInfo(ctx, adClientId);
+		final ClientId adClientId = orgInfo.getClientId();
+		final I_AD_ClientInfo clientInfo = Services.get(IClientDAO.class).retrieveClientInfo(ctx, adClientId.getRepoId());
 		I_AD_Image clientLogo = clientInfo.getLogoReport();
 		if (clientLogo == null || clientLogo.getAD_Image_ID() <= 0)
 		{

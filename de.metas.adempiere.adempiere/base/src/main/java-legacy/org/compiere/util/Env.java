@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -45,7 +46,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -64,6 +64,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -270,6 +271,7 @@ public final class Env
 
 	public static final String CTXNAME_Date = "#Date";
 	public static final String CTXNAME_IsAllowLoginDateOverride = "#" + I_AD_Role.COLUMNNAME_IsAllowLoginDateOverride;
+	public static final String CTXNAME_TimeZone = "#TimeZone";
 
 	public static final String CTXNAME_AD_Session_ID = "#AD_Session_ID";
 	public static final int CTXVALUE_AD_SESSION_ID_NONE = -1;
@@ -283,6 +285,7 @@ public final class Env
 	public static final String CTXNAME_Printer = "#Printer";
 	public static final String CTXNAME_ShowAcct = "#ShowAcct";
 	public static final String CTXNAME_AcctSchemaElementPrefix = "$Element_";
+	public static final String CTXNAME_StoreCreditCardData = "#StoreCreditCardData";
 
 	/**
 	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system. The value is loaded into the context on login.
@@ -872,39 +875,40 @@ public final class Env
 	}
 
 	/**
-	 * Get Context and convert it to an integer (0 if error)
-	 *
-	 * @param ctx context
-	 * @param context context key
-	 * @return value
+	 * @return value or ZERO if not found or error
 	 */
 	public static int getContextAsInt(
 			@NonNull final Properties ctx,
 			@NonNull final String context)
 	{
-		if (ctx == null || context == null)
+		final int defaultValueIfNotFoundOrError = 0; // using ZERO instead of "-1" for backward compatibility 
+		return getContextAsInt(ctx, context, defaultValueIfNotFoundOrError);
+	}
+	
+	public static int getContextAsInt(
+			@NonNull final Properties ctx,
+			@NonNull final String context,
+			final int defaultValueIfNotFoundOrError)
+	{
+		String valueStr = getContext(ctx, context);
+		if (isPropertyValueNull(valueStr) || valueStr.isEmpty())
 		{
-			throw new IllegalArgumentException("The given ctx does not contain Require Context");
+			valueStr = getContext(ctx, WINDOW_MAIN, context, false);
 		}
-		String s = getContext(ctx, context);
-		if (isPropertyValueNull(s) || s.length() == 0)
+		if (isPropertyValueNull(valueStr) || valueStr.isEmpty())
 		{
-			s = getContext(ctx, 0, context, false);        // search 0 and defaults
+			return defaultValueIfNotFoundOrError;
 		}
-		if (isPropertyValueNull(s) || s.length() == 0)
-		{
-			return 0;
-		}
-		//
+		
 		try
 		{
-			return Integer.parseInt(s);
+			return Integer.parseInt(valueStr);
 		}
-		catch (final NumberFormatException e)
+		catch (final NumberFormatException ex)
 		{
-			s_log.error("Failed converting {}'s value {} to integer", context, s, e);
+			s_log.error("Failed converting {}'s value {} to integer. Returning '{}'.", context, valueStr, defaultValueIfNotFoundOrError, ex);
+			return defaultValueIfNotFoundOrError;
 		}
-		return 0;
 	}    // getContextAsInt
 
 	/**
@@ -1242,11 +1246,11 @@ public final class Env
 	 * Get Login AD_User_ID
 	 *
 	 * @param ctx context
-	 * @return login AD_User_ID
+	 * @return login AD_User_ID or -1
 	 */
 	public static int getAD_User_ID(Properties ctx)
 	{
-		return getContextAsInt(ctx, CTXNAME_AD_User_ID);
+		return getContextAsInt(ctx, CTXNAME_AD_User_ID, -1);
 	}    // getAD_User_ID
 
 	public static int getAD_User_ID()
@@ -1263,6 +1267,12 @@ public final class Env
 	{
 		return UserId.ofRepoId(getAD_User_ID(ctx));
 	}
+	
+	public static Optional<UserId> getLoggedUserIdIfExists(final Properties ctx)
+	{
+		return Optional.ofNullable(UserId.ofRepoIdOrNull(getAD_User_ID(ctx)));
+	}
+
 
 	public static void setLoggedUserId(final Properties ctx, @NonNull final UserId userId)
 	{

@@ -3,11 +3,10 @@ package de.metas.i18n.impl;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MOrg;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -16,6 +15,8 @@ import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -35,13 +36,15 @@ public class LanguageBL implements ILanguageBL
 	}
 
 	@Override
-	public String getOrgAD_Language(final Properties ctx, final int AD_Org_ID) throws OrgHasNoBPartnerLinkException
+	public String getOrgAD_Language(final Properties ctx, final int orgRepoId) throws OrgHasNoBPartnerLinkException
 	{
+		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
+		
 		//
 		// Check organization Language (if found);
-		if (AD_Org_ID > 0)
+		if (orgId.isRegular())
 		{
-			final I_C_BPartner bpOrg = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, AD_Org_ID, I_C_BPartner.class, ITrx.TRXNAME_None);
+			final I_C_BPartner bpOrg = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 			final String orgAD_Language = bpOrg.getAD_Language();
 			if (orgAD_Language != null)
 			{
@@ -51,17 +54,16 @@ public class LanguageBL implements ILanguageBL
 
 		//
 		// Check client language (if found)
-		final int clientId;
-		if (AD_Org_ID > 0)
+		final ClientId clientId;
+		if (orgId.isRegular())
 		{
-			final I_AD_Org organization = MOrg.get(ctx, AD_Org_ID);
-			clientId = organization.getAD_Client_ID();
+			clientId = Services.get(IOrgDAO.class).getClientIdByOrgId(orgId);
 		}
 		else // AD_Org_ID <= 0
 		{
-			clientId = Env.getAD_Client_ID(ctx);
+			clientId = Env.getClientId(ctx);
 		}
-		final String clientAD_Language = getClientAD_Language(ctx, clientId);
+		final String clientAD_Language = getClientAD_Language(ctx, clientId.getRepoId());
 		return clientAD_Language;
 	}
 

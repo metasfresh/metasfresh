@@ -278,7 +278,7 @@ public class StockAvailabilityJAXBConvertersV1 implements StockAvailabilityClien
 		return StockAvailabilityResponseItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
 				.type(StockAvailabilityResponseItemPartType.fromV1SoapCode(soap.getTyp()))
-				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
+				.deliveryDate(JAXBDateUtils.toZonedDateTime(soap.getLieferzeitpunkt()))
 				.reason(StockAvailabilitySubstitutionReason.fromV1SoapCode(soap.getGrund()))
 				.tour(soap.getTour())
 				// .tourDeviation(soap.isTourabweichung())

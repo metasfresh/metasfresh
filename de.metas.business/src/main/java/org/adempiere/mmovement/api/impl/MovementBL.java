@@ -27,12 +27,12 @@ import java.math.BigDecimal;
 import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 
+import de.metas.organization.OrgId;
 import de.metas.product.IProductActivityProvider;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;

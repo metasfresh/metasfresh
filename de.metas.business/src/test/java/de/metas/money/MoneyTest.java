@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 
 /*
@@ -104,7 +105,7 @@ public class MoneyTest
 
 	private void testJsonSerialization(final Money money) throws Exception
 	{
-		final ObjectMapper objectMapper = new ObjectMapper();
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		final String json = objectMapper.writeValueAsString(money);
 		System.out.println("Serialized " + money + " to " + json);
 

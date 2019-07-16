@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;

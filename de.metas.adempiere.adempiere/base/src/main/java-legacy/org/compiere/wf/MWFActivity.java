@@ -35,10 +35,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
@@ -46,7 +43,6 @@ import org.compiere.model.I_AD_WF_Node_Para;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
 import org.compiere.model.MNote;
-import org.compiere.model.MOrg;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
@@ -75,6 +71,9 @@ import de.metas.money.CurrencyId;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.security.IRoleDAO;
@@ -789,12 +788,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	 */
 	public int getApprovalUser(final int AD_User_ID,
 			final int C_Currency_ID, final BigDecimal amount,
-			final int AD_Org_ID,
+			final int orgRepoId,
 			boolean ownDocument)
 	{
 		// Nothing to approve
-		if (amount == null
-				|| amount.signum() == 0)
+		if (amount == null || amount.signum() == 0)
 		{
 			return AD_User_ID;
 		}
@@ -802,6 +800,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		// services
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		
+		final OrgId orgId = OrgId.ofRepoIdOrAny(orgRepoId);
 
 		// Starting user
 		I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), AD_User_ID);
@@ -822,7 +822,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// Get Roles of User
 			final List<IUserRolePermissions> roles = userRolePermissionsDAO.retrieveUserRolesPermissionsForUserWithOrgAccess(
 					Env.getClientId(),
-					OrgId.ofRepoIdOrAny(AD_Org_ID),
+					orgId,
 					UserId.ofRepoId(AD_User_ID),
 					Env.getLocalDate());
 			for (final IUserRolePermissions role : roles)
@@ -850,7 +850,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 							CurrencyId.ofRepoId(amtApprovalCurrencyId),
 							CurrencyId.ofRepoId(C_Currency_ID),
 							ClientId.ofRepoId(getAD_Client_ID()),
-							OrgId.ofRepoId(AD_Org_ID));
+							orgId);
 					if (amtApproval == null || amtApproval.signum() == 0)
 					{
 						continue;
@@ -870,32 +870,30 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// Get Supervisor
 			if (user.getSupervisor_ID() != 0)
 			{
-				user = userDAO.retrieveUserOrNull(getCtx(), user.getSupervisor_ID());
-				log.debug("Supervisor: " + user.getName());
+				user = userDAO.getById(user.getSupervisor_ID());
+				log.debug("Supervisor: {}", user);
 			}
 			else
 			{
 				log.debug("No Supervisor");
-				MOrg org = MOrg.get(getCtx(), AD_Org_ID);
-				I_AD_OrgInfo orgInfo = org.getInfo();
+				IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+				OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 				// Get Org Supervisor
-				if (orgInfo.getSupervisor_ID() != 0)
+				if (orgInfo.getSupervisorId() != null)
 				{
-					user = userDAO.retrieveUserOrNull(getCtx(), orgInfo.getSupervisor_ID());
-					log.debug("Org=" + org.getName() + ",Supervisor: " + user.getName());
+					user = userDAO.getById(orgInfo.getSupervisorId());
 				}
 				else
 				{
 					log.debug("No Org Supervisor");
 					// Get Parent Org Supervisor
-					if (orgInfo.getParent_Org_ID() != 0)
+					if (orgInfo.getParentOrgId() != null)
 					{
-						org = MOrg.get(getCtx(), orgInfo.getParent_Org_ID());
-						orgInfo = org.getInfo();
-						if (orgInfo.getSupervisor_ID() != 0)
+						orgInfo = orgsRepo.getOrgInfoById(orgInfo.getParentOrgId());
+						if (orgInfo.getSupervisorId() != null)
 						{
-							user = userDAO.retrieveUserOrNull(getCtx(), orgInfo.getSupervisor_ID());
-							log.debug("Parent Org Supervisor: " + user.getName());
+							user = userDAO.getById(orgInfo.getSupervisorId());
+							log.debug("Parent Org Supervisor: {}", user);
 						}
 					}
 				}
@@ -1375,10 +1373,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		}
 
 		// Set Value
-		Object dbValue = null;
+		final Object dbValue;
 		if (valueStr == null)
 		{
-			
+			dbValue = null;
 		}
 		else if (displayType == DisplayType.YesNo)
 		{
@@ -1802,15 +1800,15 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			}
 			else if (resp.isOrganization())
 			{
-				final I_AD_OrgInfo org = Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(), m_po.getAD_Org_ID(), ITrx.TRXNAME_None);
-				if (org.getSupervisor_ID() <= 0)
+				final OrgId orgId = OrgId.ofRepoIdOrAny(m_po.getAD_Org_ID());
+				final OrgInfo org = Services.get(IOrgDAO.class).getOrgInfoById(orgId);
+				if (org.getSupervisorId() == null)
 				{
-					log.debug("No Supervisor for AD_Org_ID={}", m_po.getAD_Org_ID());
+					log.debug("No Supervisor for AD_Org_ID={}", orgId);
 				}
 				else
 				{
-					final UserId supervisorId = UserId.ofRepoId(org.getSupervisor_ID());
-					sendEMail(client, supervisorId, null, subject, message, pdf, mailTextBuilder.isHtml());
+					sendEMail(client, org.getSupervisorId(), null, subject, message, pdf, mailTextBuilder.isHtml());
 				}
 			}
 		}

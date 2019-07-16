@@ -32,12 +32,10 @@ import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.acct.Doc;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -65,6 +63,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
@@ -1034,12 +1033,13 @@ public class ESRImportBL implements IESRImportBL
 		if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
 		{
 			final Properties ctx = getCtx(importLine);
-			final I_AD_Org invoiceOrg = Services.get(IOrgDAO.class).retrieveOrg(ctx, invoice.getAD_Org_ID());
+			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
+			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
 					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
-							invoiceOrg.getValue(),
-							importLine.getAD_Org().getValue()
-					}));
+							invoiceOrgName,
+							importLineOrgName}));
 		}
 
 		importLine.setC_Invoice(invoice);

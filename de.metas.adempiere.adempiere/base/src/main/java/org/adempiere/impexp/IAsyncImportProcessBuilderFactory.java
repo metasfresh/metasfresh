@@ -1,13 +1,12 @@
-/**
- * 
- */
-package de.metas.adempiere.report.jasper.model;
+package org.adempiere.impexp;
+
+import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 
 /*
  * #%L
- * de.metas.report.jasper.server.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -16,25 +15,17 @@ package de.metas.adempiere.report.jasper.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-/**
- * @author tsa
- * 
- */
-public interface I_AD_OrgInfo extends org.compiere.model.I_AD_OrgInfo
+@FunctionalInterface
+public interface IAsyncImportProcessBuilderFactory
 {
-	public static final String COLUMNNAME_ReportPrefix = "ReportPrefix";
-
-	public void setReportPrefix(String ReportPrefix);
-
-	public String getReportPrefix();
+	IAsyncImportProcessBuilder newAsyncImportProcessBuilder();
 }

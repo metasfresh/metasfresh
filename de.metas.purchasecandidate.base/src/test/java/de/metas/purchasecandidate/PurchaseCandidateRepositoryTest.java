@@ -110,8 +110,6 @@ public class PurchaseCandidateRepositoryTest
 			referenceGenerator.getNextDemandReference(); result = "nextDemandReference";
 		}}; // @formatter:on
 
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(0, Quantity.of(TEN, uom));
 
 		assertThat(purchaseCandidate.getGroupReference().getDemandReference()).isEqualTo(DemandGroupReference.REFERENCE_NOT_YET_SET); // guard

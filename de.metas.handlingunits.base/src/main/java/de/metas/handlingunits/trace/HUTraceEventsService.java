@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;

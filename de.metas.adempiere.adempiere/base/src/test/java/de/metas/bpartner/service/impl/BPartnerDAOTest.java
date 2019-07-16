@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractComparableAssert;
 import org.compiere.model.I_C_BP_Group;
@@ -18,6 +17,7 @@ import org.junit.Test;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.organization.OrgId;
 
 /*
  * #%L

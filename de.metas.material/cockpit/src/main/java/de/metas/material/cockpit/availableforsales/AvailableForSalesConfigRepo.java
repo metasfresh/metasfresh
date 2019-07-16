@@ -4,11 +4,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
 import de.metas.material.cockpit.model.I_MD_AvailableForSales_Config;
+import de.metas.organization.OrgId;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.Builder;

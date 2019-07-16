@@ -7,11 +7,10 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;

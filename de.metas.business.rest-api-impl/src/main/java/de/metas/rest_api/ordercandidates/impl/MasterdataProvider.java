@@ -11,9 +11,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.IOrgDAO.OrgQuery;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.util.Env;
 
@@ -26,6 +23,9 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
@@ -185,7 +185,7 @@ public final class MasterdataProvider
 
 	public JsonOrganization getJsonOrganizationById(final int orgId)
 	{
-		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId);
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 		if (orgRecord == null)
 		{
 			return null;
@@ -205,7 +205,7 @@ public final class MasterdataProvider
 				invoiceDocType.getDocSubType(),
 				DocTypeQuery.DOCSUBTYPE_NONE);
 
-		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId.getRepoId());
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
 				.builder()

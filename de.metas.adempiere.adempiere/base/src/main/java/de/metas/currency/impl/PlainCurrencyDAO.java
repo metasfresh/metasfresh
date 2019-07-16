@@ -14,7 +14,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
@@ -31,6 +30,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 

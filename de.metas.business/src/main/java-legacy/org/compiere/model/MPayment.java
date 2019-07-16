@@ -29,7 +29,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -58,12 +57,14 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 
 /**
  * Payment Model. - retrieve and create payments for invoice
@@ -1145,7 +1146,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1174,7 +1175,7 @@ public final class MPayment extends X_C_Payment
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					documentSO = new Boolean("Y".equals(rs.getString(1)));
+					documentSO = StringUtils.toBoolean(rs.getString(1));
 				}
 			}
 			catch (final Exception e)
@@ -1213,14 +1214,14 @@ public final class MPayment extends X_C_Payment
 						{
 							if (documentSO != null)
 							{ // already set, compare with current
-								if (documentSO.booleanValue() != ("Y".equals(rs.getString(1))))
+								if (documentSO.booleanValue() != (StringUtils.toBoolean(rs.getString(1))))
 								{
 									return false;
 								}
 							}
 							else
 							{
-								documentSO = new Boolean("Y".equals(rs.getString(1)));
+								documentSO = StringUtils.toBoolean(rs.getString(1));
 							}
 						}
 					}
@@ -1252,7 +1253,7 @@ public final class MPayment extends X_C_Payment
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				paymentSO = new Boolean("Y".equals(rs.getString(1)));
+				paymentSO = StringUtils.toBoolean(rs.getString(1));
 			}
 		}
 		catch (final Exception e)

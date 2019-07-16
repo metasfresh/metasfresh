@@ -14,8 +14,12 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.metas.JsonObjectMapperHolder;
 import de.metas.Profiles;
 import de.metas.util.StringUtils;
 
@@ -72,6 +76,13 @@ public class ReportServiceMain
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
+	}
+
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
 	}
 
 	@Profile(Profiles.PROFILE_NotTest)

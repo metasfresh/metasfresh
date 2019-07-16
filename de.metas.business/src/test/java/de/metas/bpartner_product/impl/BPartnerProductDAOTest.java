@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_Org;
@@ -22,6 +21,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 

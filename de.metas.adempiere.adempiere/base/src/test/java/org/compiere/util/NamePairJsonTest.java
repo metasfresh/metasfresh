@@ -7,6 +7,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import de.metas.JsonObjectMapperHolder;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,7 +38,7 @@ public class NamePairJsonTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		jsonObjectMapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty
 	}
 

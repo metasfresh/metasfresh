@@ -8,12 +8,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.email.EMailAddress;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.AccessLevel;

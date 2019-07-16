@@ -2,9 +2,8 @@ package de.metas.shipment;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
 import de.metas.inout.InOutLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;

@@ -364,7 +364,7 @@ public class OrderJAXBConvertersV1 implements OrderClientJAXBConverters, OrderSe
 		return OrderResponsePackageItemPart.builder()
 				.qty(Quantity.of(soap.getMenge()))
 				.type(Type.ofStringValueOrNull(soap.getTyp().value()))
-				.deliveryDate(JAXBDateUtils.toLocalDateTime(soap.getLieferzeitpunkt()))
+				.deliveryDate(JAXBDateUtils.toZonedDateTime(soap.getLieferzeitpunkt()))
 				.defectReason(OrderDefectReason.fromV1SoapCode(soap.getGrund()))
 				.tour(soap.getTour())
 				.tourId(soap.getTourId())

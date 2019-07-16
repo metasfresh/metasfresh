@@ -2,10 +2,9 @@ package de.metas.order;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
@@ -15,6 +14,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -65,10 +65,10 @@ public class OrderLineRepository
 
 		final PaymentTermId paymentTermId = Services.get(IOrderLineBL.class).getPaymentTermId(orderLineRecord);
 
-		final LocalDateTime datePromised = CoalesceUtil.firstValidValue(
+		final ZonedDateTime datePromised = CoalesceUtil.firstValidValue(
 				date -> date != null,
-				() -> TimeUtil.asLocalDateTime(orderLineRecord.getDatePromised()),
-				() -> TimeUtil.asLocalDateTime(orderLineRecord.getC_Order().getDatePromised()));
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getDatePromised()),
+				() -> TimeUtil.asZonedDateTime(orderLineRecord.getC_Order().getDatePromised()));
 
 		return OrderLine.builder()
 				.id(OrderLineId.ofRepoIdOrNull(orderLineRecord.getC_OrderLine_ID()))

@@ -9,6 +9,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.JsonObjectMapperHolder;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -36,7 +38,7 @@ public class AttributesKeyTest
 	@Test
 	public void testSerializeDeserialize() throws IOException
 	{
-		ObjectMapper jsonObjectMapper = new ObjectMapper();
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(2, 4, 3, 1);
 		final String attributesKeyStr = attributesKey.getAsString();

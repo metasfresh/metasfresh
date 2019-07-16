@@ -15,7 +15,6 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
 import org.compiere.model.I_C_Conversion_Rate;
@@ -35,6 +34,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

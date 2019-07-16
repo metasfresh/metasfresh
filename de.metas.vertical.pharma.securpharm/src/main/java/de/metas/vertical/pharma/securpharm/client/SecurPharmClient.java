@@ -29,7 +29,6 @@ import java.util.Base64;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -46,8 +45,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmAction;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonAPIResponse;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonPackage;
@@ -92,7 +93,7 @@ public class SecurPharmClient
 	private final SecurPharmConfig config;
 
 	private final RestTemplate apiRestTemplate;
-	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
+	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	private final SecurPharmClientAuthenticator authenticator;
 
 	private SecurPharmClient(@NonNull final SecurPharmConfig config)
@@ -226,7 +227,7 @@ public class SecurPharmClient
 				.expirationDate(product.getExpirationDate())
 				.serialNumber(pack.getSerialNumber());
 
-		final JsonProductPackageState activeStatus = Util.coalesce(pack.getState(), JsonProductPackageState.UNKNOWN);
+		final JsonProductPackageState activeStatus = CoalesceUtil.coalesce(pack.getState(), JsonProductPackageState.UNKNOWN);
 		productDetailsBuilder.activeStatus(activeStatus);
 
 		if (pack.getReasons() != null)

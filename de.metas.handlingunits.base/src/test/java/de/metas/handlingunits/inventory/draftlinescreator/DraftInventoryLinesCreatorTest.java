@@ -13,7 +13,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.math.BigDecimal;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.DumpPOJOLookupMapOnTestFail;
 import org.adempiere.warehouse.LocatorId;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregato
 import de.metas.inventory.AggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;

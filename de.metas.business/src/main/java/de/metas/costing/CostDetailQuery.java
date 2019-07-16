@@ -2,9 +2,9 @@ package de.metas.costing;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;

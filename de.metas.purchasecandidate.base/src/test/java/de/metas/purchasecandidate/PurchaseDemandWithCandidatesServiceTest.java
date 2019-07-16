@@ -7,12 +7,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
@@ -48,6 +47,9 @@ import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.grossprofit.OrderLineWithGrossProfitPriceRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;
@@ -61,6 +63,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -167,6 +170,9 @@ public class PurchaseDemandWithCandidatesServiceTest
 		saveRecord(vendorRecord);
 
 		orgId = OrgId.ofRepoId(1000000);
+		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+				.orgId(orgId)
+				.build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
@@ -225,7 +231,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.qtyToDeliver(Quantity.of(SO_QTY_ORDERED_TEN, uomRecord))
 				.currencyIdOrNull(currencyId)
-				.salesPreparationDate(LocalDateTime.now())
+				.salesPreparationDate(ZonedDateTime.now())
 				.salesOrderAndLineIdOrNull(OrderAndLineId.ofRepoIds(salesOrderLineRecord.getC_Order_ID(), salesOrderLineRecord.getC_OrderLine_ID()))
 				.existingPurchaseCandidateId(PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID()))
 				.build();

@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.email.mailboxes.Mailbox;
 
 /*
@@ -51,7 +52,7 @@ public class EMailJsonTest
 	{
 		Adempiere.enableUnitTestMode(); // needed to display Mailbox passwords
 
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		jsonObjectMapper.enable(SerializationFeature.INDENT_OUTPUT); // pretty
 
 		random = new Random(System.currentTimeMillis());

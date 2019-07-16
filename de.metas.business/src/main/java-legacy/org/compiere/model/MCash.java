@@ -26,7 +26,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -43,6 +42,8 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
@@ -174,11 +175,13 @@ public class MCash extends X_C_Cash implements IDocument
 			setDocStatus(DOCSTATUS_Drafted);
 			//
 			Timestamp today = TimeUtil.getDay(System.currentTimeMillis());
-			setStatementDate(today);	// @#Date@
-			setDateAcct(today);	// @#Date@
+			setStatementDate (today);	// @#Date@
+			setDateAcct (today);	// @#Date@
+			
+			final String orgName = Services.get(IOrgDAO.class).retrieveOrgName(getAD_Org_ID());
 			String name = DisplayType.getDateFormat(DisplayType.Date).format(today)
-					+ " " + MOrg.get(ctx, getAD_Org_ID()).getValue();
-			setName(name);
+				+ " " + orgName;
+			setName (name);
 			setIsApproved(false);
 			setPosted(false);	// N
 			setProcessed(false);

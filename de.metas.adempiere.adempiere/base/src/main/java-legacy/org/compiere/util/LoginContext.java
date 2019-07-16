@@ -6,11 +6,11 @@ import java.util.Properties;
 
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;

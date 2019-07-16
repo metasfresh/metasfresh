@@ -11,6 +11,7 @@ import org.compiere.model.I_C_Location;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierServiceType;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
@@ -73,7 +74,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
-		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(deliveryOrderKey.getFromOrgId());
+		final I_C_Location pickupFromLocation = bpartnerOrgBL.retrieveOrgLocation(OrgId.ofRepoId(deliveryOrderKey.getFromOrgId()));
 		final LocalDate pickupDate = deliveryOrderKey.getPickupDate();
 
 		final int deliverToBPartnerId = deliveryOrderKey.getDeliverToBPartnerId();

@@ -1,11 +1,11 @@
 package de.metas.currency.impl;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

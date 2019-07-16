@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Locator;
@@ -33,6 +32,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;

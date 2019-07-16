@@ -2,7 +2,9 @@ package de.metas.i18n;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -254,7 +256,7 @@ public class TranslatableStrings
 		return DateTimeTranslatableString.ofObject(obj, displayType);
 	}
 
-	public static DateTimeTranslatableString dateAndTime(@NonNull final LocalDateTime date)
+	public static DateTimeTranslatableString dateAndTime(@NonNull final ZonedDateTime date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
@@ -331,5 +333,10 @@ public class TranslatableStrings
 		}
 
 		return ofMap(trlMap, trl.getDefaultValue());
+	}
+
+	public static ITranslatableString ofTimeZone(@NonNull final ZoneId timeZone, @NonNull final TextStyle textStyle)
+	{
+		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
 	}
 }

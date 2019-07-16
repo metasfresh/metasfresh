@@ -8,7 +8,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.service.OrgId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +33,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.organization.OrgId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.rest_api.ordercandidates.JsonOLCand;

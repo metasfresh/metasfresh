@@ -6,12 +6,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.compiere.model.I_AD_Org;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
@@ -28,6 +26,8 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -85,7 +85,7 @@ public class PPOrderProducer
 
 		//
 		// Document Type & Status
-		final int docTypeId = getC_DocType_ID(ppOrderPojo.getOrgId());
+		final int docTypeId = getC_DocType_ID(OrgId.ofRepoId(ppOrderPojo.getOrgId()));
 
 		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId);
 		ppOrderRecord.setC_DocType_ID(docTypeId);
@@ -147,14 +147,12 @@ public class PPOrderProducer
 		return ppOrderRecord;
 	}
 
-	private int getC_DocType_ID(final int orgId)
+	private int getC_DocType_ID(final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_Org org = orgDAO.retrieveOrg(ctx, orgId);
+		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId, ITrx.TRXNAME_None);
+		return docTypeDAO.getDocTypeId(Env.getCtx(), X_C_DocType.DOCBASETYPE_ManufacturingOrder, clientId.getRepoId(), orgId.getRepoId(), ITrx.TRXNAME_None);
 	}
 }

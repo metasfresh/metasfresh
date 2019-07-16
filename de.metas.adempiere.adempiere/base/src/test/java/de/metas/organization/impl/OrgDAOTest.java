@@ -1,17 +1,19 @@
-package org.adempiere.service.impl;
+package de.metas.organization.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Optional;
 
-import org.adempiere.service.IOrgDAO.OrgQuery;
-import org.adempiere.service.OrgId;
-import org.adempiere.service.OrgIdNotFoundException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgIdNotFoundException;
+import de.metas.organization.OrgQuery;
+import de.metas.organization.impl.OrgDAO;
 
 /*
  * #%L

@@ -1,10 +1,16 @@
-package de.metas.workflow.model;
+package org.adempiere.impexp;
+
+import javax.annotation.Nullable;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,23 +19,25 @@ package de.metas.workflow.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public interface I_AD_OrgInfo extends de.metas.adempiere.model.I_AD_OrgInfo
+@Value
+@Builder
+public class ImportDataDeleteRequest
 {
-	public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
+	@NonNull
+	ImportDataDeleteMode mode;
 
-	public void setAD_WF_Responsible_ID(int AD_WF_Responsible_ID);
-
-	public int getAD_WF_Responsible_ID();
-
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
+	@Nullable
+	String viewSqlWhereClause;
+	
+	@Nullable
+	String selectionSqlWhereClause;
 }

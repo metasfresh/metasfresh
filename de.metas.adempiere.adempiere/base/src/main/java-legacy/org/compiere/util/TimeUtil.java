@@ -1102,7 +1102,7 @@ public class TimeUtil
 		}
 	}
 
-	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
+	public static final ZonedDateTime min(final ZonedDateTime date1, final ZonedDateTime date2)
 	{
 		if (date1 == date2)
 		{
@@ -1121,6 +1121,7 @@ public class TimeUtil
 			return date1.compareTo(date2) <= 0 ? date1 : date2;
 		}
 	}
+
 
 	/** Truncate Second - S */
 	public static final String TRUNC_SECOND = "S";
@@ -1771,6 +1772,16 @@ public class TimeUtil
 		{
 			return ((ZonedDateTime)obj).toInstant();
 		}
+		else if (obj instanceof Integer)
+		{
+			final int millis = ((Integer)obj).intValue();
+			return Instant.ofEpochMilli(millis);
+		}
+		else if (obj instanceof Long)
+		{
+			final long millis = ((Long)obj).longValue();
+			return Instant.ofEpochMilli(millis);
+		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
@@ -1803,5 +1814,17 @@ public class TimeUtil
 	{
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
 		return localDate.equals(lastDayOfMonth);
+	}
+
+	public static ZonedDateTime convertToTimeZone(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
+	{
+		if (date.getZone().equals(zoneId))
+		{
+			return date;
+		}
+		else
+		{
+			return date.toInstant().atZone(zoneId);
+		}
 	}
 }	// TimeUtil
