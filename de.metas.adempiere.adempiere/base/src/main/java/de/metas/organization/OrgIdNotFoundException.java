@@ -1,10 +1,12 @@
-package de.metas.workflow.model;
+package de.metas.organization;
+
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.ordercandidate.rest-api-impl
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,13 +25,12 @@ package de.metas.workflow.model;
  */
 
 
-public interface I_AD_OrgInfo extends de.metas.adempiere.model.I_AD_OrgInfo
+public class OrgIdNotFoundException extends AdempiereException
 {
-	public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
+	private static final long serialVersionUID = -4776977540135879202L;
 
-	public void setAD_WF_Responsible_ID(int AD_WF_Responsible_ID);
-
-	public int getAD_WF_Responsible_ID();
-
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
+	public OrgIdNotFoundException(String msg)
+	{
+		super(msg);
+	}
 }

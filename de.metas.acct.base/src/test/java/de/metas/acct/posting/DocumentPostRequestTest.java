@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.user.UserId;
 
 /*
@@ -39,7 +40,7 @@ public class DocumentPostRequestTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = 	JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test

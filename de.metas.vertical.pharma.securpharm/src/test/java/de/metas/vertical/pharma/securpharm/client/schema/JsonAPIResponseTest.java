@@ -13,6 +13,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 
+import de.metas.JsonObjectMapperHolder;
+
 /*
  * #%L
  * metasfresh-pharma.securpharm
@@ -42,7 +44,7 @@ public class JsonAPIResponseTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test

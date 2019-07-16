@@ -343,33 +343,34 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void testLocalDateTimeMin()
+	public void testZonedDateTimeMin()
 	{
-		final LocalDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay();
-		final LocalDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay();
+		final ZoneId zone = ZoneId.systemDefault();
+		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
 
 		// NULLs check
-		assertLocalDateTimeMin(null, null, null);
-		assertLocalDateTimeMin(date1, date1, null);
-		assertLocalDateTimeMin(date1, null, date1);
+		assertZonedDateTimeMin(null, null, null);
+		assertZonedDateTimeMin(date1, date1, null);
+		assertZonedDateTimeMin(date1, null, date1);
 
 		// Same (reference) value check
-		assertLocalDateTimeMin(date1, date1, date1);
+		assertZonedDateTimeMin(date1, date1, date1);
 
 		// Same (value) check
-		assertLocalDateTimeMin(date1, date1, date1_copy);
+		assertZonedDateTimeMin(date1, date1, date1_copy);
 
-		assertLocalDateTimeMin(date1, date1, date2);
-		assertLocalDateTimeMin(date1, date2, date1);
-		assertLocalDateTimeMin(date2, date2, date3);
-		assertLocalDateTimeMin(date2, date3, date2);
+		assertZonedDateTimeMin(date1, date1, date2);
+		assertZonedDateTimeMin(date1, date2, date1);
+		assertZonedDateTimeMin(date2, date2, date3);
+		assertZonedDateTimeMin(date2, date3, date2);
 	}
 
-	private void assertLocalDateTimeMin(final LocalDateTime dateExpected, final LocalDateTime date1, final LocalDateTime date2)
+	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
 	{
-		final LocalDateTime dateMin = TimeUtil.min(date1, date2);
+		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
 
 		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
 				dateExpected, dateMin);

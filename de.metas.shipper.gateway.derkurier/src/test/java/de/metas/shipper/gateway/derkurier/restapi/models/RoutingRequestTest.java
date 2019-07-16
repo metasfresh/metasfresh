@@ -8,8 +8,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.shipper.gateway.derkurier.DerKurierTestTools;
 
 /*
@@ -39,8 +39,7 @@ public class RoutingRequestTest
 	@Test
 	public void serialize_and_deserialize() throws IOException
 	{
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		final RoutingRequest routingRequest = DerKurierTestTools.createRoutingRequest_times_without_seconds();

@@ -6,11 +6,11 @@ import java.util.UUID;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;

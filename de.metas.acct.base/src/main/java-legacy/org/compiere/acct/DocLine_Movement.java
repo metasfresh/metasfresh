@@ -1,7 +1,6 @@
 package org.compiere.acct;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_MovementLine;
@@ -15,6 +14,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;

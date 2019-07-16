@@ -29,6 +29,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.Month;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,12 +63,12 @@ public class FreshPackingMdTest
 	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(30);
 	private I_C_UOM uom;
 
-	private final LocalDateTime date_2014_01_10 = LocalDateTime.of(2014, Month.JANUARY, 10, 0, 0);
-	private final LocalDateTime date_2014_01_11 = LocalDateTime.of(2014, Month.JANUARY, 11, 0, 0);
-	private final LocalDateTime date_2014_01_12 = LocalDateTime.of(2014, Month.JANUARY, 12, 0, 0);
-	private final LocalDateTime date_2014_01_13 = LocalDateTime.of(2014, Month.JANUARY, 13, 0, 0);
-	private final LocalDateTime date_2014_01_14 = LocalDateTime.of(2014, Month.JANUARY, 14, 0, 0);
-	private final LocalDateTime date_2014_01_15 = LocalDateTime.of(2014, Month.JANUARY, 15, 0, 0);
+	private final ZonedDateTime date_2014_01_10 = zonedDateTime(2014, Month.JANUARY, 10, 0, 0);
+	private final ZonedDateTime date_2014_01_11 = zonedDateTime(2014, Month.JANUARY, 11, 0, 0);
+	private final ZonedDateTime date_2014_01_12 = zonedDateTime(2014, Month.JANUARY, 12, 0, 0);
+	private final ZonedDateTime date_2014_01_13 = zonedDateTime(2014, Month.JANUARY, 13, 0, 0);
+	private final ZonedDateTime date_2014_01_14 = zonedDateTime(2014, Month.JANUARY, 14, 0, 0);
+	private final ZonedDateTime date_2014_01_15 = zonedDateTime(2014, Month.JANUARY, 15, 0, 0);
 
 	private MockedPackagingDAO packagingDAO;
 
@@ -82,6 +84,11 @@ public class FreshPackingMdTest
 		saveRecord(uom);
 	}
 
+	private static ZonedDateTime zonedDateTime(int year, Month month, int dayOfMonth, int hour, int minute)
+	{
+		return LocalDateTime.of(year, month, dayOfMonth, hour, minute).atZone(ZoneId.systemDefault());
+	}
+
 	@Test
 	public void testTableRowAggregation_StandardCase() throws Exception
 	{
@@ -90,8 +97,8 @@ public class FreshPackingMdTest
 				createPackageable(2, date_2014_01_10, date_2014_01_15),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
-		final LocalDateTime expectedPreparationDate = date_2014_01_15;
+		final ZonedDateTime expectedDeliveryDate = date_2014_01_10;
+		final ZonedDateTime expectedPreparationDate = date_2014_01_15;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
@@ -104,8 +111,8 @@ public class FreshPackingMdTest
 				createPackageable(2, date_2014_01_10, null),
 				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
-		final LocalDateTime expectedPreparationDate = null;
+		final ZonedDateTime expectedDeliveryDate = date_2014_01_10;
+		final ZonedDateTime expectedPreparationDate = null;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
@@ -118,16 +125,16 @@ public class FreshPackingMdTest
 				createPackageable(2, date_2014_01_11, null),
 				createPackageable(3, date_2014_01_10, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
-		final LocalDateTime expectedDeliveryDate = date_2014_01_10;
-		final LocalDateTime expectedPreparationDate = date_2014_01_14;
+		final ZonedDateTime expectedDeliveryDate = date_2014_01_10;
+		final ZonedDateTime expectedPreparationDate = date_2014_01_14;
 
 		testTableRowAggregation(packageables, expectedQtyToDeliver, expectedDeliveryDate, expectedPreparationDate);
 	}
 
 	private void testTableRowAggregation(final List<Packageable> packageables,
 			final int expectedQtyToDeliver,
-			final LocalDateTime expectedDeliveryDate,
-			final LocalDateTime expectedPreparationDate)
+			final ZonedDateTime expectedDeliveryDate,
+			final ZonedDateTime expectedPreparationDate)
 			throws Exception
 	{
 		final FreshPackingMd model = createPackingModel();
@@ -155,8 +162,8 @@ public class FreshPackingMdTest
 				tableRowAgg.getQtyToDeliver(),
 				Matchers.comparesEqualTo(BigDecimal.valueOf(expectedQtyToDeliver)));
 
-		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, TimeUtil.asLocalDateTime(tableRowAgg.getDeliveryDate()));
-		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, TimeUtil.asLocalDateTime(tableRowAgg.getPreparationDate()));
+		Assert.assertEquals("Invalid aggregated DeliveryDate", expectedDeliveryDate, TimeUtil.asZonedDateTime(tableRowAgg.getDeliveryDate()));
+		Assert.assertEquals("Invalid aggregated PreparationDate", expectedPreparationDate, TimeUtil.asZonedDateTime(tableRowAgg.getPreparationDate()));
 	}
 
 	private FreshPackingMd createPackingModel()
@@ -169,7 +176,7 @@ public class FreshPackingMdTest
 		return model;
 	}
 
-	private Packageable createPackageable(final int qtyToDeliver, final LocalDateTime deliveryDate, final LocalDateTime preparationDate)
+	private Packageable createPackageable(final int qtyToDeliver, final ZonedDateTime deliveryDate, final ZonedDateTime preparationDate)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentScheduleRecord);

@@ -1,7 +1,4 @@
-package org.adempiere.service;
-
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+package de.metas.organization;
 
 /*
  * #%L
@@ -31,49 +28,23 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.util.ISingletonService;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 
 public interface IOrgDAO extends ISingletonService
 {
 	void save(I_AD_Org orgRecord);
 
-	void save(I_AD_OrgInfo orgInfoRecord);
+	ClientId getClientIdByOrgId(OrgId orgId);
 
 	Optional<OrgId> retrieveOrgIdBy(OrgQuery orgQuery);
 
-	@Value
-	public static class OrgQuery
-	{
-		public static OrgQuery ofValue(@NonNull final String value)
-		{
-			return OrgQuery.builder().orgValue(value).build();
-		}
-
-		boolean outOfTrx;
-		boolean failIfNotExists;
-		String orgValue;
-
-		@Builder
-		private OrgQuery(
-				@Nullable final Boolean outOfTrx,
-				@Nullable final Boolean failIfNotExists,
-				@NonNull final String orgValue)
-		{
-			this.outOfTrx = coalesce(outOfTrx, false);
-			this.failIfNotExists = coalesce(failIfNotExists, false);
-			this.orgValue = assumeNotEmpty(orgValue.trim(), "Parameter 'orgValue' may not be empty");
-		}
-	}
-
+	@Deprecated
 	I_AD_Org retrieveOrg(Properties ctx, int adOrgId);
 
 	default I_AD_Org getById(@NonNull final OrgId orgId)
@@ -86,28 +57,55 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveOrg(Env.getCtx(), adOrgId);
 	}
 
-	default I_AD_Org retrieveOrg(final int adOrgId)
-	{
-		return retrieveOrg(Env.getCtx(), adOrgId);
-	}
-
 	default String retrieveOrgName(final int adOrgId)
 	{
-		return retrieveOrgName(OrgId.ofRepoId(adOrgId));
+		return retrieveOrgName(OrgId.ofRepoIdOrNull(adOrgId));
 	}
 
-	default String retrieveOrgName(@NonNull final OrgId adOrgId)
+	default String retrieveOrgName(@Nullable final OrgId adOrgId)
 	{
-		final I_AD_Org org = getById(adOrgId);
-		return org != null ? org.getName() : "<" + adOrgId.getRepoId() + ">";
+		if (adOrgId == null)
+		{
+			return "?";
+		}
+		else if (adOrgId.isAny())
+		{
+			return "*";
+		}
+		else
+		{
+			final I_AD_Org orgRecord = getById(adOrgId);
+			return orgRecord != null ? orgRecord.getName() : "<" + adOrgId.getRepoId() + ">";
+		}
 	}
 
-	I_AD_OrgInfo retrieveOrgInfo(Properties ctx, int adOrgId, String trxName);
-
-	default I_AD_OrgInfo retrieveOrgInfo(int adOrgId)
+	default String retrieveOrgValue(final int adOrgId)
 	{
-		return retrieveOrgInfo(Env.getCtx(), adOrgId, ITrx.TRXNAME_None);
+		return retrieveOrgValue(OrgId.ofRepoIdOrNull(adOrgId));
 	}
+
+	default String retrieveOrgValue(@Nullable final OrgId adOrgId)
+	{
+		if (adOrgId == null)
+		{
+			return "?";
+		}
+		else if (adOrgId.isAny())
+		{
+			return "*";
+		}
+		else
+		{
+			final I_AD_Org orgRecord = getById(adOrgId);
+			return orgRecord != null ? orgRecord.getValue() : "<" + adOrgId.getRepoId() + ">";
+		}
+	}
+
+	OrgInfo createOrUpdateOrgInfo(OrgInfoUpdateRequest request);
+
+	OrgInfo getOrgInfoById(OrgId adOrgId);
+
+	OrgInfo getOrgInfoByIdInTrx(OrgId adOrgId);
 
 	WarehouseId getOrgWarehouseId(OrgId orgId);
 

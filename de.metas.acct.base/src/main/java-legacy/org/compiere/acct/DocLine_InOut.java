@@ -2,7 +2,6 @@ package org.compiere.acct;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
@@ -17,6 +16,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 
 /*

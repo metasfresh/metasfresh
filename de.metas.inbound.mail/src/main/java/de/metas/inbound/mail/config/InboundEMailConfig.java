@@ -1,8 +1,8 @@
 package de.metas.inbound.mail.config;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
+import de.metas.organization.OrgId;
 import de.metas.request.RequestTypeId;
 import de.metas.util.Check;
 import lombok.Builder;

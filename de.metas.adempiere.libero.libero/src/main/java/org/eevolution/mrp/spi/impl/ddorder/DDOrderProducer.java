@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.annotation.Nullable;
 
@@ -14,11 +13,9 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
@@ -41,11 +38,14 @@ import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -105,8 +105,7 @@ public class DDOrderProducer
 	{
 		final I_PP_Product_Planning productPlanning = InterfaceWrapperHelper.create(Env.getCtx(), pojo.getProductPlanningId(), I_PP_Product_Planning.class, ITrx.TRXNAME_ThreadInherited);
 
-		final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(Env.getCtx(), pojo.getOrgId());
-		final int orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(Env.getCtx(), pojo.getOrgId());
+		final BPartnerLocationId orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(OrgId.ofRepoId(pojo.getOrgId()));
 
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID.setValue(ddOrderRecord, pojo.getMaterialDispoGroupId());
@@ -116,12 +115,12 @@ public class DDOrderProducer
 		ddOrderRecord.setMRP_AllowCleanup(true);
 		ddOrderRecord.setAD_Org_ID(pojo.getOrgId());
 		ddOrderRecord.setPP_Plant_ID(pojo.getPlantId());
-		ddOrderRecord.setC_BPartner_ID(orgBPartnerId);
-		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId);
+		ddOrderRecord.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
+		ddOrderRecord.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
 		ddOrderRecord.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
 		ddOrderRecord.setSalesRep_ID(productPlanning.getPlanner_ID());
 
-		ddOrderRecord.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
+		ddOrderRecord.setC_DocType_ID(getC_DocType_ID(OrgId.ofRepoId(pojo.getOrgId())));
 
 		final WarehouseId inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(OrgId.ofRepoId(pojo.getOrgId()));
 		ddOrderRecord.setM_Warehouse_ID(inTransitWarehouseId.getRepoId());
@@ -263,14 +262,12 @@ public class DDOrderProducer
 		ddOrdersRepo.save(ddOrderLineAlt);
 	}
 
-	private int getC_DocType_ID(final int orgId)
+	private int getC_DocType_ID(final OrgId orgId)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-		final I_AD_Org org = orgDAO.retrieveOrg(ctx, orgId);
+		final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
 
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		return docTypeDAO.getDocTypeId(ctx, X_C_DocType.DOCBASETYPE_ManufacturingOrder, org.getAD_Client_ID(), orgId, ITrx.TRXNAME_None);
+		return docTypeDAO.getDocTypeId(Env.getCtx(), X_C_DocType.DOCBASETYPE_ManufacturingOrder, clientId.getRepoId(), orgId.getRepoId(), ITrx.TRXNAME_None);
 	}
 }

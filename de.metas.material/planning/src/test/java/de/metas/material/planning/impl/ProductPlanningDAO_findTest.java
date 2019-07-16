@@ -9,7 +9,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.ASICopy;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -28,6 +27,7 @@ import org.junit.Test;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 

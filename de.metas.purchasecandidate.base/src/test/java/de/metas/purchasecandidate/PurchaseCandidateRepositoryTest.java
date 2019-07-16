@@ -109,8 +109,6 @@ public class PurchaseCandidateRepositoryTest
 			referenceGenerator.getNextDemandReference(); result = "nextDemandReference";
 		}}; // @formatter:on
 
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(0, Quantity.of(TEN, uom));
 
 		assertThat(purchaseCandidate.getGroupReference().getDemandReference()).isEqualTo(DemandGroupReference.REFERENCE_NOT_YET_SET); // guard
@@ -158,16 +156,16 @@ public class PurchaseCandidateRepositoryTest
 
 		assertThat(purchaseCandidate.isProcessed()).isTrue();
 		assertThat(purchaseCandidate.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(TEN);
-		assertThat(purchaseCandidate.getQtyToPurchase().getUOMId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseCandidate.getQtyToPurchase().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
 		assertThat(purchaseCandidate.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ONE);
-		assertThat(purchaseCandidate.getPurchasedQty().getUOMId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseCandidate.getPurchasedQty().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
 
 		assertThat(purchaseCandidate.getPurchaseErrorItems()).isEmpty(); // because or single purchaseCandidateAllocRecord has AD_Issue_ID<=0
 		assertThat(purchaseCandidate.getPurchaseOrderItems()).hasSize(1);
 
 		final PurchaseOrderItem purchaseOrderItem = purchaseCandidate.getPurchaseOrderItems().get(0);
 		assertThat(purchaseOrderItem.getPurchasedQty().getAsBigDecimal()).isEqualByComparingTo(ONE);
-		assertThat(purchaseOrderItem.getPurchasedQty().getUOMId()).isEqualTo(uom.getC_UOM_ID());
+		assertThat(purchaseOrderItem.getPurchasedQty().getUomId().getRepoId()).isEqualTo(uom.getC_UOM_ID());
 		assertThat(purchaseOrderItem.getVendorId().getRepoId()).isEqualTo(VENDOR_ID);
 		assertThat(purchaseOrderItem.getPurchaseOrderAndLineId().getOrderLineRepoId()).isEqualTo(purchaseOrderLineRecord.getC_OrderLine_ID());
 	}

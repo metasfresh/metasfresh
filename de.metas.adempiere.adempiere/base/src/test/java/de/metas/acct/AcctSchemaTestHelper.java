@@ -4,7 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
@@ -19,6 +18,7 @@ import de.metas.acct.api.impl.AcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;

@@ -2,8 +2,8 @@ package de.metas.security.requests;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import lombok.Builder;
 import lombok.NonNull;

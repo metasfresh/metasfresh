@@ -29,6 +29,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -198,6 +199,13 @@ public class ServerBoot implements InitializingBean
 		}
 	}
 
+	@Bean
+	@Primary
+	public ObjectMapper jsonObjectMapper()
+	{
+		return JsonObjectMapperHolder.sharedJsonObjectMapper();
+	}
+
 	@Bean(Adempiere.BEAN_NAME)
 	public Adempiere adempiere()
 	{
@@ -226,13 +234,5 @@ public class ServerBoot implements InitializingBean
 			);
 			logger.info("Clearing query selection table each {} seconds", clearQuerySelectionsRateInSeconds);
 		}
-	}
-
-	@Bean
-	public ObjectMapper objectMapper()
-	{
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.findAndRegisterModules();
-		return objectMapper;
 	}
 }

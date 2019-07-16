@@ -4,11 +4,11 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.request.RequestTypeId;
 import de.metas.user.UserId;

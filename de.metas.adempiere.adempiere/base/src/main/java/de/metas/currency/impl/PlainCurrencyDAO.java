@@ -8,7 +8,6 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_ConversionType_Default;
@@ -21,6 +20,7 @@ import de.metas.currency.ConversionType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 
 /*
  * #%L
