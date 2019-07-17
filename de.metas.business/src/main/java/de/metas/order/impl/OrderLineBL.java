@@ -458,8 +458,9 @@ public class OrderLineBL implements IOrderLineBL
 			final I_C_Order order = orderLine.getC_Order();
 
 			final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-			return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(
-					order.getM_PriceList(),
+			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+			return priceListsRepo.retrievePriceListVersionOrNull(
+					priceListsRepo.getById(order.getM_PriceList_ID()),
 					getPriceDate(orderLine, order),
 					processedPLVFiltering);
 		}

@@ -31,8 +31,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.impexp.product.ProductPriceCreateRequest;
-import de.metas.location.CountryId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -40,6 +41,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -48,12 +50,10 @@ import de.metas.pricing.exceptions.PriceListVersionNotFoundException;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 
-import javax.annotation.Nullable;
-
 public interface IPriceListDAO extends ISingletonService
 {
-	public static final int M_PricingSystem_ID_None = PricingSystemId.NONE.getRepoId();
-	public static final int M_PriceList_ID_None = PriceListId.NONE.getRepoId();
+	int M_PricingSystem_ID_None = PricingSystemId.NONE.getRepoId();
+	int M_PriceList_ID_None = PriceListId.NONE.getRepoId();
 
 	I_M_PricingSystem getPricingSystemById(PricingSystemId pricingSystemId);
 
@@ -93,7 +93,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @param processed optional, can be <code>null</code>. Allow to filter by <code>I_M_PriceList.Processed</code>
 	 */
 	I_M_PriceList_Version retrievePriceListVersionOrNull(org.compiere.model.I_M_PriceList priceList, LocalDate date, @Nullable Boolean processed);
-
+	
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>
 	 *

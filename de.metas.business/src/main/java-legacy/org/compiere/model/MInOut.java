@@ -55,6 +55,8 @@ import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -1315,8 +1317,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_Order order = getC_Order();
 		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-		return (!(order != null && order.getC_Order_ID() > 0
-				&& MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+		return (!(order != null
+				&& order.getC_Order_ID() > 0
+				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& !checkCreditOnPrepayOorder));
 	}
 

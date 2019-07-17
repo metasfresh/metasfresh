@@ -2554,11 +2554,12 @@ public final class MPayment extends X_C_Payment
 			return;
 		}
 
-		final I_C_DocType orderDocType = order.getC_DocType();
-		if (orderDocType == null)
+		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		if (orderDocTypeId == null)
 		{
 			return; // shall not happen
 		}
+		final I_C_DocType orderDocType = Services.get(IDocTypeDAO.class).getById(orderDocTypeId);
 
 		final String orderDocSubType = orderDocType.getDocSubType();
 		if (!X_C_DocType.DOCSUBTYPE_POSOrder.equals(orderDocSubType)

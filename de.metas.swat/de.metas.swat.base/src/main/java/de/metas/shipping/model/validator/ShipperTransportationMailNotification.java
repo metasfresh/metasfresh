@@ -44,6 +44,8 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
@@ -56,6 +58,7 @@ import de.metas.logging.LogManager;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.MMShipperTransportation;
 import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  * Supposed to send an email to a shipment's receiver when the shipper document is completed.
@@ -93,8 +96,12 @@ public class ShipperTransportationMailNotification implements ModelValidator
 					MOrder order = (MOrder)sp.getM_InOut().getC_Order();
 					if (order != null)
 					{
-						user = order.getAD_User();
+						final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+						user = contactId != null
+								? Services.get(IBPartnerDAO.class).getContactById(contactId)
+								: null;
 					}
+					
 					if (user == null)
 					{
 						user = sp.getM_InOut().getAD_User();

@@ -91,6 +91,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -454,21 +455,21 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		setFromOrder(invoice, order);	// set base settings
 
 		//
-		int docTypeId = C_DocTypeTarget_ID;
-		if (docTypeId <= 0)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(C_DocTypeTarget_ID);
+		if (docTypeId == null)
 		{
-			final I_C_DocType odt = order.getC_DocType();
+			final I_C_DocType odt = Services.get(IOrderBL.class).getDocTypeOrNull(order);
 			if (odt != null)
 			{
-				docTypeId = odt.getC_DocTypeInvoice_ID();
-				if (docTypeId <= 0)
+				docTypeId = DocTypeId.ofRepoIdOrNull(odt.getC_DocTypeInvoice_ID());
+				if (docTypeId == null)
 				{
 					throw new AdempiereException("@NotFound@ @C_DocTypeInvoice_ID@ - @C_DocType_ID@:" + odt.getName());
 				}
 			}
 		}
 
-		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 		if (dateInvoiced != null)
 		{
 			invoice.setDateInvoiced(dateInvoiced);

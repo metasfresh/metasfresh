@@ -211,7 +211,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		return new PriceListsCollection(pricingSystemId, priceLists);
 	}
-
+	
 	@Override
 	public I_M_PriceList_Version retrievePriceListVersionOrNull(
 			@NonNull final org.compiere.model.I_M_PriceList priceList,

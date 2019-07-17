@@ -28,6 +28,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -43,6 +45,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -53,11 +57,13 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -99,9 +105,14 @@ public class CalloutOrder extends CalloutEngine
 
 		final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
 
+		final DocTypeId newDocTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
+		final I_C_DocType newDocType = newDocTypeId != null
+				? Services.get(IDocTypeDAO.class).getById(newDocTypeId)
+				: null;
+				
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(order.getC_DocTypeTarget())
+				.setNewDocType(newDocType)
 				.setOldDocType_ID(oldOrder.getC_DocTypeTarget_ID())
 				.setOldDocumentNo(order.getDocumentNo())
 				.setDocumentModel(order)
@@ -281,27 +292,28 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-
 		if (order == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
 
-		if (order.getC_BPartner() == null)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
 		{
 			return NO_ERROR; // nothing to do
 		}
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-
-		if (null == order.getC_BPartner_Location())
+		
+		if (order.getC_BPartner_Location_ID() <= 0)
 		{
-			orderBL.setBPLocation(order, order.getC_BPartner());
+			orderBL.setBPLocation(order, bpartner);
 		}
 
 		if (!orderBL.setBillLocation(order))
 		{
-			throw new BPartnerNoBillToAddressException(order.getC_BPartner());
+			throw new BPartnerNoBillToAddressException(bpartner);
 		}
 
 		return NO_ERROR;
@@ -410,7 +422,7 @@ public class CalloutOrder extends CalloutEngine
 				final int billTo_ID = rs.getInt("Bill_Location_ID");
 				if (billTo_ID <= 0)
 				{
-					order.setBill_Location(null);
+					order.setBill_Location_ID(-1);
 				}
 				else
 				{
@@ -563,11 +575,11 @@ public class CalloutOrder extends CalloutEngine
 			@NonNull final ICalloutField calloutField,
 			@NonNull final I_C_Order order)
 	{
-		final I_C_BPartner bPartner = order.getC_BPartner();
-		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bPartner);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerStats bPartnerStats = Services.get(IBPartnerStatsDAO.class).getCreateBPartnerStats(bpartnerId);
 
 		final CreditLimitRequest creditLimitRequest = CreditLimitRequest.builder()
-				.bpartnerId(bPartner.getC_BPartner_ID())
+				.bpartnerId(bpartnerId.getRepoId())
 				.creditStatus(bPartnerStats.getSOCreditStatus())
 				.evalCreditstatus(true)
 				.evaluationDate(order.getDateOrdered())
@@ -579,7 +591,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		final BPartnerCreditLimitRepository creditLimitRepo = Adempiere.getBean(BPartnerCreditLimitRepository.class);
-		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bPartner.getC_BPartner_ID(), order.getDateOrdered());
+		final BigDecimal creditLimit = creditLimitRepo.retrieveCreditLimitByBPartnerId(bpartnerId.getRepoId(), order.getDateOrdered());
 
 		final BigDecimal CreditAvailable = creditLimit.subtract(bPartnerStats.getSOCreditUsed());
 		if (CreditAvailable.signum() < 0)
@@ -702,7 +714,7 @@ public class CalloutOrder extends CalloutEngine
 				}
 				if (contID <= 0)
 				{
-					order.setBill_User(null);
+					order.setBill_User_ID(-1);
 				}
 				else
 				{
@@ -813,11 +825,13 @@ public class CalloutOrder extends CalloutEngine
 	public String priceList(final ICalloutField calloutField)
 	{
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		final I_M_PriceList priceList = order.getM_PriceList();
-		if (priceList == null || priceList.getM_PriceList_ID() <= 0)
+		
+		final PriceListId priceListId = PriceListId.ofRepoId(order.getM_PriceList_ID());
+		if (priceListId == null)
 		{
 			return NO_ERROR;
 		}
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(priceListId);
 
 		order.setIsTaxIncluded(priceList.isTaxIncluded());
 		order.setC_Currency_ID(priceList.getC_Currency_ID());
@@ -1510,15 +1524,18 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (!order.isDropShip())
 			{
-				final I_AD_Org org = order.getAD_Org();
+				final I_AD_Org org = Services.get(IOrgDAO.class).getById(order.getAD_Org_ID());
 				final I_C_BPartner linkedBPartner = Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartner(org);
 				if (null != linkedBPartner)
 				{
 					order.setDropShip_BPartner_ID(linkedBPartner.getC_BPartner_ID());
 				}
-				if (null != order.getM_Warehouse())
+				
+				final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
+				if (warehouseId != null)
 				{
-					order.setDropShip_Location_ID(order.getM_Warehouse().getC_BPartner_Location_ID());
+					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
+					order.setDropShip_Location_ID(warehouse.getC_BPartner_Location_ID());
 				}
 				order.setDropShip_User_ID(-1);
 

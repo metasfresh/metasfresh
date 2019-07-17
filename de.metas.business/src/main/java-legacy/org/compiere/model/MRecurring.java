@@ -290,7 +290,7 @@ public class MRecurring extends X_C_Recurring
 		// the new order needs to figure out the pricing and also the warehouse (task 9700) by itself
 		InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Order.class).setM_PricingSystem_ID(0);
 		to.setM_PriceList_ID(0);
-		to.setM_Warehouse(null);
+		to.setM_Warehouse_ID(-1);
 
 		to.setIsSelected(false);
 		to.setDateOrdered(dateDoc);

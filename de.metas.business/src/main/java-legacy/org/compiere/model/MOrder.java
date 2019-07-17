@@ -51,6 +51,7 @@ import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -74,6 +75,8 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.IStorageBL;
@@ -628,13 +631,14 @@ public class MOrder extends X_C_Order implements IDocument
 
 		//
 		// DocType
-		I_C_DocType docType = getC_DocType();
-		if (docType == null)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
+		if(docTypeId == null)
 		{
-			docType = getC_DocTypeTarget();
+			docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocTypeTarget_ID());
 		}
-		if (docType != null)
+		if(docTypeId != null)
 		{
+			final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
 			documentInfo.append(docType.getName());
 		}
 
@@ -961,7 +965,11 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Currency
 		if (getC_Currency_ID() <= 0)
 		{
-			final I_M_PriceList priceList = getM_PriceList();
+			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(getM_PriceList_ID());
+			final I_M_PriceList priceList = priceListId != null
+					? Services.get(IPriceListDAO.class).getById(priceListId)
+					: null;
+					
 			final int currencyId = priceList == null ? -1 : priceList.getC_Currency_ID();
 			if (currencyId > 0)
 			{

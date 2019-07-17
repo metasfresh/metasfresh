@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
@@ -19,6 +19,8 @@ import de.metas.util.ISingletonService;
 
 public interface IOrderBL extends ISingletonService
 {
+	I_C_Order getById(OrderId orderId);
+
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
 	 *
@@ -45,23 +47,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	/**
-	 * Returns the given order's <code>C_BPartner</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Partner</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner getShipToPartner(I_C_Order order);
-
 	BPartnerLocationId getShipToLocationId(I_C_Order order);
-
-	/**
-	 * Returns the given order's <code>C_BPartner_Location</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Location</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner_Location getShipToLocation(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
@@ -71,13 +57,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	/**
-	 * Returns the given order's <code>C_BPartner_Location</code>, or if set then returns the <code>Bill_Location</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner_Location getBillToLocation(I_C_Order order);
+	BPartnerLocationId getBillToLocationIdOrNull(I_C_Order order);
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
@@ -143,7 +123,7 @@ public interface IOrderBL extends ISingletonService
 	 * @param order
 	 * @return
 	 */
-	String evaluateOrderDeliveryViaRule(I_C_Order order);
+	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -229,5 +209,15 @@ public interface IOrderBL extends ISingletonService
 	 */
 	boolean isQuotation(I_C_Order order);
 
+	boolean isPrepay(OrderId orderId);
+
+	boolean isPrepay(I_C_Order order);
+
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
+
+	I_C_DocType getDocTypeOrNull(I_C_Order order);
+
+	I_C_BPartner getBPartner(I_C_Order order);
+
+	I_C_BPartner getBPartnerOrNull(I_C_Order order);
 }

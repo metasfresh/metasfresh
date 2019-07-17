@@ -114,8 +114,8 @@ public class ReceiptSchedule_WarehouseDest_Test extends ReceiptScheduleTestBase
 
 		// Check receipt's warehouse
 		Assert.assertEquals("Invalid M_InOut.M_Warehouse_ID",
-				order1.getM_Warehouse(),
-				receipt.getM_Warehouse());
+				order1.getM_Warehouse_ID(),
+				receipt.getM_Warehouse_ID());
 
 		//
 		// Generate Movement from receipt
