@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,12 +73,12 @@ import lombok.NonNull;
 @SuppressWarnings("serial")
 public final class LookupDataSourceContext implements Evaluatee2, IValidationContext, Serializable
 {
-	public static final Builder builder(final String lookupTableName)
+	public static Builder builder(final String lookupTableName)
 	{
 		return new Builder(lookupTableName);
 	}
 
-	public static final Builder builderWithoutTableName()
+	public static Builder builderWithoutTableName()
 	{
 		return new Builder(null);
 	}
@@ -228,6 +229,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		else if (value instanceof Boolean)
 		{
 			return StringUtils.ofBoolean((Boolean)value);
+		}
+		else if (TimeUtil.isDateOrTimeObject(value))
+		{
+			// NOTE: because this evaluatee is used to build SQL expressions too,
+			// we have to make sure the dates are converted to JDBC format
+			final Timestamp jdbcTimestamp = TimeUtil.asTimestamp(value);
+			return Env.toString(jdbcTimestamp);
 		}
 		else
 		{
@@ -525,7 +533,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private static final String convertFilterToSql(final String filter)
+		private static String convertFilterToSql(final String filter)
 		{
 			if (filter == FILTER_Any)
 			{
@@ -605,7 +613,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			}
 		}
 
-		private final Object findContextValueOrNull(@NonNull final CtxName variableName)
+		private Object findContextValueOrNull(@NonNull final CtxName variableName)
 		{
 			//
 			// Check given parameters
