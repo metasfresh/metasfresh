@@ -20,16 +20,7 @@ export default class Attributes extends Component {
   }
 
   handleInit = () => {
-    const {
-      docType,
-      dataId,
-      tabId,
-      rowId,
-      fieldName,
-      attributeType,
-      widgetData,
-      entity,
-    } = this.props;
+    const { attributeType, widgetData } = this.props;
     const tmpId = widgetData.value.key;
 
     this.setState(
@@ -37,16 +28,7 @@ export default class Attributes extends Component {
         loading: true,
       },
       () => {
-        return getAttributesInstance(
-          attributeType,
-          tmpId,
-          docType,
-          dataId,
-          tabId,
-          rowId,
-          fieldName,
-          entity
-        )
+        return getAttributesInstance(attributeType, tmpId)
           .then(response => {
             const { id, fieldsByName } = response.data;
 
