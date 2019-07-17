@@ -52,15 +52,21 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
     cy.log(`Execute doc action ${action}`);
 
+    cy.server();
+    const docActionAlias = `docAction-${new Date().getTime()}`;
+    cy.route('GET', new RegExp(`rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`)).as(docActionAlias);
+
     cy.get('.form-field-DocAction .meta-dropdown-toggle').click();
-
     cy.get('.form-field-DocAction .dropdown-status-open').should('exist');
-
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
       .click();
-    // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
+
+    cy.wait(`@${docActionAlias}`, {
+      requestTimeout: 20000,
+      responseTimeout: 20000,
+    });
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
     if (expectedStatus) {
