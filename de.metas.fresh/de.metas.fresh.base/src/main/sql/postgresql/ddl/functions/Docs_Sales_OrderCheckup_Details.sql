@@ -89,7 +89,7 @@ FROM
 WHERE
 	1=1
 	AND report.IsActive='Y' and reportLine.IsActive='Y'
-	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
 	AND report.C_Order_MFGWarehouse_Report_ID =  $1
