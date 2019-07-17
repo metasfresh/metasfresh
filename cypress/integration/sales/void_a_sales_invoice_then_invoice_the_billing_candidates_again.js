@@ -335,7 +335,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   }
 
   function checkBillingCandidate(qtyDelivered, qtyInvoiced) {
-    cy.getCheckboxValue('IsToRecompute').should('equals', false);
+    cy.expectCheckboxValue('IsToRecompute', false);
     cy.getStringFieldValue('Bill_BPartner_ID').should('contain', businessPartnerName);
     cy.getStringFieldValue('C_Order_ID').should('equal', salesOrderDocumentNumber);
     cy.getStringFieldValue('M_Product_ID').should('contain', productName);
