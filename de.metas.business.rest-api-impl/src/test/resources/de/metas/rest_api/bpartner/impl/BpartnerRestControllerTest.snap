@@ -5,6 +5,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
       "externalId": {
         "value": "fghij_2"
       },
+      "active": true,
       "value": "code",
       "name": "bPartner.name",
       "companyName": "bPartner.companyName",
@@ -23,9 +24,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
+        "baseLanguage": true,
         "leftToRight": true,
-        "decimalPoint": false,
-        "baseLanguage": true
+        "decimalPoint": false
       },
       "url": "bPartner.url",
       "groupId": 15,
@@ -62,6 +63,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "l1_externalId"
         },
+        "gln": "l1_gln",
+        "active": true,
         "address1": "l1_address1",
         "address2": "l1_address2",
         "poBox": "l1_poBox",
@@ -69,7 +72,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "city": "l1_city",
         "region": "l1_region",
         "countryCode": "CH",
-        "gln": "l1_gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -102,6 +122,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "l2_externalId"
         },
+        "gln": "l2_gln",
+        "active": true,
         "address1": "l2_address1",
         "address2": "l2_address2",
         "poBox": "l2_poBox",
@@ -109,7 +131,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "city": "l2_city",
         "region": "l2_region",
         "countryCode": "DE",
-        "gln": "l2_gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -144,9 +183,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "c1_externalId"
         },
+        "active": true,
         "name": "c1_name",
         "email": "c1_email@email.net",
         "phone": "c1_phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -169,7 +223,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "nanos": 560000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       },
       {
         "id": {
@@ -179,9 +234,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
         "externalId": {
           "value": "c2_externalId"
         },
+        "active": true,
         "name": "c2_name",
         "email": "c2_email@email.net",
         "phone": "c2_phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -204,7 +274,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "nanos": 560000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       }
     ],
     "orgId": 10
@@ -219,6 +290,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
       "externalId": {
         "value": "fghij"
       },
+      "active": true,
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
       "groupId": 15,
@@ -255,6 +327,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "externalId": {
           "value": "bpartnerLocation.externalId"
         },
+        "gln": "bpartnerLocationRecord.gln",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "poBox": "locationRecord.poBox",
@@ -262,7 +336,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "city": "locationRecord.city",
         "region": "locationRecord.regionName",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -281,8 +372,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         }
@@ -297,11 +388,26 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "externalId": {
           "value": "abcde"
         },
+        "active": true,
         "name": "bpartnerRecord.name",
         "lastName": "bpartnerRecord.lastName",
         "firstName": "bpartnerRecord.firstName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -320,11 +426,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       },
       {
         "id": {
@@ -334,9 +441,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
         "externalId": {
           "value": "newContact-_externalId"
         },
+        "active": true,
         "name": "newContact-_name",
         "email": "newContact-_email@email.net",
         "phone": "newContact-_phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -359,7 +481,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
             "nanos": 560000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       }
     ],
     "orgId": 10
@@ -374,6 +497,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
       "externalId": {
         "value": "fghij"
       },
+      "active": true,
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
       "groupId": 15,
@@ -410,6 +534,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "externalId": {
           "value": "bpartnerLocation.externalId"
         },
+        "gln": "bpartnerLocationRecord.gln",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "poBox": "locationRecord.poBox",
@@ -417,7 +543,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "city": "locationRecord.city",
         "region": "locationRecord.regionName",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -436,8 +579,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         }
@@ -450,6 +593,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "externalId": {
           "value": "newLocation-_externalId"
         },
+        "gln": "newLocation-_gln",
+        "active": true,
         "address1": "newLocation-_address1",
         "address2": "newLocation-_address2",
         "poBox": "newLocation-_poBox",
@@ -457,7 +602,24 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "city": "newLocation-_city",
         "region": "newLocation-_region",
         "countryCode": "DE",
-        "gln": "newLocation-_gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -492,11 +654,26 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
         "externalId": {
           "value": "abcde"
         },
+        "active": true,
         "name": "bpartnerRecord.name",
         "lastName": "bpartnerRecord.lastName",
         "firstName": "bpartnerRecord.firstName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -515,11 +692,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       }
     ],
     "orgId": 10
@@ -532,11 +710,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerConta
     "metasfreshId": 30,
     "externalId": "abcde",
     "metasfreshBPartnerId": 20,
+    "active": true,
     "name": "bpartnerRecord.name",
     "firstName": "bpartnerRecord.firstName",
     "lastName": "bpartnerRecord.lastName",
     "email": "bpartnerRecord.email",
     "phone": "bpartnerRecord.phone",
+    "newsletter": true,
+    "shipToDefault": false,
+    "billToDefault": false,
+    "defaultContact": false,
     "changeInfo": {
       "createdMillis": 1561133544,
       "createdBy": 30,
@@ -551,6 +734,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerLocat
   {
     "metasfreshId": 40,
     "externalId": "bpartnerLocation.externalId",
+    "active": true,
     "address1": "locationRecord.address1",
     "address2": "locationRecord.address2",
     "postal": "locationRecord.postal",
@@ -558,8 +742,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerLocat
     "district": "postalRecord.district",
     "region": "locationRecord.regionName",
     "city": "locationRecord.city",
-    "countryCode": "countryRecord.countryCode",
     "gln": "bpartnerLocationRecord.gln",
+    "countryCode": "countryRecord.countryCode",
+    "shipTo": false,
+    "shipToDefault": false,
+    "billTo": false,
+    "billToDefault": false,
     "changeInfo": {
       "createdMillis": 1561133544,
       "createdBy": 30,
@@ -576,6 +764,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       "metasfreshId": 20,
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
+      "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
       "changeInfo": {
@@ -589,6 +778,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
       {
         "metasfreshId": 40,
         "externalId": "bpartnerLocation.externalId",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "postal": "locationRecord.postal",
@@ -596,8 +786,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "district": "postalRecord.district",
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
-        "countryCode": "countryRecord.countryCode",
         "gln": "bpartnerLocationRecord.gln",
+        "countryCode": "countryRecord.countryCode",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -611,11 +805,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
         "metasfreshId": 30,
         "externalId": "abcde",
         "metasfreshBPartnerId": 20,
+        "active": true,
         "name": "bpartnerRecord.name",
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -634,6 +833,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       "metasfreshId": 20,
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
+      "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
       "changeInfo": {
@@ -647,6 +847,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
       {
         "metasfreshId": 40,
         "externalId": "bpartnerLocation.externalId",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "postal": "locationRecord.postal",
@@ -654,8 +855,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "district": "postalRecord.district",
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
-        "countryCode": "countryRecord.countryCode",
         "gln": "bpartnerLocationRecord.gln",
+        "countryCode": "countryRecord.countryCode",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -669,11 +874,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
         "metasfreshId": 30,
         "externalId": "abcde",
         "metasfreshBPartnerId": 20,
+        "active": true,
         "name": "bpartnerRecord.name",
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -692,6 +902,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       "metasfreshId": 20,
       "externalId": "fghij",
       "code": "bpartnerRecord.value",
+      "active": true,
       "name": "bpartnerRecord.name",
       "group": "bpGroupRecord.name",
       "changeInfo": {
@@ -705,6 +916,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
       {
         "metasfreshId": 40,
         "externalId": "bpartnerLocation.externalId",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "postal": "locationRecord.postal",
@@ -712,8 +924,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "district": "postalRecord.district",
         "region": "locationRecord.regionName",
         "city": "locationRecord.city",
-        "countryCode": "countryRecord.countryCode",
         "gln": "bpartnerLocationRecord.gln",
+        "countryCode": "countryRecord.countryCode",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": false,
+        "billToDefault": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -727,11 +943,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
         "metasfreshId": 30,
         "externalId": "abcde",
         "metasfreshBPartnerId": 20,
+        "active": true,
         "name": "bpartnerRecord.name",
         "firstName": "bpartnerRecord.firstName",
         "lastName": "bpartnerRecord.lastName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "newsletter": true,
+        "shipToDefault": false,
+        "billToDefault": false,
+        "defaultContact": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
@@ -756,6 +977,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "metasfreshId": 20,
           "externalId": "fghij",
           "code": "bpartnerRecord.value",
+          "active": true,
           "name": "bpartnerRecord.name",
           "group": "bpGroupRecord.name",
           "changeInfo": {
@@ -769,6 +991,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           {
             "metasfreshId": 40,
             "externalId": "bpartnerLocation.externalId",
+            "active": true,
             "address1": "locationRecord.address1",
             "address2": "locationRecord.address2",
             "postal": "locationRecord.postal",
@@ -776,8 +999,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "district": "postalRecord.district",
             "region": "locationRecord.regionName",
             "city": "locationRecord.city",
-            "countryCode": "countryRecord.countryCode",
             "gln": "bpartnerLocationRecord.gln",
+            "countryCode": "countryRecord.countryCode",
+            "shipTo": false,
+            "shipToDefault": false,
+            "billTo": false,
+            "billToDefault": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 30,
@@ -791,11 +1018,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "metasfreshId": 30,
             "externalId": "abcde",
             "metasfreshBPartnerId": 20,
+            "active": true,
             "name": "bpartnerRecord.name",
             "firstName": "bpartnerRecord.firstName",
             "lastName": "bpartnerRecord.lastName",
             "email": "bpartnerRecord.email",
             "phone": "bpartnerRecord.phone",
+            "newsletter": true,
+            "shipToDefault": false,
+            "billToDefault": false,
+            "defaultContact": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 30,
@@ -810,6 +1042,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "metasfreshId": 21,
           "externalId": "fghij_1",
           "code": "bpartnerRecord.value_1",
+          "active": true,
           "name": "bpartnerRecord.name_1",
           "group": "bpGroupRecord.name",
           "changeInfo": {
@@ -823,6 +1056,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           {
             "metasfreshId": 41,
             "externalId": "bpartnerLocation.externalId_1",
+            "active": true,
             "address1": "locationRecord.address1_1",
             "address2": "locationRecord.address2_1",
             "postal": "locationRecord.postal_1",
@@ -830,8 +1064,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "district": "postalRecord.district_1",
             "region": "locationRecord.regionName_1",
             "city": "locationRecord.city_1",
-            "countryCode": "countryRecord.countryCode",
             "gln": "bpartnerLocationRecord.gln_1",
+            "countryCode": "countryRecord.countryCode",
+            "shipTo": false,
+            "shipToDefault": false,
+            "billTo": false,
+            "billToDefault": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 31,
@@ -845,11 +1083,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "metasfreshId": 31,
             "externalId": "abcde_1",
             "metasfreshBPartnerId": 21,
+            "active": true,
             "name": "bpartnerRecord.name_1",
             "firstName": "bpartnerRecord.firstName_1",
             "lastName": "bpartnerRecord.lastName_1",
             "email": "bpartnerRecord.email_1",
             "phone": "bpartnerRecord.phone_1",
+            "newsletter": true,
+            "shipToDefault": false,
+            "billToDefault": false,
+            "defaultContact": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 31,
@@ -872,6 +1115,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "metasfreshId": 22,
           "externalId": "fghij_2",
           "code": "bpartnerRecord.value_2",
+          "active": true,
           "name": "bpartnerRecord.name_2",
           "group": "bpGroupRecord.name",
           "changeInfo": {
@@ -885,6 +1129,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           {
             "metasfreshId": 42,
             "externalId": "bpartnerLocation.externalId_2",
+            "active": true,
             "address1": "locationRecord.address1_2",
             "address2": "locationRecord.address2_2",
             "postal": "locationRecord.postal_2",
@@ -892,8 +1137,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "district": "postalRecord.district_2",
             "region": "locationRecord.regionName_2",
             "city": "locationRecord.city_2",
-            "countryCode": "countryRecord.countryCode",
             "gln": "bpartnerLocationRecord.gln_2",
+            "countryCode": "countryRecord.countryCode",
+            "shipTo": false,
+            "shipToDefault": false,
+            "billTo": false,
+            "billToDefault": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 32,
@@ -907,11 +1156,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "metasfreshId": 32,
             "externalId": "abcde_2",
             "metasfreshBPartnerId": 22,
+            "active": true,
             "name": "bpartnerRecord.name_2",
             "firstName": "bpartnerRecord.firstName_2",
             "lastName": "bpartnerRecord.lastName_2",
             "email": "bpartnerRecord.email_2",
             "phone": "bpartnerRecord.phone_2",
+            "newsletter": true,
+            "shipToDefault": false,
+            "billToDefault": false,
+            "defaultContact": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 32,
@@ -926,6 +1180,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "metasfreshId": 23,
           "externalId": "fghij_3",
           "code": "bpartnerRecord.value_3",
+          "active": true,
           "name": "bpartnerRecord.name_3",
           "group": "bpGroupRecord.name",
           "changeInfo": {
@@ -939,6 +1194,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           {
             "metasfreshId": 43,
             "externalId": "bpartnerLocation.externalId_3",
+            "active": true,
             "address1": "locationRecord.address1_3",
             "address2": "locationRecord.address2_3",
             "postal": "locationRecord.postal_3",
@@ -946,8 +1202,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "district": "postalRecord.district_3",
             "region": "locationRecord.regionName_3",
             "city": "locationRecord.city_3",
-            "countryCode": "countryRecord.countryCode",
             "gln": "bpartnerLocationRecord.gln_3",
+            "countryCode": "countryRecord.countryCode",
+            "shipTo": false,
+            "shipToDefault": false,
+            "billTo": false,
+            "billToDefault": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 33,
@@ -961,11 +1221,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "metasfreshId": 33,
             "externalId": "abcde_3",
             "metasfreshBPartnerId": 23,
+            "active": true,
             "name": "bpartnerRecord.name_3",
             "firstName": "bpartnerRecord.firstName_3",
             "lastName": "bpartnerRecord.lastName_3",
             "email": "bpartnerRecord.email_3",
             "phone": "bpartnerRecord.phone_3",
+            "newsletter": true,
+            "shipToDefault": false,
+            "billToDefault": false,
+            "defaultContact": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 33,
@@ -987,6 +1252,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           "metasfreshId": 24,
           "externalId": "fghij_4",
           "code": "bpartnerRecord.value_4",
+          "active": true,
           "name": "bpartnerRecord.name_4",
           "group": "bpGroupRecord.name",
           "changeInfo": {
@@ -1000,6 +1266,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
           {
             "metasfreshId": 44,
             "externalId": "bpartnerLocation.externalId_4",
+            "active": true,
             "address1": "locationRecord.address1_4",
             "address2": "locationRecord.address2_4",
             "postal": "locationRecord.postal_4",
@@ -1007,8 +1274,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "district": "postalRecord.district_4",
             "region": "locationRecord.regionName_4",
             "city": "locationRecord.city_4",
-            "countryCode": "countryRecord.countryCode",
             "gln": "bpartnerLocationRecord.gln_4",
+            "countryCode": "countryRecord.countryCode",
+            "shipTo": false,
+            "shipToDefault": false,
+            "billTo": false,
+            "billToDefault": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 34,
@@ -1022,11 +1293,16 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
             "metasfreshId": 34,
             "externalId": "abcde_4",
             "metasfreshBPartnerId": 24,
+            "active": true,
             "name": "bpartnerRecord.name_4",
             "firstName": "bpartnerRecord.firstName_4",
             "lastName": "bpartnerRecord.lastName_4",
             "email": "bpartnerRecord.email_4",
             "phone": "bpartnerRecord.phone_4",
+            "newsletter": true,
+            "shipToDefault": false,
+            "billToDefault": false,
+            "defaultContact": false,
             "changeInfo": {
               "createdMillis": 1561133544,
               "createdBy": 34,

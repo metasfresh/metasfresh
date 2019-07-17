@@ -45,38 +45,73 @@ public class JsonResponseContact
 	public static final String LAST_NAME = "lastName";
 	public static final String FIRST_NAME = "firstName";
 	public static final String NAME = "name";
+	public static final String GREETING = "greeting";
 	public static final String CODE = "code";
 	public static final String METASFRESH_B_PARTNER_ID = "metasfreshBPartnerId";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String METASFRESH_ID = "metasfreshId";
+	public static final String ACTIVE = "active";
+	public static final String MOBILE_PHONE = "mobilePhone";
+	public static final String FAX = "fax";
+	public static final String DESCRIPTION = "description";
+	public static final String NEWSLETTER = "newsletter";
+	public static final String SHIP_TO_DEFAULT = "shipToDefault";
+	public static final String BILL_TO_DEFAULT = "billToDefault";
+	public static final String DEFAULT_CONTACT = "defaultContact";
 
-	@ApiModelProperty(dataType = "java.lang.Long")
+	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
 	@ApiModelProperty(dataType = "java.lang.String")
 	JsonExternalId externalId;
 
-	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	private MetasfreshId metasfreshBPartnerId;
 
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
-	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean active;
+
+	@ApiModelProperty(allowEmptyValue = false)
 	String name;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
+	String greeting;
+
+	@JsonInclude(Include.NON_EMPTY)
 	String lastName;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	String firstName;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	String email;
 
-	@JsonInclude(Include.NON_NULL)
+	@JsonInclude(Include.NON_EMPTY)
 	String phone;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String mobilePhone;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String fax;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String description;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean newsletter;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean shipToDefault;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean billToDefault;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean defaultContact;
 
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
@@ -88,19 +123,42 @@ public class JsonResponseContact
 			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(METASFRESH_B_PARTNER_ID) @Nullable final MetasfreshId metasfreshBPartnerId,
+			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(CODE) @Nullable final String code,
 			@JsonProperty(NAME) final String name,
+			@JsonProperty(GREETING) final String greeting,
 			@JsonProperty(FIRST_NAME) final String firstName,
 			@JsonProperty(LAST_NAME) final String lastName,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
+
+			@JsonProperty(MOBILE_PHONE) final String mobilePhone,
+			@JsonProperty(FAX) final String fax,
+			@JsonProperty(DESCRIPTION) final String description,
+			@JsonProperty(NEWSLETTER) final boolean newsletter,
+
+			@JsonProperty(SHIP_TO_DEFAULT) final boolean shipToDefault,
+			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
+			@JsonProperty(DEFAULT_CONTACT) final boolean defaultContact,
+
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
+		this.defaultContact = defaultContact;
+		this.billToDefault = billToDefault;
+		this.shipToDefault = shipToDefault;
+		this.newsletter = newsletter;
+		this.description = description;
+		this.fax = fax;
+		this.mobilePhone = mobilePhone;
 		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
+
+		this.active = active;
+
 		this.code = code;
 		this.name = name;
+		this.greeting = greeting;
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;

@@ -99,7 +99,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 
-			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier)
 	{
@@ -124,11 +124,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseLocation> retrieveBPartnerLocation(
 
-			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@ApiParam(value = LOCATION_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = LOCATION_IDENTIFIER_DOC) //
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifier)
 	{
@@ -152,11 +152,11 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveBPartnerContact(
 
-			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@ApiParam(value = CONTACT_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
@@ -244,7 +244,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateLocation(
 
-			@ApiParam(value = BPARTER_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
@@ -279,7 +279,7 @@ public class BpartnerRestController implements BPartnerRestEndpoint
 	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 
-			@ApiParam(value = BPARTER_IDENTIFIER_DOC, allowEmptyValue = false) //
+			@ApiParam(required = true, value = BPARTER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 

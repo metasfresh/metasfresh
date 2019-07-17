@@ -1633,7 +1633,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		if (userInCharge == null)
 		{
-			newTerm.setAD_User_InCharge(bPartner.getSalesRep());
+			newTerm.setAD_User_InCharge_ID(bPartner.getSalesRep_ID());
 		}
 		else
 		{

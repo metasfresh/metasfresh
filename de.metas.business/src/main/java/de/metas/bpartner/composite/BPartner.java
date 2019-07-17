@@ -1,6 +1,7 @@
 package de.metas.bpartner.composite;
 
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 
@@ -45,9 +46,15 @@ public class BPartner
 
 	private ExternalId externalId;
 
+	private boolean active;
+
 	private String value;
 
 	private String name;
+
+	private String name2;
+
+	private String name3;
 
 	/** non-empty value implies that the bpartner is also a company */
 	private String companyName;
@@ -62,33 +69,48 @@ public class BPartner
 
 	private String url;
 
+	private String url2;
+
+	private String url3;
+
 	private BPGroupId groupId;
 
 	private final RecordChangeLog changeLog;
 
+	/** They are all nullable because we can create a completely empty instance which we then fill. */
 	@Builder(toBuilder = true)
 	private BPartner(
 			@Nullable final BPartnerId id,
 			@Nullable final ExternalId externalId,
+			@Nullable final Boolean active,
 			@Nullable final String value,
 			@Nullable final String name,
+			@Nullable final String name2,
+			@Nullable final String name3,
 			@Nullable final String companyName,
 			@Nullable final BPartnerId parentId,
 			@Nullable final String phone,
 			@Nullable final Language language,
 			@Nullable final String url,
+			@Nullable final String url2,
+			@Nullable final String url3,
 			@Nullable final BPGroupId groupId,
 			@Nullable final RecordChangeLog changeLog)
 	{
 		this.id = id;
 		this.externalId = externalId;
+		this.active = coalesce(active, true);
 		this.value = value;
 		this.name = name;
+		this.name2 = name2;
+		this.name3 = name3;
 		this.companyName = companyName;
 		this.parentId = parentId;
 		this.phone = phone;
 		this.language = language;
 		this.url = url;
+		this.url2 = url2;
+		this.url3 = url3;
 		this.groupId = groupId;
 
 		this.changeLog = changeLog;

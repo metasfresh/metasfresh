@@ -50,14 +50,18 @@ public class JsonRequestContact
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean active;
+
 	@JsonInclude(Include.NON_NULL)
 	String name;
 
 	@JsonInclude(Include.NON_NULL)
-	String lastName;
+	String firstName;
 
 	@JsonInclude(Include.NON_NULL)
-	String firstName;
+	String lastName;
 
 	@JsonInclude(Include.NON_NULL)
 	String email;
@@ -65,7 +69,33 @@ public class JsonRequestContact
 	@JsonInclude(Include.NON_NULL)
 	String phone;
 
-	@ApiModelProperty(required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+	@JsonInclude(Include.NON_NULL)
+	private String fax;
+
+	@JsonInclude(Include.NON_NULL)
+	private String mobilePhone;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean defaultContact;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean shipToDefault;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean billToDefault;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	private Boolean newsletter;
+
+	@JsonInclude(Include.NON_NULL)
+	private String description;
+
+	@ApiModelProperty(position = 20, // shall be last
+			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -75,21 +105,46 @@ public class JsonRequestContact
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
 			@JsonProperty("metasfreshBPartnerId") @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty("code") @Nullable final String code,
+			@JsonProperty("active") @Nullable final Boolean active,
 			@JsonProperty("name") final String name,
+
 			@JsonProperty("firstName") final String firstName,
 			@JsonProperty("lastName") final String lastName,
 			@JsonProperty("email") final String email,
 			@JsonProperty("phone") final String phone,
+
+			@JsonProperty("newsletter") final Boolean newsletter,
+			@JsonProperty("fax") final String fax,
+			@JsonProperty("mobilePhone") final String mobilePhone,
+			@JsonProperty("description") final String description,
+
+			@JsonProperty("defaultContact") @Nullable final Boolean defaultContact,
+			@JsonProperty("shipToDefault") @Nullable final Boolean shipToDefault,
+			@JsonProperty("billToDefault") @Nullable final Boolean billToDefault,
+
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.externalId = externalId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.code = code;
+		this.active = active;
 		this.name = name;
+
 		this.firstName = firstName;
 		this.lastName = lastName;
+
 		this.email = email;
 		this.phone = phone;
+		this.fax = fax;
+		this.mobilePhone = mobilePhone;
+
+		this.newsletter = newsletter;
+
+		this.description = description;
+
+		this.defaultContact = defaultContact;
+		this.shipToDefault = shipToDefault;
+		this.billToDefault = billToDefault;
 
 		this.syncAdvise = syncAdvise;
 	}

@@ -277,9 +277,6 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * @param invoiceCandidate
-	 * @return
-	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);

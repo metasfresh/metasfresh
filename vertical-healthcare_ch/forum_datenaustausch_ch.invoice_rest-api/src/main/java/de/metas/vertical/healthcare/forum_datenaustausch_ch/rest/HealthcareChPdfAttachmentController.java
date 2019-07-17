@@ -70,7 +70,7 @@ public class HealthcareChPdfAttachmentController
 	// TODO only allow PDF
 	public ResponseEntity<JsonAttachment> attachPdfFile(
 
-			@ApiParam(value = "Reference string that was returned by the invoice-rest-controller", allowEmptyValue = false) //
+			@ApiParam(required = true, value = "Reference string that was returned by the invoice-rest-controller") //
 			@PathVariable("externalReference") final String externalReference,
 
 			@RequestParam("file") @NonNull final MultipartFile file)

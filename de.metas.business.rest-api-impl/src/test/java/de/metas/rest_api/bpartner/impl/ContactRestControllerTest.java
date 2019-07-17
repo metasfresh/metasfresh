@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -86,7 +87,11 @@ class ContactRestControllerTest
 		AdempiereTestHelper.get().init();
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository());
 
 		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
