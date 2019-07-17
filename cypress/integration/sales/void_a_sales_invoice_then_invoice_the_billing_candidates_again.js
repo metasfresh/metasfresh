@@ -87,7 +87,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Open the Referenced Billing Candidates', function() {
-    cy.wait(1000);
+    cy.wait(5000);
     cy.openReferencedDocuments('C_Order_C_Invoice_Candidate');
   });
 
