@@ -20,23 +20,70 @@
  * #L%
  */
 
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { Builder } from '../../support/utils/builder';
+import { PackingMaterial } from '../../support/utils/packing_material';
+
 describe('Create Empties Receive', function() {
+  // empties receive
   const businessPartnerName = 'Test Lieferant 1';
-  const productName = 'EUR-Tauschpalette Holz_P001503';
-  const originalQuantity = 222;
+  const productQuantity = 222;
   const documentType = 'Leergutrücknahme';
 
-  it('Open Material Receipt Candidates', function() {
-    cy.visitWindow('540196');
+  // priceList
+  const date = humanReadableNow();
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
+
+  // product
+  const productCategory = `ProductCategory ${date}`;
+  const productName = `Product ${date}`;
+  const productType = 'Item';
+
+  describe('Create Packing Material', function() {
+    it('Create Product', function() {
+      Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
+
+      Builder.createBasicProductEntities(
+        productCategory,
+        productCategory,
+        priceListName,
+        productName,
+        productName,
+        productType
+      );
+    });
+
+    it('Add Product to Packing Material', function() {
+      new PackingMaterial()
+        .setName(productName)
+        .setProduct(productName)
+        .apply();
+    });
   });
 
-  it('Execute action "Empties Receive"', function() {
-    cy.executeHeaderAction('headerAction_WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer');
-    cy.selectInListField('form-group row  form-field-C_DocType_ID', documentType);
-    cy.writeIntoStringField('lookup_C_BPartner_ID', businessPartnerName);
-    cy.selectTab('M_InOutLine');
-    cy.pressBatchEntryButton();
-    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
-    cy.writeIntoStringField('Qty', originalQuantity, false, null, true).type('{enter}');
+  describe('Create Empties Receive', function() {
+    it('Open Material Receipt Candidates', function() {
+      cy.visitWindow('540196');
+    });
+
+    it('Execute action "Empties Receive"', function() {
+      cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer');
+      cy.selectInListField('C_DocType_ID', documentType);
+      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
+      cy.selectTab('M_InOutLine');
+      cy.pressBatchEntryButton();
+      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
+      cy.writeIntoStringField('Qty', productQuantity, false, null, true).type('{enter}');
+
+      cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+        cy.processDocument(
+          getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+          getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+        );
+      });
+    });
   });
 });
