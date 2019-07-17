@@ -1,7 +1,6 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
-import { DiscountSchema } from '../../support/utils/discountschema';
-import { ProductCategory } from '../../support/utils/product';
+import { ProductCategory, ProductPrice, Product } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
@@ -83,18 +82,34 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .apply();
 
-    /**Create product to use in sales order - order line with both purchase price list and sales price list*/
-    Builder.createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocationAndPrices(
-      productCategoryName,
-      productCategoryValue,
-      purchasePriceList,
-      salesPriceList,
-      productName1,
-      productValue1,
-      productType,
-      packingInstructionsName,
-      vendorName
-    );
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
+    let productPrice1;
+    let productPrice2;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(purchasePriceList);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(salesPriceList);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName1)
+        .setValue(productValue1)
+        .setProductType(productType)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice1)
+        .addProductPrice(productPrice2)
+        .setCUTUAllocation(packingInstructionsName)
+        .setBusinessPartner(vendorName)
+        .apply();
+    });
   });
   it('Create a sales order', function() {
     cy.visitWindow('143', 'NEW');
