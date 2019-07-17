@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -136,6 +138,10 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private WebsocketSender websocketSender;
+
+	@Autowired
+	@Lazy
+	private ObjectMapper sharedJsonObjectMapper;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -523,5 +529,15 @@ public class DebugRestController
 		DateTimeConverters.setEnableLegacyDateTimeWidgets(enable);
 
 		return DateTimeConverters.getConfig().toString();
+	}
+
+	@GetMapping("/changeJsonEngineCofiguration")
+	public void changeJsonEngineConfiguration(
+			@RequestParam(value = "failOnUnknownProperties", required = false) final Boolean failOnUnknownProperties)
+	{
+		if (failOnUnknownProperties != null)
+		{
+			sharedJsonObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties);
+		}
 	}
 }
