@@ -87,7 +87,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Open the Referenced Billing Candidates', function() {
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     cy.openReferencedDocuments('C_Order_C_Invoice_Candidate');
   });
 
@@ -141,7 +141,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.setCheckBoxValue('IsShipToday', false, true);
       cy.pressStartButton();
       cy.getNotificationModal(shipmentNotificationModalText);
-      cy.wait(5000);
+      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       cy.readAllNotifications();
@@ -175,10 +175,9 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     it('Execute action "Generate Invoices"', function() {
       cy.executeHeaderActionWithDialog('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
       cy.pressStartButton(500);
-      cy.wait(5000);
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.wait(5000);
+      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       // expected text:
@@ -291,7 +290,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton();
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.wait(5000);
+      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       // expected text:

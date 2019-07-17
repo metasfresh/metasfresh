@@ -26,10 +26,10 @@
 
 import 'cypress-plugin-snapshots/commands';
 
-import {List} from 'immutable';
-import {goBack, push} from 'react-router-redux';
+import { List } from 'immutable';
+import { goBack, push } from 'react-router-redux';
 
-import {loginSuccess} from '../../../src/actions/AppActions';
+import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
@@ -37,7 +37,7 @@ import notificationFixtures from '../../fixtures/misc/notifications.json';
 
 const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
-context('Reusable "login" custom command using API', function () {
+context('Reusable "login" custom command using API', function() {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
     let pass = password;
@@ -52,7 +52,7 @@ context('Reusable "login" custom command using API', function () {
       message: user + ' | ' + '****' /*pass*/,
     });
 
-    const handleSuccess = function () {
+    const handleSuccess = function() {
       if (redirect) {
         Cypress.reduxStore.dispatch(goBack());
       } else {
@@ -60,7 +60,7 @@ context('Reusable "login" custom command using API', function () {
       }
     };
 
-    const checkIfAlreadyLogged = function () {
+    const checkIfAlreadyLogged = function() {
       const error = new Error('Error when checking if user logged in');
 
       return cy
@@ -128,8 +128,8 @@ context('Reusable "login" custom command using API', function () {
 /**
  * Emulates Tab key navigation.
  */
-Cypress.Commands.add('tab', {prevSubject: 'optional'}, ($subject, direction = 'forward', options = {}) => {
-  const thenable = $subject ? cy.wrap($subject, {log: false}) : cy.focused({log: options.log !== false});
+Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 'forward', options = {}) => {
+  const thenable = $subject ? cy.wrap($subject, { log: false }) : cy.focused({ log: options.log !== false });
 
   thenable
     .then($el => nextTabbable($el, direction))
@@ -142,7 +142,7 @@ Cypress.Commands.add('tab', {prevSubject: 'optional'}, ($subject, direction = 'f
         });
       }
     })
-    .focus({log: false});
+    .focus({ log: false });
 });
 
 /**
@@ -152,8 +152,8 @@ Cypress.Commands.add('tab', {prevSubject: 'optional'}, ($subject, direction = 'f
  * element to interact with it.
  */
 Cypress.Commands.add('active', (options = {}) => {
-  cy.document({log: false})
-    .then(document => cy.wrap(document.activeElement, {log: false}))
+  cy.document({ log: false })
+    .then(document => cy.wrap(document.activeElement, { log: false }))
     .then($el => {
       if (options.log !== false) {
         Cypress.log({
@@ -179,7 +179,7 @@ Cypress.Commands.add('active', (options = {}) => {
  *
  */
 Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
-  describe('Wait for page name visible in the header', function () {
+  describe('Wait for page name visible in the header', function() {
     if (pageName) {
       cy.get('.header-breadcrumb')
         .find('.header-item-container')
@@ -213,10 +213,10 @@ function visitTableWindow(windowId) {
 }
 
 function visitDetailWindow(windowId, recordId, documentIdAliasName) {
-  describe('Open metasfresh single-record window and wait for layout and data', function () {
+  describe('Open metasfresh single-record window and wait for layout and data', function() {
     performDocumentViewAction(
       windowId,
-      function () {
+      function() {
         cy.visit(`/window/${windowId}/${recordId}`);
       },
       documentIdAliasName
@@ -248,7 +248,7 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
-      return {documentId: xhr.response.body[0].id};
+      return { documentId: xhr.response.body[0].id };
     })
     .as(documentIdAliasName);
 }
@@ -263,7 +263,7 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = '
 });
 
 Cypress.Commands.add('resetNotifications', () => {
-  describe('Clear current notifications', function () {
+  describe('Clear current notifications', function() {
     return cy
       .window()
       .its('store')
@@ -274,7 +274,7 @@ Cypress.Commands.add('resetNotifications', () => {
 });
 
 Cypress.Commands.add('readAllNotifications', () => {
-  describe('Mark all current notifications as read in the API and reset counter', function () {
+  describe('Mark all current notifications as read in the API and reset counter', function() {
     return cy
       .request({
         method: 'PUT',
@@ -303,7 +303,7 @@ const getNotificationFixture = () => {
 };
 
 Cypress.Commands.add('addNotification', notificationObject => {
-  describe('Push a new notification to the existing list', function () {
+  describe('Push a new notification to the existing list', function() {
     notificationObject = notificationObject || getNotificationFixture();
 
     return cy
@@ -322,7 +322,7 @@ Cypress.Commands.add('addNotification', notificationObject => {
 });
 
 Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) => {
-  describe('Clear current notifications and add a new one', function () {
+  describe('Clear current notifications and add a new one', function() {
     notificationObject = notificationObject || getNotificationFixture();
 
     return cy
@@ -450,5 +450,11 @@ Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
       const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
       return newTotalAmount;
     });
+  });
+});
+
+Cypress.Commands.add('waitUntilProcessIsFinished', () => {
+  describe('Wait until a process id finished', function() {
+    cy.wait(10000);
   });
 });

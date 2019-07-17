@@ -600,5 +600,12 @@ declare namespace Cypress {
      */
     editAddress(fieldName, addressFunction): Chainable<any>
 
+    /**
+     * Wait until a process is finished.
+     *
+     * Currently it just waits for 10 seconds, but maybe in the future backend will announce when a process is finished, and we will wait for that.
+     */
+    waitUntilProcessIsFinished(): Chainable<any>
+
   }
 }
