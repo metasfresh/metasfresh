@@ -43,7 +43,7 @@ describe('Create Empties Receive', function() {
   const productType = 'Item';
 
   describe('Create Packing Material', function() {
-    it('Create Product', function() {
+    it('Create Price and Product', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
       Builder.createBasicProductEntities(
