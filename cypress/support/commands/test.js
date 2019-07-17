@@ -15,8 +15,8 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
 
       Cypress.emit('emit:addressPatchResolved', requestId);
     });
-
-    cy.on('emit:addressPatchResolved', requestId => {
+    /**for each POST address request above, the event handler code needs to happen only once */
+    cy.once('emit:addressPatchResolved', requestId => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
 
       const outerPatchUrl = `/rest/api/address/${requestId}`;

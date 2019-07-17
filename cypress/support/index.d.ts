@@ -254,15 +254,56 @@ declare namespace Cypress {
 
 
     /**
-     *   Select the only row in the currently selected tab
+     * Select the only row in the currently selected tab
      */
     selectSingleTabRow(): Chainable<any>
+
+    /**
+     * Clear current notifications in the UI. This is not persistent and doesn't hit the API.
+     */
+    resetNotifications(): Chainable<any>
+
+    /**
+     * Get the number of notifications displayed in the header alert element
+     *
+     * @return notificationsNumber
+     */
+    getDOMNotificationsNumber(): Chainable<number>
+
+    /**
+      * Get the notifications inbox in the app state
+      *
+      * @return notificationsNumber
+      */
+    getNotificationsInbox(): Chainable<number>
+
+    /**
+     * Select the notification modal element. Optionally look for text inside the notification.
+     *
+     * @param optionalText optional; String to look for in the notification element
+     */
+    getNotificationModal(optionalText?: string): Chainable<any>
 
     /**
      * Mark all current notifications as read in the API and reset counter.
      */
     readAllNotifications(): Chainable<any>
 
+    /**
+     * Push a new notification to the existing list
+     *
+     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
+     */
+    addNotification(notificationObject?: object): Chainable<any>
+    
+    /**
+     * Clear current notifications and add a new one. Optionally set the unread count.
+     *
+     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
+     * @param unreadCount optional, default = 0; sets unread count number
+     */
+    
+    newNotification(notificationObject?: object, unreadCount?: number): Chainable<any>
 
     /**
      * @param waitBeforePress optional, default 0 - wait this many milliseconds before pressing the start button
