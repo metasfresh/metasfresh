@@ -90,7 +90,7 @@ public class ContactRestController implements ContactRestEndpoint
 	@GetMapping("{contactIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveContact(
-			@ApiParam(CONTACT_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{

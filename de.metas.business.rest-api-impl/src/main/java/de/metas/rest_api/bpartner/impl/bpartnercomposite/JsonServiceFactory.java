@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
+import de.metas.greeting.GreetingRepository;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 
@@ -36,12 +37,15 @@ public class JsonServiceFactory
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPGroupRepository bpGroupRepository;
 	private final RecordChangeLogRepository recordChangeLogRepository;
+	private final GreetingRepository greetingRepository;
 
 	public JsonServiceFactory(
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final RecordChangeLogRepository recordChangeLogRepository)
 	{
+		this.greetingRepository = greetingRepository;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
@@ -58,11 +62,11 @@ public class JsonServiceFactory
 	public JsonRetrieverService createRetriever()
 	{
 		final String identifier = "retriever_" + UIDStringUtil.createNext();
-		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, recordChangeLogRepository, identifier);
+		return createRetrieverService(identifier);
 	}
 
 	private JsonRetrieverService createRetrieverService(@NonNull final String identifier)
 	{
-		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, recordChangeLogRepository, identifier);
+		return new JsonRetrieverService(bpartnerCompositeRepository, bpGroupRepository, greetingRepository, recordChangeLogRepository, identifier);
 	}
 }

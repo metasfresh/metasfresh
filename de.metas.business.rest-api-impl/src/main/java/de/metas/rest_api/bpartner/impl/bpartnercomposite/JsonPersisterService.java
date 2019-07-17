@@ -25,7 +25,9 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPart
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerContactQuery.BPartnerContactQueryBuilder;
+import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.i18n.Language;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -250,7 +252,7 @@ public class JsonPersisterService
 
 	private final transient BPGroupRepository bpGroupRepository;
 
-	private final JsonRetrieverService jsonRetrieverService;
+	private final transient JsonRetrieverService jsonRetrieverService;
 
 	@Getter
 	private final String identifier;
@@ -581,6 +583,12 @@ public class JsonPersisterService
 
 		final boolean isUpdateRemove = ifExistsAdvise.isUpdateRemove();
 
+		// active
+		if (jsonBPartner.getActive() != null)
+		{
+			bpartner.setActive(jsonBPartner.getActive());
+		}
+
 		// code / value
 		if (!isEmpty(jsonBPartner.getCode(), true))
 		{
@@ -599,6 +607,36 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			bpartner.setCompanyName(null);
+		}
+
+		// name
+		if (!isEmpty(jsonBPartner.getName(), true))
+		{
+			bpartner.setName(jsonBPartner.getName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setName(null);
+		}
+
+		// name2
+		if (!isEmpty(jsonBPartner.getName2(), true))
+		{
+			bpartner.setName2(jsonBPartner.getName2().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setName2(null);
+		}
+
+		// name3
+		if (!isEmpty(jsonBPartner.getName3(), true))
+		{
+			bpartner.setName3(jsonBPartner.getName3().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setName3(null);
 		}
 
 		// externalId
@@ -649,16 +687,6 @@ public class JsonPersisterService
 
 		// metasfreshId - we will never update it
 
-		// name
-		if (!isEmpty(jsonBPartner.getName(), true))
-		{
-			bpartner.setName(jsonBPartner.getName().trim());
-		}
-		else if (isUpdateRemove)
-		{
-			bpartner.setName(null);
-		}
-
 		// parentId
 		if (jsonBPartner.getParentId() != null)
 		{
@@ -689,6 +717,26 @@ public class JsonPersisterService
 		{
 			bpartner.setUrl(null);
 		}
+
+		// url2
+		if (!isEmpty(jsonBPartner.getUrl2(), true))
+		{
+			bpartner.setUrl2(jsonBPartner.getUrl2().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setUrl2(null);
+		}
+
+		// url3
+		if (!isEmpty(jsonBPartner.getUrl3(), true))
+		{
+			bpartner.setUrl3(jsonBPartner.getUrl3().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			bpartner.setUrl3(null);
+		}
 	}
 
 	private void syncJsonToContact(
@@ -698,6 +746,12 @@ public class JsonPersisterService
 	{
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
+
+		// active
+		if (jsonBPartnerContact.getActive() != null)
+		{
+			contact.setActive(jsonBPartnerContact.getActive());
+		}
 
 		// email
 		if (!isEmpty(jsonBPartnerContact.getEmail(), true))
@@ -720,7 +774,7 @@ public class JsonPersisterService
 		}
 
 		// firstName
-		if (jsonBPartnerContact.getFirstName() != null)
+		if (!isEmpty(jsonBPartnerContact.getFirstName(), true))
 		{
 			contact.setFirstName(jsonBPartnerContact.getFirstName().trim());
 		}
@@ -730,7 +784,7 @@ public class JsonPersisterService
 		}
 
 		// lastName
-		if (jsonBPartnerContact.getLastName() != null)
+		if (!isEmpty(jsonBPartnerContact.getLastName(), true))
 		{
 			contact.setLastName(jsonBPartnerContact.getLastName().trim());
 		}
@@ -744,7 +798,7 @@ public class JsonPersisterService
 		// metasfreshId - never updated;
 
 		// name
-		if (jsonBPartnerContact.getName() != null)
+		if (!isEmpty(jsonBPartnerContact.getName(), true))
 		{
 			contact.setName(jsonBPartnerContact.getName().trim());
 		}
@@ -753,8 +807,18 @@ public class JsonPersisterService
 			contact.setName(null);
 		}
 
+		// description
+		if (!isEmpty(jsonBPartnerContact.getDescription(), true))
+		{
+			contact.setDescription(jsonBPartnerContact.getDescription().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			contact.setDescription(null);
+		}
+
 		// phone
-		if (jsonBPartnerContact.getPhone() != null)
+		if (!isEmpty(jsonBPartnerContact.getPhone(), true))
 		{
 			contact.setPhone(jsonBPartnerContact.getPhone().trim());
 		}
@@ -762,6 +826,39 @@ public class JsonPersisterService
 		{
 			contact.setPhone(null);
 		}
+
+		// fax
+		if (!isEmpty(jsonBPartnerContact.getFax(), true))
+		{
+			contact.setFax(jsonBPartnerContact.getFax().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			contact.setFax(null);
+		}
+
+		// mobilePhone
+		if (!isEmpty(jsonBPartnerContact.getMobilePhone(), true))
+		{
+			contact.setMobilePhone(jsonBPartnerContact.getMobilePhone().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			contact.setMobilePhone(null);
+		}
+
+		// newsletter
+		if (jsonBPartnerContact.getNewsletter() != null)
+		{
+			contact.setNewsletter(jsonBPartnerContact.getNewsletter());
+		}
+
+		final BPartnerContactType contactType = BPartnerContactType.builder()
+				.defaultContact(jsonBPartnerContact.getDefaultContact())
+				.shipToDefault(jsonBPartnerContact.getShipToDefault())
+				.billToDefault(jsonBPartnerContact.getBillToDefault())
+				.build();
+		contact.setContactType(contactType);
 	}
 
 	private void syncJsonToContacts(
@@ -794,7 +891,23 @@ public class JsonPersisterService
 
 		final SyncAdvise syncAdvise = coalesce(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
 
+		// active
+		if (jsonBPartnerLocation.getActive() != null)
+		{
+			location.setActive(jsonBPartnerLocation.getActive());
+		}
+
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
+
+		// name
+		if (!isEmpty(jsonBPartnerLocation.getName(), true))
+		{
+			location.setName(jsonBPartnerLocation.getName().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			location.setName(null);
+		}
 
 		// address1
 		if (!isEmpty(jsonBPartnerLocation.getAddress1(), true))
@@ -814,6 +927,25 @@ public class JsonPersisterService
 		else if (isUpdateRemove)
 		{
 			location.setAddress2(null);
+		}
+		// address3
+		if (!isEmpty(jsonBPartnerLocation.getAddress3(), true))
+		{
+			location.setAddress3(jsonBPartnerLocation.getAddress3().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			location.setAddress3(null);
+		}
+
+		// address4
+		if (!isEmpty(jsonBPartnerLocation.getAddress4(), true))
+		{
+			location.setAddress4(jsonBPartnerLocation.getAddress4().trim());
+		}
+		else if (isUpdateRemove)
+		{
+			location.setAddress4(null);
 		}
 
 		// city
@@ -895,6 +1027,14 @@ public class JsonPersisterService
 		{
 			location.setRegion(null);
 		}
+
+		final BPartnerLocationType locationType = BPartnerLocationType.builder()
+				.billToDefault(jsonBPartnerLocation.getBillToDefault())
+				.billTo(jsonBPartnerLocation.getBillTo())
+				.shipToDefault(jsonBPartnerLocation.getShipToDefault())
+				.shipTo(jsonBPartnerLocation.getShipTo())
+				.build();
+		location.setLocationType(locationType);
 	}
 
 	private void syncJsonToLocations(

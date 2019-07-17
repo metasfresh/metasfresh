@@ -5,6 +5,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
       "externalId": {
         "value": "fghij"
       },
+      "active": true,
       "value": "bpartnerRecord.value",
       "name": "bpartnerRecord.name",
       "groupId": 15,
@@ -41,6 +42,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "externalId": {
           "value": "bpartnerLocation.externalId"
         },
+        "gln": "bpartnerLocationRecord.gln",
+        "active": true,
         "address1": "locationRecord.address1",
         "address2": "locationRecord.address2",
         "poBox": "locationRecord.poBox",
@@ -49,7 +52,24 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "district": "postalRecord.district",
         "region": "locationRecord.regionName",
         "countryCode": "countryRecord.countryCode",
-        "gln": "bpartnerLocationRecord.gln",
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -84,11 +104,26 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         "externalId": {
           "value": "abcde"
         },
+        "active": true,
         "name": "bpartnerRecord.name",
         "lastName": "bpartnerRecord.lastName",
         "firstName": "bpartnerRecord.firstName",
         "email": "bpartnerRecord.email",
         "phone": "bpartnerRecord.phone",
+        "contactType": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -111,7 +146,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
             "nanos": 544000000
           },
           "entries": [ ]
-        }
+        },
+        "newsletter": true
       }
     ],
     "orgId": 10
