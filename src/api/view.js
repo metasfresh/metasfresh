@@ -75,8 +75,7 @@ export function createViewRequest({
 
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map(filter => {
-
-    delete filter.defaultVal
+    delete filter.defaultVal;
 
     filter.parameters &&
       filter.parameters.map((param, index) => {
