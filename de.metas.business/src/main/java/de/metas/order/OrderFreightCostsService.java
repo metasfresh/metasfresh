@@ -196,7 +196,9 @@ public class OrderFreightCostsService
 		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(order.getFreightCostRule(), FreightCostRule.FreightIncluded);
 
 		final ShipperId orderShipperid = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
-		final ShipperId partnerShipperId = bpartnerBL.getShipperIdOrNull(shipToBPartnerId);
+		final ShipperId partnerShipperId = shipToBPartnerId != null
+				? bpartnerBL.getShipperIdOrNull(shipToBPartnerId)
+				: null;
 
 		return FreightCostContext.builder()
 				.shipFromOrgId(OrgId.ofRepoId(order.getC_Order_ID()))

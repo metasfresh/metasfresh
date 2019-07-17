@@ -1,5 +1,7 @@
 package de.metas.document.engine;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
@@ -55,6 +57,11 @@ public enum DocStatus implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	public static DocStatus ofNullableCodeOrUnknown(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : Unknown;
+	}
+
 	public static DocStatus ofCode(@NonNull final String code)
 	{
 		final DocStatus type = typesByCode.get(code);
@@ -66,6 +73,11 @@ public enum DocStatus implements ReferenceListAwareEnum
 	}
 
 	private static final ImmutableMap<String, DocStatus> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+
+	public boolean isCompleted()
+	{
+		return this == Completed;
+	}
 
 	public boolean isReversedOrVoided()
 	{
