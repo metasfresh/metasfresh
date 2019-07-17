@@ -8,6 +8,7 @@ function executeHeaderAction(actionName) {
    * This match is needed because cypress is so fast that it may press the action button before any viewId is available, and the system will error out.
    */
   cy.url().should('matches', new RegExp(`window/[0-9]+(/[0-9]+|.*viewId=)`));
+  cy.get('.indicator-pending').should('not.exist');
 
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');

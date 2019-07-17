@@ -340,6 +340,16 @@ declare namespace Cypress {
 
 
     /**
+     * Wait until the current value of a checkBox (Yes/No box) is in the desired state (checked (true) or not checked (false).
+     *
+     * @param fieldName name of the field is question
+     * @param isChecked if true the checkbox should be in checked state, if false the checkbox should be unchecked
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     */
+    expectCheckboxValue(fieldName: string, isChecked: boolean, modal?: boolean): Chainable<any>
+
+
+    /**
      * Unset the value of a list.
      * Similar to pressing the (x) button of a list.
      *
