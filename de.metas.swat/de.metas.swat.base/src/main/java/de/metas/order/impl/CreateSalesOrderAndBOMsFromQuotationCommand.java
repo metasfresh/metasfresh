@@ -151,7 +151,8 @@ public final class CreateSalesOrderAndBOMsFromQuotationCommand
 
 	private SalesOrderCandidate createSalesOrderCandidate(final I_C_Order fromQuotation)
 	{
-		final List<I_C_OrderLine> allOrderLines = ordersRepo.retrieveOrderLines(fromQuotation.getC_Order_ID())
+		final OrderId orderId = OrderId.ofRepoId(fromQuotation.getC_Order_ID());
+		final List<I_C_OrderLine> allOrderLines = ordersRepo.retrieveOrderLines(orderId)
 				.stream()
 				.filter(line -> line.isActive() && !line.isPackagingMaterial())
 				.sorted(Comparator.comparing(I_C_OrderLine::getLine))

@@ -18,22 +18,6 @@ public class OrderPA implements IOrderPA
 	private static final Logger logger = LogManager.getLogger(OrderPA.class);
 
 	@Override
-	public MOrder retrieveOrder(final int orderId, final String trxName)
-	{
-
-		final MOrder order = new MOrder(Env.getCtx(), orderId, trxName);
-
-		if (order.get_ID() == 0)
-		{
-
-			logger.debug("There is no order with id '" + orderId + "'. Returning null.");
-			return null;
-		}
-		return order;
-
-	}
-
-	@Override
 	public I_C_Order copyOrder(
 			final I_C_Order originalOrder,
 			final boolean copyLines,

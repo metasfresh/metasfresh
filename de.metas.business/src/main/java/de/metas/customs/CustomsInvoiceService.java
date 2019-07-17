@@ -235,7 +235,7 @@ public class CustomsInvoiceService
 
 		if (shipmentLinePriceConverted == null)
 		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyBL);
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
 		}
 
 		return Money.of(shipmentLinePriceConverted, currencyId);

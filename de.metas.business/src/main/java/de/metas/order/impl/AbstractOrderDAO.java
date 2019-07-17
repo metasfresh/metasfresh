@@ -2,7 +2,6 @@ package de.metas.order.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.Collection;
 
@@ -42,6 +41,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -117,17 +117,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 			@NonNull final I_C_Order order,
 			@NonNull final Class<T> clazz)
 	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
+		if(orderId == null)
+		{
+			return ImmutableList.of();
+		}
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 		final String trxName = InterfaceWrapperHelper.getTrxName(order);
-		final int orderId = order.getC_Order_ID();
 		final List<T> orderLines = retrieveOrderLines(ctx, orderId, trxName, clazz);
-
 		orderLines.forEach(orderLine -> orderLine.setC_Order(order));
 		return orderLines;
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final int orderId)
+	public List<I_C_OrderLine> retrieveOrderLines(final OrderId orderId)
 	{
 		return retrieveOrderLines(Env.getCtx(), orderId, ITrx.TRXNAME_ThreadInherited, I_C_OrderLine.class);
 	}
@@ -136,7 +140,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	// @Cached(cacheName = I_C_OrderLine.Table_Name + "#via#" + I_C_OrderLine.COLUMNNAME_C_Order_ID)
 	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(
 			@CacheCtx final Properties ctx,
-			final int orderId,
+			@NonNull final OrderId orderId,
 			@CacheTrx final String trxName,
 			@NonNull final Class<T> clazz)
 	{
@@ -252,8 +256,20 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public void save(@NonNull final I_C_Order order)
+	public void delete(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		saveRecord(order);
+		InterfaceWrapperHelper.delete(orderLine);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_Order order)
+	{
+		InterfaceWrapperHelper.save(order);
+	}
+
+	@Override
+	public void save(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		InterfaceWrapperHelper.save(orderLine);
 	}
 }

@@ -266,6 +266,12 @@ public final class Money
 		}
 	}
 
+	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) <= 0;
+	}
+
 	public static Collector<Money, ?, Stream<Money>> sumByCurrencyAndStream()
 	{
 		return sumByCurrencyAnd(map -> map.values().stream());

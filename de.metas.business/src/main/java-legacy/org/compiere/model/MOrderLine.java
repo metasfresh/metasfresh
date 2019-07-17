@@ -803,7 +803,6 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		// Product
 		else
-		// Set/check Product Price
 		{
 			// Set Price if Actual = 0
 			if (getPriceActual().signum() == 0

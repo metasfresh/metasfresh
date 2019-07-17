@@ -881,10 +881,10 @@ public final class Env
 			@NonNull final Properties ctx,
 			@NonNull final String context)
 	{
-		final int defaultValueIfNotFoundOrError = 0; // using ZERO instead of "-1" for backward compatibility 
+		final int defaultValueIfNotFoundOrError = 0; // using ZERO instead of "-1" for backward compatibility
 		return getContextAsInt(ctx, context, defaultValueIfNotFoundOrError);
 	}
-	
+
 	public static int getContextAsInt(
 			@NonNull final Properties ctx,
 			@NonNull final String context,
@@ -899,7 +899,7 @@ public final class Env
 		{
 			return defaultValueIfNotFoundOrError;
 		}
-		
+
 		try
 		{
 			return Integer.parseInt(valueStr);
@@ -1267,12 +1267,11 @@ public final class Env
 	{
 		return UserId.ofRepoId(getAD_User_ID(ctx));
 	}
-	
+
 	public static Optional<UserId> getLoggedUserIdIfExists(final Properties ctx)
 	{
 		return Optional.ofNullable(UserId.ofRepoIdOrNull(getAD_User_ID(ctx)));
 	}
-
 
 	public static void setLoggedUserId(final Properties ctx, @NonNull final UserId userId)
 	{
@@ -1311,9 +1310,26 @@ public final class Env
 		return getUserRolePermissions(ctx);
 	}
 
+	public static IUserRolePermissions getUserRolePermissionsOrNull()
+	{
+		final Properties ctx = getCtx();
+		return getUserRolePermissionsOrNull(ctx);
+	}
+
 	public static IUserRolePermissions getUserRolePermissions(final Properties ctx)
 	{
 		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromContext(ctx);
+		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
+	}
+
+	public static IUserRolePermissions getUserRolePermissionsOrNull(final Properties ctx)
+	{
+		final UserRolePermissionsKey userRolePermissionsKey = UserRolePermissionsKey.fromContextOrNull(ctx);
+		if (userRolePermissionsKey == null)
+		{
+			return null;
+		}
+
 		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
@@ -1565,7 +1581,7 @@ public final class Env
 	}    // getLanguage
 
 	/**
-     * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
+	 * Check that language is supported by the system. Returns the base language in case parameter language is not supported.
 	 *
 	 * @return the received language if it is supported, the base language otherwise.
 	 */

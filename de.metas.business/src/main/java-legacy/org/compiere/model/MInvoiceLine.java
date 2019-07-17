@@ -516,7 +516,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		//
 		// metas: begin: US1184
-		if (!m_productPricing.calculatePrice())
+		if (!m_productPricing.recalculatePrice())
 		{
 			log.debug("Cannot calculate prices for " + m_productPricing + " [SKIP]");
 			return;

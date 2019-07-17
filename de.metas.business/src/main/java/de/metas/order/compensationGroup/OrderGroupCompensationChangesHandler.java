@@ -4,6 +4,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
+import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 import lombok.NonNull;
 
@@ -85,7 +86,7 @@ public class OrderGroupCompensationChangesHandler
 				.groupTemplate(groupTemplate)
 				.recreateGroup(group);
 
-		final int orderId = OrderGroupRepository.extractOrderIdFromGroup(group);
+		final OrderId orderId = OrderGroupRepository.extractOrderIdFromGroup(group);
 		groupsRepo.renumberOrderLinesForOrderId(orderId);
 	}
 

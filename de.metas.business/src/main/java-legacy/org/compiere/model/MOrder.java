@@ -59,8 +59,10 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
@@ -127,12 +129,12 @@ public class MOrder extends X_C_Order implements IDocument
 			setDocAction(DOCACTION_Prepare);
 			//
 			setDeliveryRule(DeliveryRule.AVAILABILITY.getCode());
-			setFreightCostRule(FREIGHTCOSTRULE_FreightIncluded);
+			setFreightCostRule(FreightCostRule.FreightIncluded.getCode());
 			// metas: we *never* use InvoiceRule 'Immediate', so don't use it as default.
 			setInvoiceRule(INVOICERULE_AfterDelivery);
 			setPaymentRule(PaymentRule.OnCredit.getCode());
 			setPriorityRule(PRIORITYRULE_Medium);
-			setDeliveryViaRule(DELIVERYVIARULE_Pickup);
+			setDeliveryViaRule(DeliveryViaRule.Pickup.getCode());
 			//
 			setIsDiscountPrinted(false);
 			setIsSelected(false);
@@ -157,7 +159,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setDatePromised(SystemTime.asDayTimestamp()); // task 06269 (see KurzBeschreibung)
 			setDateOrdered(new Timestamp(System.currentTimeMillis()));
 
-			setFreightAmt(BigDecimal.ZERO);
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);

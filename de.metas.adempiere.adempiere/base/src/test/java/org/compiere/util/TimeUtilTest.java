@@ -5,6 +5,8 @@ package org.compiere.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -566,6 +568,41 @@ public class TimeUtilTest
 	private void assertLastDayOfMonth(final boolean expectation, final LocalDate date)
 	{
 		assertThat(TimeUtil.isLastDayOfMonth(date)).isEqualTo(expectation);
-
 	}
+
+	@Test
+	public void test_isDateOrTimeObject()
+	{
+		assertThat(TimeUtil.isDateOrTimeObject(new java.util.Date())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(new java.sql.Timestamp(System.currentTimeMillis()))).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(Instant.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(ZonedDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDate.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalTime.now())).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeObject(null)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(1)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(new BigDecimal("1234"))).isFalse();
+	}
+
+	@Test
+	public void test_isDateOrTimeClass()
+	{
+		assertThat(TimeUtil.isDateOrTimeClass(java.util.Date.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(java.sql.Timestamp.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(Instant.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(ZonedDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDate.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(XMLGregorianCalendar.class)).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
+	}
+
 }
