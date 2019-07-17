@@ -1,3 +1,5 @@
+import Moment from 'moment';
+import { DATE_FORMAT } from '../constants/Constants';
 import queryString from 'query-string';
 
 export const getQueryString = query =>
@@ -95,4 +97,28 @@ export function getItemsByProperty(arr, prop, value) {
     });
 
   return ret;
+}
+
+const cleanupParameter = ({ parameterName, value, valueTo }) => ({
+  parameterName,
+  value,
+  valueTo,
+});
+
+export function cleanupFilter({ filterId, parameters }) {
+  if (parameters && parameters.length) {
+    parameters.map((param, index) => {
+      if (param.widgetType === 'Date' && param.value) {
+        param.value = Moment(param.value).format(DATE_FORMAT);
+      }
+
+      param = cleanupParameter(param);
+      parameters[index] = param;
+    });
+  }
+
+  return {
+    filterId,
+    parameters,
+  };
 }
