@@ -210,7 +210,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Sales Invoice checks', function() {
-      salesInvoiceChecks(totalAmountToPay, false);
+      salesInvoiceChecks(DocumentStatusKey.Completed, totalAmountToPay, false);
     });
   });
 
@@ -276,7 +276,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
 
     it('Expect 3 Sales Invoice and open the third', function() {
       const whichSI = 2;
-      const expectedNoRows = 2;
+      const expectedNoRows = 3;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
     });
@@ -298,7 +298,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     cy.selectTab('C_InvoiceLine');
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_Product_ID', true).should('be.equal', productName);
+    cy.getStringFieldValue('M_Product_ID', true).should('contain', productName);
     cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity.toString(10));
     cy.pressDoneButton();
     cy.getSalesInvoiceTotalAmount().then(function(amount) {
