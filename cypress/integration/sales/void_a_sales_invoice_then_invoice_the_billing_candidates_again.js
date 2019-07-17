@@ -103,8 +103,8 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Billing Candidates checks after Sales Order created', function() {
-    const qtyDelivered = ''; // backend is flaky and keeps switching between '' and '0' and back to ''
-    const qtyInvoiced = ''; // backend is flaky and keeps switching between '' and '0' and back to ''
+    const qtyDelivered = '0'; // backend is flaky and keeps switching between '' and '0' and back to ''
+    const qtyInvoiced = '0'; // backend is flaky and keeps switching between '' and '0' and back to ''
 
     checkBillingCandidate(qtyDelivered, qtyInvoiced);
   });
