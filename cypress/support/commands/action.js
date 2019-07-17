@@ -18,7 +18,7 @@ function executeHeaderAction(actionName) {
     if (url.match(listViewRegexp)) {
       cy.get('.table-flex-wrapper').should('exist');
     } else {
-      cy.get('.panel').should('exist');
+      cy.get('.panel .row').should('exist');
     }
   });
 
