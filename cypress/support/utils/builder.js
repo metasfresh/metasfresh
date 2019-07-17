@@ -75,10 +75,11 @@ export class Builder {
     });
   }
 
-  static createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocation(
+  static createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocationAndPrices(
     productCategoryName,
     productCategoryValue,
-    priceListName,
+    priceListName1,
+    priceListName2,
     productName,
     productValue,
     productType,
@@ -92,9 +93,13 @@ export class Builder {
         .apply();
     });
 
-    let productPrice;
+    let productPrice1;
+    let productPrice2;
     cy.fixture('product/product_price.json').then(productPriceJson => {
-      productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
+      productPrice1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName1);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName2);
     });
 
     cy.fixture('product/simple_product.json').then(productJson => {
@@ -103,7 +108,8 @@ export class Builder {
         .setValue(productValue)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
-        .addProductPrice(productPrice)
+        .addProductPrice(productPrice1)
+        .addProductPrice(productPrice2)
         .setCUTUAllocation(packingInstructionsName)
         .setBusinessPartner(businessPartner)
         .apply();
@@ -156,6 +162,26 @@ export class Builder {
         .setProductType(productType)
         .setProductCategory('24_Gebinde')
         .addProductPrice(productPrice)
+        .apply();
+    });
+  }
+  static createBasicProductEntitiesWithMultiplePrices(priceListName1, priceListName2, productName, productValue, productType) {
+    let productPrice1;
+    let productPrice2;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName1);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName2);
+    });
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName)
+        .setValue(productValue)
+        .setProductType(productType)
+        .setProductCategory('24_Gebinde')
+        .addProductPrice(productPrice1)
+        .addProductPrice(productPrice2)
         .apply();
     });
   }

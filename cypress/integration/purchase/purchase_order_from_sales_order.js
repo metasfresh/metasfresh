@@ -1,7 +1,6 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
-import { DiscountSchema } from '../../support/utils/discountschema';
-import { ProductCategory } from '../../support/utils/product';
+import { ProductCategory, ProductPrice, Product } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
@@ -19,22 +18,29 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductCategoryValue ${timestamp}`;
   const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const purchasePriceSystem = `PurchasePriceSystem ${timestamp}`;
+  const purchasePriceList = `PurchasePriceList ${timestamp}`;
+  const purchasePriceListVersion = `PurchasePriceListVersion ${timestamp}`;
+  const salesPriceSystem = `SalesPriceSystem ${timestamp}`;
+  const salesPriceList = `SalesPriceList ${timestamp}`;
+  const salesPriceListVersion = `SalesPriceListVersion ${timestamp}`;
   const productType = 'Item';
   const vendorName = `Vendor ${timestamp}`;
   const customerName = `Customer ${timestamp}`;
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
-    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-      Object.assign(new DiscountSchema(), discountSchemaJson)
-        .setName(discountSchemaName)
-        .apply();
-    });
-    /**Create product for packing material */
-    Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
+    /**purchase price list */
+    Builder.createBasicPriceEntities(purchasePriceSystem, purchasePriceListVersion, purchasePriceList, false);
+    /**sales price list */
+    Builder.createBasicPriceEntities(salesPriceSystem, salesPriceListVersion, salesPriceList, true);
+    /**Create product for packing material which has both a purchase price list and a sales price list */
+    Builder.createBasicProductEntitiesWithMultiplePrices(
+      purchasePriceList,
+      salesPriceList,
+      productForPackingMaterial,
+      productPMValue,
+      productType
+    );
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -59,43 +65,60 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setValue(productCategoryValue)
         .apply();
     });
-    /**Create vendor to use in product - Business partner tab */
+    /**Create vendor to use in product - Business partner tab - current vendor */
     new BPartner({ name: vendorName })
       .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
+      .setVendorPricingSystem(purchasePriceSystem)
       .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
+      .setVendorPaymentTerm('30 days net')
       .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .apply();
-    /**Create product to use in sales order - order line */
-    Builder.createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocation(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName1,
-      productValue1,
-      productType,
-      packingInstructionsName,
-      vendorName
-    );
-    /**A customer is needed for sales order */
+    /**Create customer for sales order */
     new BPartner({ name: customerName })
       .setCustomer(true)
-      .setCustomerPricingSystem(priceSystemName)
+      .setCustomerPricingSystem(salesPriceSystem)
       .setCustomerDiscountSchema(discountSchemaName)
       .setPaymentTerm('30 days net')
       .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .apply();
-    cy.readAllNotifications();
+
+    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
+      Object.assign(new ProductCategory(), productCategoryJson)
+        .setName(productCategoryName)
+        .setValue(productCategoryValue)
+        .apply();
+    });
+
+    let productPrice1;
+    let productPrice2;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(purchasePriceList);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPrice2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(salesPriceList);
+    });
+
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productName1)
+        .setValue(productValue1)
+        .setProductType(productType)
+        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .addProductPrice(productPrice1)
+        .addProductPrice(productPrice2)
+        .setCUTUAllocation(packingInstructionsName)
+        .setBusinessPartner(vendorName)
+        .apply();
+    });
   });
   it('Create a sales order', function() {
     cy.visitWindow('143', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
-      .type(vendorName)
+      .type(customerName)
       .type('\n');
-    cy.contains('.input-dropdown-list-option', vendorName).click();
+    cy.contains('.input-dropdown-list-option', customerName).click();
 
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
+    cy.selectInListField('M_PricingSystem_ID', salesPriceSystem, false, null, true);
 
     const addNewText = Cypress.messages.window.batchEntry.caption;
     cy.get('.tabs-wrapper .form-flex-align .btn')
@@ -129,8 +152,43 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
-    cy.wait(8000);
+    cy.wait(10000);
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
+    cy.wait(8000);
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    /**Go to purchase order */
+    cy.get('.reference_AD_RelationType_ID-540164', { timeout: 10000 }).click();
+    cy.get('tbody tr')
+      .eq('0')
+      .dblclick();
+    /**check product name */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.Lookup')
+      .find('.lookup-cell')
+      .contains(productName1);
+    /**check price of product */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.CostPrice')
+      .find('.costprice-cell')
+      .eq(0)
+      .contains('1.23');
+    /**check if vendor in purchase order is the current vendor set in product  */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.list-cell')
+      .contains(vendorName);
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.quantity-cell')
+      .contains('1');
+    /**purchase order should be drafted */
+    cy.get('.tag.tag-primary').contains('Drafted');
   });
 });
