@@ -1,20 +1,8 @@
 export class DocumentStatusKey {
-  // todo possibly clear "_tag_docStatus[bla]"
   static Completed = 'docStatusCompleted';
-  // noinspection JSUnusedGlobalSymbols
-  // static _tag_docStatusCompleted = '.tag-success';
-
   static Reversed = 'docStatusReversed';
-  // noinspection JSUnusedGlobalSymbols
-  // static _tag_docStatusReversed = '.tag-default';
-
   static InProgress = 'docStatusInProgress';
-  // noinspection JSUnusedGlobalSymbols
-  // static _tag_docStatusInProgress = '.tag-default';
-
   static Drafted = 'docStatusDrafted';
-  // noinspection JSUnusedGlobalSymbols
-  // static _tag_docStatusDrafted = '.tag-primary';
 }
 
 export class DocumentActionKey {
