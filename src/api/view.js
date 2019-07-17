@@ -75,8 +75,15 @@ export function createViewRequest({
 
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map(filter => {
+
+    delete filter.defaultVal
+
     filter.parameters &&
       filter.parameters.map((param, index) => {
+        // @TODO: This is really ugly
+        delete param.defaultValue;
+        delete param.defaultValueTo;
+
         if (param.widgetType === 'Date' && param.value) {
           filter.parameters[index].value = Moment(param.value).format(
             DATE_FORMAT
