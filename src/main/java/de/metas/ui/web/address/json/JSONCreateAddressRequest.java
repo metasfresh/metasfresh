@@ -5,7 +5,11 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
+import lombok.Value;
 
 /*
  * #%L
@@ -20,34 +24,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public final class JSONCreateAddressRequest implements Serializable
 {
 	@JsonProperty("templateId")
 	private final int templateId;
 
+	//
+	// Source
+	@JsonProperty("source")
+	@JsonInclude(JsonInclude.Include.NON_ABSENT)
+	private final JSONDocumentPath source;
+
 	@JsonCreator
 	private JSONCreateAddressRequest(
-			@JsonProperty("templateId") final int templateId //
-	)
+			@JsonProperty("templateId") final int templateId,
+			@JsonProperty("source") final JSONDocumentPath source)
 	{
-		super();
 		this.templateId = templateId;
+		this.source = source;
 	}
-
-	public int getTemplateId()
-	{
-		return templateId;
-	}
-
 }
