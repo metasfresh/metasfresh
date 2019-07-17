@@ -2,9 +2,9 @@ function executeHeaderAction(actionName) {
   /**
    * Only specific windows can have actions. They match one of the following urls:
    *
-   * https://dev586.metasfresh.com/window/123?viewId=123-o&page=1
+   * https://dev586.metasfresh.com/window/123?viewId=123-o&page=1 - list view
    *    - in this case also '.table-flex-wrapper' should exist
-   * https://dev586.metasfresh.com/window/123/2156425
+   * https://dev586.metasfresh.com/window/123/2156425 - single view
    *    - in this case also '.panel' should exist
    *
    * This match is needed because cypress is so fast that it may press the action button before any viewId is available, and the system will error out.
@@ -12,10 +12,10 @@ function executeHeaderAction(actionName) {
   cy.url().should('matches', new RegExp(`window/[0-9]+(/[0-9]+|.*viewId=)`));
 
   cy.url().then(url => {
-    const listRegexp = new RegExp(`window/[0-9]+.*viewId=`);
-    // const gridRegexp = new RegExp(`window/[0-9]+/[0-9]+`);
+    const listViewRegexp = new RegExp(`window/[0-9]+.*viewId=`);
+    // const singleViewRegexp = new RegExp(`window/[0-9]+/[0-9]+`);
 
-    if (url.match(listRegexp)) {
+    if (url.match(listViewRegexp)) {
       cy.get('.table-flex-wrapper').should('exist');
     } else {
       cy.get('.panel').should('exist');
