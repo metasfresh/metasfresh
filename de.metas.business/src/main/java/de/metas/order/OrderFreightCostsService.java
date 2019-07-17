@@ -150,12 +150,11 @@ public class OrderFreightCostsService
 		}
 
 		final BigDecimal freightAmtConverted = currencyBL.convert(
-				Env.getCtx(),
 				freightAmt.getAsBigDecimal(),
-				freightAmt.getCurrencyId().getRepoId(),
-				orderCurrencyId.getRepoId(),
-				Env.getAD_Client_ID(),
-				Env.getOrgId().getRepoId());
+				freightAmt.getCurrencyId(),
+				orderCurrencyId,
+				Env.getClientId(),
+				Env.getOrgId());
 
 		if (freightAmtConverted == null)
 		{
