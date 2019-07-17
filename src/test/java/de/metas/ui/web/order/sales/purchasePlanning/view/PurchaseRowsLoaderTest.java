@@ -145,7 +145,7 @@ public class PurchaseRowsLoaderTest
 		saveRecord(bPartnerCustomer);
 
 		salesOrderRecord = newInstance(I_C_Order.class);
-		salesOrderRecord.setC_BPartner(bPartnerCustomer);
+		salesOrderRecord.setC_BPartner_ID(bPartnerCustomer.getC_BPartner_ID());
 		salesOrderRecord.setPreparationDate(SystemTime.asTimestamp());
 		salesOrderRecord.setC_PaymentTerm_ID(30);
 		saveRecord(salesOrderRecord);
