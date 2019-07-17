@@ -201,7 +201,13 @@ public final class DocumentFilter
 		return param.getValueAsBoolean(defaultValue);
 	}
 
-	public LocalDate getParameterValueAsLocalDate(@NonNull final String parameterName, final LocalDate defaultValue)
+	public LocalDate getParameterValueAsLocalDateOrNull(@NonNull final String parameterName)
+	{
+		final LocalDate defaultValue = null;
+		return getParameterValueAsLocalDateOr(parameterName, defaultValue);
+	}
+
+	public LocalDate getParameterValueAsLocalDateOr(@NonNull final String parameterName, final LocalDate defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
@@ -209,7 +215,7 @@ public final class DocumentFilter
 			return defaultValue;
 		}
 
-		return param.getValueAsLocalDate(defaultValue);
+		return param.getValueAsLocalDateOr(defaultValue);
 	}
 
 	public <T extends RepoIdAware> T getParameterValueAsRepoIdOrNull(@NonNull final String parameterName, @NonNull IntFunction<T> repoIdMapper)
@@ -221,17 +227,6 @@ public final class DocumentFilter
 		}
 
 		return param.getValueAsRepoIdOrNull(repoIdMapper);
-	}
-
-	public LocalDate getParameterValueAsLocalDate(@NonNull final String parameterName)
-	{
-		final DocumentFilterParam param = getParameterOrNull(parameterName);
-		if (param == null)
-		{
-			return null;
-		}
-
-		return param.getValueAsLocalDate();
 	}
 
 	public <T> T getParameterValueAs(@NonNull final String parameterName)

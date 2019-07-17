@@ -82,7 +82,7 @@ class DateFilterUtil
 	{
 		Check.assume(DateFilterVO.FILTER_ID.equals(filter.getFilterId()), "Filter ID is {} but it was {}", DateFilterVO.FILTER_ID, filter);
 		return DateFilterVO.builder()
-				.date(filter.getParameterValueAsLocalDate(DateFilterVO.PARAM_Date, null))
+				.date(filter.getParameterValueAsLocalDateOrNull(DateFilterVO.PARAM_Date))
 				.build();
 	}
 

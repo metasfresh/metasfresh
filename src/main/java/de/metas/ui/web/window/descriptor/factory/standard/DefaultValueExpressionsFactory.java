@@ -15,6 +15,7 @@ import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.Integ
 import org.adempiere.ad.expression.api.impl.SysDateDateExpression;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -253,7 +254,7 @@ public class DefaultValueExpressionsFactory
 			final String expressionStrNorm = stripDefaultValueQuotes(expressionStr);
 			expression = expressionFactory.compile(expressionStrNorm, IStringExpression.class);
 		}
-		else if (java.util.Date.class.equals(fieldValueClass))
+		else if (TimeUtil.isDateOrTimeClass(fieldValueClass))
 		{
 			expression = expressionFactory.compile(expressionStr, DateStringExpression.class);
 		}

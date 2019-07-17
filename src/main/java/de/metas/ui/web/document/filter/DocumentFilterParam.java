@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.filter;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -203,16 +204,24 @@ public class DocumentFilterParam
 		return DisplayType.toBoolean(value, defaultValue);
 	}
 
-	public LocalDate getValueAsLocalDate(final LocalDate defaultValue)
+	public LocalDate getValueAsLocalDateOr(final LocalDate defaultValue)
 	{
-		if (value == null)
-		{
-			return defaultValue;
-		}
-		else
-		{
-			return DateTimeConverters.fromObjectToLocalDate(value);
-		}
+		return value != null ? DateTimeConverters.fromObjectToLocalDate(value) : defaultValue;
+	}
+
+	public LocalDate getValueToAsLocalDateOr(final LocalDate defaultValue)
+	{
+		return valueTo != null ? DateTimeConverters.fromObjectToLocalDate(valueTo) : defaultValue;
+	}
+
+	public Instant getValueAsInstant()
+	{
+		return value != null ? DateTimeConverters.fromObjectToInstant(value) : null;
+	}
+
+	public Instant getValueToAsInstant()
+	{
+		return valueTo != null ? DateTimeConverters.fromObjectToInstant(valueTo) : null;
 	}
 
 	public Collection<?> getValueAsCollection()

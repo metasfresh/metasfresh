@@ -20,6 +20,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Value;
 
 /*
  * #%L
@@ -44,7 +45,7 @@ import de.metas.util.GuavaCollectors;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@lombok.Data
+@Value
 public final class JSONDocumentFilter
 {
 	public static ImmutableList<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
