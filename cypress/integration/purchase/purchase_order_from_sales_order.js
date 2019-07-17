@@ -19,22 +19,23 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductCategoryValue ${timestamp}`;
   const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const purchasePriceSystem = `PurchasePriceSystem ${timestamp}`;
+  const purchasePriceList = `PurchasePriceList ${timestamp}`;
+  const purchasePriceListVersion = `PurchasePriceListVersion ${timestamp}`;
+  const salesPriceSystem = `SalesPriceSystem ${timestamp}`;
+  const salesPriceList = `SalesPriceList ${timestamp}`;
+  const salesPriceListVersion = `SalesPriceListVersion ${timestamp}`;
   const productType = 'Item';
   const vendorName = `Vendor ${timestamp}`;
   const customerName = `Customer ${timestamp}`;
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
-    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-      Object.assign(new DiscountSchema(), discountSchemaJson)
-        .setName(discountSchemaName)
-        .apply();
-    });
-    /**Create product for packing material */
-    Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
+    /**purchase price list */
+    Builder.createBasicPriceEntities(purchasePriceSystem, purchasePriceListVersion, purchasePriceList, false);
+    /**sales price list */
+    Builder.createBasicPriceEntities(salesPriceSystem, salesPriceListVersion, salesPriceList, true);
+    /**Create product for packing material which has both a purchase price list and a sales price list */
+    Builder.createBasicProductEntitiesWithMultiplePrices(purchasePriceList, salesPriceList, productForPackingMaterial, productPMValue, productType);
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -59,43 +60,44 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setValue(productCategoryValue)
         .apply();
     });
-    /**Create vendor to use in product - Business partner tab */
+    /**Create vendor to use in product - Business partner tab - current vendor */
     new BPartner({ name: vendorName })
       .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
+      .setVendorPricingSystem(purchasePriceSystem)
       .setVendorDiscountSchema(discountSchemaName)
+      .setVendorPaymentTerm('30 days net')
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+      .apply();
+    /**Create customer for sales order */
+    new BPartner({ name: customerName })
+      .setCustomer(true)
+      .setCustomerPricingSystem(salesPriceSystem)
+      .setCustomerDiscountSchema(discountSchemaName)
       .setPaymentTerm('30 days net')
       .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
       .apply();
-    /**Create product to use in sales order - order line */
-    Builder.createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocation(
+
+    /**Create product to use in sales order - order line with both purchase price list and sales price list*/
+    Builder.createBasicProductEntitiesWithBusinessPartnerAndCUTUAllocationAndPrices(
       productCategoryName,
       productCategoryValue,
-      priceListName,
+      purchasePriceList,
+      salesPriceList,
       productName1,
       productValue1,
       productType,
       packingInstructionsName,
       vendorName
     );
-    /**A customer is needed for sales order */
-    new BPartner({ name: customerName })
-      .setCustomer(true)
-      .setCustomerPricingSystem(priceSystemName)
-      .setCustomerDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
-    cy.readAllNotifications();
   });
   it('Create a sales order', function() {
     cy.visitWindow('143', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
-      .type(vendorName)
+      .type(customerName)
       .type('\n');
-    cy.contains('.input-dropdown-list-option', vendorName).click();
+    cy.contains('.input-dropdown-list-option', customerName).click();
 
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
+    cy.selectInListField('M_PricingSystem_ID', salesPriceSystem, false, null, true);
 
     const addNewText = Cypress.messages.window.batchEntry.caption;
     cy.get('.tabs-wrapper .form-flex-align .btn')
@@ -132,5 +134,16 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.wait(8000);
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
+    cy.wait(8000);
+    cy.get('.btn-header.side-panel-toggle').click({ force: true });
+    cy.get('.order-list-nav .order-list-btn')
+      .eq('1')
+      .find('i')
+      .click({ force: true });
+    /**Billing - Invoice disposition */
+    cy.get('.reference_AD_RelationType_ID-540164', { timeout: 10000 }).click();
+    cy.get('tbody tr')
+      .eq('0')
+      .dblclick();
   });
 });
