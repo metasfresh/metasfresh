@@ -29,14 +29,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_BPartner;
@@ -58,6 +55,9 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -82,7 +82,7 @@ public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
 
-	public static final ProcessInfoBuilder builder()
+	public static ProcessInfoBuilder builder()
 	{
 		return new ProcessInfoBuilder();
 	}
@@ -292,7 +292,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return new instance or null
 	 */
-	public final JavaProcess newProcessClassInstanceOrNull()
+	public JavaProcess newProcessClassInstanceOrNull()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
@@ -440,7 +440,7 @@ public final class ProcessInfo implements Serializable
 	 * @param trxName
 	 * @return record or {@link Optional#absent()} if record does not exist or it does not match given <code>modelClass</code>
 	 */
-	public final <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
+	public <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
 		final String tableName = getTableNameOrNull();
@@ -499,7 +499,7 @@ public final class ProcessInfo implements Serializable
 		return AdWindowId.toRepoId(getAdWindowId());
 	}
 
-	private static final ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
+	private static ImmutableList<ProcessInfoParameter> mergeParameters(final List<ProcessInfoParameter> parameters, final List<ProcessInfoParameter> parametersOverride)
 	{
 		if (parametersOverride == null || parametersOverride.isEmpty())
 		{
@@ -525,7 +525,7 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return parameters; never returns null
 	 */
-	public final List<ProcessInfoParameter> getParameter()
+	public List<ProcessInfoParameter> getParameter()
 	{
 		if (parameters == null)
 		{
@@ -535,7 +535,7 @@ public final class ProcessInfo implements Serializable
 		return parameters;
 	}	// getParameter
 
-	public final List<ProcessInfoParameter> getParametersNoLoad()
+	public List<ProcessInfoParameter> getParametersNoLoad()
 	{
 		return mergeParameters(parameters, parametersOverride);
 	}
@@ -543,7 +543,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Get Process Parameters as IParams instance.
 	 */
-	public final IRangeAwareParams getParameterAsIParams()
+	public IRangeAwareParams getParameterAsIParams()
 	{
 		return new ProcessParams(getParameter());
 	}
@@ -799,10 +799,10 @@ public final class ProcessInfo implements Serializable
 			Env.setOrgId(processCtx, adOrgId);
 			if (!adOrgId.isAny())
 			{
-				final I_AD_OrgInfo schedOrg = Services.get(IOrgDAO.class).retrieveOrgInfo(processCtx, adOrgId.getRepoId(), ITrx.TRXNAME_None);
-				if (schedOrg.getM_Warehouse_ID() > 0)
+				final OrgInfo schedOrg = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+				if (schedOrg.getWarehouseId() != null)
 				{
-					Env.setContext(processCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getM_Warehouse_ID());
+					Env.setContext(processCtx, Env.CTXNAME_M_Warehouse_ID, schedOrg.getWarehouseId().getRepoId());
 				}
 			}
 
@@ -1693,7 +1693,7 @@ public final class ProcessInfo implements Serializable
 			return Env.getLanguage(ctx);
 		}
 
-		private static final Language extractLanguageFromWindowContext(final Properties ctx, final int windowNo)
+		private static Language extractLanguageFromWindowContext(final Properties ctx, final int windowNo)
 		{
 			if (!Env.isRegularWindowNo(windowNo))
 			{
@@ -1728,7 +1728,7 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		private static final Language extractLanguageFromRecordRef(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		private static Language extractLanguageFromRecordRef(final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
 			Check.assumeNotNull(ctx, "Parameter ctx is not null");
 
@@ -1779,7 +1779,7 @@ public final class ProcessInfo implements Serializable
 		 * @return the login language if conditions fulfilled, null otherwise.
 		 * @task http://dewiki908/mediawiki/index.php/09614_Support_de_DE_Language_in_Reports_%28101717274915%29
 		 */
-		private static final Language extractLanguageFromDraftInOut(final Properties ctx, @Nullable final TableRecordReference recordRef)
+		private static Language extractLanguageFromDraftInOut(final Properties ctx, @Nullable final TableRecordReference recordRef)
 		{
 			Check.assumeNotNull(ctx, "Parameter ctx is not null");
 

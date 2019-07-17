@@ -9,10 +9,10 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BP_Group;
 import org.springframework.stereotype.Repository;
 
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

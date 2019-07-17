@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import de.metas.process.JavaProcess.ProcessCanceledException;
 import de.metas.process.impl.ADPInstanceDAO;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 /**
@@ -168,6 +169,7 @@ public class JavaProcessTests
 			{
 				final I_AD_PInstance pinstance = retrieveAD_PInstance();
 				final int resultExpected = result.isError() ? ADPInstanceDAO.RESULT_ERROR : ADPInstanceDAO.RESULT_OK;
+				Assert.assertEquals("Invalid AD_PInstance.AD_User_ID", loggedUserId.getRepoId(), pinstance.getAD_User_ID());
 				Assert.assertEquals("Invalid AD_PInstance.Result", resultExpected, pinstance.getResult());
 				Assert.assertEquals("Invalid AD_PInstance.ErrorMsg/Summary", result.getSummary(), pinstance.getErrorMsg());
 				Assert.assertEquals("Invalid AD_PInstance.Processing", false, pinstance.isProcessing());
@@ -212,6 +214,7 @@ public class JavaProcessTests
 		}
 	}
 
+	private static UserId loggedUserId = UserId.ofRepoId(1234567);
 	private PlainTrxManager trxManager;
 
 	@Before
@@ -225,6 +228,8 @@ public class JavaProcessTests
 		trxManager = (PlainTrxManager)Services.get(ITrxManager.class);
 		trxManager.setFailCommitIfTrxNotStarted(false);
 		trxManager.setFailRollbackIfTrxNotStarted(false);
+
+		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
 	}
 
 	@After

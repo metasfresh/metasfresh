@@ -17,7 +17,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.MAccount;
 import org.compiere.model.ModelValidator;
@@ -25,6 +24,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.organization.OrgId;
 
 /*
  * #%L

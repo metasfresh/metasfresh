@@ -1,10 +1,10 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

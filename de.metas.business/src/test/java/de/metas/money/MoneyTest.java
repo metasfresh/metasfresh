@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 
 /*
@@ -104,11 +105,26 @@ public class MoneyTest
 
 	private void testJsonSerialization(final Money money) throws Exception
 	{
-		final ObjectMapper objectMapper = new ObjectMapper();
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		final String json = objectMapper.writeValueAsString(money);
 		System.out.println("Serialized " + money + " to " + json);
 
 		final Money moneyDeserialized = objectMapper.readValue(json, money.getClass());
 		assertThat(moneyDeserialized).isEqualTo(money);
+	}
+
+	@Test
+	public void test_isLessThanOrEqualTo()
+	{
+		final Money money_1EUR = Money.of(1, EUR);
+		final Money money_2EUR = Money.of(2, EUR);
+		final Money money_2CHF = Money.of(2, CHF);
+
+		assertThat(money_1EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
+		assertThat(money_2EUR.isLessThanOrEqualTo(money_2EUR)).isTrue();
+
+		assertThat(money_2EUR.isLessThanOrEqualTo(money_1EUR)).isFalse();
+
+		assertThatThrownBy(() -> money_1EUR.isLessThanOrEqualTo(money_2CHF)).isNotNull();
 	}
 }

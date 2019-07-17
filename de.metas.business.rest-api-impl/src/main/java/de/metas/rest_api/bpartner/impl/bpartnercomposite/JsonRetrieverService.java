@@ -14,7 +14,6 @@ import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.ad.table.RecordChangeLogRepository;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -40,6 +39,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;

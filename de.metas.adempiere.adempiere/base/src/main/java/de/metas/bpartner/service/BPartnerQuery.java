@@ -6,11 +6,10 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;

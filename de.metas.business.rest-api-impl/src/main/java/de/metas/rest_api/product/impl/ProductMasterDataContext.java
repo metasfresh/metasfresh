@@ -1,7 +1,6 @@
 package de.metas.rest_api.product.impl;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

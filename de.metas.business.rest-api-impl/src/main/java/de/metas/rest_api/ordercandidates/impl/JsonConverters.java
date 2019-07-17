@@ -3,7 +3,6 @@ package de.metas.rest_api.ordercandidates.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +16,7 @@ import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOLCand;

@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Greeting;
@@ -49,6 +48,7 @@ import de.metas.location.CountrySequences;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;

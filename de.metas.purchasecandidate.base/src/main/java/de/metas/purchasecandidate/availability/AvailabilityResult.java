@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.availability;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -81,7 +81,7 @@ public class AvailabilityResult
 
 	Quantity qty;
 
-	LocalDateTime datePromised;
+	ZonedDateTime datePromised;
 
 	String availabilityText;
 
@@ -92,7 +92,7 @@ public class AvailabilityResult
 			@Nullable TrackingId trackingId,
 			@NonNull final Type type,
 			@NonNull final Quantity qty,
-			@Nullable final LocalDateTime datePromised,
+			@Nullable final ZonedDateTime datePromised,
 			@Nullable final String availabilityText,
 			@Nullable final VendorGatewayService vendorGatewayServicethatWasUsed)
 	{

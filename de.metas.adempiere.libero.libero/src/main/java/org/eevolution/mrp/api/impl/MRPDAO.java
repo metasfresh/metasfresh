@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
@@ -61,6 +60,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IResourceDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -382,7 +382,7 @@ public class MRPDAO implements IMRPDAO
 			I_AD_Org adOrg = null;
 			if (adOrgId != null && adOrgId > 0)
 			{
-				adOrg = orgDAO.retrieveOrg(ctx, adOrgId);
+				adOrg = orgDAO.getById(adOrgId);
 			}
 
 			final Integer warehouseId = (Integer)mrpSegmentValues.get(I_PP_MRP.COLUMNNAME_M_Warehouse_ID);

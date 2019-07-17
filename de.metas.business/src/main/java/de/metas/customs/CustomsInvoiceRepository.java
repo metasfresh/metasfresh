@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Customs_Invoice_Line;
 import org.compiere.model.I_M_InOut;
@@ -32,6 +31,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;

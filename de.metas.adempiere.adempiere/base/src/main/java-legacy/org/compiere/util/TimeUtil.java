@@ -1102,7 +1102,7 @@ public class TimeUtil
 		}
 	}
 
-	public static final LocalDateTime min(final LocalDateTime date1, final LocalDateTime date2)
+	public static final ZonedDateTime min(final ZonedDateTime date1, final ZonedDateTime date2)
 	{
 		if (date1 == date2)
 		{
@@ -1121,6 +1121,7 @@ public class TimeUtil
 			return date1.compareTo(date2) <= 0 ? date1 : date2;
 		}
 	}
+
 
 	/** Truncate Second - S */
 	public static final String TRUNC_SECOND = "S";
@@ -1308,21 +1309,24 @@ public class TimeUtil
 		}
 	}
 
-	public static boolean isDateOrTimeObject(final Object value)
+	public static boolean isDateOrTimeObject(@Nullable final Object value)
 	{
-		if (value == null)
-		{
-			return false;
-		}
-
-		return value instanceof Date
-				|| value instanceof Instant
-				|| value instanceof LocalDateTime
-				|| value instanceof LocalDate
-				|| value instanceof LocalTime
-				|| value instanceof ZonedDateTime
-				|| value instanceof XMLGregorianCalendar;
+		return value != null
+				? isDateOrTimeClass(value.getClass())
+				: false;
 	}
+	
+	public static boolean isDateOrTimeClass(@NonNull final Class<?> clazz)
+	{
+		return java.util.Date.class.isAssignableFrom(clazz)
+				|| Instant.class.isAssignableFrom(clazz)
+				|| ZonedDateTime.class.isAssignableFrom(clazz)
+				|| LocalDateTime.class.isAssignableFrom(clazz)
+				|| LocalDate.class.isAssignableFrom(clazz)
+				|| LocalTime.class.isAssignableFrom(clazz)
+				|| XMLGregorianCalendar.class.isAssignableFrom(clazz);
+	}
+
 
 	/** @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method. */
 	@Deprecated
@@ -1771,6 +1775,16 @@ public class TimeUtil
 		{
 			return ((ZonedDateTime)obj).toInstant();
 		}
+		else if (obj instanceof Integer)
+		{
+			final int millis = ((Integer)obj).intValue();
+			return Instant.ofEpochMilli(millis);
+		}
+		else if (obj instanceof Long)
+		{
+			final long millis = ((Long)obj).longValue();
+			return Instant.ofEpochMilli(millis);
+		}
 		else
 		{
 			throw new IllegalArgumentException("Cannot convert " + obj + " (" + obj.getClass() + ") to " + Instant.class);
@@ -1803,5 +1817,17 @@ public class TimeUtil
 	{
 		final LocalDate lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth());
 		return localDate.equals(lastDayOfMonth);
+	}
+
+	public static ZonedDateTime convertToTimeZone(@NonNull final ZonedDateTime date, @NonNull final ZoneId zoneId)
+	{
+		if (date.getZone().equals(zoneId))
+		{
+			return date;
+		}
+		else
+		{
+			return date.toInstant().atZone(zoneId);
+		}
 	}
 }	// TimeUtil

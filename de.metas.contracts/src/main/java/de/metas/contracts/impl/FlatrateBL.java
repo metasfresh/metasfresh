@@ -45,7 +45,6 @@ import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -100,6 +99,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -1105,9 +1105,6 @@ public class FlatrateBL implements IFlatrateBL
 
 	/**
 	 * Update <code>masterenddate</code> only for contract of which we know the entire period
-	 *
-	 * @param contracts
-	 * @param initialContract
 	 */
 	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
 	{

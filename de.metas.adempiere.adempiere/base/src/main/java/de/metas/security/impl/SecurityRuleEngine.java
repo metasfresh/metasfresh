@@ -25,8 +25,7 @@ package de.metas.security.impl;
 
 import java.util.Set;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import de.metas.security.ISecurityRule;
 import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;

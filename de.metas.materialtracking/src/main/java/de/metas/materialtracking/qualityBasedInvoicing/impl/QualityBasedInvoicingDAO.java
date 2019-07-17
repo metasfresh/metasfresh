@@ -25,6 +25,7 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.model.I_PP_Order;
 
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -34,6 +35,7 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityBasedInvoicingDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 {
@@ -58,7 +60,7 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsFor(@NonNull final I_PP_Order model)
 	{
 		final IMaterialTrackingDocuments materialTrackingDocuments = retrieveMaterialTrackingDocumentsOrNullFor(model);
 		if (materialTrackingDocuments == null)
@@ -70,13 +72,11 @@ public class QualityBasedInvoicingDAO implements IQualityBasedInvoicingDAO
 	}
 
 	@Override
-	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(final Object model)
+	public IMaterialTrackingDocuments retrieveMaterialTrackingDocumentsOrNullFor(@NonNull final I_PP_Order model)
 	{
-		Check.assumeNotNull(model, "model not null");
-
 		// Retrieve Material Tracking via material_tracklin
 		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
-		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveMaterialTrackingForModel(model);
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.retrieveSingleMaterialTrackingForModel(model);
 
 		if (materialTracking == null)
 		{

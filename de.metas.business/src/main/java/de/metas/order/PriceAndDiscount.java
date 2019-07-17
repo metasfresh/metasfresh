@@ -196,7 +196,7 @@ public class PriceAndDiscount
 		return updatePriceActual();
 	}
 
-	private static Percent calculateDiscountFromPrices(
+	public static Percent calculateDiscountFromPrices(
 			final BigDecimal priceEntered,
 			final BigDecimal priceActual,
 			final CurrencyPrecision precision)
@@ -231,15 +231,30 @@ public class PriceAndDiscount
 		orderLine.setDiscount(discount.getValue());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
+		orderLine.setPriceLimitNote(buildPriceLimitNote());
+	}
 
-		final String adLanguage = Language.getBaseAD_Language();
+	private String buildPriceLimitNote()
+	{
+		final ITranslatableString msg;
 		if (priceLimitEnforced)
 		{
-			orderLine.setPriceLimitNote(priceLimitEnforcedExplanation.translate(adLanguage));
+			msg = TranslatableStrings.builder()
+					.appendADMessage("Enforced")
+					.append(": ")
+					.append(priceLimitEnforcedExplanation)
+					.build();
 		}
 		else
 		{
-			orderLine.setPriceLimitNote(priceLimitNotEnforcedExplanation.translate(adLanguage));
+			msg = TranslatableStrings.builder()
+					.appendADMessage("NotEnforced")
+					.append(": ")
+					.append(priceLimitNotEnforcedExplanation)
+					.build();
 		}
+
+		final String adLanguage = Language.getBaseAD_Language();
+		return msg.translate(adLanguage);
 	}
 }

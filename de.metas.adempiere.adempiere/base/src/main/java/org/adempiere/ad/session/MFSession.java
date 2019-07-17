@@ -10,7 +10,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.PO;
@@ -26,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.hostkey.api.IHostKeyBL;
 import de.metas.hostkey.spi.impl.SessionRemoteHostStorage;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;

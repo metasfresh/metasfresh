@@ -40,7 +40,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,14 +62,13 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 
 		return queryBuilder
 				.create()
-				.setRequiredAccess(Access.READ) // only the records on which current role has access to
 				.list(I_C_ILCandHandler.class);
 	}
 
 	@Override
 	public List<I_C_ILCandHandler> retrieveForTable(final Properties ctx, final String tableName)
 	{
-		final List<I_C_ILCandHandler> result = new ArrayList<I_C_ILCandHandler>();
+		final List<I_C_ILCandHandler> result = new ArrayList<>();
 		for (final I_C_ILCandHandler handlerDef : retrieveAll(ctx))
 		{
 			if (tableName.equals(handlerDef.getTableName()))
@@ -118,7 +116,7 @@ public class InvoiceCandidateHandlerDAO implements IInvoiceCandidateHandlerDAO
 	{
 		final String classname = clazz.getName();
 
-		final List<I_C_ILCandHandler> result = new ArrayList<I_C_ILCandHandler>();
+		final List<I_C_ILCandHandler> result = new ArrayList<>();
 		for (final I_C_ILCandHandler handlerDef : retrieveAll(ctx))
 		{
 			if (classname.equals(handlerDef.getClassname()))

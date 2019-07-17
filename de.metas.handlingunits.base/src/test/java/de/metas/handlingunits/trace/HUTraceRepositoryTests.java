@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.Before;
@@ -23,6 +22,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 
 /*

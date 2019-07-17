@@ -2,15 +2,11 @@ package de.metas.rest_api.ordercandidates.impl;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
@@ -24,8 +20,10 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
@@ -34,6 +32,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.ordercandidates.JsonBPartnerInfo;
 import de.metas.rest_api.ordercandidates.JsonOrganization;
 import de.metas.rest_api.utils.PermissionService;
+import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 
@@ -97,6 +96,9 @@ public class MasterdataProviderTest
 
 		AdempiereTestHelper.get().init();
 
+		UserId loggedUserId = UserId.ofRepoId(1234567);
+		Env.setLoggedUserId(Env.getCtx(), loggedUserId);
+
 		countryRecord = newInstance(I_C_Country.class);
 		countryRecord.setCountryCode("DE");
 		saveRecord(countryRecord);
@@ -133,18 +135,20 @@ public class MasterdataProviderTest
 	@Test
 	public void getCreateOrgId_createIfNotExists()
 	{
+		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+		
 		final OrgId orgId = masterdataProvider.getCreateOrgId(jsonOrganization);
 
 		// verify AD_Org
-		final I_AD_Org orgRecord = load(orgId, I_AD_Org.class);
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 		assertThat(orgRecord.getValue()).isEqualTo("jsonOrganization.code");
 		assertThat(orgRecord.getName()).isEqualTo("jsonOrganization.name");
 
 		// verify AD_OrgInfo
-		final I_AD_OrgInfo orgInfoRecord = create(Services.get(IOrgDAO.class).retrieveOrgInfo(orgId.getRepoId()), I_AD_OrgInfo.class);
-		assertThat(orgInfoRecord.getOrgBP_Location_ID()).isGreaterThan(0);
+		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
+		assertThat(orgInfo.getOrgBPartnerLocationId()).isNotNull();
 
-		final I_C_BPartner_Location orgBPLocation = orgInfoRecord.getOrgBP_Location();
+		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgInfo.getOrgBPartnerLocationId());
 		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId().getValue());
 		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
 

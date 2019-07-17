@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,6 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -59,7 +59,7 @@ public class DataEntryRecord
 	@Getter(AccessLevel.NONE)
 	final Map<DataEntryFieldId, DataEntryRecordField<?>> fields;
 	final boolean readOnly;
-	
+
 	/** May be empty if not yet persisted */
 	@Setter(AccessLevel.NONE)
 	@NonFinal
@@ -144,7 +144,7 @@ public class DataEntryRecord
 			throw new AdempiereException("Changing readonly instance is not allowed: " + this);
 		}
 	}
-	
+
 	void setId(@NonNull final DataEntryRecordId id)
 	{
 		this.id = Optional.of(id);
@@ -163,7 +163,7 @@ public class DataEntryRecord
 		final DataEntryRecordField<?> previousFieldVersion = fields.get(dataEntryFieldId);
 
 		final Object previousValue = previousFieldVersion == null ? null : previousFieldVersion.getValue();
-		final boolean valueChanged = !Objects.equal(previousValue, value);
+		final boolean valueChanged = !Objects.equals(previousValue, value);
 
 		if (!valueChanged)
 		{
@@ -181,8 +181,9 @@ public class DataEntryRecord
 			createdUpdatedInfo = previousFieldVersion.getCreatedUpdatedInfo().updated(updatedBy, updated);
 		}
 
-		final DataEntryRecordField<?> //
-		dataEntryRecordField = DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value);
+		final DataEntryRecordField<?> dataEntryRecordField = value != null
+				? DataEntryRecordField.createDataEntryRecordField(dataEntryFieldId, createdUpdatedInfo, value)
+				: DataEntryRecordFieldString.of(dataEntryFieldId, createdUpdatedInfo, null);
 
 		fields.put(dataEntryFieldId, dataEntryRecordField);
 		return true;

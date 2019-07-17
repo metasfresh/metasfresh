@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -83,22 +84,22 @@ public class HUReportService
 	 *
 	 * @return AD_Process_ID or <code>-1</code>
 	 */
-	public int retrievePrintReceiptLabelProcessId()
+	public AdProcessId retrievePrintReceiptLabelProcessIdOrNull()
 	{
-		return retrieveProcessIDBySysConfig(SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+		return retrieveProcessIdBySysConfig(SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
 	}
 
-	public int retrievePickingLabelProcessID()
+	private AdProcessId retrievePickingLabelProcessIdOrNull()
 	{
-		return retrieveProcessIDBySysConfig(SYSCONFIG_PICKING_LABEL_PROCESS_ID);
+		return retrieveProcessIdBySysConfig(SYSCONFIG_PICKING_LABEL_PROCESS_ID);
 	}
 
-	private int retrieveProcessIDBySysConfig(final String sysConfigName)
+	private AdProcessId retrieveProcessIdBySysConfig(final String sysConfigName)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final Properties ctx = Env.getCtx();
 		final int reportProcessId = sysConfigBL.getIntValue(sysConfigName, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		return reportProcessId > 0 ? reportProcessId : -1;
+		return AdProcessId.ofRepoIdOrNull(reportProcessId);
 	}
 
 	/**
@@ -107,7 +108,7 @@ public class HUReportService
 	 */
 	public List<HUToReport> getHUsToProcess(
 			@NonNull final HUToReport huToReport,
-			final int adProcessId)
+			@NonNull final AdProcessId adProcessId)
 	{
 		final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
 		final HUProcessDescriptor huProcessDescriptor = huProcessDAO.getByProcessIdOrNull(adProcessId);
@@ -312,9 +313,8 @@ public class HUReportService
 			return;
 		}
 
-		final int adProcessId = retrievePickingLabelProcessID();
-
-		if (adProcessId <= 0)
+		final AdProcessId adProcessId = retrievePickingLabelProcessIdOrNull();
+		if (adProcessId == null)
 		{
 			loggable.addLog("No process configured via SysConfig {}; nothing to do", SYSCONFIG_PICKING_LABEL_PROCESS_ID);
 			return;

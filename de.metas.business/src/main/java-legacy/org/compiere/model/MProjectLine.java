@@ -19,8 +19,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -109,13 +107,16 @@ public class MProjectLine extends X_C_ProjectLine
 		setM_Product_ID(pi.getM_Product_ID());
 		setCommittedQty(pi.getMovementQty());
 		if (getDescription() != null)
+		{
 			setDescription(pi.getDescription());
+		}
 	}	//	setMProjectIssue
 
 	/**
 	 *	Set PO
 	 *	@param C_OrderPO_ID po id
 	 */
+	@Override
 	public void setC_OrderPO_ID (int C_OrderPO_ID)
 	{
 		super.setC_OrderPO_ID(C_OrderPO_ID);
@@ -131,7 +132,9 @@ public class MProjectLine extends X_C_ProjectLine
 		{
 			m_parent = new MProject (getCtx(), getC_Project_ID(), get_TrxName());
 			if (get_TrxName() != null)
+			{
 				m_parent.load(get_TrxName());
+			}
 		}
 		return m_parent;
 	}	//	getProject
@@ -144,15 +147,21 @@ public class MProjectLine extends X_C_ProjectLine
 	{
 		BigDecimal limitPrice = getPlannedPrice();
 		if (getM_Product_ID() == 0)
+		{
 			return limitPrice;
+		}
 		if (getProject() == null)
+		{
 			return limitPrice;
+		}
 		boolean isSOTrx = true;
 		MProductPricing pp = new MProductPricing (getM_Product_ID(), m_parent.getC_BPartner_ID(),
 			getPlannedQty(), isSOTrx);
 		pp.setM_PriceList_ID(m_parent.getM_PriceList_ID());
-		if (pp.calculatePrice())
+		if (pp.recalculatePrice())
+		{
 			limitPrice = pp.getPriceLimit();
+		}
 		return limitPrice;
 	}	//	getLimitPrice
 	
@@ -160,6 +169,7 @@ public class MProjectLine extends X_C_ProjectLine
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MProjectLine[");
@@ -180,10 +190,13 @@ public class MProjectLine extends X_C_ProjectLine
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getLine() == 0)
+		{
 			setLine();
+		}
 		
 		//	Planned Amount
 		setPlannedAmt(getPlannedQty().multiply(getPlannedPrice()));
@@ -215,7 +228,9 @@ public class MProjectLine extends X_C_ProjectLine
 				return false;
 			}
 			else
+			{
 				setC_ProjectPhase_ID(pt.getC_ProjectPhase_ID());
+			}
 		}
 		if (is_ValueChanged("C_ProjectPhase_ID") && getC_ProjectPhase_ID() != 0)
 		{
@@ -226,7 +241,9 @@ public class MProjectLine extends X_C_ProjectLine
 				return false;
 			}
 			else
+			{
 				setC_Project_ID(pp.getC_Project_ID());
+			}
 		}
 		
 		return true;
@@ -239,6 +256,7 @@ public class MProjectLine extends X_C_ProjectLine
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		updateHeader();
@@ -251,6 +269,7 @@ public class MProjectLine extends X_C_ProjectLine
 	 *	@param success success
 	 *	@return success
 	 */
+	@Override
 	protected boolean afterDelete (boolean success)
 	{
 		updateHeader();
@@ -274,7 +293,9 @@ public class MProjectLine extends X_C_ProjectLine
 			+ "WHERE C_Project_ID=" + getC_Project_ID());
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
+		{
 			log.error("updateHeader - #" + no);
+		}
 	}	//	updateHeader
 	
 }	//	MProjectLine

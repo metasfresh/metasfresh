@@ -2,9 +2,10 @@ package de.metas.costing;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.junit.Assert;
 import org.junit.Test;
+
+import de.metas.organization.OrgId;
 
 /*
  * #%L

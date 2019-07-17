@@ -104,6 +104,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
+	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */

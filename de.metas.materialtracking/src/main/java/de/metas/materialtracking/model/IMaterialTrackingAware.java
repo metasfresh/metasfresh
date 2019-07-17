@@ -32,11 +32,11 @@ package de.metas.materialtracking.model;
 public interface IMaterialTrackingAware
 {
 	// @formatter:off
-	public static final String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
+	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 
-	public void setM_Material_Tracking_ID(int M_HU_PackingMaterial_ID);
-	public int getM_Material_Tracking_ID();
-	public void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking) throws RuntimeException;
-	public I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException;
+	void setM_Material_Tracking_ID(int M_HU_PackingMaterial_ID);
+	int getM_Material_Tracking_ID();
+	void setM_Material_Tracking(I_M_Material_Tracking M_Material_Tracking) throws RuntimeException;
+	I_M_Material_Tracking getM_Material_Tracking() throws RuntimeException;
 	// @formatter:on
 }

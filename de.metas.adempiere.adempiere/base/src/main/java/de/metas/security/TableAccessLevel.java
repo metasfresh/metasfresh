@@ -25,9 +25,10 @@ package de.metas.security;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableMap;
+
+import de.metas.organization.OrgId;
 
 /**
  * Table Access Level

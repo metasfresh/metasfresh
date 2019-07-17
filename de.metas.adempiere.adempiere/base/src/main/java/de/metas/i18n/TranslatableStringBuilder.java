@@ -1,8 +1,10 @@
 package de.metas.i18n;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -11,6 +13,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -189,9 +192,14 @@ public final class TranslatableStringBuilder
 		return append(TranslatableStrings.dateAndTime(value));
 	}
 
-	public TranslatableStringBuilder appendDateTime(final LocalDateTime value)
+	public TranslatableStringBuilder appendDateTime(final Instant value)
 	{
 		return append(DateTimeTranslatableString.ofDateTime(value));
+	}
+
+	public TranslatableStringBuilder appendTimeZone(@NonNull final ZoneId zoneId, @NonNull final TextStyle textStyle)
+	{
+		return append(TimeZoneTranslatableString.ofZoneId(zoneId, textStyle));
 	}
 
 	public TranslatableStringBuilder append(final Boolean value)
