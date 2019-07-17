@@ -18,9 +18,27 @@ export function initLayout(
   `);
 }
 
-export function getAttributesInstance(attrType, tmpId) {
+export function getAttributesInstance(
+  attrType,
+  tmpId,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  fieldName,
+  entity
+) {
+  const type = entity === 'process' ? 'processId' : 'windowId';
+
   return post(`${config.API_URL}/${attrType}`, {
     templateId: tmpId,
+    source: {
+      [type]: docType,
+      documentId: docId,
+      tabid: tabId,
+      rowId: rowId,
+      fieldName: fieldName,
+    },
   });
 }
 
