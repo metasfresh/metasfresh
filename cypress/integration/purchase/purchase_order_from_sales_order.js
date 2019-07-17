@@ -34,13 +34,24 @@ describe('Create Purchase order - material receipt - invoice', function() {
     /**sales price list */
     Builder.createBasicPriceEntities(salesPriceSystem, salesPriceListVersion, salesPriceList, true);
     /**Create product for packing material which has both a purchase price list and a sales price list */
-    Builder.createBasicProductEntitiesWithMultiplePrices(
-      purchasePriceList,
-      salesPriceList,
-      productForPackingMaterial,
-      productPMValue,
-      productType
-    );
+    let productPricePM1;
+    let productPricePM2;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPricePM1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(purchasePriceList);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPricePM2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(salesPriceList);
+    });
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productForPackingMaterial)
+        .setValue(productPMValue)
+        .setProductType(productType)
+        .setProductCategory('24_Gebinde')
+        .addProductPrice(productPricePM1)
+        .addProductPrice(productPricePM2)
+        .apply();
+    });
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
