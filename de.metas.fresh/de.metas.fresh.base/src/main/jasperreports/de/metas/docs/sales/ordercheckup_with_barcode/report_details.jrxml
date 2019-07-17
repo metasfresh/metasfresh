@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/ordercheckup_with_barcode/report" uuid="d5d4a0ae-119b-42a8-a43e-e993c41ca49a">
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
@@ -21,11 +21,8 @@
 	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="c_order_id" class="java.lang.Integer">
-		<defaultValueExpression><![CDATA[$P{RECORD_ID}]]></defaultValueExpression>
-	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details( $P{RECORD_ID}, $P{c_order_id});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details( $P{RECORD_ID});]]>
 	</queryString>
 	<field name="line" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
@@ -344,9 +341,6 @@ $F{barcode} +
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="c_order_id">
-					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup_with_barcode/report_container_details.jasper"]]></subreportExpression>

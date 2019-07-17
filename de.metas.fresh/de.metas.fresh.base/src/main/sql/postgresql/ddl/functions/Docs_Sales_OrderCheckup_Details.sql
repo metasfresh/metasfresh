@@ -1,6 +1,6 @@
--- DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_C_Order_MFGWarehouse_Report_ID numeric, IN p_C_Order_Id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_C_Order_MFGWarehouse_Report_ID numeric, IN p_C_Order_Id numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric)
 RETURNS TABLE 
 	(
 	line numeric,
@@ -92,75 +92,9 @@ WHERE
 	AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
 	AND o.IsSOTrx != 'N'
 	AND o.DocStatus = 'CO'
-	AND report.C_Order_MFGWarehouse_Report_ID =  p_C_Order_MFGWarehouse_Report_ID
+	AND report.C_Order_MFGWarehouse_Report_ID =  $1
 	
-UNION
-
-SELECT
-	ol.line,
-	att.Attributes,
-	p.value AS prodValue,
-	COALESCE(bpp.ProductNo, p.value) AS Value,
-	COALESCE(bpp.ProductName, p.Name) AS Name,
-	COALESCE(bpp.UPC, p.UPC) AS EAN,
-	-- Rounding these columns is important to have them in one group
-	-- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
-	round(ol.pricelist, 3) AS pricelist,
-	round(ip.qty, 3) AS capacity,
-	round(ol.Priceactual, 3) AS PriceActual,
-	ol.qtyenteredtu,
-	ol.qtyentered,
-	pm.name as container,
-	uom.UOMSymbol AS UOMSymbol,
-	
-	--
-	-- Filtering columns
-	null as C_Order_MFGWarehouse_Report_ID,
-	null as ReportDocumentType,
-	null as C_Order_MFGWarehouse_ReportLine_ID,
-	o.C_Order_ID,
-	ol.C_OrderLine_ID,
-	ol.M_Warehouse_ID,
-	null as PP_Plant_ID,
-	o.C_BPartner_ID,
-	o.DatePromised,
-	'1-260-' || ol.C_OrderLine_ID as barcode
-FROM
-	C_Order o
-	LEFT OUTER JOIN C_OrderLine ol ON o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
-	LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID AND pmi.isActive = 'Y'
-		AND pmi.ItemType= 'PM'
-	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
-	-- Product and its translation
-	LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-
-	LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.isActive = 'Y' 
-		AND p.M_Product_ID = bpp.M_Product_ID
-	LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
-	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-	-- ADR Attribute
-	LEFT OUTER JOIN	(
-		SELECT 	String_agg ( ai_value, ', ' ) AS Attributes, M_AttributeSetInstance_ID
-		FROM 	Report.fresh_Attributes
-		WHERE	at_Value IN ( '1000015', '1000001' ) -- Marke (ADR), task 08891: also Herkunft
-		GROUP BY	M_AttributeSetInstance_ID
-	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
-		AND ol.M_AttributeSetInstance_ID != 0
-WHERE
-	1=1 AND o.isActive = 'Y' 
-	AND ol.C_Order_ID = p_C_Order_ID
-
-	AND COALESCE(pc.M_Product_Category_ID, -1) !=
-		getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
-	AND o.IsSOTrx != 'N'
-	AND o.DocStatus = 'CO'
-ORDER BY
-	line,
-
+ORDER BY ol.line
 
 $$
 LANGUAGE sql STABLE;

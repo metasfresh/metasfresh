@@ -18,79 +18,30 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
-	<parameter name="c_order_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details( $P{RECORD_ID}, $P{c_order_id});]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details( $P{RECORD_ID});]]>
 	</queryString>
-	<field name="line" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="line"/>
-	</field>
-	<field name="attributes" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
-	</field>
-	<field name="prodvalue" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="prodvalue"/>
-	</field>
-	<field name="value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="value"/>
-	</field>
-	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="name"/>
-	</field>
-	<field name="ean" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ean"/>
-	</field>
-	<field name="pricelist" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="pricelist"/>
-	</field>
-	<field name="capacity" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="capacity"/>
-	</field>
-	<field name="priceactual" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
-	</field>
-	<field name="qtyenteredtu" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtyenteredtu"/>
-	</field>
-	<field name="qtyentered" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="qtyentered"/>
-	</field>
-	<field name="container" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="container"/>
-	</field>
-	<field name="uomsymbol" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
-	</field>
-	<field name="c_order_mfgwarehouse_report_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_order_mfgwarehouse_report_id"/>
-	</field>
-	<field name="reportdocumenttype" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="reportdocumenttype"/>
-	</field>
-	<field name="c_order_mfgwarehouse_reportline_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_order_mfgwarehouse_reportline_id"/>
-	</field>
-	<field name="c_order_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_order_id"/>
-	</field>
-	<field name="c_orderline_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_orderline_id"/>
-	</field>
-	<field name="m_warehouse_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="m_warehouse_id"/>
-	</field>
-	<field name="pp_plant_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="pp_plant_id"/>
-	</field>
-	<field name="c_bpartner_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_id"/>
-	</field>
-	<field name="datepromised" class="java.sql.Timestamp">
-		<property name="com.jaspersoft.studio.field.label" value="datepromised"/>
-	</field>
-	<field name="barcode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="barcode"/>
-	</field>
+	<field name="line" class="java.math.BigDecimal"/>
+	<field name="attributes" class="java.lang.String"/>
+	<field name="value" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="ean" class="java.lang.String"/>
+	<field name="pricelist" class="java.math.BigDecimal"/>
+	<field name="capacity" class="java.math.BigDecimal"/>
+	<field name="priceactual" class="java.math.BigDecimal"/>
+	<field name="qtyenteredtu" class="java.math.BigDecimal"/>
+	<field name="qtyentered" class="java.math.BigDecimal"/>
+	<field name="container" class="java.lang.String"/>
+	<field name="uomsymbol" class="java.lang.String"/>
+	<field name="c_order_mfgwarehouse_report_id" class="java.math.BigDecimal"/>
+	<field name="reportdocumenttype" class="java.lang.String"/>
+	<field name="c_order_mfgwarehouse_reportline_id" class="java.math.BigDecimal"/>
+	<field name="c_order_id" class="java.math.BigDecimal"/>
+	<field name="c_orderline_id" class="java.math.BigDecimal"/>
+	<field name="m_warehouse_id" class="java.math.BigDecimal"/>
+	<field name="pp_plant_id" class="java.math.BigDecimal"/>
+	<field name="c_bpartner_id" class="java.math.BigDecimal"/>
+	<field name="datepromised" class="java.sql.Timestamp"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
