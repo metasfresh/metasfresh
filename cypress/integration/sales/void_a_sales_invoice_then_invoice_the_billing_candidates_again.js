@@ -103,8 +103,8 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Billing Candidates checks after Sales Order created', function() {
-    const qtyDelivered = '0'; // from '' to '0'
-    const qtyInvoiced = '0'; // from '' to '0'
+    const qtyDelivered = ''; // backend is flaky and keeps switching between '' and '0' and back to ''
+    const qtyInvoiced = ''; // backend is flaky and keeps switching between '' and '0' and back to ''
 
     checkBillingCandidate(qtyDelivered, qtyInvoiced);
   });
@@ -210,7 +210,15 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Sales Invoice checks', function() {
-      salesInvoiceChecks(DocumentStatusKey.Completed, totalAmountToPay, false);
+      salesInvoiceChecks(
+        DocumentStatusKey.Completed,
+        salesInvoiceDocumentType,
+        businessPartnerName,
+        false,
+        productName,
+        originalQuantity,
+        totalAmountToPay
+      );
     });
   });
 
@@ -225,22 +233,39 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Expect Sales Invoice is Paid after Void', function() {
-      cy.getCheckboxValue('IsPaid').should('equals', true);
+      const isPaid = true;
+      cy.getCheckboxValue('IsPaid').should('equals', isPaid);
     });
 
     it('Check First Sales Invoice after Void', function() {
-      const whichSI = 0;
+      const whichSI = 0; // 0 indexed
       const expectedNoRows = 2;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
-      salesInvoiceChecks(DocumentStatusKey.Reversed, totalAmountToPay, true);
+      salesInvoiceChecks(
+        DocumentStatusKey.Reversed,
+        salesInvoiceDocumentType,
+        businessPartnerName,
+        true,
+        productName,
+        originalQuantity,
+        totalAmountToPay
+      );
     });
     it('Check Second Sales Invoice after Void', function() {
-      const whichSI = 1;
+      const whichSI = 1; // 0 indexed
       const expectedNoRows = 2;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
-      salesInvoiceChecks(DocumentStatusKey.Reversed, totalAmountToPay * -1, true);
+      salesInvoiceChecks(
+        DocumentStatusKey.Reversed,
+        salesInvoiceDocumentType,
+        businessPartnerName,
+        true,
+        productName,
+        -1 * originalQuantity,
+        -1 * totalAmountToPay
+      );
     });
   });
 
@@ -275,37 +300,28 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     });
 
     it('Expect 3 Sales Invoice and open the third', function() {
-      const whichSI = 2;
+      const whichSI = 2; // 0 indexed
       const expectedNoRows = 3;
 
       visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows);
     });
 
     it('Check the new Sales Invoice', function() {
-      salesInvoiceChecks(DocumentStatusKey.Completed, totalAmountToPay, true);
+      salesInvoiceChecks(
+        DocumentStatusKey.Completed,
+        salesInvoiceDocumentType,
+        businessPartnerName,
+        false,
+        productName,
+        originalQuantity,
+        totalAmountToPay
+      );
     });
   });
 
   ////////////////////////////////
   ////////////////////////////////
   ////////////////////////////////
-  function salesInvoiceChecks(documentStatusKey, totalAmountToPay, isPaid) {
-    cy.expectDocumentStatus(documentStatusKey);
-    cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', salesInvoiceDocumentType);
-    cy.getStringFieldValue('C_BPartner_ID').should('contains', businessPartnerName);
-    cy.getCheckboxValue('IsPaid').should('equals', isPaid);
-
-    cy.selectTab('C_InvoiceLine');
-    cy.selectSingleTabRow();
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_Product_ID', true).should('contain', productName);
-    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity.toString(10));
-    cy.pressDoneButton();
-    cy.getSalesInvoiceTotalAmount().then(function(amount) {
-      expect(amount).equals(totalAmountToPay);
-    });
-  }
-
   function visitSpecificReferencedSalesInvoice(whichSI, expectedNoRows) {
     salesOrders.visit(salesOrderRecordId);
     cy.openReferencedDocuments('AD_RelationType_ID-540160');
@@ -336,3 +352,21 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
 //     .first()
 //     .click();
 // }
+
+// eslint-disable-next-line prettier/prettier
+function salesInvoiceChecks(documentStatusKey, salesInvoiceDocumentType, businessPartnerName, isPaid, productName, qtyEntered, totalAmountToPay) {
+  cy.expectDocumentStatus(documentStatusKey);
+  cy.getStringFieldValue('C_DocTypeTarget_ID').should('be.equal', salesInvoiceDocumentType);
+  cy.getStringFieldValue('C_BPartner_ID').should('contains', businessPartnerName);
+  cy.getCheckboxValue('IsPaid').should('equals', isPaid);
+
+  cy.selectTab('C_InvoiceLine');
+  cy.selectSingleTabRow();
+  cy.openAdvancedEdit();
+  cy.getStringFieldValue('M_Product_ID', true).should('contain', productName);
+  cy.getStringFieldValue('QtyEntered', true).should('be.equal', qtyEntered.toString(10));
+  cy.pressDoneButton();
+  cy.getSalesInvoiceTotalAmount().then(function(amount) {
+    expect(amount).equals(totalAmountToPay);
+  });
+}
