@@ -35,7 +35,13 @@ describe('Create Purchase order - material receipt - invoice', function() {
     /**sales price list */
     Builder.createBasicPriceEntities(salesPriceSystem, salesPriceListVersion, salesPriceList, true);
     /**Create product for packing material which has both a purchase price list and a sales price list */
-    Builder.createBasicProductEntitiesWithMultiplePrices(purchasePriceList, salesPriceList, productForPackingMaterial, productPMValue, productType);
+    Builder.createBasicProductEntitiesWithMultiplePrices(
+      purchasePriceList,
+      salesPriceList,
+      productForPackingMaterial,
+      productPMValue,
+      productType
+    );
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -131,7 +137,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
-    cy.wait(8000);
+    cy.wait(10000);
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
     cy.wait(8000);
@@ -140,10 +146,34 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .eq('1')
       .find('i')
       .click({ force: true });
-    /**Billing - Invoice disposition */
+    /**Go to purchase order */
     cy.get('.reference_AD_RelationType_ID-540164', { timeout: 10000 }).click();
     cy.get('tbody tr')
       .eq('0')
       .dblclick();
+    /**check product name */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.Lookup')
+      .find('.lookup-cell')
+      .contains(productName1);
+    /**check price of product */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.CostPrice')
+      .find('.costprice-cell')
+      .eq(0)
+      .contains('1.23');
+    /**check if vendor in purchase order is the current vendor set in product  */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.list-cell')
+      .contains(vendorName);
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.quantity-cell')
+      .contains('1');
+    /**purchase order should be drafted */
+    cy.get('.tag.tag-primary').contains('Drafted');
   });
 });
