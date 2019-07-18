@@ -7,7 +7,7 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { salesOrders } from '../../page_objects/sales_orders';
 import { Builder } from '../../support/utils/builder';
 
-describe('Create Purchase order - material receipt - invoice', function() {
+describe('Create Purchase order from sales order', function() {
   const timestamp = new Date().getTime();
   const productForPackingMaterial = `ProductPackingMaterial ${timestamp}`;
   const productPMValue = `purchase_order_testPM ${timestamp}`;
@@ -77,21 +77,25 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
     /**Create vendor to use in product - Business partner tab - current vendor */
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(purchasePriceSystem)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setVendorPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendor(true)
+        .setVendorPricingSystem(purchasePriceSystem)
+        .setVendorDiscountSchema(discountSchemaName)
+        .setVendorPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
     /**Create customer for sales order */
-    new BPartner({ name: customerName })
-      .setCustomer(true)
-      .setCustomerPricingSystem(salesPriceSystem)
-      .setCustomerDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      new BPartner({ ...customerJson, name: customerName })
+        .setCustomer(true)
+        .setCustomerPricingSystem(salesPriceSystem)
+        .setCustomerDiscountSchema(discountSchemaName)
+        .setPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
 
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
