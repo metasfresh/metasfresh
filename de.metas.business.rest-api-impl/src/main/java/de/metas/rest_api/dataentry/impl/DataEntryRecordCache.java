@@ -130,25 +130,11 @@ final class DataEntryRecordCache
 		return subTabIds;
 	}
 
-	// private static CacheKey extractCacheKey(final DataEntryRecord record)
-	// {
-	// final int mainRecordId = record.getMainRecord().getRecord_ID();
-	// return CacheKey.of(mainRecordId, record.getDataEntrySubTabId());
-	// }
-
-	//
-	//
-	//
-
 	@VisibleForTesting
 	int getDataEntryRecordIdIndexSize()
 	{
 		return cacheIndex.size();
 	}
-
-	//
-	//
-	//
 
 	@Value(staticConstructor = "of")
 	private static final class CacheKey
@@ -181,75 +167,4 @@ final class DataEntryRecordCache
 		}
 
 	}
-
-	// @ToString
-	// @VisibleForTesting
-	// static final class DataEntryRecordIdIndexOld
-	// {
-	// private static final Logger logger = LogManager.getLogger(DataEntryRecordIdIndex.class);
-	//
-	// private final HashMultimap<DataEntryRecordId, CacheKey> map = HashMultimap.create();
-	//
-	// private synchronized Collection<CacheKey> getCacheKeys(final DataEntryRecordId entryRecordId)
-	// {
-	// final Set<CacheKey> cacheKeys = map.get(entryRecordId);
-	// logger.trace("Returning {} for {}", cacheKeys, entryRecordId);
-	// return cacheKeys;
-	// }
-	//
-	// private synchronized void add(final Multimap<? extends DataEntryRecordId, ? extends CacheKey> multimap)
-	// {
-	// logger.trace("Adding to index: {}", multimap);
-	// map.putAll(multimap);
-	// }
-	//
-	// private synchronized void remove(final DataEntryRecordId entryRecordId, final CacheKey key)
-	// {
-	// logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
-	// map.remove(entryRecordId, key);
-	// }
-	//
-	// private synchronized int size()
-	// {
-	// return map.size();
-	// }
-	//
-	// //
-	// // ------------
-	// //
-	//
-	// public Collection<CacheKey> getCacheKeysByTableRecordReference(final TableRecordReference recordRef)
-	// {
-	// if (!I_DataEntry_Record.Table_Name.equals(recordRef.getTableName()))
-	// {
-	// logger.warn("Invalid {}. Returning no cache keys", recordRef);
-	// return ImmutableSet.of();
-	// }
-	// final DataEntryRecordId entryRecordId = DataEntryRecordId.ofRepoId(recordRef.getRecord_ID());
-	//
-	// return getCacheKeys(entryRecordId);
-	// }
-	//
-	// public void add(final Collection<DataEntryRecord> records)
-	// {
-	// if (records.isEmpty())
-	// {
-	// return;
-	// }
-	//
-	// final Multimap<? extends DataEntryRecordId, ? extends CacheKey> //
-	// multimap = records.stream()
-	// .collect(ImmutableSetMultimap.toImmutableSetMultimap(
-	// record -> record.getId().get(),
-	// record -> extractCacheKey(record)));
-	//
-	// add(multimap);
-	// }
-	//
-	// public void remove(final CacheKey key, final DataEntryRecord record)
-	// {
-	// final DataEntryRecordId entryRecordId = record.getId().get();
-	// remove(entryRecordId, key);
-	// }
-	// }
 }
