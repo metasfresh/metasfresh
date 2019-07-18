@@ -15,7 +15,10 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
@@ -80,6 +83,24 @@ public class AssignmentToRefundCandidateRepositoryTest
 		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
+
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		save(partner);
+
+		final I_C_Country country_DE =newInstance(I_C_Country.class);
+		country_DE.setAD_Language("de");
+		save(country_DE);
+
+		final I_C_Location loc = newInstance(I_C_Location.class);
+		loc.setC_Country_ID(country_DE.getC_Country_ID());
+		save(loc);
+
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_Location_ID(loc.getC_Location_ID());
+		bpLoc.setC_BPartner_ID(partner.getC_BPartner_ID());
+
+		save(bpLoc);
+
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
@@ -88,7 +109,8 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		assignableIcRecord.setBill_BPartner_ID(partner.getC_BPartner_ID());
+		assignableIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
 		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);

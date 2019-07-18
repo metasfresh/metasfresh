@@ -980,15 +980,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsSOTrx(ic.isSOTrx());
 		splitCand.setC_ILCandHandler(ic.getC_ILCandHandler());
 
+		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
+		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
+		splitCand.setBill_User_ID(ic.getBill_User_ID());
+
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
 		aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
 		splitCand.setDescription(ic.getDescription());
-
-		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
-		splitCand.setBill_User_ID(ic.getBill_User_ID());
 
 		splitCand.setInvoiceRule(ic.getInvoiceRule());
 		splitCand.setInvoiceRule_Override(ic.getInvoiceRule_Override());

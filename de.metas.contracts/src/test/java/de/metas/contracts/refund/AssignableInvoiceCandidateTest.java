@@ -10,7 +10,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate.SplitResult;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -54,8 +54,11 @@ public class AssignableInvoiceCandidateTest
 	@Test
 	public void splitQuantity()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate candidate = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(20))
+				//.bpartnerId(BPartnerId.ofRepoId(20))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.invoiceableFrom(LocalDate.now())
 				.money(Money.of(TEN, refundTestTools.getCurrency().getId()))
 				.precision(2)

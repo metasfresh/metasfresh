@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidateFactory;
@@ -209,8 +210,11 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 	@Test
 	public void updateAssignment()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				//.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_26)

@@ -5,6 +5,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +30,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
@@ -106,6 +108,10 @@ public class RefundInvoiceCandidateServiceTest
 				.frequency(Frequency.DAILY)
 				.build());
 
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setC_BPartner_ID(20);
+		save(partner);
+
 	}
 
 	private List<I_C_Flatrate_RefundConfig> createAndVerifyBaseRefundconfigs(@NonNull final ConditionsId conditionsId)
@@ -159,6 +165,7 @@ public class RefundInvoiceCandidateServiceTest
 
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
 		contractRecord.setBill_BPartner_ID(RefundTestTools.BPARTNER_ID.getRepoId());
+		contractRecord.setBill_Location_ID(RefundTestTools.BPARTNERLOCATION_ID.getRepoId());
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));
