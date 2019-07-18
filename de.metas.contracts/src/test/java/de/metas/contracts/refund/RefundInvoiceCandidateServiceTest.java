@@ -30,10 +30,15 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.api.IAggregationDAO;
+import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 
@@ -108,10 +113,28 @@ public class RefundInvoiceCandidateServiceTest
 				.frequency(Frequency.DAILY)
 				.build());
 
+		config_InvoiceCand_LineAggregation();
+
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setC_BPartner_ID(20);
 		save(partner);
 
+	}
+
+	protected void config_InvoiceCand_LineAggregation()
+	{
+		final I_C_Invoice_Candidate_Agg defaultLineAgg = newInstance(I_C_Invoice_Candidate_Agg.class);
+		defaultLineAgg.setAD_Org_ID(0);
+		defaultLineAgg.setSeqNo(0);
+		defaultLineAgg.setName("Default");
+		defaultLineAgg.setClassname(DefaultAggregator.class.getName());
+		defaultLineAgg.setIsActive(true);
+		defaultLineAgg.setC_BPartner(null);
+		defaultLineAgg.setM_ProductGroup(null);
+		save(defaultLineAgg);
+
+		final PlainAggregationDAO aggregationDAO = (PlainAggregationDAO)Services.get(IAggregationDAO.class);
+		aggregationDAO.setDefaultAgg(defaultLineAgg);
 	}
 
 	private List<I_C_Flatrate_RefundConfig> createAndVerifyBaseRefundconfigs(@NonNull final ConditionsId conditionsId)
@@ -164,8 +187,8 @@ public class RefundInvoiceCandidateServiceTest
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(FIFTEEN); // guard
 
 		final I_C_Flatrate_Term contractRecord = newInstance(I_C_Flatrate_Term.class);
-		contractRecord.setBill_BPartner_ID(RefundTestTools.BPARTNER_ID.getRepoId());
-		contractRecord.setBill_Location_ID(RefundTestTools.BPARTNERLOCATION_ID.getRepoId());
+		contractRecord.setBill_BPartner_ID(assignableRecord.getBill_BPartner_ID());
+		contractRecord.setBill_Location_ID(assignableRecord.getBill_Location_ID());
 		contractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		contractRecord.setC_Flatrate_Conditions_ID(conditionsId.getRepoId());
 		contractRecord.setStartDate(TimeUtil.asTimestamp(NOW));

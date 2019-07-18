@@ -250,6 +250,7 @@ public class RefundInvoiceCandidateRepository
 		}
 
 		record.setBill_BPartner_ID(refundCandidate.getBpartnerId().getRepoId());
+		record.setBill_Location_ID(refundCandidate.getBpartnerLocationId().getRepoId());
 		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());

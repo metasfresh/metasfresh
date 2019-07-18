@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -258,6 +259,7 @@ public class RefundInvoiceCandidateFactory
 	public Optional<RefundInvoiceCandidate> ofNullableRefundRecord(@Nullable final I_C_Invoice_Candidate refundRecord)
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 		if (refundRecord == null)
@@ -310,6 +312,7 @@ public class RefundInvoiceCandidateFactory
 				.refundConfigs(refundConfigs)
 				.assignedQuantity(Quantity.of(assignedQuantity, productUom))
 				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(refundRecord.getBill_BPartner_ID(), refundRecord.getBill_Location_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.build();

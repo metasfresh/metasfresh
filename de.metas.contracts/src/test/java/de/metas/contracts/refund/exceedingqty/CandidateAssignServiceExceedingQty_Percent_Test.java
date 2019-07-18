@@ -178,6 +178,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 		final RefundInvoiceCandidate refundCandidate_14 = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_15)
@@ -213,7 +214,7 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
-				//.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))

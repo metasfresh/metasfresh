@@ -235,6 +235,7 @@ public class CandidateAssignServiceAllQties_Amount_Test
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423,  2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_0)

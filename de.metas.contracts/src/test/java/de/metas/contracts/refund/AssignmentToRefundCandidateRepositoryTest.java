@@ -83,11 +83,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
-
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
-		save(partner);
-
-		final I_C_Country country_DE =newInstance(I_C_Country.class);
+		final I_C_Country country_DE = newInstance(I_C_Country.class);
 		country_DE.setAD_Language("de");
 		save(country_DE);
 
@@ -97,7 +93,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
 		bpLoc.setC_Location_ID(loc.getC_Location_ID());
-		bpLoc.setC_BPartner_ID(partner.getC_BPartner_ID());
+		bpLoc.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 
 		save(bpLoc);
 
@@ -109,7 +105,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner_ID(partner.getC_BPartner_ID());
+		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		assignableIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
 		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
@@ -149,6 +145,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
 		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		refundContractIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
 		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
