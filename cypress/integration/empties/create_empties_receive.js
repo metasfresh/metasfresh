@@ -72,10 +72,10 @@ describe('Create Empties Receive', function() {
     it('Execute action "Empties Receive"', function() {
       cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsFromCustomer');
       cy.selectInListField('C_DocType_ID', documentType);
-      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName, false, false, null, true);
+      cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
       cy.selectTab('M_InOutLine');
       cy.pressBatchEntryButton();
-      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName, false, false, null, true);
+      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
       cy.writeIntoStringField('Qty', productQuantity, false, null, true).type('{enter}');
 
       cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
