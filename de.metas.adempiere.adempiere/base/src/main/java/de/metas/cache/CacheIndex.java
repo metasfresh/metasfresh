@@ -7,8 +7,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 
 import de.metas.logging.LogManager;
 import lombok.Getter;
@@ -68,7 +71,7 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 {
 	private static final Logger logger = LogManager.getLogger(CacheIndex.class);
 
-	private final HashMultimap<RK, CK> map = HashMultimap.create();
+	private final SetMultimap<RK, CK> map = Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
 	@Getter
 	private final CacheIndexDataAdapter<RK, CK, V> adapter;
@@ -76,25 +79,6 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 	public CacheIndex(@NonNull final CacheIndexDataAdapter<RK, CK, V> adapter)
 	{
 		this.adapter = adapter;
-	}
-
-	private synchronized Collection<CK> getCKs(final RK entryRecordId)
-	{
-		final Set<CK> CKs = map.get(entryRecordId);
-		logger.trace("Returning {} for {}", CKs, entryRecordId);
-		return CKs;
-	}
-
-	private synchronized void add(final Multimap<? extends RK, ? extends CK> multimap)
-	{
-		logger.trace("Adding to index: {}", multimap);
-		map.putAll(multimap);
-	}
-
-	private synchronized void removeRecordKey(final RK entryRecordId, final CK key)
-	{
-		logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
-		map.remove(entryRecordId, key);
 	}
 
 	public synchronized int size()
@@ -111,6 +95,14 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 	{
 		final RK recordId = adapter.extractRK(recordRef);
 		return getCKs(recordId);
+	}
+
+	private synchronized Collection<CK> getCKs(final RK entryRecordId)
+	{
+		final Set<CK> CKs = map.get(entryRecordId);
+		logger.trace("Returning {} for {}", CKs, entryRecordId);
+
+		return ImmutableList.copyOf(CKs); // return a copy to avoid ConcurrentModificationException
 	}
 
 	/** @return the caching keys for the given record. */
@@ -140,9 +132,21 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 		add(multimap.build());
 	}
 
+	private synchronized void add(final Multimap<? extends RK, ? extends CK> multimap)
+	{
+		logger.trace("Adding to index: {}", multimap);
+		map.putAll(multimap);
+	}
+
 	public void remove(final CK key, final V record)
 	{
 		final RK recordKey = adapter.extractRK(record);
 		removeRecordKey(recordKey, key);
+	}
+
+	private synchronized void removeRecordKey(final RK entryRecordId, final CK key)
+	{
+		logger.trace("Removing pair from index: {}, {}", entryRecordId, key);
+		map.remove(entryRecordId, key);
 	}
 }

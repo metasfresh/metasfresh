@@ -52,6 +52,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.cache.CachingKeysMapper;
@@ -872,8 +873,6 @@ public class BPartnerCompositeRepository
 		locationRecord.setAddress3(bpartnerLocation.getAddress3());
 		locationRecord.setAddress4(bpartnerLocation.getAddress4());
 
-		locationRecord.setCity(bpartnerLocation.getCity());
-
 		if (isEmpty(bpartnerLocation.getCountryCode(), true))
 		{
 			locationRecord.setC_Country(null);
@@ -885,13 +884,13 @@ public class BPartnerCompositeRepository
 			locationRecord.setC_Country_ID(CountryId.toRepoId(countryId));
 		}
 
+		boolean postalDataSetFromPostalRecord = false;
 		if (!isEmpty(bpartnerLocation.getPostal(), true))
 		{
 			final IQueryBuilder<I_C_Postal> postalQueryBuilder = Services.get(IQueryBL.class)
 					.createQueryBuilder(I_C_Postal.class)
 					.addOnlyActiveRecordsFilter()
 					.addOnlyContextClient()
-					.addEqualsFilter(I_C_Postal.COLUMN_C_Country_ID, locationRecord.getC_Country_ID())
 					.filter(PostalQueryFilter.of(bpartnerLocation.getPostal().trim()));
 			if (!isEmpty(bpartnerLocation.getDistrict(), true))
 			{
@@ -904,9 +903,42 @@ public class BPartnerCompositeRepository
 
 			postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
 
-			final I_C_Postal postalRecord = postalQueryBuilder.create().first();
-			locationRecord.setC_Postal(postalRecord);
-			locationRecord.setPostal(bpartnerLocation.getPostal().trim());
+			final List<I_C_Postal> postalRecords = postalQueryBuilder
+					.create()
+					.list();
+
+			final I_C_Postal postalRecord;
+			if (postalRecords.isEmpty())
+			{
+				postalRecord = null;
+			}
+			else if (postalRecords.size() == 1)
+			{
+				postalRecord = postalRecords.get(0);
+			}
+			else if (locationRecord.getC_Country_ID() > 0)
+			{
+				postalRecord = postalRecords
+						.stream()
+						.filter(r -> (r.getC_Country_ID() == locationRecord.getC_Country_ID()))
+						.findFirst()
+						.orElse(null);
+			}
+			else
+			{
+				postalRecord = null;
+			}
+
+			if (postalRecord != null)
+			{
+				locationRecord.setC_Country_ID(postalRecord.getC_Country_ID());
+				locationRecord.setC_Postal_ID(postalRecord.getC_Postal_ID());
+				locationRecord.setPostal(postalRecord.getPostal());
+				locationRecord.setCity(postalRecord.getCity());
+				locationRecord.setRegionName(postalRecord.getRegionName());
+
+				postalDataSetFromPostalRecord = true;
+			}
 		}
 
 		bpartnerLocationRecord.setExternalId(ExternalId.toValue(bpartnerLocation.getExternalId()));
@@ -914,12 +946,19 @@ public class BPartnerCompositeRepository
 		// bpartnerLocation.getId() // id is only for lookup and won't be updated later
 
 		locationRecord.setPOBox(bpartnerLocation.getPoBox());
-		locationRecord.setPostal(bpartnerLocation.getPostal());
-		locationRecord.setRegionName(bpartnerLocation.getRegion());
+		if (!postalDataSetFromPostalRecord)
+		{
+			locationRecord.setPostal(bpartnerLocation.getPostal());
+			locationRecord.setCity(bpartnerLocation.getCity());
+			locationRecord.setRegionName(bpartnerLocation.getRegion());
+		}
 
 		saveRecord(locationRecord);
 
 		bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
+
+		Services.get(IBPartnerBL.class).setAddress(bpartnerLocationRecord);
+
 		saveRecord(bpartnerLocationRecord);
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
