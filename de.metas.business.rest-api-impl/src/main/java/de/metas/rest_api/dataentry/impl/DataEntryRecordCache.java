@@ -55,7 +55,7 @@ final class DataEntryRecordCache
 {
 	private final DataEntryRecordRepository recordsRepo;
 
-	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> dataEntryRecordIdIndex = new CacheIndex<>(new DataEntryRecordIdIndex());
+	private final CacheIndex<DataEntryRecordId/* RK */, CacheKey/* CK */, DataEntryRecord/* V */> cacheIndex = new CacheIndex<>(new DataEntryRecordIdIndex());
 
 	private final CCache<CacheKey, DataEntryRecord> cache;
 
@@ -66,8 +66,9 @@ final class DataEntryRecordCache
 				.tableName(I_DataEntry_Record.Table_Name)
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(cacheCapacity)
-				.invalidationKeysMapper(dataEntryRecordIdIndex::computeCachingKeys)
-				.removalListener(dataEntryRecordIdIndex::remove)
+				.invalidationKeysMapper(cacheIndex::computeCachingKeys)
+				.removalListener(cacheIndex::remove)
+				.additionListener(cacheIndex::add)
 				.build();
 	}
 
@@ -105,9 +106,7 @@ final class DataEntryRecordCache
 
 		final Map<CacheKey, DataEntryRecord> recordsMap = Maps.uniqueIndex(
 				records,
-				record -> CollectionUtils.singleElement(dataEntryRecordIdIndex.getAdapter().extractCKs(record)));
-
-		dataEntryRecordIdIndex.add(records);
+				record -> CollectionUtils.singleElement(cacheIndex.getAdapter().extractCKs(record)));
 
 		return recordsMap;
 	}
@@ -144,7 +143,7 @@ final class DataEntryRecordCache
 	@VisibleForTesting
 	int getDataEntryRecordIdIndexSize()
 	{
-		return dataEntryRecordIdIndex.size();
+		return cacheIndex.size();
 	}
 
 	//

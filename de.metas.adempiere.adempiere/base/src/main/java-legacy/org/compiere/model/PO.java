@@ -5009,7 +5009,7 @@ public abstract class PO
 			line.set_TrxName(trxName);
 		}
 	}
-	
+
 	protected static void set_TrxName(final Collection<? extends PO> lines, final String trxName)
 	{
 		for (final PO line : lines)
@@ -5195,7 +5195,7 @@ public abstract class PO
 		{
 			return NullModelTranslationMap.instance;
 		}
-		
+
 		final int id = get_ID();
 		if (id <= 0)
 		{
@@ -5207,7 +5207,7 @@ public abstract class PO
 		{
 			return translations;
 		}
-		
+
 		if(translations != null && translations.getRecordId() != id)
 		{
 			translations = null;
@@ -5514,7 +5514,6 @@ public abstract class PO
 
 		public POReturningAfterInsertLoader()
 		{
-			super();
 			this.columnNames = new ArrayList<>();
 			this.sqlReturning = new StringBuilder();
 		}

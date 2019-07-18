@@ -180,7 +180,7 @@ public class JsonRetrieverService
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.identifier = identifier;
 
-		cache = new BPartnerCompositeCache(identifier);
+		this.cache = new BPartnerCompositeCache(identifier);
 	}
 
 	public Optional<JsonResponseComposite> retrieveJsonBPartnerComposite(@NonNull final String bpartnerIdentifierStr)
