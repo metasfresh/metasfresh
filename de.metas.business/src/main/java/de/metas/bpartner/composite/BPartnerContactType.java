@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -35,32 +35,32 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 public class BPartnerContactType
 {
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> defaultContact;
+	private Optional<Boolean> defaultContact;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> billToDefault;
+	private Optional<Boolean> billToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> shipToDefault;
+	private Optional<Boolean> shipToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> sales;
+	private final Optional<Boolean> sales;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> salesDefault;
+	private Optional<Boolean> salesDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> purchase;
+	private final Optional<Boolean> purchase;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> purchaseDefault;
+	private Optional<Boolean> purchaseDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> subjectMatter;
+	private final Optional<Boolean> subjectMatter;
 
 	@Builder
 	public BPartnerContactType(
@@ -153,5 +153,30 @@ public class BPartnerContactType
 		return new AdempiereException(message)
 				.appendParametersToMessage()
 				.setParameter("contactLocationType", this);
+	}
+
+	public void setDefaultContact(final boolean defaultContact)
+	{
+		this.defaultContact = Optional.of(defaultContact);
+	}
+
+	public void setBillToDefault(final boolean billToDefault)
+	{
+		this.billToDefault = Optional.of(billToDefault);
+	}
+
+	public void setShipToDefault(final boolean shipToDefault)
+	{
+		this.shipToDefault = Optional.of(shipToDefault);
+	}
+
+	public void setPurchaseDefault(final boolean purchaseDefault)
+	{
+		this.purchaseDefault = Optional.of(purchaseDefault);
+	}
+
+	public void setSalesDefault(final boolean salesDefault)
+	{
+		this.salesDefault = Optional.of(salesDefault);
 	}
 }
