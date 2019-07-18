@@ -75,7 +75,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 	{
 		final I_C_Order quotation = ordersRepo.getById(quotationId);
 
-		final DocStatus quotationDocStatus = DocStatus.ofCode(quotation.getDocStatus());
+		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(quotation.getDocStatus());
 		if (!quotationDocStatus.isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a completed quotation");
