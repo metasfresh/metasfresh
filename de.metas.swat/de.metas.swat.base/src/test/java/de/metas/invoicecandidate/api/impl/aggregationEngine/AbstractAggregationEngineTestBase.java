@@ -127,6 +127,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			final BigDecimal priceEntered_Override)
 	{
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		return createInvoiceCandidate()
 				.setInstanceName("ic")
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -136,7 +137,6 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 				.setDiscount(0)
 				.setManual(false)
 				.setSOTrx(isSOTrx)
-
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
 				.buildAsSigletonList();

@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -68,9 +69,12 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 	{
 		final int qtyOrdered = 50;
 
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		ic1 = createInvoiceCandidate()
 				.setInstanceName("ic1")
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setQty(qtyOrdered)
 				.setSOTrx(config_IsSOTrx())
@@ -84,7 +88,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 
 		ic2 = createInvoiceCandidate()
 				.setInstanceName("ic2")
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setQty(qtyOrdered)
 				.setSOTrx(config_IsSOTrx())

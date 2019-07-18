@@ -37,6 +37,7 @@ import java.util.List;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -57,8 +58,11 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		ic1 = createInvoiceCandidate()
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setQty(FIFTY.negate())
 				.setSOTrx(config_IsSOTrx())
