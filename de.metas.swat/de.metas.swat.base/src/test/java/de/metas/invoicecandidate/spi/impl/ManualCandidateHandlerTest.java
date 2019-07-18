@@ -1,7 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -36,7 +34,6 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
@@ -50,7 +47,6 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
@@ -107,22 +103,53 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 	@Test
 	public void test_noSplitAmtNegativeQty()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(160)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		ic1.setQtyToInvoice_Override(BigDecimal.ONE);
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		InterfaceWrapperHelper.save(ic1);
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual);
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, -1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(-1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
@@ -150,23 +177,52 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 	{
 		updateInvalidCandidates();
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
 		manualIc3.setIsManual(true);
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(160)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		ic1.setQtyToInvoice_Override(BigDecimal.ONE);
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		InterfaceWrapperHelper.save(ic1);
@@ -201,20 +257,49 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 	@Test
 	public void test_splitAmt()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 70, 1, false, true); // BP, Price, Qty, IsManual
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(70)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		POJOWrapper.setInstanceName(ic1, "ic1");
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
@@ -240,20 +325,51 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 	@Test
 	public void test_splitAmtDifferentOrder()
 	{
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 70, 1, false, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(70)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(ic1, "ic1");
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
@@ -290,37 +406,58 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(160)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_Immediate);
-		ic1.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		ic1.setQtyDelivered(BigDecimal.ZERO);
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		InterfaceWrapperHelper.save(ic1);
 
-		invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(BPartnerId.ofRepoId(bpartner("1").getC_BPartner_ID()));
+		invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(billBPartnerAndLocationId.getBpartnerId());
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
-		manualIc1.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
-		final I_C_BPartner_Location localBPLoc = bpLoc;
-		localBPLoc.setC_BPartner_ID(bpartner("1").getC_BPartner_ID());
-		save(localBPLoc);
-
-		manualIc1.setBill_Location_ID(localBPLoc.getC_BPartner_Location_ID());
 
 		manualIc1.setC_ILCandHandler(manualHandler);
 		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, manualIc1);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
-		manualIc2.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, -1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(-1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
-		manualIc3.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
 
@@ -403,29 +540,55 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 	public void testSchedules()
 	{
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 160, 1, false, true); // BP, Price, Qty, IsManual
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(160)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		ic1.setC_InvoiceSchedule(schedule("1", X_C_InvoiceSchedule.INVOICEFREQUENCY_Daily));
 		ic1.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
-		ic1.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		ic1.setQtyDelivered(ic1.getQtyOrdered());
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		InterfaceWrapperHelper.save(ic1);
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
-		manualIc1.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
-		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate(1, -50, 1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(manualIc2, "manualIc2");
-		manualIc2.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		manualIc2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc2);
 
-		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate(1, -50, -1, true, true); // BP, Price, Qty, IsManual
+		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-50)
+				.setQty(-1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
 		POJOWrapper.setInstanceName(manualIc3, "manualIc3");
-		manualIc3.setBill_BPartner_ID(bpartner("1").getC_BPartner_ID());
 		manualIc3.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc3);
 
@@ -566,7 +729,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate manualIc3 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(-50)
-				.setQty(1)
+				.setQty(-1)
 				.setManual(true)
 				.setSOTrx(true)
 				.build();
