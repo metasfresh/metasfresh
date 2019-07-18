@@ -2,6 +2,8 @@ package de.metas.bpartner;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -37,21 +39,35 @@ public class BPartnerContactId implements RepoIdAware
 	@NonNull
 	UserId userId;
 
-	public static BPartnerContactId ofRepoId(@NonNull final BPartnerId bpartnerId, final int contactId)
+	public static BPartnerContactId ofRepoId(@NonNull final BPartnerId bpartnerId, final int contactRepoId)
 	{
-		return new BPartnerContactId(bpartnerId, UserId.ofRepoId(contactId));
+		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
+		if (userId == null)
+		{
+			throw new AdempiereException("@Invalid@ @Contact_ID@");
+		}
+
+		return new BPartnerContactId(bpartnerId, userId);
 	}
 
-	public static BPartnerContactId ofRepoId(final int bpartnerId, final int contactId)
+	public static BPartnerContactId ofRepoId(final int bpartnerRepoId, final int contactRepoId)
 	{
-		return new BPartnerContactId(BPartnerId.ofRepoId(bpartnerId), UserId.ofRepoId(contactId));
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRepoId);
+
+		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
+		if (userId == null)
+		{
+			throw new AdempiereException("@Invalid@ @Contact_ID@");
+		}
+
+		return new BPartnerContactId(bpartnerId, userId);
 	}
 
 	public static BPartnerContactId ofRepoIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final Integer contactRepoId)
 	{
-		final UserId userId = contactRepoId != null ? UserId.ofRepoIdOrNull(contactRepoId) : null;
+		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		return userId != null ? new BPartnerContactId(bpartnerId, userId) : null;
 	}
 
@@ -65,13 +81,21 @@ public class BPartnerContactId implements RepoIdAware
 			return null;
 		}
 
-		final UserId contactId = contactRepoId != null ? UserId.ofRepoIdOrNull(contactRepoId) : null;
-		if (contactId == null)
+		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
+		if (userId == null)
 		{
 			return null;
 		}
 
-		return new BPartnerContactId(bpartnerId, contactId);
+		return new BPartnerContactId(bpartnerId, userId);
+	}
+
+	private static UserId toValidContactUserIdOrNull(final Integer userRepoId)
+	{
+		final UserId userId = userRepoId != null ? UserId.ofRepoIdOrNull(userRepoId) : null;
+
+		// NOTE: system user is not a valid BP contact
+		return userId != null && userId.isRegularUser() ? userId : null;
 	}
 
 	private BPartnerContactId(@NonNull final BPartnerId bpartnerId, @NonNull final UserId userId)
