@@ -10,6 +10,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.PriceListId;
@@ -58,6 +59,8 @@ public interface IOrderBL extends ISingletonService
 	I_AD_User getShipToUser(I_C_Order order);
 
 	BPartnerLocationId getBillToLocationIdOrNull(I_C_Order order);
+
+	BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.

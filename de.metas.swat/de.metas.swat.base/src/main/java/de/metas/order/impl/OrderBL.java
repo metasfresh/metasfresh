@@ -909,12 +909,21 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public BPartnerLocationId getBillToLocationIdOrNull(I_C_Order order)
+	public BPartnerLocationId getBillToLocationIdOrNull(@NonNull final I_C_Order order)
 	{
 		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
 		return billToBPLocationId != null
 				? billToBPLocationId
 				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+	}
+
+	@Override
+	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
+	{
+		final BPartnerContactId billToContactId = BPartnerContactId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_User_ID());
+		return billToContactId != null
+				? billToContactId
+				: BPartnerContactId.ofRepoId(order.getC_BPartner_ID(), order.getAD_User_ID());
 	}
 
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
