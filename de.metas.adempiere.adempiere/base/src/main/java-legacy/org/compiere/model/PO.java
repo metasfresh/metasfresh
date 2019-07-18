@@ -5192,7 +5192,6 @@ public abstract class PO
 
 		public POReturningAfterInsertLoader()
 		{
-			super();
 			this.columnNames = new ArrayList<>();
 			this.sqlReturning = new StringBuilder();
 		}

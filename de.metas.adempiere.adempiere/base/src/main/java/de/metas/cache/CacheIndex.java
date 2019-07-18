@@ -37,9 +37,32 @@ import lombok.NonNull;
  */
 
 /**
- * @param <RK> key/id of the cached data ("record key")
- * @param <CK> cache key
- * @param <V> cached data ("value")
+ * This class can help you caching domain objects for domain keys.
+ * <p>
+ * Example use case:
+ * <li>you have a domain object that is based on C_BPartner and AD_User
+ * <li>you have a cache for those domain objects
+ * <li>if an AD_User record is updated in the UI, you want to invalidate in your cache <i>only</i> those instances that are based on that one AD_User record
+ * <p>
+ * To achive this goal, implement {@link CacheIndexDataAdapter} and create a {@link CacheIndex} instance.
+ * To use that {@link CacheIndex} instance with your {@link CCache}, build the cache as follows:
+ *
+ * <pre>
+ * CCache.&lt;YourKey, YourValue&gt;builder()
+ * 		[...]
+ * 		.invalidationKeysMapper(cacheIndex::computeCachingKeys)
+ * 		.removalListener(cacheIndex::remove)
+ * 		.additionListener(cacheIndex::add)
+ * 		[...]
+ * 		.build();
+ * </pre>
+ * <p>
+ * Note: if you have a very straight 1:1 relation between your cache's key and value, then just implementing {@link CachingKeysMapper} might be sufficient for you.
+ * <p>
+ *
+ * @param <RK> "actual" key/id of the cached data ("record key")
+ * @param <CK> cache key that is used in your {@link CCache}. Might or migh not be the same as {@code RK}
+ * @param <V> the actually cached data ("value")
  */
 public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 {
@@ -90,6 +113,7 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 		return getCKs(recordId);
 	}
 
+	/** @return the caching keys for the given record. */
 	public Collection<CK> extractCKs(@NonNull final V record)
 	{
 		return adapter.extractCKs(record);
@@ -105,20 +129,13 @@ public final class CacheIndex<RK, CK, V> implements CachingKeysMapper<CK>
 		return adapter.extractRK(recordRef);
 	}
 
-	public void add(@NonNull final Collection<V> records)
+	public void add(@NonNull final CK ignored, @NonNull final V record)
 	{
-		if (records.isEmpty())
-		{
-			return;
-		}
-
 		final ImmutableSetMultimap.Builder<RK, CK> multimap = ImmutableSetMultimap.builder();
-		for (final V record : records)
-		{
-			multimap.putAll(
-					adapter.extractRK(record),
-					adapter.extractCKs(record));
-		}
+
+		multimap.putAll(
+				adapter.extractRK(record),
+				adapter.extractCKs(record));
 
 		add(multimap.build());
 	}

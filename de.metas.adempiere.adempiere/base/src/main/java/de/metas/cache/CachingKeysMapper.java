@@ -38,7 +38,7 @@ import de.metas.cache.model.CacheInvalidateRequest;
 public interface CachingKeysMapper<CK>
 {
 	/**
-	 * Provide a possibly empty collection of cache keys for the given table record reference.
+	 * Called by the cache to provide a possibly empty collection of cache keys for the given table record reference.
 	 * Allows {@link CCache#resetForRecordId(TableRecordReference)} to only remove a limited number of cached entries.
 	 * <p>
 	 * Implementors can assume that

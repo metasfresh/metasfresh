@@ -323,6 +323,35 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
 	}
 
+	/**
+	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
+	 */
+	@Test
+	void createOrUpdateBPartner_update_C_BPartner_Name_OK()
+	{
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Name.json");
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345");
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final RecordCounts inititalCounts = new RecordCounts();
+
+		// invoke the method under test
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		inititalCounts.assertCountsUnchanged();
+
+		// verify that the bpartner-record was updated
+		refresh(bpartnerRecord);
+		assertThat(bpartnerRecord.getValue()).isEqualTo("12345"); // shall be unchanged
+		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
+	}
+
 	@Test
 	void createOrUpdateBPartner_update_C_BPartner_Value_NoSuchPartner()
 	{
