@@ -67,19 +67,32 @@ public class JsonRequestLocation
 	@JsonInclude(Include.NON_EMPTY)
 	String poBox;
 
+	@ApiModelProperty(allowEmptyValue = false, //
+			value = "If specified, then metasfresh will attempt to lookup the `C_Postal` record.\n"
+					+ "If there is one matching postal record, the system **will ignore** the following properties and instead use the postal record's values:\n"
+					+ "* countryCode\n"
+					+ "* city\n"
+					+ "* region\n")
+	@JsonInclude(Include.NON_EMPTY)
 	String postal;
 
+	@JsonInclude(Include.NON_EMPTY)
 	String city;
 
+	@ApiModelProperty(allowEmptyValue = true, //
+			value = "If specified, then metasfresh will use this property (in addition to `postal`) as a filter criterion to look up `C_Postal` records.\n"
+					+ "The property may be empty so a caller can explicitly tell metasfresh *not* to filter by district")
 	@JsonInclude(Include.NON_EMPTY)
 	String district;
 
 	@JsonInclude(Include.NON_EMPTY)
 	String region;
 
+	@JsonInclude(Include.NON_EMPTY)
 	String countryCode;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	@ApiModelProperty(allowEmptyValue = true/* we want to allow unsetting the GLN */, //
+			value = "This translates to `C_BPartner_Location.GLN`.")
 	String gln;
 
 	@ApiModelProperty(required = false)
