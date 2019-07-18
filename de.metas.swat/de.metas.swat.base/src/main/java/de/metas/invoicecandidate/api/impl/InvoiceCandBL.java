@@ -128,6 +128,7 @@ import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
@@ -718,7 +719,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-
 
 		// TODO WHAT"S THIS? what should priceuom be?
 		final I_C_UOM priceUOM = uomDAO.getByIdOrNull(ic.getPrice_UOM_ID());
@@ -2155,6 +2155,49 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		cand.setIsInDispute(true);
 		save(cand);
+	}
+
+	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
+	{
+
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		if (!ic.isFreightCost())
+		{
+			// nothing to do
+			return;
+		}
+		final OrderId orderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+
+		if (orderId == null)
+		{
+			// nothing to do;
+			return;
+		}
+		boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
+
+		if (hasInvoiceableInvoiceCands)
+		{
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_Order_ID());
+
+			if (orderLine == null)
+			{
+				// nothing to do
+				return;
+			}
+
+			ic.setQtyToInvoice(ONE);
+			set_DateToInvoice_DefaultImpl(ic);
+
+			save(ic);
+		}
+		else
+		{
+			ic.setQtyToInvoice(ZERO);
+			set_DateToInvoice_DefaultImpl(ic);
+		}
+
 	}
 
 }

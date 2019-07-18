@@ -875,6 +875,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				// Order BY: we need to return the not-manual invoice candidates first, because their NetAmtToInvoice is required when we evaluate the manual candidates
 				.orderBy()
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, Direction.Ascending, Nulls.First)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_IsManual)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID)
 				.endOrderBy()
@@ -1592,5 +1593,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.create()
 				.match();
 
+	}
+
+	@Override
+	public boolean hasInvoiceableInvoiceCands(final OrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMN_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
+				.create()
+				.match();
 	}
 }

@@ -339,6 +339,8 @@ import lombok.NonNull;
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, ic);
 
+		invoiceCandBL.setAmountAndDateForFreightCost(ic);
+
 		//
 		// Save it
 		invoiceCandDAO.save(ic);

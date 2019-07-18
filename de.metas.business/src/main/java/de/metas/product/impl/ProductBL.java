@@ -415,4 +415,14 @@ public final class ProductBL implements IProductBL
 		}
 		return product.getName();
 	}
+
+	@Override
+	public boolean isFreightCostProduct(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+
+		final String productType = product.getProductType();
+
+		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
+	}
 }
