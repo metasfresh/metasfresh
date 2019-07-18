@@ -1,7 +1,5 @@
 import { post, get, delete as del } from 'axios';
-import Moment from 'moment';
-import { getQueryString } from '../utils';
-import { DATE_FORMAT } from '../constants/Constants';
+import { getQueryString, cleanupFilter } from '../utils';
 
 export function getViewLayout(windowId, viewType, viewProfileId = null) {
   return get(
@@ -74,19 +72,13 @@ export function createViewRequest({
 }
 
 export function filterViewRequest(windowId, viewId, filters) {
-  filters.map(filter => {
-    filter.parameters &&
-      filter.parameters.map((param, index) => {
-        if (param.widgetType === 'Date' && param.value) {
-          filter.parameters[index].value = Moment(param.value).format(
-            DATE_FORMAT
-          );
-        }
-      });
+  filters.map((filter, idx) => {
+    filter = cleanupFilter(filter);
+    filters[idx] = filter;
   });
 
   return post(`${config.API_URL}/documentView/${windowId}/${viewId}/filter`, {
-    filters: filters,
+    filters,
   });
 }
 
