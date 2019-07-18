@@ -198,8 +198,9 @@ declare namespace Cypress {
      * @param typeList optional, default = false; use true when selecting value from a list not lookup field.
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch.
+     * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
      */
-    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList?: boolean, modal?: boolean, rewriteUrl?: String): Chainable<any>
+    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList?: boolean, modal?: boolean, rewriteUrl?: String, skipRequest ?: boolean): Chainable<any>
 
 
     /**

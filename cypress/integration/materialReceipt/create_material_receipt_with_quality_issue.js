@@ -1,28 +1,27 @@
 import { QualityNote } from '../../support/utils/qualityNote';
-import { DiscountSchema } from '../../support/utils/discountschema';
 import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { BPartner } from '../../support/utils/bpartner';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
+import { humanReadableNow } from '../../support/utils/utils';
 
-describe('Create test: create material receipt, https://github.com/metasfresh/metasfresh-e2e/issues/210', function() {
-  const timestamp = new Date().getTime();
-  const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
-  const qualityNoteName = `QualityNoteTest ${timestamp}`;
-  const qualityNoteValue = `QualityNoteValueTest ${timestamp}`;
+describe('Create test: create material receipt with quality issue, https://github.com/metasfresh/metasfresh-e2e/issues/210', function() {
+  const date = humanReadableNow();
+  const qualityNoteName = `QualityNoteTest ${date}`;
+  const qualityNoteValue = `QualityNoteValueTest ${date}`;
   const warehouseName = `TestWarehouseName ${date}`;
   const warehouseValue = `TestWarehouseValue ${date}`;
-  const productName1 = `ProductTest ${timestamp}`;
-  const productValue1 = `purchase_order_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const productName1 = `ProductTest ${date}`;
+  const productValue1 = `purchase_order_test ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductCategoryValue ${date}`;
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
   const productType = 'Item';
-  const vendorName = `Vendor ${timestamp}`;
+  const vendorName = `Vendor ${date}`;
 
   before(function() {
     cy.fixture('material/quality_note.json').then(qualityNoteJson => {
@@ -69,11 +68,6 @@ describe('Create test: create material receipt, https://github.com/metasfresh/me
       .selectInListField('DocBaseType', 'Material Receipt', true)
       .pressDoneButton();
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
-    cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
-      Object.assign(new DiscountSchema(), discountSchemaJson)
-        .setName(discountSchemaName)
-        .apply();
-    });
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -89,17 +83,19 @@ describe('Create test: create material receipt, https://github.com/metasfresh/me
       productValue1,
       productType
     );
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
-
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendor(true)
+        .setVendorPricingSystem(priceSystemName)
+        .setVendorDiscountSchema(discountSchemaName)
+        .setPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
     cy.readAllNotifications();
   });
   it('Create material receipt with quality issue', function() {
+    /**Create a purchase order */
     cy.visitWindow('181', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
       .type(vendorName)
@@ -115,7 +111,7 @@ describe('Create test: create material receipt, https://github.com/metasfresh/me
       .click();
     // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName1);
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
@@ -133,8 +129,7 @@ describe('Create test: create material receipt, https://github.com/metasfresh/me
       .should('have.value', '0.1')
       .clear()
       .type('10{enter}');
-    cy.wait(8000);
-    cy.wait(8000);
+    cy.wait(10000);
     /**Complete purchase order */
     cy.get('.form-field-DocAction ul')
       .click({ force: true })

@@ -3,7 +3,7 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import {humanReadableNow} from "../../support/utils/utils";
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
@@ -60,7 +60,7 @@ describe('Create Sales order', function() {
       .click();
     cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${date}`, productName);
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
