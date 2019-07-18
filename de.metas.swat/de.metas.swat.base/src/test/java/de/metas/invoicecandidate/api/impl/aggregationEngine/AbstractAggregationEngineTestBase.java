@@ -47,6 +47,7 @@ import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -125,9 +126,10 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			final boolean isSOTrx,
 			final BigDecimal priceEntered_Override)
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 		return createInvoiceCandidate()
 				.setInstanceName("ic")
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setPriceEntered_Override(priceEntered_Override)
 				.setQty(40)
