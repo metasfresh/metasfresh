@@ -6,27 +6,28 @@ import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { salesOrders } from '../../page_objects/sales_orders';
 import { Builder } from '../../support/utils/builder';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Purchase order from sales order', function() {
-  const timestamp = new Date().getTime();
-  const productForPackingMaterial = `ProductPackingMaterial ${timestamp}`;
-  const productPMValue = `purchase_order_testPM ${timestamp}`;
-  const packingMaterialName = `ProductPackingMaterial ${timestamp}`;
-  const packingInstructionsName = `ProductPackingInstrutions ${timestamp}`;
-  const productName1 = `ProductTest ${timestamp}`;
-  const productValue1 = `purchase_order_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const purchasePriceSystem = `PurchasePriceSystem ${timestamp}`;
-  const purchasePriceList = `PurchasePriceList ${timestamp}`;
-  const purchasePriceListVersion = `PurchasePriceListVersion ${timestamp}`;
-  const salesPriceSystem = `SalesPriceSystem ${timestamp}`;
-  const salesPriceList = `SalesPriceList ${timestamp}`;
-  const salesPriceListVersion = `SalesPriceListVersion ${timestamp}`;
+  const date = humanReadableNow();
+  const productForPackingMaterial = `ProductPackingMaterial ${date}`;
+  const productPMValue = `purchase_order_testPM ${date}`;
+  const packingMaterialName = `ProductPackingMaterial ${date}`;
+  const packingInstructionsName = `ProductPackingInstrutions ${date}`;
+  const productName1 = `ProductTest ${date}`;
+  const productValue1 = `purchase_order_test ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductCategoryValue ${date}`;
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const purchasePriceSystem = `PurchasePriceSystem ${date}`;
+  const purchasePriceList = `PurchasePriceList ${date}`;
+  const purchasePriceListVersion = `PurchasePriceListVersion ${date}`;
+  const salesPriceSystem = `SalesPriceSystem ${date}`;
+  const salesPriceList = `SalesPriceList ${date}`;
+  const salesPriceListVersion = `SalesPriceListVersion ${date}`;
   const productType = 'Item';
-  const vendorName = `Vendor ${timestamp}`;
-  const customerName = `Customer ${timestamp}`;
+  const vendorName = `Vendor ${date}`;
+  const customerName = `Customer ${date}`;
 
   before(function() {
     /**purchase price list */
@@ -142,7 +143,7 @@ describe('Create Purchase order from sales order', function() {
       .click();
     // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName1);
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()

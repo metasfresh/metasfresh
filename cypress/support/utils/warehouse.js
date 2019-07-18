@@ -26,6 +26,11 @@ export class Warehouse {
     this.C_BPartner_Location_ID = C_BPartner_Location_ID;
     return this;
   }
+  setIsQualityIssueWarehouse(isQualityIssueWarehouse){
+    cy.log(`Warehouse - set Quality Issue Warehouse= ${isQualityIssueWarehouse}`);
+    this.isQualityIssueWarehouse = isQualityIssueWarehouse;
+    return this;
+  }
 
   apply() {
     cy.log(`Warehouse - apply - START (name=${this.name})`);
@@ -86,6 +91,7 @@ function applyWarehouse(Warehouse) {
     .clearField('Value')
     .writeIntoStringField('Value', Warehouse.value);
   cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
+  cy.setCheckBoxValue('IsIssueWarehouse', Warehouse.isQualityIssueWarehouse);
   Warehouse.locators.forEach(locator => {
     applyLocator(locator);
     Warehouse.routes.forEach(route => {
