@@ -56,8 +56,9 @@ public class OrderId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Order_ID");
 	}
 
+	@Override
 	@JsonValue
-	public int getValue()
+	public int getRepoId()
 	{
 		return repoId;
 	}
