@@ -32,7 +32,6 @@ import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
-import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
@@ -114,10 +113,6 @@ public class RefundInvoiceCandidateServiceTest
 				.build());
 
 		config_InvoiceCand_LineAggregation();
-
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
-		partner.setC_BPartner_ID(20);
-		save(partner);
 
 	}
 
