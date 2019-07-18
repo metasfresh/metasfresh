@@ -422,7 +422,8 @@ public class BPartnerCompositeRepository
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyContextClient()
-				.addOnlyActiveRecordsFilter();
+				//.addOnlyActiveRecordsFilter() also load inactive records!
+				;
 
 		if (!query.getOnlyOrgIds().isEmpty())
 		{
@@ -537,6 +538,7 @@ public class BPartnerCompositeRepository
 
 		final List<I_AD_User> contactRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
+				// .addOnlyActiveRecordsFilter()  also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
@@ -546,6 +548,7 @@ public class BPartnerCompositeRepository
 
 		final List<I_C_BPartner_Location> bPartnerLocationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BPartner_Location.class)
+				// .addOnlyActiveRecordsFilter()  also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bPartnerIds)
 				.create()
@@ -556,7 +559,7 @@ public class BPartnerCompositeRepository
 		final ImmutableList<Integer> locationIds = CollectionUtils.extractDistinctElements(bPartnerLocationRecords, I_C_BPartner_Location::getC_Location_ID);
 		final List<I_C_Location> locationRecords = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Location.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter()  also load inactive records!
 				.addOnlyContextClient()
 				.addInArrayFilter(I_C_Location.COLUMNNAME_C_Location_ID, locationIds)
 				.create()
