@@ -345,14 +345,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   }
 });
 
-// function clickOnNotificationWithText(text) {
-//   cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
-//   cy.get('.inbox-item-unread .inbox-item-title')
-//     .filter(':contains("' + text + '")')
-//     .first()
-//     .click();
-// }
-
 // eslint-disable-next-line prettier/prettier
 function salesInvoiceChecks(documentStatusKey, salesInvoiceDocumentType, businessPartnerName, isPaid, productName, qtyEntered, totalAmountToPay) {
   cy.expectDocumentStatus(documentStatusKey);
