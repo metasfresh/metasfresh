@@ -18,6 +18,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
@@ -30,6 +32,7 @@ import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -87,6 +90,11 @@ public class RefundInvoiceCandidateServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+
+		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
+		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
+
 
 		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 

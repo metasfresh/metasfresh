@@ -28,6 +28,8 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
@@ -36,12 +38,14 @@ import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.allqties.refundconfigchange.RefundConfigChangeService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -101,6 +105,11 @@ public class CandidateAssignmentServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+
+		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
+		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
+
 
 		refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
