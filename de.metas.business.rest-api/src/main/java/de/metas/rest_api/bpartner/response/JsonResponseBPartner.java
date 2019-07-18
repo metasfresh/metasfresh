@@ -66,45 +66,45 @@ public class JsonResponseBPartner
 	MetasfreshId metasfreshId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
+			required = false, //
 			dataType = "java.lang.String", //
 			value = "This translates to `C_BPartner.ExternalId`.")
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
-	@ApiModelProperty(allowEmptyValue = false, value = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
 	String code;
 
-	@ApiModelProperty(allowEmptyValue = false, value = "This translates to `C_BPartner.IsActive`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
 	boolean active;
 
-	@ApiModelProperty(allowEmptyValue = false, value = "This translates to `C_BPartner.Name`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
 	String name;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.Name2`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.Name3`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
+			required = false, //
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonInclude(Include.NON_NULL)
 	String companyName;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
+			required = false, //
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	@JsonInclude(Include.NON_NULL)
 	MetasfreshId parentId;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
+			required = false, //
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonInclude(Include.NON_NULL)
 	String phone;
@@ -112,20 +112,20 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String language;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.URL`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.URL2`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
 	@JsonInclude(Include.NON_NULL)
 	private String url2;
 
-	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.URL3`.")
+	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
 	@JsonInclude(Include.NON_NULL)
 	private String url3;
 
 	@ApiModelProperty( //
-			allowEmptyValue = true, //
+			required = false, //
 			value = "Name of the business partner's group")
 	@JsonInclude(Include.NON_NULL)
 	String group;
@@ -138,7 +138,7 @@ public class JsonResponseBPartner
 	@Builder(toBuilder = true)
 	private JsonResponseBPartner(
 			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
-			@JsonProperty(EXTERNAL_ID) @NonNull final JsonExternalId externalId,
+			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(CODE) @NonNull final String code,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
 			@JsonProperty(NAME) @NonNull final String name,

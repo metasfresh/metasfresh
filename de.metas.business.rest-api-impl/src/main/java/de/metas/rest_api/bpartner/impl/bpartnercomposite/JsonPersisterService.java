@@ -312,7 +312,10 @@ public class JsonPersisterService
 		{
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException("bpartner");
+				throw new MissingResourceException(
+						"Did not find an existing partner with identifier '" + bpartnerIdentifierStr + "'",
+						jsonBPartnerComposite)
+								.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
 			bpartnerComposite = BPartnerComposite.builder().build();
@@ -347,7 +350,9 @@ public class JsonPersisterService
 		{
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw new MissingResourceException("jsonContact");
+				throw new MissingResourceException(
+						"Did not find an existing contact with identifier '" + contactIdentifierStr + "'")
+								.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			if (jsonContact.getMetasfreshBPartnerId() == null)
 			{
