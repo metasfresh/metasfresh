@@ -74,7 +74,8 @@ class JsonRetrieverServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
