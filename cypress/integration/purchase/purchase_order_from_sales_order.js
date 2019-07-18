@@ -7,7 +7,7 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { salesOrders } from '../../page_objects/sales_orders';
 import { Builder } from '../../support/utils/builder';
 
-describe('Create Purchase order - material receipt - invoice', function() {
+describe('Create Purchase order from sales order', function() {
   const timestamp = new Date().getTime();
   const productForPackingMaterial = `ProductPackingMaterial ${timestamp}`;
   const productPMValue = `purchase_order_testPM ${timestamp}`;
@@ -34,13 +34,24 @@ describe('Create Purchase order - material receipt - invoice', function() {
     /**sales price list */
     Builder.createBasicPriceEntities(salesPriceSystem, salesPriceListVersion, salesPriceList, true);
     /**Create product for packing material which has both a purchase price list and a sales price list */
-    Builder.createBasicProductEntitiesWithMultiplePrices(
-      purchasePriceList,
-      salesPriceList,
-      productForPackingMaterial,
-      productPMValue,
-      productType
-    );
+    let productPricePM1;
+    let productPricePM2;
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPricePM1 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(purchasePriceList);
+    });
+    cy.fixture('product/product_price.json').then(productPriceJson => {
+      productPricePM2 = Object.assign(new ProductPrice(), productPriceJson).setPriceList(salesPriceList);
+    });
+    cy.fixture('product/simple_product.json').then(productJson => {
+      Object.assign(new Product(), productJson)
+        .setName(productForPackingMaterial)
+        .setValue(productPMValue)
+        .setProductType(productType)
+        .setProductCategory('24_Gebinde')
+        .addProductPrice(productPricePM1)
+        .addProductPrice(productPricePM2)
+        .apply();
+    });
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -66,21 +77,25 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
     /**Create vendor to use in product - Business partner tab - current vendor */
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(purchasePriceSystem)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setVendorPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ ...vendorJson, name: vendorName })
+        .setVendor(true)
+        .setVendorPricingSystem(purchasePriceSystem)
+        .setVendorDiscountSchema(discountSchemaName)
+        .setVendorPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
     /**Create customer for sales order */
-    new BPartner({ name: customerName })
-      .setCustomer(true)
-      .setCustomerPricingSystem(salesPriceSystem)
-      .setCustomerDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
+    cy.fixture('sales/simple_customer.json').then(customerJson => {
+      new BPartner({ ...customerJson, name: customerName })
+        .setCustomer(true)
+        .setCustomerPricingSystem(salesPriceSystem)
+        .setCustomerDiscountSchema(discountSchemaName)
+        .setPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
 
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
