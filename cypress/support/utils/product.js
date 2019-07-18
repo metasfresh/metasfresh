@@ -85,6 +85,12 @@ export class Product {
     return this;
   }
 
+  setBusinessPartner(businessPartner) {
+    cy.log(`Product - set businessPartner = ${businessPartner}`);
+    this.businessPartner = businessPartner;
+    return this;
+  }
+
   apply() {
     cy.log(`Product - apply - START (name=${this.name})`);
     Product.applyProduct(this);
@@ -144,6 +150,14 @@ export class Product {
         cy.selectInListField('M_HU_PI_Item_ID', product.packingInstruction, true);
         cy.writeIntoStringField('Qty', 10, true, null, true);
         cy.selectDateViaPicker('ValidFrom');
+        cy.pressDoneButton();
+      }
+
+      if (product.businessPartner != null) {
+        cy.selectTab('C_BPartner_Product');
+        cy.pressAddNewButton();
+        cy.writeIntoLookupListField('C_BPartner_ID', product.businessPartner, product.businessPartner, true);
+        cy.clickOnCheckBox('IsCurrentVendor');
         cy.pressDoneButton();
       }
 
