@@ -55,16 +55,21 @@ public class ChangeLogUtil
 
 	private static final ImmutableMap<String, String> BPARTNER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_BPartner.COLUMNNAME_Value, "value")
-			.put(I_C_BPartner.COLUMNNAME_CompanyName, "companyName")
-			.put(I_C_BPartner.COLUMNNAME_ExternalId, "externalId")
-			.put(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, "groupId")
-			.put(I_C_BPartner.COLUMNNAME_AD_Language, "language")
-			.put(I_C_BPartner.COLUMNNAME_C_BPartner_ID, "id")
-			.put(I_C_BPartner.COLUMNNAME_Name, "name")
-			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, "parentId")
-			.put(I_C_BPartner.COLUMNNAME_Phone2, "phone")
-			.put(I_C_BPartner.COLUMNNAME_URL, "url")
+			.put(I_C_BPartner.COLUMNNAME_Value, BPartner.VALUE)
+			.put(I_C_BPartner.COLUMNNAME_CompanyName, BPartner.COMPANY_NAME)
+			.put(I_C_BPartner.COLUMNNAME_ExternalId, BPartner.EXTERNAL_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, BPartner.GROUP_ID)
+			.put(I_C_BPartner.COLUMNNAME_AD_Language, BPartner.LANGUAGE)
+			.put(I_C_BPartner.COLUMNNAME_C_BPartner_ID, BPartner.ID)
+			.put(I_C_BPartner.COLUMNNAME_Name, BPartner.NAME)
+			.put(I_C_BPartner.COLUMNNAME_Name2, BPartner.NAME_2)
+			.put(I_C_BPartner.COLUMNNAME_Name3, BPartner.NAME_3)
+			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, BPartner.PARENT_ID)
+			.put(I_C_BPartner.COLUMNNAME_Phone2, BPartner.PHONE)
+			.put(I_C_BPartner.COLUMNNAME_URL, BPartner.URL)
+			.put(I_C_BPartner.COLUMNNAME_URL2, BPartner.URL_2)
+			.put(I_C_BPartner.COLUMNNAME_URL3, BPartner.URL_3)
+			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
 			.build();
 
 	private static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
@@ -76,12 +81,28 @@ public class ChangeLogUtil
 			.put(I_AD_User.COLUMNNAME_Lastname, "lastName")
 			.put(I_AD_User.COLUMNNAME_Name, "name")
 			.put(I_AD_User.COLUMNNAME_Phone, "phone")
+			.put(I_AD_User.COLUMNNAME_IsDefaultContact, "defaultContact")
+			.put(I_AD_User.COLUMNNAME_IsBillToContact_Default, "billToDefault")
+			.put(I_AD_User.COLUMNNAME_IsShipToContact_Default, "shipToDefault")
+			.put(I_AD_User.COLUMNNAME_IsSalesContact, "sales")
+			.put(I_AD_User.COLUMNNAME_IsSalesContact_Default, "salesDefault")
+			.put(I_AD_User.COLUMNNAME_IsPurchaseContact, "purchase")
+			.put(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, "purchaseDefault")
+			.put(I_AD_User.COLUMNNAME_IsSubjectMatterContact, "subjectMatter")
+			.put(I_AD_User.COLUMNNAME_IsActive, "active")
+			.put(I_AD_User.COLUMNNAME_IsNewsletter, "newsletter")
+			.put(I_AD_User.COLUMNNAME_Fax, "fax")
+			.put(I_AD_User.COLUMNNAME_MobilePhone, "mobilePhone")
+			.put(I_AD_User.COLUMNNAME_Description, "description")
+			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, "greetingId")
 			.build();
 
 	private static final ImmutableMap<String, String> C_LOCATION_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
 			.put(I_C_Location.COLUMNNAME_Address1, "address1")
 			.put(I_C_Location.COLUMNNAME_Address2, "address2")
+			.put(I_C_Location.COLUMNNAME_Address3, "address3")
+			.put(I_C_Location.COLUMNNAME_Address4, "address4")
 			.put(I_C_Location.COLUMNNAME_City, "city")
 			.put(I_C_Location.COLUMNNAME_POBox, "poBox")
 			.put(I_C_Location.COLUMNNAME_Postal, "postal")
@@ -93,6 +114,12 @@ public class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_ExternalId, "externalId")
 			.put(I_C_BPartner_Location.COLUMNNAME_GLN, "gln")
 			.put(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, "id")
+			.put(I_C_BPartner_Location.COLUMNNAME_Name, "name")
+			.put(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, "billToDefault")
+			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, "shipToDefault")
+			.put(I_C_BPartner_Location.COLUMNNAME_IsBillTo, "billTo")
+			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, "shipTo")
+			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, "active")
 			.build();
 
 	private static final ImmutableMap<String, String> C_POSTAL_COLUMN_MAP = ImmutableMap

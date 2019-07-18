@@ -43,7 +43,7 @@ public class MissingResourceException extends AdempiereException
 			@NonNull final String resourceName,
 			@Nullable final Object parentResource)
 	{
-		super(assumeNotEmpty(resourceName, "Parameter 'resourceName may not be null"));
+		super(assumeNotEmpty(resourceName, "Parameter 'resourceName' may not be empty"));
 
 		appendParametersToMessage();
 		if (parentResource != null)

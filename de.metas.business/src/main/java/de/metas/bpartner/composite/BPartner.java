@@ -41,19 +41,30 @@ import lombok.Data;
 @Data
 public class BPartner
 {
+	public static final String ID = "id";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String ACTIVE = "active";
+	public static final String NAME = "name";
+	public static final String NAME_2 = "name2";
+	public static final String NAME_3 = "name3";
+	public static final String COMPANY_NAME = "companyName";
+	public static final String PARENT_ID = "parentId";
+	public static final String VALUE = "value";
+	public static final String PHONE = "phone";
+	public static final String LANGUAGE = "language";
+	public static final String URL = "url";
+	public static final String URL_2 = "url2";
+	public static final String URL_3 = "url3";
+	public static final String GROUP_ID = "groupId";
+
 	/** May be null if the bpartner was not yet saved. */
 	private BPartnerId id;
 
 	private ExternalId externalId;
-
 	private boolean active;
-
 	private String value;
-
 	private String name;
-
 	private String name2;
-
 	private String name3;
 
 	/** non-empty value implies that the bpartner is also a company */

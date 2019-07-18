@@ -10,8 +10,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -35,20 +35,20 @@ import lombok.Value;
  * #L%
  */
 
-@Value
+@Data
 public class BPartnerLocationType
 {
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> billTo;
+	private final Optional<Boolean> billTo;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> billToDefault;
+	private Optional<Boolean> billToDefault;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> shipTo;
+	private final Optional<Boolean> shipTo;
 
 	@JsonInclude(Include.NON_ABSENT)
-	Optional<Boolean> shipToDefault;
+	private Optional<Boolean> shipToDefault;
 
 	@Builder
 	public BPartnerLocationType(
@@ -107,5 +107,15 @@ public class BPartnerLocationType
 		return new AdempiereException(message)
 				.appendParametersToMessage()
 				.setParameter("bpartnerLocationType", this);
+	}
+
+	public void setBillToDefault(boolean billToDefault)
+	{
+		this.billToDefault = Optional.of(billToDefault);
+	}
+
+	public void setShipToDefault(boolean shipToDefault)
+	{
+		this.shipToDefault = Optional.of(shipToDefault);
 	}
 }
