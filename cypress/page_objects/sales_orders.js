@@ -1,6 +1,6 @@
 import Metasfresh from './page';
 
-class SalesOrders extends Metasfresh {
+class _SalesOrders extends Metasfresh {
   constructor() {
     super();
 
@@ -12,8 +12,8 @@ class SalesOrders extends Metasfresh {
     this.selectedRows = '.row-selected';
   }
 
-  visit() {
-    cy.visitWindow(this.windowId);
+  visit(recordId) {
+    cy.visitWindow(this.windowId, recordId);
   }
 
   verifyElements() {
@@ -44,4 +44,4 @@ class SalesOrders extends Metasfresh {
   }
 }
 
-export const salesOrders = new SalesOrders();
+export const salesOrders = new _SalesOrders();

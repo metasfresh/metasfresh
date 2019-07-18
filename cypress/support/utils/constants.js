@@ -1,20 +1,13 @@
 export class DocumentStatusKey {
   static Completed = 'docStatusCompleted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusCompleted = '.tag-success';
-
-
+  static Reversed = 'docStatusReversed';
   static InProgress = 'docStatusInProgress';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusInProgress = '.tag-default';
-
   static Drafted = 'docStatusDrafted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusDrafted = '.tag-primary';
 }
 
 export class DocumentActionKey {
   static Complete = 'docActionComplete';
+  static Void = 'docActionVoid';
 }
 
 /**

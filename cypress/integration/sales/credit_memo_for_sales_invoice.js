@@ -63,7 +63,7 @@ describe('Create a Credit memo for Sales Invoice', function() {
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let originalQuantity = 20;
 
-  it('Prepare product and baprtner', function () {
+  it('Prepare product and bartner', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
     Builder.createBasicProductEntities(
