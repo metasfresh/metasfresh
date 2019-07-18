@@ -340,6 +340,16 @@ declare namespace Cypress {
 
 
     /**
+     * Wait until the current value of a checkBox (Yes/No box) is in the desired state (checked (true) or not checked (false).
+     *
+     * @param fieldName name of the field is question
+     * @param isChecked if true the checkbox should be in checked state, if false the checkbox should be unchecked
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     */
+    expectCheckboxValue(fieldName: string, isChecked: boolean, modal?: boolean): Chainable<any>
+
+
+    /**
      * Unset the value of a list.
      * Similar to pressing the (x) button of a list.
      *
@@ -589,6 +599,13 @@ declare namespace Cypress {
      * from cypress/support/commands/test.js
      */
     editAddress(fieldName, addressFunction): Chainable<any>
+
+    /**
+     * Wait until a process is finished.
+     *
+     * Currently it just waits for 10 seconds, but maybe in the future backend will announce when a process is finished, and we will wait for that.
+     */
+    waitUntilProcessIsFinished(): Chainable<any>
 
   }
 }
