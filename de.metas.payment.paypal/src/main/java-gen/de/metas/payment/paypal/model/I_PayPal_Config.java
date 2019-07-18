@@ -233,6 +233,58 @@ public interface I_PayPal_Config
     public static final String COLUMNNAME_PayPal_Config_ID = "PayPal_Config_ID";
 
 	/**
+	 * Set Payer Approval Request Mail Template.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPayPal_PayerApprovalRequest_MailTemplate_ID (int PayPal_PayerApprovalRequest_MailTemplate_ID);
+
+	/**
+	 * Get Payer Approval Request Mail Template.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getPayPal_PayerApprovalRequest_MailTemplate_ID();
+
+	public org.compiere.model.I_R_MailText getPayPal_PayerApprovalRequest_MailTemplate();
+
+	public void setPayPal_PayerApprovalRequest_MailTemplate(org.compiere.model.I_R_MailText PayPal_PayerApprovalRequest_MailTemplate);
+
+    /** Column definition for PayPal_PayerApprovalRequest_MailTemplate_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Config, org.compiere.model.I_R_MailText> COLUMN_PayPal_PayerApprovalRequest_MailTemplate_ID = new org.adempiere.model.ModelColumn<I_PayPal_Config, org.compiere.model.I_R_MailText>(I_PayPal_Config.class, "PayPal_PayerApprovalRequest_MailTemplate_ID", org.compiere.model.I_R_MailText.class);
+    /** Column name PayPal_PayerApprovalRequest_MailTemplate_ID */
+    public static final String COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID = "PayPal_PayerApprovalRequest_MailTemplate_ID";
+
+	/**
+	 * Set Payment Approved Callback URL.
+	 * Called by PayPal when the payer approved the payment.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPayPal_PaymentApprovedCallbackUrl (java.lang.String PayPal_PaymentApprovedCallbackUrl);
+
+	/**
+	 * Get Payment Approved Callback URL.
+	 * Called by PayPal when the payer approved the payment.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPayPal_PaymentApprovedCallbackUrl();
+
+    /** Column definition for PayPal_PaymentApprovedCallbackUrl */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Config, Object> COLUMN_PayPal_PaymentApprovedCallbackUrl = new org.adempiere.model.ModelColumn<I_PayPal_Config, Object>(I_PayPal_Config.class, "PayPal_PaymentApprovedCallbackUrl", null);
+    /** Column name PayPal_PaymentApprovedCallbackUrl */
+    public static final String COLUMNNAME_PayPal_PaymentApprovedCallbackUrl = "PayPal_PaymentApprovedCallbackUrl";
+
+	/**
 	 * Set Sandbox.
 	 *
 	 * <br>Type: YesNo

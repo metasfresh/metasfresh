@@ -5,6 +5,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
 import de.metas.cache.CCache;
+import de.metas.email.templates.MailTemplateId;
 import de.metas.payment.paypal.model.I_PayPal_Config;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -63,10 +64,13 @@ public class PayPalConfigRepository implements PayPalConfigProvider
 		return PayPalConfig.builder()
 				.clientId(record.getPayPal_ClientId())
 				.clientSecret(record.getPayPal_ClientSecret())
-				// TODO: approval configs
 				.sandbox(record.isPayPal_Sandbox())
 				.baseUrl(record.getPayPal_BaseUrl())
 				.webUrl(record.getPayPal_WebUrl())
+				//
+				.orderApproveMailTemplateId(MailTemplateId.ofRepoId(record.getPayPal_PayerApprovalRequest_MailTemplate_ID()))
+				.orderApproveCallbackUrl(record.getPayPal_PaymentApprovedCallbackUrl())
+				//
 				.build();
 	}
 

@@ -14,7 +14,7 @@ public class X_PayPal_Config extends org.compiere.model.PO implements I_PayPal_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1518447176L;
+	private static final long serialVersionUID = -1280854652L;
 
     /** Standard Constructor */
     public X_PayPal_Config (Properties ctx, int PayPal_Config_ID, String trxName)
@@ -25,6 +25,8 @@ public class X_PayPal_Config extends org.compiere.model.PO implements I_PayPal_C
 			setPayPal_ClientId (null);
 			setPayPal_ClientSecret (null);
 			setPayPal_Config_ID (0);
+			setPayPal_PayerApprovalRequest_MailTemplate_ID (0);
+			setPayPal_PaymentApprovedCallbackUrl (null);
 			setPayPal_Sandbox (false); // N
         } */
     }
@@ -128,6 +130,59 @@ public class X_PayPal_Config extends org.compiere.model.PO implements I_PayPal_C
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_R_MailText getPayPal_PayerApprovalRequest_MailTemplate()
+	{
+		return get_ValueAsPO(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setPayPal_PayerApprovalRequest_MailTemplate(org.compiere.model.I_R_MailText PayPal_PayerApprovalRequest_MailTemplate)
+	{
+		set_ValueFromPO(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, org.compiere.model.I_R_MailText.class, PayPal_PayerApprovalRequest_MailTemplate);
+	}
+
+	/** Set Payer Approval Request Mail Template.
+		@param PayPal_PayerApprovalRequest_MailTemplate_ID Payer Approval Request Mail Template	  */
+	@Override
+	public void setPayPal_PayerApprovalRequest_MailTemplate_ID (int PayPal_PayerApprovalRequest_MailTemplate_ID)
+	{
+		if (PayPal_PayerApprovalRequest_MailTemplate_ID < 1) 
+			set_Value (COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, null);
+		else 
+			set_Value (COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, Integer.valueOf(PayPal_PayerApprovalRequest_MailTemplate_ID));
+	}
+
+	/** Get Payer Approval Request Mail Template.
+		@return Payer Approval Request Mail Template	  */
+	@Override
+	public int getPayPal_PayerApprovalRequest_MailTemplate_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Payment Approved Callback URL.
+		@param PayPal_PaymentApprovedCallbackUrl 
+		Called by PayPal when the payer approved the payment.
+	  */
+	@Override
+	public void setPayPal_PaymentApprovedCallbackUrl (java.lang.String PayPal_PaymentApprovedCallbackUrl)
+	{
+		set_Value (COLUMNNAME_PayPal_PaymentApprovedCallbackUrl, PayPal_PaymentApprovedCallbackUrl);
+	}
+
+	/** Get Payment Approved Callback URL.
+		@return Called by PayPal when the payer approved the payment.
+	  */
+	@Override
+	public java.lang.String getPayPal_PaymentApprovedCallbackUrl () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PayPal_PaymentApprovedCallbackUrl);
 	}
 
 	/** Set Sandbox.

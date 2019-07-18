@@ -5,8 +5,11 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -15,6 +18,7 @@ import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.payment.reservation.PaymentReservationStatus;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -43,6 +47,8 @@ import lombok.NonNull;
 @Service
 public class OrderPaymentReservationService
 {
+	private final IOrderBL ordersService = Services.get(IOrderBL.class);
+	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final PaymentReservationService paymentReservationService;
 
 	public OrderPaymentReservationService(
@@ -69,10 +75,14 @@ public class OrderPaymentReservationService
 		final PaymentReservation paymentReservation;
 		if (existingPaymentReservation == null)
 		{
+			final BPartnerContactId payerContactId = ordersService.getBillToContactId(salesOrder);
+
 			paymentReservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
 					.clientId(ClientId.ofRepoId(salesOrder.getAD_Client_ID()))
 					.orgId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()))
 					.amount(extractGrandTotal(salesOrder))
+					.payerContactId(payerContactId)
+					.payerEmail(bpartnersRepo.getContactEMail(payerContactId))
 					.salesOrderId(salesOrderId)
 					.dateTrx(SystemTime.asLocalDate())
 					.paymentRule(paymentRule)
