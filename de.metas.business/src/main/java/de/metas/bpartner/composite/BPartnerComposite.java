@@ -164,7 +164,7 @@ public final class BPartnerComposite
 		}
 		if (defaultContacts.size() > 1)
 		{
-			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as default"));
+			result.add(ITranslatableString.constant("Not more than one contact may be flagged as default"));
 		}
 
 		return result.build();
@@ -192,11 +192,11 @@ public final class BPartnerComposite
 		}
 		if (defaultShipToLocations.size() > 1)
 		{
-			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default shipTo location"));
+			result.add(ITranslatableString.constant("Not more than one location may be flagged as default shipTo location"));
 		}
 		if (defaultBillToLocations.size() > 1)
 		{
-			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default billTo location"));
+			result.add(ITranslatableString.constant("Not more than one location may be flagged as default billTo location"));
 		}
 		return result.build();
 	}
@@ -211,7 +211,7 @@ public final class BPartnerComposite
 				|| !extractLocationGlns().isEmpty();
 		if (!hasLookupKey)
 		{
-			result.add(TranslatableStrings.constant("At least one of bpartner.id, bpartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
+			result.add(ITranslatableString.constant("At least one of bpartner.id, bpartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
 		}
 
 		return result.build();
