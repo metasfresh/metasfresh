@@ -43,7 +43,7 @@ export class SalesInvoice {
         .should('contain', new Date().getDate())
         .should('contain', new Date().getFullYear());
 
-      cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner);
+      cy.writeIntoLookupListField('C_BPartner_ID', salesInvoice.businessPartner, salesInvoice.businessPartner, false, false, null, true);
 
       cy.getStringFieldValue('M_PriceList_ID').should('not.be.empty');
       cy.getStringFieldValue('C_Currency_ID').should('not.be.empty');

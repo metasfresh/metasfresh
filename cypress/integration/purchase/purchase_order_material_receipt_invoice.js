@@ -186,7 +186,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
     /**Navigate back in the purchase order */
     cy.go('back');
     /**Go to 'Material receipt' */
-    cy.wait(4000);
+    cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

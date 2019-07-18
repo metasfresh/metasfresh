@@ -3,7 +3,7 @@ import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { humanReadableNow } from "../../support/utils/utils";
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
