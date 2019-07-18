@@ -219,7 +219,7 @@ public class RefundTestTools
 
 		final I_C_Invoice_Candidate invoiceCandidateRecord = newInstance(I_C_Invoice_Candidate.class);
 		invoiceCandidateRecord.setIsSOTrx(true); // pls keep in sync with C_DocType that we create in this classe's constructor
-		invoiceCandidateRecord.setM_Product(productRecord);
+		invoiceCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		invoiceCandidateRecord.setPriceActual(HUNDRED);
 		invoiceCandidateRecord.setC_Currency_ID(currency.getId().getRepoId());
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(REFUND_CANDIDATE_INVOICE_DATE));
@@ -339,7 +339,7 @@ public class RefundTestTools
 		invoiceCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(ASSIGNABLE_CANDIDATE_INVOICE_DATE));
 		invoiceCandidateRecord.setBill_BPartner_ID(BPARTNER_ID.getRepoId());
 
-		invoiceCandidateRecord.setM_Product(productRecord);
+		invoiceCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		saveRecord(invoiceCandidateRecord);
 		return invoiceCandidateRecord;
 	}

@@ -41,8 +41,10 @@ import lombok.Value;
 public interface ITaxDAO extends ISingletonService
 {
 	int C_TAX_ID_NO_TAX_FOUND = 100;
-	
+
 	I_C_Tax getTaxById(int taxRepoId);
+
+	I_C_Tax getTaxByIdOrNull(int taxRepoId);
 
 	boolean retrieveIsTaxExempt(Properties ctx, int bPartnerId, Timestamp date, String trxName);
 

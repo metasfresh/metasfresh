@@ -319,9 +319,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set BPartner / Location / Contact
-		ic.setBill_BPartner(billBPartner);
-		ic.setBill_Location(billBPLocation);
-		ic.setBill_User(billBPContact);
+		ic.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
+		ic.setBill_Location_ID(billBPLocation.getC_BPartner_Location_ID());
+		ic.setBill_User_ID(billBPContact.getAD_User_ID());
 	}
 
 	private void setM_InventoryLine(final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)

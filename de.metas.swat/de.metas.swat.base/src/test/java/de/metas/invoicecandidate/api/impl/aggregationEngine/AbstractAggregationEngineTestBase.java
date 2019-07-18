@@ -38,7 +38,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.junit.Assert;
@@ -56,9 +56,13 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.util.Services;
 
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
@@ -241,14 +245,18 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	public final void validateInvoiceHeader(final String message, final IInvoiceHeader invoice, final I_C_Invoice_Candidate fromIC, final boolean invoiceReferencesOrder)
 	{
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
 		final String messagePrefix = message + " - IC=" + POJOWrapper.getInstanceName(fromIC);
 
 		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getAD_Org_ID());
 
 		if (fromIC.getM_PriceList_Version_ID() > 0)
 		{
+
+			final I_M_PriceList priceList = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(fromIC.getM_PriceList_Version_ID()));
 			// if our IC had a M_PriceListVersion_ID, we want that PLV's M_PriceList to be in the invoice
-			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", fromIC.getM_PriceList_Version().getM_PriceList_ID(), invoice.getM_PriceList_ID());
+			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", priceList.getM_PriceList_ID(), invoice.getM_PriceList_ID());
 		}
 
 		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), invoice.getBill_BPartner_ID());

@@ -88,12 +88,12 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner(bPartnerRecord);
-		assignableIcRecord.setM_Product(productRecord);
+		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		save(assignableIcRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
@@ -126,12 +126,12 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(refundContractRecord);
 
 		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
-		refundContractIcRecord.setM_Product(productRecord);
+		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency(currencyRecord);
+		refundContractIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 

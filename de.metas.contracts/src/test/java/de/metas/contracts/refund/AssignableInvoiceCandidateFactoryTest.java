@@ -78,12 +78,12 @@ public class AssignableInvoiceCandidateFactoryTest
 		dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner(bPartnerRecord);
-		assignableIcRecord.setM_Product(productRecord);
+		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		save(assignableIcRecord);
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();

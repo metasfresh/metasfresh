@@ -180,11 +180,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_InOutLine> referencingLines = retrieveActiveReferencingInoutLines(inOutLine);
-		
+
 		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
 				referencingLines.stream()
 				.map(referencingLine -> GuavaCollectors.entry(
-						extractPaymentTermIdOrNull(referencingLine), 
+						extractPaymentTermIdOrNull(referencingLine),
 						referencingLine))
 				.filter(ImmutableMapEntry::isKeyNotNull)
 				.collect(GuavaCollectors.toImmutableListMultimap());
@@ -267,6 +267,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable BigDecimal forcedQtyToAllocate)
 	{
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_M_InOut inOut = create(inOutLine.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, inOutLine);
 
@@ -339,7 +342,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set Invoice Rule from BPartner
 		else
 		{
-			final String invoiceRule = ic.getBill_BPartner().getInvoiceRule();
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
+			final String invoiceRule = billBPartner.getInvoiceRule();
 			if (!Check.isEmpty(invoiceRule))
 			{
 				ic.setInvoiceRule(invoiceRule);
@@ -543,7 +547,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 			return inOutLine.getMovementQty();
 		}
-		
+
 		final PaymentTermId icPaymentTermId = PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID());
 
 		BigDecimal qtyDeliveredLeftToAllocateForAnyPaymentTerm = packagingInOutLine.getMovementQty();
@@ -756,9 +760,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set BPartner / Location / Contact
-		ic.setBill_BPartner(billBPartner);
-		ic.setBill_Location(billBPLocation);
-		ic.setBill_User(billBPContact);
+		ic.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
+		ic.setBill_Location_ID(billBPLocation.getC_BPartner_Location_ID());
+		ic.setBill_User_ID(billBPContact == null? -1 : billBPContact.getAD_User_ID());
 	}
 
 	@Override

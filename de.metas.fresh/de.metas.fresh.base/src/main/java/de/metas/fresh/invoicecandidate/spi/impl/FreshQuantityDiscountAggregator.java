@@ -35,13 +35,17 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.ObjectUtils;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import org.compiere.model.I_C_BPartner;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
@@ -72,7 +76,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 * Stores ics and their icIols whose iols are in dispute. Those icIols are ignored by the default implementation, so we need to store them here, because in this implementation we want to keep
 	 * track of them (to have the chance to create MatchInv and stuff).
 	 */
-	private Map<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>>();
+	private Map<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<>();
 
 	/**
 	 * We use the default aggregator to do most of the work.
@@ -113,7 +117,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		List<I_C_InvoiceCandidate_InOutLine> list = ic2IndisputeIcIols.get(request.getC_Invoice_Candidate());
 		if (list == null)
 		{
-			list = new ArrayList<I_C_InvoiceCandidate_InOutLine>();
+			list = new ArrayList<>();
 			ic2IndisputeIcIols.put(request.getC_Invoice_Candidate(), list);
 		}
 
@@ -154,7 +158,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return invoiceCandAggregates;
 	}
 
-	private Set<Integer> candsSeen = new HashSet<Integer>();
+	private Set<Integer> candsSeen = new HashSet<>();
 
 	/**
 	 * Create quality discount invoice line aggregates (one for each invoice candidate), if needed.
@@ -285,6 +289,8 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 */
 	private final String getDescriptionPrefix(final I_C_Invoice_Candidate candidate)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final int bpartnerId = candidate.getBill_BPartner_ID();
 
 		String descriptionPrefix = bpartnerId2descriptionPrefix.get(bpartnerId);
@@ -292,7 +298,8 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		// Build descriptionPrefix if not already built
 		if (descriptionPrefix == null)
 		{
-			final String adLanguage = candidate.getBill_BPartner().getAD_Language();
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(candidate.getBill_BPartner_ID()));
+			final String adLanguage = billBPartner.getAD_Language();
 			descriptionPrefix = msgBL.getMsg(adLanguage, MSG_QualityDiscount, new Object[] {});
 
 			bpartnerId2descriptionPrefix.put(bpartnerId, descriptionPrefix);

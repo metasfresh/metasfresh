@@ -1,5 +1,9 @@
 package de.metas.fresh.api.invoicecandidate.impl;
 
+import org.junit.Test;
+
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -10,12 +14,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,11 +29,6 @@ package de.metas.fresh.api.invoicecandidate.impl;
 
 import mockit.Expectations;
 import mockit.Mocked;
-
-import org.compiere.model.I_C_DocType;
-import org.junit.Test;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 public class FreshInvoiceCandBLTest
 {
@@ -47,7 +46,6 @@ public class FreshInvoiceCandBLTest
 		new Expectations()
 		{{
 			candidate.isSOTrx(); result = true; times = 1;
-			candidate.setC_DocTypeInvoice((I_C_DocType)any); times = 0;
 			candidate.setC_DocTypeInvoice_ID(anyInt); times = 0;
 		}};
 		// @formatter:on

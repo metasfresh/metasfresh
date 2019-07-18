@@ -44,6 +44,7 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -57,7 +58,8 @@ import de.metas.util.ISingletonService;
 public interface IInvoiceCandDAO extends ISingletonService
 {
 	/**
-f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 * f * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 *
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
@@ -173,12 +175,7 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 */
 	void invalidateCandsForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
-	/**
-	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code> and have their effective invoice rule set to <code>KundenintervallNachLieferung</code>.
-	 *
-	 * @param bpartner
-	 */
-	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bpartner);
+	void invalidateCandsForBPartnerInvoiceRule(BPartnerId bpartnerId);
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
