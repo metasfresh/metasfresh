@@ -179,11 +179,11 @@ public final class BPartnerComposite
 		}
 		if (purchaseDefaultContacts.size() > 1)
 		{
-			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as purchaseDefault"));
+			result.add(ITranslatableString.constant("Not more than one contact may be flagged as purchaseDefault"));
 		}
 		if (salesDefaultContacts.size() > 1)
 		{
-			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as salesDefault"));
+			result.add(ITranslatableString.constant("Not more than one contact may be flagged as salesDefault"));
 		}
 
 		return result.build();
