@@ -151,20 +151,39 @@ public final class BPartnerComposite
 			{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 
-		final List<BPartnerContact> defaultContacts = new ArrayList<BPartnerContact>();
+		final List<BPartnerContact> defaultContacts = new ArrayList<>();
+		final List<BPartnerContact> purchaseDefaultContacts = new ArrayList<>();
+		final List<BPartnerContact> salesDefaultContacts = new ArrayList<>();
+
 		for (final BPartnerContact contact : contacts)
 		{
-			//result.addAll(contact.validate()); // doesn't yet have a validate method
+			// result.addAll(contact.validate()); // doesn't yet have a validate method
 
 			final BPartnerContactType contactType = contact.getContactType();
 			if (contactType != null && contactType.getDefaultContact().orElse(false))
 			{
 				defaultContacts.add(contact);
 			}
+			if (contactType != null && contactType.getPurchaseDefault().orElse(false))
+			{
+				purchaseDefaultContacts.add(contact);
+			}
+			if (contactType != null && contactType.getSalesDefault().orElse(false))
+			{
+				salesDefaultContacts.add(contact);
+			}
 		}
 		if (defaultContacts.size() > 1)
 		{
 			result.add(ITranslatableString.constant("Not more than one contact may be flagged as default"));
+		}
+		if (purchaseDefaultContacts.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as purchaseDefault"));
+		}
+		if (salesDefaultContacts.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as salesDefault"));
 		}
 
 		return result.build();
@@ -174,8 +193,8 @@ public final class BPartnerComposite
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 
-		final List<BPartnerLocation> defaultShipToLocations = new ArrayList<BPartnerLocation>();
-		final List<BPartnerLocation> defaultBillToLocations = new ArrayList<BPartnerLocation>();
+		final List<BPartnerLocation> defaultShipToLocations = new ArrayList<>();
+		final List<BPartnerLocation> defaultBillToLocations = new ArrayList<>();
 		for (final BPartnerLocation location : locations)
 		{
 			result.addAll(location.validate());

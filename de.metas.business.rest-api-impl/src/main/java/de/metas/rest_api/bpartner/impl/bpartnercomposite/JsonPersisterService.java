@@ -856,6 +856,11 @@ public class JsonPersisterService
 				.defaultContact(jsonBPartnerContact.getDefaultContact())
 				.shipToDefault(jsonBPartnerContact.getShipToDefault())
 				.billToDefault(jsonBPartnerContact.getBillToDefault())
+				.purchase(jsonBPartnerContact.getPurchase())
+				.purchaseDefault(jsonBPartnerContact.getPurchaseDefault())
+				.sales(jsonBPartnerContact.getSales())
+				.salesDefault(jsonBPartnerContact.getSalesDefault())
+				.subjectMatter(jsonBPartnerContact.getSubjectMatter())
 				.build();
 		contact.setContactType(contactType);
 	}
