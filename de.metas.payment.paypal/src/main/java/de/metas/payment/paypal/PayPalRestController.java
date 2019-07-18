@@ -5,15 +5,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.Profiles;
-import de.metas.payment.paypal.client.PayPalOrder;
-import de.metas.payment.paypal.client.PayPalOrderId;
-import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
-import de.metas.payment.reservation.PaymentReservation;
-import de.metas.payment.reservation.PaymentReservationId;
-import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.payment.paypal.client.PayPalOrderExternalId;
 import lombok.NonNull;
 
 /*
@@ -43,47 +36,19 @@ import lombok.NonNull;
 @RequestMapping("/paypal")
 public class PayPalRestController
 {
-	private final PaymentReservationService paymentReservationService;
-	private final PayPalPaymentProcessor payPalPaymentProcessor;
+	private final PayPal paypal;
 
-	public PayPalRestController(
-			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final PayPalPaymentProcessor payPalPaymentProcessor)
+	public PayPalRestController(@NonNull final PayPal paypal)
 	{
-		this.paymentReservationService = paymentReservationService;
-		this.payPalPaymentProcessor = payPalPaymentProcessor;
+		this.paypal = paypal;
 	}
 
 	@RequestMapping("/approved")
 	public void notifyOrderApprovedByPayer(
 			@RequestParam(value = "token", required = true) final String token)
 	{
-		final PayPalOrderId apiOrderId = PayPalOrderId.ofString(token);
-		onOrderApprovedByPayer(apiOrderId);
-	}
-
-	@VisibleForTesting
-	public PaymentReservation onOrderApprovedByPayer(@NonNull final PayPalOrderId apiOrderId)
-	{
-		final PaymentReservation reservation = updateReservationFromAPIOrder(apiOrderId);
-		if (reservation.getStatus().isApprovedByPayer())
-		{
-			payPalPaymentProcessor.authorizePayPalOrder(reservation);
-			paymentReservationService.save(reservation);
-		}
-
-		return reservation;
-	}
-
-	private PaymentReservation updateReservationFromAPIOrder(@NonNull final PayPalOrderId apiOrderId)
-	{
-		final PayPalOrder payPalOrder = payPalPaymentProcessor.updatePayPalOrderFromAPI(apiOrderId);
-
-		final PaymentReservationId reservationId = payPalOrder.getPaymentReservationId();
-		final PaymentReservation reservation = paymentReservationService.getById(reservationId);
-		PayPalPaymentProcessor.updateReservationFromPayPalOrder(reservation, payPalOrder);
-		paymentReservationService.save(reservation);
-		return reservation;
+		final PayPalOrderExternalId apiOrderId = PayPalOrderExternalId.ofString(token);
+		paypal.onOrderApprovedByPayer(apiOrderId);
 	}
 
 }

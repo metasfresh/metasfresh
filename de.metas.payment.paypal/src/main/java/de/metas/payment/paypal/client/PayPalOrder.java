@@ -2,6 +2,7 @@ package de.metas.payment.paypal.client;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -38,13 +39,16 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class PayPalOrder
 {
+	@Nullable
+	PayPalOrderId id;
+
 	@NonNull
 	PaymentReservationId paymentReservationId;
 
 	/** i.e. the paypal order id */
 	@NonNull
-	PayPalOrderId externalId;
-	
+	PayPalOrderExternalId externalId;
+
 	@NonNull
 	PayPalOrderStatus status;
 
@@ -75,6 +79,18 @@ public class PayPalOrder
 		catch (MalformedURLException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	public PayPalOrder withId(@NonNull final PayPalOrderId id)
+	{
+		if (Objects.equals(this.id, id))
+		{
+			return this;
+		}
+		else
+		{
+			return toBuilder().id(id).build();
 		}
 	}
 }

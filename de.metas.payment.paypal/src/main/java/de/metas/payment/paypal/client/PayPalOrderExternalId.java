@@ -6,12 +6,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
- * de.metas.payment.paypal
+ * de.metas.payment.paypalplus
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -19,48 +19,55 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-public class PayPalOrderId implements RepoIdAware
+@EqualsAndHashCode
+public final class PayPalOrderExternalId
 {
 	@JsonCreator
-	public static PayPalOrderId ofRepoId(final int repoId)
+	public static PayPalOrderExternalId ofString(@NonNull final String orderId)
 	{
-		return new PayPalOrderId(repoId);
+		return new PayPalOrderExternalId(orderId);
 	}
 
-	public static PayPalOrderId ofRepoIdOrNull(final int repoId)
+	public static PayPalOrderExternalId ofNullableString(@Nullable final String orderId)
 	{
-		return repoId > 0 ? new PayPalOrderId(repoId) : null;
+		return !Check.isEmpty(orderId, true) ? new PayPalOrderExternalId(orderId) : null;
 	}
 
-	public static int toRepoId(@Nullable final PayPalOrderId orderId)
-	{
-		return orderId != null ? orderId.getRepoId() : -1;
-	}
+	private final String id;
 
-	int repoId;
-
-	private PayPalOrderId(final int repoId)
+	private PayPalOrderExternalId(final String id)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "PayPal_Order_ID");
+		Check.assumeNotEmpty(id, "id is not empty");
+		this.id = id;
 	}
 
 	@Override
-	@JsonValue
-	public int getRepoId()
+	@Deprecated
+	public String toString()
 	{
-		return repoId;
+		return getAsString();
+	}
+
+	@JsonValue
+	public String getAsString()
+	{
+		return id;
+	}
+
+	public static String toString(@Nullable final PayPalOrderExternalId id)
+	{
+		return id != null ? id.getAsString() : null;
 	}
 }

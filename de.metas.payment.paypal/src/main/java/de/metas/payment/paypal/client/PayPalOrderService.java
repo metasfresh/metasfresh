@@ -40,6 +40,17 @@ public class PayPalOrderService
 		this.payPalOrderRepo = payPalOrderRepository;
 	}
 
+	public PayPalOrder getById(@NonNull final PayPalOrderId id)
+	{
+		return payPalOrderRepo.getById(id);
+	}
+
+	public PayPalOrderExternalId getExternalIdByLocalId(@NonNull final PayPalOrderId id)
+	{
+		final PayPalOrder paypalOrder = getById(id);
+		return paypalOrder.getExternalId();
+	}
+
 	public PayPalOrder getByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
 		return getByReservationIdIfExists(reservationId)
@@ -59,7 +70,7 @@ public class PayPalOrderService
 	}
 
 	public PayPalOrder save(
-			@NonNull final PayPalOrderId externalId,
+			@NonNull final PayPalOrderExternalId externalId,
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		return payPalOrderRepo.save(externalId, apiOrder);

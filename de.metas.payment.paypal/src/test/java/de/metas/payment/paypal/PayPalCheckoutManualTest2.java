@@ -32,7 +32,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paypal.client.PayPalClientService;
-import de.metas.payment.paypal.client.PayPalOrderId;
+import de.metas.payment.paypal.client.PayPalOrder;
+import de.metas.payment.paypal.client.PayPalOrderExternalId;
 import de.metas.payment.paypal.client.PayPalOrderRepository;
 import de.metas.payment.paypal.client.PayPalOrderService;
 import de.metas.payment.paypal.config.PayPalConfigProvider;
@@ -86,10 +87,9 @@ public class PayPalCheckoutManualTest2
 	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final CurrencyId currencyId;
 
-	private PayPalOrderRepository payPalOrderRepository;
-	private PayPalPaymentProcessor payPalPaymentProcessor;
+	private PayPal paypal;
+	private PayPalOrderService payPalOrderService;
 	private PaymentReservationService paymentReservationService;
-	private PayPalRestController payPalCallbacksService;
 
 	private PayPalCheckoutManualTest2()
 	{
@@ -118,28 +118,32 @@ public class PayPalCheckoutManualTest2
 				.approveMailTemplateId(createApproveMailTemplate())
 				.build();
 
-		final PayPalClientService payPalClient = new PayPalClientService(payPalConfigProvider, new PayPalLogRepository(Optional.empty()));
+		final PayPalClientService payPalClient = new PayPalClientService(
+				payPalConfigProvider,
+				new PayPalLogRepository(Optional.empty()));
 
-		payPalOrderRepository = new PayPalOrderRepository(Optional.empty());
-		final PayPalOrderService payPalOrdersService = new PayPalOrderService(payPalOrderRepository);
+		payPalOrderService = new PayPalOrderService(
+				new PayPalOrderRepository(Optional.empty()));
 
-		final MoneyService moneyService = new MoneyService(new CurrencyRepository());
+		final MoneyService moneyService = new MoneyService(
+				new CurrencyRepository());
 
-		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
+		final MailService mailService = new MailService(
+				new MailboxRepository(),
+				new MailTemplateRepository());
 
-		payPalPaymentProcessor = new PayPalPaymentProcessor(
-				payPalClient,
-				payPalOrdersService,
-				moneyService,
-				mailService);
+		final PaymentReservationRepository paymentReservationRepo = new PaymentReservationRepository();
 
-		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.of(ImmutableList.of(payPalPaymentProcessor)));
+		paypal = new PayPal(payPalOrderService, payPalClient, paymentReservationRepo, mailService, moneyService);
+
+		final PayPalPaymentProcessor payPalPaymentProcessor = new PayPalPaymentProcessor(paypal);
+
+		final PaymentProcessorService paymentProcessors = new PaymentProcessorService(
+				Optional.of(ImmutableList.of(payPalPaymentProcessor)));
+
 		paymentReservationService = new PaymentReservationService(
-				new PaymentReservationRepository(),
+				paymentReservationRepo,
 				paymentProcessors);
-
-		payPalCallbacksService = new PayPalRestController(paymentReservationService, payPalPaymentProcessor);
-
 	}
 
 	private static MailTemplateId createApproveMailTemplate()
@@ -148,8 +152,8 @@ public class PayPalCheckoutManualTest2
 		record.setName("approve mail template");
 		record.setMailHeader("approve payment");
 		record.setMailText("please approve payment:"
-				+ "\n Approve URL: @" + PayPalPaymentProcessor.MAIL_VAR_ApproveURL + "@"
-				+ "\n Amount: @" + PayPalPaymentProcessor.MAIL_VAR_Amount + "@");
+				+ "\n Approve URL: @" + PayPal.MAIL_VAR_ApproveURL + "@"
+				+ "\n Amount: @" + PayPal.MAIL_VAR_Amount + "@");
 		saveRecord(record);
 		return MailTemplateId.ofRepoId(record.getR_MailText_ID());
 	}
@@ -199,9 +203,8 @@ public class PayPalCheckoutManualTest2
 		//
 		// Wait: payer approval & order authorization
 		{
-			final PayPalOrderId apiOrderId = payPalOrderRepository.getByReservationId(reservationId)
-					.get()
-					.getExternalId();
+			final PayPalOrder payPalOrder = payPalOrderService.getByReservationId(reservationId);
+			final PayPalOrderExternalId apiOrderId = payPalOrder.getExternalId();
 
 			pollUntilCompleted(apiOrderId);
 		}
@@ -222,11 +225,11 @@ public class PayPalCheckoutManualTest2
 		// TODO: refund
 	}
 
-	private void pollUntilCompleted(@NonNull final PayPalOrderId apiOrderId)
+	private void pollUntilCompleted(@NonNull final PayPalOrderExternalId apiOrderId)
 	{
 		while (true)
 		{
-			final PaymentReservation reservation = payPalCallbacksService.onOrderApprovedByPayer(apiOrderId);
+			final PaymentReservation reservation = paypal.onOrderApprovedByPayer(apiOrderId);
 			if (reservation.getStatus().isCompleted())
 			{
 				System.out.println("Reservation " + reservation.getId() + " (apiOrderId=" + apiOrderId + ") was completed!");

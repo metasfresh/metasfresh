@@ -1,5 +1,6 @@
 package de.metas.payment.paypal.client;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -67,6 +68,12 @@ public class PayPalOrderRepository
 		}
 	}
 
+	public PayPalOrder getById(@NonNull final PayPalOrderId id)
+	{
+		final I_PayPal_Order record = load(id, I_PayPal_Order.class);
+		return toPayPalOrder(record);
+	}
+
 	public Optional<PayPalOrder> getByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
 		return getRecordByReservationId(reservationId).map(PayPalOrderRepository::toPayPalOrder);
@@ -83,7 +90,7 @@ public class PayPalOrderRepository
 		return Optional.ofNullable(record);
 	}
 
-	public Optional<I_PayPal_Order> getRecordByExternalId(@NonNull final PayPalOrderId externalId)
+	public Optional<I_PayPal_Order> getRecordByExternalId(@NonNull final PayPalOrderExternalId externalId)
 	{
 		final I_PayPal_Order record = Services.get(IQueryBL.class).createQueryBuilder(I_PayPal_Order.class)
 				.addOnlyActiveRecordsFilter()
@@ -97,8 +104,9 @@ public class PayPalOrderRepository
 	private static PayPalOrder toPayPalOrder(final I_PayPal_Order record)
 	{
 		return PayPalOrder.builder()
+				.id(PayPalOrderId.ofRepoIdOrNull(record.getPayPal_Order_ID()))
 				.paymentReservationId(PaymentReservationId.ofRepoId(record.getC_Payment_Reservation_ID()))
-				.externalId(PayPalOrderId.ofNullableString(record.getExternalId()))
+				.externalId(PayPalOrderExternalId.ofNullableString(record.getExternalId()))
 				.status(PayPalOrderStatus.ofCode(record.getStatus()))
 				.authorizationId(PayPalOrderAuthorizationId.ofNullableString(record.getPayPal_AuthorizationId()))
 				.payerApproveUrlString(record.getPayPal_PayerApproveUrl())
@@ -111,7 +119,7 @@ public class PayPalOrderRepository
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		return order.toBuilder()
-				.externalId(PayPalOrderId.ofString(apiOrder.id()))
+				.externalId(PayPalOrderExternalId.ofString(apiOrder.id()))
 				.status(PayPalOrderStatus.ofCode(apiOrder.status()))
 				.payerApproveUrlString(extractApproveUrlOrNull(apiOrder))
 				.authorizationId(extractAuthorizationIdOrNull(apiOrder))
@@ -121,7 +129,7 @@ public class PayPalOrderRepository
 
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
-		order.setExternalId(PayPalOrderId.toString(from.getExternalId()));
+		order.setExternalId(PayPalOrderExternalId.toString(from.getExternalId()));
 		order.setPayPal_AuthorizationId(PayPalOrderAuthorizationId.toString(from.getAuthorizationId()));
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
@@ -144,7 +152,7 @@ public class PayPalOrderRepository
 	}
 
 	public PayPalOrder save(
-			@NonNull final PayPalOrderId externalId,
+			@NonNull final PayPalOrderExternalId externalId,
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
 		final I_PayPal_Order existingRecord = getRecordByExternalId(externalId).orElse(null);
@@ -165,6 +173,8 @@ public class PayPalOrderRepository
 
 		updateRecord(record, order);
 		saveRecord(record);
+
+		order = order.withId(PayPalOrderId.ofRepoId(record.getPayPal_Order_ID()));
 
 		return order;
 	}

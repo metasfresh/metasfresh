@@ -68,7 +68,7 @@ public class PayPalClientService
 		this.logsRepo = logsRepo;
 	}
 
-	public Order getAPIOrderById(@NonNull final PayPalOrderId apiOrderId)
+	public Order getAPIOrderById(@NonNull final PayPalOrderExternalId apiOrderId)
 	{
 		final OrdersGetRequest request = new OrdersGetRequest(apiOrderId.getAsString());
 		final HttpResponse<Order> response = executeRequest(request, PayPalClientExecutionContext.EMPTY);
@@ -86,7 +86,7 @@ public class PayPalClientService
 	}
 
 	public Order authorizeOrder(
-			@NonNull final PayPalOrderId apiOrderId,
+			@NonNull final PayPalOrderExternalId apiOrderId,
 			@NonNull final PayPalClientExecutionContext context)
 	{
 		final OrdersAuthorizeRequest request = new OrdersAuthorizeRequest(apiOrderId.getAsString());
