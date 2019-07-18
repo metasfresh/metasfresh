@@ -55,9 +55,14 @@ public class JsonResponseContact
 	public static final String FAX = "fax";
 	public static final String DESCRIPTION = "description";
 	public static final String NEWSLETTER = "newsletter";
+	public static final String DEFAULT_CONTACT = "defaultContact";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String BILL_TO_DEFAULT = "billToDefault";
-	public static final String DEFAULT_CONTACT = "defaultContact";
+	public static final String SALES_DEFAULT = "salesDefault";
+	public static final String SALES = "salesDefault";
+	public static final String PURCHASE_DEFAULT = "purchaseDefault";
+	public static final String PURCHASE = "purchase";
+	public static final String SUBJECT_MATTER = "subjectMatter";
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
@@ -113,6 +118,21 @@ public class JsonResponseContact
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean defaultContact;
 
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean sales;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean salesDefault;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean purchase;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean purchaseDefault;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean subjectMatter;
+
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
@@ -141,11 +161,23 @@ public class JsonResponseContact
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
 			@JsonProperty(DEFAULT_CONTACT) final boolean defaultContact,
 
+			@JsonProperty(SALES) final boolean sales,
+			@JsonProperty(SALES_DEFAULT) final boolean salesDefault,
+			@JsonProperty(PURCHASE) final boolean purchase,
+			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
+			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
+
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.defaultContact = defaultContact;
 		this.billToDefault = billToDefault;
 		this.shipToDefault = shipToDefault;
+		this.sales = sales;
+		this.salesDefault = salesDefault;
+		this.purchase = purchase;
+		this.purchaseDefault = purchaseDefault;
+		this.subjectMatter = subjectMatter;
+
 		this.newsletter = newsletter;
 		this.description = description;
 		this.fax = fax;
@@ -163,6 +195,7 @@ public class JsonResponseContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+
 		this.changeInfo = changeInfo;
 	}
 

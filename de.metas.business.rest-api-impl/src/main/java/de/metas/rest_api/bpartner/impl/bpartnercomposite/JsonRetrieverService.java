@@ -130,6 +130,13 @@ public class JsonRetrieverService
 			.put("shipToDefault", JsonResponseContact.SHIP_TO_DEFAULT)
 			.put("billToDefault", JsonResponseContact.BILL_TO_DEFAULT)
 			.put("defaultContact", JsonResponseContact.DEFAULT_CONTACT)
+
+			.put("sales", JsonResponseContact.SALES)
+			.put("salesDefault", JsonResponseContact.SALES_DEFAULT)
+			.put("purchase", JsonResponseContact.PURCHASE)
+			.put("purchaseDefault", JsonResponseContact.PURCHASE_DEFAULT)
+			.put("subjectMatter", JsonResponseContact.SUBJECT_MATTER)
+
 			.build();
 
 	/** Mapping between {@link JsonResponseLocation} property names and REST-API properties names */
@@ -335,6 +342,11 @@ public class JsonRetrieverService
 				.defaultContact(contactType.getDefaultContactNotNull())
 				.billToDefault(contactType.getBillToDefaultNotNull())
 				.shipToDefault(contactType.getShipToDefaultNotNull())
+				.sales(contactType.getSalesNotNull())
+				.salesDefault(contactType.getSalesDefaultNotNull())
+				.purchase(contactType.getPurchaseNotNull())
+				.purchaseDefault(contactType.getPurchaseDefaultNotNull())
+				.subjectMatter(contactType.getSubjectMatterNotNull())
 				.changeInfo(jsonChangeInfo)
 				.build();
 	}

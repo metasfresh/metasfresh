@@ -734,6 +734,11 @@ public class BPartnerCompositeRepository
 						.defaultContact(contactRecord.isDefaultContact())
 						.billToDefault(contactRecord.isBillToContact_Default())
 						.shipToDefault(contactRecord.isShipToContact_Default())
+						.sales(contactRecord.isSalesContact())
+						.salesDefault(contactRecord.isSalesContact_Default())
+						.purchase(contactRecord.isPurchaseContact())
+						.purchaseDefault(contactRecord.isPurchaseContact_Default())
+						.subjectMatter(contactRecord.isSubjectMatterContact())
 						.build())
 				.email(contactRecord.getEMail())
 				.externalId(ExternalId.ofOrNull(contactRecord.getExternalId()))
@@ -968,6 +973,11 @@ public class BPartnerCompositeRepository
 			contactType.getDefaultContact().ifPresent(b -> bpartnerContactRecord.setIsDefaultContact(b));
 			contactType.getBillToDefault().ifPresent(b -> bpartnerContactRecord.setIsBillToContact_Default(b));
 			contactType.getShipToDefault().ifPresent(b -> bpartnerContactRecord.setIsShipToContact_Default(b));
+			contactType.getSales().ifPresent(b -> bpartnerContactRecord.setIsSalesContact(b));
+			contactType.getSalesDefault().ifPresent(b -> bpartnerContactRecord.setIsSalesContact_Default(b));
+			contactType.getPurchase().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact(b));
+			contactType.getPurchaseDefault().ifPresent(b -> bpartnerContactRecord.setIsPurchaseContact_Default(b));
+			contactType.getSubjectMatter().ifPresent(b -> bpartnerContactRecord.setIsSubjectMatterContact(b));
 		}
 
 		bpartnerContactRecord.setDescription(bpartnerContact.getDescription());

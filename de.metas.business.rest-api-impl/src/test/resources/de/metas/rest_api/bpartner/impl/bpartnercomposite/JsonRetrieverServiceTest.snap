@@ -122,6 +122,26 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           "shipToDefault": {
             "value": false,
             "present": true
+          },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
+            "value": false,
+            "present": true
+          },
+          "purchase": {
+            "value": false,
+            "present": true
+          },
+          "purchaseDefault": {
+            "value": false,
+            "present": true
+          },
+          "subjectMatter": {
+            "value": false,
+            "present": true
           }
         },
         "changeLog": {

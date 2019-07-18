@@ -70,29 +70,63 @@ public class JsonRequestContact
 	String phone;
 
 	@JsonInclude(Include.NON_NULL)
-	private String fax;
+	String fax;
 
 	@JsonInclude(Include.NON_NULL)
-	private String mobilePhone;
+	String mobilePhone;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	Boolean defaultContact;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
+			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
+			+ "If `true`, then " //
+			+ "* another possibly exiting metasfresh contact might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	@JsonInclude(Include.NON_NULL)
 	Boolean shipToDefault;
 
-	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(required = false, value = "Only one location per request may have `billToDefault == true`.\n"
+			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
+			+ "If `true`, then " //
+			+ "* another possibly exiting metasfresh contact might be set to `billToDefault = false`, even if it is not specified in this request.")
 	@JsonInclude(Include.NON_NULL)
 	Boolean billToDefault;
 
 	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
 	@JsonInclude(Include.NON_NULL)
-	private Boolean newsletter;
+	Boolean newsletter;
 
 	@JsonInclude(Include.NON_NULL)
-	private String description;
+	String description;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean sales;
+
+	@ApiModelProperty(required = false, value = "Only one location per request may have `salesDefault == true`.\n"
+			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
+			+ "If `true`, then " //
+			+ "* `sales` is always be assumed to be `true` as well"
+			+ "* another possibly exiting metasfresh contact might be set to `salesDefault = false`, even if it is not specified in this request.")
+	@JsonInclude(Include.NON_NULL)
+	Boolean salesDefault;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean purchase;
+
+	@ApiModelProperty(required = false, value = "Only one location per request may have `purchaseDefault == true`.\n"
+			+ "If not specified but required (e.g. because a new contact is created), then `false` is assumed.\n"
+			+ "If `true`, then " //
+			+ "* `purchase` is always be assumed to be `true` as well"
+			+ "* another possibly exiting metasfresh contact might be set to `purchaseDefault = false`, even if it is not specified in this request.")
+	@JsonInclude(Include.NON_NULL)
+	Boolean purchaseDefault;
+
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@JsonInclude(Include.NON_NULL)
+	Boolean subjectMatter;
 
 	@ApiModelProperty(position = 20, // shall be last
 			required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
@@ -122,6 +156,13 @@ public class JsonRequestContact
 			@JsonProperty("shipToDefault") @Nullable final Boolean shipToDefault,
 			@JsonProperty("billToDefault") @Nullable final Boolean billToDefault,
 
+			@JsonProperty("sales") @Nullable final Boolean sales,
+			@JsonProperty("salesDefault") @Nullable final Boolean salesDefault,
+			@JsonProperty("purchase") @Nullable final Boolean purchase,
+			@JsonProperty("purchaseDefault") @Nullable final Boolean purchaseDefault,
+
+			@JsonProperty("subjectMatter") @Nullable final Boolean subjectMatter,
+
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.externalId = externalId;
@@ -143,8 +184,16 @@ public class JsonRequestContact
 		this.description = description;
 
 		this.defaultContact = defaultContact;
+		this.subjectMatter = subjectMatter;
+
 		this.shipToDefault = shipToDefault;
 		this.billToDefault = billToDefault;
+
+		this.sales = sales;
+		this.salesDefault = salesDefault;
+
+		this.purchase = purchase;
+		this.purchaseDefault = purchaseDefault;
 
 		this.syncAdvise = syncAdvise;
 	}

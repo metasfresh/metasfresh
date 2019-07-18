@@ -18,6 +18,26 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=
       "shipToDefault": {
         "value": false,
         "present": true
+      },
+      "sales": {
+        "value": false,
+        "present": true
+      },
+      "salesDefault": {
+        "value": false,
+        "present": true
+      },
+      "purchase": {
+        "value": false,
+        "present": true
+      },
+      "purchaseDefault": {
+        "value": false,
+        "present": true
+      },
+      "subjectMatter": {
+        "value": false,
+        "present": true
       }
     },
     "changeLog": {
@@ -63,12 +83,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_ext=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
     "changeInfo": {
       "createdMillis": 1561133544,
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    }
+    },
+    "sales": false
   }
 ]
 
@@ -88,12 +113,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_id=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
     "changeInfo": {
       "createdMillis": 1561133544,
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    }
+    },
+    "sales": false
   }
 ]
 
@@ -113,12 +143,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContact_val=[
     "shipToDefault": false,
     "billToDefault": false,
     "defaultContact": false,
+    "salesDefault": false,
+    "purchase": false,
+    "purchaseDefault": false,
+    "subjectMatter": false,
     "changeInfo": {
       "createdMillis": 1561133544,
       "createdBy": 30,
       "lastUpdatedMillis": 1561133544,
       "lastUpdatedBy": 30
-    }
+    },
+    "sales": false
   }
 ]
 
@@ -144,12 +179,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 30,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 30
-        }
+        },
+        "sales": false
       },
       {
         "metasfreshId": 31,
@@ -165,12 +205,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 31,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 31
-        }
+        },
+        "sales": false
       }
     ]
   },
@@ -194,12 +239,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 32,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 32
-        }
+        },
+        "sales": false
       },
       {
         "metasfreshId": 33,
@@ -215,12 +265,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 33,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 33
-        }
+        },
+        "sales": false
       }
     ]
   },
@@ -243,12 +298,17 @@ de.metas.rest_api.bpartner.impl.ContactRestControllerTest.retrieveContactsSince=
         "shipToDefault": false,
         "billToDefault": false,
         "defaultContact": false,
+        "salesDefault": false,
+        "purchase": false,
+        "purchaseDefault": false,
+        "subjectMatter": false,
         "changeInfo": {
           "createdMillis": 1561133544,
           "createdBy": 34,
           "lastUpdatedMillis": 1561133544,
           "lastUpdatedBy": 34
-        }
+        },
+        "sales": false
       }
     ]
   }

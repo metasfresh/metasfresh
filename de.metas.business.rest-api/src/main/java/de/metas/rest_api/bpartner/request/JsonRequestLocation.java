@@ -88,7 +88,7 @@ public class JsonRequestLocation
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `shipToDefault == true`.\n"
 			+ "If `true`, then " //
-			+ "* `shipTo` is allways be assumed to be `true` as well"
+			+ "* `shipTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `shipToDefault = false`, even if it is not specified in this request.")
 	@JsonInclude(Include.NON_NULL)
 	Boolean shipToDefault;
@@ -99,7 +99,7 @@ public class JsonRequestLocation
 
 	@ApiModelProperty(required = false, value = "Only one location per request may have `billToDefault == true`.\n"
 			+ "If `true`, then " //
-			+ "* `billTo` is allways be assumed to be `true` as well"
+			+ "* `billTo` is always be assumed to be `true` as well"
 			+ "* another possibly exiting metasfresh location might be set to `billToDefault = false`, even if it is not specified in this request.")
 	@JsonInclude(Include.NON_NULL)
 	Boolean billToDefault;
