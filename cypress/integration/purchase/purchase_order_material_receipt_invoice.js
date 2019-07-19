@@ -7,25 +7,26 @@ import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Purchase order - material receipt - invoice', function() {
-  const timestamp = new Date().getTime();
-  const productForPackingMaterial = `ProductPackingMaterial ${timestamp}`;
-  const productPMValue = `purchase_order_testPM ${timestamp}`;
-  const packingMaterialName = `ProductPackingMaterial ${timestamp}`;
-  const packingInstructionsName = `ProductPackingInstrutions ${timestamp}`;
-  const productName1 = `ProductTest ${timestamp}`;
-  const productValue1 = `purchase_order_test ${timestamp}`;
-  const productName2 = `ProductTest ${timestamp}`;
-  const productValue2 = `purchase_order_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const date = humanReadableNow();
+  const productForPackingMaterial = `ProductPackingMaterial ${date}`;
+  const productPMValue = `purchase_order_testPM ${date}`;
+  const packingMaterialName = `ProductPackingMaterial ${date}`;
+  const packingInstructionsName = `ProductPackingInstrutions ${date}`;
+  const productName1 = `ProductTest ${date}`;
+  const productValue1 = `purchase_order_test ${date}`;
+  const productName2 = `ProductTest ${date}`;
+  const productValue2 = `purchase_order_test ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductCategoryValue ${date}`;
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
   const productType = 'Item';
-  const vendorName = `Vendor ${timestamp}`;
+  const vendorName = `Vendor ${date}`;
 
   before(function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
@@ -104,7 +105,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .click();
     // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName1);
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
@@ -125,7 +126,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.wait(8000);
 
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName2);
+    cy.writeIntoLookupListField('M_Product_ID', productName2, productName2, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
@@ -185,7 +186,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
     /**Navigate back in the purchase order */
     cy.go('back');
     /**Go to 'Material receipt' */
-    cy.wait(4000);
+    cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
