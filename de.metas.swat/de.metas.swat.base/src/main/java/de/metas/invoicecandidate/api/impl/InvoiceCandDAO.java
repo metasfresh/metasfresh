@@ -1591,23 +1591,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 	}
 
-	public boolean hasInvoiceableInvoiceCandidates(OrderId orderId)
-	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId.getRepoId())
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
-				.create()
-				.match();
-
-	}
-
 	@Override
 	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
 	{
-		return Services.get(IQueryBL.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> qtyToInvoiceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.setJoinOr()
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override, Operator.GREATER, BigDecimal.ZERO);
+
+		return queryBL
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addFiltersUnboxed(qtyToInvoiceFilter)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
-				.addCompareFilter(I_C_Invoice_Candidate.COLUMN_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
 				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 				.create()
