@@ -15,6 +15,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -30,6 +31,7 @@ import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,6 +67,7 @@ import net.sf.jasperreports.engine.JRException;
 public class JsonDataSourceService
 {
 	private static final String MSG_URLnotValid = "URLnotValid";
+	private static final String JSONREPORTS_USER_VALUE = "JsonReports";
 
 	private final UserAuthTokenRepository userAuthTokenRepo;
 	private final JsonDataSourceRepository repository;
@@ -79,9 +82,7 @@ public class JsonDataSourceService
 	{
 		//
 		// get authorization
-		final UserId userId = Env.getLoggedUserId();
-		final RoleId roleId = Env.getLoggedRoleId();
-		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
+		final UserAuthToken token = getUserAuhToken(reportContext);
 
 		//
 		// create the json data source
@@ -92,6 +93,29 @@ public class JsonDataSourceService
 
 		final InputStream is = getURLInputStream(getJasperJsonURL(request), request.getAuthenticationToken());
 		return is;
+	}
+
+	private UserAuthToken getUserAuhToken(@NonNull final ReportContext reportContext)
+	{
+		final UserId userId = Env.getLoggedUserId();
+		final RoleId roleId = Env.getLoggedRoleId();
+
+		UserAuthToken token = userAuthTokenRepo.retrieveByUserIdOrNull(userId, roleId);
+
+		//
+		// fallback to default Jasper Json user
+		if (token == null)
+		{
+			final ClientId clientId = Env.getClientId();
+			Services.get(IUserDAO.class).retrieveUserIdByValue(JSONREPORTS_USER_VALUE, clientId);
+			token = userAuthTokenRepo.retrieveByUserIdOrNull(userId, roleId);
+			if (token == null)
+			{
+				throw new AdempiereException("Invalid token (1)");
+			}
+		}
+
+		return token;
 	}
 
 	private static InputStream getURLInputStream(@NonNull final URL reportURL, @NonNull final String token)
