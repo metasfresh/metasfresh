@@ -82,7 +82,7 @@ public class JsonDataSourceService
 	{
 		//
 		// get authorization
-		final UserAuthToken token = getUserAuhToken(reportContext);
+		final UserAuthToken token = getUserAuhToken();
 
 		//
 		// create the json data source
@@ -95,7 +95,7 @@ public class JsonDataSourceService
 		return is;
 	}
 
-	private UserAuthToken getUserAuhToken(@NonNull final ReportContext reportContext)
+	private UserAuthToken getUserAuhToken()
 	{
 		final UserId userId = Env.getLoggedUserId();
 		final RoleId roleId = Env.getLoggedRoleId();
