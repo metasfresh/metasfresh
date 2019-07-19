@@ -180,7 +180,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
     const aliasName = `writeIntoStringField-${new Date().getTime()}`;
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchUrlPattern = rewriteUrl || '/rest/api/window';
     cy.log(
       `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
     );
@@ -260,7 +260,7 @@ Cypress.Commands.add(
       //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
       const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
       // in the default pattern we want to match URLs that do *not* end with "/NEW"
-      const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+      const patchUrlPattern = rewriteUrl || '/rest/api/window';
       if (!skipRequest) {
         cy.server();
         cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
