@@ -380,6 +380,14 @@ declare namespace Cypress {
      */
     pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
 
+
+    /**
+     * Close the batch entry quickInput
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    closeBatchEntry(waitBeforePress?: number): Chainable<any>
+
+
     /**
      * Erase the contents of this field.
      *

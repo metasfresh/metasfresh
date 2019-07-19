@@ -156,6 +156,20 @@ Cypress.Commands.add('pressBatchEntryButton', waitBeforePress => {
   });
 });
 
+/**
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('closeBatchEntry', waitBeforePress => {
+  describe("Press table's batch-entry-record-button", function() {
+    if (waitBeforePress) {
+      cy.wait(waitBeforePress);
+    }
+    cy.get('.quick-input-container').should('exist');
+    cy.get('body').type('{alt}q'); // cypress can't type to `.quick-input-container`
+    cy.get('.quick-input-container').should('not.exist');
+  });
+});
+
 Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   describe(`Expect specific document status`, function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
