@@ -65,7 +65,6 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
@@ -330,12 +329,17 @@ class BpartnerRestControllerTest
 	}
 
 	/**
-	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
+	 * Update a bpartner and insert a location at the same time.
 	 */
 	@Test
-	void createOrUpdateBPartner_update_C_BPartner_Name_OK()
+	void createOrUpdateBPartner_Update_BPartner_Name_Insert_Location()
 	{
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Name.json");
+		SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
+
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
+
+		assertThat(bpartnerUpsertRequest.getRequestItems()).hasSize(1);
+		assertThat(bpartnerUpsertRequest.getRequestItems().get(0).getBpartnerComposite().getLocationsNotNull().getRequestItems()).hasSize(1);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
@@ -350,12 +354,20 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		inititalCounts.assertCountsUnchanged();
+		inititalCounts.assertBPartnerCountChangedBy(0);
+		inititalCounts.assertUserCountChangedBy(0);
+		inititalCounts.assertLocationCountChangedBy(1);
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345"); // shall be unchanged
 		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
+
+		// use the rest controller to get the json that we can then verify
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("val-12345");
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseComposite resultBody = result.getBody();
+		expect(resultBody).toMatchSnapshot();
 	}
 
 	@Test
@@ -375,67 +387,6 @@ class BpartnerRestControllerTest
 		assertThatThrownBy(() -> bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest))
 				.isInstanceOf(MissingResourceException.class)
 				.hasMessageContaining("bpartner");
-	}
-
-	@Test
-	void createOrUpdateBPartner_update_C_BPartner_and_address()
-	{
-		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
-		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("12345nosuchvalue");
-		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
-		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
-		saveRecord(bpartnerRecord);
-
-		final I_C_Location locationrecord = newInstance(I_C_Location.class);
-		saveRecord(locationrecord);
-		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
-		bpartnerLocationRecord.setC_Location_ID(locationrecord.getC_Location_ID());
-
-		saveRecord(bpartnerLocationRecord);
-
-
-
-		// DONE externalId: "2167119765"
-		// DONE metasfresh_partner_id: "2225351"
-		// DONEcity: "Baar"
-		// DONE phone: "+ 41 43 5 014 014"
-		// DONE zip: "6340"
-		// DONE state: "ZG"
-		// DONE address: "Ruessenstrasse 5a"
-		// DONE website: "beyou.media"
-
-		final SyncAdvise updateOnly = SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).ifExists(IfExists.UPDATE_MERGE).build();
-		JsonRequestBPartnerUpsert request = JsonRequestBPartnerUpsert.builder()
-				.syncAdvise(updateOnly)
-				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-						// .bpartnerIdentifier("ext-2167119765")
-						.bpartnerIdentifier("2225351")
-						.bpartnerComposite(JsonRequestComposite.builder()
-								.bpartner(JsonRequestBPartner.builder()
-										.externalId(JsonExternalId.of("2167119765"))
-										.url("beyou.media")
-										.phone("+ 41 43 5 014 014")
-										.build())
-								.locations(JsonRequestLocationUpsert.builder()
-										.requestItem(JsonRequestLocationUpsertItem.builder()
-												.locationIdentifier("<metasfresh_location_id>")
-												.location(JsonRequestLocation.builder()
-														.city("Baar")
-														.postal("6340")
-														.address1("Ruessenstrasse 5a")
-														.district("ZG")
-														.build())
-												.build())
-										.build())
-								.build())
-						.build())
-				.build();
-		JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(request);
-
-		// TODO: check if the postal-lookup works
 	}
 
 	private JsonRequestBPartnerUpsert loadUpsertRequest(final String jsonFileName)
@@ -510,10 +461,25 @@ class BpartnerRestControllerTest
 
 		private void assertCountsUnchanged()
 		{
-			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount);
+			assertBPartnerCountChangedBy(0);
+			assertUserCountChangedBy(0);
+			assertLocationCountChangedBy(0);
+		}
+
+		private void assertUserCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + offset);
+		}
+
+		private void assertLocationCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + offset);
+			assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + offset);
+		}
+
+		private void assertBPartnerCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + offset);
 		}
 	}
 

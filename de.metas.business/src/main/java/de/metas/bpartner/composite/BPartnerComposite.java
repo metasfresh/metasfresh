@@ -128,12 +128,12 @@ public final class BPartnerComposite
 
 		if (orgId == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.orgId"));
+			result.add(ITranslatableString.constant("Missing bpartnerComposite.orgId"));
 		}
 
 		if (bpartner == null)
 		{
-			result.add(ITranslatableString.constant("Missing BPartnerComposite.bpartner"));
+			result.add(ITranslatableString.constant("Missing bpartnerComposite.bpartner"));
 		}
 		else
 		{
