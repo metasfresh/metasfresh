@@ -17,6 +17,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
     "locations": [
       {
         "metasfreshId": 100006,
+        "externalId": "123",
         "active": true,
         "postal": "5040",
         "poBox": "poBox",
@@ -83,8 +84,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "decimalPoint": false,
         "leftToRight": true,
+        "decimalPoint": false,
         "baseLanguage": true
       },
       "name": "bPartner.name",

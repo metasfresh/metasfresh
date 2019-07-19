@@ -368,6 +368,11 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 		expect(resultBody).toMatchSnapshot();
+
+		// finally, also make sure that if we repeat the same invocation, no new location record is created
+		final RecordCounts countsBefore2ndInvocation = new RecordCounts();
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		countsBefore2ndInvocation.assertCountsUnchanged();
 	}
 
 	@Test

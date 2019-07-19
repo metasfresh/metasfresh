@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.util.rest.ExternalId;
@@ -87,7 +88,8 @@ public class ShortTermLocationIndex
 
 	public BPartnerLocation newLocation(@NonNull final IdentifierString locationIdentifier)
 	{
-		final BPartnerLocation location = BPartnerLocation.builder().build();
+		final BPartnerLocationBuilder locationBuilder = BPartnerLocation.builder();
+		final BPartnerLocation location;
 
 		switch (locationIdentifier.getType())
 		{
@@ -95,13 +97,20 @@ public class ShortTermLocationIndex
 				if (bpartnerId != null)
 				{
 					final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, locationIdentifier.asMetasfreshId().getValue());
+					location = locationBuilder.id(bpartnerLocationId).build();
 					id2Location.put(bpartnerLocationId, location);
+				}
+				else
+				{
+					location = locationBuilder.build();
 				}
 				break;
 			case GLN:
+				location = locationBuilder.gln(locationIdentifier.getValue()).build();
 				gln2Location.put(locationIdentifier.getValue(), location);
 				break;
 			case EXTERNAL_ID:
+				location = locationBuilder.externalId(locationIdentifier.asExternalId()).build();
 				externalId2Location.put(locationIdentifier.asExternalId(), location);
 				break;
 			default:
