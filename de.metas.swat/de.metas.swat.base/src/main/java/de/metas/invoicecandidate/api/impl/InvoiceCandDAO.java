@@ -127,6 +127,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	@Override
+	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandId)
+	{
+		return InterfaceWrapperHelper.load(invoiceCandId.getRepoId(), I_C_Invoice_Candidate.class);
+	}
+
+	@Override
 	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
 	{
 		// Note that we can't filter by IsError in the where clause, because it wouldn't work with pagination.
@@ -1596,14 +1602,27 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public boolean hasInvoiceableInvoiceCands(final OrderId orderId)
+	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
 				.addCompareFilter(I_C_Invoice_Candidate.COLUMN_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
 				.create()
-				.match();
+				.firstId(InvoiceCandidateId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void invalidateUninvoicedFreightCostCandidate(@NonNull final OrderId orderId)
+	{
+		final IQueryBuilder<I_C_Invoice_Candidate> freightCostCandQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsFreightCost, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+
+		invalidateCandsFor(freightCostCandQueryBuilder);
 	}
 }

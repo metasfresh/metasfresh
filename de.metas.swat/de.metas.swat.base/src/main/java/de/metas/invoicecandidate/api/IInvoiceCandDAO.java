@@ -45,6 +45,7 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -424,5 +425,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
 
-	boolean hasInvoiceableInvoiceCands(OrderId orderId);
+	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 }

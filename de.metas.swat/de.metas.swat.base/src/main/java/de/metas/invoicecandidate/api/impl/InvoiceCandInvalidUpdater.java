@@ -330,6 +330,8 @@ import lombok.NonNull;
 		final BigDecimal newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
 		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
 
+		invoiceCandBL.setAmountAndDateForFreightCost(ic);
+
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
 
@@ -338,8 +340,6 @@ import lombok.NonNull;
 		invoiceCandBL.setNetAmtToInvoice(ic);
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, ic);
-
-		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 
 		//
 		// Save it

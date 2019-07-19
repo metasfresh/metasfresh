@@ -182,6 +182,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 				continue;
 			}
 
+			if(candidate.isFreightCost())
+			{
+				// don't create quality discounts for freight cost products
+				continue;
+			}
+
 			//
 			// Calculate quality discount quantity
 			final BigDecimal qtyBeforeDiscount = candidate.getQtyToInvoiceBeforeDiscount();

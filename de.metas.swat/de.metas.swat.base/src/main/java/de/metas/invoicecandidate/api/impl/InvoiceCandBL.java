@@ -106,6 +106,7 @@ import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -2159,7 +2160,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
 	{
-
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
@@ -2175,11 +2175,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// nothing to do;
 			return;
 		}
-		boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
+		//boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
 
-		if (hasInvoiceableInvoiceCands)
+		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
+
+		if (firstInvoiceableInvoiceCandId != null)
 		{
-			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_Order_ID());
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_OrderLine_ID());
 
 			if (orderLine == null)
 			{
@@ -2187,17 +2189,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return;
 			}
 
+			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(firstInvoiceableInvoiceCandId);
+
+			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 			ic.setQtyToInvoice(ONE);
 			set_DateToInvoice_DefaultImpl(ic);
-
-			save(ic);
 		}
+
 		else
 		{
 			ic.setQtyToInvoice(ZERO);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
-
 	}
-
 }
