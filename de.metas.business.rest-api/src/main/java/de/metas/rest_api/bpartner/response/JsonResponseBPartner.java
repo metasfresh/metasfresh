@@ -42,7 +42,7 @@ import lombok.Value;
 @ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
 public class JsonResponseBPartner
 {
-	public static final String GROUP = "group";
+	public static final String GROUP_NAME = "group";
 	public static final String URL = "url";
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
@@ -151,7 +151,7 @@ public class JsonResponseBPartner
 			@JsonProperty(URL) @Nullable final String url,
 			@JsonProperty(URL_2) @Nullable final String url2,
 			@JsonProperty(URL_3) @Nullable final String url3,
-			@JsonProperty(GROUP) @Nullable final String group,
+			@JsonProperty(GROUP_NAME) @Nullable final String group,
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;

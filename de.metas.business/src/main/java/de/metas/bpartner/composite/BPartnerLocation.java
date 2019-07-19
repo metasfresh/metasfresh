@@ -2,11 +2,11 @@ package de.metas.bpartner.composite;
 
 import static de.metas.util.Check.isEmpty;
 import static de.metas.util.lang.CoalesceUtil.coalesce;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -38,8 +38,25 @@ import lombok.Data;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerLocation
 {
+	public static final String ID = "id";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String GLN = "gln";
+	public static final String NAME = "name";
+	public static final String ACTIVE = "active";
+	public static final String ADDRESS_1 = "address1";
+	public static final String ADDRESS_2 = "address2";
+	public static final String ADDRESS_3 = "address3";
+	public static final String ADDRESS_4 = "address4";
+	public static final String PO_BOX = "poBox";
+	public static final String POSTAL = "postal";
+	public static final String CITY = "city";
+	public static final String DISTRICT = "district";
+	public static final String REGION = "region";
+	public static final String COUNTRYCODE = "countryCode";
+
 	private BPartnerLocationId id;
 
 	/** Needs to be unique over all business partners (not only the one this location belongs to). */

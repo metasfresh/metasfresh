@@ -6,6 +6,7 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPGroupId;
@@ -39,6 +40,7 @@ import lombok.Data;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartner
 {
 	public static final String ID = "id";

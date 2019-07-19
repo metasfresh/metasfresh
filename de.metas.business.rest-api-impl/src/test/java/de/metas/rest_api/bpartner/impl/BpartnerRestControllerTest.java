@@ -50,6 +50,8 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
@@ -74,7 +76,9 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
@@ -125,6 +129,8 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

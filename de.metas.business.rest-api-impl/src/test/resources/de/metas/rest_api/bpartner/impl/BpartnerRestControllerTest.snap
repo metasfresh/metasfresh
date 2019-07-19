@@ -1,35 +1,7 @@
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_create=[
   {
     "bpartner": {
-      "id": 100006,
-      "externalId": {
-        "value": "fghij_2"
-      },
       "active": true,
-      "value": "code",
-      "name": "bPartner.name",
-      "companyName": "bPartner.companyName",
-      "parentId": 1,
-      "phone": "bPartner.phone",
-      "language": {
-        "m_name": "Deutsch",
-        "m_AD_Language": "de_DE",
-        "m_locale": "de_DE",
-        "_decimalPoint": false,
-        "_dateFormatPattern": "dd.MM.yyyy",
-        "_mediaSize": {
-          "x": 210000,
-          "y": 297000,
-          "mediaName": {
-            "value": 4
-          }
-        },
-        "decimalPoint": false,
-        "leftToRight": true,
-        "baseLanguage": true
-      },
-      "url": "bPartner.url",
-      "groupId": 15,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -52,175 +24,39 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           "nanos": 560000000
         },
         "entries": [ ]
-      }
-    },
-    "locations": [
-      {
-        "id": {
-          "repoId": 100008,
-          "bpartnerId": 100006
-        },
-        "externalId": {
-          "value": "l1_externalId"
-        },
-        "gln": "l1_gln",
-        "active": true,
-        "address1": "l1_address1",
-        "address2": "l1_address2",
-        "poBox": "l1_poBox",
-        "postal": "l1_postal",
-        "city": "l1_city",
-        "region": "l1_region",
-        "countryCode": "CH",
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipTo": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          }
-        },
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BPartner_Location_ID"
-            ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 100008
-            },
-            "singleKey": true
-          },
-          "createdByUserId": 0,
-          "createdTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "lastChangedByUserId": 0,
-          "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "entries": [ ]
-        }
       },
-      {
-        "id": {
-          "repoId": 100010,
-          "bpartnerId": 100006
-        },
-        "externalId": {
-          "value": "l2_externalId"
-        },
-        "gln": "l2_gln",
-        "active": true,
-        "address1": "l2_address1",
-        "address2": "l2_address2",
-        "poBox": "l2_poBox",
-        "postal": "l2_postal",
-        "city": "l2_city",
-        "region": "l2_region",
-        "countryCode": "DE",
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipTo": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
+      "companyName": "bPartner.companyName",
+      "externalId": {
+        "value": "fghij_2"
+      },
+      "groupId": 15,
+      "id": 100006,
+      "language": {
+        "m_name": "Deutsch",
+        "m_AD_Language": "de_DE",
+        "m_locale": "de_DE",
+        "_decimalPoint": false,
+        "_dateFormatPattern": "dd.MM.yyyy",
+        "_mediaSize": {
+          "x": 210000,
+          "y": 297000,
+          "mediaName": {
+            "value": 4
           }
         },
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BPartner_Location_ID"
-            ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 100010
-            },
-            "singleKey": true
-          },
-          "createdByUserId": 0,
-          "createdTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "lastChangedByUserId": 0,
-          "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "entries": [ ]
-        }
-      }
-    ],
+        "baseLanguage": true,
+        "leftToRight": true,
+        "decimalPoint": false
+      },
+      "name": "bPartner.name",
+      "parentId": 1,
+      "phone": "bPartner.phone",
+      "url": "bPartner.url",
+      "value": "code"
+    },
     "contacts": [
       {
-        "id": {
-          "repoId": 100011,
-          "bpartnerId": 100006
-        },
-        "externalId": {
-          "value": "c1_externalId"
-        },
         "active": true,
-        "name": "c1_name",
-        "email": "c1_email@email.net",
-        "phone": "c1_phone",
-        "contactType": {
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
-            "value": false,
-            "present": true
-          },
-          "purchase": {
-            "value": false,
-            "present": true
-          },
-          "purchaseDefault": {
-            "value": false,
-            "present": true
-          },
-          "subjectMatter": {
-            "value": false,
-            "present": true
-          }
-        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -244,38 +80,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           },
           "entries": [ ]
         },
-        "newsletter": true
-      },
-      {
-        "id": {
-          "repoId": 100012,
-          "bpartnerId": 100006
-        },
-        "externalId": {
-          "value": "c2_externalId"
-        },
-        "active": true,
-        "name": "c2_name",
-        "email": "c2_email@email.net",
-        "phone": "c2_phone",
         "contactType": {
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
           "billToDefault": {
             "value": false,
             "present": true
           },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
+          "defaultContact": {
             "value": false,
             "present": true
           },
@@ -287,11 +97,37 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": false,
             "present": true
           },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          },
           "subjectMatter": {
             "value": false,
             "present": true
           }
         },
+        "email": "c1_email@email.net",
+        "externalId": {
+          "value": "c1_externalId"
+        },
+        "id": {
+          "repoId": 100011,
+          "bpartnerId": 100006
+        },
+        "name": "c1_name",
+        "newsletter": true,
+        "phone": "c1_phone"
+      },
+      {
+        "active": true,
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -315,7 +151,171 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           },
           "entries": [ ]
         },
-        "newsletter": true
+        "contactType": {
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "purchase": {
+            "value": false,
+            "present": true
+          },
+          "purchaseDefault": {
+            "value": false,
+            "present": true
+          },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          },
+          "subjectMatter": {
+            "value": false,
+            "present": true
+          }
+        },
+        "email": "c2_email@email.net",
+        "externalId": {
+          "value": "c2_externalId"
+        },
+        "id": {
+          "repoId": 100012,
+          "bpartnerId": 100006
+        },
+        "name": "c2_name",
+        "newsletter": true,
+        "phone": "c2_phone"
+      }
+    ],
+    "locations": [
+      {
+        "active": true,
+        "address1": "l1_address1",
+        "address2": "l1_address2",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100008
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        },
+        "city": "l1_city",
+        "countryCode": "CH",
+        "externalId": {
+          "value": "l1_externalId"
+        },
+        "gln": "l1_gln",
+        "id": {
+          "repoId": 100008,
+          "bpartnerId": 100006
+        },
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
+        "poBox": "l1_poBox",
+        "postal": "l1_postal",
+        "region": "l1_region"
+      },
+      {
+        "active": true,
+        "address1": "l2_address1",
+        "address2": "l2_address2",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100010
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        },
+        "city": "l2_city",
+        "countryCode": "DE",
+        "externalId": {
+          "value": "l2_externalId"
+        },
+        "gln": "l2_gln",
+        "id": {
+          "repoId": 100010,
+          "bpartnerId": 100006
+        },
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
+        "poBox": "l2_poBox",
+        "postal": "l2_postal",
+        "region": "l2_region"
       }
     ],
     "orgId": 10
@@ -326,14 +326,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact_create=[
   {
     "bpartner": {
-      "id": 20,
-      "externalId": {
-        "value": "fghij"
-      },
       "active": true,
-      "value": "bpartnerRecord.value",
-      "name": "bpartnerRecord.name",
-      "groupId": 15,
       "changeLog": {
         "tableName": "C_BPartner",
         "recordId": {
@@ -356,118 +349,18 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           "nanos": 560000000
         },
         "entries": [ ]
-      }
+      },
+      "externalId": {
+        "value": "fghij"
+      },
+      "groupId": 15,
+      "id": 20,
+      "name": "bpartnerRecord.name",
+      "value": "bpartnerRecord.value"
     },
-    "locations": [
-      {
-        "id": {
-          "repoId": 40,
-          "bpartnerId": 20
-        },
-        "externalId": {
-          "value": "bpartnerLocation.externalId"
-        },
-        "gln": "bpartnerLocationRecord.gln",
-        "active": true,
-        "address1": "locationRecord.address1",
-        "address2": "locationRecord.address2",
-        "poBox": "locationRecord.poBox",
-        "postal": "locationRecord.postal",
-        "city": "locationRecord.city",
-        "region": "locationRecord.regionName",
-        "countryCode": "countryRecord.countryCode",
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipTo": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          }
-        },
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BPartner_Location_ID"
-            ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 40
-            },
-            "singleKey": true
-          },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "entries": [ ]
-        }
-      }
-    ],
     "contacts": [
       {
-        "id": {
-          "repoId": 30,
-          "bpartnerId": 20
-        },
-        "externalId": {
-          "value": "abcde"
-        },
         "active": true,
-        "name": "bpartnerRecord.name",
-        "lastName": "bpartnerRecord.lastName",
-        "firstName": "bpartnerRecord.firstName",
-        "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone",
-        "contactType": {
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
-            "value": false,
-            "present": true
-          },
-          "purchase": {
-            "value": false,
-            "present": true
-          },
-          "purchaseDefault": {
-            "value": false,
-            "present": true
-          },
-          "subjectMatter": {
-            "value": false,
-            "present": true
-          }
-        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -491,38 +384,12 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "entries": [ ]
         },
-        "newsletter": true
-      },
-      {
-        "id": {
-          "repoId": 100004,
-          "bpartnerId": 20
-        },
-        "externalId": {
-          "value": "newContact-_externalId"
-        },
-        "active": true,
-        "name": "newContact-_name",
-        "email": "newContact-_email@email.net",
-        "phone": "newContact-_phone",
         "contactType": {
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
           "billToDefault": {
             "value": false,
             "present": true
           },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
+          "defaultContact": {
             "value": false,
             "present": true
           },
@@ -534,11 +401,39 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
             "value": false,
             "present": true
           },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          },
           "subjectMatter": {
             "value": false,
             "present": true
           }
         },
+        "email": "bpartnerRecord.email",
+        "externalId": {
+          "value": "abcde"
+        },
+        "firstName": "bpartnerRecord.firstName",
+        "id": {
+          "repoId": 30,
+          "bpartnerId": 20
+        },
+        "lastName": "bpartnerRecord.lastName",
+        "name": "bpartnerRecord.name",
+        "newsletter": true,
+        "phone": "bpartnerRecord.phone"
+      },
+      {
+        "active": true,
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -562,85 +457,58 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "entries": [ ]
         },
-        "newsletter": true
-      }
-    ],
-    "orgId": 10
-  }
-]
-
-
-de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation_create=[
-  {
-    "bpartner": {
-      "id": 20,
-      "externalId": {
-        "value": "fghij"
-      },
-      "active": true,
-      "value": "bpartnerRecord.value",
-      "name": "bpartnerRecord.name",
-      "groupId": 15,
-      "changeLog": {
-        "tableName": "C_BPartner",
-        "recordId": {
-          "keyColumnNames": [
-            "C_BPartner_ID"
-          ],
-          "keysByColumnName": {
-            "C_BPartner_ID": 20
-          },
-          "singleKey": true
-        },
-        "createdByUserId": 30,
-        "createdTimestamp": {
-          "seconds": 1561133,
-          "nanos": 544000000
-        },
-        "lastChangedByUserId": 30,
-        "lastChangedTimestamp": {
-          "seconds": 1561134,
-          "nanos": 560000000
-        },
-        "entries": [ ]
-      }
-    },
-    "locations": [
-      {
-        "id": {
-          "repoId": 40,
-          "bpartnerId": 20
-        },
-        "externalId": {
-          "value": "bpartnerLocation.externalId"
-        },
-        "gln": "bpartnerLocationRecord.gln",
-        "active": true,
-        "address1": "locationRecord.address1",
-        "address2": "locationRecord.address2",
-        "poBox": "locationRecord.poBox",
-        "postal": "locationRecord.postal",
-        "city": "locationRecord.city",
-        "region": "locationRecord.regionName",
-        "countryCode": "countryRecord.countryCode",
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
-          },
+        "contactType": {
           "billToDefault": {
             "value": false,
             "present": true
           },
-          "shipTo": {
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "purchase": {
+            "value": false,
+            "present": true
+          },
+          "purchaseDefault": {
+            "value": false,
+            "present": true
+          },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
             "value": false,
             "present": true
           },
           "shipToDefault": {
             "value": false,
             "present": true
+          },
+          "subjectMatter": {
+            "value": false,
+            "present": true
           }
         },
+        "email": "newContact-_email@email.net",
+        "externalId": {
+          "value": "newContact-_externalId"
+        },
+        "id": {
+          "repoId": 100004,
+          "bpartnerId": 20
+        },
+        "name": "newContact-_name",
+        "newsletter": true,
+        "phone": "newContact-_phone"
+      }
+    ],
+    "locations": [
+      {
+        "active": true,
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
         "changeLog": {
           "tableName": "C_BPartner_Location",
           "recordId": {
@@ -663,25 +531,18 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
             "nanos": 560000000
           },
           "entries": [ ]
-        }
-      },
-      {
+        },
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "district": "postalRecord.district",
+        "externalId": {
+          "value": "bpartnerLocation.externalId"
+        },
+        "gln": "bpartnerLocationRecord.gln",
         "id": {
-          "repoId": 100006,
+          "repoId": 40,
           "bpartnerId": 20
         },
-        "externalId": {
-          "value": "newLocation-_externalId"
-        },
-        "gln": "newLocation-_gln",
-        "active": true,
-        "address1": "newLocation-_address1",
-        "address2": "newLocation-_address2",
-        "poBox": "newLocation-_poBox",
-        "postal": "newLocation-_postal",
-        "city": "newLocation-_city",
-        "region": "newLocation-_region",
-        "countryCode": "DE",
         "locationType": {
           "billTo": {
             "value": false,
@@ -700,80 +561,54 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
             "present": true
           }
         },
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BPartner_Location_ID"
-            ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 100006
-            },
-            "singleKey": true
-          },
-          "createdByUserId": 0,
-          "createdTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "lastChangedByUserId": 0,
-          "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
-          },
-          "entries": [ ]
-        }
+        "poBox": "locationRecord.poBox",
+        "postal": "locationRecord.postal",
+        "region": "locationRecord.regionName"
       }
     ],
+    "orgId": 10
+  }
+]
+
+
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocation_create=[
+  {
+    "bpartner": {
+      "active": true,
+      "changeLog": {
+        "tableName": "C_BPartner",
+        "recordId": {
+          "keyColumnNames": [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName": {
+            "C_BPartner_ID": 20
+          },
+          "singleKey": true
+        },
+        "createdByUserId": 30,
+        "createdTimestamp": {
+          "seconds": 1561133,
+          "nanos": 544000000
+        },
+        "lastChangedByUserId": 30,
+        "lastChangedTimestamp": {
+          "seconds": 1561134,
+          "nanos": 560000000
+        },
+        "entries": [ ]
+      },
+      "externalId": {
+        "value": "fghij"
+      },
+      "groupId": 15,
+      "id": 20,
+      "name": "bpartnerRecord.name",
+      "value": "bpartnerRecord.value"
+    },
     "contacts": [
       {
-        "id": {
-          "repoId": 30,
-          "bpartnerId": 20
-        },
-        "externalId": {
-          "value": "abcde"
-        },
         "active": true,
-        "name": "bpartnerRecord.name",
-        "lastName": "bpartnerRecord.lastName",
-        "firstName": "bpartnerRecord.firstName",
-        "email": "bpartnerRecord.email",
-        "phone": "bpartnerRecord.phone",
-        "contactType": {
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
-            "value": false,
-            "present": true
-          },
-          "purchase": {
-            "value": false,
-            "present": true
-          },
-          "purchaseDefault": {
-            "value": false,
-            "present": true
-          },
-          "subjectMatter": {
-            "value": false,
-            "present": true
-          }
-        },
         "changeLog": {
           "tableName": "AD_User",
           "recordId": {
@@ -797,7 +632,174 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           },
           "entries": [ ]
         },
-        "newsletter": true
+        "contactType": {
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "defaultContact": {
+            "value": false,
+            "present": true
+          },
+          "purchase": {
+            "value": false,
+            "present": true
+          },
+          "purchaseDefault": {
+            "value": false,
+            "present": true
+          },
+          "sales": {
+            "value": false,
+            "present": true
+          },
+          "salesDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          },
+          "subjectMatter": {
+            "value": false,
+            "present": true
+          }
+        },
+        "email": "bpartnerRecord.email",
+        "externalId": {
+          "value": "abcde"
+        },
+        "firstName": "bpartnerRecord.firstName",
+        "id": {
+          "repoId": 30,
+          "bpartnerId": 20
+        },
+        "lastName": "bpartnerRecord.lastName",
+        "name": "bpartnerRecord.name",
+        "newsletter": true,
+        "phone": "bpartnerRecord.phone"
+      }
+    ],
+    "locations": [
+      {
+        "active": true,
+        "address1": "locationRecord.address1",
+        "address2": "locationRecord.address2",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 40
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 30,
+          "createdTimestamp": {
+            "seconds": 1561133,
+            "nanos": 544000000
+          },
+          "lastChangedByUserId": 30,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        },
+        "city": "locationRecord.city",
+        "countryCode": "countryRecord.countryCode",
+        "district": "postalRecord.district",
+        "externalId": {
+          "value": "bpartnerLocation.externalId"
+        },
+        "gln": "bpartnerLocationRecord.gln",
+        "id": {
+          "repoId": 40,
+          "bpartnerId": 20
+        },
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
+        "poBox": "locationRecord.poBox",
+        "postal": "locationRecord.postal",
+        "region": "locationRecord.regionName"
+      },
+      {
+        "active": true,
+        "address1": "newLocation-_address1",
+        "address2": "newLocation-_address2",
+        "changeLog": {
+          "tableName": "C_BPartner_Location",
+          "recordId": {
+            "keyColumnNames": [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName": {
+              "C_BPartner_Location_ID": 100006
+            },
+            "singleKey": true
+          },
+          "createdByUserId": 0,
+          "createdTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "lastChangedByUserId": 0,
+          "lastChangedTimestamp": {
+            "seconds": 1561134,
+            "nanos": 560000000
+          },
+          "entries": [ ]
+        },
+        "city": "newLocation-_city",
+        "countryCode": "DE",
+        "externalId": {
+          "value": "newLocation-_externalId"
+        },
+        "gln": "newLocation-_gln",
+        "id": {
+          "repoId": 100006,
+          "bpartnerId": 20
+        },
+        "locationType": {
+          "billTo": {
+            "value": false,
+            "present": true
+          },
+          "billToDefault": {
+            "value": false,
+            "present": true
+          },
+          "shipTo": {
+            "value": false,
+            "present": true
+          },
+          "shipToDefault": {
+            "value": false,
+            "present": true
+          }
+        },
+        "poBox": "newLocation-_poBox",
+        "postal": "newLocation-_postal",
+        "region": "newLocation-_region"
       }
     ],
     "orgId": 10

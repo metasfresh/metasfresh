@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Builder;
@@ -36,8 +37,14 @@ import lombok.NonNull;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerLocationType
 {
+	public static final String BILL_TO = "billTo";
+	public static final String BILL_TO_DEFAULT = "billToDefault";
+	public static final String SHIP_TO = "shipTo";
+	public static final String SHIP_TO_DEFAULT = "shipToDefault";
+
 	@JsonInclude(Include.NON_ABSENT)
 	private final Optional<Boolean> billTo;
 

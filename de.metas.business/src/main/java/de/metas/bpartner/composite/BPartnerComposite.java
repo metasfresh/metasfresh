@@ -18,6 +18,7 @@ import org.adempiere.service.OrgId;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -51,6 +52,7 @@ import lombok.Singular;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public final class BPartnerComposite
 {
 	private OrgId orgId;
