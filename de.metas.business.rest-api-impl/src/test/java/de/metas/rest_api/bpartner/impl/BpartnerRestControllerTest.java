@@ -50,6 +50,9 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
@@ -62,6 +65,7 @@ import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonRequestComposite;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.rest_api.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
@@ -72,7 +76,9 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
@@ -103,7 +109,6 @@ import lombok.Value;
 
 class BpartnerRestControllerTest
 {
-
 	private BpartnerRestController bpartnerRestController;
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -125,8 +130,14 @@ class BpartnerRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository());
 
 		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -345,6 +356,35 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
 	}
 
+	/**
+	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
+	 */
+	@Test
+	void createOrUpdateBPartner_update_C_BPartner_Name_OK()
+	{
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Name.json");
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345");
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final RecordCounts inititalCounts = new RecordCounts();
+
+		// invoke the method under test
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		inititalCounts.assertCountsUnchanged();
+
+		// verify that the bpartner-record was updated
+		refresh(bpartnerRecord);
+		assertThat(bpartnerRecord.getValue()).isEqualTo("12345"); // shall be unchanged
+		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
+	}
+
 	@Test
 	void createOrUpdateBPartner_update_C_BPartner_Value_NoSuchPartner()
 	{
@@ -362,6 +402,67 @@ class BpartnerRestControllerTest
 		assertThatThrownBy(() -> bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest))
 				.isInstanceOf(MissingResourceException.class)
 				.hasMessageContaining("bpartner");
+	}
+
+	@Test
+	void createOrUpdateBPartner_update_C_BPartner_and_address()
+	{
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345nosuchvalue");
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final I_C_Location locationrecord = newInstance(I_C_Location.class);
+		saveRecord(locationrecord);
+		final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
+		bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+		bpartnerLocationRecord.setC_Location_ID(locationrecord.getC_Location_ID());
+
+		saveRecord(bpartnerLocationRecord);
+
+
+
+		// DONE externalId: "2167119765"
+		// DONE metasfresh_partner_id: "2225351"
+		// DONEcity: "Baar"
+		// DONE phone: "+ 41 43 5 014 014"
+		// DONE zip: "6340"
+		// DONE state: "ZG"
+		// DONE address: "Ruessenstrasse 5a"
+		// DONE website: "beyou.media"
+
+		final SyncAdvise updateOnly = SyncAdvise.builder().ifNotExists(IfNotExists.FAIL).ifExists(IfExists.UPDATE_MERGE).build();
+		JsonRequestBPartnerUpsert request = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(updateOnly)
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						// .bpartnerIdentifier("ext-2167119765")
+						.bpartnerIdentifier("2225351")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(JsonRequestBPartner.builder()
+										.externalId(JsonExternalId.of("2167119765"))
+										.url("beyou.media")
+										.phone("+ 41 43 5 014 014")
+										.build())
+								.locations(JsonRequestLocationUpsert.builder()
+										.requestItem(JsonRequestLocationUpsertItem.builder()
+												.locationIdentifier("<metasfresh_location_id>")
+												.location(JsonRequestLocation.builder()
+														.city("Baar")
+														.postal("6340")
+														.address1("Ruessenstrasse 5a")
+														.district("ZG")
+														.build())
+												.build())
+										.build())
+								.build())
+						.build())
+				.build();
+		JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(request);
+
+		// TODO: check if the postal-lookup works
 	}
 
 	private JsonRequestBPartnerUpsert loadUpsertRequest(final String jsonFileName)

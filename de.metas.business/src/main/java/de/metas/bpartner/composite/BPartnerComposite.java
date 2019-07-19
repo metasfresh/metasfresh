@@ -17,6 +17,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerContactId;
@@ -52,6 +53,7 @@ import lombok.Singular;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public final class BPartnerComposite
 {
 	private OrgId orgId;
@@ -136,16 +138,103 @@ public final class BPartnerComposite
 		}
 		else
 		{
-			final boolean lokupValuesAreOk = !isEmpty(bpartner.getValue(), true)
-					|| bpartner.getExternalId() != null
-					|| !extractLocationGlns().isEmpty();
-			if (!lokupValuesAreOk)
-			{
-				result.add(TranslatableStrings.constant("At least one of BPartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
-			}
+			result.addAll(validateLookupKeys());
 		}
 
 		result.addAll(bpartner.validate());
+
+		result.addAll(validateLocations());
+
+		result.addAll(validateContacts());
+
+		return result.build();
+	}
+
+	private ImmutableList<ITranslatableString> validateContacts()
+	{
+		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+
+		final List<BPartnerContact> defaultContacts = new ArrayList<>();
+		final List<BPartnerContact> purchaseDefaultContacts = new ArrayList<>();
+		final List<BPartnerContact> salesDefaultContacts = new ArrayList<>();
+
+		for (final BPartnerContact contact : contacts)
+		{
+			// result.addAll(contact.validate()); // doesn't yet have a validate method
+
+			final BPartnerContactType contactType = contact.getContactType();
+			if (contactType != null && contactType.getDefaultContact().orElse(false))
+			{
+				defaultContacts.add(contact);
+			}
+			if (contactType != null && contactType.getPurchaseDefault().orElse(false))
+			{
+				purchaseDefaultContacts.add(contact);
+			}
+			if (contactType != null && contactType.getSalesDefault().orElse(false))
+			{
+				salesDefaultContacts.add(contact);
+			}
+		}
+		if (defaultContacts.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as default"));
+		}
+		if (purchaseDefaultContacts.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as purchaseDefault"));
+		}
+		if (salesDefaultContacts.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one contact may be flagged as salesDefault"));
+		}
+
+		return result.build();
+	}
+
+	private ImmutableList<ITranslatableString> validateLocations()
+	{
+		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+
+		final List<BPartnerLocation> defaultShipToLocations = new ArrayList<>();
+		final List<BPartnerLocation> defaultBillToLocations = new ArrayList<>();
+		for (final BPartnerLocation location : locations)
+		{
+			result.addAll(location.validate());
+
+			final BPartnerLocationType locationType = location.getLocationType();
+			if (locationType != null && locationType.getBillToDefault().orElse(false))
+			{
+				defaultBillToLocations.add(location);
+			}
+			if (locationType != null && locationType.getShipToDefault().orElse(false))
+			{
+				defaultShipToLocations.add(location);
+			}
+		}
+		if (defaultShipToLocations.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default shipTo location"));
+		}
+		if (defaultBillToLocations.size() > 1)
+		{
+			result.add(TranslatableStrings.constant("Not more than one location may be flagged as default billTo location"));
+		}
+		return result.build();
+	}
+
+	private ImmutableList<ITranslatableString> validateLookupKeys()
+	{
+		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
+
+		final boolean hasLookupKey = bpartner.getId() != null
+				|| !isEmpty(bpartner.getValue(), true)
+				|| bpartner.getExternalId() != null
+				|| !extractLocationGlns().isEmpty();
+		if (!hasLookupKey)
+		{
+			result.add(TranslatableStrings.constant("At least one of bpartner.id, bpartner.code, bpartner.externalId or one location.gln needs to be non-empty"));
+		}
 
 		return result.build();
 	}

@@ -143,7 +143,7 @@ public class InvoiceReferenceNosTest
 
 	private void linkOrgWithOrgBP(@NonNull final I_AD_Org org, @NonNull final I_C_BPartner orgBP)
 	{
-		orgBP.setAD_Org(org);
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
 		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(orgBP);
 
@@ -179,7 +179,7 @@ public class InvoiceReferenceNosTest
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
 
 		bpBankAccount.setC_Bank(bank);
-		bpBankAccount.setAD_Org(partner.getAD_Org());
+		bpBankAccount.setAD_Org_ID(partner.getAD_Org_ID());
 		bpBankAccount.setIsEsrAccount(true);
 
 		bpBankAccount.setC_BPartner(partner);

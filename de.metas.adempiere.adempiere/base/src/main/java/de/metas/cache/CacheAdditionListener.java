@@ -1,9 +1,5 @@
 package de.metas.cache;
 
-import java.util.Collection;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -17,21 +13,20 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/** Implementations should be thread-safe; so far, no implementation had to have any state, so I hope that won't be a problem. */
-public interface CacheIndexDataAdapter<RK, CK, V>
+/**
+  * Invoked by the caching framework when a key and value was added to the cache.
+  */
+@FunctionalInterface
+public interface CacheAdditionListener<K, V>
 {
-	Collection<CK> extractCKs(V record);
-
-	RK extractRK(V record);
-
-	RK extractRK(TableRecordReference recordRef);
+	void itemAdded(K key, V value);
 }

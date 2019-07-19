@@ -1,12 +1,12 @@
-package de.metas.cache;
+package de.metas.greeting;
 
-import java.util.Collection;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
+import de.metas.i18n.Language;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -26,12 +26,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  * #L%
  */
 
-/** Implementations should be thread-safe; so far, no implementation had to have any state, so I hope that won't be a problem. */
-public interface CacheIndexDataAdapter<RK, CK, V>
+@Value // i'm fine with making it mutable, if/when that's needed
+@Builder
+public class Greeting
 {
-	Collection<CK> extractCKs(V record);
+	private GreetingId id;
 
-	RK extractRK(V record);
+	private String greeting;
 
-	RK extractRK(TableRecordReference recordRef);
+	private Language language;
 }
