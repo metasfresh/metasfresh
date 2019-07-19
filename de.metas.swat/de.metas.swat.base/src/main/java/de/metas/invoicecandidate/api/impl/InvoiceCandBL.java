@@ -721,7 +721,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		// TODO WHAT"S THIS? what should priceuom be?
 		final I_C_UOM priceUOM = uomDAO.getByIdOrNull(ic.getPrice_UOM_ID());
 
 		final BigDecimal qtyInPriceUOM = priceUOM == null ? qty : uomConversionBL.convertFromProductUOM(productId, priceUOM, qty);
