@@ -8,6 +8,7 @@ export class DocumentStatusKey {
 export class DocumentActionKey {
   static Complete = 'docActionComplete';
   static Void = 'docActionVoid';
+  static Reactivate = 'docActionReactivate';
 }
 
 /**

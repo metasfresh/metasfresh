@@ -1,5 +1,5 @@
 import { getLanguageSpecific } from '../utils/utils';
-import { DocumentStatusKey } from '../utils/constants';
+import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
@@ -179,3 +179,24 @@ Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   });
 });
 
+Cypress.Commands.add('completeDocument', () => {
+  describe('Complete the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+  });
+});
+
+Cypress.Commands.add('reactivateDocument', () => {
+  describe('Reactivate the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
+      );
+    });
+  });
+});

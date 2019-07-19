@@ -3,6 +3,7 @@
 import {DocumentStatusKey, RewriteURL} from "./utils/constants";
 
 declare namespace Cypress {
+
   // noinspection JSUnusedGlobalSymbols
   interface Chainable<Subject> {
 
@@ -623,5 +624,17 @@ declare namespace Cypress {
      * @param rowNumber - the row number
      */
     selectNthRow(rowNumber: number): Chainable<any>
+
+
+    /**
+     * Complete the current document
+     */
+    completeDocument(): Chainable<any>
+
+    /**
+     * Reactivate the current document
+     */
+    reactivateDocument(): Chainable<any>
+
   }
 }

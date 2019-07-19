@@ -7,7 +7,10 @@
   "docActionVoid": "Void",
   "de_DE__docActionVoid": "Löschen",
 
+  "docActionReactivate": "Re-activate",
+  "de_DE__docActionReactivate": "Reaktivieren",
 
+  
 
   "docStatusCompleted": "Completed",
   "de_DE__docStatusCompleted": "Fertiggestellt",
