@@ -26,7 +26,6 @@ import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
 describe('Create Empties Return', function() {
-  // empties receive
   const businessPartnerName = 'Test Lieferant 1';
   const productQuantity = 222;
   const documentType = 'Leergutausgabe';
@@ -137,9 +136,6 @@ function createEmptiesReturn(documentType, businessPartnerName, productNames, pr
 
 /**
  * Not yet used since cypress cannot write negative numbers, plus this is only a workaround for the frontend bug https://github.com/metasfresh/metasfresh-webui-frontend/issues/2322
- *
- * @param productQuantity
- * @param rowNumber
  */
 function writeNegativeQty(productQuantity, rowNumber) {
   cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
