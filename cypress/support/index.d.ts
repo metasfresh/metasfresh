@@ -272,10 +272,10 @@ declare namespace Cypress {
     getDOMNotificationsNumber(): Chainable<number>
 
     /**
-      * Get the notifications inbox in the app state
-      *
-      * @return notificationsNumber
-      */
+     * Get the notifications inbox in the app state
+     *
+     * @return notificationsNumber
+     */
     getNotificationsInbox(): Chainable<number>
 
     /**
@@ -296,14 +296,14 @@ declare namespace Cypress {
      * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
      */
     addNotification(notificationObject?: object): Chainable<any>
-    
+
     /**
      * Clear current notifications and add a new one. Optionally set the unread count.
      *
      * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
      * @param unreadCount optional, default = 0; sets unread count number
      */
-    
+
     newNotification(notificationObject?: object, unreadCount?: number): Chainable<any>
 
     /**
@@ -616,5 +616,12 @@ declare namespace Cypress {
      */
     waitUntilProcessIsFinished(): Chainable<any>
 
+
+    /**
+     * Select the nth row in a list. Starts from 0.
+     *
+     * @param rowNumber - the row number
+     */
+    selectNthRow(rowNumber: number): Chainable<any>
   }
 }
