@@ -117,15 +117,3 @@ UPDATE AD_Element_Trl SET Description='Vollständige Web-Addresse, z.B. https://
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(544091,'de_CH') 
 ;
-
--- 2019-07-17T12:20:13.419Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET FieldLength=512,Updated=TO_TIMESTAMP('2019-07-17 14:20:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=560188
-;
-
--- 2019-07-17T12:20:15.363Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
---INSERT INTO t_alter_column values('c_bpartner','URL3','VARCHAR(512)',null,null)
---;
--- automatically dropping&recreating all the views that depend on C_BPartner fails at least on some machines; so we do it directly
-ALTER TABLE public.c_bpartner ALTER COLUMN URL3 TYPE character varying (512);
