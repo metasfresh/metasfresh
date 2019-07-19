@@ -520,19 +520,18 @@ public class JsonPersisterService
 	{
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
 
-		final SyncAdvise compositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
-
 		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
 
-		final List<JsonRequestContactUpsertItem> contactRequestItems = jsonBPartnerComposite
-				.getContactsNotNull()
-				.getRequestItems();
-		for (final JsonRequestContactUpsertItem contactRequestItem : contactRequestItems)
+		final JsonRequestContactUpsert contacts = jsonBPartnerComposite.getContactsNotNull();
+
+		final SyncAdvise contactsSyncAdvise = coalesce(contacts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+
+		for (final JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
 		{
-			syncJsonContact(contactRequestItem, compositeSyncAdvise, shortTermIndex);
+			syncJsonContact(contactRequestItem, contactsSyncAdvise, shortTermIndex);
 		}
 
-		if (compositeSyncAdvise.getIfExists().isUpdateRemove())
+		if (contactsSyncAdvise.getIfExists().isUpdateRemove())
 		{
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getContacts().removeAll(shortTermIndex.getRemainingContacts());
@@ -769,20 +768,18 @@ public class JsonPersisterService
 	{
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
-
 		resetDefaultFlagsIfNeeded(jsonBPartnerComposite, shortTermIndex);
 
-		final List<JsonRequestLocationUpsertItem> locationRequestItems = jsonBPartnerComposite
-				.getLocationsNotNull()
-				.getRequestItems();
+		final JsonRequestLocationUpsert locations = jsonBPartnerComposite.getLocationsNotNull();
 
-		for (final JsonRequestLocationUpsertItem locationRequestItem : locationRequestItems)
+		final SyncAdvise locationsSyncAdvise = coalesce(locations.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+
+		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
-			syncJsonLocation(locationRequestItem, syncAdvise, shortTermIndex);
+			syncJsonLocation(locationRequestItem, locationsSyncAdvise, shortTermIndex);
 		}
 
-		if (syncAdvise.getIfExists().isUpdateRemove())
+		if (locationsSyncAdvise.getIfExists().isUpdateRemove())
 		{
 			// deactivate the remaining bpartner locations that we did not see
 			bpartnerComposite.getLocations().removeAll(shortTermIndex.getRemainingLocations());

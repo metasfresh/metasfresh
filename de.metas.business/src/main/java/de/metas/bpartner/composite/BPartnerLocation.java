@@ -148,11 +148,11 @@ public class BPartnerLocation
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 		if (isEmpty(countryCode, true))
 		{
-			result.add(TranslatableStrings.constant("Missing countryCode"));
+			result.add(TranslatableStrings.constant("Missing location.countryCode"));
 		}
 		if (!isEmpty(district, true) && isEmpty(postal, true))
 		{
-			result.add(TranslatableStrings.constant("Missing post (required if district is set)"));
+			result.add(TranslatableStrings.constant("Missing location.postal (required if location.district is set)"));
 		}
 		return result.build();
 	}

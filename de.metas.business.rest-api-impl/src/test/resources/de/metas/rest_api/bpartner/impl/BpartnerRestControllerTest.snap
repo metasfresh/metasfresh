@@ -1,3 +1,42 @@
+de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_Update_BPartner_Name_Insert_Location=[
+  {
+    "bpartner": {
+      "metasfreshId": 100004,
+      "code": "12345",
+      "active": true,
+      "name": "bpartnerRecord.name_updated",
+      "companyName": "bpartnerRecord.companyName",
+      "group": "bpGroupRecord.name",
+      "changeInfo": {
+        "createdMillis": 1563553074,
+        "createdBy": 0,
+        "lastUpdatedMillis": 1563553074,
+        "lastUpdatedBy": 0
+      }
+    },
+    "locations": [
+      {
+        "metasfreshId": 100006,
+        "active": true,
+        "postal": "5040",
+        "poBox": "poBox",
+        "countryCode": "countryRecord.countryCode",
+        "shipTo": false,
+        "shipToDefault": false,
+        "billTo": true,
+        "billToDefault": true,
+        "changeInfo": {
+          "createdMillis": 1563553074,
+          "createdBy": 0,
+          "lastUpdatedMillis": 1563553074,
+          "lastUpdatedBy": 0
+        }
+      }
+    ]
+  }
+]
+
+
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_create=[
   {
     "bpartner": {
@@ -44,9 +83,9 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
             "value": 4
           }
         },
-        "baseLanguage": true,
+        "decimalPoint": false,
         "leftToRight": true,
-        "decimalPoint": false
+        "baseLanguage": true
       },
       "name": "bPartner.name",
       "parentId": 1,
