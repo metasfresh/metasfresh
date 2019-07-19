@@ -18,7 +18,7 @@ export class RewriteURL {
   /**
    * WINDOW is the default
    */
-  static WINDOW = '/rest/api/window/.*[^/][^N][^E][^W]$';
+  static WINDOW = '/rest/api/window/';
 
   static PROCESS = '/rest/api/process/';
 }
