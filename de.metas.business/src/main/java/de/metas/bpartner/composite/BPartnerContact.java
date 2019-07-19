@@ -5,14 +5,19 @@ import static de.metas.util.lang.CoalesceUtil.coalesce;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.table.RecordChangeLog;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.greeting.GreetingId;
 import de.metas.util.rest.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Setter;
 
 /*
  * #%L
@@ -37,9 +42,30 @@ import lombok.Data;
  */
 
 @Data
+@JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerContact
 {
+	public static final String ID = "id";
+	public static final String BPARTNER_ID = "bpartnerId";
+	public static final String EXTERNAL_ID = "externalId";
+	public static final String ACTIVE = "active";
+	public static final String NAME = "name";
+	public static final String LAST_NAME = "lastName";
+	public static final String FIRST_NAME = "firstName";
+	public static final String EMAIL = "email";
+	public static final String PHONE = "phone";
+	public static final String NEWSLETTER = "newsletter";
+	public static final String FAX = "fax";
+	public static final String MOBILE_PHONE = "mobilePhone";
+	public static final String DESCRIPTION = "description";
+	public static final String GREETING_ID = "greetingId";
+
 	private BPartnerContactId id;
+
+	/** A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes. */
+	@Setter(lombok.AccessLevel.NONE)
+	@JsonIgnore
+	private BPartnerId bpartnerId;
 
 	private ExternalId externalId;
 
@@ -57,10 +83,6 @@ public class BPartnerContact
 	@JsonInclude(Include.NON_NULL)
 	private String phone;
 
-	private BPartnerContactType contactType;
-
-	private final RecordChangeLog changeLog;
-
 	private boolean newsletter;
 
 	private String fax;
@@ -71,7 +93,15 @@ public class BPartnerContact
 
 	private GreetingId greetingId;
 
-	/** They are all nullable because we can create a completely empty instance which we then fill. */
+	private BPartnerContactType contactType;
+
+	private final RecordChangeLog changeLog;
+
+	/**
+	 * They are all nullable because we can create a completely empty instance which we then fill.
+	 * <p>
+	 * We need no bpartner id property
+	 */
 	@Builder(toBuilder = true)
 	private BPartnerContact(
 			@Nullable final BPartnerContactId id,
@@ -90,7 +120,8 @@ public class BPartnerContact
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog)
 	{
-		this.id = id;
+		setId(id);
+
 		this.externalId = externalId;
 
 		this.newsletter = coalesce(active, false);
@@ -113,5 +144,11 @@ public class BPartnerContact
 	public BPartnerContact deepCopy()
 	{
 		return toBuilder().build();
+	}
+
+	public final void setId(@Nullable final BPartnerContactId id)
+	{
+		this.id = id;
+		this.bpartnerId = id != null ? id.getBpartnerId() : null;
 	}
 }

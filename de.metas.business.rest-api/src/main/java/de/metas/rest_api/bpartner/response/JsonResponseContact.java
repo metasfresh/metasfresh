@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.changelog.JsonChangeInfo;
@@ -47,7 +46,7 @@ public class JsonResponseContact
 	public static final String NAME = "name";
 	public static final String GREETING = "greeting";
 	public static final String CODE = "code";
-	public static final String METASFRESH_B_PARTNER_ID = "metasfreshBPartnerId";
+	public static final String METASFRESH_BPARTNER_ID = "metasfreshBPartnerId";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String ACTIVE = "active";
@@ -64,7 +63,7 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 
-	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
+		@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	MetasfreshId metasfreshId;
 
 	@ApiModelProperty(dataType = "java.lang.String")
@@ -142,7 +141,7 @@ public class JsonResponseContact
 	private JsonResponseContact(
 			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
-			@JsonProperty(METASFRESH_B_PARTNER_ID) @Nullable final MetasfreshId metasfreshBPartnerId,
+			@JsonProperty(METASFRESH_BPARTNER_ID) @Nullable final MetasfreshId metasfreshBPartnerId,
 			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(CODE) @Nullable final String code,
 			@JsonProperty(NAME) final String name,

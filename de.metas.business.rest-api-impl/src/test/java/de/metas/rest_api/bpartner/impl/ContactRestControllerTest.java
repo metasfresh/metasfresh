@@ -27,6 +27,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
@@ -38,6 +40,8 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 
@@ -85,6 +89,8 @@ class ContactRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Services.registerService(IBPartnerBL.class,new BPartnerBL(new UserRepository()));
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
