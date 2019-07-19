@@ -20,8 +20,7 @@
  * #L%
  */
 
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentStatusKey, DocumentActionKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
 import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
@@ -110,36 +109,28 @@ function createEmptiesReturn(documentType, businessPartnerName, productNames, pr
   it('Create Empties Return', function() {
     cy.selectInListField('C_DocType_ID', documentType);
     cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
-    productNames.forEach((productName, index) => {
-      cy.selectTab('M_InOutLine');
-      cy.pressBatchEntryButton();
-      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
-
-      if (productQuantity > 0) {
-        cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
-        cy.closeBatchEntry();
-      } else {
-        writeNegativeQty(productQuantity + index, productName, index);
-      }
-    });
-  });
-
-  it('Complete the Empties Return', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
+    addLines(productNames, productQuantity);
+    cy.completeDocument();
   });
 }
 
-/**
- * Not yet used since cypress cannot write negative numbers, plus this is only a workaround for the frontend bug https://github.com/metasfresh/metasfresh-webui-frontend/issues/2322
- */
-function writeNegativeQty(productQuantity, rowNumber) {
-  cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+function addLines(productNames, productQuantity) {
+  productNames.forEach((productName, index) => {
+    cy.selectTab('M_InOutLine');
+    cy.pressBatchEntryButton();
+    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
+    if (productQuantity > 0) {
+      cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
+      cy.closeBatchEntry();
+    } else {
+      cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+      writeQtyInAdvancedEdit(productQuantity + index, productName, index);
+    }
+  });
+}
+
+function writeQtyInAdvancedEdit(productQuantity, rowNumber) {
   // select nth line
   cy.selectTab('M_InOutLine');
   cy.selectNthRow(rowNumber);
