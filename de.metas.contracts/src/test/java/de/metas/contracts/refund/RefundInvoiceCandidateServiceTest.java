@@ -5,7 +5,6 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,11 +32,7 @@ import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
-import de.metas.invoicecandidate.api.IAggregationDAO;
-import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
-import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.util.Services;
@@ -91,10 +86,8 @@ public class RefundInvoiceCandidateServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-
 		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
-
 
 		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
@@ -119,25 +112,6 @@ public class RefundInvoiceCandidateServiceTest
 				.builder()
 				.frequency(Frequency.DAILY)
 				.build());
-
-		config_InvoiceCand_LineAggregation();
-
-	}
-
-	protected void config_InvoiceCand_LineAggregation()
-	{
-		final I_C_Invoice_Candidate_Agg defaultLineAgg = newInstance(I_C_Invoice_Candidate_Agg.class);
-		defaultLineAgg.setAD_Org_ID(0);
-		defaultLineAgg.setSeqNo(0);
-		defaultLineAgg.setName("Default");
-		defaultLineAgg.setClassname(DefaultAggregator.class.getName());
-		defaultLineAgg.setIsActive(true);
-		defaultLineAgg.setC_BPartner(null);
-		defaultLineAgg.setM_ProductGroup(null);
-		save(defaultLineAgg);
-
-		final PlainAggregationDAO aggregationDAO = (PlainAggregationDAO)Services.get(IAggregationDAO.class);
-		aggregationDAO.setDefaultAgg(defaultLineAgg);
 	}
 
 	private List<I_C_Flatrate_RefundConfig> createAndVerifyBaseRefundconfigs(@NonNull final ConditionsId conditionsId)
