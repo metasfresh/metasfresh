@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContact.BPartnerContactBuilder;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.InvalidIdentifierException;
 import de.metas.util.rest.ExternalId;
@@ -83,7 +84,8 @@ public class ShortTermContactIndex
 
 	public BPartnerContact newContact(@NonNull final IdentifierString contactIdentifier)
 	{
-		final BPartnerContact contact = BPartnerContact.builder().build();
+		final BPartnerContact contact;
+		final BPartnerContactBuilder contactBuilder = BPartnerContact.builder();
 
 		switch (contactIdentifier.getType())
 		{
@@ -91,10 +93,16 @@ public class ShortTermContactIndex
 				if (bpartnerId != null)
 				{
 					final BPartnerContactId bpartnerLocationId = BPartnerContactId.ofRepoId(bpartnerId, contactIdentifier.asMetasfreshId().getValue());
+					contact = contactBuilder.id(bpartnerLocationId).build();
 					id2Contact.put(bpartnerLocationId, contact);
+				}
+				else
+				{
+					contact = contactBuilder.build();
 				}
 				break;
 			case EXTERNAL_ID:
+				contact = contactBuilder.externalId(contactIdentifier.asExternalId()).build();
 				externalId2Contact.put(contactIdentifier.asExternalId(), contact);
 				break;
 			default:

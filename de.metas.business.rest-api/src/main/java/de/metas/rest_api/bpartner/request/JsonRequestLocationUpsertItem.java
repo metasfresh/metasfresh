@@ -38,15 +38,13 @@ import lombok.Value;
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestLocationUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 10,
-			value = LOCATION_IDENTIFIER_DOC) //
+	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+			value = LOCATION_IDENTIFIER_DOC
+					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created lcoation.") //
 	@NonNull
 	final String locationIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 20,
-			value = "The location to upsert")
+	@ApiModelProperty(allowEmptyValue = false, position = 20, value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 
