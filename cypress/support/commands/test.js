@@ -164,9 +164,13 @@ Cypress.Commands.add('closeBatchEntry', waitBeforePress => {
     if (waitBeforePress) {
       cy.wait(waitBeforePress);
     }
-    cy.get('.quick-input-container').should('exist');
+
+    cy.get('.quick-input-container .meta-icon-preview').should('exist'); // only close batch entry if it's empty
+    cy.get('.indicator-pending').should('not.exist');
+
     cy.get('body').type('{alt}q'); // cypress can't type to `.quick-input-container`
     cy.get('.quick-input-container').should('not.exist');
+    cy.get('.indicator-pending').should('not.exist');
   });
 });
 
