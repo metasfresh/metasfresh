@@ -1479,16 +1479,14 @@ public final class Env
 	}    // isBaseTranslation
 
 	/**
-	 * Do we have Multi-Lingual Documents. Set in DB.loadOrgs
-	 *
-	 * @param ctx context
 	 * @return true if multi lingual documents
 	 */
 	public static boolean isMultiLingualDocument(final Properties ctx)
 	{
-		return Services.get(IClientDAO.class)
-				.retriveClient(ctx)
-				.isMultiLingualDocument();
+		final ClientId clientId = getClientId(ctx);
+		
+		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+		return clientsRepo.isMultilingualDocumentsEnabled(clientId);
 	}    // isMultiLingualDocument
 
 	public static void setAD_Language(final Properties ctx, final String adLanguage)

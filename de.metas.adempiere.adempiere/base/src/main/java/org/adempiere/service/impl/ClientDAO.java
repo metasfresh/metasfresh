@@ -128,4 +128,11 @@ public class ClientDAO implements IClientDAO
 				.build();
 	}
 
+	@Override
+	public boolean isMultilingualDocumentsEnabled(@NonNull final ClientId adClientId)
+	{
+		final I_AD_Client client = getById(adClientId);
+		return client.isMultiLingualDocument();
+	}
+
 }
