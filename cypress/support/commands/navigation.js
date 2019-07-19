@@ -71,7 +71,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId) => {
 Cypress.Commands.add('selectNthRow', rowNumber => {
   return cy
     .get('.table-flex-wrapper')
-    .find(`tbody tr:nth-child(${rowNumber})`)
+    .find(`tbody tr:nth-child(${rowNumber + 1})`)
     .should('exist')
     .click({ force: true });
 });
