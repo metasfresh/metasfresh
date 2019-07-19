@@ -21,7 +21,7 @@
  */
 
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { DocumentStatusKey, DocumentActionKey } from '../../support/utils/constants';
 import { Builder } from '../../support/utils/builder';
 import { PackingMaterial } from '../../support/utils/packing_material';
 
@@ -32,74 +32,100 @@ describe('Create Empties Return', function() {
   const documentType = 'Leergutausgabe';
 
   // priceList
-  // const date = humanReadableNow();
-  const date = '18T09:01:32.301';
+  const date = humanReadableNow();
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
   const priceListVersionName = `PriceListVersion ${date}`;
 
   // product
-  const productCategory = `ProductCategory ${date}`;
-  const productName = `Product ${date}`;
+  const productCategory1 = `ProductCategory ${date}`;
+  const productName1 = `Product1 ${date}`;
+  const productName2 = `Product2 ${date}`;
+  const productName3 = `Product3 ${date}`;
   const productType = 'Item';
 
-  // describe('Create Packing Material', function() {
-  //   it('Create Price and Product', function() {
-  //     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
-  //
-  //     Builder.createBasicProductEntities(
-  //       productCategory,
-  //       productCategory,
-  //       priceListName,
-  //       productName,
-  //       productName,
-  //       productType
-  //     );
-  //   });
-  //
-  //   it('Add Product to Packing Material', function() {
-  //     new PackingMaterial()
-  //       .setName(productName)
-  //       .setProduct(productName)
-  //       .apply();
-  //   });
-  // });
+  describe('Create Packing Material', function() {
+    it('Create Price and Product', function() {
+      Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
-  describe('Create Positive Empties Return', function() {
-    createEmptiesReturn(documentType, businessPartnerName, productName, productQuantity);
+      Builder.createBasicProductEntities(
+        productCategory1,
+        productCategory1,
+        priceListName,
+        productName1,
+        productName1,
+        productType
+      );
+
+      Builder.createBasicProductEntities(
+        productCategory1,
+        productCategory1,
+        priceListName,
+        productName2,
+        productName2,
+        productType
+      );
+
+      Builder.createBasicProductEntities(
+        productCategory1,
+        productCategory1,
+        priceListName,
+        productName3,
+        productName3,
+        productType
+      );
+    });
+
+    it('Add Product to Packing Material', function() {
+      // eslint-disable-next-line
+      new PackingMaterial().setName(productName1).setProduct(productName1).apply();
+      // eslint-disable-next-line
+      new PackingMaterial().setName(productName2).setProduct(productName2).apply();
+      // eslint-disable-next-line
+      new PackingMaterial().setName(productName3).setProduct(productName3).apply();
+    });
   });
 
-  // describe('Create Negative Empties Return', function() {
-  //   createEmptiesReturn(documentType, businessPartnerName, productName, -1 * productQuantity);
-  // });
+  describe('Create Positive Empties Return with 1 product', function() {
+    createEmptiesReturn(documentType, businessPartnerName, [productName2], productQuantity);
+  });
+
+  describe('Create Positive Empties Return with 3 products', function() {
+    createEmptiesReturn(documentType, businessPartnerName, [productName1, productName2, productName3], productQuantity);
+  });
+
+  describe('Cannot Create Negative Empties Return', function() {
+    it('Cannot Create Negative Empties Return', function() {
+      // eslint-disable-next-line
+      cy.log(`cannot test due to cypress bug: https://github.com/cypress-io/cypress/issues/2173#issuecomment-512776378 (cypress cannot write minus ('-') for negative numbers)`);
+    });
+  });
 });
 
-function createEmptiesReturn(documentType, businessPartnerName, productName, productQuantity) {
-  it('Open Material Receipt Candidates', function() {
+function createEmptiesReturn(documentType, businessPartnerName, productNames, productQuantity) {
+  it('Open Material Receipt Candidates and execute action "Empties Return"', function() {
     cy.visitWindow('540196');
+    cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
   });
 
-  it('Execute action "Empties Return" and create Empties Return', function() {
-    cy.executeHeaderAction('WEBUI_M_ReceiptSchedule_CreateEmptiesReturnsToVendor');
+  it('Create Empties Return', function() {
     cy.selectInListField('C_DocType_ID', documentType);
     cy.writeIntoLookupListField('C_BPartner_ID', businessPartnerName, businessPartnerName);
-    cy.selectTab('M_InOutLine');
-    cy.pressBatchEntryButton();
-    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
+    productNames.forEach((productName, index) => {
+      cy.selectTab('M_InOutLine');
+      cy.pressBatchEntryButton();
+      cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
-    // if (productQuantity > 0) {
-    //   cy.writeIntoStringField('Qty', productQuantity, false, null, true); //.type('{enter}');
-    // } else {
-    //   writeNegativeQty(productQuantity, productName, 0);
-    // }
-    // cy.wait(1000);
+      if (productQuantity > 0) {
+        cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
+        cy.closeBatchEntry();
+      } else {
+        writeNegativeQty(productQuantity + index, productName, index);
+      }
+    });
+  });
 
-    //////////
-    cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', 'EUR-Tauschpalette Holz', 'EUR-Tauschpalette Holz');
-    writeNegativeQty(-12345, 'EUR-Tauschpalette Holz', 1);
-    cy.wait(1000);
-    ////////////
-
+  it('Complete the Empties Return', function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
         getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
@@ -109,19 +135,22 @@ function createEmptiesReturn(documentType, businessPartnerName, productName, pro
   });
 }
 
-function writeNegativeQty(productQuantity, productName, lineNumber) {
-  cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}');
+/**
+ * Not yet used since cypress cannot write negative numbers, plus this is only a workaround for the frontend bug https://github.com/metasfresh/metasfresh-webui-frontend/issues/2322
+ *
+ * @param productQuantity
+ * @param rowNumber
+ */
+function writeNegativeQty(productQuantity, rowNumber) {
+  cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
 
   // select nth line
   cy.selectTab('M_InOutLine');
-  cy.get('.table-flex-wrapper')
-    .find(`tbody tr:nth-child(${lineNumber})`)
-    .should('exist')
-    .click({ force: true });
+  cy.selectNthRow(rowNumber);
 
   // do ya thing
   cy.openAdvancedEdit();
-  cy.writeIntoStringField('MovementQty', '-' + 'lala', true, null, true);
-  cy.writeIntoStringField('QtyEntered', `0--${productQuantity}`, true, null, true);
+  cy.writeIntoStringField('MovementQty', productQuantity, true, null, true);
+  cy.writeIntoStringField('QtyEntered', productQuantity, true, null, true);
   cy.pressDoneButton(100);
 }
