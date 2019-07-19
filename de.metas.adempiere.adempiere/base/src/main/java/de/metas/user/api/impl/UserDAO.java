@@ -69,9 +69,9 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true);
 
 		queryBuilder.addCompositeQueryFilter()
-				.setJoinOr()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
+		.setJoinOr()
+		.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
+		.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
 
 		final List<I_AD_User> users = queryBuilder.create().list();
 		if (users.size() > 1)
@@ -242,7 +242,7 @@ public class UserDAO implements IUserDAO
 		{
 			return new InternetAddress(email).getAddress();
 		}
-		catch (AddressException e)
+		catch (final AddressException e)
 		{
 			logger.warn("Invalid email address `{}`. Returning null.", email, e);
 			return null;
@@ -287,4 +287,36 @@ public class UserDAO implements IUserDAO
 				.listIds(UserId::ofRepoId);
 	}
 
+	@Override
+	public UserId retrieveUserIdByValue(@Nullable final String value, @NonNull final ClientId adClientId)
+	{
+		if (Check.isEmpty(value, true))
+		{
+			return null;
+		}
+
+
+		final Set<UserId> userIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_Value, value)
+				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, adClientId)
+				.create()
+				.listIds(UserId::ofRepoId);
+
+		if (userIds.isEmpty())
+		{
+			return null;
+		}
+		else if (userIds.size() == 1)
+		{
+			return userIds.iterator().next();
+		}
+		else
+		{
+			// more than one user found for given value.
+			logger.info("Found more than one user for value={} and clientId={}. Returning null", value,adClientId, userIds);
+			return null;
+		}
+	}
 }
