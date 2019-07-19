@@ -38,3 +38,6 @@ UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2019-07-18 21:07:
 UPDATE AD_Column SET AD_Val_Rule_ID=540446,Updated=TO_TIMESTAMP('2019-07-18 21:07:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=540286
 ;
 
+
+
+   UPDATE M_Product set ProductType = 'F' WHERE M_Product_ID = 1000001;
