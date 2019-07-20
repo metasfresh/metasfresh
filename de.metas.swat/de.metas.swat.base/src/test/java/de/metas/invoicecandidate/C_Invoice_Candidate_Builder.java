@@ -21,7 +21,6 @@ package de.metas.invoicecandidate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -32,11 +31,17 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+// import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_BPartner;
@@ -57,7 +62,8 @@ public class C_Invoice_Candidate_Builder
 	private final AbstractICTestSupport test;
 
 	private String instanceName;
-	private int billBPartnerId;
+	private BPartnerId billBPartnerId;
+	private BPartnerLocationId billBPartnerLocationId;
 	private int priceEntered;
 	private BigDecimal priceEntered_Override;
 	private BigDecimal qty;
@@ -97,10 +103,10 @@ public class C_Invoice_Candidate_Builder
 
 		//
 		// Configure the BPartner
-		final I_C_BPartner billPartner;
 		{
+			final I_C_BPartner billPartner;
 			billPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
-			billPartner.setC_BPartner_ID(billBPartnerId);
+			billPartner.setC_BPartner_ID(billBPartnerId.getRepoId());
 
 			InterfaceWrapperHelper.save(billPartner);
 		}
@@ -126,9 +132,34 @@ public class C_Invoice_Candidate_Builder
 			ic.setInvoiceRule_Override(invoiceRule_Override);
 		}
 
-		ic.setBill_BPartner(billPartner);
+		ic.setBill_BPartner_ID(billBPartnerId.getRepoId());
+
+		{
+			final I_C_Country country_DE = InterfaceWrapperHelper.create(ctx, I_C_Country.class, trxName);
+			country_DE.setAD_Language("de");
+			InterfaceWrapperHelper.save(country_DE);
+
+			final I_C_Location loc = InterfaceWrapperHelper.create(ctx, I_C_Location.class, trxName);
+			loc.setC_Country_ID(country_DE.getC_Country_ID());
+			InterfaceWrapperHelper.save(loc);
+
+			final I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(ctx, I_C_BPartner_Location.class, trxName);
+			bpLoc.setC_Location_ID(loc.getC_Location_ID());
+			bpLoc.setC_BPartner_ID(billBPartnerId.getRepoId());
+			if (billBPartnerLocationId != null)
+			{
+				Check.assumeEquals(billBPartnerLocationId.getBpartnerId(), billBPartnerId, "BP Location shall have the same BP: {}, {}", billBPartnerLocationId, billBPartnerId);
+				bpLoc.setC_BPartner_Location_ID(billBPartnerLocationId.getRepoId());
+			}
+			InterfaceWrapperHelper.save(bpLoc);
+
+			billBPartnerLocationId = BPartnerLocationId.ofRepoId(bpLoc.getC_BPartner_ID(), bpLoc.getC_BPartner_Location_ID());
+		}
+
+		ic.setBill_Location_ID(billBPartnerLocationId.getRepoId());
+
 		ic.setAD_User_InCharge_ID(-1); // nobody, aka null
-		ic.setM_Product(test.product("1", -1));
+		ic.setM_Product_ID(test.product("1", -1).getM_Product_ID());
 		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qty);
@@ -142,10 +173,9 @@ public class C_Invoice_Candidate_Builder
 		Check.errorIf(isSOTrx == null, "this builder={} needs isSOTrx to be set before it is able to build an IC", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);
 
-		ic.setBill_Location(test.bpLoc);
 		ic.setIsError(false); // just to avoid "refreshing changed models" exception from POJOWrapper
 		ic.setProcessed(false); // just to avoid failing filters on Processed=N
-		ic.setC_Tax(tax);
+		ic.setC_Tax_ID(tax == null ? -1 : tax.getC_Tax_ID());
 		ic.setIsTaxIncluded(false); // to avoid key builder to get "null" here
 		// 07442: activity and tax
 
@@ -161,7 +191,7 @@ public class C_Invoice_Candidate_Builder
 			}
 			else
 			{
-				ic.setM_PricingSystem(isSOTrx ? test.pricingSystem_SO : test.pricingSystem_PO);
+				ic.setM_PricingSystem_ID(isSOTrx ? test.pricingSystem_SO.getM_PricingSystem_ID() : test.pricingSystem_PO.getM_PricingSystem_ID());
 			}
 			if (M_PriceList_Version_ID > 0)
 			{
@@ -169,7 +199,7 @@ public class C_Invoice_Candidate_Builder
 			}
 			else
 			{
-				ic.setM_PriceList_Version(isSOTrx ? test.priceListVersion_SO : test.priceListVersion_PO);
+				ic.setM_PriceList_Version_ID(isSOTrx ? test.priceListVersion_SO.getM_PriceList_Version_ID() : test.priceListVersion_PO.getM_PriceList_Version_ID());
 			}
 		}
 
@@ -235,13 +265,24 @@ public class C_Invoice_Candidate_Builder
 
 	public C_Invoice_Candidate_Builder setBillBPartnerId(final int billBPartnerId)
 	{
+		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartnerId));
+	}
+
+	public C_Invoice_Candidate_Builder setBillBPartnerId(final BPartnerId billBPartnerId)
+	{
 		this.billBPartnerId = billBPartnerId;
 		return this;
 	}
 
 	public C_Invoice_Candidate_Builder setBillBPartner(final org.compiere.model.I_C_BPartner billBPartner)
 	{
-		this.billBPartnerId = billBPartner.getC_BPartner_ID();
+		return setBillBPartnerId(BPartnerId.ofRepoId(billBPartner.getC_BPartner_ID()));
+	}
+
+	public C_Invoice_Candidate_Builder setBillBPartnerAndLocationId(final BPartnerLocationId billBPartnerAndLocationId)
+	{
+		setBillBPartnerId(billBPartnerAndLocationId.getBpartnerId());
+		this.billBPartnerLocationId = billBPartnerAndLocationId;
 		return this;
 	}
 
@@ -321,7 +362,6 @@ public class C_Invoice_Candidate_Builder
 		this.isSOTrx = isSOTrx;
 		return this;
 	}
-
 
 	public C_Invoice_Candidate_Builder setOrderDocNo(final String orderDocNo)
 	{

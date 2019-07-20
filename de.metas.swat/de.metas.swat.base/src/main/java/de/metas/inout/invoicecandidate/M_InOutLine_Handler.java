@@ -47,6 +47,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -181,11 +182,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_M_InOutLine inOutLine)
 	{
 		final List<I_M_InOutLine> referencingLines = retrieveActiveReferencingInoutLines(inOutLine);
-		
+
 		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
 				referencingLines.stream()
 				.map(referencingLine -> GuavaCollectors.entry(
-						extractPaymentTermIdOrNull(referencingLine), 
+						extractPaymentTermIdOrNull(referencingLine),
 						referencingLine))
 				.filter(ImmutableMapEntry::isKeyNotNull)
 				.collect(GuavaCollectors.toImmutableListMultimap());
@@ -268,6 +269,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable BigDecimal forcedQtyToAllocate)
 	{
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_M_InOut inOut = create(inOutLine.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, inOutLine);
 
@@ -340,7 +344,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set Invoice Rule from BPartner
 		else
 		{
-			final String invoiceRule = ic.getBill_BPartner().getInvoiceRule();
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
+			final String invoiceRule = billBPartner.getInvoiceRule();
 			if (!Check.isEmpty(invoiceRule))
 			{
 				ic.setInvoiceRule(invoiceRule);
@@ -544,7 +549,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 			return inOutLine.getMovementQty();
 		}
-		
+
 		final PaymentTermId icPaymentTermId = PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID());
 
 		BigDecimal qtyDeliveredLeftToAllocateForAnyPaymentTerm = packagingInOutLine.getMovementQty();

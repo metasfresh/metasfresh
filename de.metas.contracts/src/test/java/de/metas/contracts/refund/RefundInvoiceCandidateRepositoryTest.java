@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
@@ -198,6 +199,7 @@ public class RefundInvoiceCandidateRepositoryTest
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_0)

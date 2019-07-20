@@ -52,57 +52,84 @@ import lombok.NonNull;
 
 public class ChangeLogUtil
 {
-
 	private static final ImmutableMap<String, String> BPARTNER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_BPartner.COLUMNNAME_Value, "value")
-			.put(I_C_BPartner.COLUMNNAME_CompanyName, "companyName")
-			.put(I_C_BPartner.COLUMNNAME_ExternalId, "externalId")
-			.put(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, "groupId")
-			.put(I_C_BPartner.COLUMNNAME_AD_Language, "language")
-			.put(I_C_BPartner.COLUMNNAME_C_BPartner_ID, "id")
-			.put(I_C_BPartner.COLUMNNAME_Name, "name")
-			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, "parentId")
-			.put(I_C_BPartner.COLUMNNAME_Phone2, "phone")
-			.put(I_C_BPartner.COLUMNNAME_URL, "url")
+			.put(I_C_BPartner.COLUMNNAME_Value, BPartner.VALUE)
+			.put(I_C_BPartner.COLUMNNAME_CompanyName, BPartner.COMPANY_NAME)
+			.put(I_C_BPartner.COLUMNNAME_ExternalId, BPartner.EXTERNAL_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_BP_Group_ID, BPartner.GROUP_ID)
+			.put(I_C_BPartner.COLUMNNAME_AD_Language, BPartner.LANGUAGE)
+			.put(I_C_BPartner.COLUMNNAME_C_BPartner_ID, BPartner.ID)
+			.put(I_C_BPartner.COLUMNNAME_Name, BPartner.NAME)
+			.put(I_C_BPartner.COLUMNNAME_Name2, BPartner.NAME_2)
+			.put(I_C_BPartner.COLUMNNAME_Name3, BPartner.NAME_3)
+			.put(I_C_BPartner.COLUMNNAME_BPartner_Parent_ID, BPartner.PARENT_ID)
+			.put(I_C_BPartner.COLUMNNAME_Phone2, BPartner.PHONE)
+			.put(I_C_BPartner.COLUMNNAME_URL, BPartner.URL)
+			.put(I_C_BPartner.COLUMNNAME_URL2, BPartner.URL_2)
+			.put(I_C_BPartner.COLUMNNAME_URL3, BPartner.URL_3)
+			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
 			.build();
 
 	private static final ImmutableMap<String, String> AD_USER_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_AD_User.COLUMNNAME_AD_User_ID, "id")
-			.put(I_AD_User.COLUMNNAME_EMail, "email")
-			.put(I_AD_User.COLUMNNAME_ExternalId, "externalId")
-			.put(I_AD_User.COLUMNNAME_Firstname, "firstName")
-			.put(I_AD_User.COLUMNNAME_Lastname, "lastName")
-			.put(I_AD_User.COLUMNNAME_Name, "name")
-			.put(I_AD_User.COLUMNNAME_Phone, "phone")
+			.put(I_AD_User.COLUMNNAME_AD_User_ID, BPartnerContact.ID)
+			.put(I_AD_User.COLUMNNAME_C_BPartner_ID, BPartnerContact.BPARTNER_ID)
+			.put(I_AD_User.COLUMNNAME_EMail, BPartnerContact.EMAIL)
+			.put(I_AD_User.COLUMNNAME_ExternalId, BPartnerContact.EXTERNAL_ID)
+			.put(I_AD_User.COLUMNNAME_Firstname, BPartnerContact.FIRST_NAME)
+			.put(I_AD_User.COLUMNNAME_Lastname, BPartnerContact.LAST_NAME)
+			.put(I_AD_User.COLUMNNAME_Name, BPartnerContact.NAME)
+			.put(I_AD_User.COLUMNNAME_Phone, BPartnerContact.PHONE)
+			.put(I_AD_User.COLUMNNAME_IsDefaultContact, BPartnerContactType.DEFAULT_CONTACT)
+			.put(I_AD_User.COLUMNNAME_IsBillToContact_Default, BPartnerContactType.BILL_TO_DEFAULT)
+			.put(I_AD_User.COLUMNNAME_IsShipToContact_Default, BPartnerContactType.SHIP_TO_DEFAULT)
+			.put(I_AD_User.COLUMNNAME_IsSalesContact, BPartnerContactType.SALES)
+			.put(I_AD_User.COLUMNNAME_IsSalesContact_Default, BPartnerContactType.SALES_DEFAULT)
+			.put(I_AD_User.COLUMNNAME_IsPurchaseContact, BPartnerContactType.PURCHASE)
+			.put(I_AD_User.COLUMNNAME_IsPurchaseContact_Default, BPartnerContactType.PURCHASE_DEFAULT)
+			.put(I_AD_User.COLUMNNAME_IsSubjectMatterContact, BPartnerContactType.SUBJECT_MATTER)
+			.put(I_AD_User.COLUMNNAME_IsActive, BPartnerContact.ACTIVE)
+			.put(I_AD_User.COLUMNNAME_IsNewsletter, BPartnerContact.NEWSLETTER)
+			.put(I_AD_User.COLUMNNAME_Fax, BPartnerContact.FAX)
+			.put(I_AD_User.COLUMNNAME_MobilePhone, BPartnerContact.MOBILE_PHONE)
+			.put(I_AD_User.COLUMNNAME_Description, BPartnerContact.DESCRIPTION)
+			.put(I_AD_User.COLUMNNAME_C_Greeting_ID, BPartnerContact.GREETING_ID)
 			.build();
 
 	private static final ImmutableMap<String, String> C_LOCATION_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_Location.COLUMNNAME_Address1, "address1")
-			.put(I_C_Location.COLUMNNAME_Address2, "address2")
-			.put(I_C_Location.COLUMNNAME_City, "city")
-			.put(I_C_Location.COLUMNNAME_POBox, "poBox")
-			.put(I_C_Location.COLUMNNAME_Postal, "postal")
-			.put(I_C_Location.COLUMNNAME_RegionName, "region")
+			.put(I_C_Location.COLUMNNAME_Address1, BPartnerLocation.ADDRESS_1)
+			.put(I_C_Location.COLUMNNAME_Address2, BPartnerLocation.ADDRESS_2)
+			.put(I_C_Location.COLUMNNAME_Address3, BPartnerLocation.ADDRESS_3)
+			.put(I_C_Location.COLUMNNAME_Address4, BPartnerLocation.ADDRESS_4)
+			.put(I_C_Location.COLUMNNAME_City, BPartnerLocation.CITY)
+			.put(I_C_Location.COLUMNNAME_POBox, BPartnerLocation.PO_BOX)
+			.put(I_C_Location.COLUMNNAME_Postal, BPartnerLocation.POSTAL)
+			.put(I_C_Location.COLUMNNAME_RegionName, BPartnerLocation.REGION)
 			.build();
 
 	private static final ImmutableMap<String, String> C_BPARTNER_LOCATION_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_BPartner_Location.COLUMNNAME_ExternalId, "externalId")
-			.put(I_C_BPartner_Location.COLUMNNAME_GLN, "gln")
-			.put(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, "id")
+			.put(I_C_BPartner_Location.COLUMNNAME_ExternalId, BPartnerLocation.EXTERNAL_ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_GLN, BPartnerLocation.GLN)
+			.put(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, BPartnerLocation.ID)
+			.put(I_C_BPartner_Location.COLUMNNAME_Name, BPartnerLocation.NAME)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, BPartnerLocationType.BILL_TO_DEFAULT)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsBillTo, BPartnerLocationType.BILL_TO)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, BPartnerLocationType.SHIP_TO_DEFAULT)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsShipTo, BPartnerLocationType.SHIP_TO)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsActive, BPartnerLocation.ACTIVE)
 			.build();
 
 	private static final ImmutableMap<String, String> C_POSTAL_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_Postal.COLUMNNAME_District, "district")
+			.put(I_C_Postal.COLUMNNAME_District, BPartnerLocation.DISTRICT)
 			.build();
 
 	private static final ImmutableMap<String, String> C_COUNTRY_COLUMN_MAP = ImmutableMap
 			.<String, String> builder()
-			.put(I_C_Country.COLUMNNAME_CountryCode, "countryCode")
+			.put(I_C_Country.COLUMNNAME_CountryCode, BPartnerLocation.COUNTRYCODE)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(
@@ -128,8 +155,8 @@ public class ChangeLogUtil
 				.createdTimestamp(TimeUtil.asInstant(bpartnerRecord.getCreated()))
 				.lastChangedByUserId(updated.getRight())
 				.lastChangedTimestamp(updated.getLeft())
-				.recordId(ComposedRecordId.singleKey(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerRecord.getC_BPartner_ID()))
-				.tableName(I_C_BPartner.Table_Name)
+				.recordId(ComposedRecordId.singleKey(org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerRecord.getC_BPartner_ID()))
+				.tableName(org.compiere.model.I_C_BPartner.Table_Name)
 				.entries(domainEntries)
 				.build();
 	}

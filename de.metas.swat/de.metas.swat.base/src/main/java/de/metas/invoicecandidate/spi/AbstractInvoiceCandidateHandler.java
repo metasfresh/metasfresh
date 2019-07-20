@@ -32,6 +32,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -106,12 +108,22 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 */
 	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
 	{
-		final I_M_Product product = ic.getM_Product();
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
 
 		// If no product, consider it as a non receivable service (maybe it's a charge?!)
 		if (product == null)
 		{
 			return true;
+		}
+
+		final boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(product.getM_Product_ID()));
+
+		if (isFreightCostProduct)
+		{
+			return false;
 		}
 
 		// If the product is not a service
@@ -139,7 +151,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		if (firstInOut == null)
 		{
 			ic.setDeliveryDate(null);
-			ic.setFirst_Ship_BPLocation(null);
+			ic.setFirst_Ship_BPLocation_ID(-1);
 		}
 		else
 		{

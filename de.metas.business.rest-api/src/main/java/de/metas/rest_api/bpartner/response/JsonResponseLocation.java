@@ -12,6 +12,7 @@ import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.changelog.JsonChangeInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -41,8 +42,11 @@ public class JsonResponseLocation
 {
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String EXTERNAL_ID = "externalId";
-	public static final String ADDRESS1 = "address1";
-	public static final String ADDRESS2 = "address2";
+	public static final String NAME = "name";
+	public static final String ADDRESS_1 = "address1";
+	public static final String ADDRESS_2 = "address2";
+	public static final String ADDRESS_3 = "address3";
+	public static final String ADDRESS_4 = "address4";
 	public static final String POSTAL = "postal";
 	public static final String PO_BOX = "poBox";
 	public static final String DISTRICT = "district";
@@ -50,10 +54,15 @@ public class JsonResponseLocation
 	public static final String CITY = "city";
 	public static final String COUNTRY_CODE = "countryCode";
 	public static final String GLN = "gln";
+	public static final String ACTIVE = "active";
 
-	@JsonInclude(Include.NON_NULL)
-	@ApiModelProperty(dataType = "java.lang.Integer")
-	private MetasfreshId metasfreshId;
+	public static final String BILL_TO = "billTo";
+	public static final String BILL_TO_DEFAULT = "billToDefault";
+	public static final String SHIP_TO = "shipTo";
+	public static final String SHIP_TO_DEFAULT = "shipToDefault";
+
+	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Integer")
+	MetasfreshId metasfreshId;
 
 	@ApiModelProperty(allowEmptyValue = true, //
 			dataType = "java.lang.String", //
@@ -61,60 +70,107 @@ public class JsonResponseLocation
 					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
 	private JsonExternalId externalId;
 
-	private String address1;
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean active;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	String name;
 
 	@JsonInclude(Include.NON_EMPTY)
-	private String address2;
+	String address1;
 
 	@JsonInclude(Include.NON_EMPTY)
-	private String poBox;
-
-	private String postal;
-
-	private String city;
+	String address2;
 
 	@JsonInclude(Include.NON_EMPTY)
-	private String district;
+	String address3;
 
 	@JsonInclude(Include.NON_EMPTY)
-	private String region;
+	String address4;
 
-	private String countryCode;
+	@JsonInclude(Include.NON_EMPTY)
+	String poBox;
 
-	@ApiModelProperty(allowEmptyValue = true, //
-			value = "This translates to `C_BPartner_Location.GLN`.")
-	private String gln;
+	String postal;
+
+	String city;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String district;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String region;
+
+	String countryCode;
+
+	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner_Location.GLN`.")
+	String gln;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean shipTo;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean shipToDefault;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean billTo;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	boolean billToDefault;
 
 	@JsonInclude(Include.NON_NULL)
+	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseLocation(
-			@JsonProperty(METASFRESH_ID) @Nullable final MetasfreshId metasfreshId,
+			@JsonProperty(METASFRESH_ID) @NonNull final MetasfreshId metasfreshId,
 			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
-			@JsonProperty(ADDRESS1) @Nullable final String address1,
-			@JsonProperty(ADDRESS2) @Nullable final String address2,
+			@JsonProperty(NAME) @Nullable final String name,
+			@JsonProperty(ACTIVE) @NonNull final Boolean active,
+			@JsonProperty(ADDRESS_1) @Nullable final String address1,
+			@JsonProperty(ADDRESS_2) @Nullable final String address2,
+			@JsonProperty(ADDRESS_3) @Nullable final String address3,
+			@JsonProperty(ADDRESS_4) @Nullable final String address4,
 			@JsonProperty(POSTAL) final String postal,
 			@JsonProperty(PO_BOX) final String poBox,
 			@JsonProperty(DISTRICT) final String district,
 			@JsonProperty(REGION) final String region,
 			@JsonProperty(CITY) final String city,
+			@JsonProperty(GLN) final String gln,
 			@JsonProperty(COUNTRY_CODE) @Nullable final String countryCode,
-			@JsonProperty(GLN) @Nullable final String gln,
+			@JsonProperty(SHIP_TO) @Nullable final boolean shipTo,
+			@JsonProperty(SHIP_TO_DEFAULT) @Nullable final boolean shipToDefault,
+			@JsonProperty(BILL_TO) @Nullable final boolean billTo,
+			@JsonProperty(BILL_TO_DEFAULT) @Nullable final boolean billToDefault,
+
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
 		this.externalId = externalId;
+
+		this.active = active;
+
+		this.name = name;
+
 		this.address1 = address1;
 		this.address2 = address2;
+		this.address3 = address3;
+		this.address4 = address4;
+
 		this.postal = postal;
 		this.poBox = poBox;
 		this.district = district;
 		this.region = region;
 		this.city = city;
 		this.countryCode = countryCode; // mandatory only if we want to insert/update a new location
+
+		this.billToDefault = billToDefault;
+		this.billTo = billTo;
+		this.shipToDefault = shipToDefault;
+		this.shipTo = shipTo;
 
 		this.changeInfo = changeInfo;
 	}

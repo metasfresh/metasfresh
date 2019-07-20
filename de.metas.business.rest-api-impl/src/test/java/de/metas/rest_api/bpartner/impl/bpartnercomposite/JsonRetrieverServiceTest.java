@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
+import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.bpartner.impl.MockLogEntriesRepository;
 
@@ -73,8 +74,13 @@ class JsonRetrieverServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository());
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

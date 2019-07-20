@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -262,7 +263,9 @@ public interface IInvoiceCandidateHandler
 
 	default void setInvoiceScheduleAndDateToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setC_InvoiceSchedule_ID(ic.getBill_BPartner().getC_InvoiceSchedule_ID());
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+		ic.setC_InvoiceSchedule_ID(bpartnerDAO.getById(ic.getBill_BPartner_ID()).getC_InvoiceSchedule_ID());
 
 		Services.get(IInvoiceCandBL.class).set_DateToInvoice_DefaultImpl(ic);
 	}

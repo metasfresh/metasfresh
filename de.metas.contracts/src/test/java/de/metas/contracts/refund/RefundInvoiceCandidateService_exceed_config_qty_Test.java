@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundConfigBuilder;
@@ -148,7 +147,8 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate.builder()
 				.assignedQuantity(Quantity.of(FIVE, refundTestTools.getUomRecord()))
-				.bpartnerId(BPartnerId.ofRepoId(10))
+				.bpartnerId(refundTestTools.BPARTNER_ID)
+				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
 				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
 				.refundConfigs(ImmutableList.of(refundContract.getRefundConfig(FIVE)))

@@ -50,6 +50,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.IQueryOrderByBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -80,6 +81,8 @@ import com.google.common.collect.ImmutableSet;
 
 import ch.qos.logback.classic.Level;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -109,6 +112,7 @@ import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
@@ -126,6 +130,12 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
+
+	@Override
+	public I_C_Invoice_Candidate getById(final InvoiceCandidateId invoiceCandId)
+	{
+		return InterfaceWrapperHelper.load(invoiceCandId.getRepoId(), I_C_Invoice_Candidate.class);
+	}
 
 	@Override
 	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(final Properties ctx, final PInstanceId pinstanceId, final String trxName)
@@ -774,8 +784,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final void invalidateCandsForBPartnerInvoiceRule(final I_C_BPartner bpartner)
+	public final void invalidateCandsForBPartnerInvoiceRule(final BPartnerId bpartnerId)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = partnerDAO.getById(bpartnerId);
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = retrieveForBillPartnerQuery(bpartner)
 				.addCoalesceEqualsFilter(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery,
 						I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
@@ -873,6 +886,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				//
 				// Order BY: we need to return the not-manual invoice candidates first, because their NetAmtToInvoice is required when we evaluate the manual candidates
 				.orderBy()
+				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, Direction.Ascending, Nulls.First)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_IsManual)
 				.addColumn(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID)
 				.endOrderBy()
@@ -1583,5 +1597,36 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@Override
+	public InvoiceCandidateId getFirstInvoiceableInvoiceCandId(final OrderId orderId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final ICompositeQueryFilter<I_C_Invoice_Candidate> qtyToInvoiceFilter = queryBL.createCompositeQueryFilter(I_C_Invoice_Candidate.class)
+				.setJoinOr()
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override, Operator.GREATER, BigDecimal.ZERO);
+
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addFiltersUnboxed(qtyToInvoiceFilter)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+				.create()
+				.firstId(InvoiceCandidateId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void invalidateUninvoicedFreightCostCandidate(@NonNull final OrderId orderId)
+	{
+		final IQueryBuilder<I_C_Invoice_Candidate> freightCostCandQueryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_IsFreightCost, true)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false);
+
+		invalidateCandsFor(freightCostCandQueryBuilder);
 	}
 }

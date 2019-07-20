@@ -20,6 +20,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidateFactory;
@@ -238,6 +239,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate
 				.builder()
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(savedRefundContract)
 				.refundConfig(savedRefundConfig_0)
@@ -254,8 +256,11 @@ public class CandidateAssignServiceAllQties_Percent_Test
 	@Test
 	public void updateAssignment()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate assignableCandidate_14 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_14_00)
@@ -284,7 +289,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		}
 
 		final AssignableInvoiceCandidate assignableCandidate_12 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_12_00)
@@ -323,7 +329,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_15
 		final AssignableInvoiceCandidate assignableCandidate_20 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_20_00)
@@ -366,7 +373,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000025))
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_30_00)
@@ -422,8 +430,11 @@ public class CandidateAssignServiceAllQties_Percent_Test
 	@Test
 	public void updateAssignment2()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		final AssignableInvoiceCandidate assignableCandidate_3 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_3_00)
@@ -458,7 +469,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 2nd assignable candidate, but note that with its quantity, we stay within savedRefundConfig_0
 		final AssignableInvoiceCandidate assignableCandidate_6 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_6_00)
@@ -494,7 +506,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		// add a 3rd assignable candidate, but note that with its quantity, jump right into savedRefundConfig_50
 		final AssignableInvoiceCandidate assignableCandidate_46 = AssignableInvoiceCandidate.builder()
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_46_00)
@@ -542,7 +555,7 @@ public class CandidateAssignServiceAllQties_Percent_Test
 
 		final AssignableInvoiceCandidate assignableCandidate_30 = AssignableInvoiceCandidate.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000025))
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(productId)
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_30_00)

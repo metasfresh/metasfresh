@@ -37,6 +37,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -52,9 +53,12 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		return createInvoiceCandidate()
 				.setInstanceName("ic1")
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setQty(100)
 				.setSOTrx(false)

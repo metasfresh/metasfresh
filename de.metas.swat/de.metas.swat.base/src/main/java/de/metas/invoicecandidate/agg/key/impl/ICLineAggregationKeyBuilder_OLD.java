@@ -32,6 +32,8 @@ import java.util.Objects;
 
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -41,6 +43,8 @@ import de.metas.aggregation.api.IAggregationAttribute;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
@@ -50,6 +54,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.money.CurrencyId;
+import de.metas.product.IProductDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -93,6 +99,9 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	@Override
 	public IAggregationKey buildAggregationKey(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		final I_C_Invoice_Candidate_Agg agg = ic.getC_Invoice_Candidate_Agg();
 		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {}", ic);
 
@@ -111,7 +120,8 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		{
 			if (ic.getM_Product_ID() > 0)
 			{
-				sb.append(ic.getM_Product().getValue());
+				final I_M_Product product =productDAO.getById(ic.getM_Product_ID());
+				sb.append(product.getValue());
 			}
 			else if (ic.getC_Charge_ID() > 0)
 			{
@@ -140,7 +150,8 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		// 06718: Use UOM in aggregation
 		if (ic.getC_UOM_ID() > 0)
 		{
-			final String uomName = ic.getC_UOM().getName(); // Unique
+			final I_C_UOM uom = uomDAO.getById(ic.getC_UOM_ID());
+			final String uomName = uom.getName(); // Unique
 			sb.append("/" + uomName);
 		}
 
@@ -197,7 +208,10 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	 */
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{
-		final I_C_BPartner_Location billBPLocation = ic.getBill_Location();
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
+		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
 		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {}", ic);
 
 		// We use the language of the bill location to determine the number format.
@@ -209,7 +223,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
 		if (currencyId != null)
 		{
-			final CurrencyCode currencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
+			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
 			numberFormat.setCurrency(Currency.getInstance(currencyCode.toThreeLetterCode()));
 		}
 

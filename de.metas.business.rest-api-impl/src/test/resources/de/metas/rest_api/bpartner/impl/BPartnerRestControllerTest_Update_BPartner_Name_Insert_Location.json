@@ -1,0 +1,34 @@
+  {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "val-12345",
+        "bpartnerComposite": {
+          "bpartner": {
+            "name": "bpartnerRecord.name_updated"
+          },
+          "locations": {
+            "requestItems": [
+                {
+                    "locationIdentifier": "ext-123",
+                    "location": {
+                      "billToDefault": true,
+                      "postal": "5040",
+                      "poBox": "poBox",
+                      "countryCode": "countryRecord.countryCode",
+                      "active": true
+                    }
+                }
+            ],
+            "syncAdvise": {
+                "ifNotExists": "CREATE",
+                "ifExists": "UPDATE_MERGE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "FAIL",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }

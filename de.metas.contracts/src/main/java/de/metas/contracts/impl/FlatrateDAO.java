@@ -78,6 +78,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -96,12 +97,16 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final Properties ctx = getCtx(ic);
 		final String trxName = getTrxName(ic);
 
 		final int bill_BPartner_ID = ic.getBill_BPartner_ID();
 		final Timestamp dateOrdered = ic.getDateOrdered();
-		final int m_Product_Category_ID = ic.getM_Product().getM_Product_Category_ID();
+
+		final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
+		final int m_Product_Category_ID = product.getM_Product_Category_ID();
 		final int m_Product_ID = ic.getM_Product_ID();
 		final int c_Charge_ID = ic.getC_Charge_ID();
 

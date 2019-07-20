@@ -9,7 +9,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
 import de.metas.product.ProductId;
@@ -54,7 +54,7 @@ public class AssignableInvoiceCandidate
 	 */
 	InvoiceCandidateId id;
 
-	BPartnerId bpartnerId;
+	BPartnerLocationId bpartnerLocationId;
 	ProductId productId;
 	LocalDate invoiceableFrom;
 
@@ -75,7 +75,7 @@ public class AssignableInvoiceCandidate
 	@Builder(toBuilder = true)
 	private AssignableInvoiceCandidate(
 			@Nullable final InvoiceCandidateId id,
-			@NonNull final BPartnerId bpartnerId,
+			@NonNull final BPartnerLocationId bpartnerLocationId,
 			@NonNull final ProductId productId,
 			@NonNull final LocalDate invoiceableFrom,
 			@NonNull final Money money,
@@ -85,7 +85,7 @@ public class AssignableInvoiceCandidate
 			@Singular("assignmentToRefundCandidate") final List<AssignmentToRefundCandidate> assignmentsToRefundCandidates)
 	{
 		this.id = id;
-		this.bpartnerId = bpartnerId;
+		this.bpartnerLocationId = bpartnerLocationId;
 		this.productId = productId;
 		this.invoiceableFrom = invoiceableFrom;
 		this.money = money;

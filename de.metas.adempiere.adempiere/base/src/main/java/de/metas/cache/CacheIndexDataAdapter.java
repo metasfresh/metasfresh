@@ -26,6 +26,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  * #L%
  */
 
+/** Implementations should be thread-safe; so far, no implementation had to have any state, so I hope that won't be a problem. */
 public interface CacheIndexDataAdapter<RK, CK, V>
 {
 	Collection<CK> extractCKs(V record);

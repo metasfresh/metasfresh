@@ -408,7 +408,7 @@ public class InvoiceCandidateWriter
 		ic.setRecord_ID(modelRecordId);
 
 		// product
-		ic.setM_Product(product);
+		ic.setM_Product_ID(product.getM_Product_ID());
 
 		// charge
 		// int chargeId = olc.getC_Charge_ID();

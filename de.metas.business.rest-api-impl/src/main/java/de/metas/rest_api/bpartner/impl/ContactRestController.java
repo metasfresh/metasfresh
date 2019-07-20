@@ -26,8 +26,8 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
@@ -90,7 +90,7 @@ public class ContactRestController implements ContactRestEndpoint
 	@GetMapping("{contactIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveContact(
-			@ApiParam(CONTACT_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{

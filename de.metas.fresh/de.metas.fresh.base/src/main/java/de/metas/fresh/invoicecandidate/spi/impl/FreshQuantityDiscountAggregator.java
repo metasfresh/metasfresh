@@ -35,7 +35,10 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_BPartner;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -180,6 +183,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 				continue;
 			}
 
+			if(candidate.isFreightCost())
+			{
+				// don't create quality discounts for freight cost products
+				continue;
+			}
+
 			//
 			// Calculate quality discount quantity
 			final BigDecimal qtyBeforeDiscount = candidate.getQtyToInvoiceBeforeDiscount();
@@ -287,6 +296,8 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 */
 	private final String getDescriptionPrefix(final I_C_Invoice_Candidate candidate)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final int bpartnerId = candidate.getBill_BPartner_ID();
 
 		String descriptionPrefix = bpartnerId2descriptionPrefix.get(bpartnerId);
@@ -294,7 +305,8 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		// Build descriptionPrefix if not already built
 		if (descriptionPrefix == null)
 		{
-			final String adLanguage = candidate.getBill_BPartner().getAD_Language();
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(candidate.getBill_BPartner_ID()));
+			final String adLanguage = billBPartner.getAD_Language();
 			descriptionPrefix = msgBL.getMsg(adLanguage, MSG_QualityDiscount, new Object[] {});
 
 			bpartnerId2descriptionPrefix.put(bpartnerId, descriptionPrefix);

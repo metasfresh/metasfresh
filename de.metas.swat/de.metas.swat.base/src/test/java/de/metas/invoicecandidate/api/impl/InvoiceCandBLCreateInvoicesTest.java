@@ -45,6 +45,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
@@ -189,12 +190,31 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
 
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
-		// creating with: bpartner, price, qty, isManual=false, isSOTrx=true
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
-		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
+		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2, ic3);
 
 		//
