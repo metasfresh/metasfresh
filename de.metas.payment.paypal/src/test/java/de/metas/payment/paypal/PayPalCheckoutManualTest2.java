@@ -36,7 +36,6 @@ import de.metas.payment.paypal.client.PayPalOrder;
 import de.metas.payment.paypal.client.PayPalOrderExternalId;
 import de.metas.payment.paypal.client.PayPalOrderRepository;
 import de.metas.payment.paypal.client.PayPalOrderService;
-import de.metas.payment.paypal.config.PayPalConfigProvider;
 import de.metas.payment.paypal.logs.PayPalLogRepository;
 import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
 import de.metas.payment.processor.PaymentProcessorService;
@@ -114,7 +113,7 @@ public class PayPalCheckoutManualTest2
 
 	private void setupServices()
 	{
-		final PayPalConfigProvider payPalConfigProvider = TestPayPalConfigProvider.builder()
+		final TestPayPalConfigProvider payPalConfigProvider = TestPayPalConfigProvider.builder()
 				.approveMailTemplateId(createApproveMailTemplate())
 				.build();
 

@@ -197,6 +197,33 @@ public interface I_PayPal_Log
     public static final String COLUMNNAME_PayPal_Log_ID = "PayPal_Log_ID";
 
 	/**
+	 * Set PayPal Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPayPal_Order_ID (int PayPal_Order_ID);
+
+	/**
+	 * Get PayPal Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPayPal_Order_ID();
+
+	public de.metas.payment.paypal.model.I_PayPal_Order getPayPal_Order();
+
+	public void setPayPal_Order(de.metas.payment.paypal.model.I_PayPal_Order PayPal_Order);
+
+    /** Column definition for PayPal_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Log, de.metas.payment.paypal.model.I_PayPal_Order> COLUMN_PayPal_Order_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, de.metas.payment.paypal.model.I_PayPal_Order>(I_PayPal_Log.class, "PayPal_Order_ID", de.metas.payment.paypal.model.I_PayPal_Order.class);
+    /** Column name PayPal_Order_ID */
+    public static final String COLUMNNAME_PayPal_Order_ID = "PayPal_Order_ID";
+
+	/**
 	 * Set Request Body.
 	 *
 	 * <br>Type: TextLong

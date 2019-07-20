@@ -22,6 +22,7 @@ import com.paypal.orders.PurchaseUnit;
 import de.metas.logging.LogManager;
 import de.metas.payment.paypal.model.I_PayPal_Order;
 import de.metas.payment.reservation.PaymentReservationId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -70,8 +71,15 @@ public class PayPalOrderRepository
 
 	public PayPalOrder getById(@NonNull final PayPalOrderId id)
 	{
-		final I_PayPal_Order record = load(id, I_PayPal_Order.class);
+		final I_PayPal_Order record = getRecordById(id);
 		return toPayPalOrder(record);
+	}
+
+	private I_PayPal_Order getRecordById(@NonNull final PayPalOrderId id)
+	{
+		final I_PayPal_Order record = load(id, I_PayPal_Order.class);
+		Check.assumeNotNull(record, "paypal order shall exist for {}", id);
+		return record;
 	}
 
 	public Optional<PayPalOrder> getByReservationId(@NonNull final PaymentReservationId reservationId)
@@ -90,15 +98,24 @@ public class PayPalOrderRepository
 		return Optional.ofNullable(record);
 	}
 
-	public Optional<I_PayPal_Order> getRecordByExternalId(@NonNull final PayPalOrderExternalId externalId)
+	public PayPalOrder getByExternalId(@NonNull final PayPalOrderExternalId externalId)
+	{
+		final I_PayPal_Order record = getRecordByExternalId(externalId);
+		return toPayPalOrder(record);
+	}
+
+	private I_PayPal_Order getRecordByExternalId(@NonNull final PayPalOrderExternalId externalId)
 	{
 		final I_PayPal_Order record = Services.get(IQueryBL.class).createQueryBuilder(I_PayPal_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PayPal_Order.COLUMN_ExternalId, externalId.getAsString())
 				.create()
 				.firstOnly(I_PayPal_Order.class);
-
-		return Optional.ofNullable(record);
+		if (record == null)
+		{
+			throw new AdempiereException("@NotFound@ @PayPal_Order_ID@ (@ExternalId@: " + externalId + ")");
+		}
+		return record;
 	}
 
 	private static PayPalOrder toPayPalOrder(final I_PayPal_Order record)
@@ -130,37 +147,29 @@ public class PayPalOrderRepository
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
 		order.setExternalId(PayPalOrderExternalId.toString(from.getExternalId()));
+		order.setStatus(from.getStatus().getCode());
 		order.setPayPal_AuthorizationId(PayPalOrderAuthorizationId.toString(from.getAuthorizationId()));
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
 	}
 
-	public PayPalOrder save(
-			@NonNull final PaymentReservationId reservationId,
-			@NonNull final com.paypal.orders.Order apiOrder)
+	public PayPalOrder create(@NonNull final PaymentReservationId reservationId)
 	{
-		I_PayPal_Order record = getRecordByReservationId(reservationId).orElse(null);
-		if (record == null)
-		{
-			record = newInstance(I_PayPal_Order.class);
-			record.setC_Payment_Reservation_ID(reservationId.getRepoId());
-			record.setStatus(apiOrder.status());
-			record.setExternalId(apiOrder.id());
-		}
+		final I_PayPal_Order record = newInstance(I_PayPal_Order.class);
+		record.setC_Payment_Reservation_ID(reservationId.getRepoId());
+		record.setStatus("-");
+		record.setPayPal_OrderJSON("{}");
+		record.setExternalId("-"); // need to set it because it's needed in PayPalOrder
+		saveRecord(record);
 
-		return updateFromAPIOrderAndSave(record, apiOrder);
+		return toPayPalOrder(record);
 	}
 
 	public PayPalOrder save(
-			@NonNull final PayPalOrderExternalId externalId,
+			@NonNull final PayPalOrderId id,
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
-		final I_PayPal_Order existingRecord = getRecordByExternalId(externalId).orElse(null);
-		if (existingRecord == null)
-		{
-			throw new AdempiereException("@NotFound@ @PayPal_Order_ID@ (@ExternalId@: " + externalId + ")");
-		}
-
+		final I_PayPal_Order existingRecord = getRecordById(id);
 		return updateFromAPIOrderAndSave(existingRecord, apiOrder);
 	}
 

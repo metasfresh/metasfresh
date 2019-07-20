@@ -14,7 +14,7 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -474425789L;
+	private static final long serialVersionUID = -298060771L;
 
     /** Standard Constructor */
     public X_PayPal_Log (Properties ctx, int PayPal_Log_ID, String trxName)
@@ -129,6 +129,40 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	public int getPayPal_Log_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PayPal_Log_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.payment.paypal.model.I_PayPal_Order getPayPal_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PayPal_Order_ID, de.metas.payment.paypal.model.I_PayPal_Order.class);
+	}
+
+	@Override
+	public void setPayPal_Order(de.metas.payment.paypal.model.I_PayPal_Order PayPal_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PayPal_Order_ID, de.metas.payment.paypal.model.I_PayPal_Order.class, PayPal_Order);
+	}
+
+	/** Set PayPal Order.
+		@param PayPal_Order_ID PayPal Order	  */
+	@Override
+	public void setPayPal_Order_ID (int PayPal_Order_ID)
+	{
+		if (PayPal_Order_ID < 1) 
+			set_Value (COLUMNNAME_PayPal_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PayPal_Order_ID, Integer.valueOf(PayPal_Order_ID));
+	}
+
+	/** Get PayPal Order.
+		@return PayPal Order	  */
+	@Override
+	public int getPayPal_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PayPal_Order_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

@@ -10,6 +10,7 @@ import com.braintreepayments.http.serializer.Json;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.order.OrderId;
+import de.metas.payment.paypal.client.PayPalOrderId;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
@@ -53,6 +54,7 @@ public class PayPalCreateLogRequest
 
 	OrderId salesOrderId;
 	PaymentReservationId paymentReservationId;
+	PayPalOrderId internalPayPalOrderId;
 
 	public static class PayPalCreateLogRequestBuilder
 	{

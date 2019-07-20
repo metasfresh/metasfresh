@@ -45,12 +45,13 @@ public final class PayPalOrderStatus
 		return status != null ? status : new PayPalOrderStatus(code);
 	}
 
+	public static final PayPalOrderStatus UNKNOWN = new PayPalOrderStatus("-");
 	public static final PayPalOrderStatus CREATED = new PayPalOrderStatus("CREATED");
 	public static final PayPalOrderStatus APPROVED = new PayPalOrderStatus("APPROVED");
 	public static final PayPalOrderStatus COMPLETED = new PayPalOrderStatus("COMPLETED");
 
 	private static final ImmutableMap<String, PayPalOrderStatus> cacheByCode = Maps.uniqueIndex(
-			Arrays.asList(CREATED, APPROVED, COMPLETED),
+			Arrays.asList(UNKNOWN, CREATED, APPROVED, COMPLETED),
 			PayPalOrderStatus::getCode);
 
 	private final String code;

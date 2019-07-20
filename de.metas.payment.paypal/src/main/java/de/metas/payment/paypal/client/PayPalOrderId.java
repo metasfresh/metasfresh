@@ -31,6 +31,7 @@ import lombok.Value;
  * #L%
  */
 
+/** Internal PayPal Order ID (which is known only by metasfresh). */
 @Value
 public class PayPalOrderId implements RepoIdAware
 {

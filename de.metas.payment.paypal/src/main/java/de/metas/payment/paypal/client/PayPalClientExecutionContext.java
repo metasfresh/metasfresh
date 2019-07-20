@@ -31,8 +31,7 @@ import lombok.Value;
 @Builder
 public class PayPalClientExecutionContext
 {
-	public static final PayPalClientExecutionContext EMPTY = builder().build();
-
-	PaymentReservationId paymentReservationId;
 	OrderId salesOrderId;
+	PaymentReservationId paymentReservationId;
+	PayPalOrderId internalPayPalOrderId;
 }

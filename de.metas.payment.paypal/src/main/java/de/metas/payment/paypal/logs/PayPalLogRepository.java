@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.payment.paypal.client.PayPalOrderId;
 import de.metas.payment.paypal.model.I_PayPal_Log;
 import de.metas.payment.reservation.PaymentReservationId;
 import lombok.NonNull;
@@ -74,6 +75,7 @@ public class PayPalLogRepository
 
 		record.setC_Order_ID(OrderId.toRepoId(log.getSalesOrderId()));
 		record.setC_Payment_Reservation_ID(PaymentReservationId.toRepoId(log.getPaymentReservationId()));
+		record.setPayPal_Order_ID(PayPalOrderId.toRepoId(log.getInternalPayPalOrderId()));
 
 		saveRecord(record);
 

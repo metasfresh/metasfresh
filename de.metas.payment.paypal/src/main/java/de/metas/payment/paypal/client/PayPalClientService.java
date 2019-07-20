@@ -68,10 +68,10 @@ public class PayPalClientService
 		this.logsRepo = logsRepo;
 	}
 
-	public Order getAPIOrderById(@NonNull final PayPalOrderExternalId apiOrderId)
+	public Order getAPIOrderById(@NonNull final PayPalOrderExternalId apiOrderId, @NonNull final PayPalClientExecutionContext context)
 	{
 		final OrdersGetRequest request = new OrdersGetRequest(apiOrderId.getAsString());
-		final HttpResponse<Order> response = executeRequest(request, PayPalClientExecutionContext.EMPTY);
+		final HttpResponse<Order> response = executeRequest(request, context);
 		return response.result();
 	}
 
@@ -129,7 +129,8 @@ public class PayPalClientService
 	{
 		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder()
 				.salesOrderId(context.getSalesOrderId())
-				.paymentReservationId(context.getPaymentReservationId());
+				.paymentReservationId(context.getPaymentReservationId())
+				.internalPayPalOrderId(context.getInternalPayPalOrderId());
 
 		try
 		{

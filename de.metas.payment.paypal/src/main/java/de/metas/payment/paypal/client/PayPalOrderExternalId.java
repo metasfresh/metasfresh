@@ -31,6 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 
+/** External PayPal Order ID (which is known by paypal.com). */
 @EqualsAndHashCode
 public final class PayPalOrderExternalId
 {

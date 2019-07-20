@@ -33,22 +33,16 @@ import lombok.NonNull;
 @Service
 public class PayPalOrderService
 {
-	private final PayPalOrderRepository payPalOrderRepo;
+	private final PayPalOrderRepository paypalOrderRepo;
 
-	public PayPalOrderService(@NonNull final PayPalOrderRepository payPalOrderRepository)
+	public PayPalOrderService(@NonNull final PayPalOrderRepository paypalOrderRepository)
 	{
-		this.payPalOrderRepo = payPalOrderRepository;
+		this.paypalOrderRepo = paypalOrderRepository;
 	}
 
 	public PayPalOrder getById(@NonNull final PayPalOrderId id)
 	{
-		return payPalOrderRepo.getById(id);
-	}
-
-	public PayPalOrderExternalId getExternalIdByLocalId(@NonNull final PayPalOrderId id)
-	{
-		final PayPalOrder paypalOrder = getById(id);
-		return paypalOrder.getExternalId();
+		return paypalOrderRepo.getById(id);
 	}
 
 	public PayPalOrder getByReservationId(@NonNull final PaymentReservationId reservationId)
@@ -57,23 +51,26 @@ public class PayPalOrderService
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @PayPal_Order_ID@: " + reservationId));
 	}
 
+	public PayPalOrder getByExternalId(@NonNull final PayPalOrderExternalId externalId)
+	{
+		return paypalOrderRepo.getByExternalId(externalId);
+	}
+
 	public Optional<PayPalOrder> getByReservationIdIfExists(@NonNull final PaymentReservationId reservationId)
 	{
-		return payPalOrderRepo.getByReservationId(reservationId);
+		return paypalOrderRepo.getByReservationId(reservationId);
+	}
+
+	public PayPalOrder create(@NonNull final PaymentReservationId reservationId)
+	{
+		return paypalOrderRepo.create(reservationId);
 	}
 
 	public PayPalOrder save(
-			@NonNull final PaymentReservationId reservationId,
+			@NonNull final PayPalOrderId id,
 			@NonNull final com.paypal.orders.Order apiOrder)
 	{
-		return payPalOrderRepo.save(reservationId, apiOrder);
-	}
-
-	public PayPalOrder save(
-			@NonNull final PayPalOrderExternalId externalId,
-			@NonNull final com.paypal.orders.Order apiOrder)
-	{
-		return payPalOrderRepo.save(externalId, apiOrder);
+		return paypalOrderRepo.save(id, apiOrder);
 	}
 
 }
