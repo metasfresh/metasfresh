@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -115,15 +116,21 @@ public class RefundInvoiceCandidateFactoryTest
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
 
-		dateToInvoiceOfAssignableCand  = SystemTime.asTimestamp();
+		dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
+
+		final I_C_BPartner_Location location = newInstance(I_C_BPartner_Location.class);
+		location.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+
+		save(location);
 
 		refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
-		refundContractIcRecord.setM_Product(productRecord);
+		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		refundContractIcRecord.setBill_Location_ID(location.getC_BPartner_Location_ID());
+		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency(currencyRecord);
+		refundContractIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 

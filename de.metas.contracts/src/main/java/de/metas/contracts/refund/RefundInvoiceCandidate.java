@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.money.Money;
@@ -58,6 +59,9 @@ public class RefundInvoiceCandidate
 
 	@NonNull
 	BPartnerId bpartnerId;
+
+	@NonNull
+	BPartnerLocationId bpartnerLocationId;
 
 	@NonNull
 	LocalDate invoiceableFrom;

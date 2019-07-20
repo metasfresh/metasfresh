@@ -12,6 +12,9 @@ import java.sql.Timestamp;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -47,7 +50,7 @@ import de.metas.util.time.SystemTime;
 
 public class AssignableInvoiceCandidateFactoryTest
 {
-	private I_C_BPartner bPartnerRecord;
+	private int BPartnerRecordID = 10;
 	private I_M_Product productRecord;
 	private I_C_Invoice_Candidate assignableIcRecord;
 	private Timestamp dateToInvoiceOfAssignableCand;
@@ -60,9 +63,6 @@ public class AssignableInvoiceCandidateFactoryTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		bPartnerRecord = newInstance(I_C_BPartner.class);
-		save(bPartnerRecord);
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -77,13 +77,32 @@ public class AssignableInvoiceCandidateFactoryTest
 
 		dateToInvoiceOfAssignableCand = SystemTime.asTimestamp();
 
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		partner.setC_BPartner_ID(BPartnerRecordID);
+		save(partner);
+
+		final I_C_Country country_DE = newInstance(I_C_Country.class);
+		country_DE.setAD_Language("de");
+		save(country_DE);
+
+		final I_C_Location loc = newInstance(I_C_Location.class);
+		loc.setC_Country_ID(country_DE.getC_Country_ID());
+		save(loc);
+
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_Location_ID(loc.getC_Location_ID());
+		bpLoc.setC_BPartner_ID(partner.getC_BPartner_ID());
+
+		save(bpLoc);
+
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner(bPartnerRecord);
-		assignableIcRecord.setM_Product(productRecord);
+		assignableIcRecord.setBill_BPartner_ID(partner.getC_BPartner_ID());
+		assignableIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		save(assignableIcRecord);
 
 		final InvoiceScheduleRepository invoiceScheduleRepository = new InvoiceScheduleRepository();
@@ -101,7 +120,8 @@ public class AssignableInvoiceCandidateFactoryTest
 		// invoke the method under test
 		final AssignableInvoiceCandidate ofRecord = assignableInvoiceCandidateFactory.ofRecord(assignableIcRecord);
 
-		assertThat(ofRecord.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+		assertThat(ofRecord.getBpartnerLocationId().getBpartnerId().getRepoId()).isEqualTo(BPartnerRecordID);
+
 		assertThat(ofRecord.getProductId().getRepoId()).isEqualTo(productRecord.getM_Product_ID());
 
 		// TODO move to dedicated test case

@@ -18,6 +18,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.CandidateAssignmentService.UnassignResult;
@@ -143,6 +144,8 @@ public class CandidateAssignmentService_mocked_Test
 	@Test
 	public void unassignSingleCandidate_exceedingQty()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(2156423, 2);
+
 		final RefundConfig refundConfig_0 = RefundConfig.builder()
 				.id(RefundConfigId.ofRepoId(1000001))
 				.minQty(ZERO)
@@ -182,6 +185,7 @@ public class CandidateAssignmentService_mocked_Test
 				.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000024))
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(refundContract)
 				.refundConfig(refundConfig_15)
@@ -193,6 +197,7 @@ public class CandidateAssignmentService_mocked_Test
 				.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000025))
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(refundContract)
 				.refundConfig(refundConfig_0)
@@ -203,8 +208,10 @@ public class CandidateAssignmentService_mocked_Test
 		final InvoiceCandidateId assignableCandidateId = InvoiceCandidateId.ofRepoId(1000023);
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
 				.id(assignableCandidateId)
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(ProductId.ofRepoId(2005577))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_26_00)
 				.precision(2)
@@ -254,6 +261,8 @@ public class CandidateAssignmentService_mocked_Test
 	@Test
 	public void unassignSingleCandidate_allQtys()
 	{
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(2156423, 2);
+
 		final RefundConfig refundConfig_0 = RefundConfig.builder()
 				.id(RefundConfigId.ofRepoId(1000001))
 				.minQty(ZERO)
@@ -298,6 +307,7 @@ public class CandidateAssignmentService_mocked_Test
 				.builder()
 				.id(InvoiceCandidateId.ofRepoId(1000024))
 				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(2156423, 2))
 				.invoiceableFrom(LocalDate.parse("2019-11-30"))
 				.refundContract(refundContract)
 				.refundConfig(refundConfig_0)
@@ -310,7 +320,8 @@ public class CandidateAssignmentService_mocked_Test
 
 		final AssignableInvoiceCandidate assignableCandidate = AssignableInvoiceCandidate.builder()
 				.id(assignableCandidateId)
-				.bpartnerId(BPartnerId.ofRepoId(2156423))
+				// .bpartnerId(BPartnerId.ofRepoId(2156423))
+				.bpartnerLocationId(billBPartnerAndLocationId)
 				.productId(ProductId.ofRepoId(2005577))
 				.invoiceableFrom(LocalDate.parse("2018-12-17"))
 				.money(money_26_00)

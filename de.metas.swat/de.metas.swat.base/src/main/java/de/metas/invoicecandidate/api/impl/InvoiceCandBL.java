@@ -65,10 +65,12 @@ import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MNote;
@@ -88,8 +90,11 @@ import de.metas.async.processor.IStatefulWorkpackageProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
@@ -101,6 +106,7 @@ import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -120,8 +126,10 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Line_Alloc;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.PricingConditions;
@@ -136,7 +144,9 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -240,6 +250,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	void setInvoiceScheduleAmtStatus(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		//
 		// services
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
@@ -254,10 +265,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return;
 		}
 
+		final I_C_BPartner partner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
+
 		final int invoiceSchedId = retrieveInvoiceScheduleId(ic);
 		if (invoiceSchedId <= 0)
 		{
-			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { ic.getBill_BPartner().getName() });
+
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { partner.getName() });
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return;
 		}
@@ -269,7 +283,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			final Timestamp dateToday = getToday();
 
-			final BigDecimal actualAmt = invoiceCandDAO.retrieveInvoicableAmount(ic.getBill_BPartner(), dateToday);
+			final BigDecimal actualAmt = invoiceCandDAO.retrieveInvoicableAmount(partner, dateToday);
 
 			if (actualAmt.compareTo(invoiceSched.getAmt()) < 0)
 			{
@@ -457,6 +471,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private int retrieveInvoiceScheduleId(final I_C_Invoice_Candidate ic)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final String invoiceRule = getInvoiceRule(ic);
 		Check.assume(X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery.equals(invoiceRule),
 				"Method is only called if invoice rule is " + X_C_Invoice_Candidate.INVOICERULE_CustomerScheduleAfterDelivery);
@@ -467,7 +483,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (C_InvoiceSchedule_ID <= 0)
 		{
 			logger.info("BPartner has no Schedule");
-			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { ic.getBill_BPartner().getName() });
+
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
+			final String msg = Services.get(IMsgBL.class).getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL_STATUS_INVOICE_SCHEDULE_MISSING_1P, new Object[] { billBPartner.getName() });
 			amendSchedulerResult(ic, msg);
 			ic.setInvoiceScheduleAmtStatus(msg);
 			return -1;
@@ -691,6 +709,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			@NonNull final BigDecimal qty,
 			@NonNull final I_C_Invoice_Candidate ic)
 	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 		if (ic.getM_Product_ID() <= 0)
 		{
 			logger.debug("returing param qty {} as result, because ic.getM_Product_ID() <= 0");
@@ -700,8 +721,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final BigDecimal qtyInPriceUOM = uomConversionBL.convertFromProductUOM(productId, ic.getPrice_UOM(), qty);
+		final I_C_UOM priceUOM = uomDAO.getByIdOrNull(ic.getPrice_UOM_ID());
+
+		final BigDecimal qtyInPriceUOM = priceUOM == null ? qty : uomConversionBL.convertFromProductUOM(productId, priceUOM, qty);
 
 		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qty, productId, qtyInPriceUOM, ic);
 
@@ -711,7 +733,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
 			amendSchedulerResult(ic,
-					msgBL.getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qty, ic.getPrice_UOM(), productName }));
+					msgBL.getMsg(ctx, InvoiceCandBL.MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qty, priceUOM, productName }));
 			ic.setIsError(true);
 		}
 		return qtyInPriceUOM;
@@ -770,7 +792,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			if (invoiceSchedule.getAmt() != null && invoiceSchedule.getAmt().signum() != 0)
 			{
 				// we need to invalidate all the partner's ICs *if* there is an overall invoiceable sum-amount from which on the ICs shall be invoiced
-				invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(ic.getBill_BPartner());
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(ic.getBill_BPartner_ID());
+				invoiceCandDAO.invalidateCandsForBPartnerInvoiceRule(bpartnerId);
 			}
 		}
 	}
@@ -881,8 +904,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public int getPrecisionFromCurrency(final I_C_Invoice_Candidate ic)
 	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
-		final I_C_Currency currency = ic.getC_Currency();
+		final I_C_Currency currency = currencyDAO.getById(CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID()));
 		if (currency == null)
 		{
 			// Case: currency was not set yet because we got some errors on
@@ -897,8 +921,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public int getPrecisionFromPricelist(final I_C_Invoice_Candidate ic)
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		// take the precision from the bpartner price list
-		final I_C_BPartner_Location partnerLocation = ic.getBill_Location();
+		final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
 		if (partnerLocation != null)
 		{
 			final LocalDate date = TimeUtil.asLocalDate(ic.getDateOrdered());
@@ -954,15 +980,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsSOTrx(ic.isSOTrx());
 		splitCand.setC_ILCandHandler(ic.getC_ILCandHandler());
 
+		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
+		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
+		splitCand.setBill_User_ID(ic.getBill_User_ID());
+
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
 		aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
 		splitCand.setDescription(ic.getDescription());
-
-		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
-		splitCand.setBill_User_ID(ic.getBill_User_ID());
 
 		splitCand.setInvoiceRule(ic.getInvoiceRule());
 		splitCand.setInvoiceRule_Override(ic.getInvoiceRule_Override());
@@ -996,8 +1022,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setC_Activity(ic.getC_Activity());
 
 		// 07814: setting both tax and tax-override to get an exact copy
-		splitCand.setC_Tax(ic.getC_Tax());
-		splitCand.setC_Tax_Override(ic.getC_Tax_Override());
+		splitCand.setC_Tax_ID(ic.getC_Tax_ID());
+		splitCand.setC_Tax_Override_ID(ic.getC_Tax_Override_ID());
 
 		splitCand.setExternalId(ic.getExternalId());
 
@@ -1745,13 +1771,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public I_C_Tax getTaxEffective(final I_C_Invoice_Candidate candidate)
 	{
-		final I_C_Tax taxOverride = candidate.getC_Tax_Override();
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
+		final I_C_Tax taxOverride = taxDAO.getTaxByIdOrNull(candidate.getC_Tax_Override_ID());
 
 		if (taxOverride != null)
 		{
 			return taxOverride;
 		}
-		return candidate.getC_Tax();
+		return taxDAO.getTaxById(candidate.getC_Tax_ID());
 	}
 
 	/**
@@ -1802,8 +1830,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public int getCurrencyPrecision(final I_C_Invoice_Candidate candidate)
 	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 		Check.assumeNotNull(candidate, "candidate not null");
-		final I_C_Currency currency = candidate.getC_Currency();
+
+		final I_C_Currency currency = currencyDAO.getById(CurrencyId.ofRepoIdOrNull(candidate.getC_Currency_ID()));
 		if (currency != null)
 		{
 			return currency.getStdPrecision();
@@ -2126,4 +2157,48 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		save(cand);
 	}
 
+	public void setAmountAndDateForFreightCost(final I_C_Invoice_Candidate ic)
+	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+		if (!ic.isFreightCost())
+		{
+			// nothing to do
+			return;
+		}
+		final OrderId orderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+
+		if (orderId == null)
+		{
+			// nothing to do;
+			return;
+		}
+		//boolean hasInvoiceableInvoiceCands = invoiceCandDAO.hasInvoiceableInvoiceCands(orderId);
+
+		final InvoiceCandidateId firstInvoiceableInvoiceCandId = invoiceCandDAO.getFirstInvoiceableInvoiceCandId(orderId);
+
+		if (firstInvoiceableInvoiceCandId != null)
+		{
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(ic.getC_OrderLine_ID());
+
+			if (orderLine == null)
+			{
+				// nothing to do
+				return;
+			}
+
+			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(firstInvoiceableInvoiceCandId);
+
+			ic.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
+			ic.setQtyToInvoice(ONE);
+			set_DateToInvoice_DefaultImpl(ic);
+		}
+
+		else
+		{
+			ic.setQtyToInvoice(ZERO);
+			set_DateToInvoice_DefaultImpl(ic);
+		}
+	}
 }

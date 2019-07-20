@@ -15,7 +15,10 @@ import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_InvoiceSchedule;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_InvoiceSchedule;
@@ -80,6 +83,20 @@ public class AssignmentToRefundCandidateRepositoryTest
 		final I_C_BPartner bPartnerRecord = newInstance(I_C_BPartner.class);
 		save(bPartnerRecord);
 
+		final I_C_Country country_DE = newInstance(I_C_Country.class);
+		country_DE.setAD_Language("de");
+		save(country_DE);
+
+		final I_C_Location loc = newInstance(I_C_Location.class);
+		loc.setC_Country_ID(country_DE.getC_Country_ID());
+		save(loc);
+
+		final I_C_BPartner_Location bpLoc = newInstance(I_C_BPartner_Location.class);
+		bpLoc.setC_Location_ID(loc.getC_Location_ID());
+		bpLoc.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+
+		save(bpLoc);
+
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
@@ -88,12 +105,13 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(productRecord);
 
 		assignableIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		assignableIcRecord.setBill_BPartner(bPartnerRecord);
-		assignableIcRecord.setM_Product(productRecord);
+		assignableIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		assignableIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		assignableIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		assignableIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		assignableIcRecord.setNetAmtInvoiced(ONE);
 		assignableIcRecord.setNetAmtToInvoice(NINE);
-		assignableIcRecord.setC_Currency(currencyRecord);
+		assignableIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		save(assignableIcRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
@@ -126,12 +144,13 @@ public class AssignmentToRefundCandidateRepositoryTest
 		save(refundContractRecord);
 
 		final I_C_Invoice_Candidate refundContractIcRecord = newInstance(I_C_Invoice_Candidate.class);
-		refundContractIcRecord.setBill_BPartner(bPartnerRecord);
-		refundContractIcRecord.setM_Product(productRecord);
+		refundContractIcRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
+		refundContractIcRecord.setBill_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		refundContractIcRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency(currencyRecord);
+		refundContractIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 

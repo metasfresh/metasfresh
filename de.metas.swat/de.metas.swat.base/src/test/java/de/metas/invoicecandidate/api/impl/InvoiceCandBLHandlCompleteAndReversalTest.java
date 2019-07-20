@@ -44,9 +44,9 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -82,9 +82,13 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testReversal");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setSOTrx(true)
 				.build();
+
 
 		final BigDecimal invoiceQtyInvoiced = new BigDecimal("10");
 
@@ -202,9 +206,12 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
-		final PlainContextAware contextProvider =  PlainContextAware.newWithTrxName(ctx, trxName);
+		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setSOTrx(true)
 				.build();
 
@@ -219,7 +226,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE, IDocument.STATUS_Completed, creditmemoDocTypeBaseName);
 		creditMemoAndLine.getLeft().setIsCreditedInvoiceReinvoicable(true);
 
-		//creditMemoAndLine.getLeft().setRef_CreditMemo_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
+		// creditMemoAndLine.getLeft().setRef_CreditMemo_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
 
 		creditMemoAndLine.getLeft().setRef_Invoice_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
 		InterfaceWrapperHelper.save(creditMemoAndLine.getLeft());
@@ -298,7 +305,10 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final String trxName = Services.get(ITrxManager.class).createTrxName("testCompleteCreditmemo");
 		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 
-		final I_C_Invoice_Candidate ic = new C_Invoice_Candidate_Builder(this)
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setSOTrx(true)
 				.build();
 
