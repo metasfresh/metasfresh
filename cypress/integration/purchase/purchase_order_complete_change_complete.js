@@ -70,15 +70,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
       productType,
       packingInstructionsName
     );
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
-      productCategoryName,
-      productCategoryValue,
-      priceListName,
-      productName2,
-      productValue2,
-      productType,
-      packingInstructionsName
-    );
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ name: vendorName })
         .setVendor(true)
@@ -90,7 +81,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
     });
     cy.readAllNotifications();
   });
-  it('Create a purchase order', function() {
+  it('Create a purchase order and complete it', function() {
     cy.visitWindow('181', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
       .type(vendorName)
@@ -103,7 +94,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
@@ -124,7 +114,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .clear()
       .type('5{enter}');
     cy.wait(8000);
-
     /**Complete purchase order */
     cy.get('.form-field-DocAction ul')
       .click({ force: true })
@@ -145,5 +134,34 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .click({ force: true });
     cy.wait(8000);
     cy.get('.tag.tag-default').contains('In Progress');
+    cy.log('change Quantity TU');
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.quantity-cell')
+      .eq('0')
+      .dblclick({ force: true })
+      .writeIntoStringField('QtyEnteredTU', '4');
+    cy.get('#tab_C_OrderLine').click();
+    cy.log('change Quantity');
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.quantity-cell')
+      .eq('1')
+      .dblclick({ force: true })
+      .writeIntoStringField('QtyEntered', '45');
+    cy.get('#tab_C_OrderLine').click();
+    cy.log('change Price');
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.costprice-cell')
+      .eq('0')
+      .dblclick({ force: true })
+      .writeIntoStringField('PriceEntered', '4.00');
+    cy.log('change Quantity');
+    cy.get('.form-field-DocAction ul')
+      .click({ force: true })
+      .get('li')
+      .eq('1')
+      .click({ force: true });
   });
 });
