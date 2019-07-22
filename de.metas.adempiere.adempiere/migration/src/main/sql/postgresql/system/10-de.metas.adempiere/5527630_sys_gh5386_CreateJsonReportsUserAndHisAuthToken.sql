@@ -20,5 +20,4 @@ update ad_user set value ='JsonReports', name ='Json Reports', IsSystemUser='N' 
 
 
 -- Create a default auth token for user Json Reports
-
-INSERT INTO public.ad_user_authtoken (ad_client_id, ad_org_id, ad_role_id, ad_user_authtoken_id, ad_user_id, authtoken, created, createdby, description, isactive, updated, updatedby) VALUES (1000000, 1000000, 1000000, 540001, 540057, '0d46ecc8fc8148049ddc7eb19433d3b6', '2019-07-19 09:32:54.000000', 100, null, 'Y', '2019-07-19 09:32:59.000000', 100);
+INSERT INTO public.ad_user_authtoken (ad_client_id, ad_org_id, ad_role_id, ad_user_authtoken_id, ad_user_id, authtoken, created, createdby, description, isactive, updated, updatedby) VALUES (1000000, 1000000, 1000000, 540001, 540057, replace((uuid_in(md5(random()::text || clock_timestamp()::text)::cstring))::text,'-', ''), '2019-07-19 09:32:54.000000', 100, null, 'Y', '2019-07-19 09:32:59.000000', 100);
