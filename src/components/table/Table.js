@@ -6,6 +6,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 import currentDevice from 'current-device';
+import counterpart from 'counterpart';
 
 import { deleteRequest } from '../../actions/GenericActions';
 import {
@@ -35,6 +36,10 @@ import {
   mapIncluded,
   collapsedMap,
 } from '../../utils/documentListHelper';
+
+const MOBILE_TABLE_SIZE_LIMIT = 30; // subjective number, based on empiric testing
+const isMobileOrTablet =
+  currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
 class Table extends Component {
   _isMounted = false;
@@ -656,16 +661,14 @@ class Table extends Component {
 
     if (e.button === 0) {
       const { selected } = this.state;
-      const selectMore = e.nativeEvent.metaKey || e.nativeEvent.ctrlKey;
+      const selectMore = e.metaKey || e.ctrlKey;
       const selectRange = e.shiftKey;
       const isSelected = selected.indexOf(id) > -1;
       const isAnySelected = selected.length > 0;
 
       let newSelection;
-      let mobileDevice =
-        currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
-      if (selectMore || mobileDevice) {
+      if (selectMore || isMobileOrTablet) {
         if (isSelected) {
           newSelection = this.deselectProduct(id);
         } else {
@@ -967,14 +970,18 @@ class Table extends Component {
 
     this.rowRefs = {};
 
-    return rows
-      .filter(row => {
+    let renderRows = rows.filter(row => {
         if (collapsedRows) {
           return collapsedRows.indexOf(row[keyProperty]) === -1;
         }
         return true;
-      })
-      .map((item, i) => (
+    });
+
+    if (isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT) {
+      renderRows = renderRows.slice(0, MOBILE_TABLE_SIZE_LIMIT);
+    }
+
+    return renderRows.map((item, i) => (
         <TableItem
           {...item}
           {...{
@@ -1016,9 +1023,7 @@ class Table extends Component {
                 windowType: item.supportIncludedViews
                   ? item.includedView.windowType || item.includedView.windowId
                   : null,
-                viewId: item.supportIncludedViews
-                  ? item.includedView.viewId
-                  : '',
+              viewId: item.supportIncludedViews ? item.includedView.viewId : '',
               });
             }
           }}
@@ -1254,6 +1259,10 @@ class Table extends Component {
                 queryLimitHit,
                 disablePaginationShortcuts,
               }}
+              handleChangePage={pages => {
+                this.deselectAllProducts();
+                handleChangePage(pages);
+              }}
               selected={selected || [undefined]}
               pageLength={pageLength}
               rowLength={rows ? rows.length : 0}
@@ -1300,6 +1309,14 @@ class Table extends Component {
             handleToggleQuickInput={this.handleBatchEntryToggle}
             handleToggleExpand={toggleFullScreen}
           />
+        )}
+        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
+          <span className="text-danger">
+            {counterpart.translate('view.limitTo', {
+              limit: MOBILE_TABLE_SIZE_LIMIT,
+              total: rows.length,
+            })}
+          </span>
         )}
       </div>
     );

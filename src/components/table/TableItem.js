@@ -10,6 +10,7 @@ import {
 } from '../../constants/Constants';
 import TableCell from './TableCell';
 import { shouldRenderColumn } from '../../utils/tableHelpers';
+import { WithMobileDoubleTap } from '../WithMobileDoubleTap';
 
 class TableItem extends PureComponent {
   constructor(props) {
@@ -487,6 +488,7 @@ class TableItem extends PureComponent {
     } = this.props;
 
     return (
+      <WithMobileDoubleTap>
       <tr
         key={key}
         onClick={onClick}
@@ -506,6 +508,7 @@ class TableItem extends PureComponent {
         )}
         {this.renderCells()}
       </tr>
+      </WithMobileDoubleTap>
     );
   }
 }

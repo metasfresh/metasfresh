@@ -195,12 +195,12 @@
     margin-bottom: 0;
 }
 
-.react-autosuggest__suggestions-list li {
+.react-autosuggest__suggestion {
     cursor: pointer;
     border-bottom: 1px solid $brand-super-light-color;
 }
 
-.react-autosuggest__suggestions-list li:hover {
+.react-autosuggest__suggestion--highlighted {
     color: white;
     background-color: $brand-color-primary;
 }

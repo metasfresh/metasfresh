@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import NumericInput from './NumericQuickInput';
+import NumberInput from './CustomNumberInput';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { getClassNames, generateMomentObj } from './RawWidgetHelpers';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
@@ -129,8 +130,15 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch } = this.props;
+    const { handlePatch, widgetData } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
+
+    const fieldData = widgetData.find(widget => widget.field === property);
+    let isCostPriceInput = false;
+
+    if (fieldData && fieldData.widgetType === 'CostPrice') {
+      isCostPriceInput = true;
+    }
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
@@ -139,6 +147,16 @@ export class RawWidget extends Component {
         cachedValue: value,
         clearedFieldWarning: false,
       });
+
+      // for CostPrice inputs we replace commas with dots before patching
+      // and prepend value with 0 if needed
+      if (isCostPriceInput) {
+        value = value.replace(`,`, `.`);
+
+        if (value.match(/^[.,]+/)) {
+          value = `0${value}`;
+        }
+      }
 
       return handlePatch(property, value, id, valueTo);
     }
@@ -633,7 +651,7 @@ export class RawWidget extends Component {
               <NumericInput
                 {...widgetProperties}
                 min={0}
-                precision={1}
+                precision={widgetField === 'CableLength' ? 2 : 1}
                 step={subentity === 'quickInput' ? 0.1 : 1}
               />
             ) : (
@@ -649,7 +667,7 @@ export class RawWidget extends Component {
               'input-focused': isEdited,
             })}
           >
-            <input {...widgetProperties} type="number" />
+            <NumberInput {...widgetProperties} />
           </div>
         );
       case 'YesNo':

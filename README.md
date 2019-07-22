@@ -52,10 +52,7 @@ Application comes with a set of tests, both unit as well as functional.
 
 #### Cypress e2e tests
 
-Right now, the actual cypress tests reside in the [metasfresh-webui-frontend](https://github.com/metasfresh/metasfresh-webui-frontend) repo.<br>
-This is going to change as of issue [#7](https://github.com/metasfresh/metasfresh-e2e/issues/7) Move existing cypress tests into this repo.
-
-We already moved our cypress-documentation from here to the metasfresh-e2e [README.md](https://github.com/metasfresh/metasfresh-e2e/blob/master/README.md).
+Actual cypress tests reside in the [metasfresh-webui-frontend](https://github.com/metasfresh/metasfresh-webui-frontend) repo.<br>
 
 ### Contribution
 

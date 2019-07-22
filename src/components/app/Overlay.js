@@ -26,9 +26,9 @@ class Overlay extends Component {
   }
 
   render() {
-    const { data, toggleOverlay } = this.props;
+    const { data, toggleOverlay, showOverlay } = this.props;
 
-    if (!data) {
+    if (!data || !showOverlay) {
       return null;
     }
 

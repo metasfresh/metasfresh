@@ -2,16 +2,23 @@ import React, { Component } from 'react';
 import Autosuggest from 'react-autosuggest';
 import TagsInput from 'react-tagsinput';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
 
 import 'react-tagsinput/react-tagsinput.css';
 
 import { autocompleteRequest } from '../../actions/GenericActions';
 
 class AutocompleteTo extends Component {
+  static propTypes = {
+    to: PropTypes.array,
+    emailId: PropTypes.string,
+  };
+
   constructor(props) {
     super(props);
 
     this.state = {
+      value: '',
       suggestions: [],
       tags: this.getTags(),
     };
@@ -27,7 +34,7 @@ class AutocompleteTo extends Component {
     return tagsUpdated;
   };
 
-  handleChange = tags => {
+  handleTagChange = tags => {
     this.setState({ tags });
   };
 
@@ -62,12 +69,14 @@ class AutocompleteTo extends Component {
 
   autocompleteRenderInput = ({ addTag, ...props }) => {
     const { suggestions } = this.state;
-
-    const handleOnChange = (e, { method }) => {
-      if (method === 'enter') {
-        e.preventDefault();
-      } else {
-        props.onChange(e);
+    const handleOnChange = (e, { newValue, method }) => {
+      this.setState({ value: newValue });
+      switch (method) {
+        case 'type':
+          props.onChange(e);
+          break;
+        default:
+          e.preventDefault();
       }
     };
 
@@ -100,7 +109,7 @@ class AutocompleteTo extends Component {
           className: 'email-input',
         }}
         value={tags}
-        onChange={this.handleChange}
+        onChange={this.handleTagChange}
       />
     );
   }

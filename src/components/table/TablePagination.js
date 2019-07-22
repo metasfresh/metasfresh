@@ -118,7 +118,7 @@ class TablePagination extends PureComponent {
 
     pagination.push(
       <li
-        className="page-item"
+        className="page-item js-not-unselect"
         key={1}
         onClick={() => {
           this.resetGoToPage();
@@ -169,7 +169,7 @@ class TablePagination extends PureComponent {
     );
     pagination.push(
       <li
-        className="page-item"
+        className="page-item js-not-unselect"
         key={9999}
         onClick={() => {
           this.resetGoToPage();
@@ -193,7 +193,7 @@ class TablePagination extends PureComponent {
     for (let i = start; i <= end; i++) {
       pagination.push(
         <li
-          className={classnames('page-item', {
+          className={classnames('page-item js-not-unselect', {
             active: page === i,
           })}
           key={i}

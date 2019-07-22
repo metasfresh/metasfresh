@@ -56,16 +56,21 @@ class Attachments extends Component {
   handleDeleteAttachment = (e, id) => {
     const { windowType, docId } = this.props;
     e.stopPropagation();
-
-    deleteRequest('window', windowType, docId, null, null, 'attachments', id)
-      .then(() => {
-        return attachmentsRequest('window', windowType, docId);
-      })
-      .then(response => {
-        this.setState({
-          data: response.data,
+    if (
+      window.confirm(
+        `${counterpart.translate('window.attachment.deleteQuestion')}`
+      )
+    ) {
+      deleteRequest('window', windowType, docId, null, null, 'attachments', id)
+        .then(() => {
+          return attachmentsRequest('window', windowType, docId);
+        })
+        .then(response => {
+          this.setState({
+            data: response.data,
+          });
         });
-      });
+    }
   };
 
   handleKeyDown = e => {
@@ -124,7 +129,9 @@ class Attachments extends Component {
         key={key}
         tabIndex={0}
         onMouseEnter={() => {
-          this.toggleAttachmentDelete(item.id);
+          if (item.allowDelete) {
+            this.toggleAttachmentDelete(item.id);
+          }
         }}
         onMouseLeave={() => {
           this.toggleAttachmentDelete(null);
