@@ -286,37 +286,4 @@ public class UserDAO implements IUserDAO
 				.create()
 				.listIds(UserId::ofRepoId);
 	}
-
-	@Override
-	public UserId retrieveUserIdByValue(@Nullable final String value, @NonNull final ClientId adClientId)
-	{
-		if (Check.isEmpty(value, true))
-		{
-			return null;
-		}
-
-
-		final Set<UserId> userIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Value, value)
-				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, adClientId)
-				.create()
-				.listIds(UserId::ofRepoId);
-
-		if (userIds.isEmpty())
-		{
-			return null;
-		}
-		else if (userIds.size() == 1)
-		{
-			return userIds.iterator().next();
-		}
-		else
-		{
-			// more than one user found for given value.
-			logger.info("Found more than one user for value={} and clientId={}. Returning null", value,adClientId, userIds);
-			return null;
-		}
-	}
 }

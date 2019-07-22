@@ -15,7 +15,6 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -31,7 +30,6 @@ import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
 import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -67,7 +65,6 @@ import net.sf.jasperreports.engine.JRException;
 public class JsonDataSourceService
 {
 	private static final String MSG_URLnotValid = "URLnotValid";
-	private static final String JSONREPORTS_USER_VALUE = "JsonReports";
 
 	private final UserAuthTokenRepository userAuthTokenRepo;
 	private final JsonDataSourceRepository repository;
@@ -97,9 +94,7 @@ public class JsonDataSourceService
 
 	private UserAuthToken getUserAuhToken()
 	{
-		final ClientId clientId = Env.getClientId();
-		final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByValue(JSONREPORTS_USER_VALUE, clientId);
-		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, RoleId.JsonReports);
+		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
 
 		if (token == null)
 		{

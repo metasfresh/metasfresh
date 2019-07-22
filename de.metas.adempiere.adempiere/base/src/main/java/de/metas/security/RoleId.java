@@ -37,23 +37,15 @@ import lombok.Value;
 public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
-	public static final RoleId JsonReports = new RoleId(540078);
+
+	/** Used by the reports service when it accesses the REST-API */
+	public static final RoleId JSON_REPORTS = new RoleId(540078);
 
 	@JsonCreator
 	public static RoleId ofRepoId(final int repoId)
 	{
-		if (repoId == SYSTEM.getRepoId())
-		{
-			return SYSTEM;
-		}
-		else if (repoId == JsonReports.getRepoId())
-		{
-			return JsonReports;
-		}
-		else
-		{
-			return new RoleId(repoId);
-		}
+		final RoleId roleId = ofRepoIdOrNull(repoId);
+		return Check.assumeNotNull(roleId, "Unable to create a roleId for repoId={}", repoId);
 	}
 
 	public static RoleId ofRepoIdOrNull(final int repoId)
@@ -62,9 +54,9 @@ public class RoleId implements RepoIdAware
 		{
 			return SYSTEM;
 		}
-		else if (repoId == JsonReports.getRepoId())
+		else if (repoId == JSON_REPORTS.getRepoId())
 		{
-			return JsonReports;
+			return JSON_REPORTS;
 		}
 		else
 		{
