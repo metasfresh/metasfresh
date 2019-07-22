@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.order.IOrderBL;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -140,7 +141,7 @@ public class OrderUserNotifications
 
 	private static ADMessageAndParams extractOrderCompletedADMessageAndParams(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		return ADMessageAndParams.builder()
 				.adMessage(order.isSOTrx() ? MSG_SalesOrderCompleted : MSG_PurchaseOrderCompleted)
 				.param(TableRecordReference.of(order))

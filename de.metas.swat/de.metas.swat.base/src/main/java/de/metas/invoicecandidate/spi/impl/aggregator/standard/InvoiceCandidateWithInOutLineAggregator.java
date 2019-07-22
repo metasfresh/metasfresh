@@ -35,6 +35,7 @@ import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -329,7 +330,7 @@ import lombok.ToString;
 		}
 		else
 		{
-			final int currencyPrecision = invoiceCandBL.getPrecisionFromCurrency(cand);
+			final CurrencyPrecision currencyPrecision = invoiceCandBL.getPrecisionFromCurrency(cand);
 			// 07202: Make sure we adapt the quantity we use to the product and price UOM of the candidate.
 			final BigDecimal candQtyToInvoiceFinalInPriceUOM = invoiceCandBL.convertToPriceUOM(candQtyToInvoiceFinal, cand);
 			candPriceActual = invoiceCandBL.getPriceActual(cand);

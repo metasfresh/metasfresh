@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.banking.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for C_BankStatementLine_Ref
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -618847616L;
+	private static final long serialVersionUID = 1052922287L;
 
     /** Standard Constructor */
     public X_C_BankStatementLine_Ref (Properties ctx, int C_BankStatementLine_Ref_ID, String trxName)
@@ -43,13 +25,10 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
         {
 			setC_BankStatementLine_ID (0);
 			setC_BankStatementLine_Ref_ID (0);
-			setC_Currency_ID (0);
-// @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
-			setIsOverUnderPayment (false);
-// N
-			setLine (0);
-// @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine_Ref WHERE C_BankStatementLine_ID=@C_BankStatementLine_ID@
-			setTrxAmt (Env.ZERO);
+			setC_Currency_ID (0); // @SQL=SELECT C_Currency_ID FROM C_BP_BankAccount WHERE C_BP_BankAccount_ID=@C_BP_BankAccount_ID@
+			setIsOverUnderPayment (false); // N
+			setLine (0); // @SQL=SELECT COALESCE(MAX(Line),0)+10 FROM C_BankStatementLine_Ref WHERE C_BankStatementLine_ID=@C_BankStatementLine_ID@
+			setTrxAmt (BigDecimal.ZERO);
         } */
     }
 
@@ -69,7 +48,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
     }
 
 	@Override
-	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine() throws RuntimeException
+	public org.compiere.model.I_C_BankStatementLine getC_BankStatementLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BankStatementLine_ID, org.compiere.model.I_C_BankStatementLine.class);
 	}
@@ -127,18 +106,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Business Partner .
 		@param C_BPartner_ID 
 		Identifies a Business Partner
@@ -162,18 +129,6 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Currency.
@@ -202,7 +157,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
@@ -239,7 +194,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	public org.compiere.model.I_C_Payment getC_Payment()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
 	}
@@ -291,7 +246,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		return (java.lang.String)get_Value(COLUMNNAME_CreatePayment);
 	}
 
-	/** Set Discount Amount.
+	/** Set Skonto.
 		@param DiscountAmt 
 		Calculated amount of discount
 	  */
@@ -301,7 +256,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 		set_Value (COLUMNNAME_DiscountAmt, DiscountAmt);
 	}
 
-	/** Get Discount Amount.
+	/** Get Skonto.
 		@return Calculated amount of discount
 	  */
 	@Override
@@ -309,7 +264,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DiscountAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -379,7 +334,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_OverUnderAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -445,7 +400,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TrxAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -467,7 +422,7 @@ public class X_C_BankStatementLine_Ref extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_WriteOffAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

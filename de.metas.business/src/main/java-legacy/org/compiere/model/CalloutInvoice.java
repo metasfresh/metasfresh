@@ -35,6 +35,7 @@ import org.compiere.util.Env;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.security.IUserRolePermissions;
@@ -126,11 +127,9 @@ public class CalloutInvoice extends CalloutEngine
 				final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 				// PaymentRule
-				String paymentRule = rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO");
-
-				if (!Check.isEmpty(paymentRule))
+				PaymentRule paymentRule = PaymentRule.ofNullableCode(rs.getString(isSOTrx ? "PaymentRule" : "PaymentRulePO"));
+				if (paymentRule != null)
 				{
-
 					final I_C_DocType invoiceDocType = invoice.getC_DocType() == null ? invoice.getC_DocTypeTarget()
 							: invoice.getC_DocType();
 
@@ -142,17 +141,16 @@ public class CalloutInvoice extends CalloutEngine
 						// Credits are Payment Term
 						if (invoiceBL.isCreditMemo(docBaseType))
 						{
-							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit;
+							paymentRule = PaymentRule.OnCredit;
 						}
 
 						// No Check/Transfer for SO_Trx
-						else if (isSOTrx && (X_C_Invoice.PAYMENTRULE_Check.equals(paymentRule)))
+						else if (isSOTrx && paymentRule.isCheck())
 						{
-							paymentRule = X_C_Invoice.PAYMENTRULE_OnCredit; // Payment
-																			 // Term
+							paymentRule = PaymentRule.OnCredit;
 						}
 
-						invoice.setPaymentRule(paymentRule);
+						invoice.setPaymentRule(paymentRule.getCode());
 					}
 				}
 				// Payment Term

@@ -34,7 +34,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -51,6 +50,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -147,14 +147,14 @@ public class C_OrderLine
 		final int numberOfRuns = subscriptionBL.computeNumberOfRuns(flatrateConditions.getC_Flatrate_Transition(), date);
 
 		final Properties ctx = Env.getCtx();
-		final I_M_Product product = Services.get(IProductDAO.class).getById(ol.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 		final I_C_Flatrate_Matching matching = subscriptionBL.retrieveMatching(
 				ctx,
 				ol.getC_Flatrate_Conditions_ID(),
-				product,
+				productAndCategoryId,
 				ITrx.TRXNAME_None);
 
-		final ProductId productId = ProductId.ofRepoIdOrNull(ol.getM_Product_ID());
 		final Quantity qtyEntered = orderLineBL.getQtyEntered(ol);
 		final Quantity qtyEnteredInProductUOM = uomConversionBL.convertToProductUOM(qtyEntered, productId);
 

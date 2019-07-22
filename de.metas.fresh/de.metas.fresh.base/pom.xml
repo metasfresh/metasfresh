@@ -185,6 +185,12 @@
 			<artifactId>de.metas.payment.sepa</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.payment.paypal</groupId>
+			<artifactId>de.metas.payment.paypal</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.handlingunits</groupId>

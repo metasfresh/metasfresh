@@ -34,7 +34,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
-import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Check;
@@ -81,50 +81,45 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 			transferedBackAmt = linePayment.getPayAmt();
 		}
 		
-		trxManager.run(trxName, new TrxRunnable()
-		{
-			@Override
-			public void run(String localTrxName) throws Exception
-			{
-				// must assure that the line has transaction
-				InterfaceWrapperHelper.refresh(line, ITrx.TRXNAME_ThreadInherited);
-				
-				// Create the reversal payment
-				final I_C_Payment transferBackPayment =
-						Services.get(IPaymentBL.class).newBuilder(line)
-							.setAD_Org_ID(line.getAD_Org_ID())
-							.setC_BPartner_ID(linePayment.getC_BPartner_ID())
-							.setDocbaseType(X_C_DocType.DOCBASETYPE_APPayment)
-							.setPayAmt(transferedBackAmt)
-							.setC_Currency_ID(linePayment.getC_Currency_ID())
-							.setTenderType(TenderType.ACH)
-							.setC_BP_BankAccount_ID(linePayment.getC_BP_BankAccount_ID())
-							.setDateAcct(SystemTime.asDayTimestamp())
-							.setDateTrx(SystemTime.asDayTimestamp())
-							.createAndProcess();
-		
-				// Create the allocation
-				// @formatter:off
-				Services.get(IAllocationBL.class).newBuilder(InterfaceWrapperHelper.getContextAware(line))
+		trxManager.run(trxName, (TrxRunnable)localTrxName -> {
+			// must assure that the line has transaction
+			InterfaceWrapperHelper.refresh(line, ITrx.TRXNAME_ThreadInherited);
+			
+			// Create the reversal payment
+			final I_C_Payment transferBackPayment =
+					Services.get(IPaymentBL.class).newBuilder(line)
 						.setAD_Org_ID(line.getAD_Org_ID())
-						.setC_Currency_ID(transferBackPayment.getC_Currency_ID())
-						.setDateAcct(transferBackPayment.getDateAcct())
-						.setDateTrx(transferBackPayment.getDateTrx())
-						.addLine()
-							.setAD_Org_ID(line.getAD_Org_ID())
-							.setC_BPartner_ID(linePayment.getC_BPartner_ID())
-							.setC_Payment_ID(linePayment.getC_Payment_ID())
-							.setAmount(transferedBackAmt)
-						.lineDone()
-						.addLine()
-							.setAD_Org_ID(line.getAD_Org_ID())
-							.setC_BPartner_ID(transferBackPayment.getC_BPartner_ID())
-							.setC_Payment_ID(transferBackPayment.getC_Payment_ID())
-							.setAmount(transferedBackAmt.negate())
-						.lineDone()
-						.create(true);
-				// @formatter:on
-			}
+						.setC_BPartner_ID(linePayment.getC_BPartner_ID())
+						.setDocbaseType(X_C_DocType.DOCBASETYPE_APPayment)
+						.setPayAmt(transferedBackAmt)
+						.setC_Currency_ID(linePayment.getC_Currency_ID())
+						.setTenderType(TenderType.DirectDeposit)
+						.setC_BP_BankAccount_ID(linePayment.getC_BP_BankAccount_ID())
+						.setDateAcct(SystemTime.asDayTimestamp())
+						.setDateTrx(SystemTime.asDayTimestamp())
+						.createAndProcess();
+
+			// Create the allocation
+			// @formatter:off
+			Services.get(IAllocationBL.class).newBuilder(InterfaceWrapperHelper.getContextAware(line))
+					.setAD_Org_ID(line.getAD_Org_ID())
+					.setC_Currency_ID(transferBackPayment.getC_Currency_ID())
+					.setDateAcct(transferBackPayment.getDateAcct())
+					.setDateTrx(transferBackPayment.getDateTrx())
+					.addLine()
+						.setAD_Org_ID(line.getAD_Org_ID())
+						.setC_BPartner_ID(linePayment.getC_BPartner_ID())
+						.setC_Payment_ID(linePayment.getC_Payment_ID())
+						.setAmount(transferedBackAmt)
+					.lineDone()
+					.addLine()
+						.setAD_Org_ID(line.getAD_Org_ID())
+						.setC_BPartner_ID(transferBackPayment.getC_BPartner_ID())
+						.setC_Payment_ID(transferBackPayment.getC_Payment_ID())
+						.setAmount(transferedBackAmt.negate())
+					.lineDone()
+					.create(true);
+			// @formatter:on
 		});
 		return true;
 	}

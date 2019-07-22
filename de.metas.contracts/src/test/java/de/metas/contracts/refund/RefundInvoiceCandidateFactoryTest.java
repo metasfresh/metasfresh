@@ -22,15 +22,17 @@ import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.lang.Percent;
 import de.metas.util.time.SystemTime;
 
@@ -83,9 +85,7 @@ public class RefundInvoiceCandidateFactoryTest
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		save(productRecord);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		save(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
 		conditionsRecord.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Refund);
@@ -110,8 +110,8 @@ public class RefundInvoiceCandidateFactoryTest
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
 		refundContractRecord.setBill_BPartner(bPartnerRecord);
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
-		refundContractRecord.setM_Product(productRecord);
-		refundContractRecord.setC_Currency(currencyRecord);
+		refundContractRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		refundContractRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractRecord.setStartDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_START_DATE));
 		refundContractRecord.setEndDate(TimeUtil.asTimestamp(RefundTestTools.CONTRACT_END_DATE));
 		save(refundContractRecord);
@@ -130,7 +130,7 @@ public class RefundInvoiceCandidateFactoryTest
 		refundContractIcRecord.setDateToInvoice(dateToInvoiceOfAssignableCand);
 		refundContractIcRecord.setAD_Table_ID(getTableId(I_C_Flatrate_Term.class));
 		refundContractIcRecord.setRecord_ID(refundContractRecord.getC_Flatrate_Term_ID());
-		refundContractIcRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
+		refundContractIcRecord.setC_Currency_ID(currencyId.getRepoId());
 		refundContractIcRecord.setPriceActual(TEN);
 		save(refundContractIcRecord);
 
@@ -149,7 +149,7 @@ public class RefundInvoiceCandidateFactoryTest
 
 		assertThat(ofRecord.getBpartnerId().getRepoId()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		assertThat(ofRecord.getRefundContract().getId().getRepoId()).isEqualTo(refundContractRecord.getC_Flatrate_Term_ID());
-		assertThat(ofRecord.getMoney().getValue()).isEqualByComparingTo(TEN);
+		assertThat(ofRecord.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(ofRecord.getInvoiceableFrom()).isEqualTo(TimeUtil.asLocalDate(dateToInvoiceOfAssignableCand));
 
 		final List<RefundConfig> refundConfigs = ofRecord.getRefundConfigs();

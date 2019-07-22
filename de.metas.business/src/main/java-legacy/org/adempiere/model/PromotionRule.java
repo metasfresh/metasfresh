@@ -40,6 +40,8 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Services;
 
@@ -435,7 +437,7 @@ public class PromotionRule {
 			int pindex = 1;
 			stmt = DB.prepareStatement(sql.toString(), order.get_TrxName());
 			stmt.setInt(pindex++, order.getC_BPartner_ID());
-			stmt.setInt(pindex++, order.getC_BPartner().getC_BP_Group_ID());
+			stmt.setInt(pindex++, Services.get(IBPartnerDAO.class).getBPGroupIdByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID())).getRepoId());
 			stmt.setInt(pindex++, order.getM_PriceList_ID());
 			stmt.setInt(pindex++, order.getM_Warehouse_ID());
 			stmt.setTimestamp(pindex++, order.getDateOrdered());

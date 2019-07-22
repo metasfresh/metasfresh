@@ -21,7 +21,6 @@ package de.metas.invoicecandidate.api;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -52,6 +51,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
@@ -245,7 +245,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	BigDecimal retrieveInvoicableAmount(I_C_BPartner billBPartner, Timestamp date);
 
-	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, int targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
+	BigDecimal retrieveInvoicableAmount(Properties ctx, IInvoiceCandidateQuery query, CurrencyId targetCurrencyId, int adClientId, int adOrgId, String amountColumnName, String trxName);
 
 	/**
 	 * Creates a new {@link IInvoiceCandidateQuery} instance

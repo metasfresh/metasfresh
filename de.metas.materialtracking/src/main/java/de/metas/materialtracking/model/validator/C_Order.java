@@ -29,7 +29,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -92,8 +91,6 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 			return;
 		}
 
-		final I_C_BPartner partner = document.getC_BPartner();
-
 		final List<I_C_OrderLine> documentLines = retrieveDocumentLines(document);
 		for (final I_C_OrderLine line : documentLines)
 		{
@@ -107,7 +104,7 @@ public class C_Order extends MaterialTrackableDocumentByASIInterceptor<I_C_Order
 			final IMaterialTrackingQuery queryVO = materialTrackingDao.createMaterialTrackingQuery();
 			queryVO.setCompleteFlatrateTerm(true);
 			queryVO.setProcessed(false);
-			queryVO.setC_BPartner_ID(partner.getC_BPartner_ID());
+			queryVO.setC_BPartner_ID(document.getC_BPartner_ID());
 			queryVO.setM_Product_ID(line.getM_Product_ID());
 
 			// there can be many trackings for the given product and partner (different parcels), which is not a problem for this verification

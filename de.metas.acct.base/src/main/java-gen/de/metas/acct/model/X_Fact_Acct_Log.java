@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.acct.model;
 
@@ -31,7 +15,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 581579031L;
+	private static final long serialVersionUID = 1504781792L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Log (Properties ctx, int Fact_Acct_Log_ID, String trxName)
@@ -79,9 +63,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	/** Update = U */
 	public static final String ACTION_Update = "U";
 	/** Set Aktion.
-		@param Action 
-		Zeigt die durchzuführende Aktion an
-	  */
+		@param Action Aktion	  */
 	@Override
 	public void setAction (java.lang.String Action)
 	{
@@ -90,8 +72,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	}
 
 	/** Get Aktion.
-		@return Zeigt die durchzuführende Aktion an
-	  */
+		@return Aktion	  */
 	@Override
 	public java.lang.String getAction () 
 	{
@@ -143,7 +124,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	}
 
 	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
@@ -180,7 +161,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getC_ElementValue() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getC_ElementValue()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_ElementValue_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -217,7 +198,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	}
 
 	@Override
-	public org.compiere.model.I_C_Period getC_Period() throws RuntimeException
+	public org.compiere.model.I_C_Period getC_Period()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Period_ID, org.compiere.model.I_C_Period.class);
 	}
@@ -273,7 +254,7 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	}
 
 	@Override
-	public org.compiere.model.I_Fact_Acct getFact_Acct() throws RuntimeException
+	public org.compiere.model.I_Fact_Acct getFact_Acct()
 	{
 		return get_ValueAsPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
 	}
@@ -321,6 +302,8 @@ public class X_Fact_Acct_Log extends org.compiere.model.PO implements I_Fact_Acc
 	public static final String POSTINGTYPE_Statistical = "S";
 	/** Reservation = R */
 	public static final String POSTINGTYPE_Reservation = "R";
+	/** Actual Year End = Y */
+	public static final String POSTINGTYPE_ActualYearEnd = "Y";
 	/** Set Buchungsart.
 		@param PostingType 
 		Die Art des gebuchten Betrages dieser Transaktion

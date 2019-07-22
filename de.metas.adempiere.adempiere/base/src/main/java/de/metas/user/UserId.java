@@ -103,8 +103,13 @@ public class UserId implements RepoIdAware
 		return repoId;
 	}
 
+	public boolean isSystemUser()
+	{
+		return repoId == SYSTEM.repoId;
+	}
+
 	public boolean isRegularUser()
 	{
-		return repoId != SYSTEM.repoId;
+		return !isSystemUser();
 	}
 }

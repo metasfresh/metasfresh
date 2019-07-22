@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Invoice;
@@ -36,6 +37,7 @@ import org.compiere.model.MBankStatement;
 import org.compiere.model.MBankStatementLine;
 import org.compiere.model.MPeriod;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
@@ -45,10 +47,12 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListener;
 import de.metas.banking.service.IBankStatementListenerService;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -182,31 +186,34 @@ public class BankStatementBL implements IBankStatementBL
 				final I_C_Invoice inv = refLine.getC_Invoice();
 
 				final CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						bsl.getDateAcct(), // ConvDate,
+						TimeUtil.asLocalDate(bsl.getDateAcct()), // ConvDate,
 						CurrencyConversionTypeId.ofRepoIdOrNull(inv.getC_ConversionType_ID()), // ConversionType_ID,
-						bsl.getAD_Client_ID(), // AD_Client_ID
-						bsl.getAD_Org_ID() // AD_Org_ID
+						ClientId.ofRepoId(bsl.getAD_Client_ID()), // AD_Client_ID
+						OrgId.ofRepoId(bsl.getAD_Org_ID()) // AD_Org_ID
 						);
 
+				final CurrencyId refLineCurrencyId = CurrencyId.ofRepoId(refLine.getC_Currency_ID());
+				final CurrencyId bslCurrencyId = CurrencyId.ofRepoId(bsl.getC_Currency_ID());
+				
 				final BigDecimal trxAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getTrxAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal discountAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getDiscountAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal writeOffAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getWriteOffAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				final BigDecimal overUnderAmt = currencyConversionBL.convert(conversionCtx,
 						refLine.getOverUnderAmt(),
-						refLine.getC_Currency_ID(), // CurFrom_ID,
-						bsl.getC_Currency_ID()) // CurTo_ID
+						refLineCurrencyId, // CurFrom_ID,
+						bslCurrencyId) // CurTo_ID
 						.getAmount();
 				
 				totalStmtAmt = totalStmtAmt.add(trxAmt);

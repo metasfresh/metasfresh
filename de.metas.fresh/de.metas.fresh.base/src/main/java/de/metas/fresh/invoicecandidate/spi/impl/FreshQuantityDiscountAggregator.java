@@ -39,6 +39,7 @@ import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -211,7 +212,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			// Adjust the original invoice line add let it include our qty with issues.
 			originalInvoiceLineRW.addQtyToInvoice(qtyQualityDiscount);
 			// We also need to update the invoice line's net amount
-			setNetLineAmt(originalInvoiceLineRW, invoiceCandBL.getCurrencyPrecision(candidate));
+			setNetLineAmt(originalInvoiceLineRW, invoiceCandBL.getPrecisionFromCurrency(candidate));
 			// Update aggregate's qtyAllocated
 			invoiceCandAggregate.addAllocatedQty(candidate, originalInvoiceLineRW, qtyQualityDiscount);
 
@@ -262,7 +263,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		invoiceLine.setDiscount(invoiceCandBL.getDiscount(candidate));
 		invoiceLine.setQtyToInvoice(qtyToInvoice);
 
-		final BigDecimal lineNetAmt = invoiceCandBL.calculateNetAmt(qtyToInvoice, priceActual, invoiceCandBL.getCurrencyPrecision(candidate));
+		final BigDecimal lineNetAmt = invoiceCandBL.calculateNetAmt(qtyToInvoice, priceActual, invoiceCandBL.getPrecisionFromCurrency(candidate));
 		invoiceLine.setNetLineAmt(lineNetAmt);
 
 		invoiceLine.setDescription(description);
@@ -314,7 +315,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return descriptionPrefix;
 	}
 
-	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine, final int currencyPrecision)
+	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine, final CurrencyPrecision currencyPrecision)
 	{
 		BigDecimal qtyToInvoice = invoiceLine.getQtyToInvoice();
 		BigDecimal priceActual = invoiceLine.getPriceActual();

@@ -50,6 +50,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -700,7 +701,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		POJOWrapper.setInstanceName(ic1, "ic1");
 		InterfaceWrapperHelper.save(ic1);
 
-		order1.setDocStatus(X_C_Order.DOCSTATUS_Completed);
+		order1.setDocStatus(DocStatus.Completed.getCode());
 		order1.setDocAction(X_C_Order.DOCACTION_Close);
 		InterfaceWrapperHelper.save(order1);
 

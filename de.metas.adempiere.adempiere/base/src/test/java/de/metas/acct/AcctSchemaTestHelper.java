@@ -7,7 +7,6 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.I_C_Currency;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 
@@ -17,7 +16,10 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.acct.api.impl.AcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -53,14 +55,11 @@ public class AcctSchemaTestHelper
 	@Builder(builderMethodName = "newAcctSchema", builderClassName = "newAcctSchemaBuilder")
 	private static AcctSchemaId createAcctSchema()
 	{
-		final I_C_Currency acctCurrency = newInstance(I_C_Currency.class);
-		acctCurrency.setStdPrecision(2);
-		acctCurrency.setCostingPrecision(2);
-		saveRecord(acctCurrency);
+		final CurrencyId acctCurrency = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_AcctSchema acctSchemaRecord = newInstance(I_C_AcctSchema.class);
 		acctSchemaRecord.setName("Test AcctSchema");
-		acctSchemaRecord.setC_Currency_ID(acctCurrency.getC_Currency_ID());
+		acctSchemaRecord.setC_Currency_ID(acctCurrency.getRepoId());
 		acctSchemaRecord.setM_CostType_ID(1);
 		acctSchemaRecord.setCostingLevel(CostingLevel.Client.getCode());
 		acctSchemaRecord.setCostingMethod(CostingMethod.StandardCosting.getCode());

@@ -24,9 +24,11 @@ import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.acct.api.IFactAcctDAO;
@@ -37,6 +39,9 @@ import de.metas.costing.ICostingService;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -107,9 +112,14 @@ public class MMatchPO extends X_M_MatchPO
 		final int orderCurrency_ID = order.getC_Currency_ID();
 		if (invoiceCurrency_ID != orderCurrency_ID)
 		{
-			priceActual = Services.get(ICurrencyBL.class).convert(getCtx(), priceActual, invoiceCurrency_ID, orderCurrency_ID,
-					invoice.getDateInvoiced(), invoice.getC_ConversionType_ID(),
-					getAD_Client_ID(), getAD_Org_ID());
+			priceActual = Services.get(ICurrencyBL.class).convert(
+					priceActual, 
+					CurrencyId.ofRepoId(invoiceCurrency_ID), 
+					CurrencyId.ofRepoId(orderCurrency_ID),
+					TimeUtil.asLocalDate(invoice.getDateInvoiced()), 
+					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+					ClientId.ofRepoId(getAD_Client_ID()), 
+					OrgId.ofRepoId(getAD_Org_ID()));
 		}
 		return priceActual;
 	}

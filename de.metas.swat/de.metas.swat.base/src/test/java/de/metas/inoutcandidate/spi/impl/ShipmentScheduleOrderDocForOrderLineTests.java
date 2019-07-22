@@ -63,8 +63,8 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		save(billBPartner);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setBill_BPartner(billBPartner);
-		order.setM_Warehouse(wh);
+		order.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
+		order.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		order.setDatePromised(deliveryDate);
 		save(order);
 

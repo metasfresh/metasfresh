@@ -5,14 +5,14 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import de.metas.acct.api.AcctSchema;
@@ -27,8 +27,10 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -115,7 +117,6 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId_NOTUSED)
 	{
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-		final Properties ctx = Env.getCtx();
 		final int productId = costSegment.getProductId().getRepoId();
 		final int orgId = costSegment.getOrgId().getRepoId();
 		final int asiId = costSegment.getAttributeSetInstanceId().getRepoId();
@@ -177,14 +178,19 @@ public class AverageInvoiceCostingMethodHandler extends CostingMethodHandlerTemp
 				}
 				// Assumption: everything is matched
 				final BigDecimal price = rs.getBigDecimal(4);
-				final int C_Currency_ID = rs.getInt(5);
-				final Timestamp DateAcct = rs.getTimestamp(6);
-				final int C_ConversionType_ID = rs.getInt(7);
-				final int Client_ID = rs.getInt(8);
-				final int Org_ID = rs.getInt(9);
-				final BigDecimal cost = currencyConversionBL.convert(ctx, price,
-						C_Currency_ID, acctCurencyId.getRepoId(),
-						DateAcct, C_ConversionType_ID, Client_ID, Org_ID);
+				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(5));
+				final LocalDate DateAcct = TimeUtil.asLocalDate(rs.getTimestamp(6));
+				final CurrencyConversionTypeId C_ConversionType_ID = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(7));
+				final ClientId Client_ID = ClientId.ofRepoId(rs.getInt(8));
+				final OrgId Org_ID = OrgId.ofRepoId(rs.getInt(9));
+				final BigDecimal cost = currencyConversionBL.convert(
+						price,
+						currencyId,
+						acctCurencyId,
+						DateAcct, 
+						C_ConversionType_ID, 
+						Client_ID, 
+						Org_ID);
 				//
 				final BigDecimal oldAverageAmt = newAverageAmt;
 				final BigDecimal averageCurrent = oldStockQty.multiply(oldAverageAmt);

@@ -64,10 +64,14 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -78,7 +82,9 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -101,7 +107,9 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -111,9 +119,13 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	public void setCS_Creditpass_Config_ID (int CS_Creditpass_Config_ID)
 	{
 		if (CS_Creditpass_Config_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, null);
+		}
 		else
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_ID, Integer.valueOf(CS_Creditpass_Config_ID));
+		}
 	}
 
 	/** Get Zahlungsart ID.
@@ -123,7 +135,9 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -133,30 +147,34 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	public void setCS_Creditpass_Config_PaymentRule_ID (int CS_Creditpass_Config_PaymentRule_ID)
 	{
 		if (CS_Creditpass_Config_PaymentRule_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, null);
+		}
 		else
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Creditpass_Config_PaymentRule_ID, Integer.valueOf(CS_Creditpass_Config_PaymentRule_ID));
+		}
 	}
 
-	/** 
-	 * PaymentRule AD_Reference_ID=195
-	 * Reference name: _Payment Rule
-	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** 
+//	 * PaymentRule AD_Reference_ID=195
+//	 * Reference name: _Payment Rule
+//	 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** CreditCard = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** DirectDeposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** OnCredit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** DirectDebit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird
@@ -192,7 +210,9 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PurchaseType);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -203,7 +223,9 @@ public class X_CS_Creditpass_Config_PaymentRule extends org.compiere.model.PO im
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RequestPrice);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 

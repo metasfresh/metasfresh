@@ -7,6 +7,7 @@ import org.compiere.Adempiere;
 
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.email.EMailAddress;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -132,7 +133,7 @@ public class M_ShipperTransportation_SendDerKurierEMail
 		{
 			return false;
 		}
-		final String mailTo = config.getDeliveryOrderRecipientEmailOrNull();
-		return !Check.isEmpty(mailTo, true);
+		final EMailAddress mailTo = config.getDeliveryOrderRecipientEmailOrNull();
+		return mailTo != null;
 	}
 }

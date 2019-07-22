@@ -36,10 +36,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -131,7 +133,7 @@ class OLCandOrderFactory
 	private I_C_Order newOrder(final OLCand candidateOfGroup)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
-		order.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(X_C_Order.DOCACTION_Complete);
 
 		// use the values from 'processor
@@ -212,7 +214,7 @@ class OLCandOrderFactory
 		{
 			try
 			{
-				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, X_C_Order.DOCSTATUS_Completed);
+				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
 				save(order);
 
 				loggable.addLog("@Created@ @C_Order_ID@ " + order.getDocumentNo());
@@ -295,8 +297,11 @@ class OLCandOrderFactory
 			}
 			if (candidate.isManualPrice() || candidate.isManualDiscount())
 			{
-				final int currencyId = candidate.getC_Currency_ID();
-				final CurrencyPrecision stdPrecision = CurrencyPrecision.ofInt(currencyDAO.getStdPrecision(ctx, currencyId)); // FIXME: use price list's precision
+				// FIXME: use price list's precision
+				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(candidate.getC_Currency_ID());
+				final CurrencyPrecision stdPrecision = currencyId != null
+						? currencyDAO.getStdPrecision(currencyId)
+						: ICurrencyDAO.DEFAULT_PRECISION;
 				orderLineBL.updatePriceActual(currentOrderLine, stdPrecision);
 			}
 		}

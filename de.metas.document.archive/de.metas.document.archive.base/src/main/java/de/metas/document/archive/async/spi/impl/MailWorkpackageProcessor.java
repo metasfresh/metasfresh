@@ -8,16 +8,16 @@ import java.util.StringJoiner;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Table;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 
@@ -26,6 +26,9 @@ import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
@@ -33,13 +36,19 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.email.EMail;
-import de.metas.email.IMailBL;
-import de.metas.email.Mailbox;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlate;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letter.BoilerPlateRepository;
+import de.metas.organization.OrgId;
+import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutor;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -61,12 +70,12 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	//
 	// Services
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IArchiveEventManager archiveEventManager = Services.get(IArchiveEventManager.class);
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final transient IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
+	private final transient MailService mailService = Adempiere.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = Adempiere.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientRepository docOutBoundRecipientRepository = Adempiere.getBean(DocOutBoundRecipientRepository.class);
 
@@ -111,7 +120,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		}
 		catch (final Exception e)
 		{
-			if (mailBL.isConnectionError(e))
+			if (mailService.isConnectionError(e))
 			{
 				throw WorkpackageSkipRequestException.createWithTimeoutAndThrowable(e.getLocalizedMessage(), DEFAULT_SkipTimeoutOnConnectionError, e);
 			}
@@ -135,20 +144,23 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 			ctx.setProperty(Env.CTXNAME_AD_Language, archiveLanguage);
 		}
 
-		final int processID = pInstance == null ? ProcessExecutor.getCurrentProcessId() : pInstance.getAD_Process_ID();
+		final AdProcessId processId = pInstance != null
+				? AdProcessId.ofRepoIdOrNull(pInstance.getAD_Process_ID())
+				: ProcessExecutor.getCurrentProcessIdOrNull();
 
-		final I_AD_User userFrom = null; // no user - this mailbox is the AD_Client's mailbox
-
-		final Mailbox mailbox = mailBL.findMailBox(
-				docOutboundLogRecord.getAD_Client(),
-				docOutboundLogRecord.getAD_Org_ID(),
-				processID,
-				docOutboundLogRecord.getC_DocType(),
-				null, // mailCustomType
-				userFrom);
+		final ClientId adClientId = ClientId.ofRepoId(docOutboundLogRecord.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
+		final DocBaseAndSubType docBaseAndSubType = extractDocBaseAndSubType(docOutboundLogRecord);
+		final Mailbox mailbox = mailService.findMailBox(
+				tenantEmailConfig,
+				OrgId.ofRepoId(docOutboundLogRecord.getAD_Org_ID()),
+				processId,
+				docBaseAndSubType,
+				(EMailCustomType)null); // mailCustomType
 
 		// note that we verified this earlier
-		final String mailTo = Check.assumeNotEmpty(
+		final EMailAddress mailTo = EMailAddress.ofNullableString(docOutboundLogRecord.getCurrentEMailAddress());
+		Check.assumeNotNull(
 				docOutboundLogRecord.getCurrentEMailAddress(),
 				"C_Doc_Outbound_Log needs to have a non-empty CurrentEMailAddress value; C_Doc_Outbound_Log={}", docOutboundLogRecord);
 
@@ -157,8 +169,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		{
 			final EmailParams emailParams = extractEmailParams(docOutboundLogRecord);
 
-			final EMail email = mailBL.createEMail(
-					ctx,
+			final EMail email = mailService.createEMail(
 					mailbox,
 					mailTo,
 					emailParams.getSubject(),
@@ -175,7 +186,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 				final String pdfFileName = computePdfFileName(docOutboundLogRecord);
 				email.addAttachment(pdfFileName, attachment);
 
-				mailBL.send(email);
+				mailService.send(email);
 				status = IArchiveEventManager.STATUS_MESSAGE_SENT;
 			}
 		}
@@ -183,22 +194,34 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		//
 		// Create doc outbound log entry
 		{
-			final String from = mailbox.getEmail();
-			final String cc = null;
-			final String bcc = null;
+			final EMailAddress from = mailbox.getEmail();
+			final EMailAddress cc = null;
+			final EMailAddress bcc = null;
 
 			final String statusText = msgBL.getMsg(ctx, status);
 
 			archiveEventManager.fireEmailSent(
 					archive,
 					X_C_Doc_Outbound_Log_Line.ACTION_EMail,
-					userFrom,
+					(UserEMailConfig)null,
 					from,
 					mailTo,
 					cc,
 					bcc,
 					statusText);
 		}
+	}
+
+	private DocBaseAndSubType extractDocBaseAndSubType(final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docOutboundLogRecord.getC_DocType_ID());
+		if (docTypeId == null)
+		{
+			return null;
+		}
+
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
 	}
 
 	private String computePdfFileName(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)

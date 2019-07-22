@@ -35,6 +35,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 
 /**
  * Tests:
@@ -59,6 +63,7 @@ public class CountryModelAttributeSetInstanceListenerTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		helper = new ModelAttributeSetInstanceListenerTestHelper();
 		helper.setAttributeAction(AttributeAction.GenerateNew);

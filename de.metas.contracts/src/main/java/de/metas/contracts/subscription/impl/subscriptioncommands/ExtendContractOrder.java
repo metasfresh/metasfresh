@@ -13,6 +13,7 @@ import org.compiere.util.TimeUtil;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -65,7 +66,7 @@ public class ExtendContractOrder
 			childCRS.setBase(true);
 			childCRS.copyRecord(from, InterfaceWrapperHelper.getTrxName(existentOrder));
 	
-			newOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+			newOrder.setDocStatus(DocStatus.Drafted.getCode());
 			newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 			
 			final I_C_Flatrate_Term lastTerm = Services.get(ISubscriptionBL.class).retrieveLastFlatrateTermFromOrder(existentOrder);

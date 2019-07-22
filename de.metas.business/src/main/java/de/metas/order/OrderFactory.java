@@ -14,6 +14,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.lang.SOTrx;
@@ -74,7 +75,7 @@ public class OrderFactory
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
 		order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setDocStatus(IDocument.STATUS_Drafted);
+		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(IDocument.ACTION_Complete);
 	}
 

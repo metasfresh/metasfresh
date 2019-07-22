@@ -16,8 +16,9 @@ import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -173,10 +174,9 @@ public class PurchaseCandidateRepositoryTest
 	@Test
 	public void getById_with_profitInfo()
 	{
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		saveRecord(currencyRecord);
+		final CurrencyId currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		purchaseCandidateRecord.setC_Currency(currencyRecord);
+		purchaseCandidateRecord.setC_Currency_ID(currencyId.getRepoId());
 		purchaseCandidateRecord.setProfitPurchasePriceActual(ONE);
 		purchaseCandidateRecord.setProfitSalesPriceActual(TEN);
 		purchaseCandidateRecord.setPurchasePriceActual(TWO);
@@ -190,19 +190,19 @@ public class PurchaseCandidateRepositoryTest
 		final PurchaseProfitInfo profitInfo = purchaseCandidate.getProfitInfoOrNull();
 		assertThat(profitInfo).isNotNull();
 
-		final CurrencyId curencyId = profitInfo.getCommonCurrency();
-		assertThat(curencyId.getRepoId()).isEqualTo(currencyRecord.getC_Currency_ID());
+		assertThat(profitInfo.getCommonCurrency())
+				.isEqualTo(currencyId);
 
 		assertThat(profitInfo.getProfitPurchasePriceActual())
 				.isPresent()
-				.contains(Money.of(ONE, curencyId));
+				.contains(Money.of(ONE, currencyId));
 
 		assertThat(profitInfo.getProfitSalesPriceActual())
 				.isPresent()
-				.contains(Money.of(TEN, curencyId));
+				.contains(Money.of(TEN, currencyId));
 
 		assertThat(profitInfo.getPurchasePriceActual())
 				.isPresent()
-				.contains(Money.of(TWO, curencyId));
+				.contains(Money.of(TWO, currencyId));
 	}
 }

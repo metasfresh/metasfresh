@@ -13,7 +13,6 @@ import java.time.LocalDate;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
@@ -31,6 +30,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -86,9 +86,9 @@ public class CustomsInvoiceServiceTest
 	private BPartnerLocationId logisticCompany;
 	private UserId logisticUserId;
 
-	private I_C_Currency chf;
+	private CurrencyId chf;
 
-	private I_C_Currency euro;
+	private CurrencyId euro;
 
 	private BigDecimal currencyMultiplier;
 
@@ -121,8 +121,8 @@ public class CustomsInvoiceServiceTest
 		logisticCompany = createBPartnerAndLocation("LogisticCompany", "Logistic Company Address");
 		logisticUserId = createUser(logisticCompany.getBpartnerId(), "Logistic company user");
 
-		chf = createCurrency("CHF");
-		euro = createCurrency("EURO");
+		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+		euro = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		currencyMultiplier = BigDecimal.valueOf(1.13);
 
@@ -152,7 +152,7 @@ public class CustomsInvoiceServiceTest
 	@Test
 	public void createCustomsInvoice_oneShipmentLine()
 	{
-		final Money priceActual = Money.of(BigDecimal.TEN, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual = Money.of(BigDecimal.TEN, chf);
 
 		final Quantity qty = Quantity.of(BigDecimal.valueOf(2), uom1);
 
@@ -174,7 +174,7 @@ public class CustomsInvoiceServiceTest
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
 				.bpartnerAddress(bpartnerAddress)
-				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
+				.currencyId(chf)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
 				.invoiceDate(invoiceDate)
@@ -188,7 +188,7 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice.getId());
 
 		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(CurrencyId.ofRepoId(chf.getC_Currency_ID())));
+		assertThat(customsInvoice.getCurrencyId(), is(chf));
 
 		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
@@ -205,7 +205,7 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final Money expectedLineNetAmt = Money.of(priceActual.getValue().multiply(qty.getAsBigDecimal()), CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money expectedLineNetAmt = Money.of(priceActual.getAsBigDecimal().multiply(qty.getAsBigDecimal()), chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
@@ -226,7 +226,7 @@ public class CustomsInvoiceServiceTest
 		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
 		final OrderId order = createOrder(bpartnerAndLocation2);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
 		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
 
@@ -237,7 +237,7 @@ public class CustomsInvoiceServiceTest
 
 		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
 
 		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom1);
 
@@ -257,7 +257,7 @@ public class CustomsInvoiceServiceTest
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
 				.bpartnerAddress(bpartnerAddress)
-				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
+				.currencyId(chf)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
 				.invoiceDate(invoiceDate)
@@ -271,7 +271,7 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice.getId());
 
 		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(CurrencyId.ofRepoId(chf.getC_Currency_ID())));
+		assertThat(customsInvoice.getCurrencyId(), is(chf));
 
 		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
@@ -288,9 +288,9 @@ public class CustomsInvoiceServiceTest
 
 		assertNotNull(customsInvoiceLine.getId());
 
-		final BigDecimal expectedPrice = (priceActual1.getValue().multiply(qty1.getAsBigDecimal()))
-				.add(priceActual2.getValue().multiply(qty2.getAsBigDecimal()));
-		final Money expectedLineNetAmt = Money.of(expectedPrice, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
+				.add(priceActual2.getAsBigDecimal().multiply(qty2.getAsBigDecimal()));
+		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
@@ -308,7 +308,7 @@ public class CustomsInvoiceServiceTest
 		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
 		final OrderId order = createOrder(bpartnerAndLocation2);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
 		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
 
@@ -319,7 +319,7 @@ public class CustomsInvoiceServiceTest
 
 		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), chf);
 
 		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom2);
 
@@ -339,7 +339,7 @@ public class CustomsInvoiceServiceTest
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
 				.bpartnerAddress(bpartnerAddress)
-				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
+				.currencyId(chf)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
 				.invoiceDate(invoiceDate)
@@ -353,7 +353,7 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice.getId());
 
 		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(CurrencyId.ofRepoId(chf.getC_Currency_ID())));
+		assertThat(customsInvoice.getCurrencyId(), is(chf));
 
 		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
@@ -375,9 +375,9 @@ public class CustomsInvoiceServiceTest
 
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
-		final BigDecimal expectedPrice = (priceActual1.getValue().multiply(qty1.getAsBigDecimal()))
-				.add(priceActual2.getValue().multiply(qty2inUom1));
-		final Money expectedLineNetAmt = Money.of(expectedPrice, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
+				.add(priceActual2.getAsBigDecimal().multiply(qty2inUom1));
+		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNetAmt(), is(expectedLineNetAmt));
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
@@ -393,7 +393,7 @@ public class CustomsInvoiceServiceTest
 		final BPartnerLocationId bpartnerAndLocation2 = createBPartnerAndLocation("Partner2", "address2");
 		final OrderId order = createOrder(bpartnerAndLocation2);
 
-		final Money priceActual1 = Money.of(BigDecimal.TEN, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money priceActual1 = Money.of(BigDecimal.TEN, chf);
 
 		final Quantity qty1 = Quantity.of(BigDecimal.valueOf(2), uom1);
 
@@ -404,7 +404,7 @@ public class CustomsInvoiceServiceTest
 
 		final InOutAndLineId shipmentLine1 = InOutAndLineId.ofRepoId(inout1.getRepoId(), shipmentLineRecord1.getM_InOutLine_ID());
 
-		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), CurrencyId.ofRepoId(euro.getC_Currency_ID()));
+		final Money priceActual2 = Money.of(BigDecimal.valueOf(20), euro);
 
 		final Quantity qty2 = Quantity.of(BigDecimal.valueOf(5), uom2);
 
@@ -424,7 +424,7 @@ public class CustomsInvoiceServiceTest
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(logisticCompany)
 				.bpartnerAddress(bpartnerAddress)
-				.currencyId(CurrencyId.ofRepoId(chf.getC_Currency_ID()))
+				.currencyId(chf)
 				.docTypeId(docTypeId)
 				.documentNo(documentNo)
 				.invoiceDate(invoiceDate)
@@ -438,7 +438,7 @@ public class CustomsInvoiceServiceTest
 		assertNotNull(customsInvoice.getId());
 
 		assertThat(customsInvoice.getBpartnerAndLocationId(), is(logisticCompany));
-		assertThat(customsInvoice.getCurrencyId(), is(CurrencyId.ofRepoId(chf.getC_Currency_ID())));
+		assertThat(customsInvoice.getCurrencyId(), is(chf));
 
 		assertThat(customsInvoice.getDocTypeId(), is(docTypeId));
 		assertThat(customsInvoice.getInvoiceDate(), is(invoiceDate));
@@ -460,12 +460,12 @@ public class CustomsInvoiceServiceTest
 
 		assertThat(customsInvoiceLine.getQuantity(), is(expectedQty));
 
-		final BigDecimal price2inCurrency1 = priceActual2.getValue().multiply(currencyMultiplier);
+		final BigDecimal price2inCurrency1 = priceActual2.getAsBigDecimal().multiply(currencyMultiplier);
 
-		final BigDecimal expectedPrice = (priceActual1.getValue().multiply(qty1.getAsBigDecimal()))
+		final BigDecimal expectedPrice = (priceActual1.getAsBigDecimal().multiply(qty1.getAsBigDecimal()))
 				.add(price2inCurrency1.multiply(qty2inUom1));
 
-		final Money expectedLineNetAmt = Money.of(expectedPrice, CurrencyId.ofRepoId(chf.getC_Currency_ID()));
+		final Money expectedLineNetAmt = Money.of(expectedPrice, chf);
 
 		assertThat(customsInvoiceLine.getLineNo(), is(10));
 		assertThat(customsInvoiceLine.getProductId(), is(product1));
@@ -479,9 +479,9 @@ public class CustomsInvoiceServiceTest
 
 		orderLineRecord.setC_Order_ID(order.getRepoId());
 		orderLineRecord.setM_Product_ID(product1.getRepoId());
-		orderLineRecord.setC_UOM_ID(qty.getUOMId());
+		orderLineRecord.setC_UOM_ID(qty.getUomId().getRepoId());
 
-		orderLineRecord.setPriceActual(priceActual.getValue());
+		orderLineRecord.setPriceActual(priceActual.getAsBigDecimal());
 		orderLineRecord.setC_Currency_ID(priceActual.getCurrencyId().getRepoId());
 
 		orderLineRecord.setQtyOrdered(qty.getAsBigDecimal());
@@ -535,7 +535,7 @@ public class CustomsInvoiceServiceTest
 		order.setC_BPartner_ID(bpartnerAndLocation.getBpartnerId().getRepoId());
 		order.setC_BPartner_Location_ID(bpartnerAndLocation.getRepoId());
 
-		order.setDocStatus(IDocument.STATUS_Completed);
+		order.setDocStatus(DocStatus.Completed.getCode());
 
 		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
@@ -587,17 +587,6 @@ public class CustomsInvoiceServiceTest
 		save(docTypeRecord);
 
 		return DocTypeId.ofRepoId(docTypeRecord.getC_DocType_ID());
-	}
-
-	private I_C_Currency createCurrency(final String currencyCode)
-	{
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setCurSymbol(currencyCode);
-		currencyRecord.setStdPrecision(2);
-
-		save(currencyRecord);
-
-		return currencyRecord;
 	}
 
 	private BPartnerLocationId createBPartnerAndLocation(final String partnerName, final String address)

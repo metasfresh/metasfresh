@@ -43,7 +43,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -53,7 +52,6 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -71,8 +69,11 @@ import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -388,7 +389,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		pricingSystem_None.setName("None");
 		InterfaceWrapperHelper.save(pricingSystem_None);
 
-		final I_C_Currency currency = currencyConversionBL.getBaseCurrency(Env.getCtx());
+		final Currency currency = currencyConversionBL.getBaseCurrency(Env.getCtx());
 
 		final I_M_PriceList priceList_None = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		priceList_None.setM_PriceList_ID(IPriceListDAO.M_PriceList_ID_None);
@@ -396,10 +397,10 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		priceList_None.setName("None");
 		priceList_None.setIsSOPriceList(true);
 		priceList_None.setC_Country_ID(countryId_DE.getRepoId());
-		priceList_None.setC_Currency_ID(currency.getC_Currency_ID());
+		priceList_None.setC_Currency_ID(currency.getId().getRepoId());
 		InterfaceWrapperHelper.save(priceList_None);
 
-		final int currencyPrecision = currency.getStdPrecision();
+		final CurrencyPrecision currencyPrecision = currency.getPrecision();
 
 		//
 		// create a sales PS and PLV
@@ -409,8 +410,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_PriceList pl_so = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		pl_so.setM_PricingSystem(pricingSystem_SO);
 		pl_so.setIsSOPriceList(true);
-		pl_so.setPricePrecision(currencyPrecision);
-		pl_so.setC_Currency_ID(currency.getC_Currency_ID());
+		pl_so.setPricePrecision(currencyPrecision.toInt());
+		pl_so.setC_Currency_ID(currency.getId().getRepoId());
 		InterfaceWrapperHelper.save(pl_so);
 
 		priceListVersion_SO = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
@@ -426,8 +427,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_PriceList pl_po = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		pl_po.setM_PricingSystem(pricingSystem_PO);
 		pl_po.setIsSOPriceList(false);
-		pl_po.setPricePrecision(currencyPrecision);
-		pl_po.setC_Currency_ID(currency.getC_Currency_ID());
+		pl_po.setPricePrecision(currencyPrecision.toInt());
+		pl_po.setC_Currency_ID(currency.getId().getRepoId());
 		InterfaceWrapperHelper.save(pl_po);
 
 		priceListVersion_PO = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
@@ -566,7 +567,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected void completeInOut(final I_M_InOut inOut)
 	{
 		inOut.setProcessed(true);
-		inOut.setDocStatus(X_C_Order.DOCSTATUS_Completed); // fake complete
+		inOut.setDocStatus(DocStatus.Completed.getCode()); // fake complete
 		InterfaceWrapperHelper.save(inOut);
 	}
 

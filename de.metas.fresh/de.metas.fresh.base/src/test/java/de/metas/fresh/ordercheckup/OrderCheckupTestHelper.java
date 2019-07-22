@@ -166,7 +166,7 @@ public class OrderCheckupTestHelper
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setIsSOTrx(true);
-		order.setM_Warehouse(warehouse);
+		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		InterfaceWrapperHelper.save(order);
 		return order;
 	}

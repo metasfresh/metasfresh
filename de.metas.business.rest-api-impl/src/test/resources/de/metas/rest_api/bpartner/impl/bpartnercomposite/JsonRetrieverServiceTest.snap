@@ -98,8 +98,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
     "contacts": [
       {
         "id": {
-          "repoId": 30,
-          "bpartnerId": 20
+          "bpartnerId": 20,
+          "userId": 30
         },
         "externalId": {
           "value": "abcde"

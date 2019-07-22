@@ -6,7 +6,7 @@ import java.util.List;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -63,7 +63,8 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 		BigDecimal result = BigDecimal.ZERO;
 		for (final I_C_Invoice invoice : invoices)
 		{
-			if (!docActionBL.isDocumentStatusOneOf(invoice, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+			final DocStatus invoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+			if(!invoiceDocStatus.isCompletedOrClosed())
 			{
 				continue;
 			}

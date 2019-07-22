@@ -13,6 +13,7 @@ import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
@@ -69,7 +70,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
 		
-		newOrder.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+		newOrder.setDocStatus(DocStatus.Drafted.getCode());
 		newOrder.setDocAction(X_C_Order.DOCACTION_Complete);
 		InterfaceWrapperHelper.save(newOrder);
 
@@ -119,28 +120,28 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 
 		final ProcessInfoParameter[] para = getParametersAsArray();
 
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
-			if (para[i].getParameter() == null)
+			String name = element.getParameterName();
+			if (element.getParameter() == null)
 			{
 				// do nothing
 			}
 			else if (name.equals("C_DocType_ID"))
 			{
-				newOrderDocTypeId = para[i].getParameterAsInt();
+				newOrderDocTypeId = element.getParameterAsInt();
 			}
 			else if (name.equals("DateOrdered"))
 			{
-				newOrderDateOrdered = para[i].getParameterAsTimestamp();
+				newOrderDateOrdered = element.getParameterAsTimestamp();
 			}
 			else if (name.equals("DocumentNo"))
 			{
-				poReference = para[i].getParameterAsString();
+				poReference = element.getParameterAsString();
 			}
 			else if (name.equals("CompleteIt"))
 			{
-				newOrderClompleteIt = para[i].getParameterAsBoolean();
+				newOrderClompleteIt = element.getParameterAsBoolean();
 			}
 			else
 			{
