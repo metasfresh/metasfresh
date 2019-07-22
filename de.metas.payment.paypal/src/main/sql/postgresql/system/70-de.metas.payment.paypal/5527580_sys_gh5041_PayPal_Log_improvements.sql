@@ -23,8 +23,3 @@ UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2019-07-19 09:45
 UPDATE AD_Column SET DDL_NoForeignKey='Y',Updated=TO_TIMESTAMP('2019-07-19 09:45:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=568357
 ;
 
--- 2019-07-19T06:46:29.800Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ CREATE TABLE public.PayPal_Log (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Order_ID NUMERIC(10), C_Payment_Reservation_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, PayPal_Log_ID NUMERIC(10) NOT NULL, PayPal_Order_ID NUMERIC(10), RequestBody TEXT, RequestHeaders TEXT, RequestMethod VARCHAR(40), RequestPath VARCHAR(2000), ResponseBody TEXT, ResponseCode NUMERIC(10), ResponseHeaders TEXT, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT PayPal_Log_Key PRIMARY KEY (PayPal_Log_ID))
-;
-
