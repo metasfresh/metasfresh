@@ -930,13 +930,15 @@ class Table extends Component {
 
       if (!rows || !rows.length) return;
 
-      rows.filter(row => row[keyProperty] === rowId).map(item => {
-        let field = item.fieldsByName[prop];
+      rows
+        .filter(row => row[keyProperty] === rowId)
+        .map(item => {
+          let field = item.fieldsByName[prop];
 
-        if (field) {
-          field.value = value;
-        }
-      });
+          if (field) {
+            field.value = value;
+          }
+        });
     }
 
     onRowEdited && onRowEdited(true);
@@ -1302,22 +1304,20 @@ class Table extends Component {
           />
         )}
 
-        {allowShortcut &&
-          !readonly && (
-            <TableContextShortcuts
-              handleToggleQuickInput={this.handleBatchEntryToggle}
-              handleToggleExpand={toggleFullScreen}
-            />
-          )}
-        {isMobileOrTablet &&
-          rows.length > MOBILE_TABLE_SIZE_LIMIT && (
-            <span className="text-danger">
-              {counterpart.translate('view.limitTo', {
-                limit: MOBILE_TABLE_SIZE_LIMIT,
-                total: rows.length,
-              })}
-            </span>
-          )}
+        {allowShortcut && !readonly && (
+          <TableContextShortcuts
+            handleToggleQuickInput={this.handleBatchEntryToggle}
+            handleToggleExpand={toggleFullScreen}
+          />
+        )}
+        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
+          <span className="text-danger">
+            {counterpart.translate('view.limitTo', {
+              limit: MOBILE_TABLE_SIZE_LIMIT,
+              total: rows.length,
+            })}
+          </span>
+        )}
       </div>
     );
   }
