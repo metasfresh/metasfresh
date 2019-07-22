@@ -1,6 +1,6 @@
 import Metasfresh from './page';
 
-class SalesInvoices extends Metasfresh {
+class _SalesInvoices extends Metasfresh {
   constructor() {
     super();
 
@@ -20,4 +20,4 @@ class SalesInvoices extends Metasfresh {
   }
 }
 
-export const salesInvoices = new SalesInvoices();
+export const salesInvoices = new _SalesInvoices();

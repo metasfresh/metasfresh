@@ -221,6 +221,36 @@ exports[`purchase - vendor spec > Create a vendor with two contacts #0`] =
         "viewEditorRenderMode": "always",
         "widgetType": "Labels"
       },
+      "M_FreightCost_ID": {
+        "displayed": true,
+        "field": "M_FreightCost_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "M_FreightCost_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
+      },
+      "M_Shipper_ID": {
+        "displayed": true,
+        "field": "M_Shipper_ID",
+        "lookupValuesStale": true,
+        "mandatory": false,
+        "readonly": false,
+        "validStatus": {
+          "fieldName": "M_Shipper_ID",
+          "initialValue": true,
+          "valid": true
+        },
+        "value": null,
+        "viewEditorRenderMode": "always",
+        "widgetType": "List"
+      },
       "URL": {
         "displayed": true,
         "field": "URL",

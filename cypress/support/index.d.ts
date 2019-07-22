@@ -3,6 +3,7 @@
 import {DocumentStatusKey, RewriteURL} from "./utils/constants";
 
 declare namespace Cypress {
+
   // noinspection JSUnusedGlobalSymbols
   interface Chainable<Subject> {
 
@@ -198,8 +199,9 @@ declare namespace Cypress {
      * @param typeList optional, default = false; use true when selecting value from a list not lookup field.
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional, default = null; specify to which URL the command expects the frontend to patch.
+     * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
      */
-    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList?: boolean, modal?: boolean, rewriteUrl?: String): Chainable<any>
+    writeIntoLookupListField(fieldName: String, partialValue: String, expectedListValue: String, typeList?: boolean, modal?: boolean, rewriteUrl?: String, skipRequest ?: boolean): Chainable<any>
 
 
     /**
@@ -254,15 +256,56 @@ declare namespace Cypress {
 
 
     /**
-     *   Select the only row in the currently selected tab
+     * Select the only row in the currently selected tab
      */
     selectSingleTabRow(): Chainable<any>
+
+    /**
+     * Clear current notifications in the UI. This is not persistent and doesn't hit the API.
+     */
+    resetNotifications(): Chainable<any>
+
+    /**
+     * Get the number of notifications displayed in the header alert element
+     *
+     * @return notificationsNumber
+     */
+    getDOMNotificationsNumber(): Chainable<number>
+
+    /**
+     * Get the notifications inbox in the app state
+     *
+     * @return notificationsNumber
+     */
+    getNotificationsInbox(): Chainable<number>
+
+    /**
+     * Select the notification modal element. Optionally look for text inside the notification.
+     *
+     * @param optionalText optional; String to look for in the notification element
+     */
+    getNotificationModal(optionalText?: string): Chainable<any>
 
     /**
      * Mark all current notifications as read in the API and reset counter.
      */
     readAllNotifications(): Chainable<any>
 
+    /**
+     * Push a new notification to the existing list
+     *
+     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
+     */
+    addNotification(notificationObject?: object): Chainable<any>
+
+    /**
+     * Clear current notifications and add a new one. Optionally set the unread count.
+     *
+     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
+     * @param unreadCount optional, default = 0; sets unread count number
+     */
+
+    newNotification(notificationObject?: object, unreadCount?: number): Chainable<any>
 
     /**
      * @param waitBeforePress optional, default 0 - wait this many milliseconds before pressing the start button
@@ -299,6 +342,16 @@ declare namespace Cypress {
 
 
     /**
+     * Wait until the current value of a checkBox (Yes/No box) is in the desired state (checked (true) or not checked (false).
+     *
+     * @param fieldName name of the field is question
+     * @param isChecked if true the checkbox should be in checked state, if false the checkbox should be unchecked
+     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     */
+    expectCheckboxValue(fieldName: string, isChecked: boolean, modal?: boolean): Chainable<any>
+
+
+    /**
      * Unset the value of a list.
      * Similar to pressing the (x) button of a list.
      *
@@ -327,6 +380,14 @@ declare namespace Cypress {
      * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
      */
     pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
+
+
+    /**
+     * Close the batch entry quickInput
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    closeBatchEntry(waitBeforePress?: number): Chainable<any>
+
 
     /**
      * Erase the contents of this field.
@@ -548,6 +609,32 @@ declare namespace Cypress {
      * from cypress/support/commands/test.js
      */
     editAddress(fieldName, addressFunction): Chainable<any>
+
+    /**
+     * Wait until a process is finished.
+     *
+     * Currently it just waits for 10 seconds, but maybe in the future backend will announce when a process is finished, and we will wait for that.
+     */
+    waitUntilProcessIsFinished(): Chainable<any>
+
+
+    /**
+     * Select the nth row in a list. Starts from 0.
+     *
+     * @param rowNumber - the row number
+     */
+    selectNthRow(rowNumber: number): Chainable<any>
+
+
+    /**
+     * Complete the current document
+     */
+    completeDocument(): Chainable<any>
+
+    /**
+     * Reactivate the current document
+     */
+    reactivateDocument(): Chainable<any>
 
   }
 }

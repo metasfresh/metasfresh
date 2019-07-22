@@ -1,19 +1,19 @@
 import Metasfresh from './page';
 
-class _SalesOrders extends Metasfresh {
+class PurchaseOrders extends Metasfresh {
   constructor() {
     super();
 
-    this.windowId = 143;
-    this.orderLineTabId = 'AD_Tab-187';
+    this.windowId = 181;
+    this.purchaseLineTabId = 'AD_Tab-293';
     this.tableRows = '.table-flex-wrapper-row';
     this.rowSelector = 'tbody tr';
     this.listHeader = '.document-list-header';
     this.selectedRows = '.row-selected';
   }
 
-  visit(recordId) {
-    cy.visitWindow(this.windowId, recordId);
+  visit() {
+    cy.visitWindow(this.windowId);
   }
 
   verifyElements() {
@@ -44,4 +44,4 @@ class _SalesOrders extends Metasfresh {
   }
 }
 
-export const salesOrders = new _SalesOrders();
+export const purchaseOrders = new PurchaseOrders();

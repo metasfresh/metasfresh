@@ -2,22 +2,23 @@ import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Sales order', function() {
-  const timestamp = new Date().getTime();
-  const customer = `CustomerTest ${timestamp}`;
-  const productName = `ProductTest ${timestamp}`;
-  const productValue = `sales_order_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const date = humanReadableNow();
+  const customer = `CustomerTest ${date}`;
+  const productName = `ProductTest ${date}`;
+  const productValue = `sales_order_test ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductCategoryValue ${date}`;
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
   const productType = 'Item';
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
       productCategoryValue,
@@ -57,7 +58,7 @@ describe('Create Sales order', function() {
       .click();
     // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
@@ -82,7 +83,7 @@ describe('Create Sales order', function() {
       .get('li')
       .eq('1')
       .click({ force: true });
-    cy.wait(8000);
+    cy.wait(10000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

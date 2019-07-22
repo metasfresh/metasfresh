@@ -1,0 +1,36 @@
+{
+    "name": "Test Warehouse",
+    "value": "Test Warehouse",
+    "locators": [
+      {
+        "x": 0,
+        "x1": 0,
+        "y": 0,
+        "z": 0,
+        "value": "Test Warehouse",
+        "isAfterPickingLocator": false
+      }
+    ],
+    "routes": [
+      {
+        "de_DE__docBaseType": "Auftrag",
+        "docBaseType": "Sales Order"
+      },
+      {
+        "de_DE__docBaseType": "Bestellung",
+        "docBaseType": "Purchase Order"
+      },
+      {
+        "de_DE__docBaseType": "Manufacturing Order",
+        "docBaseType": "Manufacturing Order"
+      },
+      {
+        "de_DE__docBaseType": "Distribution Order",
+        "docBaseType": "Distribution Order"
+      },
+      {
+        "de_DE__docBaseType": "Wareneingang",
+        "docBaseType": "Material Receipt"
+      }
+    ]
+}

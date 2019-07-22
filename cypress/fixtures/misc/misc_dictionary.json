@@ -4,6 +4,14 @@
   "docActionComplete": "Complete",
   "de_DE__docActionComplete": "Fertigstellen",
 
+  "docActionVoid": "Void",
+  "de_DE__docActionVoid": "Löschen",
+
+  "docActionReactivate": "Re-activate",
+  "de_DE__docActionReactivate": "Reaktivieren",
+
+  
+
   "docStatusCompleted": "Completed",
   "de_DE__docStatusCompleted": "Fertiggestellt",
 
@@ -12,6 +20,10 @@
 
   "docStatusDrafted": "Drafted",
   "de_DE__docStatusDrafted": "Entwurf",
+
+  "docStatusReversed": "Reversed",
+  "de_DE__docStatusReversed": "Rückgängig",
+
 
   "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
   "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
