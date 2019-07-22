@@ -31,16 +31,22 @@ class TableCell extends PureComponent {
       ? Moment(new Date(fieldValue)).format(TableCell.getDateFormat(fieldType))
       : '';
 
-  static createAmount = (fieldValue, precision) => {
+  static createAmount = (fieldValue, precision, isGerman) => {
     if (fieldValue) {
       const fieldValueAsNum = numeral(parseFloat(fieldValue));
       const numberFormat = TableCell.getAmountFormatByPrecision(precision);
-      return numberFormat
+      const returnValue = numberFormat
         ? fieldValueAsNum.format(numberFormat)
         : fieldValueAsNum.format();
-    } else {
-      return '';
+
+      // For German natives we want to show numbers with comma as a value separator
+      // https://github.com/metasfresh/me03/issues/1822
+      return isGerman && parseFloat(returnValue) != null
+        ? `${returnValue}`.replace('.', ',')
+        : returnValue;
     }
+
+    return '';
   };
 
   static createSpecialField = (fieldType, fieldValue) => {
@@ -56,12 +62,13 @@ class TableCell extends PureComponent {
     }
   };
 
-  // TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
+  // @TODO: THIS NEEDS URGENT REFACTORING, WHY THE HECK ARE WE RETURNING
   // SIX DIFFERENT TYPES OF VALUES HERE ? UBER-BAD DESIGN !
   static fieldValueToString = (
     fieldValue,
     fieldType = 'Text',
-    precision = null
+    precision = null,
+    isGerman
   ) => {
     if (fieldValue === null) {
       return '';
@@ -90,7 +97,7 @@ class TableCell extends PureComponent {
         if (DATE_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createDate(fieldValue, fieldType);
         } else if (AMOUNT_FIELD_TYPES.includes(fieldType)) {
-          return TableCell.createAmount(fieldValue, precision);
+          return TableCell.createAmount(fieldValue, precision, isGerman);
         } else if (SPECIAL_FIELD_TYPES.includes(fieldType)) {
           return TableCell.createSpecialField(fieldType, fieldValue);
         }
@@ -175,6 +182,7 @@ class TableCell extends PureComponent {
       viewId,
       modalVisible,
       onClickOutside,
+      isGerman,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
@@ -182,7 +190,8 @@ class TableCell extends PureComponent {
       ? TableCell.fieldValueToString(
           widgetData[0].value,
           item.widgetType,
-          widgetData[0].precision
+          widgetData[0].precision,
+          isGerman
         )
       : null;
     const description =
@@ -305,8 +314,10 @@ TableCell.propTypes = {
   onCellChange: PropTypes.func,
   onCellExtend: PropTypes.func,
   isEdited: PropTypes.bool,
+  isGerman: PropTypes.bool,
 };
 
 export default connect(state => ({
   modalVisible: state.windowHandler.modal.visible,
+  isGerman: state.appHandler.me.language.key.includes('de'),
 }))(TableCell);
