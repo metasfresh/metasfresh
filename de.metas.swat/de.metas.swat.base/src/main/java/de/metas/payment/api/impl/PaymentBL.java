@@ -425,7 +425,8 @@ public class PaymentBL implements IPaymentBL
 		// metas: tsa: begin: 01955:
 		// If is an zero payment and it has no allocations and the AutoPayZeroAmt flag is not set
 		// then don't touch the payment
-		if (total.signum() == 0 && !hasAllocations
+		if (total.signum() == 0 
+				&& !hasAllocations
 				&& !sysConfigBL.getBooleanValue("org.compiere.model.MInvoice.AutoPayZeroAmt", true, payment.getAD_Client_ID()))
 		{
 			// don't touch the IsAllocated flag, return not changed
@@ -443,8 +444,7 @@ public class PaymentBL implements IPaymentBL
 			payment.setIsAllocated(test);
 		}
 
-		log.debug("Allocated=" + test
-				+ " (" + alloc + "=" + total + ")");
+		log.debug("Allocated={} ({}={})", test, alloc, total);
 		return change;
 	}	// testAllocation
 
