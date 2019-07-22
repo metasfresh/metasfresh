@@ -132,13 +132,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .eq('1')
       .click({ force: true });
     cy.wait(8000);
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    // cy.get('tbody tr').should('eq', '2');
-    /**Check for purchase order candidates referenced ?? */
     /**check product name */
     cy.get('tbody tr')
       .eq('0')
@@ -152,6 +145,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('.costprice-cell')
       .eq(0)
       .contains('1.23');
+    /**check product quantity */
     cy.get('tbody tr')
       .eq('0')
       .find('.quantity-cell')
