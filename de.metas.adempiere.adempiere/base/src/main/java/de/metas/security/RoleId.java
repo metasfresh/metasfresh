@@ -37,7 +37,7 @@ import lombok.Value;
 public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
-	public static final RoleId ADMIN = new RoleId(1000000);
+	public static final RoleId JsonReports = new RoleId(540078);
 
 	@JsonCreator
 	public static RoleId ofRepoId(final int repoId)
@@ -46,9 +46,9 @@ public class RoleId implements RepoIdAware
 		{
 			return SYSTEM;
 		}
-		else if (repoId == ADMIN.getRepoId())
+		else if (repoId == JsonReports.getRepoId())
 		{
-			return ADMIN;
+			return JsonReports;
 		}
 		else
 		{
@@ -62,9 +62,9 @@ public class RoleId implements RepoIdAware
 		{
 			return SYSTEM;
 		}
-		else if (repoId == ADMIN.getRepoId())
+		else if (repoId == JsonReports.getRepoId())
 		{
-			return ADMIN;
+			return JsonReports;
 		}
 		else
 		{

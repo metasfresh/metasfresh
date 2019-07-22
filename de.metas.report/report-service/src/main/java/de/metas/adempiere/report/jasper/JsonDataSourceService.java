@@ -82,7 +82,7 @@ public class JsonDataSourceService
 	{
 		//
 		// get authorization
-		final UserAuthToken token = getUserAuhToken();
+		final UserAuthToken token = getUserAuhToken(reportContext);
 
 		//
 		// create the json data source
@@ -95,24 +95,15 @@ public class JsonDataSourceService
 		return is;
 	}
 
-	private UserAuthToken getUserAuhToken()
+	private UserAuthToken getUserAuhToken(@NonNull final ReportContext reportContext)
 	{
-		final UserId userId = Env.getLoggedUserId();
-		final RoleId roleId = Env.getLoggedRoleId();
+		final ClientId clientId = Env.getClientId();
+		final UserId userId = Services.get(IUserDAO.class).retrieveUserIdByValue(JSONREPORTS_USER_VALUE, clientId);
+		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, RoleId.JsonReports);
 
-		UserAuthToken token = userAuthTokenRepo.retrieveByUserIdOrNull(userId, roleId);
-
-		//
-		// fallback to default Jasper Json user
 		if (token == null)
 		{
-			final ClientId clientId = Env.getClientId();
-			Services.get(IUserDAO.class).retrieveUserIdByValue(JSONREPORTS_USER_VALUE, clientId);
-			token = userAuthTokenRepo.retrieveByUserIdOrNull(userId, roleId);
-			if (token == null)
-			{
-				throw new AdempiereException("Invalid token (1)");
-			}
+			throw new AdempiereException("Invalid token (1)");
 		}
 
 		return token;
