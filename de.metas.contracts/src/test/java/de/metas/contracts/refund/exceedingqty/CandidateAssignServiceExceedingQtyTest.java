@@ -58,7 +58,7 @@ public class CandidateAssignServiceExceedingQtyTest
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test

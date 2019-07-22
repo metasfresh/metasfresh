@@ -37,6 +37,7 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
@@ -111,12 +112,14 @@ public class CandidateAssignServiceExceedingQty_Percent_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools();
-
-		PlainCurrencyDAO.prepareCurrency()
+		final Currency currency = PlainCurrencyDAO.prepareCurrency()
 				.currencyId(CURRENCY_ID)
 				.currencyCode(CurrencyCode.EUR)
 				.precision(CurrencyPrecision.TWO)
+				.build();
+
+		refundTestTools = RefundTestTools.builder()
+				.currency(currency)
 				.build();
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();

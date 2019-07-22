@@ -48,7 +48,7 @@ public class AssignableInvoiceCandidateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class AssignableInvoiceCandidateTest
 				//.bpartnerId(BPartnerId.ofRepoId(20))
 				.bpartnerLocationId(billBPartnerAndLocationId)
 				.invoiceableFrom(LocalDate.now())
-				.money(Money.of(TEN, refundTestTools.getCurrency().getId()))
+				.money(Money.of(TEN, refundTestTools.getCurrencyId()))
 				.precision(2)
 				.productId(ProductId.ofRepoId(30))
 				.quantity(Quantity.of(THIRTY, refundTestTools.getUomRecord()))

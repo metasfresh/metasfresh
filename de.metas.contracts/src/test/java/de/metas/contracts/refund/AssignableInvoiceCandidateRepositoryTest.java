@@ -62,7 +62,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 
 		assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(AssignableInvoiceCandidateFactory.newForUnitTesting());
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 		assertThat(assignableCandidate.getQuantity().getUomId().getRepoId()).isEqualTo(product.getC_UOM_ID());
 		assertThat(assignableCandidate.getBpartnerLocationId().getBpartnerId().getRepoId()).isEqualTo(refundTestTools.billBPartnerLocationId.getBpartnerId().getRepoId());
 		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualTo(TWENTY);
-		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrency().getId());
+		assertThat(assignableCandidate.getMoney().getCurrencyId()).isEqualTo(refundTestTools.getCurrencyId());
 		assertThat(assignableCandidate.getInvoiceableFrom()).isEqualTo(NOW);
 	}
 
@@ -95,7 +95,7 @@ public class AssignableInvoiceCandidateRepositoryTest
 		assignableCandidateRecord.setBill_Location_ID(billBPartnerAndLocationId.getRepoId());
 		assignableCandidateRecord.setDateToInvoice(TimeUtil.asTimestamp(NOW));
 		assignableCandidateRecord.setNetAmtToInvoice(TWENTY);
-		assignableCandidateRecord.setC_Currency_ID(refundTestTools.getCurrency().getId().getRepoId());
+		assignableCandidateRecord.setC_Currency_ID(refundTestTools.getCurrencyId().getRepoId());
 		assignableCandidateRecord.setM_Product_ID(refundTestTools.getProductRecord().getM_Product_ID());
 		assignableCandidateRecord.setQtyInvoiced(TEN);
 		assignableCandidateRecord.setQtyToInvoice(FIVE);

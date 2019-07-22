@@ -72,7 +72,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
+		refundTestTools = RefundTestTools.newInstance(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
@@ -147,10 +147,10 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 
 		final RefundInvoiceCandidate refundCandidate = RefundInvoiceCandidate.builder()
 				.assignedQuantity(Quantity.of(FIVE, refundTestTools.getUomRecord()))
-				.bpartnerId(refundTestTools.BPARTNER_ID)
+				.bpartnerId(RefundTestTools.BPARTNER_ID)
 				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
-				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
+				.money(Money.of(ONE, refundTestTools.getCurrencyId()))
 				.refundConfigs(ImmutableList.of(refundContract.getRefundConfig(FIVE)))
 				.refundContract(refundContract)
 				.build();

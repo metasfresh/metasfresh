@@ -106,10 +106,8 @@ public class CandidateAssignmentServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-
 		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
-
 
 		refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
@@ -140,7 +138,7 @@ public class CandidateAssignmentServiceTest
 				refundInvoiceCandidateRepository,
 				refundConfigChangeService);
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
@@ -341,7 +339,7 @@ public class CandidateAssignmentServiceTest
 
 		assertThat(result.isUpdateWasDone()).isTrue();
 
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 
 		final AssignmentExpectation expectation = AssignmentExpectation
@@ -385,7 +383,7 @@ public class CandidateAssignmentServiceTest
 
 		assertThat(result.isUpdateWasDone()).isTrue();
 
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 
 		final AssignmentExpectation expectation = AssignmentExpectation
@@ -435,7 +433,7 @@ public class CandidateAssignmentServiceTest
 				.getById(preparedAssignableCandidates.get(TEN).getId());
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
-		final CurrencyId currentId = refundTestTools.getCurrency().getId();
+		final CurrencyId currentId = refundTestTools.getCurrencyId();
 
 		final AssignmentExpectation expectation = AssignmentExpectation
 				.builder()
@@ -486,7 +484,7 @@ public class CandidateAssignmentServiceTest
 				.getById(preparedAssignableCandidates.get(SEVEN).getId());
 
 		final I_C_UOM uom = refundTestTools.getUomRecord();
-		final CurrencyId currentId = refundTestTools.getCurrency().getId();
+		final CurrencyId currentId = refundTestTools.getCurrencyId();
 
 		final AssignmentExpectation expectation = AssignmentExpectation
 				.builder()
@@ -513,7 +511,7 @@ public class CandidateAssignmentServiceTest
 	@Test
 	public void assignCandidate_accumulatedConfig_percent1()
 	{
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 
 		final AssignableInvoiceCandidate preAssignedAssignableCandidate = refundTestTools.createAssignableCandidateStandlone(THIRTEEN);
@@ -599,7 +597,7 @@ public class CandidateAssignmentServiceTest
 				THREE, // assignedQty
 				ImmutableList.of( // individualAssignments
 						new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final I_C_UOM uom = refundTestTools.getUomRecord();
 
 		//
@@ -677,7 +675,7 @@ public class CandidateAssignmentServiceTest
 			@NonNull final BigDecimal assignedQty,
 			@Nullable final List<IndividualTestAssignment> individualAssignments)
 	{
-		final CurrencyId currencyId = refundTestTools.getCurrency().getId();
+		final CurrencyId currencyId = refundTestTools.getCurrencyId();
 		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate(refundContract)
 				.toBuilder()
 				.money(Money.of(ONE, currencyId))
