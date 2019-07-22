@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.email.EMailAddress;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_Shipper_Config;
 import de.metas.util.Services;
 
@@ -80,6 +81,7 @@ public class DerKurierShipperConfigRepositoryTest
 
 		final I_AD_MailBox mailbox = newInstance(I_AD_MailBox.class);
 		mailbox.setSMTPHost("smtphost");
+		mailbox.setEMail("from@metasfresh.com");
 		save(mailbox);
 
 		configRecord.setAD_MailBox_ID(mailbox.getAD_MailBox_ID());
@@ -93,7 +95,7 @@ public class DerKurierShipperConfigRepositoryTest
 		assertThat(config.getCustomerNumber()).isEqualTo("1234");
 		assertThat(config.getRestApiBaseUrl()).isEqualTo("https://testurl");
 		assertThat(config.getDeliveryOrderMailBoxOrNull().getSmtpHost()).isEqualTo("smtphost");
-		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo("we@us.test");
+		assertThat(config.getDeliveryOrderRecipientEmailOrNull()).isEqualTo(EMailAddress.ofString("we@us.test"));
 
 		final ParcelNumberGenerator parcelNumberGenerator = config.getParcelNumberGenerator();
 		assertThat(parcelNumberGenerator.getAdSequenceId()).isEqualTo(sequenceRecord.getAD_Sequence_ID());

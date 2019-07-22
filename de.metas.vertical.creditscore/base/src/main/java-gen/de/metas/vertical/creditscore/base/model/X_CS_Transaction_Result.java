@@ -65,10 +65,14 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		}
 	}
 
 	/** Get Geschäftspartner.
@@ -79,7 +83,9 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -102,10 +108,14 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -116,7 +126,9 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -139,10 +151,14 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_Order_ID (int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Order_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+		}
 	}
 
 	/** Get Auftrag.
@@ -153,7 +169,9 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -162,10 +180,14 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	@Override
 	public void setCS_Transaction_Result_ID (int CS_Transaction_Result_ID)
 	{
-		if (CS_Transaction_Result_ID < 1) 
+		if (CS_Transaction_Result_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_CS_Transaction_Result_ID, Integer.valueOf(CS_Transaction_Result_ID));
+		}
 	}
 
 	/** Get CS_Transaction_Result.
@@ -175,29 +197,31 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CS_Transaction_Result_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
-	/** 
-	 * PaymentRule AD_Reference_ID=195
-	 * Reference name: _Payment Rule
-	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** 
+//	 * PaymentRule AD_Reference_ID=195
+//	 * Reference name: _Payment Rule
+//	 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** CreditCard = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** DirectDeposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** OnCredit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** DirectDebit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird
@@ -249,7 +273,9 @@ public class X_CS_Transaction_Result extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_RequestPrice);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 

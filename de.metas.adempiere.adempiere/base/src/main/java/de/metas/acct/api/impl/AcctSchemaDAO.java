@@ -20,7 +20,6 @@ import org.compiere.model.I_C_AcctSchema_CostElement;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.MColumn;
 import org.compiere.report.MReportTree;
 import org.compiere.util.DB;
@@ -49,6 +48,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
@@ -148,14 +148,12 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 	private AcctSchema toAcctSchema(@NonNull final I_C_AcctSchema acctSchemaRecord)
 	{
-		final Properties ctx = Env.getCtx();
-
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 
 		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchemaRecord.getC_Currency_ID());
-		final I_C_Currency acctCurrency = Services.get(ICurrencyDAO.class).retrieveCurrency(ctx, acctCurrencyId.getRepoId());
-		final CurrencyPrecision standardPrecision = CurrencyPrecision.ofInt(acctCurrency.getStdPrecision());
-		final CurrencyPrecision costingPrecision = CurrencyPrecision.ofInt(acctCurrency.getCostingPrecision());
+		final Currency acctCurrency = Services.get(ICurrencyDAO.class).getById(acctCurrencyId);
+		final CurrencyPrecision standardPrecision = acctCurrency.getPrecision();
+		final CurrencyPrecision costingPrecision = acctCurrency.getCostingPrecision();
 
 		final I_C_AcctSchema_GL acctSchemaGL = retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
 		if (acctSchemaGL == null)

@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -189,7 +190,7 @@ import lombok.NonNull;
 
 	private static List<Object> createCommonMessageParams(@NonNull final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 		return ImmutableList.of(TableRecordReference.of(order), bpValue, bpName);

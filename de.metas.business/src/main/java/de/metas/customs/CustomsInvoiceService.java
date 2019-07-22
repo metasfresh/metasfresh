@@ -227,12 +227,11 @@ public class CustomsInvoiceService
 		final Money priceActual = orderLine.getPriceActual();
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-				Env.getCtx(),
 				priceActual.getAsBigDecimal(),
-				priceActual.getCurrencyId().getRepoId(),
-				currencyId.getRepoId(),
-				Env.getAD_Client_ID(),
-				Env.getOrgId().getRepoId());
+				priceActual.getCurrencyId(),
+				currencyId,
+				Env.getClientId(),
+				Env.getOrgId());
 
 		if (shipmentLinePriceConverted == null)
 		{

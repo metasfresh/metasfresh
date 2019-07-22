@@ -13,15 +13,14 @@ package de.metas.banking.payment.paymentallocation.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -31,17 +30,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.search.FindHelper;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -58,6 +54,8 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -70,17 +68,12 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 	{
 		final StringBuilder sql = new StringBuilder();
 		final List<Object> sqlParams = new ArrayList<>();
-		
+
 		sql.append("SELECT * FROM GetOpenPayments(?, ?, ?, ?, ?, ?)");
 		sqlParams.addAll(Arrays.asList(
-				context.getC_BPartner_ID()
-				, context.getC_Currency_ID()
-				, context.isMultiCurrency()
-				, context.getAD_Org_ID()
-				, context.getDate()
-				, null // c_payment_id
-				));
-		
+				context.getC_BPartner_ID(), context.getC_Currency_ID(), context.isMultiCurrency(), context.getAD_Org_ID(), context.getDate(), null // c_payment_id
+		));
+
 		final int filterPaymentId = context.getFilter_Payment_ID();
 		if (filterPaymentId > 0)
 		{
@@ -96,12 +89,8 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 			sql.append(" SELECT * FROM GetOpenPayments(?, ?, ?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null // don't filter by BPartner context.getC_BPartner_ID()
-					, context.getC_Currency_ID()
-					, context.isMultiCurrency()
-					, context.getAD_Org_ID()
-					, context.getDate()
-					, paymentId // c_payment_id
-					));
+					, context.getC_Currency_ID(), context.isMultiCurrency(), context.getAD_Org_ID(), context.getDate(), paymentId // c_payment_id
+			));
 		}
 
 		//
@@ -167,7 +156,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setPaymentDate(rs.getTimestamp("paymentdate"))
 				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
-				.setCurrencyISOCode(rs.getString("iso_code"))
+				.setCurrencyISOCode(getCurrencyCode(rs, "iso_code"))
 				// Amounts
 				// NOTE: we assume the amounts were already AP adjusted, so we are converting them back to relative values (i.e. not AP adjusted)
 				.setMultiplierAP(multiplierAP)
@@ -188,15 +177,10 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		// Main query
 		sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
 		sqlParams.addAll(Arrays.asList(
-				context.getC_BPartner_ID()
-				, context.getC_Currency_ID()
-				, context.isMultiCurrency()
-				, context.getAD_Org_ID()
-				, context.getDate()
-				, null // C_Invoice_ID
+				context.getC_BPartner_ID(), context.getC_Currency_ID(), context.isMultiCurrency(), context.getAD_Org_ID(), context.getDate(), null // C_Invoice_ID
 				, null // C_Order_ID
-				));
-		
+		));
+
 		final String filterPOReference = context.getFilterPOReference();
 		if (!Check.isEmpty(filterPOReference, true))
 		{
@@ -212,13 +196,9 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null // no C_BPartner_ID
-					, context.getC_Currency_ID()
-					, context.isMultiCurrency()
-					, context.getAD_Org_ID()
-					, context.getDate()
-					, invoiceId // C_Invoice_ID
+					, context.getC_Currency_ID(), context.isMultiCurrency(), context.getAD_Org_ID(), context.getDate(), invoiceId // C_Invoice_ID
 					, null // C_Order_ID
-					));
+			));
 		}
 
 		//
@@ -229,13 +209,9 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null // no C_BPartner_ID
-					, context.getC_Currency_ID()
-					, context.isMultiCurrency()
-					, context.getAD_Org_ID()
-					, context.getDate()
-					, null // C_Invoice_ID
+					, context.getC_Currency_ID(), context.isMultiCurrency(), context.getAD_Org_ID(), context.getDate(), null // C_Invoice_ID
 					, orderId // C_Order_ID
-					));
+			));
 		}
 
 		//
@@ -306,7 +282,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 
 		final String documentNo = rs.getString("docno");
-		
+
 		//
 		// Fetch amounts
 		// NOTE: we assume those amounts are already CreditMemo adjusted but not AP adjusted
@@ -340,22 +316,17 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		}
 
 		// NOTE: because this takes some time to calculate and it's not always needed, we use a supplier to calculate the value only if needed.
-		final Supplier<BigDecimal> paymentRequestAmtSupplier = Suppliers.memoize(new Supplier<BigDecimal>()
-		{
-			@Override
-			public BigDecimal get()
+		final Supplier<BigDecimal> paymentRequestAmtSupplier = Suppliers.memoize(() -> {
+			try
 			{
-				try
-				{
-					return getPaymentRequestSum(invoiceId);
-				}
-				catch (Exception e)
-				{
-					// NOTE: we are catching the exception, logging it and return ZERO,
-					// because there is a big chance this method will be invoked from UI and we don't want to fail there...
-					logger.warn(e.getLocalizedMessage(), e);
-					return BigDecimal.ZERO;
-				}
+				return getPaymentRequestSum(invoiceId);
+			}
+			catch (Exception e)
+			{
+				// NOTE: we are catching the exception, logging it and return ZERO,
+				// because there is a big chance this method will be invoked from UI and we don't want to fail there...
+				logger.warn(e.getLocalizedMessage(), e);
+				return BigDecimal.ZERO;
 			}
 		});
 
@@ -368,7 +339,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setBPartnerName(rs.getString("bpartnername"))
 				.setDateInvoiced(rs.getTimestamp("invoicedate"))
 				.setDateAcct(rs.getTimestamp("dateacct")) // task 09643
-				.setCurrencyISOCode(rs.getString("iso_code"))
+				.setCurrencyISOCode(getCurrencyCode(rs, "iso_code"))
 				.setGrandTotal(grandTotalOrig)
 				.setGrandTotalConv(grandTotal)
 				.setOpenAmtConv(openAmt)
@@ -379,6 +350,14 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				.setIsPrepayOrder(isPrePayOrder)
 				.setPOReference(rs.getString("POReference"))
 				.build();
+	}
+
+	private CurrencyCode getCurrencyCode(final ResultSet rs, final String columnName) throws SQLException
+	{
+		final String code = rs.getString(columnName);
+		return !Check.isEmpty(code, true)
+				? CurrencyCode.ofThreeLetterCode(code)
+				: null;
 	}
 
 	private final BigDecimal getPaymentRequestSum(final int invoiceId)
@@ -428,8 +407,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 				"AND Processed = 'N'" +
 				"AND IsError = 'N'" +
 				"AND IsInDispute = 'N'" +
-				"ORDER BY ic.DateInvoiced, COALESCE(ic.DateToInvoice_Override, ic.DateToInvoice) "
-				);
+				"ORDER BY ic.DateInvoiced, COALESCE(ic.DateToInvoice_Override, ic.DateToInvoice) ");
 		logger.debug("InvSQL=" + sql.toString());
 
 		// role security
@@ -445,10 +423,7 @@ public class PaymentAllocationFormDAO implements IPaymentAllocationFormDAO
 		{
 			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, new Object[] {
-					context.getAD_Org_ID()
-					, context.getC_BPartner_ID()
-					, context.getC_Currency_ID()
-					, context.getDate()
+					context.getAD_Org_ID(), context.getC_BPartner_ID(), context.getC_Currency_ID(), context.getDate()
 			});
 
 			rs = pstmt.executeQuery();

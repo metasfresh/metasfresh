@@ -16,7 +16,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -35,12 +34,16 @@ import org.junit.Test;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.freighcost.FreightCostRepository;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.freighcost.FreightCostService;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
@@ -117,9 +120,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -136,7 +139,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -150,7 +153,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -189,9 +192,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -207,7 +210,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -215,7 +218,7 @@ public class FreightCostTest
 		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
 		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1);
 
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
@@ -235,7 +238,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -274,9 +277,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -292,7 +295,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -300,7 +303,7 @@ public class FreightCostTest
 		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
 		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1);
 
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
@@ -320,7 +323,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -354,9 +357,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -372,7 +375,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -380,7 +383,7 @@ public class FreightCostTest
 		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
 		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1);
 
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
@@ -400,7 +403,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -434,9 +437,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -452,7 +455,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -460,7 +463,7 @@ public class FreightCostTest
 		final I_M_PricingSystem pricingSystem = createPricingSystem("PricingSystem");
 		order1.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 
-		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1.getC_Currency_ID());
+		final I_M_PriceList pricelist = createPriceList(pricingSystem.getM_PricingSystem_ID(), currency1);
 
 		final I_C_TaxCategory taxCategory1 = createTaxCategory("TaxCategory1", country1.getC_Country_ID());
 
@@ -480,7 +483,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -514,9 +517,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -533,7 +536,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -547,7 +550,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				TEN,
 				FIVE);
@@ -585,9 +588,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -606,13 +609,13 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				N100,
 				TEN);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				N200,
 				FIVE);
@@ -625,7 +628,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N150,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		orderFreightCostsService.addFreightRateLineIfNeeded(order1);
@@ -653,7 +656,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N99,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		orderFreightCostsService.addFreightRateLineIfNeeded(order2);
@@ -681,7 +684,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				N201,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Shipper.getCode());
 
 		orderFreightCostsService.addFreightRateLineIfNeeded(order3);
@@ -716,9 +719,9 @@ public class FreightCostTest
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		save(partner1);
 
-		final I_C_Currency currency1 = createCurrency("Currency1");
+		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
 
-		final I_C_Country country1 = createCountry("Country1", currency1.getC_Currency_ID());
+		final I_C_Country country1 = createCountry("Country1", currency1);
 
 		final I_C_BPartner_Location location1 = createBPartnerLocation(partner1.getC_BPartner_ID(), country1.getC_Country_ID());
 
@@ -735,7 +738,7 @@ public class FreightCostTest
 				product1.getM_Product_ID(),
 				uom1.getC_UOM_ID(),
 				TEN,
-				currency1.getC_Currency_ID(),
+				currency1,
 				DeliveryViaRule.Pickup.getCode());
 
 		final I_M_Product freightCostProduct = createProduct("FreightCostProduct", uom1.getC_UOM_ID(), productCategory.getM_Product_Category_ID());
@@ -749,7 +752,7 @@ public class FreightCostTest
 				validForm);
 
 		createFreightCostDetail(country1.getC_Country_ID(),
-				currency1.getC_Currency_ID(),
+				currency1,
 				freightCostShipper.getM_FreightCostShipper_ID(),
 				ZERO,
 				ZERO);
@@ -800,21 +803,20 @@ public class FreightCostTest
 		return shipper;
 	}
 
-	private I_C_Currency createCurrency(final String name)
+	private CurrencyId createCurrency(final CurrencyCode code)
 	{
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		currency.setCurSymbol(name);
+		final Currency currency = PlainCurrencyDAO.prepareCurrency()
+				.currencyCode(code)
+				.build();
 
-		save(currency);
-
-		return currency;
+		return currency.getId();
 	}
 
-	private I_C_Country createCountry(final String countryName, final int currencyId)
+	private I_C_Country createCountry(final String countryName, final CurrencyId currencyId)
 	{
 		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setName(countryName);
-		country.setC_Currency_ID(currencyId);
+		country.setC_Currency_ID(currencyId.getRepoId());
 
 		save(country);
 
@@ -882,7 +884,7 @@ public class FreightCostTest
 			final int productId,
 			final int uomId,
 			final BigDecimal price,
-			final int currencyId,
+			final CurrencyId currencyId,
 			final String deliveryViaRule)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
@@ -893,7 +895,7 @@ public class FreightCostTest
 		order.setFreightCostRule(freightCostRule);
 		order.setDeliveryViaRule(deliveryViaRule);
 		order.setFreightAmt(freightAmt);
-		order.setC_Currency_ID(currencyId);
+		order.setC_Currency_ID(currencyId.getRepoId());
 		order.setDateOrdered(SystemTime.asDayTimestamp());
 
 		save(order);
@@ -903,7 +905,7 @@ public class FreightCostTest
 		orderLine.setM_Product_ID(productId);
 		orderLine.setC_UOM_ID(uomId);
 		orderLine.setC_Order_ID(order.getC_Order_ID());
-		orderLine.setC_Currency_ID(currencyId);
+		orderLine.setC_Currency_ID(currencyId.getRepoId());
 		orderLine.setPriceEntered(price);
 		orderLine.setPriceActual(price);
 		orderLine.setQtyEntered(ONE);
@@ -941,15 +943,16 @@ public class FreightCostTest
 
 	}
 
-	private I_M_FreightCostDetail createFreightCostDetail(final int countryId,
-			final int currencyId,
+	private I_M_FreightCostDetail createFreightCostDetail(
+			final int countryId,
+			final CurrencyId currencyId,
 			final int freightCostShipperId,
 			final BigDecimal shipmentValueAmt,
 			final BigDecimal freightAmt)
 	{
 		final I_M_FreightCostDetail freightCostDetail = newInstance(I_M_FreightCostDetail.class);
 		freightCostDetail.setC_Country_ID(countryId);
-		freightCostDetail.setC_Currency_ID(currencyId);
+		freightCostDetail.setC_Currency_ID(currencyId.getRepoId());
 		freightCostDetail.setM_FreightCostShipper_ID(freightCostShipperId);
 		freightCostDetail.setShipmentValueAmt(shipmentValueAmt);
 		freightCostDetail.setFreightAmt(freightAmt);
@@ -970,11 +973,11 @@ public class FreightCostTest
 		return pricingSystem;
 	}
 
-	private I_M_PriceList createPriceList(final int pricingSystemId, final int currencyId)
+	private I_M_PriceList createPriceList(final int pricingSystemId, final CurrencyId currencyId)
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
 		priceList.setM_PricingSystem_ID(pricingSystemId);
-		priceList.setC_Currency_ID(currencyId);
+		priceList.setC_Currency_ID(currencyId.getRepoId());
 		priceList.setIsSOPriceList(true);
 
 		save(priceList);

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_GL_Distribution;
 import org.compiere.model.I_GL_DistributionLine;
 import org.compiere.util.Env;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.gldistribution.GLDistributionResultLine.Sign;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -67,7 +67,7 @@ public class GLDistributionBuilder
 	private Sign _amountSign = Sign.DETECT;
 	private BigDecimal _qtyToDistribute;
 	private CurrencyId _currencyId;
-	private Integer _precision;
+	private CurrencyPrecision _precision;
 	private AccountDimension _accountDimension;
 
 	private GLDistributionBuilder()
@@ -172,9 +172,11 @@ public class GLDistributionBuilder
 		//
 		// Calculate Amount
 		{
-			final int precision = getPrecision();
+			final CurrencyPrecision precision = getPrecision();
 			final BigDecimal amountToDistribute = getAmountToDistribute();
-			final BigDecimal amt = amountToDistribute.multiply(percent).divide(Env.ONEHUNDRED, precision, BigDecimal.ROUND_HALF_UP);
+			final BigDecimal amt = amountToDistribute
+					.multiply(percent)
+					.divide(Env.ONEHUNDRED, precision.toInt(), precision.getRoundingMode());
 			resultLine.setAmount(amt);
 			resultLine.setAmountSign(getAmountSign());
 			resultLine.setCurrencyId(getCurrencyId());
@@ -281,16 +283,6 @@ public class GLDistributionBuilder
 		return _glDistribution;
 	}
 
-	private final Properties getCtx()
-	{
-		if (_ctx == null)
-		{
-			final I_GL_Distribution glDistribution = getGLDistribution();
-			_ctx = InterfaceWrapperHelper.getCtx(glDistribution);
-		}
-		return _ctx;
-	}
-
 	private List<I_GL_DistributionLine> getGLDistributionLines()
 	{
 		final I_GL_Distribution glDistribution = getGLDistribution();
@@ -310,11 +302,11 @@ public class GLDistributionBuilder
 		return _currencyId;
 	}
 
-	private final int getPrecision()
+	private final CurrencyPrecision getPrecision()
 	{
 		if (_precision == null)
 		{
-			_precision = currencyDAO.getStdPrecision(getCtx(), getCurrencyId().getRepoId());
+			_precision = currencyDAO.getStdPrecision(getCurrencyId());
 		}
 		return _precision;
 	}

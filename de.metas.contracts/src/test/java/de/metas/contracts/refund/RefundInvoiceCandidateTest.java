@@ -55,7 +55,7 @@ public class RefundInvoiceCandidateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	/**
@@ -87,7 +87,7 @@ public class RefundInvoiceCandidateTest
 				.bpartnerId(BPARTNER_ID)
 				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
-				.money(Money.of(ONE, refundTestTools.getCurrency().getId()))
+				.money(Money.of(ONE, refundTestTools.getCurrencyId()))
 				.refundContract(refundContract)
 				.build();
 

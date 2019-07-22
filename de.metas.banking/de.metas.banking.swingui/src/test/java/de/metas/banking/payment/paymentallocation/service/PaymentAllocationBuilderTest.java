@@ -59,7 +59,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.model.I_C_Payment;
 import de.metas.banking.payment.paymentallocation.impl.PaymentAllocationBL;
@@ -68,7 +67,12 @@ import de.metas.banking.payment.paymentallocation.model.IInvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.IPaymentRow;
 import de.metas.banking.payment.paymentallocation.model.InvoiceRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentRow;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.IDocument;
+import de.metas.money.CurrencyId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -79,6 +83,7 @@ public class PaymentAllocationBuilderTest
 	private IAllocationDAO allocationDAO;
 	private IPaymentDAO paymentDAO;
 	private IInvoiceBL invoiceBL;
+	private CurrencyRepository currenciesRepo;
 
 	private final Properties ctx = Env.getCtx();
 
@@ -88,7 +93,7 @@ public class PaymentAllocationBuilderTest
 	private final int adOrgId = 1000000; // just a dummy value
 	final int bpartnerId = 1; // dummy value
 
-	private I_C_Currency currency;
+	private Currency currency;
 
 	private static final boolean IsReceipt_Yes = true;
 	private static final boolean IsReceipt_No = false;
@@ -102,11 +107,9 @@ public class PaymentAllocationBuilderTest
 		allocationDAO = Services.get(IAllocationDAO.class);
 		paymentDAO = Services.get(IPaymentDAO.class);
 		invoiceBL = Services.get(IInvoiceBL.class);
+		currenciesRepo = new CurrencyRepository();
 
-		currency = InterfaceWrapperHelper.create(ctx, I_C_Currency.class, ITrx.TRXNAME_None);
-		currency.setC_Currency_ID(318);
-		currency.setISO_Code("CHF");
-		InterfaceWrapperHelper.save(currency);
+		currency = PlainCurrencyDAO.createCurrency(CurrencyCode.CHF);
 
 		setAllowSalesPurchaseInvoiceCompensation(true);
 	}
@@ -503,7 +506,7 @@ public class PaymentAllocationBuilderTest
 		return PaymentAllocationBuilder.newBuilder()
 				.setCtx(ctx)
 				.setAD_Org_ID(adOrgId)
-				.setC_Currency_ID(currency.getC_Currency_ID())
+				.setC_Currency_ID(currency.getId().getRepoId())
 				.setDateTrx(date)
 				.setDateAcct(date)  // task 09643. Leaving this date also as current date. will be changed later if needed
 				;
@@ -552,7 +555,7 @@ public class PaymentAllocationBuilderTest
 		invoice.setIsSOTrx(docType.isSOTrx());
 		invoice.setDateInvoiced(TimeUtil.asTimestamp(date));
 		invoice.setC_BPartner_ID(bpartnerId);
-		invoice.setC_Currency(currency);
+		invoice.setC_Currency_ID(currency.getId().getRepoId());
 		invoice.setGrandTotal(openAmt);
 		invoice.setProcessed(true);
 		invoice.setDocStatus(IDocument.STATUS_Completed);
@@ -570,7 +573,7 @@ public class PaymentAllocationBuilderTest
 				.setMultiplierAP(invoiceType.getMultiplierAP()) // Vendor/Customer multiplier
 				.setCreditMemo(invoiceType.isCreditMemo())
 				//
-				.setCurrencyISOCode(invoice.getC_Currency().getISO_Code())
+				.setCurrencyISOCode(extractCurrencyCode(invoice))
 				.setGrandTotal(openAmt_CMAdjusted)
 				.setGrandTotalConv(openAmt_CMAdjusted)
 				.setOpenAmtConv(openAmt_CMAdjusted)
@@ -584,6 +587,13 @@ public class PaymentAllocationBuilderTest
 
 		return invoiceRow;
 	}
+	
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
+	}
+
 
 	private final LoadingCache<InvoiceType, I_C_DocType> invoiceType2docType = CacheBuilder.newBuilder()
 			.build(new CacheLoader<InvoiceType, I_C_DocType>()
@@ -637,7 +647,7 @@ public class PaymentAllocationBuilderTest
 				.setDocTypeName(isReceipt ? "Receipt" : "Payment")
 				.setMultiplierAP(multiplierAP)
 				//
-				.setCurrencyISOCode(currency.getISO_Code())
+				.setCurrencyISOCode(currency.getCurrencyCode())
 				.setPayAmt(openAmt)
 				.setPayAmtConv(openAmt)
 				.setOpenAmtConv(openAmt)
@@ -650,7 +660,7 @@ public class PaymentAllocationBuilderTest
 		// Create a dummy record (needed for the BL which calculates how much was allocated)
 		final I_C_Payment payment = InterfaceWrapperHelper.create(ctx, I_C_Payment.class, ITrx.TRXNAME_None);
 		payment.setC_Payment_ID(paymentId);
-		payment.setC_Currency(currency);
+		payment.setC_Currency_ID(currency.getId().getRepoId());
 		InterfaceWrapperHelper.save(payment);
 
 		return paymentRow;

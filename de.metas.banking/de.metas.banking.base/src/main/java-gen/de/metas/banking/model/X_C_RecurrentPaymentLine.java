@@ -1,27 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.banking.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-
-import org.compiere.util.Env;
 
 /** Generated Model for C_RecurrentPaymentLine
  *  @author Adempiere (generated) 
@@ -33,7 +15,7 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1979186601L;
+	private static final long serialVersionUID = -529131929L;
 
     /** Standard Constructor */
     public X_C_RecurrentPaymentLine (Properties ctx, int C_RecurrentPaymentLine_ID, String trxName)
@@ -43,16 +25,14 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
         {
 			setC_BP_BankAccount_ID (0);
 			setC_BP_BankAccount_Own_ID (0);
-			setC_Currency_ID (0);
-// @C_Currency_ID@
+			setC_Currency_ID (0); // @C_Currency_ID@
 			setC_PaymentTerm_ID (0);
 			setC_RecurrentPayment_ID (0);
 			setC_RecurrentPaymentLine_ID (0);
 			setDateFrom (new Timestamp( System.currentTimeMillis() ));
 			setFrequency (0);
 			setFrequencyType (null);
-			setPayAmt (Env.ZERO);
-// 0
+			setPayAmt (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -62,42 +42,14 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    @Override
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
     @Override
     protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_C_RecurrentPaymentLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
-	}
 
 	/** Set Ansprechpartner.
 		@param AD_User_ID 
@@ -106,7 +58,7 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -125,7 +77,7 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -161,16 +113,8 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public org.compiere.util.KeyNamePair getKeyNamePair() 
-    {
-        return new org.compiere.util.KeyNamePair(get_ID(), String.valueOf(getC_BP_BankAccount_ID()));
-    }
-
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount_Own() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount_Own()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_Own_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -204,7 +148,7 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -240,18 +184,6 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
-	}
-
 	/** Set Currency.
 		@param C_Currency_ID 
 		The Currency for this record
@@ -278,7 +210,7 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
 	}
@@ -289,9 +221,9 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
-	/** Set Payment Term.
+	/** Set Zahlungsbedingung.
 		@param C_PaymentTerm_ID 
-		The terms of Payment (timing, discount)
+		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
@@ -302,8 +234,8 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Payment Term.
-		@return The terms of Payment (timing, discount)
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public int getC_PaymentTerm_ID () 
@@ -315,15 +247,15 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public I_C_RecurrentPayment getC_RecurrentPayment() throws RuntimeException
+	public de.metas.banking.model.I_C_RecurrentPayment getC_RecurrentPayment()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_RecurrentPayment_ID, I_C_RecurrentPayment.class);
+		return get_ValueAsPO(COLUMNNAME_C_RecurrentPayment_ID, de.metas.banking.model.I_C_RecurrentPayment.class);
 	}
 
 	@Override
-	public void setC_RecurrentPayment(I_C_RecurrentPayment C_RecurrentPayment)
+	public void setC_RecurrentPayment(de.metas.banking.model.I_C_RecurrentPayment C_RecurrentPayment)
 	{
-		set_ValueFromPO(COLUMNNAME_C_RecurrentPayment_ID, I_C_RecurrentPayment.class, C_RecurrentPayment);
+		set_ValueFromPO(COLUMNNAME_C_RecurrentPayment_ID, de.metas.banking.model.I_C_RecurrentPayment.class, C_RecurrentPayment);
 	}
 
 	/** Set Recurrent Payment.
@@ -509,26 +441,12 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PayAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
-	{
-		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
-	}
-
-	/** Set Sales Representative.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -538,9 +456,8 @@ public class X_C_RecurrentPaymentLine extends org.compiere.model.PO implements I
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Sales Representative.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{

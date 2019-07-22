@@ -24,10 +24,10 @@ package de.metas.invoicecandidate.api.impl;
 
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Order;
 
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.IAggregationFactory;
@@ -36,10 +36,11 @@ import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -107,8 +108,9 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
-		final I_C_Order prepayOrder = ic.getC_Order();
-		if (prepayOrder !=null  && Services.get(IDocTypeBL.class).isPrepay(prepayOrder.getC_DocType())
+		final OrderId prepayOrderId = OrderId.ofRepoIdOrNull(ic.getC_Order_ID());
+		if (prepayOrderId !=null 
+				&& Services.get(IOrderBL.class).isPrepay(prepayOrderId)
 				&& X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header.equals(aggregationUsageLevel))
 		{
 			return invoiceAggregationFactory.getPrepayOrderAggregationKeyBuilder(ctx);
@@ -133,7 +135,7 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 			return false;
 		}
 
-		final boolean same = Check.equals(aggregationKey1, aggregationKey2);
+		final boolean same = Objects.equals(aggregationKey1, aggregationKey2);
 		return same;
 	}
 }

@@ -38,8 +38,10 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class DefaultPaymentBuilder implements IBuilder
 {
@@ -49,26 +51,26 @@ public class DefaultPaymentBuilder implements IBuilder
 	private String _docbaseType;
 	private boolean _built = false;
 
-	public enum TenderType
-	{
-		ACH("A"),
-		CREDIT_CARD("C"),
-		DIRECT_DEBIT("D"),
-		CASH("X");
-
-		private final String name;
-
-		private TenderType(String name)
-		{
-			this.name = name;
-		}
-
-		@Override
-		public String toString()
-		{
-			return name;
-		}
-	}
+//	public enum TenderType
+//	{
+//		ACH("A"),
+//		CREDIT_CARD("C"),
+//		DIRECT_DEBIT("D"),
+//		CASH("X");
+//
+//		private final String name;
+//
+//		private TenderType(String name)
+//		{
+//			this.name = name;
+//		}
+//
+//		@Override
+//		public String toString()
+//		{
+//			return name;
+//		}
+//	}
 
 	public DefaultPaymentBuilder(final Object contextProvider)
 	{
@@ -254,10 +256,10 @@ public class DefaultPaymentBuilder implements IBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder setTenderType(TenderType tenderType)
+	public final DefaultPaymentBuilder setTenderType(@NonNull final TenderType tenderType)
 	{
 		assertNotBuilt();
-		payment.setTenderType(tenderType.toString());
+		payment.setTenderType(tenderType.getCode());
 		return this;
 	}
 

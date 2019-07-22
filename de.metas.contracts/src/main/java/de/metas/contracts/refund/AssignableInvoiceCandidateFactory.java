@@ -10,7 +10,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -19,7 +18,8 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -58,6 +58,7 @@ import lombok.NonNull;
 public class AssignableInvoiceCandidateFactory
 {
 	private final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository;
+	private final CurrencyRepository currenciesRepo;
 
 	@VisibleForTesting
 	public static AssignableInvoiceCandidateFactory newForUnitTesting()
@@ -70,19 +71,22 @@ public class AssignableInvoiceCandidateFactory
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = new RefundInvoiceCandidateRepository(refundContractRepository, refundInvoiceCandidateFactory);
 		final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository = new AssignmentToRefundCandidateRepository(refundInvoiceCandidateRepository);
 
-		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository);
+		final CurrencyRepository currenciesRepo = new CurrencyRepository();
+		
+		return new AssignableInvoiceCandidateFactory(assignmentToRefundCandidateRepository, currenciesRepo);
 	}
 
-	public AssignableInvoiceCandidateFactory(@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository)
+	public AssignableInvoiceCandidateFactory(
+			@NonNull final AssignmentToRefundCandidateRepository assignmentToRefundCandidateRepository,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.assignmentToRefundCandidateRepository = assignmentToRefundCandidateRepository;
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */
 	public AssignableInvoiceCandidate ofRecord(@Nullable final I_C_Invoice_Candidate assignableRecord)
 	{
-		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(assignableRecord.getC_Invoice_Candidate_ID());
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(assignableRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -90,9 +94,8 @@ public class AssignableInvoiceCandidateFactory
 				.getNetAmtInvoiced()
 				.add(assignableRecord.getNetAmtToInvoice());
 
-		final I_C_Currency currencyRecord = currencyDAO.getById(CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID()));
-		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
-		final int precision = currencyRecord.getStdPrecision();
+		final CurrencyId currencyId = CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID());
+		final CurrencyPrecision precision = currenciesRepo.getStdPrecision(currencyId);
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
 
 		final Quantity quantity = extractQuantity(assignableRecord);
@@ -105,7 +108,7 @@ public class AssignableInvoiceCandidateFactory
 				.bpartnerLocationId(BPartnerLocationId.ofRepoId(assignableRecord.getBill_BPartner_ID(),assignableRecord.getBill_Location_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
-				.precision(precision)
+				.precision(precision.toInt())
 				.quantity(quantity)
 				.quantityOld(quantityOld)
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))

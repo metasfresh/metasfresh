@@ -193,8 +193,8 @@ public class CostingService implements ICostingService
 		final CurrencyConversionResult amtConversionResult = currencyConversionBL.convert(
 				conversionCtx,
 				request.getAmt().getValue(),
-				request.getAmt().getCurrencyId().getRepoId(),
-				acctCurrencyId.getRepoId());
+				request.getAmt().getCurrencyId(),
+				acctCurrencyId);
 
 		return request.withAmount(CostAmount.of(amtConversionResult.getAmount(), acctCurrencyId));
 	}

@@ -15,7 +15,7 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
-import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -112,7 +112,7 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 						: X_C_DocType.DOCBASETYPE_APPayment)
 				.setPayAmt(importRecord.getPayAmt())
 				.setDiscountAmt(importRecord.getDiscountAmt())
-				.setTenderType(TenderType.ACH)
+				.setTenderType(TenderType.DirectDeposit)
 				.setDateAcct(importRecord.getDateTrx())
 				.setDateTrx(importRecord.getDateTrx())
 				.setDescription("Import for debitorId/creditorId" + importRecord.getBPartnerValue())

@@ -48,10 +48,10 @@ import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.IDocument;
-import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.payment.api.IPaymentBL;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -347,7 +347,7 @@ public class PaySelectionBL implements IPaySelectionBL
 				.setDateAcct(payDate)
 				.setDateTrx(payDate)
 				.setC_BPartner_ID(line.getC_BPartner_ID())
-				.setTenderType(TenderType.ACH)
+				.setTenderType(TenderType.DirectDeposit)
 				.setPayAmt(line.getPayAmt())
 				.setDiscountAmt(line.getDiscountAmt())
 				//

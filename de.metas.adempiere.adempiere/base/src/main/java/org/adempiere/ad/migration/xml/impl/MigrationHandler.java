@@ -34,14 +34,13 @@ import org.adempiere.ad.migration.xml.IXMLHandlerFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
-import org.compiere.util.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 
 class MigrationHandler implements IXMLHandler<I_AD_Migration>
 {
@@ -129,10 +128,10 @@ class MigrationHandler implements IXMLHandler<I_AD_Migration>
 		migration.setIsDeferredConstraints(deferrConstraints);
 
 		// Comment
-		final Node commentNode = (Element)element.getElementsByTagName(NODE_Comments).item(0);
+		final Node commentNode = element.getElementsByTagName(NODE_Comments).item(0);
 		if (commentNode != null)
 		{
-			migration.setComments(Util.getElementText(commentNode));
+			migration.setComments(getElementText(commentNode));
 		}
 
 		InterfaceWrapperHelper.save(migration);
@@ -159,4 +158,23 @@ class MigrationHandler implements IXMLHandler<I_AD_Migration>
 		logger.info("Imported migration: " + Services.get(IMigrationBL.class).getSummary(migration));
 		return true;
 	}
+	
+	// thx to http://www.java2s.com/Code/Java/XML/DOMUtilgetElementText.htm
+	static String getElementText(final Node element)
+	{
+		final StringBuffer buf = new StringBuffer();
+		final NodeList list = element.getChildNodes();
+		boolean found = false;
+		for (int i = 0; i < list.getLength(); i++)
+		{
+			final Node node = list.item(i);
+			if (node.getNodeType() == Node.TEXT_NODE)
+			{
+				buf.append(node.getNodeValue());
+				found = true;
+			}
+		}
+		return found ? buf.toString() : null;
+	}
+
 }

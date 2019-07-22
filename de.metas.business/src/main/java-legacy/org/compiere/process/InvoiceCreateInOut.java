@@ -17,10 +17,6 @@
 package org.compiere.process;
 
 import java.math.BigDecimal;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -30,6 +26,10 @@ import org.compiere.model.MInOutLine;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.util.Env;
+
+import de.metas.document.engine.DocStatus;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
  
 /**
  * Create (Generate) Shipment from Invoice
@@ -54,17 +54,24 @@ public class InvoiceCreateInOut extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		for (ProcessInfoParameter para : getParametersAsArray())
 		{
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
+			{
 				;
+			}
 			else if (name.equals(PARAM_M_Warehouse_ID))
+			{
 				p_M_Warehouse_ID = para.getParameterAsInt();
+			}
 			else
+			{
 				log.error("Unknown Parameter: " + name);
+			}
 		}
 		p_C_Invoice_ID = getRecord_ID();
 	}	//	prepare
@@ -75,26 +82,39 @@ public class InvoiceCreateInOut extends JavaProcess
 	 *	@return info
 	 *	@throws Exception
 	 */
+	@Override
 	protected String doIt () throws Exception
 	{
 		log.info("C_Invoice_ID=" + p_C_Invoice_ID + ", M_Warehouse_ID=" + p_M_Warehouse_ID);
 		if (p_C_Invoice_ID <= 0)
+		{
 			throw new FillMandatoryException("C_Invoice_ID");
+		}
 		if (p_M_Warehouse_ID == 0)
+		{
 			throw new FillMandatoryException(PARAM_M_Warehouse_ID);
+		}
 		//
 		MInvoice invoice = new MInvoice (getCtx(), p_C_Invoice_ID, null);
 		if (invoice.get_ID() <= 0)
+		{
 			throw new AdempiereException("@NotFound@ @C_Invoice_ID@");
-		if (!MInvoice.DOCSTATUS_Completed.equals(invoice.getDocStatus()))
+		}
+		
+		final DocStatus invoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+		if (!invoiceDocStatus.isCompleted())
+		{
 			throw new AdempiereException("@InvoiceCreateDocNotCompleted@");
+		}
 		//
 		for (MInvoiceLine invoiceLine : invoice.getLines(false))
 		{
 			createLine(invoice, invoiceLine);
 		}
 		if (m_inout == null)
+		{
 			throw new InvoiceFullyMatchedException();
+		}
 		//
 		return m_inout.getDocumentNo();
 	}	//	doIt
@@ -107,7 +127,9 @@ public class InvoiceCreateInOut extends JavaProcess
 	private MInOut getCreateHeader(MInvoice invoice)
 	{
 		if (m_inout != null)
+		{
 			return m_inout;
+		}
 		m_inout = new MInOut (invoice, 0, null, p_M_Warehouse_ID);
 		m_inout.saveEx();
 		return m_inout;

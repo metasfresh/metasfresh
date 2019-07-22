@@ -40,7 +40,7 @@ public class UnassignedPairOfCandidatesTest
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test

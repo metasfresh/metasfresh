@@ -23,6 +23,7 @@ package de.metas.handlingunits.expectations;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 
@@ -280,6 +281,11 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		this.valueDate = valueDate;
 		this.valueDateSet = true;
 		return this;
+	}
+
+	public HUAttributeExpectation<ParentExpectationType> valueDate(final LocalDate valueDate)
+	{
+		return valueDate(TimeUtil.asDate(valueDate));
 	}
 
 	public final AttributeId getAttributeIdNotNull()

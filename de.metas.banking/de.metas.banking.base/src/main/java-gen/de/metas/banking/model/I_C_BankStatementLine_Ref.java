@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.banking.model;
 
 
@@ -32,7 +16,7 @@ public interface I_C_BankStatementLine_Ref
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -47,8 +31,6 @@ public interface I_C_BankStatementLine_Ref
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_AD_Client>(I_C_BankStatementLine_Ref.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -74,10 +56,6 @@ public interface I_C_BankStatementLine_Ref
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_AD_Org>(I_C_BankStatementLine_Ref.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -156,10 +134,6 @@ public interface I_C_BankStatementLine_Ref
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
     /** Column definition for C_BPartner_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_BPartner>(I_C_BankStatementLine_Ref.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
     /** Column name C_BPartner_ID */
@@ -184,10 +158,6 @@ public interface I_C_BankStatementLine_Ref
 	 * <br>Virtual Column: false
 	 */
 	public int getC_Currency_ID();
-
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_BankStatementLine_Ref, org.compiere.model.I_C_Currency>(I_C_BankStatementLine_Ref.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
@@ -306,7 +276,7 @@ public interface I_C_BankStatementLine_Ref
     public static final String COLUMNNAME_CreatePayment = "CreatePayment";
 
 	/**
-	 * Set Discount Amount.
+	 * Set Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -316,7 +286,7 @@ public interface I_C_BankStatementLine_Ref
 	public void setDiscountAmt (java.math.BigDecimal DiscountAmt);
 
 	/**
-	 * Get Discount Amount.
+	 * Get Skonto.
 	 * Calculated amount of discount
 	 *
 	 * <br>Type: Amount
@@ -436,8 +406,10 @@ public interface I_C_BankStatementLine_Ref
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProcessed (boolean Processed);
 
 	/**
@@ -446,8 +418,10 @@ public interface I_C_BankStatementLine_Ref
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isProcessed();
 
     /** Column definition for Processed */

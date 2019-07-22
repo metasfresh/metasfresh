@@ -10,7 +10,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -20,6 +19,8 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -29,7 +30,9 @@ import de.metas.dunning_gateway.spi.model.DunningId;
 import de.metas.dunning_gateway.spi.model.DunningToExport;
 import de.metas.dunning_gateway.spi.model.MetasfreshVersion;
 import de.metas.dunning_gateway.spi.model.Money;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 
@@ -60,13 +63,16 @@ public class DunningToExportFactory
 {
 	private final DunningService dunningService;
 	private final AttachmentEntryService attachmentEntryService;
+	private final CurrencyRepository currenciesRepo;
 
 	public DunningToExportFactory(
 			@NonNull final DunningService dunningService,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final CurrencyRepository currenciesRepo)
 	{
 		this.attachmentEntryService = attachmentEntryService;
 		this.dunningService = dunningService;
+		this.currenciesRepo = currenciesRepo;
 	}
 
 	public List<DunningToExport> getCreateForId(@NonNull final DunningDocId dunningDocId)
@@ -80,11 +86,11 @@ public class DunningToExportFactory
 		{
 			final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-			final String currencyStr = dunnedInvoiceRecord.getC_Currency().getISO_Code();
-			final Money grandTotal = Money.of(dunnedInvoiceRecord.getGrandTotal(), currencyStr);
+			final CurrencyCode currencyCode = extractCurrencyCode(dunnedInvoiceRecord);
+			final Money grandTotal = Money.of(dunnedInvoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-			final BigDecimal allocatedAmt = Util.coalesce(allocationDAO.retrieveAllocatedAmt(dunnedInvoiceRecord), ZERO);
-			final Money allocatedMoney = Money.of(allocatedAmt, currencyStr);
+			final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(dunnedInvoiceRecord), ZERO);
+			final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 			final DunningToExport dunningToExport = DunningToExport
 					.builder()
@@ -103,6 +109,12 @@ public class DunningToExportFactory
 		}
 
 		return result.build();
+	}
+
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}
 
 	private ImmutableList<DunningAttachment> createDunningAttachments(@NonNull final DunningDocId dunningDocId)

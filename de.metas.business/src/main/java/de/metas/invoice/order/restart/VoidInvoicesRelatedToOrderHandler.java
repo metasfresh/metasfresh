@@ -11,13 +11,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -62,13 +62,14 @@ public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDoc
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 		for (final I_C_Invoice invoiceRecord : invoiceRecordsToHandle)
 		{
-			if (documentBL.isDocumentReversedOrVoided(invoiceRecord))
+			final DocStatus invoiceDocStatus = DocStatus.ofCode(invoiceRecord.getDocStatus());
+			if (invoiceDocStatus.isReversedOrVoided())
 			{
 				continue; // nothing to do
 			}
-			if (documentBL.isDocumentCompleted(invoiceRecord))
+			if (invoiceDocStatus.isCompleted())
 			{
-				documentBL.processEx(invoiceRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+				documentBL.processEx(invoiceRecord, IDocument.ACTION_Reverse_Correct, DocStatus.Reversed.getCode());
 				saveRecord(invoiceRecord);
 			}
 			else
@@ -77,7 +78,7 @@ public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDoc
 						request.getOrderId(),
 						I_C_Invoice.COLUMNNAME_C_Invoice_ID,
 						invoiceRecord.getDocumentNo(),
-						invoiceRecord.getDocStatus());
+						invoiceDocStatus);
 				throw new AdempiereException(errorMsg);
 			}
 		}

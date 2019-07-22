@@ -41,6 +41,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.order.DeliveryViaRule;
 import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -210,4 +211,6 @@ public interface IBPartnerBL extends ISingletonService
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+
+	DeliveryViaRule getDeliveryViaRuleOrNull(BPartnerId bpartnerId, SOTrx soTrx);
 }

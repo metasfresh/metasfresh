@@ -2,13 +2,20 @@ package de.metas.email.process;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_MailText;
 
-import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
-import de.metas.process.Param;
-import de.metas.util.Services;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.MailService;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -41,8 +48,10 @@ import de.metas.process.JavaProcess;
 public class R_MailText_Test extends JavaProcess
 {
 	// services
-	private final transient IMailBL mailBL = Services.get(IMailBL.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final transient IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final transient IUserDAO usersRepo = Services.get(IUserDAO.class);
+	private final transient MailService mailService = Adempiere.getBean(MailService.class);
 
 	@Param(parameterName = "C_BPartner_ID")
 	private int p_C_BPartner_ID;
@@ -54,39 +63,43 @@ public class R_MailText_Test extends JavaProcess
 	private int p_Record_ID = -1;
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final I_R_MailText mailText = getRecord(I_R_MailText.class);
+		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getRecord_ID());
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
 
-		final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(mailText);
-
+		Object record = null;
 		if (p_AD_Table_ID > 0 && p_Record_ID >= 0)
 		{
 			final String tableName = tableDAO.retrieveTableName(p_AD_Table_ID);
-			final Object record = InterfaceWrapperHelper.create(getCtx(), tableName, p_Record_ID, Object.class, getTrxName());
+			record = InterfaceWrapperHelper.create(getCtx(), tableName, p_Record_ID, Object.class, getTrxName());
 			if (record != null)
 			{
-				final boolean analyse = true;
-				mailTextBuilder.setRecord(record, analyse);
+				mailTextBuilder.recordAndUpdateBPartnerAndContact(record);
 			}
 		}
 
+		I_C_BPartner bpartner = null;
 		if (p_C_BPartner_ID > 0)
 		{
-			mailTextBuilder.setC_BPartner(p_C_BPartner_ID);
+			bpartner = bpartnersRepo.getById(p_C_BPartner_ID);
+			mailTextBuilder.bpartner(bpartner);
 		}
+
+		I_AD_User contact = null;
 		if (p_AD_User_ID >= 0)
 		{
-			mailTextBuilder.setAD_User(p_AD_User_ID);
+			contact = usersRepo.getById(UserId.ofRepoId(p_AD_User_ID));
+			mailTextBuilder.bpartnerContact(contact);
 		}
 
 		//
 		// Display configuration
-		addLog("Using @C_BPartner_ID@: {}", mailTextBuilder.getC_BPartner());
-		addLog("Using @AD_User_ID@: {}", mailTextBuilder.getAD_User());
-		addLog("Using @Record_ID@: {}", mailTextBuilder.getRecord());
-		addLog("Using @AD_Language@: {}", mailTextBuilder.getAD_Language());
-		addLog("Using @IsHtml@: {}", mailTextBuilder.isHtml());
+		addLog("Using @R_MailText_ID@: {}", mailTemplateId);
+		addLog("Using @C_BPartner_ID@: {}", bpartner);
+		addLog("Using @AD_User_ID@: {}", contact);
+		addLog("Using @Record_ID@: {}", record);
+		addLog("Using @AD_Language@: {}", mailTextBuilder.getAdLanguage());
 
 		//
 		// Display results

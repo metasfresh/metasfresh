@@ -16,7 +16,6 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Customer_Retention;
 import org.compiere.model.X_C_Customer_Retention;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.invoice.ContractInvoiceService;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -350,7 +350,7 @@ public class CustomerRetentionRepositoryTest
 		invoice.setDocumentNo(documentNo);
 		invoice.setDateInvoiced(dateInvoiced);
 		invoice.setIsSOTrx(true);
-		invoice.setDocStatus(X_C_Invoice.DOCSTATUS_Completed);
+		invoice.setDocStatus(DocStatus.Completed.getCode());
 
 		save(invoice);
 

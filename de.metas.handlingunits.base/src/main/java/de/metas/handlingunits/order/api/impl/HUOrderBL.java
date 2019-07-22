@@ -29,13 +29,13 @@ import java.util.function.Consumer;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Forecast;
 import org.slf4j.Logger;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUDocumentHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -48,6 +48,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
@@ -484,7 +485,8 @@ public class HUOrderBL implements IHUOrderBL
 
 		Check.assumeNotNull(order, "Order cannot be null");
 
-		if (order.getC_BPartner() == null || order.getDateOrdered() == null)
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartnerOrNull(order);
+		if (bpartner == null || order.getDateOrdered() == null)
 		{
 			// in case order's C_BPartner_ID or DateOrdered are null
 			// (i.e. when we just hit New to create a new order), there is no point to search for M_HU_PI_Item_Product record.
@@ -516,7 +518,7 @@ public class HUOrderBL implements IHUOrderBL
 
 		//
 		// Try fetching best matching PIP
-		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, order.getC_BPartner(), order.getDateOrdered(),
+		final I_M_HU_PI_Item_Product pip = hupiItemProductDAO.retrieveMaterialItemProduct(productId, bpartner, order.getDateOrdered(),
 				X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit,
 				true); // allowInfiniteCapacity = true
 

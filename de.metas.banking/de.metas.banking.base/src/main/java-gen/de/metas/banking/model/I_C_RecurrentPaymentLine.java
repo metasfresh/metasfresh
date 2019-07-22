@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.banking.model;
 
 
@@ -28,13 +12,13 @@ public interface I_C_RecurrentPaymentLine
     public static final String Table_Name = "C_RecurrentPaymentLine";
 
     /** AD_Table_ID=540094 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
-    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
     /** Load Meta Data */
 
@@ -47,8 +31,6 @@ public interface I_C_RecurrentPaymentLine
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Client_ID();
-
-	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_Client>(I_C_RecurrentPaymentLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,10 +57,6 @@ public interface I_C_RecurrentPaymentLine
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_Org>(I_C_RecurrentPaymentLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
@@ -103,10 +81,6 @@ public interface I_C_RecurrentPaymentLine
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_ID();
-
-	public org.compiere.model.I_AD_User getAD_User();
-
-	public void setAD_User(org.compiere.model.I_AD_User AD_User);
 
     /** Column definition for AD_User_ID */
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User>(I_C_RecurrentPaymentLine.class, "AD_User_ID", org.compiere.model.I_AD_User.class);
@@ -218,18 +192,14 @@ public interface I_C_RecurrentPaymentLine
 	 */
 	public int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
     /** Column definition for C_Currency_ID */
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_C_Currency>(I_C_RecurrentPaymentLine.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
     /** Column name C_Currency_ID */
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -238,8 +208,8 @@ public interface I_C_RecurrentPaymentLine
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Payment Term.
-	 * The terms of Payment (timing, discount)
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -255,6 +225,56 @@ public interface I_C_RecurrentPaymentLine
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_C_PaymentTerm> COLUMN_C_PaymentTerm_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_C_PaymentTerm>(I_C_RecurrentPaymentLine.class, "C_PaymentTerm_ID", org.compiere.model.I_C_PaymentTerm.class);
     /** Column name C_PaymentTerm_ID */
     public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+
+	/**
+	 * Set Recurrent Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RecurrentPayment_ID (int C_RecurrentPayment_ID);
+
+	/**
+	 * Get Recurrent Payment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RecurrentPayment_ID();
+
+	public de.metas.banking.model.I_C_RecurrentPayment getC_RecurrentPayment();
+
+	public void setC_RecurrentPayment(de.metas.banking.model.I_C_RecurrentPayment C_RecurrentPayment);
+
+    /** Column definition for C_RecurrentPayment_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, de.metas.banking.model.I_C_RecurrentPayment> COLUMN_C_RecurrentPayment_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, de.metas.banking.model.I_C_RecurrentPayment>(I_C_RecurrentPaymentLine.class, "C_RecurrentPayment_ID", de.metas.banking.model.I_C_RecurrentPayment.class);
+    /** Column name C_RecurrentPayment_ID */
+    public static final String COLUMNNAME_C_RecurrentPayment_ID = "C_RecurrentPayment_ID";
+
+	/**
+	 * Set Recurrent Payment Line.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_RecurrentPaymentLine_ID (int C_RecurrentPaymentLine_ID);
+
+	/**
+	 * Get Recurrent Payment Line.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_RecurrentPaymentLine_ID();
+
+    /** Column definition for C_RecurrentPaymentLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, Object> COLUMN_C_RecurrentPaymentLine_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, Object>(I_C_RecurrentPaymentLine.class, "C_RecurrentPaymentLine_ID", null);
+    /** Column name C_RecurrentPaymentLine_ID */
+    public static final String COLUMNNAME_C_RecurrentPaymentLine_ID = "C_RecurrentPaymentLine_ID";
 
 	/**
 	 * Get Created.
@@ -285,56 +305,6 @@ public interface I_C_RecurrentPaymentLine
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User>(I_C_RecurrentPaymentLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Recurrent Payment.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RecurrentPayment_ID (int C_RecurrentPayment_ID);
-
-	/**
-	 * Get Recurrent Payment.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RecurrentPayment_ID();
-
-	public I_C_RecurrentPayment getC_RecurrentPayment();
-
-	public void setC_RecurrentPayment(I_C_RecurrentPayment C_RecurrentPayment);
-
-    /** Column definition for C_RecurrentPayment_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, I_C_RecurrentPayment> COLUMN_C_RecurrentPayment_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, I_C_RecurrentPayment>(I_C_RecurrentPaymentLine.class, "C_RecurrentPayment_ID", I_C_RecurrentPayment.class);
-    /** Column name C_RecurrentPayment_ID */
-    public static final String COLUMNNAME_C_RecurrentPayment_ID = "C_RecurrentPayment_ID";
-
-	/**
-	 * Set Recurrent Payment Line.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_RecurrentPaymentLine_ID (int C_RecurrentPaymentLine_ID);
-
-	/**
-	 * Get Recurrent Payment Line.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_RecurrentPaymentLine_ID();
-
-    /** Column definition for C_RecurrentPaymentLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, Object> COLUMN_C_RecurrentPaymentLine_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, Object>(I_C_RecurrentPaymentLine.class, "C_RecurrentPaymentLine_ID", null);
-    /** Column name C_RecurrentPaymentLine_ID */
-    public static final String COLUMNNAME_C_RecurrentPaymentLine_ID = "C_RecurrentPaymentLine_ID";
 
 	/**
 	 * Set Date From.
@@ -533,8 +503,7 @@ public interface I_C_RecurrentPaymentLine
     public static final String COLUMNNAME_PayAmt = "PayAmt";
 
 	/**
-	 * Set Sales Representative.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -543,18 +512,13 @@ public interface I_C_RecurrentPaymentLine
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Sales Representative.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getSalesRep_ID();
-
-	public org.compiere.model.I_AD_User getSalesRep();
-
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
 
     /** Column definition for SalesRep_ID */
     public static final org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_C_RecurrentPaymentLine, org.compiere.model.I_AD_User>(I_C_RecurrentPaymentLine.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);

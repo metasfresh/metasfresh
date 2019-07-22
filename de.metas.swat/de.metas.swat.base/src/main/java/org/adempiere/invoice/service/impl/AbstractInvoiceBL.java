@@ -56,7 +56,6 @@ import org.compiere.model.I_M_RMA;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -78,6 +77,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IModelTranslationMap;
@@ -91,6 +91,8 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -453,21 +455,21 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		setFromOrder(invoice, order);	// set base settings
 
 		//
-		int docTypeId = C_DocTypeTarget_ID;
-		if (docTypeId <= 0)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(C_DocTypeTarget_ID);
+		if (docTypeId == null)
 		{
-			final I_C_DocType odt = order.getC_DocType();
+			final I_C_DocType odt = Services.get(IOrderBL.class).getDocTypeOrNull(order);
 			if (odt != null)
 			{
-				docTypeId = odt.getC_DocTypeInvoice_ID();
-				if (docTypeId <= 0)
+				docTypeId = DocTypeId.ofRepoIdOrNull(odt.getC_DocTypeInvoice_ID());
+				if (docTypeId == null)
 				{
 					throw new AdempiereException("@NotFound@ @C_DocTypeInvoice_ID@ - @C_DocType_ID@:" + odt.getName());
 				}
 			}
 		}
 
-		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId);
+		setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
 		if (dateInvoiced != null)
 		{
 			invoice.setDateInvoiced(dateInvoiced);
@@ -835,103 +837,93 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		Check.assume(invoiceLineId2inOutId.size() == lines.size(), "Every line's id has been added to map '" + invoiceLineId2inOutId + "'");
 
 		// create Comparator
-		final Comparator<I_C_InvoiceLine> cmp = new Comparator<I_C_InvoiceLine>()
-		{
-			@Override
-			public int compare(final I_C_InvoiceLine line1, final I_C_InvoiceLine line2)
+		final Comparator<I_C_InvoiceLine> cmp = (line1, line2) -> {
+			// InOut_ID
+			final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
+			final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
+
+			if (InOut_ID1 > InOut_ID2)
 			{
-				// InOut_ID
-				final int InOut_ID1 = invoiceLineId2inOutId.get(line1.getC_InvoiceLine_ID());
-				final int InOut_ID2 = invoiceLineId2inOutId.get(line2.getC_InvoiceLine_ID());
-
-				if (InOut_ID1 > InOut_ID2)
-				{
-					return 1;
-				}
-				if (InOut_ID1 < InOut_ID2)
-				{
-					return -1;
-				}
-
-				// Freight cost
-				final boolean fc1 = line1.isFreightCostLine();
-				final boolean fc2 = line2.isFreightCostLine();
-
-				if (fc1 && !fc2)
-				{
-					return 1;
-				}
-				if (!fc1 && fc2)
-				{
-					return -1;
-				}
-
-				// LineNo
-				final int line1No = line1.getLine();
-				final int line2No = line2.getLine();
-
-				if (line1No > line2No)
-				{
-					return 1;
-				}
-				if (line1No < line2No)
-				{
-					return -1;
-				}
-
-				return 0;
+				return 1;
 			}
+			if (InOut_ID1 < InOut_ID2)
+			{
+				return -1;
+			}
+
+			// Freight cost
+			final boolean fc1 = line1.isFreightCostLine();
+			final boolean fc2 = line2.isFreightCostLine();
+
+			if (fc1 && !fc2)
+			{
+				return 1;
+			}
+			if (!fc1 && fc2)
+			{
+				return -1;
+			}
+
+			// LineNo
+			final int line1No = line1.getLine();
+			final int line2No = line2.getLine();
+
+			if (line1No > line2No)
+			{
+				return 1;
+			}
+			if (line1No < line2No)
+			{
+				return -1;
+			}
+
+			return 0;
 		};
 		return cmp;
 	}
 
 	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
 	{
-		final Comparator<I_C_InvoiceLine> comparator = new Comparator<I_C_InvoiceLine>()
-		{
-			@Override
-			public int compare(final I_C_InvoiceLine line1, final I_C_InvoiceLine line2)
+		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
+
+			final I_M_InOutLine iol1 = line1.getM_InOutLine();
+			final I_M_InOutLine iol2 = line2.getM_InOutLine();
+			if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
 			{
-
-				final I_M_InOutLine iol1 = line1.getM_InOutLine();
-				final I_M_InOutLine iol2 = line2.getM_InOutLine();
-				if (Util.same(line1.getM_InOutLine_ID(), line2.getM_InOutLine_ID()))
-				{
-					return line1.getLine() - line2.getLine(); // keep IL order
-				}
-				else if (line1.getM_InOutLine_ID() <= 0 || iol1 == null)
-				{
-					return 1; // second line not null, put it first
-				}
-				else if (line2.getM_InOutLine_ID() <= 0 || iol2 == null)
-				{
-					return -1; // first line not null, put it first
-				}
-
-				final I_C_OrderLine ol1 = iol1.getC_OrderLine();
-				final I_C_OrderLine ol2 = iol2.getC_OrderLine();
-				if (Util.same(ol1, ol2))
-				{
-					return iol1.getLine() - iol2.getLine(); // keep IOL order
-				}
-				else if (ol1 == null)
-				{
-					return 1; // second line not null, put it first
-				}
-				else if (ol2 == null)
-				{
-					return -1; // first line not null, put it first
-				}
-
-				final I_C_Order o1 = InterfaceWrapperHelper.create(ol1.getC_Order(), I_C_Order.class);
-				final I_C_Order o2 = InterfaceWrapperHelper.create(ol2.getC_Order(), I_C_Order.class);
-				if (o1.getC_Order_ID() != o2.getC_Order_ID())
-				{
-					return o1.getC_Order_ID() - o2.getC_Order_ID(); // first orders go first
-				}
-
-				return ol1.getLine() - ol2.getLine(); // keep OL order
+				return line1.getLine() - line2.getLine(); // keep IL order
 			}
+			else if (line1.getM_InOutLine_ID() <= 0 || iol1 == null)
+			{
+				return 1; // second line not null, put it first
+			}
+			else if (line2.getM_InOutLine_ID() <= 0 || iol2 == null)
+			{
+				return -1; // first line not null, put it first
+			}
+
+			final I_C_OrderLine ol1 = iol1.getC_OrderLine();
+			final I_C_OrderLine ol2 = iol2.getC_OrderLine();
+			if (Util.same(ol1, ol2))
+			{
+				return iol1.getLine() - iol2.getLine(); // keep IOL order
+			}
+			else if (ol1 == null)
+			{
+				return 1; // second line not null, put it first
+			}
+			else if (ol2 == null)
+			{
+				return -1; // first line not null, put it first
+			}
+
+			final I_C_Order o1 = InterfaceWrapperHelper.create(ol1.getC_Order(), I_C_Order.class);
+			final I_C_Order o2 = InterfaceWrapperHelper.create(ol2.getC_Order(), I_C_Order.class);
+			if (o1.getC_Order_ID() != o2.getC_Order_ID())
+			{
+				return o1.getC_Order_ID() - o2.getC_Order_ID(); // first orders go first
+			}
+
+			return ol1.getLine() - ol2.getLine(); // keep OL order
 		};
 		return comparator;
 	}
@@ -1235,8 +1227,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean isComplete(final org.compiere.model.I_C_Invoice invoice)
 	{
-		final String docStatus = invoice.getDocStatus();
-		return Services.get(IDocumentBL.class).isStatusCompletedOrClosedOrReversed(docStatus);
+		final DocStatus docStatus = DocStatus.ofCode(invoice.getDocStatus());
+		return docStatus.isCompletedOrClosedOrReversed();
 	}
 
 	@Override
@@ -1497,9 +1489,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public String getDefaultPaymentRule()
+	public PaymentRule getDefaultPaymentRule()
 	{
-		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_C_Invoice_PaymentRule, X_C_Invoice.PAYMENTRULE_OnCredit);
+		final ISysConfigBL sysconfigs = Services.get(ISysConfigBL.class);
+		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 
 	@Override

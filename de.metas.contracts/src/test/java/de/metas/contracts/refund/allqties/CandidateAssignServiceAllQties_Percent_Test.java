@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.ConditionsId;
@@ -38,6 +37,10 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
@@ -136,10 +139,11 @@ public class CandidateAssignServiceAllQties_Percent_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
+		PlainCurrencyDAO.prepareCurrency()
+				.currencyId(CURRENCY_ID)
+				.currencyCode(CurrencyCode.EUR)
+				.precision(CurrencyPrecision.TWO)
+				.build();
 
 		final I_C_UOM uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
@@ -170,7 +174,8 @@ public class CandidateAssignServiceAllQties_Percent_Test
 		final InvoiceScheduleRepository invoiceScheduleRepository = refundConfigRepository.getInvoiceScheduleRepository();
 
 		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(
-				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository());
+				candidateAssignServiceAllQties.getAssignmentToRefundCandidateRepository(),
+				new CurrencyRepository());
 
 		this.assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(assignableInvoiceCandidateFactory);
 

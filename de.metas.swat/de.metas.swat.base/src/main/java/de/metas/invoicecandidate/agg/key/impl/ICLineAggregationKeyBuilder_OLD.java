@@ -28,9 +28,9 @@ import java.text.NumberFormat;
 import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -45,6 +45,7 @@ import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -219,10 +220,11 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final Locale locale = Language.getLanguage(langInfo).getLocale();
 		final NumberFormat numberFormat = NumberFormat.getCurrencyInstance(locale);
 
-		final I_C_Currency currency = currencyDAO.getById(CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID()));
-		if (currency != null)
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+		if (currencyId != null)
 		{
-			numberFormat.setCurrency(Currency.getInstance(currency.getISO_Code()));
+			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
+			numberFormat.setCurrency(Currency.getInstance(currencyCode.toThreeLetterCode()));
 		}
 
 		return numberFormat;
@@ -234,7 +236,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final String aggregationKey1 = buildKey(model1);
 		final String aggregationKey2 = buildKey(model2);
 
-		return Check.equals(aggregationKey1, aggregationKey2);
+		return Objects.equals(aggregationKey1, aggregationKey2);
 	}
 
 	@Override

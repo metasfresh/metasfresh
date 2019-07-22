@@ -54,7 +54,7 @@ public class CostAmount
 
 	public static final CostAmount ofMoney(@NonNull final Money money)
 	{
-		return new CostAmount(money.getValue(), money.getCurrencyId());
+		return new CostAmount(money.getAsBigDecimal(), money.getCurrencyId());
 	}
 
 	public static final CostAmount zero(final CurrencyId currencyId)

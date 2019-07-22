@@ -31,7 +31,6 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 
@@ -177,16 +176,14 @@ public class M_ShippingPackage_CreateFromTourplanning extends JavaProcess implem
 
 	private I_M_ShippingPackage createShippingPackage(final I_C_Order order)
 	{
-		final I_C_BPartner partner = order.getC_BPartner();
-		final I_C_BPartner_Location bpLoc = order.getC_BPartner_Location();
 		final Timestamp deliverydate = order.getDatePromised();
 
 		// create package
-		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class, partner);
+		final I_M_Package mpackage = InterfaceWrapperHelper.newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(shipperId.getRepoId());
 		mpackage.setShipDate(deliverydate);
-		mpackage.setC_BPartner_ID(partner.getC_BPartner_ID());
-		mpackage.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());
+		mpackage.setC_BPartner_ID(order.getC_BPartner_ID());
+		mpackage.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
 		InterfaceWrapperHelper.save(mpackage);
 
 		// create shipping package

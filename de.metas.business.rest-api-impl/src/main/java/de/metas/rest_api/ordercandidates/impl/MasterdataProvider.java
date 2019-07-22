@@ -12,11 +12,11 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -218,17 +218,17 @@ public final class MasterdataProvider
 		return docTypeDAO.getDocTypeId(query);
 	}
 
-	public CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	public CurrencyId getCurrencyId(@Nullable final String currencyCodeStr)
 	{
-		if (Check.isEmpty(currencyCode))
+		if (Check.isEmpty(currencyCodeStr, true))
 		{
 			return null;
 		}
-		final I_C_Currency currencyRecord = Services
-				.get(ICurrencyDAO.class)
-				.retrieveCurrencyByISOCode(Env.getCtx(), currencyCode);
-		Check.errorIf(currencyRecord == null, "Unable to retrieve a C_Currency for ISO code={}", currencyCode);
-		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
+		
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
 	}
 
 }

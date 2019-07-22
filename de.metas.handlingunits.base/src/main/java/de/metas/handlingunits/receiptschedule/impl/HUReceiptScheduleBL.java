@@ -57,6 +57,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -328,7 +329,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 	private void validateHuIds(Set<HuId> huIds)
 	{
-		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(Adempiere.getBeansOfType(IHUToReceiveValidator.class));
+		final IHUToReceiveValidator huToReceiveValidator = CompositeHUToReceiveValidator.of(SpringContextHolder.instance.getBeansOfType(IHUToReceiveValidator.class));
 
 		for (final HuId huId : huIds)
 		{

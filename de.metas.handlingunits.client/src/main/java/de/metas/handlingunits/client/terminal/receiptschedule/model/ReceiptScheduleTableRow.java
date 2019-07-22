@@ -45,6 +45,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -111,7 +113,11 @@ public class ReceiptScheduleTableRow implements IReceiptScheduleTableRow
 	@Override
 	public I_C_BPartner getC_BPartner()
 	{
-		return rs.getC_Order().getC_BPartner();
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		
+		final OrderId orderId = OrderId.ofRepoId(rs.getC_Order_ID());
+		final I_C_Order order = orderBL.getById(orderId);
+		return orderBL.getBPartner(order);
 	}
 
 	public int getC_BPartner_ID()

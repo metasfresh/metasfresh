@@ -21,7 +21,6 @@ package de.metas.invoicecandidate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collections;
@@ -38,12 +37,12 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -161,7 +160,7 @@ public class C_Invoice_Candidate_Builder
 
 		ic.setAD_User_InCharge_ID(-1); // nobody, aka null
 		ic.setM_Product_ID(test.product("1", -1).getM_Product_ID());
-		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getC_Currency_ID());
+		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qty);
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
@@ -225,7 +224,7 @@ public class C_Invoice_Candidate_Builder
 			InterfaceWrapperHelper.save(orderLine);
 
 			order.setProcessed(true);
-			order.setDocStatus(X_C_Order.DOCSTATUS_Completed); // fake complete
+			order.setDocStatus(DocStatus.Completed.getCode()); // fake complete
 			InterfaceWrapperHelper.save(order);
 
 			ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());

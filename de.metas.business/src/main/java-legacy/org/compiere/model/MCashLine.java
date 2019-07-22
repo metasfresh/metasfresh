@@ -25,9 +25,10 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.Msg;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 
 /**
@@ -62,9 +63,9 @@ public class MCashLine extends X_C_CashLine
 		{
 		//	setLine (0);
 		//	setCashType (CASHTYPE_GeneralExpense);
-			setAmount (Env.ZERO);
-			setDiscountAmt(Env.ZERO);
-			setWriteOffAmt(Env.ZERO);
+			setAmount (BigDecimal.ZERO);
+			setDiscountAmt(BigDecimal.ZERO);
+			setWriteOffAmt(BigDecimal.ZERO);
 			setIsGenerated(false);
 		}
 	}	//	MCashLine
@@ -111,9 +112,13 @@ public class MCashLine extends X_C_CashLine
 	{
 		String desc = getDescription();
 		if (desc == null)
+		{
 			setDescription(description);
+		}
 		else
+		{
 			setDescription(desc + " | " + description);
+		}
 	}	//	addDescription
 	
 	/**
@@ -130,11 +135,13 @@ public class MCashLine extends X_C_CashLine
 		BigDecimal amt = invoice.getGrandTotal();
 		if (MDocType.DOCBASETYPE_APInvoice.equals(dt.getDocBaseType())
 			|| MDocType.DOCBASETYPE_ARCreditMemo.equals(dt.getDocBaseType()) )
+		{
 			amt = amt.negate();
+		}
 		setAmount (amt);
 		//
-		setDiscountAmt(Env.ZERO);
-		setWriteOffAmt(Env.ZERO);
+		setDiscountAmt(BigDecimal.ZERO);
+		setWriteOffAmt(BigDecimal.ZERO);
 		setIsGenerated(true);
 		m_invoice = invoice;
 	}	//	setInvoiceLine
@@ -151,18 +158,19 @@ public class MCashLine extends X_C_CashLine
 		//	Amount
 		BigDecimal amt = order.getGrandTotal();
 		setAmount (amt);
-		setDiscountAmt(Env.ZERO);
-		setWriteOffAmt(Env.ZERO);
+		setDiscountAmt(BigDecimal.ZERO);
+		setWriteOffAmt(BigDecimal.ZERO);
 		setIsGenerated(true);
 		//
-		if (MOrder.DOCSTATUS_WaitingPayment.equals(order.getDocStatus()))
+		final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
+		if(orderDocStatus.isWaitingForPayment())
 		{
 			saveEx(trxName);
 			order.setC_CashLine_ID(getC_CashLine_ID());
 			order.processIt(MOrder.ACTION_WaitComplete);
 			order.saveEx(trxName);
 			//	Set Invoice
-			MInvoice[] invoices = order.getInvoices();
+			MInvoice[] invoices = MOrder.getInvoices(OrderId.ofRepoId(order.getC_Order_ID()));
 			int length = invoices.length;
 			if (length > 0)		//	get last invoice
 			{
@@ -213,13 +221,21 @@ public class MCashLine extends X_C_CashLine
 		//
 		reversal.setAmount(getAmount().negate());
 		if (getDiscountAmt() == null)
-			setDiscountAmt(Env.ZERO);
+		{
+			setDiscountAmt(BigDecimal.ZERO);
+		}
 		else
+		{
 			reversal.setDiscountAmt(getDiscountAmt().negate());
+		}
 		if (getWriteOffAmt() == null)
-			setWriteOffAmt(Env.ZERO);
+		{
+			setWriteOffAmt(BigDecimal.ZERO);
+		}
 		else
+		{
 			reversal.setWriteOffAmt(getWriteOffAmt().negate());
+		}
 		reversal.addDescription("(" + getLine() + ")");
 		return reversal;
 	}	//	reverse
@@ -232,7 +248,9 @@ public class MCashLine extends X_C_CashLine
 	public MCash getParent()
 	{
 		if (m_parent == null)
+		{
 			m_parent = new MCash (getCtx(), getC_Cash_ID(), get_TrxName());
+		}
 		return m_parent;
 	}	//	getCash
 	
@@ -243,7 +261,9 @@ public class MCashLine extends X_C_CashLine
 	public MCashBook getCashBook()
 	{
 		if (m_cashBook == null)
+		{
 			m_cashBook = MCashBook.get(getCtx(), getParent().getC_CashBook_ID());
+		}
 		return m_cashBook;
 	}	//	getCashBook
 	
@@ -268,7 +288,9 @@ public class MCashLine extends X_C_CashLine
 	public MInvoice getInvoice()
 	{
 		if (m_invoice == null && getC_Invoice_ID() != 0)
+		{
 			m_invoice = MInvoice.get(getCtx(), getC_Invoice_ID());
+		}
 		return m_invoice;
 	}	//	getInvoice
 	
@@ -300,7 +322,9 @@ public class MCashLine extends X_C_CashLine
 	protected boolean afterDelete (boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		return updateHeader();
 	}	//	afterDelete
 
@@ -329,11 +353,17 @@ public class MCashLine extends X_C_CashLine
 		
 		//	Verify CashType
 		if (CASHTYPE_Invoice.equals(getCashType()) && getC_Invoice_ID() == 0)
+		{
 			setCashType(CASHTYPE_GeneralExpense);
+		}
 		if (CASHTYPE_BankAccountTransfer.equals(getCashType()) && getC_BP_BankAccount_ID() == 0)
+		{
 			setCashType(CASHTYPE_GeneralExpense);
+		}
 		if (CASHTYPE_Charge.equals(getCashType()) && getC_Charge_ID() == 0)
+		{
 			setCashType(CASHTYPE_GeneralExpense);
+		}
 
 		boolean verify = newRecord 
 			|| is_ValueChanged("CashType")
@@ -342,28 +372,41 @@ public class MCashLine extends X_C_CashLine
 		if (verify)
 		{
 			//	Verify Currency
-			if (CASHTYPE_BankAccountTransfer.equals(getCashType())) 
+			if (CASHTYPE_BankAccountTransfer.equals(getCashType()))
+			{
 				setC_Currency_ID(getBankAccount().getC_Currency_ID());
+			}
 			else if (CASHTYPE_Invoice.equals(getCashType()))
+			{
 				setC_Currency_ID(getInvoice().getC_Currency_ID());
-			else	//	Cash 
+			}
+			else
+			{
 				setC_Currency_ID(getCashBook().getC_Currency_ID());
+			}
 		
 			//	Set Organization
 			if (CASHTYPE_BankAccountTransfer.equals(getCashType()))
+			{
 				setAD_Org_ID(getBankAccount().getAD_Org_ID());
-			//	Cash Book
+			}
 			else if (CASHTYPE_Invoice.equals(getCashType()))
+			{
 				setAD_Org_ID(getCashBook().getAD_Org_ID());
+			}
 			//	otherwise (charge) - leave it
 			//	Enforce Org
 			if (getAD_Org_ID() == 0)
+			{
 				setAD_Org_ID(getParent().getAD_Org_ID());
+			}
 		}
 		
 		// If CashType is not Bank Account Transfer, set C_BP_BankAccount_ID to null - teo_sarca BF [ 1760240 ]
 		if (!CASHTYPE_BankAccountTransfer.equals(getCashType()))
+		{
 			setC_BP_BankAccount_ID(I_ZERO);
+		}
 
 		/**	General fix of Currency 
 		UPDATE C_CashLine cl SET C_Currency_ID = (SELECT C_Currency_ID FROM C_Invoice i WHERE i.C_Invoice_ID=cl.C_Invoice_ID) WHERE C_Currency_ID IS NULL AND C_Invoice_ID IS NOT NULL;
@@ -392,7 +435,9 @@ public class MCashLine extends X_C_CashLine
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		return updateHeader();
 	}	//	afterSave
 	
@@ -415,14 +460,18 @@ public class MCashLine extends X_C_CashLine
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
 		int no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
+		{
 			log.warn("Difference #" + no);
+		}
 		//	Ending Balance
 		sql = "UPDATE C_Cash"
 			+ " SET EndingBalance = BeginningBalance + StatementDifference "
 			+ "WHERE C_Cash_ID=" + getC_Cash_ID();
 		no = DB.executeUpdate(sql, get_TrxName());
 		if (no != 1)
+		{
 			log.warn("Balance #" + no);
+		}
 		return no == 1;
 	}	//	updateHeader
 
@@ -439,10 +488,14 @@ public class MCashLine extends X_C_CashLine
 		StringBuffer sb = new StringBuffer();
 		MCash cash = getC_Cash();
 		if (cash != null && cash.getC_Cash_ID() > 0)
+		{
 			sb.append(cash.getSummary());
+		}
 		
 		if (sb.length() > 0)
+		{
 			sb.append(" - ");
+		}
 		sb.append(Msg.translate(getCtx(), COLUMNNAME_Amount)).append(": ").append(getAmount());
 		return sb.toString();
 	}

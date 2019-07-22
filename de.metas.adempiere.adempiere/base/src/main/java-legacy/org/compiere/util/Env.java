@@ -48,6 +48,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CFrame;
@@ -156,7 +157,7 @@ public final class Env
 		LogManager.shutdown();
 		//
 
-		final ApplicationContext springApplicationContext = Adempiere.getSpringApplicationContext();
+		final ApplicationContext springApplicationContext = SpringContextHolder.instance.getApplicationContext();
 		if (springApplicationContext != null) // don't fail if we exit before swing-client's login was done
 		{
 			SpringApplication.exit(springApplicationContext, () -> 0);
@@ -1478,16 +1479,14 @@ public final class Env
 	}    // isBaseTranslation
 
 	/**
-	 * Do we have Multi-Lingual Documents. Set in DB.loadOrgs
-	 *
-	 * @param ctx context
 	 * @return true if multi lingual documents
 	 */
 	public static boolean isMultiLingualDocument(final Properties ctx)
 	{
-		return Services.get(IClientDAO.class)
-				.retriveClient(ctx)
-				.isMultiLingualDocument();
+		final ClientId clientId = getClientId(ctx);
+		
+		final IClientDAO clientsRepo = Services.get(IClientDAO.class);
+		return clientsRepo.isMultilingualDocumentsEnabled(clientId);
 	}    // isMultiLingualDocument
 
 	public static void setAD_Language(final Properties ctx, final String adLanguage)
@@ -2452,7 +2451,7 @@ public final class Env
 	{
 		if (applicationContext != null)
 		{
-			Adempiere.instance.setApplicationContext(applicationContext);
+			SpringContextHolder.instance.setApplicationContext(applicationContext);
 		}
 		return Adempiere.instance;
 	}
@@ -2464,7 +2463,7 @@ public final class Env
 	 */
 	public static void autowireBean(final Object bean)
 	{
-		Adempiere.getSpringApplicationContext().getAutowireCapableBeanFactory().autowireBean(bean);
+		SpringContextHolder.instance.autowire(bean);
 	}
 
 	/**

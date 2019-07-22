@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -109,8 +108,6 @@ public class ShipmentLinesForCustomsInvoiceRepo
 
 	private boolean isValidShipment(final InOutId shipmentId)
 	{
-		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
 		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
@@ -126,7 +123,8 @@ public class ShipmentLinesForCustomsInvoiceRepo
 			return false;
 		}
 
-		if (!documentBL.isStatusStrOneOf(shipment.getDocStatus(), DocStatus.Completed.getCode(), DocStatus.Closed.getCode()))
+		final DocStatus shipmentDocStatus = DocStatus.ofCode(shipment.getDocStatus());
+		if(!shipmentDocStatus.isCompletedOrClosed())
 		{
 			return false;
 		}

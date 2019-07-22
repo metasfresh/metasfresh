@@ -26,15 +26,14 @@ package de.metas.banking.model;
 import java.math.BigDecimal;
 
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 public interface IBankStatementLineOrRef
 {
 	//@formatter:off
-	public int getAD_Client_ID();
-	public int getAD_Org_ID();
+	int getAD_Client_ID();
+	int getAD_Org_ID();
 	//@formatter:on
 
 	//@formatter:off
@@ -63,33 +62,32 @@ public interface IBankStatementLineOrRef
 	//@formatter:on
 
 	//@formatter:off
-	public void setC_BPartner_ID (int C_BPartner_ID);
-	public int getC_BPartner_ID();
-	public I_C_BPartner getC_BPartner();
+	void setC_BPartner_ID (int C_BPartner_ID);
+	int getC_BPartner_ID();
+	I_C_BPartner getC_BPartner();
 	//@formatter:on
 
 	//@formatter:off
-	public void setC_Currency_ID (int C_Currency_ID);
-	public int getC_Currency_ID();
-	public I_C_Currency getC_Currency();
+	void setC_Currency_ID (int C_Currency_ID);
+	int getC_Currency_ID();
 	//@formatter:on
 
 	//@formatter:off
-	public void setC_Invoice_ID (int C_Invoice_ID);
-	public void setC_Invoice(I_C_Invoice invoice);
-	public int getC_Invoice_ID();
-	public I_C_Invoice getC_Invoice();
+	void setC_Invoice_ID (int C_Invoice_ID);
+	void setC_Invoice(I_C_Invoice invoice);
+	int getC_Invoice_ID();
+	I_C_Invoice getC_Invoice();
 	//@formatter:on
 
 	//@formatter:off
-	public void setC_Payment_ID (int C_Payment_ID);
-	public void setC_Payment(I_C_Payment payment);
-	public int getC_Payment_ID();
-	public I_C_Payment getC_Payment();
+	void setC_Payment_ID (int C_Payment_ID);
+	void setC_Payment(I_C_Payment payment);
+	int getC_Payment_ID();
+	I_C_Payment getC_Payment();
 	//@formatter:on
 
 	//@formatter:off
-	public void setReferenceNo (java.lang.String ReferenceNo);
-	public java.lang.String getReferenceNo();
+	void setReferenceNo (java.lang.String ReferenceNo);
+	java.lang.String getReferenceNo();
 	//@formatter:on
 }
