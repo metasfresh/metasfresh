@@ -44,7 +44,6 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.model.IDocumentLocation;
 import de.metas.inout.model.I_M_InOutLine;
@@ -223,15 +222,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		return rs.getAD_User_ID();
-	}
-
-	@Override
-	public I_AD_User getAD_User_Effective(final I_M_ReceiptSchedule rs)
-	{
-		final I_AD_User user = InterfaceWrapperHelper.create(
-				rs.getAD_User_Override_ID() <= 0 ? rs.getAD_User() : rs.getAD_User_Override(),
-				I_AD_User.class);
-		return user;
 	}
 
 	private IDocumentLocation asDocumentLocation(final I_M_ReceiptSchedule receiptSchedule)
