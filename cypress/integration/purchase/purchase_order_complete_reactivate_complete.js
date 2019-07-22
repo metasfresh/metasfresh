@@ -79,14 +79,15 @@ describe('Create Purchase order - material receipt - invoice', function() {
       productType,
       packingInstructionsName
     );
-    new BPartner({ name: vendorName })
-      .setVendor(true)
-      .setVendorPricingSystem(priceSystemName)
-      .setVendorDiscountSchema(discountSchemaName)
-      .setPaymentTerm('30 days net')
-      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-      .apply();
-
+    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
+      new BPartner({ name: vendorName })
+        .setVendor(true)
+        .setVendorPricingSystem(priceSystemName)
+        .setVendorDiscountSchema(discountSchemaName)
+        .setPaymentTerm('30 days net')
+        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+        .apply();
+    });
     cy.readAllNotifications();
   });
   it('Create a purchase order', function() {
@@ -136,14 +137,37 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .eq('1')
       .find('i')
       .click({ force: true });
+    // cy.get('tbody tr').should('eq', '2');
     /**Check for purchase order candidates referenced ?? */
-    /**Reactivate purchase order */
+    /**check product name */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.Lookup')
+      .find('.lookup-cell')
+      .contains(productName1);
+    /**check price of product */
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.CostPrice')
+      .find('.costprice-cell')
+      .eq(0)
+      .contains('1.23');
+    cy.get('tbody tr')
+      .eq('0')
+      .find('.quantity-cell')
+      .contains('5');
+    /**purchase order should be completed */
+    cy.log('purchase order should be completed');
+    cy.get('.tag.tag-success').contains('Completed');
   });
+  /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {
     cy.get('.meta-icon-chevron-1.meta-icon-success')
       .click({ force: true })
       .get('li')
       .eq('1')
       .click({ force: true });
+    cy.wait(8000);
+    cy.get('.tag.tag-default').contains('In Progress');
   });
 });
