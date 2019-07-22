@@ -208,7 +208,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productSet)
 		{
-			assertModelEquals(prefix + "Product", this.product, ic.getM_Product());
+			assertModelEquals(prefix + "Product", this.product.getM_Product_ID(), ic.getM_Product_ID());
 		}
 		if (productNameSet)
 		{
@@ -226,7 +226,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (uomSet)
 		{
-			assertModelEquals(prefix + "UOM", this.uom, ic.getC_UOM());
+			assertModelEquals(prefix + "UOM", this.uom.getC_UOM_ID(), ic.getC_UOM_ID());
 		}
 		if (descriptionSet)
 		{
@@ -458,7 +458,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	{
 		if (this.handlingUnitsInfoExpectation == null)
 		{
-			this.handlingUnitsInfoExpectation = new HandlingUnitsInfoExpectation<QualityInvoiceLineExpectation>(this);
+			this.handlingUnitsInfoExpectation = new HandlingUnitsInfoExpectation<>(this);
 		}
 		return this.handlingUnitsInfoExpectation;
 	}

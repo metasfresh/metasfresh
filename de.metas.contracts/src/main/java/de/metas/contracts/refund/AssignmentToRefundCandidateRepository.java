@@ -13,6 +13,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +23,7 @@ import de.metas.contracts.model.I_C_Invoice_Candidate_Assignment;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -94,6 +96,7 @@ public class AssignmentToRefundCandidateRepository
 	public AssignmentToRefundCandidate ofRecordOrNull(@NonNull final I_C_Invoice_Candidate_Assignment assignmentRecord)
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 		final I_C_Invoice_Candidate refundRecord = load(
 				assignmentRecord.getC_Invoice_Candidate_Term_ID(),
@@ -113,7 +116,8 @@ public class AssignmentToRefundCandidateRepository
 				assignmentRecord.getAssignedMoneyAmount(),
 				refundCandidate.get().getMoney().getCurrencyId());
 
-		final I_C_UOM productUom = uomDAO.getById(refundRecord.getM_Product().getC_UOM_ID());
+		final I_M_Product product = productDAO.getById(refundRecord.getM_Product_ID());
+		final I_C_UOM productUom = uomDAO.getById(product.getC_UOM_ID());
 
 		final Quantity assignedQuantity = Quantity.of(assignmentRecord.getAssignedQuantity(), productUom);
 

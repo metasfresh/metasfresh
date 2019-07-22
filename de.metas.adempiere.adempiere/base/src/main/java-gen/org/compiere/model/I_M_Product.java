@@ -1406,10 +1406,6 @@ public interface I_M_Product
 	 */
 	public int getSalesRep_ID();
 
-	public org.compiere.model.I_AD_User getSalesRep();
-
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
-
     /** Column definition for SalesRep_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_M_Product, org.compiere.model.I_AD_User>(I_M_Product.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
     /** Column name SalesRep_ID */

@@ -38,9 +38,10 @@ import lombok.Value;
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestContactUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 10, value = CONTACT_IDENTIFIER_DOC + "\n"//
-					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.") //
+	@ApiModelProperty(allowEmptyValue = false, position = 10, //
+			value = CONTACT_IDENTIFIER_DOC + "\n"//
+					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.\n"
+					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact.") //
 	@NonNull
 	final String contactIdentifier;
 

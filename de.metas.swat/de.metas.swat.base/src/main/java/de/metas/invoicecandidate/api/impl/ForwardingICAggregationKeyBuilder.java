@@ -35,6 +35,7 @@ import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_BPartner;
@@ -95,7 +96,10 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 	 */
 	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> getDelegate(final I_C_Invoice_Candidate ic)
 	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(ic.getBill_BPartner(), I_C_BPartner.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(ic.getBill_BPartner_ID(), I_C_BPartner.class);
 		if (bpartner == null)
 		{
 			return null;

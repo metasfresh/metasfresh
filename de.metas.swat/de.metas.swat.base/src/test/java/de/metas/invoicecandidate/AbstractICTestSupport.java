@@ -34,7 +34,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -43,11 +42,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
@@ -100,6 +97,7 @@ import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.location.CountryId;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
@@ -127,8 +125,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	 */
 	private I_C_Invoice_Candidate_Agg defaultLineAgg;
 	protected IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggKeyBuilder;
-
-	protected I_C_BPartner_Location bpLoc;
 
 	//
 	// Taxes
@@ -221,13 +217,6 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 
 		config_StandardDocTypes();
 		config_Pricing();
-
-		final I_C_Location loc = InterfaceWrapperHelper.create(ctx, I_C_Location.class, trxName);
-		loc.setC_Country_ID(country_DE.getC_Country_ID());
-		InterfaceWrapperHelper.save(loc);
-		bpLoc = InterfaceWrapperHelper.create(ctx, I_C_BPartner_Location.class, trxName);
-		bpLoc.setC_Location_ID(loc.getC_Location_ID());
-		InterfaceWrapperHelper.save(bpLoc);
 
 		final I_AD_Org org = InterfaceWrapperHelper.create(ctx, I_AD_Org.class, trxName); // 07442
 		InterfaceWrapperHelper.save(org);

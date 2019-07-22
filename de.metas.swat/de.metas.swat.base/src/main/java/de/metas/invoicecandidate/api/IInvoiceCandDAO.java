@@ -44,12 +44,15 @@ import org.compiere.model.I_M_InOutLine;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
@@ -57,7 +60,8 @@ import de.metas.util.ISingletonService;
 public interface IInvoiceCandDAO extends ISingletonService
 {
 	/**
-f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 * f * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#COLUMNNAME_HeaderAggregationKey}
+	 *
 	 * @see #retrieveInvoiceCandidates(IQueryBuilder)
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(Properties ctx, PInstanceId pinstanceId, String trxName);
@@ -173,12 +177,7 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 */
 	void invalidateCandsForHeaderAggregationKey(Properties ctx, String headerAggregationKey, String trxName);
 
-	/**
-	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code> and have their effective invoice rule set to <code>KundenintervallNachLieferung</code>.
-	 *
-	 * @param bpartner
-	 */
-	void invalidateCandsForBPartnerInvoiceRule(I_C_BPartner bpartner);
+	void invalidateCandsForBPartnerInvoiceRule(BPartnerId bpartnerId);
 
 	/**
 	 * Invalidates all ICs that have the given <code>Bill_BPartner_ID</code>.
@@ -276,9 +275,6 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	 * <li>are active</li>
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
-	 *
-	 * @param invoiceCandidate
-	 * @return
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
@@ -425,4 +421,10 @@ f	 * @return invoice candidate iterator ordered by {@link I_C_Invoice_Candidate#
 	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 
 	Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(PInstanceId pinstanceId);
+
+	InvoiceCandidateId getFirstInvoiceableInvoiceCandId(OrderId orderId);
+
+	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
 }

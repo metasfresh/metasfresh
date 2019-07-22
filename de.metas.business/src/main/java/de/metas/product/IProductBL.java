@@ -78,7 +78,7 @@ public interface IProductBL extends ISingletonService
 
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
-	 * 
+	 *
 	 * @return {@link AttributeSetId}; never returns null
 	 */
 	AttributeSetId getAttributeSetId(I_M_Product product);
@@ -177,4 +177,6 @@ public interface IProductBL extends ISingletonService
 	String getProductValue(ProductId productId);
 
 	String getProductName(ProductId productId);
+
+	boolean isFreightCostProduct(ProductId productId);
 }

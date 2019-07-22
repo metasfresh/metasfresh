@@ -12,17 +12,20 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -78,6 +81,8 @@ public class AssignableInvoiceCandidateFactory
 	/** Note: does not load&include {@link AssignmentToRefundCandidate}s; those need to be retrieved using {@link AssignmentToRefundCandidateRepository}. */
 	public AssignableInvoiceCandidate ofRecord(@Nullable final I_C_Invoice_Candidate assignableRecord)
 	{
+		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(assignableRecord.getC_Invoice_Candidate_ID());
 
 		final Timestamp invoicableFromDate = getValueOverrideOrValue(assignableRecord, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice);
@@ -85,7 +90,7 @@ public class AssignableInvoiceCandidateFactory
 				.getNetAmtInvoiced()
 				.add(assignableRecord.getNetAmtToInvoice());
 
-		final I_C_Currency currencyRecord = assignableRecord.getC_Currency();
+		final I_C_Currency currencyRecord = currencyDAO.getById(CurrencyId.ofRepoId(assignableRecord.getC_Currency_ID()));
 		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 		final int precision = currencyRecord.getStdPrecision();
 		final Money money = Money.of(stripTrailingDecimalZeros(moneyAmount), currencyId);
@@ -97,7 +102,7 @@ public class AssignableInvoiceCandidateFactory
 
 		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.bpartnerId(BPartnerId.ofRepoId(assignableRecord.getBill_BPartner_ID()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoId(assignableRecord.getBill_BPartner_ID(),assignableRecord.getBill_Location_ID()))
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision)
@@ -113,8 +118,10 @@ public class AssignableInvoiceCandidateFactory
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-		final I_C_UOM uom = uomDAO.getById(assignableRecord.getM_Product().getC_UOM_ID());
+		final I_M_Product product = productDAO.getById(assignableRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
 		final Quantity quantity = Quantity.of(
 				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
