@@ -3,6 +3,7 @@
 import {DocumentStatusKey, RewriteURL} from "./utils/constants";
 
 declare namespace Cypress {
+
   // noinspection JSUnusedGlobalSymbols
   interface Chainable<Subject> {
 
@@ -272,10 +273,10 @@ declare namespace Cypress {
     getDOMNotificationsNumber(): Chainable<number>
 
     /**
-      * Get the notifications inbox in the app state
-      *
-      * @return notificationsNumber
-      */
+     * Get the notifications inbox in the app state
+     *
+     * @return notificationsNumber
+     */
     getNotificationsInbox(): Chainable<number>
 
     /**
@@ -296,14 +297,14 @@ declare namespace Cypress {
      * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
      */
     addNotification(notificationObject?: object): Chainable<any>
-    
+
     /**
      * Clear current notifications and add a new one. Optionally set the unread count.
      *
      * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
      * @param unreadCount optional, default = 0; sets unread count number
      */
-    
+
     newNotification(notificationObject?: object, unreadCount?: number): Chainable<any>
 
     /**
@@ -379,6 +380,14 @@ declare namespace Cypress {
      * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
      */
     pressBatchEntryButton(waitBeforePress?: number): Chainable<any>
+
+
+    /**
+     * Close the batch entry quickInput
+     * @param waitBeforePress - optional; if truthy, call cy.wait with the given parameter first
+     */
+    closeBatchEntry(waitBeforePress?: number): Chainable<any>
+
 
     /**
      * Erase the contents of this field.
@@ -607,6 +616,25 @@ declare namespace Cypress {
      * Currently it just waits for 10 seconds, but maybe in the future backend will announce when a process is finished, and we will wait for that.
      */
     waitUntilProcessIsFinished(): Chainable<any>
+
+
+    /**
+     * Select the nth row in a list. Starts from 0.
+     *
+     * @param rowNumber - the row number
+     */
+    selectNthRow(rowNumber: number): Chainable<any>
+
+
+    /**
+     * Complete the current document
+     */
+    completeDocument(): Chainable<any>
+
+    /**
+     * Reactivate the current document
+     */
+    reactivateDocument(): Chainable<any>
 
   }
 }

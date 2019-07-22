@@ -56,10 +56,22 @@ Cypress.Commands.add('selectReference', (refName, timeout) => {
   });
 });
 
-
 Cypress.Commands.add('openReferencedDocuments', (referenceId) => {
   cy.get('body').type('{alt}6');
   if (referenceId) {
     cy.selectReference(referenceId).click();
   }
+});
+
+/**
+ * Select the nth row in a list. Starts from 0.
+ *
+ * @param rowNumber - the row number
+ */
+Cypress.Commands.add('selectNthRow', rowNumber => {
+  return cy
+    .get('.table-flex-wrapper')
+    .find(`tbody tr:nth-child(${rowNumber + 1})`)
+    .should('exist')
+    .click({ force: true });
 });
