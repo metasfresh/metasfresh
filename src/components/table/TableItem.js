@@ -439,13 +439,14 @@ class TableItem extends PureComponent {
     return (
       <div className={'indent'}>
         {indentation}
-        {includedDocuments && !collapsed && (
-          <div
-            className={classnames('indent-bot', {
-              'indent-collapsible-bot': collapsible,
-            })}
-          />
-        )}
+        {includedDocuments &&
+          !collapsed && (
+            <div
+              className={classnames('indent-bot', {
+                'indent-collapsible-bot': collapsible,
+              })}
+            />
+          )}
         {includedDocuments && collapsible ? (
           collapsed ? (
             <i
@@ -489,25 +490,26 @@ class TableItem extends PureComponent {
 
     return (
       <WithMobileDoubleTap>
-      <tr
-        key={key}
-        onClick={onClick}
-        onDoubleClick={this.handleDoubleClick}
-        className={classnames({
-          'row-selected': isSelected,
-          'tr-odd': odd,
-          'tr-even': !odd,
-          'row-disabled': processed,
-          'row-boundary': processed && lastChild && !includedDocuments,
-          'row-not-saved': notSaved,
-          'item-caption': caption,
-        })}
-      >
-        {indentSupported && indent && (
-          <td className="indented">{this.renderTree(contextType)}</td>
-        )}
-        {this.renderCells()}
-      </tr>
+        <tr
+          key={key}
+          onClick={onClick}
+          onDoubleClick={this.handleDoubleClick}
+          className={classnames({
+            'row-selected': isSelected,
+            'tr-odd': odd,
+            'tr-even': !odd,
+            'row-disabled': processed,
+            'row-boundary': processed && lastChild && !includedDocuments,
+            'row-not-saved': notSaved,
+            'item-caption': caption,
+          })}
+        >
+          {indentSupported &&
+            indent && (
+              <td className="indented">{this.renderTree(contextType)}</td>
+            )}
+          {this.renderCells()}
+        </tr>
       </WithMobileDoubleTap>
     );
   }

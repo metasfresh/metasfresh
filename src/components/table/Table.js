@@ -930,15 +930,13 @@ class Table extends Component {
 
       if (!rows || !rows.length) return;
 
-      rows
-        .filter(row => row[keyProperty] === rowId)
-        .map(item => {
-          let field = item.fieldsByName[prop];
+      rows.filter(row => row[keyProperty] === rowId).map(item => {
+        let field = item.fieldsByName[prop];
 
-          if (field) {
-            field.value = value;
-          }
-        });
+        if (field) {
+          field.value = value;
+        }
+      });
     }
 
     onRowEdited && onRowEdited(true);
@@ -971,10 +969,10 @@ class Table extends Component {
     this.rowRefs = {};
 
     let renderRows = rows.filter(row => {
-        if (collapsedRows) {
-          return collapsedRows.indexOf(row[keyProperty]) === -1;
-        }
-        return true;
+      if (collapsedRows) {
+        return collapsedRows.indexOf(row[keyProperty]) === -1;
+      }
+      return true;
     });
 
     if (isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT) {
@@ -982,83 +980,83 @@ class Table extends Component {
     }
 
     return renderRows.map((item, i) => (
-        <TableItem
-          {...item}
-          {...{
-            entity,
-            cols,
-            windowId,
-            mainTable,
-            indentSupported,
-            selected,
-            docId,
-            tabIndex,
-            readonly,
-            collapsible,
-            viewId,
-            supportOpenRecord,
-          }}
-          key={`${i}-${docId}`}
-          collapsed={
-            collapsedParentsRows &&
-            collapsedParentsRows.indexOf(item[keyProperty]) > -1
+      <TableItem
+        {...item}
+        {...{
+          entity,
+          cols,
+          windowId,
+          mainTable,
+          indentSupported,
+          selected,
+          docId,
+          tabIndex,
+          readonly,
+          collapsible,
+          viewId,
+          supportOpenRecord,
+        }}
+        key={`${i}-${docId}`}
+        collapsed={
+          collapsedParentsRows &&
+          collapsedParentsRows.indexOf(item[keyProperty]) > -1
+        }
+        odd={i & 1}
+        ref={c => {
+          if (c) {
+            const keyProp = item[keyProperty];
+            this.rowRefs[keyProp] = c.wrappedInstance;
           }
-          odd={i & 1}
-          ref={c => {
-            if (c) {
-              const keyProp = item[keyProperty];
-              this.rowRefs[keyProp] = c.wrappedInstance;
-            }
-          }}
-          rowId={item[keyProperty]}
-          tabId={tabId}
-          onDoubleClick={this.handleDoubleClick}
-          onClick={e => {
-            const selected = this.handleClick(e, keyProperty, item);
+        }}
+        rowId={item[keyProperty]}
+        tabId={tabId}
+        onDoubleClick={this.handleDoubleClick}
+        onClick={e => {
+          const selected = this.handleClick(e, keyProperty, item);
 
-            if (openIncludedViewOnSelect) {
-              showIncludedViewOnSelect({
-                showIncludedView: selected && item.supportIncludedViews,
-                forceClose: !selected,
-                windowType: item.supportIncludedViews
-                  ? item.includedView.windowType || item.includedView.windowId
-                  : null,
+          if (openIncludedViewOnSelect) {
+            showIncludedViewOnSelect({
+              showIncludedView: selected && item.supportIncludedViews,
+              forceClose: !selected,
+              windowType: item.supportIncludedViews
+                ? item.includedView.windowType || item.includedView.windowId
+                : null,
               viewId: item.supportIncludedViews ? item.includedView.viewId : '',
-              });
-            }
-          }}
-          handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
-            this.handleRightClick(
-              e,
-              item[keyProperty],
-              fieldName,
-              !!supportZoomInto,
-              supportFieldEdit
-            )
+            });
           }
-          changeListenOnTrue={() => this.changeListen(true)}
-          changeListenOnFalse={() => this.changeListen(false)}
-          newRow={i === rows.length - 1 ? newRow : false}
-          isSelected={
-            selected &&
-            (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
-          }
-          handleSelect={this.selectRangeProduct}
-          contextType={item.type}
-          caption={item.caption ? item.caption : ''}
-          colspan={item.colspan}
-          notSaved={item.saveStatus && !item.saveStatus.saved}
-          getSizeClass={getSizeClass}
-          handleRowCollapse={() =>
-            this.handleRowCollapse(
-              item,
-              collapsedParentsRows.indexOf(item[keyProperty]) > -1
-            )
-          }
-          onItemChange={this.handleItemChange}
-          onCopy={handleCopy}
-        />
-      ));
+        }}
+        handleRightClick={(e, fieldName, supportZoomInto, supportFieldEdit) =>
+          this.handleRightClick(
+            e,
+            item[keyProperty],
+            fieldName,
+            !!supportZoomInto,
+            supportFieldEdit
+          )
+        }
+        changeListenOnTrue={() => this.changeListen(true)}
+        changeListenOnFalse={() => this.changeListen(false)}
+        newRow={i === rows.length - 1 ? newRow : false}
+        isSelected={
+          selected &&
+          (selected.indexOf(item[keyProperty]) > -1 || selected[0] === 'all')
+        }
+        handleSelect={this.selectRangeProduct}
+        contextType={item.type}
+        caption={item.caption ? item.caption : ''}
+        colspan={item.colspan}
+        notSaved={item.saveStatus && !item.saveStatus.saved}
+        getSizeClass={getSizeClass}
+        handleRowCollapse={() =>
+          this.handleRowCollapse(
+            item,
+            collapsedParentsRows.indexOf(item[keyProperty]) > -1
+          )
+        }
+        onItemChange={this.handleItemChange}
+        onCopy={handleCopy}
+      />
+    ));
   };
 
   renderEmptyInfo = (data, tabId) => {
@@ -1304,20 +1302,22 @@ class Table extends Component {
           />
         )}
 
-        {allowShortcut && !readonly && (
-          <TableContextShortcuts
-            handleToggleQuickInput={this.handleBatchEntryToggle}
-            handleToggleExpand={toggleFullScreen}
-          />
-        )}
-        {isMobileOrTablet && rows.length > MOBILE_TABLE_SIZE_LIMIT && (
-          <span className="text-danger">
-            {counterpart.translate('view.limitTo', {
-              limit: MOBILE_TABLE_SIZE_LIMIT,
-              total: rows.length,
-            })}
-          </span>
-        )}
+        {allowShortcut &&
+          !readonly && (
+            <TableContextShortcuts
+              handleToggleQuickInput={this.handleBatchEntryToggle}
+              handleToggleExpand={toggleFullScreen}
+            />
+          )}
+        {isMobileOrTablet &&
+          rows.length > MOBILE_TABLE_SIZE_LIMIT && (
+            <span className="text-danger">
+              {counterpart.translate('view.limitTo', {
+                limit: MOBILE_TABLE_SIZE_LIMIT,
+                total: rows.length,
+              })}
+            </span>
+          )}
       </div>
     );
   }
