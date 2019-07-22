@@ -3,18 +3,15 @@ package de.metas.ui.web.order.products_proposal.campaign_price;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import de.metas.location.CountryId;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.rules.campaign_price.CampaignPrice;
 import de.metas.pricing.rules.campaign_price.CampaignPriceQuery;
 import de.metas.pricing.rules.campaign_price.CampaignPriceService;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalCampaignPrice;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -41,10 +38,9 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(exclude = { "campaignPriceService", "currenciesRepo" })
+@ToString(exclude = { "campaignPriceService" })
 public class StandardCampaignPriceProvider implements CampaignPriceProvider
 {
-	private final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
 	private final CampaignPriceService campaignPriceService;
 
 	private final BPartnerId bpartnerId;
@@ -84,7 +80,7 @@ public class StandardCampaignPriceProvider implements CampaignPriceProvider
 	private ProductProposalCampaignPrice toProductProposalCampaignPrice(final CampaignPrice campaignPrice)
 	{
 		return ProductProposalCampaignPrice.builder()
-				.amount(campaignPrice.getPriceStd().toAmount(currenciesRepo::getISOCodeById))
+				.amount(campaignPriceService.getPriceStdAsAmount(campaignPrice))
 				.applyOnlyIfLessThanStandardPrice(true)
 				.build();
 	}

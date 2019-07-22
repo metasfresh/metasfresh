@@ -13,7 +13,7 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -197,7 +197,8 @@ public class SalesOrder2PurchaseViewFactory extends PurchaseViewFactoryTemplate
 
 		final OrderId salesOrderId = getSingleSalesOrderId(purchaseCandidates);
 		final I_C_Order salesOrder = ordersRepo.getById(salesOrderId);
-		return IDocument.STATUS_Completed.equals(salesOrder.getDocStatus());
+		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
+		return docStatus.isCompleted();
 	}
 
 	private static final OrderId getSingleSalesOrderId(@NonNull final List<PurchaseCandidate> purchaseCandidates)

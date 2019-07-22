@@ -1,7 +1,7 @@
 package de.metas.ui.web.order.products_proposal.process;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.JavaProcess;
@@ -41,7 +41,7 @@ abstract class WEBUI_ProductsProposal_Launcher_Template extends JavaProcess
 
 	public WEBUI_ProductsProposal_Launcher_Template()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	@Override

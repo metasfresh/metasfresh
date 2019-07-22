@@ -135,11 +135,11 @@ public final class Values
 		}
 		else if (value instanceof Money)
 		{
-			return bigDecimalToJson(((Money)value).getValue());
+			return bigDecimalToJson(((Money)value).getAsBigDecimal());
 		}
 		else if (value instanceof Amount)
 		{
-			return bigDecimalToJson(((Amount)value).getValue());
+			return bigDecimalToJson(((Amount)value).getAsBigDecimal());
 		}
 		else if (value instanceof DocumentId)
 		{

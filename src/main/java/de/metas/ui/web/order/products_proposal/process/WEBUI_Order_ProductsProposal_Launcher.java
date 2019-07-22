@@ -4,7 +4,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -47,8 +47,8 @@ public class WEBUI_Order_ProductsProposal_Launcher extends WEBUI_ProductsProposa
 		}
 
 		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
-		final String docStatus = salesOrder.getDocStatus();
-		if (!IDocument.STATUS_Drafted.equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
+		if (!docStatus.isDrafted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
 		}

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -40,7 +41,7 @@ public class ProductProposalPrice
 	@Getter
 	private final BigDecimal userEnteredPriceValue;
 	@Getter
-	private final String currencyCode;
+	private final CurrencyCode currencyCode;
 
 	private final Amount priceListPrice;
 	private final ProductProposalCampaignPrice campaignPrice;
@@ -62,7 +63,7 @@ public class ProductProposalPrice
 
 		//
 		this.currencyCode = priceListPrice.getCurrencyCode();
-		if (campaignPrice != null && !currencyCode.equals(priceListPrice.getCurrencyCode()))
+		if (campaignPrice != null && !currencyCode.equals(campaignPrice.getCurrencyCode()))
 		{
 			throw new AdempiereException("" + campaignPrice + " and " + priceListPrice + " shall have the same currency");
 		}
@@ -74,11 +75,11 @@ public class ProductProposalPrice
 		}
 		else if (campaignPrice != null)
 		{
-			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getValue();
+			this.userEnteredPriceValue = campaignPrice.applyOn(priceListPrice).getAsBigDecimal();
 		}
 		else
 		{
-			this.userEnteredPriceValue = priceListPrice.getValue();
+			this.userEnteredPriceValue = priceListPrice.getAsBigDecimal();
 		}
 
 		//

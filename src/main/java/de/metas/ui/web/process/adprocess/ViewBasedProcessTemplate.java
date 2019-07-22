@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.ClientOnlyProcess;
@@ -99,7 +99,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	protected ViewBasedProcessTemplate()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	/**
