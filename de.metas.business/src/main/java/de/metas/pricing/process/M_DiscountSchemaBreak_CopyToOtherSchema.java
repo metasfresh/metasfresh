@@ -1,19 +1,12 @@
 package de.metas.pricing.process;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.model.I_M_DiscountSchemaLine;
-
-import com.google.common.collect.ImmutableList;
+import org.compiere.model.I_M_DiscountSchemaBreak;
 
 import de.metas.pricing.DiscountSchemaId;
-import de.metas.pricing.DiscountSchemaLineId;
-import de.metas.pricing.DiscountSchemaRepository;
+import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -44,9 +37,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_DiscountSchemaLine_CopyToOtherSchema extends JavaProcess implements IProcessPrecondition
+public class M_DiscountSchemaBreak_CopyToOtherSchema extends JavaProcess implements IProcessPrecondition
 {
-	private final DiscountSchemaRepository discountSchemaRepo = Adempiere.getBean(DiscountSchemaRepository.class);
+	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Param(parameterName = I_M_DiscountSchema.COLUMNNAME_M_DiscountSchema_ID)
 	private DiscountSchemaId p_DiscountSchemaId;
@@ -63,31 +56,16 @@ public class M_DiscountSchemaLine_CopyToOtherSchema extends JavaProcess implemen
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final List<DiscountSchemaLineId> linesToCopy = retrieveLinesToCopy();
+		final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter = getProcessInfo().getQueryFilterOrElse(null);
+		if (queryFilter == null)
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 
-		linesToCopy.stream()
-		.forEach(lineToCopy -> discountSchemaRepo.createLineCopy(lineToCopy, p_DiscountSchemaId));
+		pricingConditionsRepo.copyDiscountSchemaBreaks(p_DiscountSchemaId, queryFilter);
 
 		return MSG_OK;
 	}
-
-	private List<DiscountSchemaLineId> retrieveLinesToCopy()
-	{
-		final IQueryFilter<I_M_DiscountSchemaLine> queryFilter = getProcessInfo()
-				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-
-		final ImmutableList<DiscountSchemaLineId> selectedDiscountSchemaLineIds = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DiscountSchemaLine.class)
-				.filter(queryFilter)
-				.create()
-				.listIds(DiscountSchemaLineId::ofRepoId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		return selectedDiscountSchemaLineIds;
-
-	}
-
 }
