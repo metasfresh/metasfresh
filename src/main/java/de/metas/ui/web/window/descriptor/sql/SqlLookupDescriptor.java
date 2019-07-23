@@ -192,6 +192,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	{
 		return Objects.hash(
 				tableName,
+				zoomIntoWindowId,
 				sqlForFetchingExpression,
 				sqlForFetchingLookupByIdExpression,
 				entityTypeIndex,
@@ -224,6 +225,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		final SqlLookupDescriptor other = (SqlLookupDescriptor)obj;
 		return Objects.equals(tableName, other.tableName)
+				&& Objects.equals(zoomIntoWindowId, other.zoomIntoWindowId)
 				&& Objects.equals(sqlForFetchingExpression, other.sqlForFetchingExpression)
 				&& Objects.equals(sqlForFetchingLookupByIdExpression, other.sqlForFetchingLookupByIdExpression)
 				&& entityTypeIndex == other.entityTypeIndex
