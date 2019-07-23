@@ -234,9 +234,13 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		Optional<AdWindowId> adWindowId;
+		@NonNull
+		@Builder.Default
+		Optional<AdWindowId> adWindowId = Optional.empty();
+
 		@NonNull
 		TableRecordReference record;
+
 		String recordDisplayText;
 	}
 
