@@ -5,10 +5,9 @@ import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
-import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { PurchaseOrderStatus } from '../../support/utils/constants';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Purchase order - material receipt - invoice', function() {
   const date = humanReadableNow();
@@ -27,7 +26,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const productType = 'Item';
   const vendorName = `Vendor ${date}`;
 
-  before(function() {
+  it('Create price and product entities to be used in purchase order', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -41,6 +40,8 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setProduct(productForPackingMaterial)
         .apply();
     });
+  });
+  it('Create packing related items to be used in purchase order', function() {
     cy.fixture('product/packing_instructions.json').then(packingInstructionsJson => {
       Object.assign(new PackingInstructions(), packingInstructionsJson)
         .setName(packingInstructionsName)
@@ -53,6 +54,8 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setPackingMaterial(packingMaterialName)
         .apply();
     });
+  });
+  it('Create product and vendor to be used in purchase order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -103,39 +106,38 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${purchaseOrders.windowId}/*/${purchaseOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .clear()
       .type('5{enter}');
-    cy.wait(8000);
+    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
     /**Complete purchase order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
-    cy.wait(8000);
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+
     /**purchase order should be completed */
     cy.log('purchase order should be completed');
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.get('.tag.tag-success').contains(getLanguageSpecific(miscDictionary, PurchaseOrderStatus.Completed));
+      cy.get('.tag.tag-success').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed));
     });
   });
   /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {
-    cy.get('.meta-icon-chevron-1.meta-icon-success')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
+      );
+    });
     cy.wait(8000);
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, PurchaseOrderStatus.InProgress));
+      cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress));
     });
     cy.log('change Quantity TU');
     cy.get('tbody tr')
@@ -161,10 +163,11 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .dblclick({ force: true })
       .writeIntoStringField('PriceEntered', '4.00');
     cy.log('change Quantity');
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
   });
 });

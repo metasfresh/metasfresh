@@ -5,9 +5,9 @@ import { ProductCategory } from '../../support/utils/product';
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
-import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Purchase order - material receipt - invoice', function() {
   const date = humanReadableNow();
@@ -28,7 +28,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const productType = 'Item';
   const vendorName = `Vendor ${date}`;
 
-  before(function() {
+  it('Create price and product entities to be used in purchase order', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
@@ -36,6 +36,8 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
     Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
+  });
+  it('Create packing related entities to be used in purchase order', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -54,6 +56,8 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setPackingMaterial(packingMaterialName)
         .apply();
     });
+  });
+  it('Create product,category and vendor entities to be used in purchase order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -103,7 +107,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
@@ -114,16 +117,13 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${purchaseOrders.windowId}/*/${purchaseOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.wait(8000);
+    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
 
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName2, productName2, false, false, null, true);
@@ -135,22 +135,20 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${purchaseOrders.windowId}/*/${purchaseOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.wait(8000);
+    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
     /**Complete purchase order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
     cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
@@ -210,7 +208,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('i')
       .click({ force: true });
     cy.get('.reference_C_Invoice_Candidate').click();
-    cy.wait(5000);//look into
+    cy.wait(5000); //look into
     cy.get('.pagination-link.pointer').click({ force: true });
     cy.contains('generate invoices').click();
     cy.wait(5000);

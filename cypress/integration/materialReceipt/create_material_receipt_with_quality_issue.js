@@ -3,9 +3,9 @@ import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { BPartner } from '../../support/utils/bpartner';
-import { purchaseOrders } from '../../page_objects/purchase_orders';
-import { humanReadableNow } from '../../support/utils/utils';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create test: create material receipt with quality issue, https://github.com/metasfresh/metasfresh-e2e/issues/210', function() {
   const date = humanReadableNow();
@@ -24,13 +24,15 @@ describe('Create test: create material receipt with quality issue, https://githu
   const productType = 'Item';
   const vendorName = `Vendor ${date}`;
 
-  before(function() {
+  it('Create a quality note', function() {
     cy.fixture('material/quality_note.json').then(qualityNoteJson => {
       Object.assign(new QualityNote(), qualityNoteJson)
         .setValue(qualityNoteValue)
         .setName(qualityNoteName)
         .apply();
     });
+  });
+  it('Create quality issue warehouse', function() {
     /**filter after quality issue warehouse */
     cy.visitWindow('139');
     toggleNotFrequentFilters();
@@ -81,7 +83,8 @@ describe('Create test: create material receipt with quality issue, https://githu
         .setValue(productCategoryValue)
         .apply();
     });
-
+  });
+  it('Create product and vendor', function() {
     Builder.createBasicProductEntities(
       productCategoryName,
       productCategoryValue,
@@ -101,7 +104,7 @@ describe('Create test: create material receipt with quality issue, https://githu
     });
     cy.readAllNotifications();
   });
-  it('Create material receipt with quality issue', function() {
+  it('Create purchase order - material receipt with quality issue', function() {
     /**Create a purchase order */
     cy.visitWindow('181', 'NEW');
     cy.get('#lookup_C_BPartner_ID input')
@@ -116,7 +119,7 @@ describe('Create test: create material receipt with quality issue, https://githu
       .contains(addNewText)
       .should('exist')
       .click();
-    // cy.wait(8000);
+
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
@@ -127,22 +130,20 @@ describe('Create test: create material receipt with quality issue, https://githu
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${purchaseOrders.windowId}/*/${purchaseOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .clear()
       .type('10{enter}');
-    cy.wait(10000);
+    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
     /**Complete purchase order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
     cy.wait(8000);
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
