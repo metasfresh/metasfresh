@@ -418,7 +418,11 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
         return;
       }
 
-      if (actualFieldValue !== expectedFieldValue) {
+      /**
+       * Here i'm using `!=` and not `!==` so that '222' == 222 (a string is equals to a number with the same value)
+       * We need this for cases such as `cy.writeIntoStringField('QtyEntered', 222, true);`
+       */
+      if (actualFieldValue != expectedFieldValue) {
         cy.log(
           `5 waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}', but the current response body's field has ${fieldName}=${actualFieldValue}; waiting once more`
         );
