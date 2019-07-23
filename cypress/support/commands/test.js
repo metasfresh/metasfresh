@@ -1,5 +1,5 @@
 import { getLanguageSpecific } from '../utils/utils';
-import { DocumentStatusKey } from '../utils/constants';
+import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
@@ -156,6 +156,24 @@ Cypress.Commands.add('pressBatchEntryButton', waitBeforePress => {
   });
 });
 
+/**
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('closeBatchEntry', waitBeforePress => {
+  describe("Press table's batch-entry-record-button", function() {
+    if (waitBeforePress) {
+      cy.wait(waitBeforePress);
+    }
+
+    cy.get('.quick-input-container .meta-icon-preview').should('exist'); // only close batch entry if it's empty
+    cy.get('.indicator-pending').should('not.exist');
+
+    cy.get('body').type('{alt}q'); // cypress can't type to `.quick-input-container`
+    cy.get('.quick-input-container').should('not.exist');
+    cy.get('.indicator-pending').should('not.exist');
+  });
+});
+
 Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   describe(`Expect specific document status`, function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
@@ -165,3 +183,24 @@ Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
   });
 });
 
+Cypress.Commands.add('completeDocument', () => {
+  describe('Complete the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+  });
+});
+
+Cypress.Commands.add('reactivateDocument', () => {
+  describe('Reactivate the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
+      );
+    });
+  });
+});

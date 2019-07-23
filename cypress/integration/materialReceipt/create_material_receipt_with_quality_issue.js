@@ -5,6 +5,7 @@ import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { BPartner } from '../../support/utils/bpartner';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { humanReadableNow } from '../../support/utils/utils';
+import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 
 describe('Create test: create material receipt with quality issue, https://github.com/metasfresh/metasfresh-e2e/issues/210', function() {
   const date = humanReadableNow();
@@ -30,9 +31,14 @@ describe('Create test: create material receipt with quality issue, https://githu
         .setName(qualityNoteName)
         .apply();
     });
-    /**check if a quality issue warehouse exists */
+    /**filter after quality issue warehouse */
     cy.visitWindow('139');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.clickOnCheckBox('IsIssueWarehouse', true, false, null, true);
+    applyFilters();
     cy.wait(8000);
+    /**if found, deselect it */
     cy.get('tr > td:nth-of-type(7)').then(el => {
       var element = el.find('.meta-icon-checkbox-1');
       if (element.length) {
@@ -42,6 +48,7 @@ describe('Create test: create material receipt with quality issue, https://githu
       }
     });
     cy.wait(10000);
+    /**create a new quality issue warehouse */
     cy.visitWindow('139', 'NEW')
       .writeIntoStringField('Name', warehouseName)
       .clearField('Value')

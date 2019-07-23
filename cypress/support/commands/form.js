@@ -109,27 +109,33 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
+ * @param {boolean} skipPatch - if true - the patch request will be skipped
  */
-Cypress.Commands.add('clickOnCheckBox', (fieldName, expectedPatchValue, modal, rewriteUrl = null) => {
-  describe('Click on a checkbox field', function() {
-    cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
+Cypress.Commands.add(
+  'clickOnCheckBox',
+  (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
+    describe('Click on a checkbox field', function() {
+      cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-    const patchCheckBoxAliasName = `patchCheckBox-${new Date().getTime()}`;
+      const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+      const patchCheckBoxAliasName = `patchCheckBox-${new Date().getTime()}`;
+      if (!skipPatch) {
+        cy.server();
+        cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
+      }
+      cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
+      const path = createFieldPath(fieldName, modal);
 
-    cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
-
-    const path = createFieldPath(fieldName, modal);
-
-    cy.get(path)
-      .find('.input-checkbox-tick')
-      .click({ force: true }) // we don't care if the checkbox scrolled out of view
-      .waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
-  });
-});
+      cy.get(path)
+        .find('.input-checkbox-tick')
+        .click({ force: true }); // we don't care if the checkbox scrolled out of view
+      if (!skipPatch) {
+        cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
+      }
+    });
+  }
+);
 /*
  * Right now it can only select the current date
  */
@@ -295,7 +301,6 @@ Cypress.Commands.add(
  *
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
- * @param {boolean} skipPatch - if set to true, the PATCH request will be skipped
  */
 Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
   describe('Select value in list field', function() {

@@ -8,6 +8,7 @@ export class DocumentStatusKey {
 export class DocumentActionKey {
   static Complete = 'docActionComplete';
   static Void = 'docActionVoid';
+  static Reactivate = 'docActionReactivate';
 }
 
 /**
@@ -18,7 +19,11 @@ export class RewriteURL {
   /**
    * WINDOW is the default
    */
-  static WINDOW = '/rest/api/window/.*[^/][^N][^E][^W]$';
+  static WINDOW = '/rest/api/window/';
 
   static PROCESS = '/rest/api/process/';
+}
+export class PurchaseOrderStatus {
+  static Completed = 'Completed';
+  static InProgress = 'InProgress';
 }
