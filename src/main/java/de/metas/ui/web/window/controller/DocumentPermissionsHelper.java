@@ -114,7 +114,7 @@ public class DocumentPermissionsHelper
 
 		try
 		{
-			rolePermLoggingBL.logWindowAccess(permissions.getRoleId(), adWindowId.getRepoId(), readWriteAccess, ex.getLocalizedMessage());
+			rolePermLoggingBL.logWindowAccess(permissions.getRoleId(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
 		}
 		catch (final NoSuchForeignKeyException noSuchForeignKeyException)
 		{

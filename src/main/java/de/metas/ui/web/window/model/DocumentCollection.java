@@ -752,7 +752,7 @@ public class DocumentCollection
 		InterfaceWrapperHelper.save(toPO);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAD_Window_ID(fromDocumentPath.getAD_Window_ID(-1));
+		childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
 		childCRS.setParentPO(toPO);
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);

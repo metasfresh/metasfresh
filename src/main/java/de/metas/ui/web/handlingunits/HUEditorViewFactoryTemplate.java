@@ -160,7 +160,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
 
 			// Consider window tab's where clause if any
-			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
+			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toAdWindowId());
 			if (!Check.isEmpty(huTab.getWhereClause(), true))
 			{
 				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");

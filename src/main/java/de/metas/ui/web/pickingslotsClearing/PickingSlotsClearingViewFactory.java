@@ -84,7 +84,7 @@ public class PickingSlotsClearingViewFactory implements IViewFactory
 
 		return ViewLayout.builder()
 				.setWindowId(WINDOW_ID)
-				.setCaption(Services.get(IADWindowDAO.class).retrieveWindowName(WINDOW_ID.toInt()))
+				.setCaption(Services.get(IADWindowDAO.class).retrieveWindowName(WINDOW_ID.toAdWindowId()))
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.setHasTreeSupport(true)
 				.setFilters(getFilterDescriptorsProvider().getAll())
