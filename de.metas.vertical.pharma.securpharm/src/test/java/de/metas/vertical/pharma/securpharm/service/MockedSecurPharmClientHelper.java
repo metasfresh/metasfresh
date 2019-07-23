@@ -135,6 +135,9 @@ public class MockedSecurPharmClientHelper
 	{
 		Mockito.when(client.decodeDataMatrix(dataMatrix))
 				.thenReturn(DecodeDataMatrixClientResponse.builder()
+						.error(true)
+						.resultCode("errorCode")
+						.resultMessage("errorMessage")
 						.log(generateDummyLogERROR())
 						.build());
 	}

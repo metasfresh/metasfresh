@@ -120,14 +120,16 @@ public class SecurPharmClient
 
 		final APIReponseWithLog responseAndLogData = getFromUrl(url, clientTransactionId);
 
+		final JsonAPIResponse apiResponse = responseAndLogData.getResponse();
 		final SecurPharmLog log = responseAndLogData.getLog();
-		final ProductDetails productDetails = !log.isError()
-				? extractProductDetailsFromAPIResponse(responseAndLogData.getResponse())
-				: null;
+		final boolean error = log.isError();
 
 		return DecodeDataMatrixClientResponse.builder()
+				.error(error)
+				.resultCode(apiResponse.getResultCode())
+				.resultMessage(apiResponse.getResultMessage())
+				.productDetails(!error ? extractProductDetailsFromAPIResponse(apiResponse) : null)
 				.log(log)
-				.productDetails(productDetails)
 				.build();
 	}
 
@@ -188,7 +190,7 @@ public class SecurPharmClient
 			logger.debug("Got HTTP client error", ex);
 
 			final String apiResponseString = ex.getResponseBodyAsString();
-			apiResponse = fromJsonStringOrNull(apiResponseString, JsonAPIResponse.class);
+			apiResponse = createJsonAPIResponseFromJsonString(apiResponseString);
 
 			log.error(true);
 			log.responseCode(ex.getStatusCode());
@@ -199,12 +201,7 @@ public class SecurPharmClient
 		{
 			logger.debug("Got unknown error", ex);
 
-			final JsonResult apiResponseResult = new JsonResult();
-			apiResponseResult.setCode("?");
-			apiResponseResult.setMessage(ex.getMessage());
-
-			apiResponse = new JsonAPIResponse();
-			apiResponse.setRes(apiResponseResult);
+			apiResponse = createJsonAPIResponseFromErrorMessage(ex.getMessage());
 
 			log.error(true);
 			// logData.responseCode(ex.getStatusCode());
@@ -213,6 +210,25 @@ public class SecurPharmClient
 		}
 
 		return APIReponseWithLog.of(log.build(), apiResponse);
+	}
+
+	private JsonAPIResponse createJsonAPIResponseFromJsonString(final String json)
+	{
+		final JsonAPIResponse apiResponse = fromJsonStringOrNull(json, JsonAPIResponse.class);
+		return apiResponse != null
+				? apiResponse
+				: createJsonAPIResponseFromErrorMessage(json);
+	}
+
+	private static JsonAPIResponse createJsonAPIResponseFromErrorMessage(final String errorMessage)
+	{
+		final JsonResult apiResponseResult = new JsonResult();
+		apiResponseResult.setCode("?");
+		apiResponseResult.setMessage(errorMessage);
+
+		final JsonAPIResponse apiResponse = new JsonAPIResponse();
+		apiResponse.setRes(apiResponseResult);
+		return apiResponse;
 	}
 
 	private static ProductDetails extractProductDetailsFromAPIResponse(@NonNull final JsonAPIResponse apiResponse)
