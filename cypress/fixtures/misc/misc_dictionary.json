@@ -29,9 +29,9 @@
   "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
   "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)",
 
-  "Completed": "Completed",
-  "de_DE__Completed": "Fertiggestellt",
+  "purchaseOrderStatusCompleted": "Completed",
+  "de_DE__purchaseOrderStatusCompletedCompleted": "Fertiggestellt",
 
-  "InProgress": "In Progress",
-  "de_DE__InProgress": "In Verarbeitung"
+  "purchaseOrderStatusInProgress": "In Progress",
+  "de_DE__purchaseOrderStatusCompletedInProgress": "In Verarbeitung"
 }

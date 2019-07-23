@@ -24,6 +24,6 @@ export class RewriteURL {
   static PROCESS = '/rest/api/process/';
 }
 export class PurchaseOrderStatus {
-  static Completed = 'Completed';
-  static InProgress = 'InProgress';
+  static Completed = 'purchaseOrderStatusCompleted';
+  static InProgress = 'purchaseOrderStatusInProgress';
 }
