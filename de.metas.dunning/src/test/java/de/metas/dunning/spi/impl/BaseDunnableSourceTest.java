@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,7 +64,7 @@ public class BaseDunnableSourceTest extends DunningTestBase
 		final PlainDunningContext dunningContext = createPlainDunningContext((Date)null, null); // date and level not required
 
 		final IDunnableDoc dunnable = mkDunnableDocBuilder()
-				.setOpenAmt(Env.ZERO)
+				.setOpenAmt(BigDecimal.ZERO)
 				.create();
 
 		Assert.assertFalse("Invalid for " + dunnable, source.isEligible(dunningContext, dunnable));
@@ -165,9 +164,9 @@ public class BaseDunnableSourceTest extends DunningTestBase
 				.setRecord_ID(1)
 				.setC_BPartner_ID(1)
 				.setC_BPartner_Location_ID(1)
-				.setC_Currency(currencyEUR)
-				.setTotalAmt(Env.ZERO)
-				.setOpenAmt(Env.ZERO)
+				.setC_Currency_ID(currencyEUR.getRepoId())
+				.setTotalAmt(BigDecimal.ZERO)
+				.setOpenAmt(BigDecimal.ZERO)
 				.setDueDate(defaultDueDate);
 	}
 }

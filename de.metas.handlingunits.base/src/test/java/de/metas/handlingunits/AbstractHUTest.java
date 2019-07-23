@@ -31,6 +31,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
@@ -43,6 +44,9 @@ import org.junit.runner.Description;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -165,6 +169,7 @@ public abstract class AbstractHUTest
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 

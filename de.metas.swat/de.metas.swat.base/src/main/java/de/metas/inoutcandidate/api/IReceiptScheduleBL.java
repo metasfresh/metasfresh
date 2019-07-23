@@ -33,7 +33,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -146,12 +145,6 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 * @return AD_User_Override_ID and falls back to AD_User_ID if no override value is set
 	 */
 	int getAD_User_Effective_ID(I_M_ReceiptSchedule rs);
-
-	/**
-	 * @param rs
-	 * @return AD_User_Override and falls back to AD_User if no override value is set
-	 */
-	I_AD_User getAD_User_Effective(I_M_ReceiptSchedule rs);
 
 	/**
 	 *

@@ -16,15 +16,14 @@ package de.metas.payment.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +34,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.allocation.api.DefaultAllocationBuilder;
+import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
 
 /**
@@ -49,7 +50,7 @@ public interface IPaymentBL extends ISingletonService
 	 * @param colName source column name
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
-	public void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted);
+	void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted);
 
 	/**
 	 * updates amount when flag IsOverUnderPayment change
@@ -57,14 +58,14 @@ public interface IPaymentBL extends ISingletonService
 	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
-	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted);
+	void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
 	 * updates amounts when currency change
 	 * 
 	 * @param payment
 	 */
-	public void onCurrencyChange(final I_C_Payment payment);
+	void onCurrencyChange(final I_C_Payment payment);
 
 	/**
 	 * updates amounts when PayAmt change
@@ -72,7 +73,7 @@ public interface IPaymentBL extends ISingletonService
 	 * @param payment
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
-	public void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
+	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
 
 	/**
 	 * Creates a new payment builder.
@@ -98,15 +99,12 @@ public interface IPaymentBL extends ISingletonService
 	 * @return
 	 */
 	DefaultPaymentBuilder newBuilder(Object ctxProvider);
-	
+
 	/**
-	 * Gets the payment rule for the BP. If none is set, gets the one of the BP group.
-	 * 
-	 * @param bPartner
-	 * @return
+	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
 	 */
-	 String getPaymentRuleForBPartner(I_C_BPartner bPartner);
-	 
+	PaymentRule getPaymentRuleForBPartner(I_C_BPartner bPartner);
+
 	/**
 	 * check if the invoice is allocated with the specified payment
 	 * 
@@ -122,12 +120,13 @@ public interface IPaymentBL extends ISingletonService
 	 * @return true if updated
 	 */
 	boolean testAllocation(I_C_Payment payment);
-	
+
 	boolean isCashTrx(final I_C_Payment payment);
+
 	/**
 	 * WriteOff given payment.
 	 * 
-	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created). 
+	 * NOTE: transaction is automatically handled (thread inherited transaction will be used or a new one will be created).
 	 * 
 	 * @param payment
 	 * @param writeOffAmt amount to write-off

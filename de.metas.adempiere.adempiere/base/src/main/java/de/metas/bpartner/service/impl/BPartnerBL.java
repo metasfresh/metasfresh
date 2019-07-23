@@ -56,6 +56,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.User;
@@ -75,6 +76,11 @@ public class BPartnerBL implements IBPartnerBL
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.userRepository = userRepository;
+	}
+	
+	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
 	}
 
 	@Override
@@ -611,5 +617,25 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BP_Group bpGroup = bpGroupsRepo.getByBPartnerId(bpartnerId);
 		freightCostId = bpGroup.getM_FreightCost_ID();
 		return freightCostId;
+	}
+
+	@Override
+	public DeliveryViaRule getDeliveryViaRuleOrNull(@NonNull final BPartnerId bpartnerId, SOTrx soTrx)
+	{
+		final I_C_BPartner bp = getById(bpartnerId);
+		
+		if (soTrx.isSales())
+		{
+			return DeliveryViaRule.ofNullableCode(bp.getDeliveryViaRule());
+		}
+		else if(soTrx.isPurchase())
+		{
+			return DeliveryViaRule.ofNullableCode(bp.getPO_DeliveryViaRule());
+		}
+		else
+		{
+			// shall not happen
+			return null;
+		}
 	}
 }

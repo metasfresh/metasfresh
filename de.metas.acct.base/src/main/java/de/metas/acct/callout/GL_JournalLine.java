@@ -24,17 +24,19 @@ package de.metas.acct.callout;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
@@ -43,6 +45,9 @@ import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -57,28 +62,42 @@ public class GL_JournalLine
 
 	private final TaxAccountableCallout taxAccountableCallout = new TaxAccountableCallout();
 
-	@CalloutMethod(columnNames = { I_GL_JournalLine.COLUMNNAME_DateAcct, I_GL_JournalLine.COLUMNNAME_C_Currency_ID, I_GL_JournalLine.COLUMNNAME_C_ConversionType_ID })
+	@CalloutMethod(columnNames = {
+			I_GL_JournalLine.COLUMNNAME_DateAcct,
+			I_GL_JournalLine.COLUMNNAME_C_Currency_ID,
+			I_GL_JournalLine.COLUMNNAME_C_ConversionType_ID })
 	public void updateCurrencyRate(final I_GL_JournalLine glJournalLine)
 	{
 		//
 		// Extract data from source Journal
-		final int currencyId = glJournalLine.getC_Currency_ID();
-		final int conversionTypeId = glJournalLine.getC_ConversionType_ID();
-		Timestamp dateAcct = glJournalLine.getDateAcct();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournalLine.getC_Currency_ID());
+		if (currencyId == null)
+		{
+			// not set yet
+			return;
+		}
+
+		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(glJournalLine.getC_ConversionType_ID());
+		LocalDate dateAcct = TimeUtil.asLocalDate(glJournalLine.getDateAcct());
 		if (dateAcct == null)
 		{
-			dateAcct = SystemTime.asDayTimestamp();
+			dateAcct = SystemTime.asLocalDate();
 		}
-		final int adClientId = glJournalLine.getAD_Client_ID();
-		final int adOrgId = glJournalLine.getAD_Org_ID();
+		final ClientId adClientId = ClientId.ofRepoId(glJournalLine.getAD_Client_ID());
+		final OrgId adOrgId = OrgId.ofRepoId(glJournalLine.getAD_Org_ID());
 		final I_GL_Journal glJournal = glJournalLine.getGL_Journal();
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(glJournal.getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 
 		//
 		// Calculate currency rate
-		BigDecimal currencyRate = Services.get(ICurrencyBL.class).getRate(currencyId, acctSchema.getCurrencyId().getRepoId(),
-				dateAcct, conversionTypeId, adClientId, adOrgId);
+		BigDecimal currencyRate = Services.get(ICurrencyBL.class).getRate(
+				currencyId,
+				acctSchema.getCurrencyId(),
+				dateAcct,
+				conversionTypeId,
+				adClientId,
+				adOrgId);
 		if (currencyRate == null)
 		{
 			currencyRate = BigDecimal.ZERO;

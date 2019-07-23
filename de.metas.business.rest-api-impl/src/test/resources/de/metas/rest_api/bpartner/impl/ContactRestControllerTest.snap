@@ -1,8 +1,8 @@
 de.metas.rest_api.bpartner.impl.ContactRestControllerTest.createOrUpdateContact=[
   {
     "id": {
-      "repoId": 100004,
-      "bpartnerId": 20
+      "bpartnerId": 20,
+      "userId": 100004
     },
     "active": true,
     "name": "jsonContact.name",

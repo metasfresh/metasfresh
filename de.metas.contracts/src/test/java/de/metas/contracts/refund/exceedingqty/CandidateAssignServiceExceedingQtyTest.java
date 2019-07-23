@@ -58,7 +58,7 @@ public class CandidateAssignServiceExceedingQtyTest
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 	}
 
 	@Test
@@ -91,7 +91,7 @@ public class CandidateAssignServiceExceedingQtyTest
 
 		final InvoiceCandidateId invoiceCandidateId = assignedRefundInvoiceCandidate.getId();
 		assertThat(invoiceCandidateId).isEqualTo(refundCandidate.getId());
-		assertThat(assignedRefundInvoiceCandidate.getMoney().getValue()).isEqualByComparingTo(HUNDRED.add(TWO)); // // we add 20% of 10; 20% is set in the refund config
+		assertThat(assignedRefundInvoiceCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(HUNDRED.add(TWO)); // // we add 20% of 10; 20% is set in the refund config
 
 		final I_C_Invoice_Candidate assignedRefundInvoiceCandidateRecord = RefundTestTools.retrieveRecord(invoiceCandidateId);
 		assertThat(assignedRefundInvoiceCandidateRecord.getPriceActual()).isEqualByComparingTo(HUNDRED.add(TWO));

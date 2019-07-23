@@ -29,7 +29,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
@@ -47,13 +46,13 @@ public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSu
 	private static final long serialVersionUID = 1L;
 
 	/** @return new builder */
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/** Cast given {@link IGridTabSummaryInfo} to {@link HUInvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
-	public static final HUInvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
+	public static HUInvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
 		if (gridTabSummaryInfo instanceof HUInvoiceCandidatesSelectionSummaryInfo)
 		{
@@ -295,9 +294,10 @@ public final class HUInvoiceCandidatesSelectionSummaryInfo implements IGridTabSu
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing, false); // isPackingMaterial TODO
 
-			final I_C_Currency currency = currencyDAO.getById(CurrencyId.ofRepoId(ic.getC_Currency_ID()));
-
-			final String currencySymbol = currency == null ? null : currency.getCurSymbol();
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+			final String currencySymbol = currencyId != null
+					? currencyDAO.getById(currencyId).getSymbol().getDefaultValue()
+					: null;
 			addCurrencySymbol(currencySymbol);
 
 			if (ic.isToRecompute())

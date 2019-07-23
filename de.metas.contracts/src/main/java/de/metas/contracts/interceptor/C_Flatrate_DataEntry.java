@@ -46,9 +46,9 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 @Interceptor(I_C_Flatrate_DataEntry.class)
@@ -238,7 +238,7 @@ public class C_Flatrate_DataEntry
 			final List<I_C_Flatrate_DataEntry> existingCorrectionEntries = flatrateDB.retrieveDataEntries(
 					flatrateTerm,
 					X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased,
-					dataEntry.getC_UOM());
+					UomId.ofRepoIdOrNull(dataEntry.getC_UOM_ID()));
 			for (final I_C_Flatrate_DataEntry corrEntry : existingCorrectionEntries)
 			{
 				final Timestamp corrEntryStartDate = corrEntry.getC_Period().getStartDate();

@@ -44,7 +44,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -57,10 +57,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -136,7 +138,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public Iterator<org.compiere.model.I_M_InOutLine> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
-		final InOutLinesWithMissingInvoiceCandidate dao = Adempiere.getBean(InOutLinesWithMissingInvoiceCandidate.class);
+		final InOutLinesWithMissingInvoiceCandidate dao = SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class);
 		return dao.retrieveLinesThatNeedAnInvoiceCandidate(limit);
 	}
 
@@ -501,8 +503,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-		if (docActionBL.isDocumentStatusOneOf(inOut, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
+		if(docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
@@ -730,17 +732,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_M_InOut inOut = create(fromInOutLine.getM_InOut(), I_M_InOut.class);
 
-		final I_C_BPartner billBPartner;
-		final I_C_BPartner_Location billBPLocation;
-		final I_AD_User billBPContact;
+		final BPartnerLocationId billBPLocationId;
+		final BPartnerContactId billBPContactId;
 		// The bill related info cannot be changed in the schedule
 		// Therefore, it's safe to set them in the invoice candidate directly from the order (if we have it)
 		final I_C_Order inoutOrder = inOut.getC_Order();
 		if (inoutOrder != null && inoutOrder.getC_Order_ID() > 0)
 		{
-			billBPartner = inoutOrder.getBill_BPartner();
-			billBPLocation = inoutOrder.getBill_Location();
-			billBPContact = inoutOrder.getBill_User();
+			billBPLocationId = BPartnerLocationId.ofRepoIdOrNull(inoutOrder.getBill_BPartner_ID(), inoutOrder.getBill_Location_ID());
+			billBPContactId = BPartnerContactId.ofRepoIdOrNull(inoutOrder.getBill_BPartner_ID(), inoutOrder.getBill_User_ID());
 		}
 		// Otherwise, take it from the inout, but don't use the inout's location and user. They might not be "billto" after all.
 		else
@@ -748,21 +748,24 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean alsoTryBilltoRelation = true;
 			final Properties ctx = getCtx(ic);
 
-			billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
-			billBPartner = billBPLocation.getC_BPartner(); // task 08585: might be different from inOut.getC_BPartner(), because it might be the billTo-relation's BPartner.
-			billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPartner.getC_BPartner_ID(), ITrx.TRXNAME_None);
+			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
+			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
+			
+			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
+			billBPContactId = billBPContact != null
+					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
+					: null;
 		}
 
-		Check.assumeNotNull(billBPartner, "billBPartner not null");
-		Check.assumeNotNull(billBPLocation, "billBPLocation not null");
+		Check.assumeNotNull(billBPLocationId, "billBPLocation not null");
 		// Bill_User_ID isn't mandatory in C_Order, and isn't considered a must in OLHandler either
-		// Check.assumeNotNull(billBPContact, "billBPContact not null");
+		// Check.assumeNotNull(billBPContactId, "billBPContact not null");
 
 		//
 		// Set BPartner / Location / Contact
-		ic.setBill_BPartner_ID(billBPartner.getC_BPartner_ID());
-		ic.setBill_Location_ID(billBPLocation.getC_BPartner_Location_ID());
-		ic.setBill_User_ID(billBPContact == null? -1 : billBPContact.getAD_User_ID());
+		ic.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
+		ic.setBill_Location_ID(billBPLocationId.getRepoId());
+		ic.setBill_User_ID(BPartnerContactId.toRepoId(billBPContactId));
 	}
 
 	@Override

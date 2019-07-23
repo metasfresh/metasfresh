@@ -345,7 +345,7 @@ public class TestDunning extends DunningTestBase
 				.setC_BPartner_ID(invoice.getC_BPartner_ID())
 				.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID())
 				.setContact_ID(invoice.getAD_User_ID())
-				.setC_Currency(invoice.getC_Currency())
+				.setC_Currency_ID(invoice.getC_Currency_ID())
 				.setTotalAmt(invoice.getGrandTotal()) // totalAmt,
 				.setOpenAmt(invoice.getGrandTotal()) // openAmt,
 				.setDueDate(dueDate) // dueDate,
@@ -394,7 +394,7 @@ public class TestDunning extends DunningTestBase
 		invoice1.setC_BPartner_ID(2);
 		invoice1.setC_BPartner_Location_ID(2);
 		invoice1.setAD_User_ID(2);
-		invoice1.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice1.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice1.setC_DocType_ID(type.getC_DocType_ID());
 		invoice1.setIsSOTrx(true);
 		invoice1.setProcessed(true);
@@ -408,7 +408,7 @@ public class TestDunning extends DunningTestBase
 		invoice2.setC_BPartner_ID(2);
 		invoice2.setC_BPartner_Location_ID(2);
 		invoice2.setAD_User_ID(2);
-		invoice2.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice2.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice2.setC_DocType_ID(type.getC_DocType_ID());
 		invoice2.setIsSOTrx(true);
 		invoice2.setProcessed(true);
@@ -423,7 +423,7 @@ public class TestDunning extends DunningTestBase
 		invoice3.setC_BPartner_ID(2);
 		invoice3.setC_BPartner_Location_ID(2);
 		invoice3.setAD_User_ID(2);
-		invoice3.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice3.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice3.setC_DocType_ID(type.getC_DocType_ID());
 		invoice3.setIsSOTrx(true);
 		invoice3.setProcessed(true);
@@ -437,7 +437,7 @@ public class TestDunning extends DunningTestBase
 		invoice4.setC_BPartner_ID(2);
 		invoice4.setC_BPartner_Location_ID(2);
 		invoice4.setAD_User_ID(2);
-		invoice4.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice4.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice4.setC_DocType_ID(type.getC_DocType_ID());
 		invoice4.setIsSOTrx(true);
 		invoice4.setProcessed(true);

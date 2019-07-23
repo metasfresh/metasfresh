@@ -39,6 +39,7 @@ import org.compiere.model.I_C_Tax;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -74,7 +75,7 @@ public interface IInvoiceCandBL extends ISingletonService
 		 * @return result summary (using context language)
 		 */
 		String getSummary(Properties ctx);
-	};
+	}
 
 	/**
 	 * @return new invoice candidates updater
@@ -161,7 +162,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param ic
 	 * @return precision used to calculate amounts
 	 */
-	int getPrecisionFromCurrency(I_C_Invoice_Candidate ic);
+	CurrencyPrecision getPrecisionFromCurrency(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Invalidates those invoice candidates that reference the given invoice schedule
@@ -187,7 +188,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	BigDecimal calculateNetAmt(I_C_Invoice_Candidate ic);
 
-	BigDecimal calculateNetAmt(BigDecimal qty, BigDecimal price, int currencyPrecision);
+	BigDecimal calculateNetAmt(BigDecimal qty, BigDecimal price, CurrencyPrecision currencyPrecision);
 
 	/**
 	 * @return the newly created, but not yet saved invoice candidate record.
@@ -355,14 +356,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	BigDecimal getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
 
 	/**
-	 * If the given <code>candidate</code> has a currency, it shall return the currency's precision. Otherwise, it shall return <code>2</code> as fallback.
-	 *
-	 * @param candidate
-	 * @return
-	 */
-	int getCurrencyPrecision(I_C_Invoice_Candidate candidate);
-
-	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 *
 	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
@@ -404,7 +397,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param ic
 	 * @return
 	 */
-	int getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
+	CurrencyPrecision getPrecisionFromPricelist(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Close the given invoice candidate.

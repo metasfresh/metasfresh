@@ -254,10 +254,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
+		{
 			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+		}
 	}
 
 	/** Get Ansprechpartner.
@@ -268,7 +272,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -355,10 +361,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_Bank_ID (int C_Bank_ID)
 	{
-		if (C_Bank_ID < 1) 
+		if (C_Bank_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Bank_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+		}
 	}
 
 	/** Get Bank.
@@ -369,7 +379,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Bank_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -380,10 +392,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
 	{
-		if (C_BP_BankAccount_ID < 1) 
+		if (C_BP_BankAccount_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
+		}
 	}
 
 	/** Get Bankverbindung.
@@ -394,7 +410,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -417,10 +435,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_BPartner_ID (int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		}
 	}
 
 	/** Get Geschäftspartner.
@@ -431,20 +453,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -454,10 +466,14 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -468,7 +484,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -490,7 +508,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpMM);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -512,7 +532,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CreditCardExpYY);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -647,8 +669,10 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 		Object oo = get_Value(COLUMNNAME_IsACH);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;

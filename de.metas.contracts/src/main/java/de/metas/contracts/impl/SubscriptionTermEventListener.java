@@ -16,6 +16,7 @@ import de.metas.contracts.spi.FallbackFlatrateTermEventListener;
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuery;
 import de.metas.pricing.IPricingResult;
+import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -76,7 +77,7 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 		if (X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice.equals(conditions.getOnFlatrateTermExtend()))
 		{
 			final IPricingResult pricingInfo = FlatrateTermPricing.builder()
-					.termRelatedProduct(next.getM_Product())
+					.termRelatedProductId(ProductId.ofRepoIdOrNull(next.getM_Product_ID()))
 					.term(next)
 					.priceDate(TimeUtil.asLocalDate(next.getStartDate()))
 					.qty(next.getPlannedQtyPerUnit())

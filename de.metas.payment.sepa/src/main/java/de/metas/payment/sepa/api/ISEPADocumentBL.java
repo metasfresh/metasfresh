@@ -49,16 +49,6 @@ public interface ISEPADocumentBL extends ISingletonService
 	Date getDueDate(I_SEPA_Export_Line line);
 
 	/**
-	 * Determines if a BPartner is eligible for SEPA export by checking payment rules.
-	 * 
-	 * @param ctx
-	 * @param bPartnerId
-	 * @param trxName
-	 * @return
-	 */
-	boolean isSEPAEligible(Properties ctx, int bPartnerId, String trxName);
-
-	/**
 	 * Method used to update data in a BP after a SEPA operation 
 	 * NOTE: Currently only a placeholder, as we're not using the functionality yet.
 	 * 

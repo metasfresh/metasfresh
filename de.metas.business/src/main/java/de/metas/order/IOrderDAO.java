@@ -164,5 +164,7 @@ public interface IOrderDAO extends ISingletonService
 
 	void delete(org.compiere.model.I_C_OrderLine orderLine);
 
+	void save(org.compiere.model.I_C_Order order);
+
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 }

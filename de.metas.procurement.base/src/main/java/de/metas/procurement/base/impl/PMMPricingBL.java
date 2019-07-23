@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -32,6 +34,8 @@ import de.metas.procurement.base.IPMMPricingBL;
 import de.metas.procurement.base.model.I_C_Flatrate_DataEntry;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -179,18 +183,26 @@ public class PMMPricingBL implements IPMMPricingBL
 			logger.info("Invalid FlatrateAmtPerUOM: {} (event={})", flatrateAmtPerUOM, pricingAware);
 			return false;
 		}
+		
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID());
+		final CurrencyPrecision currencyPrecision = currencyId != null
+				? Services.get(ICurrencyDAO.class).getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 
+		final UomId flatrateTermUomId = UomId.ofRepoIdOrNull(flatrateTerm.getC_UOM_ID());
+		final I_C_UOM flatrateTermUom = Services.get(IUOMDAO.class).getById(flatrateTermUomId);
+		
 		//
 		// Convert the price
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final BigDecimal price = uomConversionBL.convertPrice(
 				productId,
 				flatrateAmtPerUOM,
-				flatrateTerm.getC_UOM(),  								// this is the flatrateAmt's UOM
+				flatrateTermUom, // this is the flatrateAmt's UOM
 				uom,  													// this is the qtyReportEvent's UOM
-				flatrateTerm.getC_Currency().getStdPrecision());
+				currencyPrecision.toInt());
 
-		pricingAware.setCurrencyId(CurrencyId.ofRepoIdOrNull(flatrateTerm.getC_Currency_ID()));
+		pricingAware.setCurrencyId(currencyId);
 		pricingAware.setPrice(price);
 		return true;
 	}

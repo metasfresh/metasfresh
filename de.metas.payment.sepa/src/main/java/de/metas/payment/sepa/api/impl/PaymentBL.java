@@ -90,7 +90,7 @@ public class PaymentBL implements IPaymentBL
 		exportLine.setRecord_ID(line.getC_PaySelectionLine_ID());
 		exportLine.setAmt(line.getPayAmt());
 		exportLine.setC_BP_BankAccount(bpBankAccount); // 07789: also setting the BP bank account so the following model validator(s) can more easily see evaluate what it is.
-		exportLine.setC_Currency(bpBankAccount.getC_Currency());
+		exportLine.setC_Currency_ID(bpBankAccount.getC_Currency_ID());
 		exportLine.setC_BPartner(bpartner);
 		exportLine.setDescription(sourceInvoice.getDescription());
 

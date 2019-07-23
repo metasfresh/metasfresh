@@ -10,9 +10,11 @@ import org.compiere.model.I_C_Order;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.DocumentUserNotificationsProducer;
+import de.metas.order.IOrderBL;
 import de.metas.procurement.base.ProcurementConstants;
 import de.metas.user.UserId;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 
 /*
  * #%L
@@ -71,7 +73,7 @@ public class OrdersCollector implements IOrdersCollector
 
 	private static List<Object> extractUserNotificationADMessageParams(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
 		return ImmutableList.builder()
 				.add(TableRecordReference.of(order))
 				.add(bpartner.getValue())

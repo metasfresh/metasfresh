@@ -28,12 +28,12 @@ import de.metas.contracts.model.X_C_Flatrate_RefundConfig;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -89,7 +89,7 @@ public class RefundInvoiceCandidateServiceTest
 		final IAggregationFactory aggregationFactory = Services.get(IAggregationFactory.class);
 		aggregationFactory.setDefaultAggregationKeyBuilder(I_C_Invoice_Candidate.class, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header, ICHeaderAggregationKeyBuilder_OLD.instance);
 
-		refundTestTools = new RefundTestTools(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
+		refundTestTools = RefundTestTools.newInstance(); // this also makes sure we have the ILCandHandler and C_DocType needed to create a new refund candidate
 
 		final RefundInvoiceCandidateRepository refundInvoiceCandidateRepository = RefundInvoiceCandidateRepository.createInstanceForUnitTesting();
 
@@ -356,12 +356,12 @@ public class RefundInvoiceCandidateServiceTest
 	public void addAssignableMoney()
 	{
 		final RefundInvoiceCandidate refundCandidate = refundTestTools.createRefundCandidate();
-		assertThat(refundCandidate.getMoney().getValue()).isEqualByComparingTo("100"); // guard
+		assertThat(refundCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo("100"); // guard
 		assertThat(refundCandidate.getAssignedQuantity().getAsBigDecimal()).isEqualByComparingTo(ZERO); // guard
 
 		final AssignableInvoiceCandidate assignableCandidate = refundTestTools.createAssignableCandidateStandlone();
 		assertThat(assignableCandidate.getQuantity().getAsBigDecimal()).isEqualByComparingTo(ONE);// guard
-		assertThat(assignableCandidate.getMoney().getValue()).isEqualByComparingTo(TEN);// guard
+		assertThat(assignableCandidate.getMoney().getAsBigDecimal()).isEqualByComparingTo(TEN);// guard
 
 		final RefundConfig refundConfig = extractSingleConfig(refundCandidate);
 		assertThat(refundConfig.getRefundBase()).isEqualTo(RefundBase.PERCENTAGE);
@@ -371,7 +371,7 @@ public class RefundInvoiceCandidateServiceTest
 		final AssignmentToRefundCandidate result = refundInvoiceCandidateService.addAssignableMoney(refundCandidate, refundConfig, assignableCandidate);
 
 		assertThat(result.getRefundInvoiceCandidate().getId()).isEqualTo(refundCandidate.getId());
-		assertThat(result.getMoneyAssignedToRefundCandidate().getValue()).isEqualByComparingTo("2");
-		assertThat(result.getRefundInvoiceCandidate().getMoney().getValue()).isEqualByComparingTo("102");
+		assertThat(result.getMoneyAssignedToRefundCandidate().getAsBigDecimal()).isEqualByComparingTo("2");
+		assertThat(result.getRefundInvoiceCandidate().getMoney().getAsBigDecimal()).isEqualByComparingTo("102");
 	}
 }

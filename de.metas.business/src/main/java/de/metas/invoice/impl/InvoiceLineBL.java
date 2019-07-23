@@ -246,7 +246,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
-		final I_M_PriceList priceList = order.getM_PriceList();
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,

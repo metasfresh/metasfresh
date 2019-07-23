@@ -26,7 +26,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.persistence.TableModelLoader;
@@ -35,7 +34,8 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
@@ -60,11 +60,14 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.EMailAddress;
+import de.metas.email.MailService;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -271,7 +274,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	/** Process */
 	private MWFProcess m_process = null;
 	/** List of email recipients */
-	private ArrayList<String> m_emails = new ArrayList<>();
+	private ArrayList<EMailAddress> m_emails = new ArrayList<>();
 
 	/**************************************************************************
 	 * Get State
@@ -842,11 +845,12 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				if (C_Currency_ID != amtApprovalCurrencyId
 						&& amtApprovalCurrencyId > 0)			// No currency = amt only
 				{
-					amtApproval = Services.get(ICurrencyBL.class).convert(getCtx(),// today & default rate
-							amtApproval, amtApprovalCurrencyId,
-							C_Currency_ID,
-							getAD_Client_ID(),
-							orgId.getRepoId());
+					amtApproval = Services.get(ICurrencyBL.class).convert(// today & default rate
+							amtApproval,
+							CurrencyId.ofRepoId(amtApprovalCurrencyId),
+							CurrencyId.ofRepoId(C_Currency_ID),
+							ClientId.ofRepoId(getAD_Client_ID()),
+							orgId);
 					if (amtApproval == null || amtApproval.signum() == 0)
 					{
 						continue;
@@ -1157,7 +1161,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			note.save();
 			// Attachment
 
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 			attachmentEntryService.createNewAttachment(note, report);
 			return true;
 		}
@@ -1209,9 +1213,11 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			{
 				final PO po = getPO(trxName);
 
-				final IMailBL mailBL = Services.get(IMailBL.class);
-				final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(getNode().getR_MailText());
-				mailTextBuilder.setRecord(po, true); // metas: tsa
+				MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(getNode().getR_MailText_ID());
+				
+				final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+				final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
+						.recordAndUpdateBPartnerAndContact(po);
 
 				// metas: tsa: check for null strings
 				StringBuffer subject = new StringBuffer();
@@ -1234,7 +1240,8 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				{
 					message.append("\n-----\n").append(getNodeHelp());
 				}
-				String to = getNode().getEMail();
+				
+				final EMailAddress to = EMailAddress.ofString(getNode().getEMail());
 
 				final MClient client = MClient.get(getCtx(), getAD_Client_ID());
 				client.sendEMail(to, subject.toString(), message.toString(), null);
@@ -1702,9 +1709,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	{
 		final IDocument doc = getDocument();
 
-		final IMailBL mailBL = Services.get(IMailBL.class);
-		final IMailTextBuilder mailTextBuilder = mailBL.newMailTextBuilder(m_node.getR_MailText());
-		mailTextBuilder.setRecord(m_po, true);
+		final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
+		final MailTemplateId mailTemplateId = MailTemplateId.ofRepoId(m_node.getR_MailText_ID());
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId)
+				.recordAndUpdateBPartnerAndContact(m_po);
 		//
 		String subject = doc.getDocumentInfo()
 				+ ": " + mailTextBuilder.getMailHeader();
@@ -1716,7 +1724,14 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		MClient client = MClient.get(doc.getCtx(), doc.getAD_Client_ID());
 
 		// Explicit EMail
-		sendEMail(client, (UserId)null, m_node.getEMail(), subject, message, pdf, mailTextBuilder.isHtml());
+		sendEMail(
+				client,
+				(UserId)null,
+				EMailAddress.ofNullableString(m_node.getEMail()),
+				subject,
+				message,
+				pdf,
+				mailTextBuilder.isHtml());
 		// Recipient Type
 		String recipient = m_node.getEMailRecipient();
 		// email to document user
@@ -1813,7 +1828,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 	private void sendEMail(
 			MClient client,
 			UserId userId, 
-			String email,
+			EMailAddress email,
 			String subject, 
 			String message, 
 			File pdf, 
@@ -1822,10 +1837,9 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		if (userId != null)
 		{
 			final I_AD_User user = Services.get(IUserDAO.class).getById(userId);
-			email = user.getEMail();
-			if (email != null && email.length() > 0)
+			email = EMailAddress.ofNullableString(user.getEMail());
+			if (email != null)
 			{
-				email = email.trim();
 				if (!m_emails.contains(email))
 				{
 					client.sendEMail(null, user, subject, message, pdf, isHtml);
@@ -1837,34 +1851,17 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				log.debug("No EMail for User {}", user.getName());
 			}
 		}
-		else if (email != null && email.length() > 0)
+		else if (email != null)
 		{
-			// Just one
-			if (email.indexOf(';') == -1)
+			if (!m_emails.contains(email))
 			{
-				email = email.trim();
-				if (!m_emails.contains(email))
-				{
-					client.sendEMail(email, subject, message, pdf, isHtml);
-					m_emails.add(email);
-				}
-				return;
+				client.sendEMail(email, subject, message, pdf, isHtml);
+				m_emails.add(email);
 			}
-			// Multiple EMail
-			StringTokenizer st = new StringTokenizer(email, ";");
-			while (st.hasMoreTokens())
-			{
-				String email1 = st.nextToken().trim();
-				if (email1.length() == 0)
-				{
-					continue;
-				}
-				if (!m_emails.contains(email1))
-				{
-					client.sendEMail(email1, subject, message, pdf, isHtml);
-					m_emails.add(email1);
-				}
-			}
+		}
+		else
+		{
+			log.warn("No userId or email provided");
 		}
 	}	// sendEMail
 

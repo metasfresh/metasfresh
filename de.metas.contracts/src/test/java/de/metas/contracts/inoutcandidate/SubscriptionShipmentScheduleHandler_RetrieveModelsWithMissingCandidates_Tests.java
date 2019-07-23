@@ -61,7 +61,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		save(firstProduct);
 
 		final I_C_Flatrate_Term firstTerm = newInstance(I_C_Flatrate_Term.class);
-		firstTerm.setM_Product(firstProduct);
+		firstTerm.setM_Product_ID(firstProduct.getM_Product_ID());
 		save(firstTerm);
 
 		firstRecord = newInstance(I_C_SubscriptionProgress.class);
@@ -76,7 +76,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 		save(secondProduct);
 
 		final I_C_Flatrate_Term secondTerm = newInstance(I_C_Flatrate_Term.class);
-		secondTerm.setM_Product(secondProduct);
+		secondTerm.setM_Product_ID(secondProduct.getM_Product_ID());
 		save(secondTerm);
 
 		secondRecord = newInstance(I_C_SubscriptionProgress.class);
