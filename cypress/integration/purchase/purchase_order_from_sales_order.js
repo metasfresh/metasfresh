@@ -161,7 +161,8 @@ describe('Create Purchase order from sales order', function() {
       .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
@@ -172,7 +173,7 @@ describe('Create Purchase order from sales order', function() {
     /**Create purchase order from sales order */
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

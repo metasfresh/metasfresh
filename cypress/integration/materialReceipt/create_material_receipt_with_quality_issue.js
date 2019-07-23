@@ -39,17 +39,17 @@ describe('Create test: create material receipt with quality issue, https://githu
     selectNotFrequentFilterWidget('default');
     cy.clickOnCheckBox('IsIssueWarehouse', true, false, null, true);
     applyFilters();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     /**if found, deselect it */
     cy.get('tr > td:nth-of-type(7)').then(el => {
       var element = el.find('.meta-icon-checkbox-1');
       if (element.length) {
         cy.get(element).dblclick();
         cy.setCheckBoxValue('IsIssueWarehouse', false);
-        cy.wait(10000);
+        cy.waitUntilProcessIsFinished();
       }
     });
-    cy.wait(10000);
+    cy.waitUntilProcessIsFinished();
     /**create a new quality issue warehouse */
     cy.visitWindow('139', 'NEW')
       .writeIntoStringField('Name', warehouseName)
@@ -144,7 +144,7 @@ describe('Create test: create material receipt with quality issue, https://githu
         getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
       );
     });
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -156,20 +156,20 @@ describe('Create test: create material receipt with quality issue, https://githu
     cy.get('tbody tr')
       .eq('0')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     /**Receive CUs */
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveCUs');
     /**this means that 50% of the products are altered. */
     cy.writeIntoStringField('QualityDiscountPercent', 50, true, null, true);
     cy.selectInListField('QualityNotice', qualityNoteName, true, null, true);
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     /**Create material receipt */
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams');
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     cy.pressDoneButton();
-    cy.wait(3000);
+    cy.waitUntilProcessIsFinished();
     cy.go('back');
-    cy.wait(3000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

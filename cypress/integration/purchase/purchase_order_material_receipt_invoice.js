@@ -149,7 +149,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
       );
     });
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -161,30 +161,30 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.get('tbody tr')
       .eq('0')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.quick-actions-tag.pointer').click({ force: true });
 
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     /**Create material receipt */
     cy.contains('Create material receipt').click();
-    cy.wait(2000);
+    cy.waitUntilProcessIsFinished();
     cy.pressDoneButton();
     /**Select the second product */
     cy.get('tbody tr')
       .eq('1')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.quick-actions-tag.pointer').click({ force: true });
 
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     /**Create material receipt */
     cy.contains('Create material receipt').click();
-    cy.wait(2000);
+    cy.waitUntilProcessIsFinished();
     cy.pressDoneButton();
     /**Navigate back in the purchase order */
     cy.go('back');
     /**Go to 'Material receipt' */
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -192,7 +192,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .click({ force: true });
     cy.contains('Material Receipt (#').click();
     /**Navigate back in the purchase order */
-    cy.wait(2000);
+    cy.waitUntilProcessIsFinished();
     cy.go('back');
     let grandTotal = null;
     cy.openAdvancedEdit()
@@ -208,19 +208,19 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .find('i')
       .click({ force: true });
     cy.get('.reference_C_Invoice_Candidate').click();
-    cy.wait(5000); //look into
+    cy.waitUntilProcessIsFinished();
     cy.get('.pagination-link.pointer').click({ force: true });
     cy.contains('generate invoices').click();
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     cy.pressStartButton();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     /**Open notifications */
     cy.get('.header-item-badge.icon-lg i').click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + vendorName + '")')
       .first()
       .click();
-    cy.wait(3000);
+    cy.waitUntilProcessIsFinished();
     cy.openAdvancedEdit();
     /**because should('have.value',grandTotal) evaluates using a null grand total */
     cy.get('.form-field-GrandTotal input').should(el => {

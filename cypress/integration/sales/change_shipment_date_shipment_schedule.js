@@ -58,7 +58,7 @@ describe('Create Sales order', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
@@ -81,7 +81,7 @@ describe('Create Sales order', function() {
         getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
       );
     });
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
