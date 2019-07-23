@@ -147,13 +147,7 @@ public final class DateTimeConverters
 
 	public static String toJson(@NonNull final ZoneId zoneId)
 	{
-		final JSONDateConfig config = getConfig();
-		return toJson(zoneId, config);
-	}
-
-	public static String toJson(@NonNull final ZoneId zoneId, @NonNull final JSONDateConfig config)
-	{
-		return config.getTimeZoneFormatter().format(INSTANT_0.atZone(zoneId));
+		return zoneId.getId();
 	}
 
 	public static Object fromJson(
