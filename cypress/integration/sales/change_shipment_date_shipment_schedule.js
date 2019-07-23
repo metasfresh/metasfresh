@@ -73,7 +73,8 @@ describe('Create Sales order', function() {
       .find('input')
       .should('have.value', '0.1')
       .type('1{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
