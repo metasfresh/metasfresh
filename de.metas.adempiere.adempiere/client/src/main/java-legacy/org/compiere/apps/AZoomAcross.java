@@ -61,12 +61,12 @@ public class AZoomAcross
 	 * @param tableName zoom source table (i.e. the table we start from)
 	 * @param query query that specifies the zoom source PO (i.e. the PO we start from)
 	 */
-	public AZoomAcross(JComponent invoker, String tableName, final int windowID, MQuery query)
+	public AZoomAcross(JComponent invoker, String tableName, final AdWindowId windowID, MQuery query)
 	{
 		this(invoker, retrieveZoomSourceOrNull(tableName, query, windowID));
 	}
 
-	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final int adWindowId)
+	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final AdWindowId adWindowId)
 	{
 		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), ITrx.TRXNAME_None)
 				.firstOnly();
@@ -74,7 +74,7 @@ public class AZoomAcross
 		{
 			return null;
 		}
-		return POZoomSource.of(po, AdWindowId.ofRepoIdOrNull(adWindowId));
+		return POZoomSource.of(po, adWindowId);
 	}
 
 	private AZoomAcross(final JComponent invoker, IZoomSource source)
@@ -135,7 +135,7 @@ public class AZoomAcross
 		logger.info("AD_Window_ID={} - {}", adWindowId, query);
 
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowId.getRepoId(), query))
+		if (!frame.initWindow(adWindowId, query))
 		{
 			return;
 		}

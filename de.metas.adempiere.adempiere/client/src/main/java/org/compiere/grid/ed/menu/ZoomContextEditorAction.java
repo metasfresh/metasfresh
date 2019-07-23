@@ -208,12 +208,12 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 		zoom(lookup.getWindowNo(), AD_Window_ID, zoomQuery);
 	}
 
-	private void zoom(int parentWindowNo, @NonNull AdWindowId AD_Window_ID, MQuery zoomQuery)
+	private void zoom(int parentWindowNo, @NonNull AdWindowId adWindowId, MQuery zoomQuery)
 	{
 		// setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(AD_Window_ID.getRepoId(), zoomQuery))
+		if (!frame.initWindow(adWindowId, zoomQuery))
 		{
 			// setCursor(Cursor.getDefaultCursor());
 			ValueNamePair pp = MetasfreshLastError.retrieveError();

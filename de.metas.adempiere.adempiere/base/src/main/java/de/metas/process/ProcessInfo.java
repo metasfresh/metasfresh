@@ -223,7 +223,8 @@ public final class ProcessInfo implements Serializable
 	private final boolean reportApplySecuritySettings;
 	private final OutputType jrDesiredOutputType;
 	@Getter
-	@NonNull private final ProcessType type;
+	@NonNull
+	private final ProcessType type;
 	@Getter
 	private final Optional<String> jsonPath;
 
@@ -254,7 +255,6 @@ public final class ProcessInfo implements Serializable
 	{
 		return Env.coalesce(ctx);
 	}
-
 
 	/**
 	 * Advise if we want business logic to be executed asynchronously further down the road, or not.
@@ -548,7 +548,6 @@ public final class ProcessInfo implements Serializable
 		return new ProcessParams(getParameter());
 	}
 
-
 	public OrgId getOrgId()
 	{
 		return orgId;
@@ -640,8 +639,8 @@ public final class ProcessInfo implements Serializable
 		final ICompositeQueryFilter<T> compositeFilter = queryBL.createCompositeQueryFilter((String)null);
 
 		compositeFilter.addFilter(whereFilter)
-		.addFilter(clientFilter)
-		.addFilter(orgFilter);
+				.addFilter(clientFilter)
+				.addFilter(orgFilter);
 
 		return compositeFilter;
 	}
@@ -947,9 +946,9 @@ public final class ProcessInfo implements Serializable
 			return Env.getLoggedRoleId(getCtx());
 		}
 
-		public ProcessInfoBuilder setAD_Window_ID(int adWindowId)
+		public ProcessInfoBuilder setAdWindowId(@Nullable final AdWindowId adWindowId)
 		{
-			_adWindowId = AdWindowId.ofRepoIdOrNull(adWindowId);
+			_adWindowId = adWindowId;
 			return this;
 		}
 
@@ -1384,7 +1383,6 @@ public final class ProcessInfo implements Serializable
 				return Optional.of(JSONPath.trim());
 			}
 		}
-
 
 		private Language getReportLanguage()
 		{

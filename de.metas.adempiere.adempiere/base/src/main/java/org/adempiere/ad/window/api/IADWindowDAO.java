@@ -31,11 +31,6 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	ITranslatableString retrieveWindowName(AdWindowId adWindowId);
 
-	default ITranslatableString retrieveWindowName(int adWindowId)
-	{
-		return retrieveWindowName(AdWindowId.ofRepoIdOrNull(adWindowId));
-	}
-
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
 	AdWindowId getWindowIdByInternalName(String internalName);
@@ -70,7 +65,7 @@ public interface IADWindowDAO extends ISingletonService
 	 * @param window
 	 * @return
 	 */
-	I_AD_Tab retrieveFirstTab(final int adWindowId);
+	I_AD_Tab retrieveFirstTab(final AdWindowId adWindowId);
 
 	void copyWindow(AdWindowId targetWindowId, AdWindowId sourceWindowId);
 
@@ -83,6 +78,8 @@ public interface IADWindowDAO extends ISingletonService
 	Set<AdTabId> retrieveTabIdsWithMissingADElements();
 
 	Set<AdWindowId> retrieveWindowIdsWithMissingADElements();
+	
+	I_AD_Window getById(AdWindowId adWindowId);
 
 	I_AD_Window getWindowByIdInTrx(AdWindowId windowId);
 

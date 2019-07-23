@@ -37,7 +37,6 @@ import org.adempiere.service.IRolePermLoggingBL;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -47,6 +46,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -72,7 +72,7 @@ public class GridWindowVO implements Serializable
 	 *  @return {@link GridWindowVO}; never returns null
 	 *  @see #create(Properties, int, int, int)
 	 */
-	public static GridWindowVO create (final Properties ctx, final int windowNo, final int adWindowId)
+	public static GridWindowVO create (final Properties ctx, final int windowNo, final AdWindowId adWindowId)
 	{
 		return builder()
 				.ctx(ctx)
@@ -98,7 +98,7 @@ public class GridWindowVO implements Serializable
 	public static GridWindowVO create ( //
 			@NonNull final Properties ctx //
 			, final int windowNo //
-			, final int adWindowId //
+			, final AdWindowId adWindowId //
 			, final int adMenuId //
 			, final boolean loadAllLanguages //
 			, final boolean applyRolePermissions //
@@ -109,10 +109,10 @@ public class GridWindowVO implements Serializable
 		//
 		//  If AD_Window_ID not provided, try fetching it from AD_Menu_ID (used by HTML UI)
 		// TODO: not sure if this is still used
-		int adWindowIdEffective = adWindowId;
+		AdWindowId adWindowIdEffective = adWindowId;
 		Boolean isSOTrxOverride = null;
 		Boolean readonlyOverride = null;
-		if (adWindowIdEffective <= 0 && adMenuId > 0)
+		if (adWindowIdEffective == null && adMenuId > 0)
 		{
 			final String sql = "SELECT AD_Window_ID, IsSOTrx, IsReadOnly FROM AD_Menu WHERE AD_Menu_ID=? AND Action='W'";
 			final List<Object> sqlParams = Arrays.<Object>asList(adMenuId);
@@ -125,7 +125,7 @@ public class GridWindowVO implements Serializable
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					adWindowIdEffective = rs.getInt(1);
+					adWindowIdEffective = AdWindowId.ofRepoIdOrNull(rs.getInt(1));
 					isSOTrxOverride = DisplayType.toBoolean(rs.getString(2));
 					readonlyOverride = DisplayType.toBoolean(rs.getString(3));
 				}
@@ -140,7 +140,7 @@ public class GridWindowVO implements Serializable
 				rs = null; pstmt = null;
 			}
 			//
-			if (adWindowIdEffective <= 0)
+			if (adWindowIdEffective == null)
 			{
 				throw new WindowLoadException("@NotFound@ @AD_Menu_ID@=" + adMenuId, "-", "-", adWindowIdEffective);
 			}
@@ -148,7 +148,7 @@ public class GridWindowVO implements Serializable
 			logger.debug("AD_Window_ID={}", adWindowIdEffective);
 		}
 		
-		final GridWindowVO vo = new GridWindowVO (ctx, windowNo, AdWindowId.ofRepoId(adWindowId), loadAllLanguages, applyRolePermissions);
+		final GridWindowVO vo = new GridWindowVO (ctx, windowNo, adWindowIdEffective, loadAllLanguages, applyRolePermissions);
 		if(isSOTrxOverride != null)
 		{
 			vo.setIsSOTrx(isSOTrxOverride);
@@ -162,7 +162,7 @@ public class GridWindowVO implements Serializable
 		//
 		//  --  Get Window
 		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSql(vo.getCtx(), vo.getAD_Window_ID(), loadAllLanguages, sqlParams);
+		final String sql = buildSql(vo.getCtx(), vo.getAdWindowId(), loadAllLanguages, sqlParams);
 		String windowName = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -182,8 +182,8 @@ public class GridWindowVO implements Serializable
 				{
 					windowName = rs.getString("Name");
 					vo.name = windowName;
-					vo.description = Util.coalesce(rs.getString("Description"), "");
-					vo.help = Util.coalesce(rs.getString("Help"), "");
+					vo.description = CoalesceUtil.coalesce(rs.getString("Description"), "");
+					vo.help = CoalesceUtil.coalesce(rs.getString("Help"), "");
 				}
 				
 				if(loadAllLanguages)
@@ -293,7 +293,7 @@ public class GridWindowVO implements Serializable
 		return vo;
 	}   //  create
 	
-	private static final String buildSql(final Properties ctx, final int AD_Window_ID, final boolean loadAllLanguages, final List<Object> sqlParams)
+	private static final String buildSql(final Properties ctx, final AdWindowId adWindowId, final boolean loadAllLanguages, final List<Object> sqlParams)
 	{
 		//
 		final boolean useTrl;
@@ -327,7 +327,7 @@ public class GridWindowVO implements Serializable
 					+ ", IsOneInstanceOnly " // 10 // metas: US831
 					);
 			sql.append(" FROM AD_Window w WHERE w.AD_Window_ID=? AND w.IsActive=?");
-			sqlParams.add(AD_Window_ID);
+			sqlParams.add(adWindowId);
 			sqlParams.add(true); // IsActive
 		}
 		else
@@ -347,7 +347,7 @@ public class GridWindowVO implements Serializable
 					);
 			sql.append(" FROM AD_Window w INNER JOIN AD_Window_Trl trl ON (trl.AD_Window_ID=w.AD_Window_ID)");
 			sql.append(" WHERE w.AD_Window_ID=? AND w.IsActive=?");
-			sqlParams.add(AD_Window_ID);
+			sqlParams.add(adWindowId);
 			sqlParams.add(true); // IsActive
 			
 			if(filterByLanguage)
@@ -368,7 +368,7 @@ public class GridWindowVO implements Serializable
 	 */
 	private static List<GridTabVO> createTabs (final GridWindowVO mWindowVO)
 	{
-		final int adWindowId = mWindowVO.getAD_Window_ID();
+		final AdWindowId adWindowId = mWindowVO.getAdWindowId();
 		final String windowType = mWindowVO.getWindowType();
 		final boolean isReadonly = WINDOWTYPE_QUERY.equals(windowType);
 		final boolean onlyCurrentRows = WINDOWTYPE_TRX.equals(windowType);
@@ -384,7 +384,6 @@ public class GridWindowVO implements Serializable
 			//	create statement
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
-			pstmt.setInt(1, adWindowId);
 			rs = pstmt.executeQuery();
 			
 			final LinkedHashMap<Integer, GridTabVO> tabsByAD_Tab_ID = new LinkedHashMap<>();
@@ -430,7 +429,7 @@ public class GridWindowVO implements Serializable
 			//  No Tabs
 			if (TabNo == 0 || tabsByAD_Tab_ID.isEmpty())
 			{
-				throw new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAD_Window_ID());
+				throw new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAdWindowId());
 //				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
 //				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
 //				return null;
@@ -629,11 +628,6 @@ public class GridWindowVO implements Serializable
 			loadErrorMessages.append("\n");
 		}
 		loadErrorMessages.append(message);
-	}
-	
-	public int getAD_Window_ID()
-	{
-		return adWindowId.getRepoId();
 	}
 	
 	public AdWindowId getAdWindowId()

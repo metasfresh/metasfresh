@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
@@ -639,7 +640,7 @@ public final class AEnv
 		// task #797 Make sure the window is displayed by the AWT event dispatching thread. The current thread might not be able to do it right.
 		SwingUtilities.invokeLater(() -> {
 			final AWindow frame = new AWindow();
-			if (!frame.initWindow(windowIdToUse.getRepoId(), query))
+			if (!frame.initWindow(windowIdToUse, query))
 			{
 				return;
 			}
@@ -701,16 +702,16 @@ public final class AEnv
 
 	/**
 	 *
-	 * @param AD_Window_ID
+	 * @param adWindowId
 	 * @return the found window or <code>null</code>
 	 */
 	// task 05796
-	public static AWindow findInWindowManager(final int AD_Window_ID)
+	public static AWindow findInWindowManager(final AdWindowId adWindowId)
 	{
 		final AMenu mainWindow = AEnv.getAMenu();
 		if (mainWindow != null)
 		{
-			return mainWindow.getWindowManager().find(AD_Window_ID);
+			return mainWindow.getWindowManager().find(adWindowId);
 		}
 		return null;
 	}
@@ -764,11 +765,12 @@ public final class AEnv
 			// Get Window
 			if (s_workflow.booleanValue())
 			{
-				s_workflow_Window_ID = DB.getSQLValue(null,
-						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID);
-				if (s_workflow_Window_ID == 0)
+				s_workflow_Window_ID = AdWindowId.ofRepoIdOrNull(DB.getSQLValue(
+						ITrx.TRXNAME_None,
+						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID));
+				if (s_workflow_Window_ID == null)
 				{
-					s_workflow_Window_ID = 297;	// fallback HARDCODED
+					s_workflow_Window_ID = AdWindowId.ofRepoId(297);	// fallback HARDCODED
 				}
 			}
 		}
@@ -783,7 +785,7 @@ public final class AEnv
 	 */
 	public static void startWorkflowProcess(final int AD_Table_ID, final int Record_ID)
 	{
-		if (s_workflow_Window_ID == 0)
+		if (s_workflow_Window_ID == null)
 		{
 			return;
 		}
@@ -811,7 +813,7 @@ public final class AEnv
 	/** Workflow Menu */
 	private static Boolean s_workflow = null;
 	/** Workflow Menu */
-	private static int s_workflow_Window_ID = 0;
+	private static AdWindowId s_workflow_Window_ID = null;
 
 	/** Server Re-tries */
 	private static int s_serverTries = 0;
@@ -874,7 +876,7 @@ public final class AEnv
 	}   // getServerVersion
 
 	/** Window Cache */
-	private static CCache<Integer, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
+	private static CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model
@@ -884,14 +886,14 @@ public final class AEnv
 	 * @param AD_Menu_ID menu
 	 * @return Model Window Value Object; never returns <code>null</code>
 	 */
-	public static GridWindowVO getMWindowVO(final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID)
+	public static GridWindowVO getMWindowVO(final int WindowNo, final AdWindowId adWindowId, final int AD_Menu_ID)
 	{
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
-		if (AD_Window_ID != 0 && Ini.isCacheWindow())   	// try cache
+		if (adWindowId != null && Ini.isCacheWindow())   	// try cache
 		{
-			mWindowVO = s_windows.get(AD_Window_ID);
+			mWindowVO = s_windows.get(adWindowId);
 			if (mWindowVO != null)
 			{
 				mWindowVO = mWindowVO.clone(WindowNo);
@@ -905,13 +907,13 @@ public final class AEnv
 			mWindowVO = GridWindowVO.builder()
 					.ctx(Env.getCtx())
 					.windowNo(WindowNo)
-					.adWindowId(AD_Window_ID)
+					.adWindowId(adWindowId)
 					.adMenuId(AD_Menu_ID)
 					.loadAllLanguages(false)
 					.applyRolePermissions(true)
 					.build();
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
-			s_windows.put(AD_Window_ID, mWindowVO);
+			s_windows.put(adWindowId, mWindowVO);
 		}   	// from Client
 
 		// Check (remote) context
