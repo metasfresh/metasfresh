@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
@@ -73,7 +74,7 @@ public class AZoomAcross
 		{
 			return null;
 		}
-		return POZoomSource.of(po, adWindowId);
+		return POZoomSource.of(po, AdWindowId.ofRepoIdOrNull(adWindowId));
 	}
 
 	private AZoomAcross(final JComponent invoker, IZoomSource source)
@@ -128,14 +129,16 @@ public class AZoomAcross
 	 */
 	private void launch(final ZoomInfoFactory.ZoomInfo zoomInfo)
 	{
-		final int AD_Window_ID = zoomInfo.getAD_Window_ID();
+		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
 		final MQuery query = zoomInfo.getQuery();
 
-		logger.info("AD_Window_ID={} - {}", AD_Window_ID, query);
+		logger.info("AD_Window_ID={} - {}", adWindowId, query);
 
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(AD_Window_ID, query))
+		if (!frame.initWindow(adWindowId.getRepoId(), query))
+		{
 			return;
+		}
 		AEnv.addToWindowManager(frame);
 		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
 		{

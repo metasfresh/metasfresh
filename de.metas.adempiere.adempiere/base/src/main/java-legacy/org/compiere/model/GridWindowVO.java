@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -147,7 +148,7 @@ public class GridWindowVO implements Serializable
 			logger.debug("AD_Window_ID={}", adWindowIdEffective);
 		}
 		
-		final GridWindowVO vo = new GridWindowVO (ctx, windowNo, adWindowId, loadAllLanguages, applyRolePermissions);
+		final GridWindowVO vo = new GridWindowVO (ctx, windowNo, AdWindowId.ofRepoId(adWindowId), loadAllLanguages, applyRolePermissions);
 		if(isSOTrxOverride != null)
 		{
 			vo.setIsSOTrx(isSOTrxOverride);
@@ -251,7 +252,7 @@ public class GridWindowVO implements Serializable
 		if (vo != null && applyRolePermissions)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
-			final Boolean windowAccess = role.checkWindowPermission(vo.getAD_Window_ID())
+			final Boolean windowAccess = role.checkWindowPermission(vo.getAdWindowId())
 					.getReadWriteBoolean();
 			
 			// no access 
@@ -448,19 +449,24 @@ public class GridWindowVO implements Serializable
 		}
 	}   //  createTabs
 
-	private GridWindowVO (final Properties ctx, final int windowNo, final int adWindowId, final boolean loadAllLanguages, final boolean applyRolePermissions)
+	private GridWindowVO (
+			final Properties ctx, 
+			final int windowNo, 
+			@NonNull final AdWindowId adWindowId, 
+			final boolean loadAllLanguages, 
+			final boolean applyRolePermissions)
 	{
 		super();
 		this.ctx = ctx;
 		this.windowNo = windowNo;
-		this.AD_Window_ID = adWindowId;
+		this.adWindowId = adWindowId;
 		this.loadAllLanguages = loadAllLanguages;
 		this.applyRolePermissions = applyRolePermissions;
 	}
 	
 	private GridWindowVO(final GridWindowVO from, final int windowNo)
 	{
-		this(from.ctx, windowNo, from.AD_Window_ID, from.loadAllLanguages, from.applyRolePermissions);
+		this(from.ctx, windowNo, from.adWindowId, from.loadAllLanguages, from.applyRolePermissions);
 		
 		this.name = from.name;
 		this.nameTrls = from.nameTrls == null ? null : new HashMap<>(from.nameTrls);
@@ -485,7 +491,7 @@ public class GridWindowVO implements Serializable
 		final List<GridTabVO> fromTabs = from._tabs;
 		if (fromTabs != null)
 		{
-			final List<GridTabVO> tabsClone = new ArrayList<GridTabVO>();
+			final List<GridTabVO> tabsClone = new ArrayList<>();
 			for (final GridTabVO fromTab : fromTabs)
 			{
 				final GridTabVO cloneTab = fromTab.clone(from.ctx, windowNo);
@@ -508,7 +514,7 @@ public class GridWindowVO implements Serializable
 	private final int windowNo; // FIXME: get rid of GridWindwoVO.WindowNo
 
 	/** Window				*/
-	private final int AD_Window_ID;
+	private final AdWindowId adWindowId;
 	private final boolean loadAllLanguages;
 	private final boolean applyRolePermissions;
 	
@@ -605,14 +611,20 @@ public class GridWindowVO implements Serializable
 	protected void addLoadErrorMessage(String message, boolean checkEmpty)
 	{
 		if (Check.isEmpty(message, true))
+		{
 			return;
+		}
 		if (loadErrorMessages == null)
+		{
 			loadErrorMessages = new StringBuffer();
+		}
 		if (loadErrorMessages.length() > 0)
 		{
 			// Don't add this message
 			if (checkEmpty)
+			{
 				return;
+			}
 
 			loadErrorMessages.append("\n");
 		}
@@ -621,7 +633,12 @@ public class GridWindowVO implements Serializable
 	
 	public int getAD_Window_ID()
 	{
-		return AD_Window_ID;
+		return adWindowId.getRepoId();
+	}
+	
+	public AdWindowId getAdWindowId()
+	{
+		return adWindowId;
 	}
 	
 	public int getWindowNo()

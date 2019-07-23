@@ -46,6 +46,8 @@ import javax.swing.RepaintManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.service.ClientId;
@@ -258,7 +260,7 @@ public final class AEnv
 		int y = (sSize.height - wSize.height) / 2;
 		if (position == SwingConstants.CENTER)
 		{
-			;
+			
 		}
 		else if (position == SwingConstants.NORTH_WEST)
 		{
@@ -596,7 +598,8 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(AD_Table_ID, Record_ID));
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(AD_Table_ID);
+		zoom(RecordZoomWindowFinder.newInstance(tableName, Record_ID));
 	}
 
 	/**
@@ -618,14 +621,14 @@ public final class AEnv
 		}
 
 		zoom(RecordZoomWindowFinder.newInstance(TableName, Record_ID)
-				.setSO_Window_ID(AD_Window_ID)
-				.setPO_Window_ID(PO_Window_ID));
+				.soWindowId(AdWindowId.ofRepoIdOrNull(AD_Window_ID))
+				.poWindowId(AdWindowId.ofRepoIdOrNull(PO_Window_ID)));
 	}
 
-	private static final void zoom(final RecordZoomWindowFinder zoomInfo)
+	private static void zoom(final RecordZoomWindowFinder zoomInfo)
 	{
-		final int windowIdToUse = zoomInfo.findAD_Window_ID();
-		if (windowIdToUse <= 0)
+		final AdWindowId windowIdToUse = zoomInfo.findAdWindowId().orElse(null);
+		if (windowIdToUse == null)
 		{
 			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
 			return;
@@ -636,7 +639,7 @@ public final class AEnv
 		// task #797 Make sure the window is displayed by the AWT event dispatching thread. The current thread might not be able to do it right.
 		SwingUtilities.invokeLater(() -> {
 			final AWindow frame = new AWindow();
-			if (!frame.initWindow(windowIdToUse, query))
+			if (!frame.initWindow(windowIdToUse.getRepoId(), query))
 			{
 				return;
 			}
@@ -679,8 +682,7 @@ public final class AEnv
 			return;
 		}
 
-		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
-
+		zoom(RecordZoomWindowFinder.newInstance(query, AdWindowId.ofRepoIdOrNull(adWindowId)));
 	}
 
 	/**
@@ -1018,7 +1020,7 @@ public final class AEnv
 	 * @param parentType
 	 * @return parent component which implements given type or <code>null</code>
 	 */
-	public static final <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
+	public static <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
 	{
 		if (comp == null)
 		{
@@ -1046,7 +1048,7 @@ public final class AEnv
 	 * @param comp
 	 * @return {@link Dialog} or null
 	 */
-	public static final Dialog getDialog(final Component comp)
+	public static Dialog getDialog(final Component comp)
 	{
 		Component c = comp;
 		while (c != null)
@@ -1173,7 +1175,7 @@ public final class AEnv
 	 * @param form
 	 * @return formFrame which was created or null
 	 */
-	public static final FormFrame createForm(final I_AD_Form form)
+	public static FormFrame createForm(final I_AD_Form form)
 	{
 		final FormFrame formFrame = new FormFrame();
 		if (formFrame.openForm(form))

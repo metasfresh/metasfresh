@@ -105,7 +105,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
 	@Override
-	public String retrieveInternalWindowName(final int adWindowId)
+	public String retrieveInternalWindowName(final AdWindowId adWindowId)
 	{
 		final I_AD_Window window = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Window.class)

@@ -36,7 +36,7 @@ public interface IADWindowDAO extends ISingletonService
 		return retrieveWindowName(AdWindowId.ofRepoIdOrNull(adWindowId));
 	}
 
-	String retrieveInternalWindowName(int adWindowId);
+	String retrieveInternalWindowName(AdWindowId adWindowId);
 
 	AdWindowId getWindowIdByInternalName(String internalName);
 
