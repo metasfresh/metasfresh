@@ -1,8 +1,5 @@
 export class DocumentStatusKey {
   static Completed = 'docStatusCompleted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusCompleted = '.tag-success';
-
   static Reversed = 'docStatusReversed';
   static InProgress = 'docStatusInProgress';
   static Drafted = 'docStatusDrafted';
