@@ -9,6 +9,7 @@ export class DocumentActionKey {
   static Complete = 'docActionComplete';
   static Void = 'docActionVoid';
   static Reactivate = 'docActionReactivate';
+  static Reverse = 'docActionReverse';
 }
 
 /**

@@ -637,5 +637,10 @@ declare namespace Cypress {
      */
     reactivateDocument(): Chainable<any>
 
+  /**
+   * Reverse the current document
+   */
+  reverseDocument(): Chainable<any>
   }
+
 }
