@@ -33,6 +33,18 @@ Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   });
 });
 
+Cypress.Commands.add('getTextFieldValue', (fieldName, modal) => {
+  describe('Get field value', function() {
+    cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
+
+    const path = createFieldPath(fieldName, modal);
+    return cy
+      .get(path)
+      .find('textarea')
+      .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+  });
+});
+
 Cypress.Commands.add('assertFieldNotShown', (fieldName, modal) => {
   describe('Assert that a vield is not shown', function() {
     cy.log(`assertFieldNotShown - fieldName=${fieldName}; modal=${modal}`);

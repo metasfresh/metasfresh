@@ -33,14 +33,25 @@ declare namespace Cypress {
 
     /**
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false; - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param modal - optional, default = false; - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
      *
      * @example
-     * cy.getStringFieldValue('Description').then(fieldValue => {
-     *  cy.log(`Description = ${fieldValue}`)
-     * });
+     * cy.getStringFieldValue('C_BPartner_ID').should('contain', businessPartnerName);
      */
     getStringFieldValue(fieldName: string, modal?: boolean): Chainable<any>
+
+
+    /**
+     * Used for reading text fields such as the `Description` field.
+     *
+     * @param fieldName - name of the field is question
+     * @param modal - optional, default = false; - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     *
+     * @example
+     * cy.getTextFieldValue('Description').should('contain', originalDocumentDescription);
+     */
+    getTextFieldValue(fieldName: string, modal?: boolean):Chainable<any>
+
 
     /**
      * @param fieldName - name of the field is question
