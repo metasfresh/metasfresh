@@ -23,3 +23,7 @@ export class RewriteURL {
 
   static PROCESS = '/rest/api/process/';
 }
+export class PurchaseOrderStatus {
+  static Completed = 'Completed';
+  static InProgress = 'InProgress';
+}

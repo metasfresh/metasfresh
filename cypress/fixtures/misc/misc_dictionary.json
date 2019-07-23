@@ -27,5 +27,11 @@
 
   "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
   "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
-  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)"
+  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)",
+
+  "Completed": "Completed",
+  "de_DE__Completed": "Fertiggestellt",
+
+  "InProgress": "In Progress",
+  "de_DE__InProgress": "In Verarbeitung"
 }

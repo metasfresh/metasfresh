@@ -7,7 +7,8 @@ import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { PurchaseOrderStatus } from '../../support/utils/constants';
 
 describe('Create Purchase order - material receipt - invoice', function() {
   const date = humanReadableNow();
@@ -17,8 +18,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
   const packingInstructionsName = `ProductPackingInstrutions ${date}`;
   const productName1 = `ProductTest ${date}`;
   const productValue1 = `purchase_order_test ${date}`;
-  const productName2 = `ProductTest ${date}`;
-  const productValue2 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
   const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
@@ -123,7 +122,9 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.wait(8000);
     /**purchase order should be completed */
     cy.log('purchase order should be completed');
-    cy.get('.tag.tag-success').contains('Completed');
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.get('.tag.tag-success').contains(getLanguageSpecific(miscDictionary, PurchaseOrderStatus.Completed));
+    });
   });
   /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {
@@ -133,7 +134,9 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .eq('1')
       .click({ force: true });
     cy.wait(8000);
-    cy.get('.tag.tag-default').contains('In Progress');
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, PurchaseOrderStatus.InProgress));
+    });
     cy.log('change Quantity TU');
     cy.get('tbody tr')
       .eq('0')
