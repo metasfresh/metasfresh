@@ -71,7 +71,7 @@ describe('Create Sales order', function() {
       .find('input')
       .should('have.value', '0.1')
       .type('1{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
@@ -79,7 +79,7 @@ describe('Create Sales order', function() {
         getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
       );
     });
-    cy.wait(10000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -94,14 +94,14 @@ describe('Create Sales order', function() {
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
     /**Wait for the shipment schedule process to complete */
-    cy.wait(10000);
+    cy.waitUntilProcessIsFinished();
     /**Open notifications */
     cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')
       .first()
       .click();
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
