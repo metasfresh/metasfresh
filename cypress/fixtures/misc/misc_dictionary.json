@@ -27,5 +27,14 @@
 
   "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
   "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",
-  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)"
+  "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)",
+
+  "c_uom_EA": "Each",
+  "de_DE__c_uom_EA": "Stück",
+
+  "c_uom_KGM": "Kilogram",
+  "de_DE__c_uom_KGM": "Kilogramm",
+
+  "c_country_CH": "Switzerland",
+  "de_DE__c_country_CH": "Schweiz"
 }
