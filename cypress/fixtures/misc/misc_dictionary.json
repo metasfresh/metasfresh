@@ -30,8 +30,11 @@
   "de_DE__defaultTaxCategory": "Normaler Steuersatz 19% (Deutschland)",
 
   "purchaseOrderStatusCompleted": "Completed",
-  "de_DE__purchaseOrderStatusCompletedCompleted": "Fertiggestellt",
+  "de_DE__purchaseOrderStatusCompleted": "Fertiggestellt",
 
   "purchaseOrderStatusInProgress": "In Progress",
-  "de_DE__purchaseOrderStatusCompletedInProgress": "In Verarbeitung"
+  "de_DE__purchaseOrderStatusInProgress": "In Verarbeitung",
+
+  "purchaseOrderStatusDrafted": "Drafted",
+  "de_DE__purchaseOrderStatusDrafted": "Entwurf"
 }

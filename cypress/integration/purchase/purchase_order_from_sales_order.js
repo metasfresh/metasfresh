@@ -6,7 +6,8 @@ import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { salesOrders } from '../../page_objects/sales_orders';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { PurchaseOrderStatus } from '../../support/utils/constants';
 
 describe('Create Purchase order from sales order', function() {
   const date = humanReadableNow();
@@ -205,6 +206,8 @@ describe('Create Purchase order from sales order', function() {
       .find('.quantity-cell')
       .contains('1');
     /**purchase order should be drafted */
-    cy.get('.tag.tag-primary').contains('Drafted');
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.get('.tag.tag-primary').contains(getLanguageSpecific(miscDictionary, PurchaseOrderStatus.Drafted));
+    });
   });
 });

@@ -26,4 +26,5 @@ export class RewriteURL {
 export class PurchaseOrderStatus {
   static Completed = 'purchaseOrderStatusCompleted';
   static InProgress = 'purchaseOrderStatusInProgress';
+  static Drafted = 'purchaseOrderStatusDrafted';
 }
