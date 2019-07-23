@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
@@ -78,17 +79,17 @@ import de.metas.util.Check;
 @Immutable
 public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final SqlLookupDescriptor cast(final LookupDescriptor descriptor)
+	public static SqlLookupDescriptor cast(final LookupDescriptor descriptor)
 	{
 		return (SqlLookupDescriptor)descriptor;
 	}
 
-	public static final LookupDescriptorProvider searchInTable(final String lookupTableName)
+	public static LookupDescriptorProvider searchInTable(final String lookupTableName)
 	{
 		return builder()
 				.setCtxTableName(null) // tableName
@@ -98,7 +99,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.buildProvider();
 	}
 
-	public static final LookupDescriptorProvider listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
+	public static LookupDescriptorProvider listByAD_Reference_Value_ID(final int AD_Reference_Value_ID)
 	{
 		Check.assumeGreaterThanZero(AD_Reference_Value_ID, "AD_Reference_Value_ID");
 
@@ -115,7 +116,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	 * @param AD_Reference_Value_ID has to be > 0
 	 * @param AD_Val_Rule_ID may be <= 0
 	 */
-	public static final LookupDescriptorProvider searchByAD_Val_Rule_ID(
+	public static LookupDescriptorProvider searchByAD_Val_Rule_ID(
 			final int AD_Reference_Value_ID,
 			final int AD_Val_Rule_ID)
 	{
@@ -148,11 +149,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 	private final boolean highVolume;
 	private final boolean numericKey;
-	private final LookupSource lookupSourceType;
 
+	private final LookupSource lookupSourceType;
 	private final ImmutableSet<String> dependsOnFieldNames;
 	private final ImmutableSet<String> dependsOnTableNames;
-
 	private final GenericSqlLookupDataSourceFetcher lookupDataSourceFetcher;
 
 	private SqlLookupDescriptor(final Builder builder)
@@ -167,11 +167,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		numericKey = builder.numericKey;
 		highVolume = builder.isHighVolume();
-		lookupSourceType = builder.getLookupSourceType();
 
+		lookupSourceType = builder.getLookupSourceType();
 		dependsOnFieldNames = ImmutableSet.copyOf(builder.dependsOnFieldNames);
 		dependsOnTableNames = ImmutableSet.copyOf(builder.getDependsOnTableNames());
-
 		lookupDataSourceFetcher = GenericSqlLookupDataSourceFetcher.of(this); // keep it last!
 	}
 
@@ -181,6 +180,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("tableName", tableName)
+				.add("zoomIntoWindowId", zoomIntoWindowId.orElse(null))
 				.add("highVolume", highVolume ? highVolume : null)
 				.add("sqlForFetching", sqlForFetchingExpression.toOneLineString())
 				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == INamePairPredicate.NULL ? null : postQueryPredicate)
@@ -347,11 +347,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		private ICachedStringExpression sqlForFetchingLookupByIdExpression;
 		private int entityTypeIndex = -1;
 
-		private int zoomIntoWindowId = -1;
+		private AdWindowId zoomIntoAdWindowId = null;
 
 		private Builder()
 		{
-			super();
 		}
 
 		public LookupDescriptorProvider buildProvider()
@@ -470,7 +469,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			// Set the SQLs
 			{
 				sqlTableName = lookupInfo.getTableName();
-				zoomIntoWindowId = lookupInfo.getZoomAD_Window_ID_Override();
+				zoomIntoAdWindowId = lookupInfo.getZoomAD_Window_ID_Override();
 				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
 						.caching();
 				sqlForFetchingLookupByIdExpression = buildSqlForFetchingById(lookupInfo)
@@ -549,7 +548,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			}
 		}
 
-		private static final IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final LookupScope scope, final IValidationRule validationRuleEffective)
+		private static IStringExpression buildSqlWhere(final MLookupInfo lookupInfo, final LookupScope scope, final IValidationRule validationRuleEffective)
 		{
 			final String tableName = lookupInfo.getTableName();
 			final String lookup_SqlWhere = lookupInfo.getWhereClauseSqlPart();
@@ -585,7 +584,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return sqlWhereFinal.build();
 		}
 
-		private static final IStringExpression buildSqlWhereClauseFromValidationRule(final IValidationRule validationRule, final LookupScope scope)
+		private static IStringExpression buildSqlWhereClauseFromValidationRule(final IValidationRule validationRule, final LookupScope scope)
 		{
 			final IStringExpression validationRuleWhereClause = validationRule.getPrefilterWhereClause();
 			if (validationRuleWhereClause.isNullExpression())
@@ -602,7 +601,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleWhereClause;
 		}
 
-		private final IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
+		private IStringExpression buildSqlForFetching(final MLookupInfo lookupInfo, final IStringExpression sqlWhere, final String sqlOrderBy)
 		{
 			final String tableName = lookupInfo.getTableName();
 			return IStringExpression.composer()
@@ -721,8 +720,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 
 		public Optional<WindowId> getZoomIntoWindowId()
 		{
-			final WindowId windowId = zoomIntoWindowId > 0 ? WindowId.of(zoomIntoWindowId) : null;
-			return Optional.ofNullable(windowId);
+			return Optional.ofNullable(WindowId.ofNullable(zoomIntoAdWindowId));
 		}
 
 		private LookupSource getLookupSourceType()
@@ -737,7 +735,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		private final Access getRequiredAccess(final String tableName)
+		private Access getRequiredAccess(final String tableName)
 		{
 			if (requiredAccess != null)
 			{
