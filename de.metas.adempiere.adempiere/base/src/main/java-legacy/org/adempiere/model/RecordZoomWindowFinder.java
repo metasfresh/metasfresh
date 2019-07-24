@@ -1,13 +1,11 @@
 package org.adempiere.model;
 
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
@@ -15,14 +13,12 @@ import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.cache.CCache;
-import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
 
 /*
  * #%L
@@ -52,14 +48,13 @@ import lombok.Value;
  * Use case:
  * <ul>
  * <li>create a new instance using one of the static builders
- * <li>get the actual window ID: {@link #findAdWindowId()}
+ * <li>get the actual window ID: {@link #findAD_Window_ID()}
  * <li>get the {@link MQuery} to be used when the window is opened: {@link #createZoomQuery()}
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ToString(doNotUseGetters = false)
 public class RecordZoomWindowFinder
 {
 	public static final RecordZoomWindowFinder newInstance(final String tableName, final int recordId)
@@ -67,8 +62,15 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(tableName, recordId);
 	}
 
-	public static final RecordZoomWindowFinder newInstance(@NonNull final TableRecordReference record)
+	public static final RecordZoomWindowFinder newInstance(final int adTableId, final int recordId)
 	{
+		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+		return new RecordZoomWindowFinder(tableName, recordId);
+	}
+
+	public static final RecordZoomWindowFinder newInstance(final ITableRecordReference record)
+	{
+		Check.assumeNotNull(record, "Parameter record is not null");
 		return new RecordZoomWindowFinder(record.getTableName(), record.getRecord_ID());
 	}
 
@@ -77,15 +79,14 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(tableName);
 	}
 
-	@Nullable
-	public static final Optional<AdWindowId> findAdWindowId(final TableRecordReference record)
+	public static final int findAD_Window_ID(final ITableRecordReference record)
 	{
-		return newInstance(record).findAdWindowId();
+		return newInstance(record).findAD_Window_ID();
 	}
 
-	public static final Optional<AdWindowId> findAdWindowId(final String tableName)
+	public static final int findAD_Window_ID(final String tableName)
 	{
-		return newInstance(tableName).findAdWindowId();
+		return newInstance(tableName).findAD_Window_ID();
 	}
 
 	public static final RecordZoomWindowFinder newInstance(final MQuery query)
@@ -93,7 +94,7 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(query);
 	}
 
-	public static final RecordZoomWindowFinder newInstance(final MQuery query, final AdWindowId windowIdToUse)
+	public static final RecordZoomWindowFinder newInstance(final MQuery query, final int windowIdToUse)
 	{
 		return new RecordZoomWindowFinder(query, windowIdToUse);
 
@@ -107,15 +108,15 @@ public class RecordZoomWindowFinder
 	private final int _recordId;
 	private final MQuery _query_Provided;
 	//
-	private AdWindowId _soWindowId_Provided = null;
-	private AdWindowId _poWindowId_Provided = null;
-	private SOTrx _soTrx_Provided = null;
+	private Integer _soWindowId_Provided = null;
+	private Integer _poWindowId_Provided = null;
+	private Boolean _isSOTrx_Provided = null;
 
 	//
 	// Effective values
 	private String _keyColumnName;
 	private WindowIds _windowIdsEffective = null;
-	private SOTrx _soTrx_Effective = null;
+	private Boolean _isSOTrx_Effective = null;
 
 	//
 	// Cache
@@ -142,8 +143,10 @@ public class RecordZoomWindowFinder
 		_query_Provided = null;
 	}
 
-	private RecordZoomWindowFinder(@NonNull final MQuery query)
+	private RecordZoomWindowFinder(final MQuery query)
 	{
+		Check.assumeNotNull(query, "Parameter query is not null");
+
 		final String tableName = query.getTableName();
 		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
 		_tableName = tableName;
@@ -152,14 +155,16 @@ public class RecordZoomWindowFinder
 
 		//
 		// Load additional infos from given query
-		_soTrx_Provided = query.isSOTrxOrNull();
+		_isSOTrx_Provided = query.isSOTrxOrNull();
 
 	}
 
-	private RecordZoomWindowFinder(
-			@NonNull final MQuery query,
-			@Nullable final AdWindowId adWindowId)
+	private RecordZoomWindowFinder(final MQuery query, final int adWindowId)
 	{
+		super();
+
+		Check.assumeNotNull(query, "Parameter query is not null");
+
 		final String tableName = query.getTableName();
 		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
 		_tableName = tableName;
@@ -168,7 +173,7 @@ public class RecordZoomWindowFinder
 
 		//
 		// Load additional infos from given query
-		_soTrx_Provided = query.isSOTrxOrNull();
+		_isSOTrx_Provided = query.isSOTrxOrNull();
 
 		// task #1062
 		// suggested window is for both trx
@@ -176,14 +181,31 @@ public class RecordZoomWindowFinder
 		_windowIdsEffective = WindowIds.of(adWindowId, adWindowId);
 	}
 
-	@Nullable
-	public Optional<AdWindowId> findAdWindowId()
+	@Override
+	public String toString()
 	{
-		final WindowIds windowIds = getEffectiveWindowIds();
-		return windowIds.getAdWindowIdBySOTrx(() -> getSOTrxEffective());
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("tableName", _tableName)
+				.add("recordId", _recordId)
+				.add("query_Provided", _query_Provided)
+				//
+				.add("isSOTrx_Provided", _isSOTrx_Provided)
+				.add("isSOTrx_Effective", _isSOTrx_Effective)
+				//
+				.add("WindowIds_Effective", _windowIdsEffective)
+				.add("PO_Window_ID_Provided", _poWindowId_Provided)
+				.add("SO_Window_ID_Provided", _soWindowId_Provided)
+				//
+				.toString();
 	}
 
-	@Deprecated
+	public int findAD_Window_ID()
+	{
+		final WindowIds windowIds = getEffectiveWindowIds();
+		return windowIds.getAD_Window_ID_ByIsSOTrx(() -> getIsSOTrxEffective());
+	}
+
 	public MQuery createZoomQuery()
 	{
 		if (_query_Provided != null)
@@ -205,23 +227,23 @@ public class RecordZoomWindowFinder
 		return query;
 	}
 
-	public RecordZoomWindowFinder soWindowId(@Nullable final AdWindowId soWindowId)
+	public RecordZoomWindowFinder setSO_Window_ID(final int soWindowId)
 	{
 		_soWindowId_Provided = soWindowId;
 		resetEffectiveValues();
 		return this;
 	}
 
-	public RecordZoomWindowFinder poWindowId(@Nullable final AdWindowId poWindowId)
+	public RecordZoomWindowFinder setPO_Window_ID(final int poWindowId)
 	{
 		_poWindowId_Provided = poWindowId;
 		resetEffectiveValues();
 		return this;
 	}
 
-	public RecordZoomWindowFinder soTrx(@Nullable final SOTrx soTrx)
+	public RecordZoomWindowFinder setIsSOTrx(final Boolean isSOTrx)
 	{
-		_soTrx_Provided = soTrx;
+		_isSOTrx_Provided = isSOTrx;
 		resetEffectiveValues();
 		return this;
 	}
@@ -229,15 +251,20 @@ public class RecordZoomWindowFinder
 	private final void resetEffectiveValues()
 	{
 		_windowIdsEffective = null;
-		_soTrx_Effective = null;
+		_isSOTrx_Effective = null;
 	}
 
-	private String getTableName()
+	public String getTableName()
 	{
 		return _tableName;
 	}
 
-	private int getRecord_ID()
+	public int getAD_Table_ID()
+	{
+		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
+	}
+
+	public int getRecord_ID()
 	{
 		return _recordId;
 	}
@@ -283,8 +310,8 @@ public class RecordZoomWindowFinder
 
 	private final WindowIds retrieveEffectiveWindowIds()
 	{
-		final AdWindowId soWindowId_Provided = _soWindowId_Provided;
-		final AdWindowId poWindowId_Provided = _poWindowId_Provided;
+		final Integer soWindowId_Provided = _soWindowId_Provided;
+		final Integer poWindowId_Provided = _poWindowId_Provided;
 
 		//
 		// If the SO and PO AD_Window_ID were specified => use them
@@ -308,31 +335,31 @@ public class RecordZoomWindowFinder
 		return tableName2defaultWindowIds.getOrLoad(tableName, () -> retrieveDefaultWindowIds(tableName));
 	}
 
-	private SOTrx getSOTrxEffective()
+	private boolean getIsSOTrxEffective()
 	{
-		if (_soTrx_Effective == null)
+		if (_isSOTrx_Effective == null)
 		{
-			_soTrx_Effective = computeSOTrxEffective();
+			_isSOTrx_Effective = computeIsSOTrxEffective();
 		}
-		return _soTrx_Effective;
+		return _isSOTrx_Effective;
 	}
 
-	private SOTrx computeSOTrxEffective()
+	private boolean computeIsSOTrxEffective()
 	{
-		final SOTrx soTrxProvided = _soTrx_Provided;
-		if (soTrxProvided != null)
+		final Boolean isSOTrxProvided = _isSOTrx_Provided;
+		if (isSOTrxProvided != null)
 		{
-			return soTrxProvided;
+			return isSOTrxProvided;
 		}
 
 		final String tableName = getTableName();
 		final String sqlWhereClause = getRecordWhereClause(); // might be null
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
-			return SOTrx.SALES;
+			return true;
 		}
 
-		return DB.retrieveRecordSOTrx(tableName, sqlWhereClause).orElse(SOTrx.SALES);
+		return retriveIsSOTrx(tableName, sqlWhereClause);
 	}
 
 	//
@@ -354,9 +381,14 @@ public class RecordZoomWindowFinder
 			return WindowIds.NONE;
 		}
 
-		final AdWindowId soWindowId = AdWindowId.ofRepoIdOrNull(table.getAD_Window_ID());
-		final AdWindowId poWindowId = AdWindowId.ofRepoIdOrNull(table.getPO_Window_ID());
+		final int soWindowId = table.getAD_Window_ID();
+		final int poWindowId = table.getPO_Window_ID();
 		return WindowIds.of(soWindowId, poWindowId);
+	}
+
+	private static final boolean retriveIsSOTrx(final String tableName, final String sqlWhereClause)
+	{
+		return DB.isSOTrx(tableName, sqlWhereClause);
 	}
 
 	/**
@@ -364,53 +396,61 @@ public class RecordZoomWindowFinder
 	 *
 	 * It also implements some helpful methods for deciding what AD_Window_ID to pick.
 	 */
-	@Value
 	private static final class WindowIds
 	{
-		public static WindowIds of(
-				@Nullable final AdWindowId soWindowId,
-				@Nullable final AdWindowId poWindowId)
+		public static final WindowIds of(final int soWindowId, final int poWindowId)
 		{
-			if (soWindowId == null && poWindowId == null)
+			if (soWindowId <= 0 && poWindowId <= 0)
 			{
 				return NONE;
 			}
 			return new WindowIds(soWindowId, poWindowId);
 		}
 
-		public static WindowIds of(
-				@Nullable final AdWindowId soWindowId,
-				@Nullable final AdWindowId poWindowId,
-				@NonNull final WindowIds defaults)
+		public static final WindowIds of(final Integer soWindowId, final Integer poWindowId, final WindowIds defaults)
 		{
-			final AdWindowId soWindowId_Effective = soWindowId != null ? soWindowId : defaults.getSoWindowId().orElse(null);
-			final AdWindowId poWindowId_Effective = poWindowId != null ? poWindowId : defaults.getPoWindowId().orElse(null);
+			final int soWindowId_Effective = soWindowId != null ? soWindowId : defaults.getSO_Window_ID();
+			final int poWindowId_Effective = poWindowId != null ? poWindowId : defaults.getPO_Window_ID();
 			return of(soWindowId_Effective, poWindowId_Effective);
 		}
 
-		public static final WindowIds NONE = new WindowIds();
+		public static final WindowIds NONE = new WindowIds(-1, -1);
 
-		private final Optional<AdWindowId> soWindowId;
-		private final Optional<AdWindowId> poWindowId;
+		private final int soWindowId;
+		private final int poWindowId;
 
-		private WindowIds(final AdWindowId soWindowId, final AdWindowId poWindowId)
+		private WindowIds(final int soWindowId, final int poWindowId)
 		{
-			this.soWindowId = Optional.ofNullable(soWindowId);
-			this.poWindowId = Optional.ofNullable(poWindowId);
+			super();
+			this.soWindowId = soWindowId;
+			this.poWindowId = poWindowId;
 		}
 
-		private WindowIds()
+		@Override
+		public String toString()
 		{
-			this.soWindowId = Optional.empty();
-			this.poWindowId = Optional.empty();
+			return MoreObjects.toStringHelper(this)
+					.add("soWindowId", soWindowId)
+					.add("poWindowId", poWindowId)
+					.toString();
 		}
 
-		public Optional<AdWindowId> getAdWindowIdBySOTrx(final Supplier<SOTrx> soTrxSupplier)
+		public int getSO_Window_ID()
 		{
-			if (poWindowId.isPresent())
+			return soWindowId;
+		}
+
+		public int getPO_Window_ID()
+		{
+			return poWindowId;
+		}
+
+		public int getAD_Window_ID_ByIsSOTrx(final Supplier<Boolean> isSOTrxSupplier)
+		{
+			if (poWindowId > 0)
 			{
-				final SOTrx soTrx = soTrxSupplier.get();
-				return soTrx.isSales() ? soWindowId : poWindowId;
+				final boolean isSOTrx = isSOTrxSupplier.get();
+				return isSOTrx ? soWindowId : poWindowId;
 			}
 			else
 			{

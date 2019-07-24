@@ -66,7 +66,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
@@ -1332,7 +1331,7 @@ public class Viewer extends CFrame
 	{
 		AWindow win = new AWindow ();
 		new AWindowListener (win, this);	//	forwards Window Events
-		AdWindowId AD_Window_ID = AdWindowId.ofRepoId(240);		//	hardcoded
+		int AD_Window_ID = 240;		//	hardcoded
 		int AD_PrintFormat_ID = m_reportEngine.getPrintFormat().get_ID();
 		win.initWindow(AD_Window_ID, MQuery.getEqualQuery("AD_PrintFormat_ID", AD_PrintFormat_ID));
 		AEnv.addToWindowManager(win);

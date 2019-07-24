@@ -24,10 +24,11 @@ package org.compiere.grid;
 
 
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.EventListener;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,7 +94,7 @@ public final class VPanelFormFieldBuilder
 		final GridFieldVO fieldVO = GridFieldVO.createStdField(Env.getCtx(),
 				windowNo,
 				0, // TabNo
-				(AdWindowId)null, // AD_Window_ID
+				0, // AD_Window_ID
 				0, // AD_Tab_ID
 				false, // tabReadOnly
 				false, // isCreated
@@ -137,19 +138,25 @@ public final class VPanelFormFieldBuilder
 		// Add Editor -> Field automatic binding
 		if (bindEditorToModel)
 		{
-			editor.addVetoableChangeListener(evt -> {
-				if (!Check.equals(field.getColumnName(), evt.getPropertyName()))
+			editor.addVetoableChangeListener(new VetoableChangeListener()
+			{
+
+				@Override
+				public void vetoableChange(final PropertyChangeEvent evt) throws PropertyVetoException
 				{
-					return;
+					if (!Check.equals(field.getColumnName(), evt.getPropertyName()))
+					{
+						return;
+					}
+					final Object value = evt.getNewValue();
+					if (value == null)
+					{
+						// NOTE: skip null values because of how editor works.
+						// Maybe we will fix that in future, but atm there are to many events triggered with a null new value.
+						return;
+					}
+					field.setValue(value, true);
 				}
-				final Object value = evt.getNewValue();
-				if (value == null)
-				{
-					// NOTE: skip null values because of how editor works.
-					// Maybe we will fix that in future, but atm there are to many events triggered with a null new value.
-					return;
-				}
-				field.setValue(value, true);
 			});
 		}
 

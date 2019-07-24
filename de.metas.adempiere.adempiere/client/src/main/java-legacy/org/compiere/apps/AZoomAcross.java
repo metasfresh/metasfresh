@@ -22,7 +22,6 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
@@ -61,12 +60,12 @@ public class AZoomAcross
 	 * @param tableName zoom source table (i.e. the table we start from)
 	 * @param query query that specifies the zoom source PO (i.e. the PO we start from)
 	 */
-	public AZoomAcross(JComponent invoker, String tableName, final AdWindowId windowID, MQuery query)
+	public AZoomAcross(JComponent invoker, String tableName, final int windowID, MQuery query)
 	{
 		this(invoker, retrieveZoomSourceOrNull(tableName, query, windowID));
 	}
 
-	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final AdWindowId adWindowId)
+	private static final IZoomSource retrieveZoomSourceOrNull(final String tableName, final MQuery query, final int adWindowId)
 	{
 		final PO po = new Query(Env.getCtx(), tableName, query.getWhereClause(), ITrx.TRXNAME_None)
 				.firstOnly();
@@ -129,16 +128,14 @@ public class AZoomAcross
 	 */
 	private void launch(final ZoomInfoFactory.ZoomInfo zoomInfo)
 	{
-		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
+		final int AD_Window_ID = zoomInfo.getAD_Window_ID();
 		final MQuery query = zoomInfo.getQuery();
 
-		logger.info("AD_Window_ID={} - {}", adWindowId, query);
+		logger.info("AD_Window_ID={} - {}", AD_Window_ID, query);
 
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowId, query))
-		{
+		if (!frame.initWindow(AD_Window_ID, query))
 			return;
-		}
 		AEnv.addToWindowManager(frame);
 		if (Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED))
 		{

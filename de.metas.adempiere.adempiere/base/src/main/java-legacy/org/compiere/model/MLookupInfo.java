@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
@@ -42,7 +41,6 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 
 /**
  * Info Class for Lookup SQL (ValueObject)
@@ -66,16 +64,20 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 * @param zoomQuery zoom query
 	 */
 	/* package */ MLookupInfo(
-			@NonNull final String sqlQuery_BaseLang,
-			@NonNull final String sqlQuery_Trl,
-			@NonNull final String tableName,
-			@NonNull final String keyColumn,
-			final AdWindowId zoomSO_Window_ID, 
-			final AdWindowId zoomPO_Window_ID, 
-			final AdWindowId zoomAD_Window_ID_Override, 
-			final MQuery zoomQuery)
+			final String sqlQuery_BaseLang, final String sqlQuery_Trl //
+			, final String tableName, final String keyColumn //
+			, final int zoomSO_Window_ID, final int zoomPO_Window_ID, final int zoomAD_Window_ID_Override, final MQuery zoomQuery //
+	)
 	{
+		super();
+		Check.assumeNotNull(sqlQuery_BaseLang, "Parameter sqlQuery_BaseLang is not null");
+		Check.assumeNotNull(sqlQuery_Trl, "Parameter sqlQuery_Trl is not null");
 		this.sqlQuery = TranslatableParameterizedString.of(CTXNAME_AD_Language, sqlQuery_BaseLang, sqlQuery_Trl);
+
+		if (keyColumn == null)
+			throw new IllegalArgumentException("KeyColumn is null");
+		if (tableName == null)
+			throw new IllegalArgumentException("TableName is null");
 		TableName = tableName;
 		KeyColumn = keyColumn;
 		this.zoomSO_Window_ID = zoomSO_Window_ID;
@@ -110,9 +112,9 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
 	private boolean securityDisabled = false;
 
-	private final AdWindowId zoomSO_Window_ID;
-	private final AdWindowId zoomPO_Window_ID;
-	private final AdWindowId zoomAD_Window_ID_Override;
+	private final int zoomSO_Window_ID;
+	private final int zoomAD_Window_ID_Override;
+	private final int zoomPO_Window_ID;
 	private final MQuery zoomQuery;
 
 	/** Direct Access Query (i.e. SELECT Key, Value, Name ... FROM TableName WHERE KeyColumn=?) */
@@ -129,6 +131,8 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	/** AD_Reference_ID */
 	private int DisplayType;
+	/** Real AD_Reference_ID */
+	private int AD_Reference_Value_ID;
 	/** CreadedBy?updatedBy */
 	private boolean IsCreadedUpdatedBy = false;
 	@Deprecated
@@ -173,17 +177,17 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return null;
 	}	// clone
 
-	public AdWindowId getZoomSO_Window_ID()
+	public int getZoomSO_Window_ID()
 	{
 		return zoomSO_Window_ID;
 	}
 
-	public AdWindowId getZoomPO_Window_ID()
+	public int getZoomPO_Window_ID()
 	{
 		return zoomPO_Window_ID;
 	}
 
-	public AdWindowId getZoomAD_Window_ID_Override()
+	public int getZoomAD_Window_ID_Override()
 	{
 		return zoomAD_Window_ID_Override;
 	}
@@ -198,7 +202,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return getSqlQueryEffective().translate();
 	}
 
-	private TranslatableParameterizedString getSqlQueryEffective()
+	private final TranslatableParameterizedString getSqlQueryEffective()
 	{
 		if (isSecurityDisabled())
 		{
@@ -471,7 +475,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		return isNumericKey(KeyColumn);
 	}
 
-	public static boolean isNumericKey(final String keyColumn)
+	public static final boolean isNumericKey(final String keyColumn)
 	{
 		if (keyColumn == null)
 		{
@@ -499,6 +503,16 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/* package */void setDisplayType(final int displayType)
 	{
 		this.DisplayType = displayType;
+	}
+
+	public int getAD_Reference_Value_ID()
+	{
+		return AD_Reference_Value_ID;
+	}
+
+	void setAD_Reference_Value_ID(int aD_Reference_Value_ID)
+	{
+		AD_Reference_Value_ID = aD_Reference_Value_ID;
 	}
 
 	public boolean isKey()
@@ -546,7 +560,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 		this.queryHasEntityType = queryHasEntityType;
 	}
 
-	public boolean isQueryHasEntityType()
+	public final boolean isQueryHasEntityType()
 	{
 		return queryHasEntityType;
 	}

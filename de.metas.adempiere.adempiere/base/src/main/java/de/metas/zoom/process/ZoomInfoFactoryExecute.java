@@ -1,6 +1,5 @@
 package de.metas.zoom.process;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.ZoomInfoFactory;
@@ -44,7 +43,7 @@ import de.metas.util.Services;
 public class ZoomInfoFactoryExecute extends JavaProcess
 {
 	@Param(mandatory = true, parameterName = "AD_Window_ID")
-	private AdWindowId windowId;
+	private int windowId;
 
 	@Param(mandatory = true, parameterName = "Record_ID")
 	private int recordId;

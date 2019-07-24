@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
@@ -83,7 +82,7 @@ public class NotificationRepositoryTest
 				.targetAction(TargetRecordAction.builder()
 						.record(TableRecordReference.of("MyTable", 111))
 						.recordDisplayText("targetRecordDisplayText")
-						.adWindowId(AdWindowId.optionalOfRepoId(444))
+						.adWindowId(444)
 						.build())
 				.build());
 

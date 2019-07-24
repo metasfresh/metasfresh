@@ -24,7 +24,6 @@ package org.adempiere.model;
 
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.GridField;
 import org.compiere.model.PO;
 
@@ -95,7 +94,7 @@ public interface CopyRecordSupport
 	 */
 	Object getValueToCopy(final GridField gridField);
 
-	void setAdWindowId(AdWindowId adWindowId);
+	void setAD_Window_ID(int aDWindowID);
 
 	/**
 	 * Allows other modules to install custom code to be executed each time a record was copied.

@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -27,12 +26,11 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.util.Services;
-import lombok.Value;
 
 public class ValuePreferenceBL implements IValuePreferenceBL
 {
 	@Override
-	public IUserValuePreferences getWindowPreferences(final Properties ctx, final AdWindowId adWindowId)
+	public IUserValuePreferences getWindowPreferences(final Properties ctx, final int adWindowId)
 	{
 		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
 		final int AD_Org_ID = Env.getAD_Org_ID(ctx);
@@ -48,7 +46,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 	}
 
 	@Cached(cacheName = I_AD_Preference.Table_Name + "#by#AD_Window_ID#Attribute")
-	Map<AdWindowId, IUserValuePreferences> retrieveAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
+	Map<Integer, IUserValuePreferences> retrieveAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -70,13 +68,53 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		;
 	}
 
-	@Value(staticConstructor = "of")
 	private static final class UserValuePreference implements IUserValuePreference
 	{
-		private final AdWindowId adWindowId;
+		public static UserValuePreference of(final int adWindowId, final String name, final String value)
+		{
+			return new UserValuePreference(adWindowId, name, value);
+		}
+
+		private final int adWindowId;
 		private final String name;
 		private final String value;
-		
+
+		public UserValuePreference(final int adWindowId, final String name, final String value)
+		{
+			super();
+			this.adWindowId = adWindowId;
+			this.name = name;
+			this.value = value;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("name", name)
+					.add("value", value)
+					.add("AD_Window_ID", adWindowId)
+					.toString();
+		}
+
+		@Override
+		public int getAD_Window_ID()
+		{
+			return adWindowId;
+		}
+
+		@Override
+		public String getName()
+		{
+			return name;
+		}
+
+		@Override
+		public String getValue()
+		{
+			return value;
+		}
+
 		@Override
 		public <T> T getValue(final Class<T> clazz)
 		{
@@ -135,11 +173,12 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 	{
 		public static final UserValuePreferences EMPTY = new UserValuePreferences();
 
-		private final AdWindowId adWindowId;
+		private final int adWindowId;
 		private final Map<String, IUserValuePreference> name2value;
 
 		private UserValuePreferences(final UserValuePreferencesBuilder builder)
 		{
+			super();
 			adWindowId = builder.adWindowId;
 			name2value = ImmutableMap.copyOf(builder.name2value);
 		}
@@ -147,7 +186,8 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		/** empty constructor */
 		private UserValuePreferences()
 		{
-			adWindowId = null;
+			super();
+			adWindowId = 0;
 			name2value = ImmutableMap.of();
 		}
 
@@ -161,7 +201,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		}
 
 		@Override
-		public AdWindowId getAdWindowId()
+		public int getAD_Window_ID()
 		{
 			return adWindowId;
 		}
@@ -197,10 +237,10 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 
 	private static final class UserValuePreferencesBuilder
 	{
-		public static Collector<I_AD_Preference, ?, ImmutableMap<AdWindowId, IUserValuePreferences>> byWindowIdCollector()
+		public static Collector<I_AD_Preference, ?, ImmutableMap<Integer, IUserValuePreferences>> byWindowIdCollector()
 		{
 			return Collectors.collectingAndThen(
-					Collectors.groupingBy(adPreference -> extractAdWindowId(adPreference), collector()) // downstream collector: AD_Window_ID->IUserValuePreferences
+					Collectors.groupingBy(adPreference -> extractAD_Window_ID(adPreference), collector()) // downstream collector: AD_Window_ID->IUserValuePreferences
 					, ImmutableMap::copyOf // finisher
 			);
 		}
@@ -216,12 +256,13 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 			);
 		}
 
-		private static AdWindowId extractAdWindowId(final I_AD_Preference adPreference)
+		private static final int extractAD_Window_ID(final I_AD_Preference adPreference)
 		{
-			return AdWindowId.ofRepoIdOrNull(adPreference.getAD_Window_ID());
+			final int adWindowId = adPreference.getAD_Window_ID();
+			return adWindowId > 0 ? adWindowId : IUserValuePreference.AD_WINDOW_ID_NONE;
 		}
 
-		private AdWindowId adWindowId;
+		private int adWindowId = 0;
 		private final Map<String, IUserValuePreference> name2value = new HashMap<>();
 
 		private UserValuePreferencesBuilder()
@@ -245,12 +286,12 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 
 		public UserValuePreferencesBuilder add(final I_AD_Preference adPreference)
 		{
-			final AdWindowId currentWindowId = extractAdWindowId(adPreference);
+			final int currentWindowId = extractAD_Window_ID(adPreference);
 			if (isEmpty())
 			{
 				adWindowId = currentWindowId;
 			}
-			else if (!AdWindowId.equals(adWindowId, currentWindowId))
+			else if (adWindowId != currentWindowId)
 			{
 				throw new IllegalArgumentException("Preference " + adPreference + "'s AD_Window_ID=" + currentWindowId + " is not matching builder's AD_Window_ID=" + adWindowId);
 			}

@@ -43,7 +43,6 @@ import javax.swing.JMenuBar;
 import javax.swing.KeyStroke;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.ad.session.ISessionBL;
@@ -199,7 +198,7 @@ public final class AMenu extends CFrame
 	/**
 	 * Sets window position, window dimension and shows it.
 	 */
-	private void packAndShow()
+	private final void packAndShow()
 	{
 		boolean openMaximized = Ini.isPropertyBool(Ini.P_OPEN_WINDOW_MAXIMIZED);
 
@@ -208,9 +207,7 @@ public final class AMenu extends CFrame
 		{
 			Point windowLocation = Ini.getWindowLocation(0);
 			if (windowLocation == null)
-			{
 				windowLocation = new Point(0, 0);
-			}
 			// Make sure the position is not out of the screen
 			if (windowLocation.x < 0 || windowLocation.y < 0)
 			{
@@ -240,13 +237,9 @@ public final class AMenu extends CFrame
 		// Show the window
 		this.setVisible(true);
 		if (openMaximized)
-		{
 			this.setExtendedState(Frame.MAXIMIZED_BOTH);
-		}
 		else
-		{
 			this.setState(Frame.NORMAL);
-		}
 	}
 
 	private final int m_WindowNo;
@@ -455,9 +448,7 @@ public final class AMenu extends CFrame
 		if (Env.getUserRolePermissions().isShowPreference())
 		{
 			if (mTools.getComponentCount() > 0)
-			{
 				mTools.addSeparator();
-			}
 			AEnv.addMenuItem("Preference", null, null, mTools, this);
 		}
 
@@ -541,7 +532,7 @@ public final class AMenu extends CFrame
 	 * @param e event
 	 */
 	@Override
-	protected void processWindowEvent(final WindowEvent e)
+	protected final void processWindowEvent(final WindowEvent e)
 	{
 		super.processWindowEvent(e);
 
@@ -556,17 +547,14 @@ public final class AMenu extends CFrame
 	 *
 	 * @param value true if busy
 	 */
-	protected void setBusy(final boolean value)
+	protected final void setBusy(final boolean value)
 	{
 		this.busy = value;
 		if (value)
-		{
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		}
-		else {
+		else
 			setCursor(Cursor.getDefaultCursor());
 		// setEnabled (!value); // causes flicker
-		}
 	}	// setBusy
 
 	/**
@@ -609,22 +597,14 @@ public final class AMenu extends CFrame
 	{
 		// Buttons
 		if (e.getSource() == bNotes)
-		{
 			gotoNotes();
-		}
 		else if (e.getSource() == bRequests)
-		{
 			gotoRequests();
-		}
 		else if (WindowMenu.ShowAllWindows_ActionName.equals(e.getActionCommand()))
-		{
 			m_WindowMenu.expose();
-		}
 		else if (!AEnv.actionPerformed(e.getActionCommand(), m_WindowNo, this))
-		 {
 			log.error("unknown action=" + e.getActionCommand());
 		// updateInfo();
-		}
 	}	// actionPerformed
 
 	/**
@@ -657,9 +637,7 @@ public final class AMenu extends CFrame
 					+ " INNER JOIN AD_TABLE t ON (t.AD_Window_ID=m.AD_Window_ID) "
 					+ "WHERE t.AD_Table_ID=?", 389);
 			if (m_note_Menu_ID == 0)
-			 {
 				m_note_Menu_ID = 233;	// fallback HARDCODED
-			}
 		}
 		AMenuStartItem.startMenuItemById(m_note_Menu_ID, msgBL.translate(m_ctx, "AD_Note_ID"), this); // async load
 	}   // gotoMessage
@@ -692,7 +670,7 @@ public final class AMenu extends CFrame
 			throw new AdempiereException("No window found for menu " + m_request_Menu_ID);
 		}
 
-		final I_AD_Tab requestTab = Services.get(IADWindowDAO.class).retrieveFirstTab(AdWindowId.ofRepoId(requestWindow.getAD_Window_ID()));
+		final I_AD_Tab requestTab = Services.get(IADWindowDAO.class).retrieveFirstTab(requestWindow.getAD_Window_ID());
 
 		if (requestTab == null)
 		{
@@ -724,9 +702,7 @@ public final class AMenu extends CFrame
 		// + " INNER JOIN AD_TABLE t ON (t.AD_Window_ID=m.AD_Window_ID) "
 		// + "WHERE t.AD_Table_ID=?", 417);
 		if (m_request_Menu_ID == 0)
-		 {
 			m_request_Menu_ID = 237;	// My Requests
-		}
 		AMenuStartItem.startMenuItemById(m_request_Menu_ID, msgBL.translate(m_ctx, I_R_Request.COLUMNNAME_R_Request_ID), this); // async load
 	}   // gotoRequests
 

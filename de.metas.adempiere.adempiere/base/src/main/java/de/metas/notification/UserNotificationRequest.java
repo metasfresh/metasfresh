@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -195,13 +194,14 @@ public class UserNotificationRequest
 			return recipient(Recipient.user(userId));
 		}
 
+
 		public UserNotificationRequestBuilder topic(final Topic topic)
 		{
 			return notificationGroupName(NotificationGroupName.of(topic));
 		}
 	}
 
-	public interface TargetAction
+	public static interface TargetAction
 	{
 	}
 
@@ -216,12 +216,12 @@ public class UserNotificationRequest
 
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
 		{
-			return builder().record(record).adWindowId(AdWindowId.optionalOfRepoId(adWindowId)).build();
+			return builder().record(record).adWindowId(adWindowId).build();
 		}
 
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, @NonNull final AdWindowId adWindowId)
 		{
-			return builder().record(record).adWindowId(Optional.of(adWindowId)).build();
+			return builder().record(record).adWindowId(adWindowId.getRepoId()).build();
 		}
 
 		public static TargetRecordAction of(@NonNull final String tableName, final int recordId)
@@ -234,13 +234,9 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		@NonNull
-		@Builder.Default
-		Optional<AdWindowId> adWindowId = Optional.empty();
-
+		int adWindowId;
 		@NonNull
 		TableRecordReference record;
-
 		String recordDisplayText;
 	}
 

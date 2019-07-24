@@ -65,10 +65,8 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.CopyRecordSupportTableInfo;
@@ -756,22 +754,22 @@ public class APanel extends CPanel
 	 * tabPanel
 	 *
 	 * @param AD_Workbench_ID if > 0 this is a workbench, AD_Window_ID ignored
-	 * @param adWindowId if not a workbench, Window ID
+	 * @param AD_Window_ID if not a workbench, Window ID
 	 * @param query if not a Workbench, Zoom Query - additional SQL where clause
 	 * @return true if Panel is initialized successfully
 	 */
-	public boolean initPanel(final int AD_Workbench_ID, final AdWindowId adWindowId, MQuery query)
+	public boolean initPanel(final int AD_Workbench_ID, final int AD_Window_ID, MQuery query)
 	{
 		Check.assume(!isNested, "Nested panels/included tabs are not allowed tobe initialized here");
 
-		log.debug("initPanel: WB={}, Win={}, Query={}", AD_Workbench_ID, adWindowId, query);
+		log.debug("initPanel: WB={}, Win={}, Query={}", AD_Workbench_ID, AD_Window_ID, query);
 
-		this.setName("APanel_" + (adWindowId != null ? adWindowId.getRepoId() : 0));
+		this.setName("APanel" + AD_Window_ID);
 
 		// Single Window
 		if (AD_Workbench_ID == 0)
 		{
-			m_mWorkbench = new GridWorkbench(m_ctx, adWindowId);
+			m_mWorkbench = new GridWorkbench(m_ctx, AD_Window_ID);
 		}
 		else
 		// Workbench
@@ -792,7 +790,7 @@ public class APanel extends CPanel
 		// Configure Dimension
 		Dimension windowSize = null;
 		{
-			final I_AD_Window adWindow = Services.get(IADWindowDAO.class).getWindowByIdInTrx(adWindowId);
+			final I_AD_Window adWindow = InterfaceWrapperHelper.create(m_ctx, AD_Window_ID, I_AD_Window.class, ITrx.TRXNAME_None);
 			final int winWidth = adWindow.getWinWidth();
 			final int winHeight = adWindow.getWinHeight();
 			if (winWidth > 0
@@ -2191,7 +2189,7 @@ public class APanel extends CPanel
 			{
 				if (m_curTab.getRecord_ID() <= 0)
 				{
-					
+					;
 				}
 				else if (m_curTab.getTabNo() == 0 && m_mWorkbench.getMWindow(getWindowIndex()).isTransaction())
 				{
@@ -2648,7 +2646,7 @@ public class APanel extends CPanel
 				query.addRestriction(link, Operator.EQUAL, Env.getContext(m_ctx, m_curWindowNo, link));
 			}
 		}
-		new AZoomAcross(aZoomAcross.getButton(), m_curTab.getTableName(), m_curTab.getAdWindowId(), query);
+		new AZoomAcross(aZoomAcross.getButton(), m_curTab.getTableName(), m_curTab.getAD_Window_ID(), query);
 	}	// cmd_zoom
 
 	/**
@@ -2936,7 +2934,7 @@ public class APanel extends CPanel
 			size = new Dimension(0, 0);
 		}
 		//
-		MWindow win = new MWindow(m_ctx, m_curTab.getAdWindowId().getRepoId(), ITrx.TRXNAME_None);
+		MWindow win = new MWindow(m_ctx, m_curTab.getAD_Window_ID(), null);
 		win.setWindowSize(size);
 		win.save();
 	}	// cmdWinSize

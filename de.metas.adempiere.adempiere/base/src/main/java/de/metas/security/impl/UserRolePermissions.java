@@ -37,7 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
@@ -536,17 +535,17 @@ class UserRolePermissions implements IUserRolePermissions
 	 * @return null in no access, TRUE if r/w and FALSE if r/o
 	 */
 	@Override
-	public Boolean getWindowAccess(@NonNull final AdWindowId AD_Window_ID)
+	public Boolean getWindowAccess(final int AD_Window_ID)
 	{
 		final Boolean access = checkWindowPermission(AD_Window_ID).getReadWriteBoolean();
-		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID.getRepoId(), access);
+		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID, access);
 		return access;
 	}
 
 	@Override
-	public ElementPermission checkWindowPermission(@NonNull final AdWindowId AD_Window_ID)
+	public ElementPermission checkWindowPermission(final int AD_Window_ID)
 	{
-		return windowPermissions.getPermission(AD_Window_ID.getRepoId());
+		return windowPermissions.getPermission(AD_Window_ID);
 	}
 
 	/**

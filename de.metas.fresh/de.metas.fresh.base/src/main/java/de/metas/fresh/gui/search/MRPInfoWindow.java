@@ -38,7 +38,6 @@ import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.event.ListSelectionEvent;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -225,7 +224,7 @@ public class MRPInfoWindow extends InfoSimple
 			final MQuery query = new MQuery(I_Fresh_QtyOnHand.Table_Name);
 			query.addRestriction(I_Fresh_QtyOnHand.COLUMNNAME_DateDoc, Operator.EQUAL, datePromised);
 			query.setRecordCount(1);
-			final AdWindowId AD_WindowNo = getAD_Window_ID(I_Fresh_QtyOnHand.Table_Name, true);
+			final int AD_WindowNo = getAD_Window_ID(I_Fresh_QtyOnHand.Table_Name, true);
 			zoom(AD_WindowNo, query);
 		}
 		//

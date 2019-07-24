@@ -20,9 +20,6 @@ import java.awt.BorderLayout;
 import java.awt.Image;
 import java.awt.event.WindowEvent;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.MetasfreshGlassPane;
 import org.compiere.model.GridWindow;
@@ -81,7 +78,7 @@ public class AWindow extends CFrame
 	public boolean initWorkbench (int AD_Workbench_ID)
 	{
 		this.setName("AWindow_WB_" + AD_Workbench_ID);
-		boolean loadedOK = m_APanel.initPanel (AD_Workbench_ID, (AdWindowId)null, null);
+		boolean loadedOK = m_APanel.initPanel (AD_Workbench_ID, 0, null);
 		//
 		commonInit();
 		return loadedOK;
@@ -89,14 +86,16 @@ public class AWindow extends CFrame
 
 	/**
 	 *	Dynamic Initialization Single Window
+	 *  @param AD_Window_ID window
+	 *  @param query query
 	 *  @return true if loaded OK
 	 */
-	public boolean initWindow (@Nullable final AdWindowId adWindowId, MQuery query)
+	public boolean initWindow (int AD_Window_ID, MQuery query)
 	{
-		this.setName("AWindow_" + (adWindowId != null ? adWindowId.getRepoId() : 0));
-		setAdWindowId(adWindowId);
+		this.setName("AWindow_" + AD_Window_ID);
+		setAD_Window_ID(AD_Window_ID);
 		//
-		boolean loadedOK = m_APanel.initPanel (0, adWindowId, query);
+		boolean loadedOK = m_APanel.initPanel (0, AD_Window_ID, query);
 		if (loadedOK)
 		{
 			commonInit();
@@ -115,9 +114,7 @@ public class AWindow extends CFrame
 		//
 		Image image = m_APanel.getImage();
 		if (image != null)
-		{
 			setIconImage(image);
-		}
 		
 		this.setTransferHandler(new AttachmentDnDTransferHandler(m_APanel)); // metas: drag&drop support for attachments
 	}   //  commonInit
@@ -130,16 +127,12 @@ public class AWindow extends CFrame
 	public void setBusy (final boolean busy)
 	{
 		if (busy == m_glassPane.isVisible())
-		{
 			return;
-		}
 		log.debug("set busy: {}, window={}", busy, this);
 		m_glassPane.setMessage(null);
 		m_glassPane.setVisible(busy);
 		if (busy)
-		{
 			m_glassPane.requestFocus();
-		}
 	}   //  setBusy
 
 	/**
@@ -193,15 +186,11 @@ public class AWindow extends CFrame
 	public void dispose()
 	{
 		if (Env.hideWindow(this))
-		{
 			return;
-		}
 		
 		log.debug("disposing: {}", this);
 		if (m_APanel != null)
-		{
 			m_APanel.dispose();
-		}
 		m_APanel = null;
 		this.removeAll();
 		super.dispose();
@@ -215,9 +204,7 @@ public class AWindow extends CFrame
 	public int getWindowNo()
 	{
 		if (m_APanel != null)
-		{
 			return m_APanel.getWindowNo();
-		}
 		return 0;
 	}	//	getWindowNo
 	
@@ -235,10 +222,8 @@ public class AWindow extends CFrame
 	public GridWindow getGridWindow()
 	{
 		if (m_APanel == null)
-		{
 			return null;
-		}
-		return m_APanel.getGridWorkbench().getMWindowById(getAdWindowId());
+		return m_APanel.getGridWorkbench().getMWindowById(getAD_Window_ID());
 	}
 // metas: end
 }	//	AWindow

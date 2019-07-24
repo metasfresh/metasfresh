@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -243,16 +242,12 @@ public class InfoInvoice extends Info
 		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
-		{
 			fBPartner_ID.setValue(new Integer(bp));
-		}
 
 		//  prepare table
 		StringBuffer where = new StringBuffer("i.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-		{
 			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Invoice.", "i."));
-		}
 		prepareTable(s_invoiceLayout,
 			" C_Invoice_v i",   //  corrected for CM
 			where.toString(),
@@ -274,42 +269,28 @@ public class InfoInvoice extends Info
 	{
 		StringBuffer sql = new StringBuffer();
 		if (fDocumentNo.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(i.DocumentNo) LIKE ?");
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(i.Description) LIKE ?");
-		}
 	//	if (fPOReference.getText().length() > 0)
 	//		sql.append(" AND UPPER(i.POReference) LIKE ?");
 		//
 		if (fBPartner_ID.getValue() != null)
-		{
 			sql.append(" AND i.C_BPartner_ID=?");
-		}
 		//
 		if (fOrder_ID.getValue() != null)
-		{
 			sql.append(" AND i.C_Order_ID=?");
-		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND TRUNC(i.DateInvoiced) <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND TRUNC(i.DateInvoiced) >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND TRUNC(i.DateInvoiced) BETWEEN ? AND ?");
-			}
 		}
 		//
 		if (fAmtFrom.getValue() != null || fAmtTo.getValue() != null)
@@ -317,17 +298,11 @@ public class InfoInvoice extends Info
 			BigDecimal from = (BigDecimal)fAmtFrom.getValue();
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND i.GrandTotal <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND i.GrandTotal >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND i.GrandTotal BETWEEN ? AND ?");
-			}
 		}
 		//
 		sql.append(" AND i.IsPaid=? AND i.IsSOTrx=?");
@@ -348,13 +323,9 @@ public class InfoInvoice extends Info
 	{
 		int index = 1;
 		if (fDocumentNo.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDocumentNo));
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDescription));
-		}
 	//	if (fPOReference.getText().length() > 0)
 	//		pstmt.setString(index++, getSQLText(fPOReference));
 		//
@@ -378,13 +349,9 @@ public class InfoInvoice extends Info
 			Timestamp to = fDateTo.getValue();
 			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setTimestamp(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setTimestamp(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setTimestamp(index++, from);
@@ -398,13 +365,9 @@ public class InfoInvoice extends Info
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			log.debug("Amt From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setBigDecimal(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setBigDecimal(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setBigDecimal(index++, from);
@@ -424,9 +387,7 @@ public class InfoInvoice extends Info
 	{
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
-		{
 			s += "%";
-		}
 		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
@@ -440,13 +401,11 @@ public class InfoInvoice extends Info
 		log.info( "InfoInvoice.zoom");
 		Integer C_Invoice_ID = getSelectedRowKey();
 		if (C_Invoice_ID == null)
-		{
 			return;
-		}
 		MQuery query = new MQuery("C_Invoice");
 		query.addRestriction("C_Invoice_ID", Operator.EQUAL, C_Invoice_ID);
 		query.setRecordCount(1);
-		AdWindowId AD_WindowNo = getAD_Window_ID("C_Invoice", fIsSOTrx.isSelected());
+		int AD_WindowNo = getAD_Window_ID("C_Invoice", fIsSOTrx.isSelected());
 		zoom (AD_WindowNo, query);
 	}	//	zoom
 
@@ -477,18 +436,12 @@ public class InfoInvoice extends Info
 		{
 			Object value = p_table.getValueAt(row, INDEX_PAYSCHEDULE);
 			if (value != null && value instanceof KeyNamePair)
-			{
 				C_InvoicePaySchedule_ID = ((KeyNamePair)value).getKey();
-			}
 		}
-		if (C_InvoicePaySchedule_ID <= 0)
-		{
+		if (C_InvoicePaySchedule_ID <= 0)	//	not selected
 			Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "C_InvoicePaySchedule_ID", "0");
-		}
 		else
-		{
 			Env.setContext(Env.getCtx(), p_WindowNo, Env.TAB_INFO, "C_InvoicePaySchedule_ID", String.valueOf(C_InvoicePaySchedule_ID));
-		}
 	}	//	saveSelectionDetail
 
 

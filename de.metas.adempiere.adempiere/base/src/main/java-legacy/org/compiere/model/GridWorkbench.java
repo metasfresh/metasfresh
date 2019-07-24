@@ -24,15 +24,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Properties;
+import org.slf4j.Logger;
+import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
 
 /**
  *  Window Workbench Model
@@ -61,17 +59,17 @@ public class GridWorkbench implements Serializable
 	 *  @param ctx context
 	 *  @param AD_Window_ID window
 	 */
-	public GridWorkbench (Properties ctx, AdWindowId adWindowId)
+	public GridWorkbench (Properties ctx, int AD_Window_ID)
 	{
 		m_ctx = ctx;
-		m_windows.add (new WBWindow(TYPE_WINDOW, AdWindowId.toRepoId(adWindowId)));
+		m_windows.add (new WBWindow(TYPE_WINDOW, AD_Window_ID));
 	}   //  MWorkbench
 
 	/** Properties      */
 	private Properties  m_ctx;
 
 	/** List of windows */
-	private ArrayList<WBWindow>   m_windows = new ArrayList<>();
+	private ArrayList<WBWindow>   m_windows = new ArrayList<WBWindow>();
 
 	private int         AD_Workbench_ID = 0;
 	private String      Name = "";
@@ -97,7 +95,6 @@ public class GridWorkbench implements Serializable
 		//  Get WB info
 		String sql = null;
 		if (Env.isBaseLanguage(m_ctx, "AD_Workbench"))
-		{
 			sql = "SELECT w.Name,w.Description,w.Help,"                         //  1..3
 				+ " w.AD_Column_ID,w.AD_Image_ID,w.AD_Color_ID,w.PA_Goal_ID,"   //  4..7
 				+ " c.ColumnName "                                              //  8
@@ -105,9 +102,7 @@ public class GridWorkbench implements Serializable
 				+ "WHERE w.AD_Workbench_ID=?"                   //  #1
 				+ " AND w.IsActive='Y'"
 				+ " AND w.AD_Column_ID=c.AD_Column_ID";
-		}
 		else
-		{
 			sql = "SELECT t.Name,t.Description,t.Help,"
 				+ " w.AD_Column_ID,w.AD_Image_ID,w.AD_Color_ID,w.PA_Goal_ID,"
 				+ " c.ColumnName "
@@ -117,7 +112,6 @@ public class GridWorkbench implements Serializable
 				+ " AND w.AD_Workbench_ID=t.AD_Workbench_ID"
 				+ " AND t.AD_Language='" + Env.getAD_Language(m_ctx) + "'"
 				+ " AND w.AD_Column_ID=c.AD_Column_ID";
-		}
 		try
 		{
 			PreparedStatement pstmt = DB.prepareStatement(sql, null);
@@ -128,14 +122,10 @@ public class GridWorkbench implements Serializable
 				Name = rs.getString(1);
 				Description = rs.getString(2);
 				if (Description == null)
-				{
 					Description = "";
-				}
 				Help = rs.getString(3);
 				if (Help == null)
-				{
 					Help = "";
-				}
 				//
 				AD_Column_ID = rs.getInt(4);
 				AD_Image_ID = rs.getInt(5);
@@ -144,9 +134,7 @@ public class GridWorkbench implements Serializable
 				ColumnName = rs.getString(8);
 			}
 			else
-			{
 				AD_Workbench_ID = 0;
-			}
 			rs.close();
 			pstmt.close();
 		}
@@ -156,9 +144,7 @@ public class GridWorkbench implements Serializable
 		}
 
 		if (AD_Workbench_ID == 0)
-		{
 			return false;
-		}
 		return initWorkbenchWindows();
 	}   //  initWorkbench
 
@@ -166,7 +152,6 @@ public class GridWorkbench implements Serializable
 	 *  String Representation
 	 *  @return info
 	 */
-	@Override
 	public String toString()
 	{
 		return "MWorkbench ID=" + AD_Workbench_ID + " " + Name
@@ -296,21 +281,13 @@ public class GridWorkbench implements Serializable
 				int AD_Task_ID = rs.getInt(4);
 				//
 				if (AD_Window_ID > 0)
-				{
 					m_windows.add (new WBWindow(TYPE_WINDOW, AD_Window_ID));
-				}
 				else if (AD_Form_ID > 0)
-				{
 					m_windows.add (new WBWindow(TYPE_FORM, AD_Form_ID));
-				}
 				else if (AD_Process_ID > 0)
-				{
 					m_windows.add (new WBWindow(TYPE_PROCESS, AD_Process_ID));
-				}
 				else if (AD_Task_ID > 0)
-				{
 					m_windows.add (new WBWindow(TYPE_TASK, AD_Task_ID));
-				}
 			}
 			rs.close();
 			pstmt.close();
@@ -340,10 +317,8 @@ public class GridWorkbench implements Serializable
 	public int getWindowType (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			return -1;
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		return win.Type;
 	}   //  getWindowType
 
@@ -352,14 +327,12 @@ public class GridWorkbench implements Serializable
 	 *  @param index index in workbench
 	 *  @return -1 if not valid
 	 */
-	public AdWindowId getWindowID (int index)
+	public int getWindowID (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
-			return null;
-		}
-		WBWindow win = m_windows.get(index);
-		return AdWindowId.ofRepoIdOrNull(win.ID);
+			return -1;
+		WBWindow win = (WBWindow)m_windows.get(index);
+		return win.ID;
 	}   //  getWindowID
 
 	
@@ -371,14 +344,10 @@ public class GridWorkbench implements Serializable
 	public void setMWindow (int index, GridWindow mw)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.Type != TYPE_WINDOW)
-		{
 			throw new IllegalArgumentException ("Not a MWindow: " + index);
-		}
 		win.mWindow = mw;
 	}   //  setMWindow
 
@@ -390,14 +359,10 @@ public class GridWorkbench implements Serializable
 	public GridWindow getMWindow (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.Type != TYPE_WINDOW)
-		{
 			throw new IllegalArgumentException ("Not a MWindow: " + index);
-		}
 		return win.mWindow;
 	}   //  getMWindow
 
@@ -409,14 +374,10 @@ public class GridWorkbench implements Serializable
 	public String getName (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null && win.Type == TYPE_WINDOW)
-		{
 			return win.mWindow.getName();
-		}
 		return null;
 	}   //  getName
 
@@ -428,14 +389,10 @@ public class GridWorkbench implements Serializable
 	public String getDescription (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null && win.Type == TYPE_WINDOW)
-		{
 			return win.mWindow.getDescription();
-		}
 		return null;
 	}   //  getDescription
 
@@ -447,14 +404,10 @@ public class GridWorkbench implements Serializable
 	public String getHelp (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null && win.Type == TYPE_WINDOW)
-		{
 			return win.mWindow.getHelp();
-		}
 		return null;
 	}   //  getHelp
 
@@ -466,14 +419,10 @@ public class GridWorkbench implements Serializable
 	public Icon getIcon (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null && win.Type == TYPE_WINDOW)
-		{
 			return win.mWindow.getIcon();
-		}
 		return null;
 	}   //  getIcon
 
@@ -485,14 +434,10 @@ public class GridWorkbench implements Serializable
 	public Image getImage (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null && win.Type == TYPE_WINDOW)
-		{
 			return win.mWindow.getImage();
-		}
 		return null;
 	}   //  getImage
 
@@ -504,17 +449,13 @@ public class GridWorkbench implements Serializable
 	public int getAD_Color_ID (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		int retValue = -1;
 	//	if (win.mWindow != null && win.Type == TYPE_WINDOW)
 	//		return win.mWindow.getAD_Color_ID();
 		if (retValue == -1)
-		{
 			return getAD_Color_ID();
-		}
 		return retValue;
 	}   //  getAD_Color_ID
 
@@ -526,10 +467,8 @@ public class GridWorkbench implements Serializable
 	public void setWindowNo (int index, int windowNo)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		win.WindowNo = windowNo;
 	}   //  getWindowNo
 
@@ -541,10 +480,8 @@ public class GridWorkbench implements Serializable
 	public int getWindowNo (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		return win.WindowNo;
 	}   //  getWindowNo
 
@@ -555,14 +492,10 @@ public class GridWorkbench implements Serializable
 	public void dispose (int index)
 	{
 		if (index < 0 || index > m_windows.size())
-		{
 			throw new IllegalArgumentException ("Index invalid: " + index);
-		}
-		WBWindow win = m_windows.get(index);
+		WBWindow win = (WBWindow)m_windows.get(index);
 		if (win.mWindow != null)
-		{
 			win.mWindow.dispose();
-		}
 		win.mWindow = null;
 	}   //  dispose
 
@@ -604,18 +537,14 @@ public class GridWorkbench implements Serializable
 	}   //  WBWindow
 
 // metas: begin
-	public GridWindow getMWindowById(AdWindowId adWindowId)
+	public GridWindow getMWindowById(int AD_Window_ID)
 	{
-		if (adWindowId == null)
-		{
+		if (AD_Window_ID <= 0)
 			return null;
-		}
 		for (WBWindow win : m_windows)
 		{
-			if (win.Type == TYPE_WINDOW && AdWindowId.equals(adWindowId, win.mWindow.getAdWindowId()))
-			{
+			if (win.Type == TYPE_WINDOW && AD_Window_ID == win.mWindow.getAD_Window_ID())
 				return win.mWindow;
-			}
 			
 		}
 		return null;

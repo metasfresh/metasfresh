@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.ui.editor.IZoomableEditor;
@@ -46,7 +45,6 @@ import org.compiere.util.ValueNamePair;
 
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Check;
-import lombok.NonNull;
 
 public class ZoomContextEditorAction extends AbstractContextMenuAction
 {
@@ -101,7 +99,7 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 
 		final GridField gridField = editor.getField();
 		final Lookup lookup = gridField.getLookup();
-		if (lookup == null || lookup.getZoom() == null)
+		if (lookup == null || lookup.getZoom() == 0)
 		{
 			return false;
 		}
@@ -201,19 +199,19 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 			zoomQuery.setRecordCount(1); // guess
 		}
 
-		AdWindowId AD_Window_ID = lookup.getZoomAD_Window_ID(zoomQuery);
+		int AD_Window_ID = lookup.getZoomAD_Window_ID(zoomQuery);
 
 		log.info(columnName + " - AD_Window_ID=" + AD_Window_ID + " - Query=" + zoomQuery + " - Value=" + value);
 
 		zoom(lookup.getWindowNo(), AD_Window_ID, zoomQuery);
 	}
 
-	private void zoom(int parentWindowNo, @NonNull AdWindowId adWindowId, MQuery zoomQuery)
+	private void zoom(int parentWindowNo, int AD_Window_ID, MQuery zoomQuery)
 	{
 		// setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowId, zoomQuery))
+		if (!frame.initWindow(AD_Window_ID, zoomQuery))
 		{
 			// setCursor(Cursor.getDefaultCursor());
 			ValueNamePair pp = MetasfreshLastError.retrieveError();

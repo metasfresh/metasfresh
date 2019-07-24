@@ -24,7 +24,6 @@ package org.adempiere.ad.service;
 
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.compiere.model.ILookupDisplayColumn;
@@ -87,11 +86,11 @@ public interface ILookupDAO extends ISingletonService
 
 		boolean isValueDisplayed();
 
-		AdWindowId getZoomSO_Window_ID();
+		int getZoomSO_Window_ID();
 
-		AdWindowId getZoomAD_Window_ID_Override();
+		int getZoomAD_Window_ID_Override();
 
-		AdWindowId getZoomPO_Window_ID();
+		int getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
 
@@ -105,9 +104,9 @@ public interface ILookupDAO extends ISingletonService
 	{
 		boolean isTranslated();
 
-		AdWindowId getZoomWindowPO();
+		int getZoomWindowPO();
 
-		AdWindowId getZoomWindow();
+		int getZoomWindow();
 
 		List<ILookupDisplayColumn> getLookupDisplayColumns();
 	}
@@ -133,7 +132,8 @@ public interface ILookupDAO extends ISingletonService
 		 */
 		Object getValidationKey();
 
-		@Override NamePair next();
+		@Override
+		public NamePair next();
 
 		/**
 		 *

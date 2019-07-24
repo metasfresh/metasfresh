@@ -15,7 +15,6 @@ package org.compiere.apps.form;
 
 import java.sql.Timestamp;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.IStatusBar;
@@ -78,8 +77,8 @@ public class TrxMaterial
 			return m_mTab;
 		}
 
-		final AdWindowId adWindowId = AdWindowId.ofRepoId(223); // Hardcoded: "Waren-Bewegungen (indirekte Verwendung)"
-		final GridWindowVO wVO = AEnv.getMWindowVO (m_WindowNo, adWindowId, 0);
+		final int AD_Window_ID = 223; // Hardcoded: "Waren-Bewegungen (indirekte Verwendung)"
+		final GridWindowVO wVO = AEnv.getMWindowVO (m_WindowNo, AD_Window_ID, 0);
 		Check.assumeNotNull(wVO, "wVO not null"); // shall not happen
 
 		m_mWindow = new GridWindow (wVO);
@@ -125,34 +124,22 @@ public class TrxMaterial
 		final MQuery query = m_staticQuery.deepCopy();
 		//  Organization
 		if (organization != null && organization.toString().length() > 0)
-		{
 			query.addRestriction(I_M_Transaction.COLUMNNAME_AD_Org_ID, Operator.EQUAL, organization);
-		}
 		//  Locator
 		if (locator != null && locator.toString().length() > 0)
-		{
 			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Locator_ID, Operator.EQUAL, locator);
-		}
 		//  Product
 		if (product != null && product.toString().length() > 0)
-		{
 			query.addRestriction(I_M_Transaction.COLUMNNAME_M_Product_ID, Operator.EQUAL, product);
-		}
 		//  MovementType
 		if (movementType != null && movementType.toString().length() > 0)
-		{
 			query.addRestriction(I_M_Transaction.COLUMNNAME_MovementType, Operator.EQUAL, movementType);
-		}
 		//  DateFrom
 		if (movementDateFrom != null)
-		{
 			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", Operator.GREATER_EQUAL, movementDateFrom);
-		}
 		//  DateTO
 		if (movementDateTo != null)
-		{
 			query.addRestriction("TRUNC("+I_M_Transaction.COLUMNNAME_MovementDate+")", Operator.LESS_EQUAL, movementDateTo);
-		}
 		// C_BPartner_ID
 		if (bpartnerId != null && bpartnerId.toString().length() > 0)
 		{
@@ -174,7 +161,7 @@ public class TrxMaterial
 		statusBar.setStatusDB(Integer.toString(no));
 	}   //  refresh
 
-	public AdWindowId adWindowId;
+	public int AD_Window_ID;
 	public MQuery query;
 
 	/**
@@ -184,7 +171,7 @@ public class TrxMaterial
 	{
 		log.info("");
 		//
-		adWindowId = null;
+		AD_Window_ID = 0;
 		String ColumnName = null;
 		String SQL = null;
 		//
@@ -193,12 +180,9 @@ public class TrxMaterial
 		{
 			log.debug("M_InOutLine_ID=" + lineID);
 			if (Env.getContext(Env.getCtx(), m_WindowNo, "MovementType").startsWith("C"))
-			{
-				adWindowId = AdWindowId.ofRepoId(169);     //  Customer
-			}
-			else {
-				adWindowId = AdWindowId.ofRepoId(184);     //  Vendor
-			}
+				AD_Window_ID = 169;     //  Customer
+			else
+				AD_Window_ID = 184;     //  Vendor
 			ColumnName = "M_InOut_ID";
 			SQL = "SELECT M_InOut_ID FROM M_InOutLine WHERE M_InOutLine_ID=?";
 		}
@@ -208,7 +192,7 @@ public class TrxMaterial
 			if (lineID > 0)
 			{
 				log.debug("M_InventoryLine_ID=" + lineID);
-				adWindowId = AdWindowId.ofRepoId(168);
+				AD_Window_ID = 168;
 				ColumnName = "M_Inventory_ID";
 				SQL = "SELECT M_Inventory_ID FROM M_InventoryLine WHERE M_InventoryLine_ID=?";
 			}
@@ -218,25 +202,21 @@ public class TrxMaterial
 				if (lineID > 0)
 				{
 					log.debug("M_MovementLine_ID=" + lineID);
-					adWindowId = AdWindowId.ofRepoId(170);
+					AD_Window_ID = 170;
 					ColumnName = "M_Movement_ID";
 					SQL = "SELECT M_Movement_ID FROM M_MovementLine WHERE M_MovementLine_ID=?";
 				}
 			}
 		}
-		if (adWindowId == null)
-		{
+		if (AD_Window_ID <= 0)
 			return;
-		}
 
 		//  Get Parent ID
 		final int parentID = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL, lineID);
 		query = MQuery.getEqualQuery(ColumnName, parentID);
-		log.info("AD_Window_ID=" + adWindowId + " - " + query);
+		log.info("AD_Window_ID=" + AD_Window_ID + " - " + query);
 		if (parentID <= 0)
-		{
 			log.error("No ParentValue - " + SQL + " - " + lineID);
-		}
 	}   //  zoom
 
 	protected final Lookup getLookup(final String columnName)

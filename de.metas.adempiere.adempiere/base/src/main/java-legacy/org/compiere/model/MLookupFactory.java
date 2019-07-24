@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.IColumnInfo;
@@ -94,9 +93,7 @@ public class MLookupFactory
 	{
 		MLookupInfo info = getLookupInfo(WindowNo, AD_Reference_ID, ctxTableName, ctxColumnName, AD_Reference_Value_ID, IsParent, ValidationCode);
 		if (info == null)
-		{
 			throw new AdempiereException("MLookup.create - no LookupInfo");
-		}
 		return new MLookup(ctx, Column_ID, info, 0);
 	}   // create
 
@@ -282,7 +279,7 @@ public class MLookupFactory
 		// NOTE: because some of the previous getters can retrieve a clone of a cached lookup info, here we need to set the actual values again
 		info.setWindowNo(WindowNo);
 		info.setDisplayType(AD_Reference_ID);
-		//info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
+		info.setAD_Reference_Value_ID(AD_Reference_Value_ID);
 		info.setIsParent(IsParent);
 		info.setValidationRule(Services.get(IValidationRuleFactory.class).create(info.getTableName(), AD_Val_Rule_ID, ctxTableName, ctxColumnName));
 		info.getValidationRule(); // make sure the effective validation rule is built here (optimization)
@@ -404,7 +401,7 @@ public class MLookupFactory
 				.append(" ORDER BY ").append(sqlOrderBy);
 
 		//
-		final AdWindowId AD_REFERENCE_WINDOW_ID = AdWindowId.ofRepoId(101);
+		final int AD_REFERENCE_WINDOW_ID = 101;
 		final MLookupInfo lookupInfo = new MLookupInfo(
 				realSQL_BaseLang.toString(),   // Query_BaseLang
 				realSQL_Trl.toString(),   // Query_Trl
@@ -412,7 +409,7 @@ public class MLookupFactory
 				I_AD_Ref_List.Table_Name + "." + I_AD_Ref_List.COLUMNNAME_Value,   // KeyColumn
 				AD_REFERENCE_WINDOW_ID,   // zoomSO_Window_ID
 				AD_REFERENCE_WINDOW_ID,   // zoomPO_Window_ID
-				(AdWindowId)null, // zoomAD_Window_ID_Override
+				-1, // zoomAD_Window_ID_Override
 				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID) // Zoom Query
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
@@ -715,23 +712,23 @@ public class MLookupFactory
 
 		//
 		// Zoom AD_Window_IDs
-		AdWindowId zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
-		if (lookupDisplayInfo.getZoomWindow() != null)
+		int zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
+		if (lookupDisplayInfo.getZoomWindow() > 0)
 		{
 			zoomSO_Window_ID = lookupDisplayInfo.getZoomWindow();
 		}
 
-		AdWindowId zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
-		if (lookupDisplayInfo.getZoomWindowPO() != null)
+		int zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
+		if (lookupDisplayInfo.getZoomWindowPO() > 0)
 		{
 			zoomPO_Window_ID = lookupDisplayInfo.getZoomWindowPO();
 		}
 
-		final AdWindowId zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
-		if (zoomAD_Window_ID_Override != null)
+		final int zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
+		if (zoomAD_Window_ID_Override > 0)
 		{
 			zoomSO_Window_ID = zoomAD_Window_ID_Override;
-			zoomPO_Window_ID = null;
+			zoomPO_Window_ID = 0;
 		}
 
 		//
@@ -819,13 +816,9 @@ public class MLookupFactory
 		{
 			final String embeddedSQL;
 			if (ldc.isVirtual())
-			{
 				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), tableName, ldc.getColumnSQL());
-			}
 			else
-			{
 				embeddedSQL = getLookup_TableDirEmbed(languageInfo, ldc.getColumnName(), tableName);
-			}
 
 			if (embeddedSQL != null)
 			{
@@ -842,13 +835,9 @@ public class MLookupFactory
 		{
 			final String embeddedSQL;
 			if (ldc.isVirtual())
-			{
 				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnSQL(), tableName, ldc.getAD_Reference_ID());
-			}
 			else
-			{
 				embeddedSQL = getLookup_TableEmbed(languageInfo, ldc.getColumnName(), tableName, ldc.getAD_Reference_ID());
-			}
 
 			if (embeddedSQL != null)
 			{
@@ -1053,18 +1042,18 @@ public class MLookupFactory
 
 	public static final class LanguageInfo
 	{
-		public static LanguageInfo ofSpecificLanguage(@NonNull final Language language)
+		public static final LanguageInfo ofSpecificLanguage(@NonNull final Language language)
 		{
 			return new LanguageInfo(language.getAD_Language());
 		}
 
-		public static LanguageInfo ofSpecificLanguage(final Properties ctx)
+		public static final LanguageInfo ofSpecificLanguage(final Properties ctx)
 		{
 			final String adLanguage = Env.getAD_Language(ctx);
 			return new LanguageInfo(adLanguage);
 		}
 
-		public static LanguageInfo ofSpecificLanguage(final String adLanguage)
+		public static final LanguageInfo ofSpecificLanguage(final String adLanguage)
 		{
 			return new LanguageInfo(adLanguage);
 		}

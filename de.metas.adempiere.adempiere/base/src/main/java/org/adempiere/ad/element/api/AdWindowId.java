@@ -1,8 +1,5 @@
 package org.adempiere.ad.element.api;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -23,11 +20,11 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,11 +41,6 @@ public class AdWindowId implements RepoIdAware
 	public static AdWindowId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdWindowId(repoId) : null;
-	}
-
-	public static Optional<AdWindowId> optionalOfRepoId(final int repoId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(final AdWindowId id)
@@ -68,10 +60,5 @@ public class AdWindowId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
-	}
-
-	public static boolean equals(final AdWindowId id1, final AdWindowId id2)
-	{
-		return Objects.equals(id1, id2);
 	}
 }

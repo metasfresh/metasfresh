@@ -24,7 +24,6 @@ import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.MutableComboBoxModel;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
@@ -65,7 +64,7 @@ public abstract class Lookup extends AbstractListModel
 	}   //  Lookup
 
 	/** The Data List           */
-	private volatile List<Object>   p_data = new ArrayList<>();
+	private volatile List<Object>   p_data = new ArrayList<Object>();
 
 	/** The Selected Item       */
 	private volatile Object         m_selectedObject;
@@ -186,9 +185,7 @@ public abstract class Lookup extends AbstractListModel
 		p_data.add(anObject);
 		fireIntervalAdded (this, p_data.size()-1, p_data.size()-1);
 		if (p_data.size() == 1 && m_selectedObject == null && anObject != null)
-		{
 			setSelectedItem (anObject);
-		}
 	}   //  addElement
 
 	/**
@@ -213,13 +210,9 @@ public abstract class Lookup extends AbstractListModel
 		if (getElementAt(index) == m_selectedObject)
 		{
 			if (index == 0)
-			{
 				setSelectedItem (getSize() == 1 ? null : getElementAt( index + 1 ));
-			}
 			else
-			{
 				setSelectedItem (getElementAt (index - 1));
-			}
 		}
 		p_data.remove(index);
 		fireIntervalRemoved (this, index, index);
@@ -234,9 +227,7 @@ public abstract class Lookup extends AbstractListModel
 	{
 		int index = p_data.indexOf (anObject);
 		if (index != -1)
-		{
 			removeElementAt(index);
-		}
 	}   //  removeItem
 
 	/**
@@ -337,27 +328,21 @@ public abstract class Lookup extends AbstractListModel
 			Object obj = m_selectedObject;
 			p_data.clear();
 			//  restore old data
-			p_data = new ArrayList<>(m_tempData.length);
-			for (Object element : m_tempData)
-			{
-				p_data.add(element);
-			}
+			p_data = new ArrayList<Object>(m_tempData.length);
+			for (int i = 0; i < m_tempData.length; i++)
+				p_data.add(m_tempData[i]);
 			m_tempData = null;
 
 			//  if nothing selected, select first
 			if (obj == null && p_data.size() > 0)
-			{
 				obj = p_data.get(0);
-			}
 			setSelectedItem(obj);
 
 			fireContentsChanged(this, 0, p_data.size());
 			return;
 		}
 		if (p_data != null)
-		{
 			fillComboBox(isMandatory(), true, true, false);
-		}
 	}   //  fillComboBox
 
 
@@ -505,9 +490,9 @@ public abstract class Lookup extends AbstractListModel
 	 *	Get Zoom - default implementation
 	 *  @return Zoom AD_Window_ID
 	 */
-	public AdWindowId getZoom()
+	public int getZoom()
 	{
-		return null;
+		return 0;
 	}	//	getZoom
 
 	/**
@@ -515,9 +500,9 @@ public abstract class Lookup extends AbstractListModel
 	 * 	@param query query
 	 *  @return Zoom Window - here 0
 	 */
-	public AdWindowId getZoomAD_Window_ID(MQuery query)
+	public int getZoomAD_Window_ID(MQuery query)
 	{
-		return null;
+		return 0;
 	}	//	getZoom
 
 	/**
@@ -549,9 +534,7 @@ public abstract class Lookup extends AbstractListModel
 	public void dispose()
 	{
 		if (p_data != null)
-		{
 			p_data.clear();
-		}
 		p_data = null;
 		m_selectedObject = null;
 		m_tempData = null;

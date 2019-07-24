@@ -29,8 +29,6 @@ import java.util.Set;
 
 import javax.swing.Icon;
 
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.h2;
@@ -76,9 +74,9 @@ public class GridWindow implements Serializable
 	 *  @param AD_Window_ID window id
 	 *	@return window or null if not found
 	 */
-	public static GridWindow get (Properties ctx, int WindowNo, AdWindowId adWindowId)
+	public static GridWindow get (Properties ctx, int WindowNo, int AD_Window_ID)
 	{
-		return get(ctx, WindowNo, adWindowId, false);
+		return get(ctx, WindowNo, AD_Window_ID, false);
 	}
 	
 	/**
@@ -89,14 +87,12 @@ public class GridWindow implements Serializable
 	 *  @param virtual
 	 *	@return window or null if not found
 	 */
-	public static GridWindow get (Properties ctx, int WindowNo, AdWindowId adWindowId, boolean virtual)
+	public static GridWindow get (Properties ctx, int WindowNo, int AD_Window_ID, boolean virtual)
 	{
-		log.debug("Window={}, AD_Window_ID={}", WindowNo, adWindowId);
-		GridWindowVO mWindowVO = GridWindowVO.create (ctx, WindowNo, adWindowId);
+		log.debug("Window={}, AD_Window_ID={}", WindowNo, AD_Window_ID);
+		GridWindowVO mWindowVO = GridWindowVO.create (ctx, WindowNo, AD_Window_ID);
 		if (mWindowVO == null)
-		{
 			return null;
-		}
 		return new GridWindow(mWindowVO, virtual);
 	}	//	get
 
@@ -119,9 +115,7 @@ public class GridWindow implements Serializable
 		m_vo = vo;
 		m_virtual = virtual;
 		if (loadTabData())
-		{
 			enableEvents();
-		}
 	}	//	MWindow
 
 	/** Value Object                */
@@ -146,11 +140,9 @@ public class GridWindow implements Serializable
 	 */
 	public void dispose()
 	{
-		log.debug("AD_Window_ID={}", m_vo.getAdWindowId());
+		log.debug("AD_Window_ID={}", m_vo.getAD_Window_ID());
 		for (int i = 0; i < getTabCount(); i++)
-		{
 			getTab(i).dispose();
-		}
 		m_tabs.clear();
 		m_tabs = null;
 	}	//	dispose
@@ -221,7 +213,7 @@ public class GridWindow implements Serializable
 			//	No Parent - no link
 			if (parents.size() == 0)
 			{
-				
+				;
 			}
 			//	Standard case
 			else if (parents.size() == 1)
@@ -249,16 +241,12 @@ public class GridWindow implements Serializable
 						}
 						//	The tab could have more than one key, look into their parents
 						if (tabKey.equals(""))
-						{
 							for (int k = 0; k < tab.getParentColumnNames().size(); k++)
-							{
 								if (parent.equals(tab.getParentColumnNames().get(k)))
 								{
 									mTab.setLinkColumnName(parent);
 									break;
 								}
-							}
-						}
 					}	//	for all parents
 				}	//	for all previous tabs
 			}	//	parents.size > 1
@@ -300,9 +288,7 @@ public class GridWindow implements Serializable
 	public Image getImage()
 	{
 		if (m_vo.getAD_Image_ID() <= 0)
-		{
 			return null;
-		}
 		//
 		MImage mImage = MImage.get(Env.getCtx(), m_vo.getAD_Image_ID());
 		return mImage.getImage();
@@ -315,9 +301,7 @@ public class GridWindow implements Serializable
 	public Icon getIcon()
 	{
 		if (m_vo.getAD_Image_ID() <= 0)
-		{
 			return null;
-		}
 		//
 		MImage mImage = MImage.get(Env.getCtx(), m_vo.getAD_Image_ID());
 		return mImage.getIcon();
@@ -352,9 +336,7 @@ public class GridWindow implements Serializable
 		GridTab tab = getTab(0);
 		tab.query(false, 0, GridTabMaxRows.NO_RESTRICTION);
 		if (tab.getRowCount() > 0)
-		{
 			tab.navigate(0);
-		}
 	}   //  open
 
 	/**
@@ -363,9 +345,7 @@ public class GridWindow implements Serializable
 	private void enableEvents()
 	{
 		for (int i = 0; i < getTabCount(); i++)
-		{
 			getTab(i).enableEvents();
-		}
 	}   //  enableEvents
 
 	/**
@@ -385,9 +365,7 @@ public class GridWindow implements Serializable
 	public GridTab getTab (int i)
 	{
 		if (i < 0 || i+1 > m_tabs.size())
-		{
 			return null;
-		}
 		return m_tabs.get(i);
 	}	//	getTab
 	
@@ -396,31 +374,55 @@ public class GridWindow implements Serializable
 		return m_tabs.indexOf(tab);
 	}
 
-	public AdWindowId getAdWindowId()
+	/**
+	 *	Get Window_ID
+	 *  @return AD_Window_ID
+	 */
+	public int getAD_Window_ID()
 	{
-		return m_vo.getAdWindowId();
+		return m_vo.getAD_Window_ID();
 	}	//	getAD_Window_ID
 
+	/**
+	 *	Get WindowNo
+	 *  @return WindowNo
+	 */
 	public int getWindowNo()
 	{
 		return m_vo.getWindowNo();
 	}	//	getWindowNo
 
+	/**
+	 *	Get Name
+	 *  @return name
+	 */
 	public String getName()
 	{
 		return m_vo.getName();
 	}	//	getName
 
+	/**
+	 *	Get Description
+	 *  @return Description
+	 */
 	public String getDescription()
 	{
 		return m_vo.getDescription();
 	}	//	getDescription
 
+	/**
+	 *	Get Help
+	 *  @return Help
+	 */
 	public String getHelp()
 	{
 		return m_vo.getHelp();
 	}	//	getHelp
 
+	/**
+	 *	Get Window Type
+	 *  @return Window Type see WindowType_*
+	 */
 	public String getWindowType()
 	{
 		return m_vo.getWindowType();
@@ -444,9 +446,7 @@ public class GridWindow implements Serializable
 		final int winWidth = m_vo.getWinWidth();
 		final int winHeight = m_vo.getWinHeight();
 		if (winWidth != 0 && winHeight != 0)
-		{
 			return new Dimension (winWidth, winHeight);
-		}
 		return null;
 	}	//	getWindowSize
 
@@ -457,7 +457,7 @@ public class GridWindow implements Serializable
 	@Override
 	public String toString()
 	{
-		return "MWindow[" + m_vo.getWindowNo() + "," + m_vo.getName() + " (" + m_vo.getAdWindowId() + ")]";
+		return "MWindow[" + m_vo.getWindowNo() + "," + m_vo.getName() + " (" + m_vo.getAD_Window_ID() + ")]";
 	}   //  toString
 
 	/**
@@ -477,13 +477,9 @@ public class GridWindow implements Serializable
 		//
 		// Window
 		if (getDescription().length() != 0)
-		{
 			center.addElement(new p().addElement(new i(getDescription())));
-		}
 		if (getHelp().length() != 0)
-		{
 			center.addElement(new p().addElement(getHelp()));
-		}
 
 
 		//
@@ -496,9 +492,7 @@ public class GridWindow implements Serializable
 			{
 				GridTab tab = getTab(tabIndex);
 				if (tabIndex > 0)
-				{
 					p.addElement(" | ");
-				}
 				p.addElement(new a("#Tab" + tabIndex).addElement(tab.getName()));
 			}
 			center.addElement(p)
@@ -534,15 +528,11 @@ public class GridWindow implements Serializable
 
 				final String tabDescription = tab.getDescription();
 				if (!Check.isEmpty(tabDescription, true))
-				{
 					tr.addElement(new th()
 							.addElement(new i(tabDescription)));
-				}
 				else
-				{
 					tr.addElement(new th()
 							.addElement(WebDoc.NBSP));
-				}
 				table.addElement(tr);
 			}
 			
@@ -552,9 +542,7 @@ public class GridWindow implements Serializable
 			{
 				final String tabHelp = tab.getHelp();
 				if (!Check.isEmpty(tabHelp, true))
-				{
 					tdTabContent.addElement(new p().addElement(tabHelp));
-				}
 			}
 			
 			//
@@ -564,9 +552,7 @@ public class GridWindow implements Serializable
 				tdTabContent.addElement(new h4("Fields").addAttribute("ALIGN", "left"));
 				final p p = new p();
 				if (!tab.isLoadComplete())
-				{
 					this.initTab(tabIndex);
-				}
 				for (int fieldIndex = 0; fieldIndex < tab.getFieldCount(); fieldIndex++)
 				{
 					final GridField field = tab.getField(fieldIndex);
@@ -580,9 +566,7 @@ public class GridWindow implements Serializable
 					if (hdr != null && hdr.length() > 0)
 					{
 						if (fieldIndex > 0)
-						{
 							p.addElement(" | ");
-						}
 						p.addElement(new a("#Field" + tabIndex + "-" + fieldIndex, hdr));
 					}
 				}
@@ -612,14 +596,10 @@ public class GridWindow implements Serializable
 					final td td = new td().setColSpan(2).addElement(fieldHeader);
 						
 					if (field.getDescription().length() != 0)
-					{
 						td.addElement(new i(field.getDescription()));
-					}
 					//
 					if (field.getHelp().length() != 0)
-					{
 						td.addElement(new p().addElement(field.getHelp()));
-					}
 					table.addElement(new tr().addElement(td));
 				}
 			}	//	for all Fields
@@ -651,32 +631,24 @@ public class GridWindow implements Serializable
 			ResultSet rs = null;
 			try
 			{
-				pstmt = DB.prepareStatement (sql, ITrx.TRXNAME_None);
-				DB.setParameter(pstmt, 1, getAdWindowId());
+				pstmt = DB.prepareStatement (sql, null);
+				pstmt.setInt (1, getAD_Window_ID());
 				rs = pstmt.executeQuery ();
 				if (rs.next ())
 				{
 					m_modelUpdated = rs.getTimestamp(1);	//	Window
 					Timestamp ts = rs.getTimestamp(2);		//	Tab
 					if (ts.after(m_modelUpdated))
-					{
 						m_modelUpdated = ts;
-					}
 					ts = rs.getTimestamp(3);				//	Table
 					if (ts.after(m_modelUpdated))
-					{
 						m_modelUpdated = ts;
-					}
 					ts = rs.getTimestamp(4);				//	Field
 					if (ts.after(m_modelUpdated))
-					{
 						m_modelUpdated = ts;
-					}
 					ts = rs.getTimestamp(5);				//	Column
 					if (ts.after(m_modelUpdated))
-					{
 						m_modelUpdated = ts;
-					}
 				}
 			}
 			catch (Exception e)

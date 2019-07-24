@@ -26,15 +26,15 @@ import java.util.Collection;
 
 import java.util.Properties;
 
-import org.adempiere.ad.element.api.AdWindowId;
-
 import de.metas.util.ISingletonService;
 
 public interface IValuePreferenceBL extends ISingletonService
 {
 	public interface IUserValuePreference
 	{
-		AdWindowId getAdWindowId();
+		int AD_WINDOW_ID_NONE = 0;
+
+		int getAD_Window_ID();
 
 		String getName();
 
@@ -45,7 +45,7 @@ public interface IValuePreferenceBL extends ISingletonService
 
 	public interface IUserValuePreferences
 	{
-		AdWindowId getAdWindowId();
+		int getAD_Window_ID();
 
 		String getValue(String name);
 
@@ -54,7 +54,7 @@ public interface IValuePreferenceBL extends ISingletonService
 		Collection<IUserValuePreference> values();
 	}
 
-	IUserValuePreferences getWindowPreferences(Properties ctx, AdWindowId adWindowId);
+	IUserValuePreferences getWindowPreferences(Properties ctx, int adWindowId);
 
 	Collection<IUserValuePreferences> getAllWindowPreferences(int AD_Client_ID, int AD_Org_ID, int AD_User_ID);
 

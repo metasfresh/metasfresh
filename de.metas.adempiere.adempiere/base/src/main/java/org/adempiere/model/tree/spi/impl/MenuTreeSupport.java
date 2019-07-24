@@ -30,7 +30,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Menu;
@@ -204,7 +203,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final String action = rs.getString(I_AD_Menu.COLUMNNAME_Action);
 		info.setImageIndicator(action);
 
-		final AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(rs.getInt(I_AD_Menu.COLUMNNAME_AD_Window_ID));
+		final int AD_Window_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Window_ID);
 		final int AD_Process_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Process_ID);
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
@@ -216,7 +215,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final String webuiNameNewBreadcrumb = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNewBreadcrumb);
 		final String windowMainTableName = rs.getString("AD_Window_TableName"); // table name of first window tab
 
-		info.setAD_Window_ID(AdWindowId.toRepoId(adWindowId));
+		info.setAD_Window_ID(AD_Window_ID);
 		info.setAD_Process_ID(AD_Process_ID);
 		info.setAD_Form_ID(AD_Form_ID);
 		info.setAD_Workflow_ID(AD_Workflow_ID);
@@ -244,7 +243,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final ElementPermission access;
 		if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			access = role.checkWindowPermission(adWindowId);
+			access = role.checkWindowPermission(AD_Window_ID);
 
 			if (Services.get(IDeveloperModeBL.class).isEnabled())
 			{
