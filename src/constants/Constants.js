@@ -7,7 +7,7 @@ export const DATE_FIELDS = ['Date', 'DateTime', 'Time'];
 export const INITIALLY_CLOSED = 'INITIALLY_CLOSED';
 export const INITIALLY_OPEN = 'INITIALLY_OPEN';
 
-export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice'];
+export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
 export const AMOUNT_FIELD_FORMATS_BY_PRECISION = [
   '0,0.[00000]',
   '0,0.0[0000]',
