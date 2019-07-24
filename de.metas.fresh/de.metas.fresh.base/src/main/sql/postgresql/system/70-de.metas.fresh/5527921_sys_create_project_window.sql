@@ -1,5 +1,15 @@
 INSERT INTO t_alter_column values('c_project_user','C_Project_User_ID','NUMERIC(10)',null,null)
 ;
+
+-- 2018-04-12T15:22:36.474
+-- project window
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=559671
+;
+
+-- 2018-04-12T15:22:36.475
+-- project window
+DELETE FROM AD_Column WHERE AD_Column_ID=559671
+;
 -- 2018-04-12T15:24:02.079
 -- project window
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559677,543957,0,13,540961,'N','C_Project_User_ID',TO_TIMESTAMP('2018-04-12 15:24:02','YYYY-MM-DD HH24:MI:SS'),100,'U',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','Projektkontakt',TO_TIMESTAMP('2018-04-12 15:24:02','YYYY-MM-DD HH24:MI:SS'),100,1)
