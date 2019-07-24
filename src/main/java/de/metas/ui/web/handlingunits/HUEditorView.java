@@ -194,8 +194,8 @@ public class HUEditorView implements IView
 
 	@Override
 	public ViewResult getPage(
-			final int firstRow, 
-			final int pageLength, 
+			final int firstRow,
+			final int pageLength,
 			@NonNull final ViewRowsOrderBy orderBys)
 	{
 		final List<HUEditorRow> page = rowsBuffer
@@ -353,6 +353,11 @@ public class HUEditorView implements IView
 		{
 			invalidateAll();
 		}
+	}
+
+	public boolean addHUId(@NonNull final HuId huIdToAdd)
+	{
+		return rowsBuffer.addHUIds(ImmutableSet.of(huIdToAdd));
 	}
 
 	public boolean addHUIds(final Collection<HuId> huIdsToAdd)

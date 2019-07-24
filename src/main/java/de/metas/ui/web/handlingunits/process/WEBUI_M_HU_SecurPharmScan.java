@@ -12,6 +12,7 @@ import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScannerResult;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 /*
@@ -81,15 +82,18 @@ public class WEBUI_M_HU_SecurPharmScan extends HUEditorProcessTemplate implement
 	{
 		final SecurPharmHUAttributesScanner scanner = securPharmService.newHUScanner();
 
-		scanner.scanAndUpdateHUAttributes(getDataMatrix(), getSelectedHuId());
+		final SecurPharmHUAttributesScannerResult result = scanner.scanAndUpdateHUAttributes(getDataMatrix(), getSelectedHuId());
 
 		//
 		// Update view
 		final HUEditorView view = getView();
-		view.addHUIds(scanner.getExtractedCUIds());
+		if(result.getExtractedCUId() != null)
+		{
+			view.addHUId(result.getExtractedCUId());
+		}
 		view.invalidateAll();
 
-		return MSG_OK;
+		return result.getResultMessageAndCode();
 	}
 
 	private HuId getSelectedHuId()
