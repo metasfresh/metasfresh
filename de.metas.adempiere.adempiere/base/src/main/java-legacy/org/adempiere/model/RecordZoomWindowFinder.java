@@ -77,7 +77,6 @@ public class RecordZoomWindowFinder
 		return new RecordZoomWindowFinder(tableName);
 	}
 
-	@Nullable
 	public static final Optional<AdWindowId> findAdWindowId(final TableRecordReference record)
 	{
 		return newInstance(record).findAdWindowId();
@@ -176,7 +175,6 @@ public class RecordZoomWindowFinder
 		_windowIdsEffective = WindowIds.of(adWindowId, adWindowId);
 	}
 
-	@Nullable
 	public Optional<AdWindowId> findAdWindowId()
 	{
 		final WindowIds windowIds = getEffectiveWindowIds();
