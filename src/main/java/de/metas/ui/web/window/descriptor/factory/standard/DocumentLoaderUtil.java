@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.GridWindowVO;
 import org.compiere.util.Env;
 
@@ -31,12 +30,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class DocumentLoaderUtil
 {
-	public GridWindowVO createGridWindoVO(final AdWindowId adWindowId)
+	public GridWindowVO createGridWindoVO(final int AD_Window_ID)
 	{
 		final GridWindowVO gridWindowVO = GridWindowVO.builder()
 				.ctx(Env.getCtx())
 				.windowNo(0) // TODO: get rid of WindowNo from GridWindowVO
-				.adWindowId(adWindowId)
+				.adWindowId(AD_Window_ID)
 				.adMenuId(-1) // N/A
 				.loadAllLanguages(true)
 				.applyRolePermissions(false)

@@ -11,7 +11,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -507,9 +506,8 @@ public class DocumentCollection
 		{
 			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
 		}
-		
-		final AdWindowId zoomInto_adWindowId = zoomWindowFinder.findAdWindowId().orElse(null);
-		if (zoomInto_adWindowId == null)
+		final int zoomInto_adWindowId = zoomWindowFinder.findAD_Window_ID();
+		if (zoomInto_adWindowId <= 0)
 		{
 			throw new EntityNotFoundException("No windowId found")
 					.setParameter("zoomIntoInfo", zoomIntoInfo);
@@ -752,7 +750,7 @@ public class DocumentCollection
 		InterfaceWrapperHelper.save(toPO);
 
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
-		childCRS.setAdWindowId(fromDocumentPath.getAdWindowIdOrNull());
+		childCRS.setAD_Window_ID(fromDocumentPath.getAD_Window_ID(-1));
 		childCRS.setParentPO(toPO);
 		childCRS.setBase(true);
 		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
@@ -819,13 +817,13 @@ public class DocumentCollection
 	@Immutable
 	private static final class DocumentKey
 	{
-		public static DocumentKey of(final Document document)
+		public static final DocumentKey of(final Document document)
 		{
 			final DocumentPath documentPath = document.getDocumentPath();
 			return ofRootDocumentPath(documentPath);
 		}
 
-		public static DocumentKey ofRootDocumentPath(final DocumentPath documentPath)
+		public static final DocumentKey ofRootDocumentPath(final DocumentPath documentPath)
 		{
 			if (!documentPath.isRootDocument())
 			{
@@ -838,7 +836,7 @@ public class DocumentCollection
 			return new DocumentKey(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentPath.getDocumentId());
 		}
 
-		public static DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
+		public static final DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
 		{
 			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId);
 		}

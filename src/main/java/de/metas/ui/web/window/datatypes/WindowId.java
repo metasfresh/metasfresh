@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.datatypes;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -11,7 +9,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -38,12 +35,12 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class WindowId
 {
-	public static WindowId fromJson(final String json)
+	public static final WindowId fromJson(final String json)
 	{
 		return new WindowId(json);
 	}
 
-	public static WindowId fromNullableJson(final String json)
+	public static final WindowId fromNullableJson(final String json)
 	{
 		if (json == null)
 		{
@@ -52,14 +49,9 @@ public final class WindowId
 		return new WindowId(json);
 	}
 
-	public static WindowId of(final int windowIdInt)
+	public static final WindowId of(final int windowIdInt)
 	{
 		return new WindowId(windowIdInt);
-	}
-
-	public static WindowId of(@NonNull final AdWindowId adWindowId)
-	{
-		return new WindowId(adWindowId.getRepoId());
 	}
 
 	public static WindowId of(final DocumentId documentTypeId)
@@ -74,9 +66,13 @@ public final class WindowId
 		}
 	}
 
-	public static WindowId ofNullable(@Nullable final AdWindowId adWindowId)
+	public static final WindowId ofIntOrNull(final int windowIdInt)
 	{
-		return adWindowId != null ? new WindowId(adWindowId.getRepoId()) : null;
+		if (windowIdInt <= 0)
+		{
+			return null;
+		}
+		return new WindowId(windowIdInt);
 	}
 
 	private final String value;
@@ -142,11 +138,6 @@ public final class WindowId
 	public AdWindowId toAdWindowIdOrNull()
 	{
 		return AdWindowId.ofRepoIdOrNull(toIntOr(-1));
-	}
-
-	public AdWindowId toAdWindowId()
-	{
-		return AdWindowId.ofRepoId(toInt());
 	}
 
 	public boolean isInt()

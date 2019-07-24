@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -177,10 +176,10 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document info
-		AdWindowId adWindowId = null; // TODO boardPO.getAD_Window_ID();
-		if (adWindowId == null)
+		int adWindowId = 0; // TODO boardPO.getAD_Window_ID();
+		if (adWindowId <= 0)
 		{
-			adWindowId = RecordZoomWindowFinder.findAdWindowId(tableName).get();
+			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableName);
 		}
 		final WindowId documentWindowId = WindowId.of(adWindowId);
 
