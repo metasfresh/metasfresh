@@ -103,7 +103,6 @@ public class UserAuthTokenRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
-		//		.setLimit(1) // we allow more than one valid token at a time
 				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
