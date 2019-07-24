@@ -14,6 +14,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.NonNull;
@@ -304,9 +305,9 @@ public final class ViewRow implements IViewRow
 			return values;
 		}
 
-		public Object getFieldValue(final String fieldName)
+		public LookupValue getFieldValueAsLookupValue(final String fieldName)
 		{
-			return values.get(fieldName);
+			return LookupValue.cast(values.get(fieldName));
 		}
 
 		public Builder addIncludedRow(final IViewRow includedRow)
