@@ -32,8 +32,6 @@ public interface I_M_Securpharm_Config
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Client>(I_M_Securpharm_Config.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -58,10 +56,6 @@ public interface I_M_Securpharm_Config
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_Org>(I_M_Securpharm_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -193,7 +187,7 @@ public interface I_M_Securpharm_Config
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set SecurPharm Configuration.
+	 * Set SecurPharm Einstellungen.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -202,7 +196,7 @@ public interface I_M_Securpharm_Config
 	public void setM_Securpharm_Config_ID (int M_Securpharm_Config_ID);
 
 	/**
-	 * Get SecurPharm Configuration.
+	 * Get SecurPharm Einstellungen.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -257,10 +251,6 @@ public interface I_M_Securpharm_Config
 	 * <br>Virtual Column: false
 	 */
 	public int getSupport_User_ID();
-
-	public org.compiere.model.I_AD_User getSupport_User();
-
-	public void setSupport_User(org.compiere.model.I_AD_User Support_User);
 
     /** Column definition for Support_User_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User> COLUMN_Support_User_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Config, org.compiere.model.I_AD_User>(I_M_Securpharm_Config.class, "Support_User_ID", org.compiere.model.I_AD_User.class);

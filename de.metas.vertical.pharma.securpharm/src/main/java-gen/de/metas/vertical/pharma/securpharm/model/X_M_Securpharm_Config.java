@@ -14,7 +14,7 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -371054048L;
+	private static final long serialVersionUID = 2060146244L;
 
     /** Standard Constructor */
     public X_M_Securpharm_Config (Properties ctx, int M_Securpharm_Config_ID, String trxName)
@@ -95,8 +95,8 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 		return (java.lang.String)get_Value(COLUMNNAME_CertificatePath);
 	}
 
-	/** Set SecurPharm Configuration.
-		@param M_Securpharm_Config_ID SecurPharm Configuration	  */
+	/** Set SecurPharm Einstellungen.
+		@param M_Securpharm_Config_ID SecurPharm Einstellungen	  */
 	@Override
 	public void setM_Securpharm_Config_ID (int M_Securpharm_Config_ID)
 	{
@@ -106,8 +106,8 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Config_ID, Integer.valueOf(M_Securpharm_Config_ID));
 	}
 
-	/** Get SecurPharm Configuration.
-		@return SecurPharm Configuration	  */
+	/** Get SecurPharm Einstellungen.
+		@return SecurPharm Einstellungen	  */
 	@Override
 	public int getM_Securpharm_Config_ID () 
 	{
@@ -131,18 +131,6 @@ public class X_M_Securpharm_Config extends org.compiere.model.PO implements I_M_
 	public java.lang.String getPharmaRestApiBaseURL () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PharmaRestApiBaseURL);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getSupport_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Support_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setSupport_User(org.compiere.model.I_AD_User Support_User)
-	{
-		set_ValueFromPO(COLUMNNAME_Support_User_ID, org.compiere.model.I_AD_User.class, Support_User);
 	}
 
 	/** Set Support Benutzer.
