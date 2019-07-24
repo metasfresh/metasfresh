@@ -1653,6 +1653,29 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
+	/** Set IsFreightCost.
+		@param IsFreightCost IsFreightCost	  */
+	@Override
+	public void setIsFreightCost (boolean IsFreightCost)
+	{
+		set_Value (COLUMNNAME_IsFreightCost, Boolean.valueOf(IsFreightCost));
+	}
+
+	/** Get IsFreightCost.
+		@return IsFreightCost	  */
+	@Override
+	public boolean isFreightCost () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsFreightCost);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Group Compensation Line.
 		@param IsGroupCompensationLine Group Compensation Line	  */
 	@Override
@@ -2555,6 +2578,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String PRODUCTTYPE_ExpenseType = "E";
 	/** Online = O */
 	public static final String PRODUCTTYPE_Online = "O";
+	/** FreightCost = F */
+	public static final String PRODUCTTYPE_FreightCost = "F";
 	/** Set Produktart.
 		@param ProductType 
 		Art von Produkt
