@@ -66,7 +66,9 @@ function applyPurchaseOrder(purchaseOrder) {
       cy.writeIntoStringField('POReference', purchaseOrder.poReference);
     }
 
-    cy.setCheckBoxValue('IsDropShip', purchaseOrder.isDropShip);
+    if (purchaseOrder.isDropShip) {
+      cy.setCheckBoxValue('IsDropShip', purchaseOrder.isDropShip);
+    }
 
     purchaseOrder.lines.forEach(function(purchaseOrderLine) {
       applyPurchaseOrderLine(purchaseOrderLine);
