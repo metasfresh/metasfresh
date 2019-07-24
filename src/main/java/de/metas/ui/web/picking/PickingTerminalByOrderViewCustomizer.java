@@ -14,8 +14,8 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverters;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
@@ -117,23 +117,23 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 	@Override
 	public void customizeViewRow(final ViewRow.Builder rowBuilder)
 	{
-		final JSONLookupValue orderOrBPLocationLV = createOrderOrBPLocation(rowBuilder);
+		final LookupValue orderOrBPLocationLV = createOrderOrBPLocation(rowBuilder);
 		rowBuilder.putFieldValue(FIELDNAME_OrderOrBPLocation, orderOrBPLocationLV);
 	}
 
-	private JSONLookupValue createOrderOrBPLocation(final ViewRow.Builder rowBuilder)
+	private LookupValue createOrderOrBPLocation(final ViewRow.Builder rowBuilder)
 	{
 		// Grouping row
 		if (rowBuilder.isRootRow())
 		{
-			final JSONLookupValue orderLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
-			final JSONLookupValue bpartnerLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
-			return JSONLookupValue.concat(orderLV, bpartnerLV);
+			final LookupValue orderLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID);
+			final LookupValue bpartnerLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID);
+			return LookupValue.concat(orderLV, bpartnerLV);
 		}
 		// Detail/included row
 		else
 		{
-			final JSONLookupValue bpLocationLV = (JSONLookupValue)rowBuilder.getFieldValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
+			final LookupValue bpLocationLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 			return bpLocationLV;
 		}
 	}
