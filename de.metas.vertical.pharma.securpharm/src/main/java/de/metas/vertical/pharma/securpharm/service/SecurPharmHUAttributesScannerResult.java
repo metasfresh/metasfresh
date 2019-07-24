@@ -1,9 +1,7 @@
-package de.metas.vertical.pharma.securpharm.client;
+package de.metas.vertical.pharma.securpharm.service;
 
-import javax.annotation.Nullable;
-
-import de.metas.vertical.pharma.securpharm.log.SecurPharmLog;
-import de.metas.vertical.pharma.securpharm.product.ProductDetails;
+import de.metas.handlingunits.HuId;
+import de.metas.vertical.pharma.securpharm.attribute.SecurPharmAttributesStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,17 +30,30 @@ import lombok.Value;
 
 @Value
 @Builder
-public class DecodeDataMatrixClientResponse
+public class SecurPharmHUAttributesScannerResult
 {
-	boolean error;
-	
+	@NonNull
+	SecurPharmAttributesStatus status;
+
 	String resultCode;
 	String resultMessage;
 
-	/** Set if not error */
-	@Nullable
-	ProductDetails productDetails;
+	HuId extractedCUId;
 
-	@NonNull
-	SecurPharmLog log;
+	public String getResultMessageAndCode()
+	{
+		if (resultMessage == null)
+		{
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		sb.append(resultMessage);
+		if (resultCode != null)
+		{
+			sb.append(" (").append(resultCode).append(")");
+		}
+
+		return sb.toString();
+	}
 }
