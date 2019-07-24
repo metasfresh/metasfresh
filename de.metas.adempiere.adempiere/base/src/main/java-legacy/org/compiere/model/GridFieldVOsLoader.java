@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
@@ -42,7 +45,7 @@ import de.metas.util.Check;
 
 /*package*/ final class GridFieldVOsLoader
 {
-	public static final GridFieldVOsLoader newInstance()
+	public static GridFieldVOsLoader newInstance()
 	{
 		return new GridFieldVOsLoader();
 	}
@@ -52,7 +55,7 @@ import de.metas.util.Check;
 	private Properties _ctx;
 	private int _windowNo;
 	private int _tabNo;
-	private int _adWindowId;
+	private AdWindowId _adWindowId;
 	private int _adTabId;
 	private int _templateTabId;
 	private boolean _tabReadOnly;
@@ -81,7 +84,7 @@ import de.metas.util.Check;
 		final Properties ctx = getCtx();
 		final int windowNo = getWindowNo();
 		final int tabNo = getTabNo();
-		final int AD_Window_ID = getAD_Window_ID();
+		final AdWindowId AD_Window_ID = getAD_Window_ID();
 		final int adTabId = getAD_Tab_ID();
 		final int templateTabId = getTemplateTabIdEffective();
 		final boolean tabReadOnly = isTabReadOnly();
@@ -176,13 +179,13 @@ import de.metas.util.Check;
 		return _tabNo;
 	}
 
-	public GridFieldVOsLoader setAD_Window_ID(final int AD_Window_ID)
+	public GridFieldVOsLoader setAdWindowId(@Nullable final AdWindowId adWindowId)
 	{
-		_adWindowId = AD_Window_ID;
+		_adWindowId = adWindowId;
 		return this;
 	}
 
-	private int getAD_Window_ID()
+	private AdWindowId getAD_Window_ID()
 	{
 		return _adWindowId;
 	}
