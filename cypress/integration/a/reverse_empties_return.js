@@ -171,10 +171,10 @@ function addLines(productNames, productQuantity) {
     cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
     if (productQuantity > 0) {
-      cy.writeIntoStringField('Qty', productQuantity + index, false, null, true); //.type('{enter}');
+      cy.writeIntoStringField('Qty', productQuantity + index); //.type('{enter}');
       cy.closeBatchEntry();
     } else {
-      cy.writeIntoStringField('Qty', -1 * productQuantity, false, null, true); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+      cy.writeIntoStringField('Qty', -1 * productQuantity); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
       writeQtyInAdvancedEdit(productQuantity + index, productName, index);
     }
   });
@@ -187,7 +187,7 @@ function writeQtyInAdvancedEdit(productQuantity, rowNumber) {
 
   // do ya thing
   cy.openAdvancedEdit();
-  cy.writeIntoStringField('MovementQty', productQuantity, true, null, true);
-  cy.writeIntoStringField('QtyEntered', productQuantity, true, null, true);
+  cy.writeIntoStringField('MovementQty', productQuantity);
+  cy.writeIntoStringField('QtyEntered', productQuantity);
   cy.pressDoneButton(100);
 }
