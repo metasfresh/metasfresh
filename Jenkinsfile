@@ -220,7 +220,7 @@ node('agent && linux')
   </ul>
 </ul>
 <p>
-<h3>Deployable artifacts</h3>
+<h3>Deployable maven artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist-sql-only']}\">sql-only-tar.gz</a></li>
@@ -260,7 +260,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 						MF_UPSTREAM_BRANCH, // branchName
 						MF_VERSION, // versionSuffix
 						'dist/target/docker/app') // workDir
-		dockerBuildAndPush(appDockerConf)
+		final String publishedDistAppImageName = dockerBuildAndPush(appDockerConf)
 
 		// report
 		final String reportDockerBaseImageRepo = 'metasfresh-report-dev'
@@ -271,13 +271,23 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 						.withArtifactName('metasfresh-dist-report')
 						.withWorkDir('dist/target/docker/report')
 						.withAdditionalBuildArgs(reportAdditionalBuildArgs)
-		dockerBuildAndPush(reportDockerConf)				
+		final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)				
 
 		// postgres DB init container
 		final DockerConf dbInitDockerConf = appDockerConf
 						.withArtifactName('metasfresh-db-init-pg-9-5')
 						.withWorkDir('dist/target/docker/db-init')
 		dbInitDockerImageName = dockerBuildAndPush(dbInitDockerConf)
+
+		currentBuild.description= """${currentBuild.description}<p/>
+			<h3>Docker</h3>
+			This build created the following deployable docker images 
+			<ul>
+			<li><code>${publishedReportDockerImageName}</code> with base-image <code>metasfresh/${reportDockerBaseImageRepo}:${reportDockerBaseImageTag}</code></li>
+			<li><code>${publishedDistAppImageName}</code></li>
+			<li><code>${dbInitDockerImageName}</code></li>
+			</ul>
+			"""
 
 		// clean up the workspace after (successfull) builds
 		cleanWs cleanWhenAborted: false, cleanWhenFailure: false
