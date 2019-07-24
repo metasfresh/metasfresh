@@ -195,6 +195,14 @@ note: when adding new records, please roughly order them by alphabet.
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business.rest-api</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>migration-postgres-sql</classifier>
+			<type>zip</type>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
 			<version>${metasfresh.version}</version>
@@ -686,14 +694,14 @@ note: when adding new records, please roughly order them by alphabet.
 							<stripVersion>${de.metas.endcustomer.stripVersion}</stripVersion>
 							<artifactItems>
 								<artifactItem>
-									<groupId>${project.groupId}</groupId>
+									<groupId>de.metas.dist</groupId>
 									<artifactId>metasfresh-dist-serverRoot</artifactId>
 									<version>${project.version}</version>
 									<outputDirectory>${project.build.directory}/dist/deploy</outputDirectory>
 									<destFileName>metasfresh_server.jar</destFileName>
 								</artifactItem>
 								<artifactItem>
-									<groupId>${project.groupId}</groupId>
+									<groupId>de.metas.dist</groupId>
 									<artifactId>metasfresh-dist-swingui</artifactId>
 									<classifier>client</classifier>
 									<version>${project.version}</version>
