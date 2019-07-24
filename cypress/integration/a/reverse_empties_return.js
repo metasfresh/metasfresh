@@ -170,12 +170,13 @@ function addLines(productNames, productQuantity) {
     cy.pressBatchEntryButton();
     cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
 
+    const qty = productQuantity + index;
     if (productQuantity > 0) {
-      cy.writeIntoStringField('Qty', productQuantity + index); //.type('{enter}');
+      cy.writeIntoStringField('Qty', qty); //.type('{enter}');
       cy.closeBatchEntry();
     } else {
-      cy.writeIntoStringField('Qty', -1 * productQuantity); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
-      writeQtyInAdvancedEdit(productQuantity + index, productName, index);
+      cy.writeIntoStringField('Qty', -1 * qty); //.type('{enter}'); // first write the positive qty (frontend bug workaround)
+      writeQtyInAdvancedEdit(qty, productName, index);
     }
   });
 }
