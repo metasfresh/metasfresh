@@ -3,9 +3,11 @@ package de.metas.notification;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,7 +21,7 @@ import org.apache.ecs.ClearElement;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.br;
 import org.apache.ecs.xhtml.html;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -88,7 +90,7 @@ public class NotificationSenderTemplate
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
 	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	private final MailService mailService = Adempiere.getBean(MailService.class);
+	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 
 	private IRecordTextProvider recordTextProvider = NullRecordTextProvider.instance;
 
@@ -256,19 +258,19 @@ public class NotificationSenderTemplate
 		return "#" + record.getRecord_ID();
 	}
 
-	private int resolveTargetWindowId(final TargetRecordAction targetRecordAction)
+	private Optional<AdWindowId> resolveTargetWindowId(final TargetRecordAction targetRecordAction)
 	{
-		if (targetRecordAction.getAdWindowId() > 0)
+		if (targetRecordAction.getAdWindowId().isPresent())
 		{
 			return targetRecordAction.getAdWindowId();
 		}
 		if (targetRecordAction.getRecord() == null)
 		{
-			return -1;
+			return Optional.empty();
 		}
 
 		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecordAction.getRecord());
-		return recordWindowFinder.findAD_Window_ID();
+		return recordWindowFinder.findAdWindowId();
 	}
 
 	private String extractSubjectText(final UserNotificationRequest request)
@@ -475,8 +477,8 @@ public class NotificationSenderTemplate
 				formatter.recordDisplayText(targetRecord, targetRecordDisplayText);
 			}
 
-			final int targetWindowId = targetRecordAction.getAdWindowId();
-			if (targetWindowId > 0)
+			final AdWindowId targetWindowId = targetRecordAction.getAdWindowId().orElse(null);
+			if (targetWindowId != null)
 			{
 				formatter.recordWindowId(targetRecord, targetWindowId);
 			}

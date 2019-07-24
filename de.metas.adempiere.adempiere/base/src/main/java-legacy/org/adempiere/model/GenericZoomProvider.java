@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.DBException;
@@ -36,7 +37,6 @@ import org.compiere.model.MQuery.Operator;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
@@ -52,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -77,7 +78,7 @@ import lombok.NonNull;
 	@Override
 	public List<ZoomInfo> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
-			final int targetAD_Window_ID,
+			final AdWindowId targetAD_Window_ID,
 			final boolean checkRecordsCount)
 	{
 		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnNameOrNull());
@@ -89,8 +90,8 @@ import lombok.NonNull;
 		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
 		{
-			final int AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
-			if (targetAD_Window_ID > 0 && targetAD_Window_ID != AD_Window_ID)
+			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
+			if (targetAD_Window_ID !=null && !AdWindowId.equals(targetAD_Window_ID, AD_Window_ID))
 			{
 				continue;
 			}
@@ -189,8 +190,8 @@ import lombok.NonNull;
 				//
 				// Get/create the zoom info descriptor builders (one for each target table and window IDs triplet)
 				final String targetTableName = rs.getString("TableName");
-				final int SO_Window_ID = rs.getInt("AD_Window_ID");
-				final int PO_Window_ID = rs.getInt("PO_Window_ID");
+				final AdWindowId SO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt("AD_Window_ID"));
+				final AdWindowId PO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt("PO_Window_ID"));
 				final String soNameBaseLang = rs.getString("Name_BaseLang");
 				final String poNameBaseLang = rs.getString("PO_Name_BaseLang");
 				final ArrayKey key = ArrayKey.of(targetTableName, SO_Window_ID, PO_Window_ID);
@@ -325,8 +326,8 @@ import lombok.NonNull;
 			// For RMA, Material Receipt window should be loaded for
 			// IsSOTrx=true and Shipment for IsSOTrx=false
 			// TODO: fetch the additional SQL from window's first tab where clause
-			final int AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
-			if (I_M_RMA.Table_Name.equals(sourceTableName) && (AD_Window_ID == 169 || AD_Window_ID == 184))
+			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetAD_Window_ID();
+			if (I_M_RMA.Table_Name.equals(sourceTableName) && (AD_Window_ID.getRepoId() == 169 || AD_Window_ID.getRepoId() == 184))
 			{
 				isSO = !isSO;
 			}
@@ -356,7 +357,7 @@ import lombok.NonNull;
 		}
 
 		private final ImmutableTranslatableString nameTrl;
-		private final int targetAD_Window_ID;
+		private final AdWindowId targetAD_Window_ID;
 
 		private final String targetWindowInternalName;
 
@@ -371,7 +372,7 @@ import lombok.NonNull;
 		private GenericZoomInfoDescriptor(
 				final Builder builder,
 				final ImmutableTranslatableString nameTrl,
-				final int targetAD_Window_ID,
+				@NonNull final AdWindowId targetAD_Window_ID,
 				final Boolean isSOTrx)
 		{
 			this.nameTrl = nameTrl;
@@ -388,11 +389,10 @@ import lombok.NonNull;
 			}
 
 			this.targetAD_Window_ID = targetAD_Window_ID;
-			Check.assume(targetAD_Window_ID > 0, "AD_Window_ID > 0");
 
 			final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
-			this.targetWindowInternalName = Util.coalesceSuppliers(
+			this.targetWindowInternalName = CoalesceUtil.coalesceSuppliers(
 					() -> windowDAO.retrieveInternalWindowName(targetAD_Window_ID),
 					() -> windowDAO.retrieveWindowName(targetAD_Window_ID).translate(Env.getAD_Language()));
 
@@ -417,7 +417,7 @@ import lombok.NonNull;
 			return nameTrl;
 		}
 
-		public int getTargetAD_Window_ID()
+		public AdWindowId getTargetAD_Window_ID()
 		{
 			return targetAD_Window_ID;
 		}
@@ -471,8 +471,8 @@ import lombok.NonNull;
 			private String targetColumnName;
 			private boolean dynamicTargetColumnName;
 			private String virtualTargetColumnSql;
-			private int targetSO_Window_ID;
-			private int targetPO_Window_ID;
+			private AdWindowId targetSO_Window_ID;
+			private AdWindowId targetPO_Window_ID;
 			private Boolean targetHasIsSOTrxColumn;
 
 			private Builder()
@@ -482,7 +482,7 @@ import lombok.NonNull;
 
 			public List<GenericZoomInfoDescriptor> buildAll()
 			{
-				if (targetPO_Window_ID <= 0)
+				if (targetPO_Window_ID == null)
 				{
 					final ImmutableTranslatableString soNameTrl = this.soNameTrl.build();
 					final Boolean isSOTrx = null; // applies for SO and PO
@@ -551,7 +551,7 @@ import lombok.NonNull;
 				return this;
 			}
 
-			public Builder setTargetWindowIds(int soWindowId, int poWindowId)
+			public Builder setTargetWindowIds(AdWindowId soWindowId, AdWindowId poWindowId)
 			{
 				targetSO_Window_ID = soWindowId;
 				targetPO_Window_ID = poWindowId;
