@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
+
 /*
  * #%L
  * metasfresh-pharma.securpharm
@@ -39,7 +41,7 @@ public class JsonExpirationDateTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	@Test

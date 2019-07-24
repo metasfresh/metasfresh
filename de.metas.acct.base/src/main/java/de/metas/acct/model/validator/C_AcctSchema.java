@@ -4,7 +4,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
@@ -19,6 +18,7 @@ import de.metas.acct.api.TaxCorrectionType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /*

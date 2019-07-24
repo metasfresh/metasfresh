@@ -3,7 +3,6 @@ package de.metas.util.web.security;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.base.Supplier;
 
+import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;

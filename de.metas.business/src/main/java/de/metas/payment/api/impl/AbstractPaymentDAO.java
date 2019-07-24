@@ -48,7 +48,7 @@ import org.compiere.model.I_Fact_Acct;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -99,7 +99,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Posted, true) // Posted
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 		;
 
 		// Only the documents created after the given start time
@@ -145,7 +145,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		queryBuilder
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID()) // C_BPartner_ID
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
-				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
 
 		final IQuery<I_C_AllocationLine> allocationsQuery = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, ITrx.TRXNAME_None)

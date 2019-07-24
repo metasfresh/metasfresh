@@ -1,16 +1,14 @@
 package de.metas.letters.model;
 
-import org.compiere.util.Util;
-
 import de.metas.document.model.IDocumentLocation;
+import lombok.NonNull;
 
 public class LetterDocumentLocationAdapter implements IDocumentLocation
 {
 	private final I_C_Letter delegate;
 
-	public LetterDocumentLocationAdapter(I_C_Letter delegate)
+	public LetterDocumentLocationAdapter(@NonNull final I_C_Letter delegate)
 	{
-		Util.assume(delegate != null, "delegate not null");
 		this.delegate = delegate;
 	}
 

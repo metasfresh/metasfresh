@@ -29,10 +29,10 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.impexp.IImportProcessFactory;
-import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilder;
+import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilderFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
@@ -79,7 +79,7 @@ public class Main extends AbstractModuleInterceptor
 		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
-		if (Adempiere.isSpringProfileActive(Profiles.PROFILE_App))
+		if (SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
 		{
 			final int initDelayMillis = getInitDelayMillis();
 			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);
@@ -91,7 +91,7 @@ public class Main extends AbstractModuleInterceptor
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
 
 		// Data import (async support)
-		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
+		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderFactory(AsyncImportProcessBuilderFactory.instance);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 

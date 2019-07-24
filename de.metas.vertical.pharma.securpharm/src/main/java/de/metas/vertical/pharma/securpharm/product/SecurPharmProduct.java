@@ -41,6 +41,9 @@ public class SecurPharmProduct
 {
 	boolean error;
 
+	String resultCode;
+	String resultMessage;
+
 	@Nullable
 	ProductDetails productDetails;
 

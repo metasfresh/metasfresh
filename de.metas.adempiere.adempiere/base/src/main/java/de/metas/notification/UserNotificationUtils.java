@@ -5,6 +5,7 @@ import org.adempiere.exceptions.AdempiereException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.event.Event;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -36,12 +37,7 @@ public class UserNotificationUtils
 {
 	private static final String EVENT_PARAM_Notification = "userNotification";
 
-	private static final ObjectMapper jsonMapper;
-	static
-	{
-		jsonMapper = new ObjectMapper();
-		jsonMapper.findAndRegisterModules();
-	}
+	private static final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public static Event toEvent(@NonNull final UserNotification notification)
 	{

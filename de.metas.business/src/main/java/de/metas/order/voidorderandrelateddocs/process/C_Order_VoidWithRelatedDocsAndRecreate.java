@@ -11,6 +11,7 @@ import org.compiere.model.I_C_Order;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler.RecordsToHandleKey;
@@ -73,10 +74,12 @@ public class C_Order_VoidWithRelatedDocsAndRecreate
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Currently this process is only implemented for sales orders");
 		}
 
-		if (!documentBL.isDocumentCompleted(orderRecord))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(orderRecord.getDocStatus());
+		if (!docStatus.isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("selected C_Order_ID=" + orderRecord.getC_Order_ID() + " is not completed");
 		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

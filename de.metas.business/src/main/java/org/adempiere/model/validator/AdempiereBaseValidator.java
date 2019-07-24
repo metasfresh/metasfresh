@@ -48,7 +48,6 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
-import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_DocTypeCounter;
 import org.compiere.model.I_C_DocType_Sequence;
@@ -214,8 +213,6 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Table.class);
 		cachingService.addTableCacheConfigIfAbsent(I_AD_Ref_List.class);
 		cachingService.addTableCacheConfigIfAbsent(I_M_PriceList.class);
-
-		cachingService.addTableCacheConfigIfAbsent(I_C_ConversionType.class);
 
 		// M_Product (for now, using the same setting that were in MProduct.s_cache
 		cachingService.createTableCacheConfigBuilder(I_M_Product.class)

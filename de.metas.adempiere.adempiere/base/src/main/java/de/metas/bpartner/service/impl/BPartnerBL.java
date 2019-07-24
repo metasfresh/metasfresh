@@ -34,7 +34,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -48,13 +47,18 @@ import com.google.common.base.Strings;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
 import de.metas.location.impl.AddressBuilder;
+import de.metas.order.DeliveryViaRule;
+import de.metas.organization.OrgId;
+import de.metas.shipping.ShipperId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -72,6 +76,11 @@ public class BPartnerBL implements IBPartnerBL
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.userRepository = userRepository;
+	}
+	
+	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IBPartnerDAO.class).getById(bpartnerId);
 	}
 
 	@Override
@@ -571,5 +580,62 @@ public class BPartnerBL implements IBPartnerBL
 		final int salesRepRecordId = bpartnerRecord.getSalesRep_ID();
 
 		return UserId.ofRepoIdOrNull(salesRepRecordId);
+	}
+
+	@Override
+	public ShipperId getShipperIdOrNull(final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartnerRecord = bPartnerDAO.getById(bpartnerId);
+
+		final int shipperId = bpartnerRecord.getM_Shipper_ID();
+
+		return ShipperId.ofRepoIdOrNull(shipperId);
+	}
+
+	@Override
+	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+	}
+
+	@Override
+	public int getFreightCostIdByBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		int freightCostId = bpartner.getM_FreightCost_ID();
+		if (freightCostId > 0)
+		{
+			return freightCostId;
+		}
+
+		final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
+		final I_C_BP_Group bpGroup = bpGroupsRepo.getByBPartnerId(bpartnerId);
+		freightCostId = bpGroup.getM_FreightCost_ID();
+		return freightCostId;
+	}
+
+	@Override
+	public DeliveryViaRule getDeliveryViaRuleOrNull(@NonNull final BPartnerId bpartnerId, SOTrx soTrx)
+	{
+		final I_C_BPartner bp = getById(bpartnerId);
+		
+		if (soTrx.isSales())
+		{
+			return DeliveryViaRule.ofNullableCode(bp.getDeliveryViaRule());
+		}
+		else if(soTrx.isPurchase())
+		{
+			return DeliveryViaRule.ofNullableCode(bp.getPO_DeliveryViaRule());
+		}
+		else
+		{
+			// shall not happen
+			return null;
+		}
 	}
 }

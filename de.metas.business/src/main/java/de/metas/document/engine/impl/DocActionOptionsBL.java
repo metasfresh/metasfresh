@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import com.google.common.base.Suppliers;
@@ -60,8 +60,7 @@ public class DocActionOptionsBL implements IDocActionOptionsBL
 
 	private static final ImmutableMap<String, IDocActionOptionsCustomizer> retrieveDocActionOptionsCustomizer()
 	{
-		final ImmutableMap<String, IDocActionOptionsCustomizer> customizers = Adempiere.getSpringApplicationContext().getBeansOfType(IDocActionOptionsCustomizer.class)
-				.values()
+		final ImmutableMap<String, IDocActionOptionsCustomizer> customizers = SpringContextHolder.instance.getBeansOfType(IDocActionOptionsCustomizer.class)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(IDocActionOptionsCustomizer::getAppliesToTableName, Function.identity()));
 

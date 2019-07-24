@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -38,6 +37,8 @@ import org.compiere.util.DB;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
@@ -45,6 +46,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -801,7 +803,6 @@ public class MOrderLine extends X_C_OrderLine
 		}
 		// Product
 		else
-		// Set/check Product Price
 		{
 			// Set Price if Actual = 0
 			if (getPriceActual().signum() == 0
@@ -892,7 +893,7 @@ public class MOrderLine extends X_C_OrderLine
 				saveEx(get_TrxName());
 			}
 
-			if (!getParent().reserveStock(null, new MOrderLine[] { this }))
+			if (!getParent().reserveStock(null, ImmutableList.of(this)))
 			{
 				throw new AdempiereException("@DeleteError@ @QtyReserved@=" + getQtyReserved());
 			}

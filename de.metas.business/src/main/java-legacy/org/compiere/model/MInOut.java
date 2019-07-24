@@ -32,7 +32,6 @@ import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
@@ -56,6 +55,9 @@ import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -68,6 +70,9 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.util.Check;
@@ -1312,8 +1317,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		final I_C_Order order = getC_Order();
 		final boolean checkCreditOnPrepayOorder = Services.get(ISysConfigBL.class).getBooleanValue("CHECK_CREDIT_ON_PREPAY_ORDER", true, getAD_Client_ID(), getAD_Org_ID());
 		// ignore -- don't validate Prepay Orders depending on sysconfig parameter
-		return (!(order != null && order.getC_Order_ID() > 0
-				&& MDocType.DOCSUBTYPE_PrepayOrder.equals(order.getC_DocType().getDocSubType())
+		return (!(order != null
+				&& order.getC_Order_ID() > 0
+				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& !checkCreditOnPrepayOorder));
 	}
 
@@ -2149,14 +2155,14 @@ public class MInOut extends X_M_InOut implements IDocument
 		// Business Partner needs to be linked to Org
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner bp = bpartnersRepo.getById(getC_BPartner_ID());
-		final int counterAD_Org_ID = bp.getAD_OrgBP_ID();
-		if (counterAD_Org_ID <= 0)
+		final OrgId counterAD_Org_ID = OrgId.ofRepoIdOrAny(bp.getAD_OrgBP_ID());
+		if (counterAD_Org_ID.isAny())
 		{
 			return null;
 		}
 
 		final I_C_BPartner counterBP = bpartnersRepo.getById(counterC_BPartner_ID);
-		final I_AD_OrgInfo counterOrgInfo = Services.get(IOrgDAO.class).retrieveOrgInfo(counterAD_Org_ID);
+		final OrgInfo counterOrgInfo = Services.get(IOrgDAO.class).getOrgInfoById(counterAD_Org_ID);
 		log.debug("Counter BP={}", counterBP);
 
 		// Document Type
@@ -2187,8 +2193,8 @@ public class MInOut extends X_M_InOut implements IDocument
 				C_DocTypeTarget_ID, !isSOTrx(), true, get_TrxName(), true);
 
 		//
-		counter.setAD_Org_ID(counterAD_Org_ID);
-		counter.setM_Warehouse_ID(counterOrgInfo.getM_Warehouse_ID());
+		counter.setAD_Org_ID(counterAD_Org_ID.getRepoId());
+		counter.setM_Warehouse_ID(WarehouseId.toRepoId(counterOrgInfo.getWarehouseId()));
 		//
 		counter.setBPartner(counterBP);
 
@@ -2544,7 +2550,9 @@ public class MInOut extends X_M_InOut implements IDocument
 			final List<I_C_InvoiceLine> existingInvoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(inoutLine);
 			for (final I_C_InvoiceLine existingInvoiceLine : existingInvoiceLines)
 			{
-				if (!Services.get(IDocumentBL.class).isDocumentStatusOneOf(existingInvoiceLine.getC_Invoice(), IDocument.STATUS_Reversed, IDocument.STATUS_Voided))
+				final I_C_Invoice existingInvoice = existingInvoiceLine.getC_Invoice();
+				final DocStatus existingInvoiceDocStatus = DocStatus.ofCode(existingInvoice.getDocStatus());
+				if(!existingInvoiceDocStatus.isReversedOrVoided())
 				{
 					foundInvoice = true;
 				}

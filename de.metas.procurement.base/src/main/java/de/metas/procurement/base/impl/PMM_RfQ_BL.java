@@ -10,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.money.CurrencyId;
 import de.metas.procurement.base.IPMM_RfQ_BL;
 import de.metas.procurement.base.IPMM_RfQ_DAO;
 import de.metas.procurement.base.PMMContractBuilder;
@@ -172,7 +173,7 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 				.setStartDate(rfqResponseLine.getDateWorkStart())
 				.setEndDate(rfqResponseLine.getDateWorkComplete())
 				.setC_BPartner(rfqResponseLine.getC_BPartner())
-				.setC_Currency(rfqResponseLine.getC_Currency())
+				.setCurrencyId(CurrencyId.ofRepoIdOrNull(rfqResponseLine.getC_Currency_ID()))
 				.setPMM_Product(rfqResponseLine.getPMM_Product())
 				.setC_UOM(rfqResponseLine.getC_UOM());
 

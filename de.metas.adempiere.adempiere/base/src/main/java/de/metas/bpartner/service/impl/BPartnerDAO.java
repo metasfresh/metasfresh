@@ -1,7 +1,6 @@
 package de.metas.bpartner.service.impl;
 
 import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -53,8 +52,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
@@ -72,7 +69,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_OrgInfo;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -85,11 +81,15 @@ import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -210,6 +210,23 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public EMailAddress getContactEMail(@NonNull final BPartnerContactId contactId)
+	{
+		final I_AD_User contact = getContactById(contactId);
+		if (contact == null)
+		{
+			throw new AdempiereException("@NotFound@ " + contactId);
+		}
+
+		final EMailAddress contactEmail = EMailAddress.ofNullableString(contact.getEMail());
+		if (contactEmail == null)
+		{
+			throw new AdempiereException("Contact has no email: " + contact.getName());
+		}
+		return contactEmail;
 	}
 
 	@Override
@@ -382,6 +399,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+
+		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
+		final I_C_Location location = locationRepos.getById(locationId);
+		return CountryId.ofRepoId(location.getC_Country_ID());
+	}
+
+	@Override
 	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
@@ -541,13 +569,13 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		final int adOrgId = bPartner.getAD_Org_ID();
-		if (adOrgId > 0 && soTrx.isSales())
+		final OrgId adOrgId = OrgId.ofRepoIdOrAny(bPartner.getAD_Org_ID());
+		if (adOrgId.isRegular() && soTrx.isSales())
 		{
-			final I_AD_OrgInfo orgInfo = create(Services.get(IOrgDAO.class).retrieveOrgInfo(ctx, adOrgId, ITrx.TRXNAME_None), I_AD_OrgInfo.class);
-			if (orgInfo.getM_PricingSystem_ID() > 0)
+			final OrgInfo orgInfo = Services.get(IOrgDAO.class).getOrgInfoById(adOrgId);
+			if (orgInfo.getPricingSystemId() != null)
 			{
-				return PricingSystemId.ofRepoId(orgInfo.getM_PricingSystem_ID());
+				return orgInfo.getPricingSystemId();
 			}
 		}
 

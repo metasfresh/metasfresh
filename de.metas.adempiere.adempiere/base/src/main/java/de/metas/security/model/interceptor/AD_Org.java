@@ -3,12 +3,12 @@ package de.metas.security.model.interceptor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;

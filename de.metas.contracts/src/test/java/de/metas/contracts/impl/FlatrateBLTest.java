@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -68,6 +67,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.organization.OrgId;
 import de.metas.pricing.rules.MockedPricingRule;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;

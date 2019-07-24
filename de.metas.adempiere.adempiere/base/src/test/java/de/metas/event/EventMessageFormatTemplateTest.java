@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 
 /*
@@ -46,7 +47,7 @@ public class EventMessageFormatTemplateTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		jsonMapper = new ObjectMapper();
+		jsonMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	/** @return record reference as map, e.g. <code>{ "tableName":"C_Invoice", "recordId":123 }</code> */

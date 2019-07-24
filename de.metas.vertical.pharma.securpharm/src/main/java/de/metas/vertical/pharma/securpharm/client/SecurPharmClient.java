@@ -29,7 +29,6 @@ import java.util.Base64;
 import java.util.UUID;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -46,8 +45,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmAction;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonAPIResponse;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonPackage;
@@ -92,7 +93,7 @@ public class SecurPharmClient
 	private final SecurPharmConfig config;
 
 	private final RestTemplate apiRestTemplate;
-	private final ObjectMapper jsonObjectMapper = new ObjectMapper();
+	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 	private final SecurPharmClientAuthenticator authenticator;
 
 	private SecurPharmClient(@NonNull final SecurPharmConfig config)
@@ -119,14 +120,16 @@ public class SecurPharmClient
 
 		final APIReponseWithLog responseAndLogData = getFromUrl(url, clientTransactionId);
 
+		final JsonAPIResponse apiResponse = responseAndLogData.getResponse();
 		final SecurPharmLog log = responseAndLogData.getLog();
-		final ProductDetails productDetails = !log.isError()
-				? extractProductDetailsFromAPIResponse(responseAndLogData.getResponse())
-				: null;
+		final boolean error = log.isError();
 
 		return DecodeDataMatrixClientResponse.builder()
+				.error(error)
+				.resultCode(apiResponse.getResultCode())
+				.resultMessage(apiResponse.getResultMessage())
+				.productDetails(!error ? extractProductDetailsFromAPIResponse(apiResponse) : null)
 				.log(log)
-				.productDetails(productDetails)
 				.build();
 	}
 
@@ -187,7 +190,7 @@ public class SecurPharmClient
 			logger.debug("Got HTTP client error", ex);
 
 			final String apiResponseString = ex.getResponseBodyAsString();
-			apiResponse = fromJsonStringOrNull(apiResponseString, JsonAPIResponse.class);
+			apiResponse = createJsonAPIResponseFromJsonString(apiResponseString);
 
 			log.error(true);
 			log.responseCode(ex.getStatusCode());
@@ -198,12 +201,7 @@ public class SecurPharmClient
 		{
 			logger.debug("Got unknown error", ex);
 
-			final JsonResult apiResponseResult = new JsonResult();
-			apiResponseResult.setCode("?");
-			apiResponseResult.setMessage(ex.getMessage());
-
-			apiResponse = new JsonAPIResponse();
-			apiResponse.setRes(apiResponseResult);
+			apiResponse = createJsonAPIResponseFromErrorMessage(ex.getMessage());
 
 			log.error(true);
 			// logData.responseCode(ex.getStatusCode());
@@ -212,6 +210,25 @@ public class SecurPharmClient
 		}
 
 		return APIReponseWithLog.of(log.build(), apiResponse);
+	}
+
+	private JsonAPIResponse createJsonAPIResponseFromJsonString(final String json)
+	{
+		final JsonAPIResponse apiResponse = fromJsonStringOrNull(json, JsonAPIResponse.class);
+		return apiResponse != null
+				? apiResponse
+				: createJsonAPIResponseFromErrorMessage(json);
+	}
+
+	private static JsonAPIResponse createJsonAPIResponseFromErrorMessage(final String errorMessage)
+	{
+		final JsonResult apiResponseResult = new JsonResult();
+		apiResponseResult.setCode("?");
+		apiResponseResult.setMessage(errorMessage);
+
+		final JsonAPIResponse apiResponse = new JsonAPIResponse();
+		apiResponse.setRes(apiResponseResult);
+		return apiResponse;
 	}
 
 	private static ProductDetails extractProductDetailsFromAPIResponse(@NonNull final JsonAPIResponse apiResponse)
@@ -226,7 +243,7 @@ public class SecurPharmClient
 				.expirationDate(product.getExpirationDate())
 				.serialNumber(pack.getSerialNumber());
 
-		final JsonProductPackageState activeStatus = Util.coalesce(pack.getState(), JsonProductPackageState.UNKNOWN);
+		final JsonProductPackageState activeStatus = CoalesceUtil.coalesce(pack.getState(), JsonProductPackageState.UNKNOWN);
 		productDetailsBuilder.activeStatus(activeStatus);
 
 		if (pack.getReasons() != null)

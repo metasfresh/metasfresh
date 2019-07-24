@@ -7,7 +7,7 @@ import org.compiere.model.I_C_Order;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.CreateSalesOrderAndBOMsFromQuotationCommand;
@@ -75,8 +75,8 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 	{
 		final I_C_Order quotation = ordersRepo.getById(quotationId);
 
-		final String quotationDocStatus = quotation.getDocStatus();
-		if (!IDocument.STATUS_Completed.contentEquals(quotationDocStatus))
+		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(quotation.getDocStatus());
+		if (!quotationDocStatus.isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a completed quotation");
 		}

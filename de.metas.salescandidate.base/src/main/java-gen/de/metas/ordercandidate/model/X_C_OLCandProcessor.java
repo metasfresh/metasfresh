@@ -70,10 +70,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setAD_Scheduler_ID (int AD_Scheduler_ID)
 	{
-		if (AD_Scheduler_ID < 1) 
+		if (AD_Scheduler_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_Scheduler_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_Scheduler_ID, Integer.valueOf(AD_Scheduler_ID));
+		}
 	}
 
 	/** Get Ablaufsteuerung.
@@ -84,7 +88,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Scheduler_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -107,10 +113,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
 	{
-		if (AD_User_InCharge_ID < 1) 
+		if (AD_User_InCharge_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+		}
 	}
 
 	/** Get Betreuer.
@@ -121,7 +131,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -144,10 +156,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID)
 	{
-		if (C_DocTypeTarget_ID < 1) 
+		if (C_DocTypeTarget_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
+		}
 	}
 
 	/** Get Zielbelegart.
@@ -158,7 +174,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeTarget_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -183,10 +201,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setC_OLCandProcessor_ID (int C_OLCandProcessor_ID)
 	{
-		if (C_OLCandProcessor_ID < 1) 
+		if (C_OLCandProcessor_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_OLCandProcessor_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_OLCandProcessor_ID, Integer.valueOf(C_OLCandProcessor_ID));
+		}
 	}
 
 	/** Get Auftragskand. Verarb..
@@ -196,7 +218,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OLCandProcessor_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -219,10 +243,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
 	{
-		if (C_PaymentTerm_ID < 1) 
+		if (C_PaymentTerm_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+		}
 	}
 
 	/** Get Zahlungsbedingung.
@@ -233,7 +261,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -410,10 +440,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setM_AttributeSet_ID (int M_AttributeSet_ID)
 	{
-		if (M_AttributeSet_ID < 0) 
+		if (M_AttributeSet_ID < 0)
+		{
 			set_Value (COLUMNNAME_M_AttributeSet_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_AttributeSet_ID, Integer.valueOf(M_AttributeSet_ID));
+		}
 	}
 
 	/** Get Merkmals-Satz.
@@ -424,7 +458,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSet_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -447,10 +483,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
+		if (M_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+		}
 	}
 
 	/** Get Preissystem.
@@ -461,7 +501,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -484,10 +526,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setM_Shipper_ID (int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
+		if (M_Shipper_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+		}
 	}
 
 	/** Get Lieferweg.
@@ -498,7 +544,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -521,10 +569,14 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	@Override
 	public void setM_Warehouse_ID (int M_Warehouse_ID)
 	{
-		if (M_Warehouse_ID < 1) 
+		if (M_Warehouse_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+		}
 	}
 
 	/** Get Lager.
@@ -535,7 +587,9 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -558,25 +612,25 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** 
-	 * PaymentRule AD_Reference_ID=195
-	 * Reference name: _Payment Rule
-	 */
-	public static final int PAYMENTRULE_AD_Reference_ID=195;
-	/** Cash = B */
-	public static final String PAYMENTRULE_Cash = "B";
-	/** CreditCard = K */
-	public static final String PAYMENTRULE_CreditCard = "K";
-	/** DirectDeposit = T */
-	public static final String PAYMENTRULE_DirectDeposit = "T";
-	/** Check = S */
-	public static final String PAYMENTRULE_Check = "S";
-	/** OnCredit = P */
-	public static final String PAYMENTRULE_OnCredit = "P";
-	/** DirectDebit = D */
-	public static final String PAYMENTRULE_DirectDebit = "D";
-	/** Mixed = M */
-	public static final String PAYMENTRULE_Mixed = "M";
+//	/** 
+//	 * PaymentRule AD_Reference_ID=195
+//	 * Reference name: _Payment Rule
+//	 */
+//	public static final int PAYMENTRULE_AD_Reference_ID=195;
+//	/** Cash = B */
+//	public static final String PAYMENTRULE_Cash = "B";
+//	/** CreditCard = K */
+//	public static final String PAYMENTRULE_CreditCard = "K";
+//	/** DirectDeposit = T */
+//	public static final String PAYMENTRULE_DirectDeposit = "T";
+//	/** Check = S */
+//	public static final String PAYMENTRULE_Check = "S";
+//	/** OnCredit = P */
+//	public static final String PAYMENTRULE_OnCredit = "P";
+//	/** DirectDebit = D */
+//	public static final String PAYMENTRULE_DirectDebit = "D";
+//	/** Mixed = M */
+//	public static final String PAYMENTRULE_Mixed = "M";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird

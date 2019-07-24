@@ -58,6 +58,7 @@ public class BPartnerCompositeCache
 				.initialCapacity(100)
 				.invalidationKeysMapper(cacheIndex::computeCachingKeys)
 				.removalListener(cacheIndex::remove)
+				.additionListener(cacheIndex::add)
 				.build();
 	}
 

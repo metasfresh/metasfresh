@@ -8,12 +8,12 @@ import java.util.Optional;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.X_C_Invoice;
 import org.springframework.stereotype.Service;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -83,7 +83,7 @@ public class ContractInvoiceService
 		final Optional<InvoiceId> predecessorInvoice = queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID())
 				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, X_C_Invoice.DOCSTATUS_Closed, X_C_Invoice.DOCSTATUS_Completed)
+				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderByDescending(I_C_Invoice.COLUMNNAME_DateInvoiced)
 				.create()
 				.listIds(InvoiceId::ofRepoId)
@@ -98,7 +98,7 @@ public class ContractInvoiceService
 	{
 		final Optional<InvoiceId> predecessorInvoice = queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bPartnerId.getRepoId())
-				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, X_C_Invoice.DOCSTATUS_Closed, X_C_Invoice.DOCSTATUS_Completed)
+				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderByDescending(I_C_Invoice.COLUMNNAME_DateInvoiced)
 				.create()
 				.listIds(InvoiceId::ofRepoId)

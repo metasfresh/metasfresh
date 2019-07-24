@@ -23,7 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
@@ -181,7 +181,7 @@ public class AvailableForSalesUtil
 		{
 			return; // nothing to do
 		}
-		if (config.isRunAsync() && Adempiere.isSpringProfileActive(Profiles.PROFILE_Webui))
+		if (config.isRunAsync() && SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_Webui))
 		{
 			final UserId errorNotificationRecipient = UserId.ofRepoId(Env.getAD_User_ID());
 

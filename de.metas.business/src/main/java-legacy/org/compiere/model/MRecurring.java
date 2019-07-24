@@ -26,6 +26,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.document.engine.DocStatus;
+
 /**
  * Recurring Model
  *
@@ -71,13 +73,21 @@ public class MRecurring extends X_C_Recurring
 		StringBuffer sb = new StringBuffer("MRecurring[")
 				.append(get_ID()).append("-").append(getName());
 		if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Order))
+		{
 			sb.append(",C_Order_ID=").append(getC_Order_ID());
+		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Invoice))
+		{
 			sb.append(",C_Invoice_ID=").append(getC_Invoice_ID());
+		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_Project))
+		{
 			sb.append(",C_Project_ID=").append(getC_Project_ID());
+		}
 		else if (getRecurringType().equals(MRecurring.RECURRINGTYPE_GLJournal))
+		{
 			sb.append(",GL_JournalBatch_ID=").append(getGL_JournalBatch_ID());
+		}
 		sb.append(",Frequency=").append(getFrequencyType()).append("*").append(getFrequency());
 		sb.append("]");
 		return sb.toString();
@@ -92,7 +102,9 @@ public class MRecurring extends X_C_Recurring
 	{
 		Timestamp dateDoc = getDateNextRun();
 		if (!calculateRuns())
+		{
 			throw new IllegalStateException("No Runs Left");
+		}
 
 		// log
 		MRecurringRun run = new MRecurringRun(getCtx(), this);
@@ -139,7 +151,9 @@ public class MRecurring extends X_C_Recurring
 		// msg += journal.getDocumentNo();
 		// }
 		else
+		{
 			return "Invalid @RecurringType@ = " + getRecurringType();
+		}
 		run.save(get_TrxName());
 
 		//
@@ -171,19 +185,29 @@ public class MRecurring extends X_C_Recurring
 	private void setDateNextRun()
 	{
 		if (getFrequency() < 1)
+		{
 			setFrequency(1);
+		}
 		int frequency = getFrequency();
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(getDateNextRun());
 		//
 		if (getFrequencyType().equals(FREQUENCYTYPE_Daily))
+		{
 			cal.add(Calendar.DAY_OF_YEAR, frequency);
+		}
 		else if (getFrequencyType().equals(FREQUENCYTYPE_Weekly))
+		{
 			cal.add(Calendar.WEEK_OF_YEAR, frequency);
+		}
 		else if (getFrequencyType().equals(FREQUENCYTYPE_Monthly))
+		{
 			cal.add(Calendar.MONTH, frequency);
+		}
 		else if (getFrequencyType().equals(FREQUENCYTYPE_Quarterly))
+		{
 			cal.add(Calendar.MONTH, 3 * frequency);
+		}
 		Timestamp next = new Timestamp(cal.getTimeInMillis());
 		setDateNextRun(next);
 	}	// setDateNextRun
@@ -256,7 +280,7 @@ public class MRecurring extends X_C_Recurring
 		to.setAD_Org(org); // 09700
 
 		//
-		to.setDocStatus(X_C_Order.DOCSTATUS_Drafted);		// Draft
+		to.setDocStatus(DocStatus.Drafted.getCode());
 		to.setDocAction(X_C_Order.DOCACTION_Complete);
 		//
 		to.setC_DocType_ID(0);
@@ -266,7 +290,7 @@ public class MRecurring extends X_C_Recurring
 		// the new order needs to figure out the pricing and also the warehouse (task 9700) by itself
 		InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Order.class).setM_PricingSystem_ID(0);
 		to.setM_PriceList_ID(0);
-		to.setM_Warehouse(null);
+		to.setM_Warehouse_ID(-1);
 
 		to.setIsSelected(false);
 		to.setDateOrdered(dateDoc);

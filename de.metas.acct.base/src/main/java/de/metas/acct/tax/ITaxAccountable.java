@@ -29,6 +29,7 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyPrecision;
 
 /**
  * Accountable tax record.
@@ -46,7 +47,7 @@ public interface ITaxAccountable
 
 	AcctSchemaId getAcctSchemaId();
 
-	int getPrecision();
+	CurrencyPrecision getPrecision();
 
 	I_C_ValidCombination getTaxTotal_Acct();
 

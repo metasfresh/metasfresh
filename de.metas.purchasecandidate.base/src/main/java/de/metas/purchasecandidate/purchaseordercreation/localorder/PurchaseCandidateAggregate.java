@@ -1,6 +1,6 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
@@ -16,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -53,7 +53,7 @@ public class PurchaseCandidateAggregate
 
 	private final PurchaseCandidateAggregateKey aggregationKey;
 
-	private LocalDateTime purchaseDatePromised;
+	private ZonedDateTime purchaseDatePromised;
 	private Quantity qtyToDeliver;
 	private final ArrayList<PurchaseCandidate> purchaseCandidates = new ArrayList<>();
 	private final HashSet<OrderAndLineId> salesOrderAndLineIds = new HashSet<>();
@@ -113,7 +113,7 @@ public class PurchaseCandidateAggregate
 		this.qtyToDeliver = qtyToDeliver;
 	}
 
-	public LocalDateTime getDatePromised()
+	public ZonedDateTime getDatePromised()
 	{
 		return purchaseDatePromised;
 	}

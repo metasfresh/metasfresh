@@ -25,15 +25,16 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -44,6 +45,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -66,11 +70,17 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 			.getComparator(I_C_Invoice_Candidate.class);
 
 	@Override
-	public BigDecimal retrieveInvoicableAmount(final Properties ctx, final IInvoiceCandidateQuery query, final int targetCurrencyId, final int adClientId, final int adOrgId,
-			final String amountColumnName, final String trxName)
+	public BigDecimal retrieveInvoicableAmount(
+			final Properties ctx, 
+			final IInvoiceCandidateQuery query, 
+			final CurrencyId targetCurrencyId, 
+			final int adClientId, 
+			final int adOrgId,
+			final String amountColumnName, 
+			final String trxName)
 	{
 		// Conversion date to be used on currency conversion
-		final Timestamp dateConv = SystemTime.asTimestamp();
+		final LocalDate dateConv = SystemTime.asLocalDate();
 
 		BigDecimal totalAmt = BigDecimal.ZERO;
 		for (final I_C_Invoice_Candidate ic : retrieveCandidates(query))
@@ -81,13 +91,14 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 				continue;
 			}
 
-			final BigDecimal netAmtToInvoiceConv = Services.get(ICurrencyBL.class).convert(ctx,
+			final BigDecimal netAmtToInvoiceConv = Services.get(ICurrencyBL.class).convert(
 					netAmtToInvoice,
-					ic.getC_Currency_ID(), // CurFrom_ID,
+					CurrencyId.ofRepoId(ic.getC_Currency_ID()), // CurFrom_ID,
 					targetCurrencyId, // CurTo_ID,
 					dateConv,
-					ic.getC_ConversionType_ID(),
-					adClientId, adOrgId);
+					CurrencyConversionTypeId.ofRepoIdOrNull(ic.getC_ConversionType_ID()),
+					ClientId.ofRepoId(adClientId),
+					OrgId.ofRepoId(adOrgId));
 
 			totalAmt = totalAmt.add(netAmtToInvoiceConv);
 
@@ -99,52 +110,46 @@ public class PlainInvoiceCandDAO extends InvoiceCandDAO
 
 	private List<I_C_Invoice_Candidate> retrieveCandidates(final IInvoiceCandidateQuery query)
 	{
-		return db.getRecords(I_C_Invoice_Candidate.class, new IQueryFilter<I_C_Invoice_Candidate>()
-		{
-
-			@Override
-			public boolean accept(final I_C_Invoice_Candidate pojo)
+		return db.getRecords(I_C_Invoice_Candidate.class, pojo -> {
+			if (query.getBill_BPartner_ID() > 0 && query.getBill_BPartner_ID() != pojo.getBill_BPartner_ID())
 			{
-				if (query.getBill_BPartner_ID() > 0 && query.getBill_BPartner_ID() != pojo.getBill_BPartner_ID())
-				{
-					return false;
-				}
-
-				if (query.getDateToInvoice() != null)
-				{
-					final Timestamp queryDateToInvoice = TimeUtil.getDay(query.getDateToInvoice());
-					final Timestamp pojoDateToInvoice = Services.get(IInvoiceCandBL.class).getDateToInvoice(pojo);
-					if (!queryDateToInvoice.equals(pojoDateToInvoice))
-					{
-						return false;
-					}
-				}
-
-				if (query.getExcludeC_Invoice_Candidate_ID() > 0 && pojo.getC_Invoice_Candidate_ID() == query.getExcludeC_Invoice_Candidate_ID())
-				{
-					return false;
-				}
-
-				// either the candidate is *not* manual, or its ID is less or equal than MaxManualC_Invoice_Candidate_ID
-				if (query.getMaxManualC_Invoice_Candidate_ID() > 0
-						&& pojo.isManual()
-						&& pojo.getC_Invoice_Candidate_ID() > query.getMaxManualC_Invoice_Candidate_ID())
-				{
-					return false;
-				}
-
-				if (query.getHeaderAggregationKey() != null && !query.getHeaderAggregationKey().equals(pojo.getHeaderAggregationKey()))
-				{
-					return false;
-				}
-
-				if (query.getProcessed() != null && query.getProcessed() != pojo.isProcessed())
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+
+			if (query.getDateToInvoice() != null)
+			{
+				final Timestamp queryDateToInvoice = TimeUtil.getDay(query.getDateToInvoice());
+				final Timestamp pojoDateToInvoice = Services.get(IInvoiceCandBL.class).getDateToInvoice(pojo);
+				if (!queryDateToInvoice.equals(pojoDateToInvoice))
+				{
+					return false;
+				}
+			}
+
+			if (query.getExcludeC_Invoice_Candidate_ID() > 0 && pojo.getC_Invoice_Candidate_ID() == query.getExcludeC_Invoice_Candidate_ID())
+			{
+				return false;
+			}
+
+			// either the candidate is *not* manual, or its ID is less or equal than MaxManualC_Invoice_Candidate_ID
+			if (query.getMaxManualC_Invoice_Candidate_ID() > 0
+					&& pojo.isManual()
+					&& pojo.getC_Invoice_Candidate_ID() > query.getMaxManualC_Invoice_Candidate_ID())
+			{
+				return false;
+			}
+
+			if (query.getHeaderAggregationKey() != null && !query.getHeaderAggregationKey().equals(pojo.getHeaderAggregationKey()))
+			{
+				return false;
+			}
+
+			if (query.getProcessed() != null && query.getProcessed() != pojo.isProcessed())
+			{
+				return false;
+			}
+
+			return true;
 		});
 	}
 	

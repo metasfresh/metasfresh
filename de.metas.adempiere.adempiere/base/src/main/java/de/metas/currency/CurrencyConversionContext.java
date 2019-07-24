@@ -5,11 +5,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

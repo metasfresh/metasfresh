@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.assertj.core.api.AbstractBigDecimalAssert;
 import org.junit.Test;
 
@@ -20,6 +19,7 @@ import de.metas.costing.CostingLevel;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;

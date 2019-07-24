@@ -14,7 +14,11 @@ import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
-import de.metas.email.Mailbox;
+import de.metas.email.EMailAddress;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 
 /*
@@ -70,7 +74,7 @@ public class DerKurierDeliveryOrderEmailerManualTest
 	public void testAttachAndEmail()
 	{
 		final Mailbox mailbox = Mailbox.builder()
-				.email("we@derKurier.test")
+				.email(EMailAddress.ofString("we@derKurier.test"))
 				.smtpHost("localhost")
 				.smtpPort(25)
 				.password("test")
@@ -82,9 +86,16 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
-		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(derKurierShipperConfigRepository, attachmentEntryService);
+		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
+		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(
+				derKurierShipperConfigRepository,
+				attachmentEntryService,
+				mailService);
 
-		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(mailbox, "orderProcessing@derKurier.test", firstEntry);
+		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(
+				mailbox, 
+				EMailAddress.ofString("orderProcessing@derKurier.test"), 
+				firstEntry);
 
 		// now check in your mail server if the mail is OK..
 	}

@@ -154,7 +154,6 @@ import de.metas.util.Services;
 						I_M_Material_Tracking_Ref.COLUMN_M_Material_Tracking_ID,
 						materialTrackingRefQuery);
 			}
-			// TODO
 		}
 
 		final IQuery<I_M_Material_Tracking> query = queryBuilder

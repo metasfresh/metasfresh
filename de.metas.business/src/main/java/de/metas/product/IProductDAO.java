@@ -28,10 +28,10 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.Builder.Default;

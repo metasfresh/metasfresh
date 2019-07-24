@@ -24,7 +24,7 @@ package de.metas.fresh.picking.form;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -514,7 +514,7 @@ public class FreshPackingMd
 
 		final String deliveryVia = item.getDeliveryVia();
 
-		final LocalDateTime deliveryDate = item.getDeliveryDate(); // customer01676
+		final ZonedDateTime deliveryDate = item.getDeliveryDate(); // customer01676
 		final ShipmentScheduleId shipmentScheduleId = item.getShipmentScheduleId();
 		final String bpartnerValue = item.getCustomerBPValue();
 		final String bpartnerName = item.getCustomerName();

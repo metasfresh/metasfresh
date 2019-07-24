@@ -56,7 +56,7 @@ public class ProductPrice
 
 	public BigDecimal toBigDecimal()
 	{
-		return value.getValue();
+		return value.getAsBigDecimal();
 	}
 
 	public CurrencyId getCurrencyId()

@@ -8,7 +8,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.service.OrgId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +33,7 @@ import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.organization.OrgId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.ordercandidates.JsonAttachment;
 import de.metas.rest_api.ordercandidates.JsonOLCand;
@@ -195,7 +195,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	public ResponseEntity<JsonAttachment> attachFile(
 			@PathVariable("dataSourceName") final String dataSourceName,
 
-			@ApiParam(value = "External reference of the order line candidates to which the given file shall be attached", allowEmptyValue = false) //
+			@ApiParam(required = true, value = "External reference of the order line candidates to which the given file shall be attached") //
 			@PathVariable("externalReference") final String externalReference,
 
 			@ApiParam(value = "List with an even number of items;\n"
@@ -204,7 +204,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			@RequestParam("tags") //
 			@Nullable final List<String> tagKeyValuePairs,
 
-			@ApiParam(value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
+			@ApiParam(required = true, value = "The file to attach; the attachment's MIME type will be determined from the file extenstion", allowEmptyValue = false) //
 			@RequestBody @NonNull final MultipartFile file) throws IOException
 	{
 		final IOLCandBL olCandsService = Services.get(IOLCandBL.class);

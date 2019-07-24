@@ -10,7 +10,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.Document;
 import de.metas.payment.sepa.model.I_SEPA_Export;
@@ -21,9 +23,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 	private SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
 	private Document xmlDocument;
 
-	private I_C_Currency eur;
-
-	private I_C_Currency chf;
+	private CurrencyId eur;
+	private CurrencyId chf;
 
 	@Before
 	public void beforeTest()
@@ -33,15 +34,8 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 		this.xmlGenerator = new SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02();
 		this.xmlDocument = null;
 
-		eur = newInstance(I_C_Currency.class);
-		eur.setCurSymbol("€");
-		eur.setISO_Code("EUR");
-		save(eur);
-
-		chf = newInstance(I_C_Currency.class);
-		chf.setCurSymbol("CHF");
-		chf.setISO_Code("CHF");
-		save(chf);
+		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 	}
 
 	@Test
@@ -102,13 +96,12 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 			final String iban,
 			final String bic,
 			final BigDecimal amt,
-			final I_C_Currency currency)
+			final CurrencyId currencyId)
 	{
 
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
-		bankAccount.setC_Currency(currency);
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(iban);
-		bankAccount.setC_Currency(currency);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
 		save(bankAccount);
@@ -117,7 +110,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02Tests
 		line.setIBAN(iban);
 		line.setSwiftCode(bic);
 		line.setAmt(amt);
-		line.setC_Currency(currency);
+		line.setC_Currency_ID(currencyId.getRepoId());
 		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
 
 		line.setC_BP_BankAccount(bankAccount);

@@ -26,10 +26,10 @@ package de.metas.security.impl;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.adempiere.service.OrgId;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.security.ISecurityRule;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;

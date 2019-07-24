@@ -35,6 +35,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -50,11 +51,35 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	@Test
 	public void test_simple01()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 1, 1, false, true); // BP, Price, Qty
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
 		POJOWrapper.setInstanceName(ic1, "ic1");
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(1, 1, 1, false, true);
+
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		POJOWrapper.setInstanceName(ic2, "ic2");
-		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate(1, 1, 1, false, true);
+
+		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		POJOWrapper.setInstanceName(ic3, "ic3");
 
 		updateInvalidCandidates();
@@ -98,11 +123,34 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	@Test
 	public void test_API()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 1, 1, false, false); // BP, Price, Qty
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(false)
+				.build();
 		POJOWrapper.setInstanceName(ic1, "ic1");
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(1, 1, 1, false, false);
+
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(false)
+				.build();
 		POJOWrapper.setInstanceName(ic2, "ic2");
-		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate(1, 1, 1, false, false);
+
+		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(1)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(false)
+				.build();
 		POJOWrapper.setInstanceName(ic3, "ic3");
 
 		updateInvalidCandidates();
@@ -144,10 +192,25 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	{
 		// we also need a regular invoice candidate, or 'updateInvalidCandidates()' won't set the NetAmtToInvoice of the manual candidate to a positive value.
 		// but note that we will only invoice the manual candidate, and not 'regularIc1'.
-		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate(1, 10, 1, false, true); // BP, Price, Qty, isManual, IsSOTrx
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		InterfaceWrapperHelper.save(regularIc1);
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -10, 1, true, true); // BP, Price, Qty, IsManual, IsSOTrx
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-10)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(true)
+				.build();
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 
@@ -179,10 +242,26 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	{
 		// we also need a regular invoice candidate, or 'updateInvalidCandidates()' won't set the NetAmtToInvoice of the manual candidate to a positive value.
 		// but note that we will only invoice the manual candidate, and not 'regularIc1'.
-		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate(1, 10, 1, false, false); // BP, Price, Qty, isManual, IsSOTrx
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
+		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(1)
+				.setManual(false)
+				.setSOTrx(false)
+				.build();
 		InterfaceWrapperHelper.save(regularIc1);
 
-		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate(1, -10, 1, true, false); // BP, Price, Qty, IsManual, IsSOTrx
+		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(-10)
+				.setQty(1)
+				.setManual(true)
+				.setSOTrx(false)
+				.build();
+
 		manualIc1.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(manualIc1);
 

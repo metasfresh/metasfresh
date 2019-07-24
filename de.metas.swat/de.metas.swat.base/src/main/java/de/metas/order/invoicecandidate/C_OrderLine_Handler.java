@@ -35,7 +35,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
@@ -62,7 +61,9 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
@@ -130,6 +131,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private I_C_Invoice_Candidate createCandidateForOrderLine(final I_C_OrderLine orderLine)
 	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
 		final Properties ctx = InterfaceWrapperHelper.getCtx(orderLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(orderLine);
 
@@ -144,7 +147,13 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setRecord_ID(orderLine.getC_OrderLine_ID());
 
 		ic.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
-		ic.setM_Product_ID(orderLine.getM_Product_ID());
+
+		final int productRecordId = orderLine.getM_Product_ID();
+		ic.setM_Product_ID(productRecordId);
+
+		boolean isFreightCostProduct = productBL.isFreightCostProduct(ProductId.ofRepoId(productRecordId));
+
+		ic.setIsFreightCost(isFreightCostProduct);
 		ic.setIsPackagingMaterial(orderLine.isPackagingMaterial());
 		ic.setC_Charge_ID(orderLine.getC_Charge_ID());
 

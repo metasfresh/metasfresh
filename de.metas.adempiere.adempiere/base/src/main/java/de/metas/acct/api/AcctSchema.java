@@ -1,13 +1,13 @@
 package de.metas.acct.api;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.impl.AcctSchemaPeriodControl;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;

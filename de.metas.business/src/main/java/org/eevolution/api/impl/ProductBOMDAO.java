@@ -41,7 +41,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
@@ -59,6 +58,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;

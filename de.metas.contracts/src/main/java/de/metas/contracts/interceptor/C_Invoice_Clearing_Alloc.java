@@ -35,6 +35,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -63,7 +64,7 @@ public class C_Invoice_Clearing_Alloc
 						term,
 						invoiceCand.getDateOrdered(),
 						X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased,
-						term.getC_UOM(),
+						UomId.ofRepoId(term.getC_UOM_ID()),
 						true); // onlyNonSim
 
 		final I_C_Flatrate_DataEntry dataEntry;

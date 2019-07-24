@@ -78,6 +78,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.stream.StreamUtils;
@@ -95,12 +97,16 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
 	{
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+
 		final Properties ctx = getCtx(ic);
 		final String trxName = getTrxName(ic);
 
 		final int bill_BPartner_ID = ic.getBill_BPartner_ID();
 		final Timestamp dateOrdered = ic.getDateOrdered();
-		final int m_Product_Category_ID = ic.getM_Product().getM_Product_Category_ID();
+
+		final I_M_Product product = productDAO.getById(ic.getM_Product_ID());
+		final int m_Product_Category_ID = product.getM_Product_Category_ID();
 		final int m_Product_ID = ic.getM_Product_ID();
 		final int c_Charge_ID = ic.getC_Charge_ID();
 
@@ -272,10 +278,10 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Conditions fc,
 			final Timestamp dateOrdered,
 			final String dataEntryType,
-			final I_C_UOM uom,
+			final UomId uomId,
 			final boolean onlyNonSim)
 	{
-		return retrieveEntries(fc, null, dateOrdered, dataEntryType, uom, onlyNonSim);
+		return retrieveEntries(fc, null, dateOrdered, dataEntryType, uomId, onlyNonSim);
 	}
 
 	@Override
@@ -284,7 +290,7 @@ public class FlatrateDAO implements IFlatrateDAO
 			final I_C_Flatrate_Term term,
 			final Timestamp date,
 			final String dataEntryType,
-			final I_C_UOM uom,
+			final UomId uomId,
 			final boolean onlyNonSim)
 	{
 		final Properties ctx;
@@ -337,10 +343,10 @@ public class FlatrateDAO implements IFlatrateDAO
 				I_C_Flatrate_DataEntry.COLUMNNAME_Type + "=? ");
 		params.add(dataEntryType);
 
-		if (uom != null)
+		if (uomId != null)
 		{
 			wc.append(" AND " + I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID + "=? ");
-			params.add(uom.getC_UOM_ID());
+			params.add(uomId);
 		}
 
 		// Return the entries in the order of their UOM.
@@ -380,16 +386,16 @@ public class FlatrateDAO implements IFlatrateDAO
 			final boolean onlyNonSim)
 	{
 		final I_C_Flatrate_Conditions fc = null;
-		final I_C_UOM uom = null;
+		final UomId uomId = null;
 
-		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uom, onlyNonSim);
+		return retrieveEntries(fc, flatrateTerm, date, dataEntryType, uomId, onlyNonSim);
 	}
 
 	@Override
 	public List<I_C_Flatrate_DataEntry> retrieveDataEntries(
 			final I_C_Flatrate_Term term,
 			final String dataEntryType,
-			final I_C_UOM uom)
+			final UomId uomId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -398,9 +404,9 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, term.getC_Flatrate_Term_ID())
 				.addOnlyContextClient();
 
-		if (uom != null)
+		if (uomId != null)
 		{
-			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uom.getC_UOM_ID());
+			queryBuilder.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_UOM_ID, uomId);
 		}
 
 		if (!Check.isEmpty(dataEntryType, true))
@@ -514,12 +520,12 @@ public class FlatrateDAO implements IFlatrateDAO
 	public final List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
 			final Timestamp dateFrom, final Timestamp dateTo,
-			final I_C_UOM uom)
+			final UomId uomId)
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
 
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uom);
+		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{

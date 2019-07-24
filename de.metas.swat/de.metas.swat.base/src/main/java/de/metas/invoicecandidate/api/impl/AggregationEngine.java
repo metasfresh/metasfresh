@@ -54,6 +54,9 @@ import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.api.impl.AggregationKey;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.IDocTypeDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -68,6 +71,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
@@ -306,6 +310,10 @@ public class AggregationEngine implements IAggregationEngine
 	private void addToInvoiceHeader(final InvoiceHeaderImplBuilder invoiceHeader, final I_C_Invoice_Candidate ic, final int inoutId)
 	{
 
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 		invoiceHeader.setAD_Org_ID(ic.getAD_Org_ID());
 		invoiceHeader.setBill_BPartner_ID(ic.getBill_BPartner_ID());
 		invoiceHeader.setBill_Location_ID(getBill_Location_ID(ic));
@@ -327,12 +335,13 @@ public class AggregationEngine implements IAggregationEngine
 		final int M_PriceList_ID;
 		if (ic.getM_PriceList_Version_ID() > 0)
 		{
-			M_PriceList_ID = ic.getM_PriceList_Version().getM_PriceList_ID();
+
+			M_PriceList_ID = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(ic.getM_PriceList_Version_ID())).getM_PriceList_ID();
 		}
 		else
 		{
-			final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), ic.getBill_Location(), SOTrx.ofBoolean(ic.isSOTrx()));
+			final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
+			final I_M_PriceList pl = priceListDAO.retrievePriceListByPricingSyst(PricingSystemId.ofRepoIdOrNull(ic.getM_PricingSystem_ID()), bpLocation, SOTrx.ofBoolean(ic.isSOTrx()));
 			if (pl == null)
 			{
 				throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
@@ -358,7 +367,8 @@ public class AggregationEngine implements IAggregationEngine
 
 		if (ic.getC_DocTypeInvoice_ID() > 0)
 		{
-			invoiceHeader.setC_DocTypeInvoice(ic.getC_DocTypeInvoice());
+			final I_C_DocType docTypeInvoice = docTypeDAO.getById(ic.getC_DocTypeInvoice_ID());
+			invoiceHeader.setC_DocTypeInvoice(docTypeInvoice);
 		}
 
 		// 06630: set shipment id to header

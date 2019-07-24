@@ -44,14 +44,13 @@ import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
@@ -59,8 +58,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Order;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -73,7 +70,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -91,7 +89,10 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -188,7 +189,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// Services
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		//
@@ -265,8 +265,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			if (olAndSched.hasSalesOrderLine())
 			{
-				final String orderDocStatus = olAndSched.getOrderDocStatus();
-				if (!docActionBL.isStatusCompletedOrClosedOrReversed(orderDocStatus) // task 07355: thread closed orders like completed orders
+				final DocStatus orderDocStatus = olAndSched.getOrderDocStatus();
+				if (!orderDocStatus.isCompletedOrClosedOrReversed() // task 07355: thread closed orders like completed orders
 						&& !sched.isProcessed() // task 05206: ts: don't try to delete already processed scheds..it won't work
 						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)
@@ -387,7 +387,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updatePreparationAndDeliveryDate(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final ShipmentScheduleReferencedLineFactory shipmentScheduleOrderDocFactory = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class);
+		final ShipmentScheduleReferencedLineFactory shipmentScheduleOrderDocFactory = SpringContextHolder.instance.getBean(ShipmentScheduleReferencedLineFactory.class);
 		final ShipmentScheduleReferencedLine shipmentScheduleOrderDoc = shipmentScheduleOrderDocFactory.createFor(sched);
 
 		sched.setPreparationDate(shipmentScheduleOrderDoc.getPreparationDate());
@@ -770,7 +770,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 */
 	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
 	{
-		final WarehouseId warehouseId = Adempiere.getBean(ShipmentScheduleReferencedLineFactory.class)
+		final WarehouseId warehouseId = SpringContextHolder.instance.getBean(ShipmentScheduleReferencedLineFactory.class)
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId.getRepoId());
@@ -875,34 +875,35 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@VisibleForTesting
 	boolean isConsolidateVetoedByOrderOfSched(final I_M_ShipmentSchedule sched)
 	{
-		if (sched.getC_Order_ID() <= 0)
+		final OrderId orderId = OrderId.ofRepoIdOrNull(sched.getC_Order_ID());
+		if (orderId == null)
 		{
 			return false;
 		}
 
-		final I_C_Order order = sched.getC_Order();
-
-		final String docSubType = order.getC_DocType().getDocSubType();
-		final boolean isPrePayOrder = X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType);
-		if (isPrePayOrder)
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+		final I_C_Order order = orderBL.getById(orderId);
+		if (orderBL.isPrepay(order))
 		{
-			logger.debug("Because '" + order + "' is a prepay order, consolidation into one shipment is not allowed");
+			logger.debug("Because '{}' is a prepay order, consolidation into one shipment is not allowed", order);
 			return true;
 		}
 
 		final boolean isCustomFreightCostRule = isCustomFreightCostRule(order);
 		if (isCustomFreightCostRule)
 		{
-			logger.debug("Because '" + order + "' has not the standard freight cost rule,  consolidation into one shipment is not allowed");
+			logger.debug("Because '{}' has not the standard freight cost rule,  consolidation into one shipment is not allowed", order);
 			return true;
 		}
+		
 		return false;
 	}
 
 	private boolean isCustomFreightCostRule(final I_C_Order order)
 	{
-		return X_C_Order.FREIGHTCOSTRULE_FixPrice.equals(order.getFreightCostRule())
-		// || X_C_Order.FREIGHTCOSTRULE_FreightIncluded.equals(order.getFreightCostRule()) // 07973: included freight cost rule shall no longer be considered "custom"
+		final FreightCostRule freightCostRule = FreightCostRule.ofCode(order.getFreightCostRule());
+		return FreightCostRule.FixPrice.equals(freightCostRule)
+		// || FreightCostRule.FreightIncluded.equals(freightCostRule) // 07973: included freight cost rule shall no longer be considered "custom"
 		;
 	}
 

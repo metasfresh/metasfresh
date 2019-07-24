@@ -50,6 +50,9 @@ import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerCompositeRepository.ContactIdAndBPartner;
 import de.metas.bpartner.composite.BPartnerContactQuery;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.JsonExternalId;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
@@ -72,7 +75,9 @@ import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
 import de.metas.rest_api.utils.MissingResourceException;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.rest.ExternalId;
 import de.metas.util.time.SystemTime;
@@ -103,7 +108,6 @@ import lombok.Value;
 
 class BpartnerRestControllerTest
 {
-
 	private BpartnerRestController bpartnerRestController;
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -125,8 +129,14 @@ class BpartnerRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository());
 
 		bpartnerRestController = new BpartnerRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -202,33 +212,6 @@ class BpartnerRestControllerTest
 		final JsonResponseLocation resultBody = result.getBody();
 
 		expect(resultBody).toMatchSnapshot();
-	}
-
-	@Test
-	void createOrUpdateBPartner_create_tmp()
-	{
-
-		final JsonRequestComposite bpartnerComposite = JsonRequestComposite.builder()
-				.bpartner(JsonRequestBPartner.builder()
-						.code("87606")
-						.companyName("beyou.media Test MF")
-						.name("beyou.media Test MF")
-						.group("D-Kunde")
-						.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-						.build())
-				.build();
-
-		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier("ext-" + "2058366328")
-				.bpartnerComposite(bpartnerComposite)
-				.build();
-
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.requestItem(requestItem)
-				.build();
-
-		JSONObjectMapper.forClass(Object.class).writeValueAsString(bpartnerUpsertRequest);
 	}
 
 	@Test
@@ -345,6 +328,53 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
 	}
 
+	/**
+	 * Update a bpartner and insert a location at the same time.
+	 */
+	@Test
+	void createOrUpdateBPartner_Update_BPartner_Name_Insert_Location()
+	{
+		SystemTime.setTimeSource(() -> 1563553074); // Fri, 19 Jul 2019 16:17:54 GMT
+
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BPartnerRestControllerTest_Update_BPartner_Name_Insert_Location.json");
+
+		assertThat(bpartnerUpsertRequest.getRequestItems()).hasSize(1);
+		assertThat(bpartnerUpsertRequest.getRequestItems().get(0).getBpartnerComposite().getLocationsNotNull().getRequestItems()).hasSize(1);
+
+		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
+		bpartnerRecord.setName("bpartnerRecord.name");
+		bpartnerRecord.setValue("12345");
+		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
+		saveRecord(bpartnerRecord);
+
+		final RecordCounts inititalCounts = new RecordCounts();
+
+		// invoke the method under test
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		inititalCounts.assertBPartnerCountChangedBy(0);
+		inititalCounts.assertUserCountChangedBy(0);
+		inititalCounts.assertLocationCountChangedBy(1);
+
+		// verify that the bpartner-record was updated
+		refresh(bpartnerRecord);
+		assertThat(bpartnerRecord.getValue()).isEqualTo("12345"); // shall be unchanged
+		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
+
+		// use the rest controller to get the json that we can then verify
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("val-12345");
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseComposite resultBody = result.getBody();
+		expect(resultBody).toMatchSnapshot();
+
+		// finally, also make sure that if we repeat the same invocation, no new location record is created
+		final RecordCounts countsBefore2ndInvocation = new RecordCounts();
+		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+		countsBefore2ndInvocation.assertCountsUnchanged();
+	}
+
 	@Test
 	void createOrUpdateBPartner_update_C_BPartner_Value_NoSuchPartner()
 	{
@@ -436,10 +466,25 @@ class BpartnerRestControllerTest
 
 		private void assertCountsUnchanged()
 		{
-			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount);
-			assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount);
+			assertBPartnerCountChangedBy(0);
+			assertUserCountChangedBy(0);
+			assertLocationCountChangedBy(0);
+		}
+
+		private void assertUserCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + offset);
+		}
+
+		private void assertLocationCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + offset);
+			assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + offset);
+		}
+
+		private void assertBPartnerCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + offset);
 		}
 	}
 

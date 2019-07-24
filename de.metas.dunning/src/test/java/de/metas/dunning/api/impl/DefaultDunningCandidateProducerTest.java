@@ -216,19 +216,19 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		dunningUtil.setRate(currencyEUR, currencyCHF, new BigDecimal("1.5"));
 
-		dunning.setC_Currency_ID(currencyCHF.getC_Currency_ID());
+		dunning.setC_Currency_ID(currencyCHF.getRepoId());
 		InterfaceWrapperHelper.save(dunning);
 
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(15) // daysDue,
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
 
 		final I_C_Dunning_Candidate candidate = producer.createDunningCandidate(context, sourceDoc);
 		Assert.assertNotNull("Candidate shall be generated", candidate);
-		Assert.assertEquals("Candidate - Invalid Currency", currencyCHF.getC_Currency_ID(), candidate.getC_Currency_ID());
+		Assert.assertEquals("Candidate - Invalid Currency", currencyCHF.getRepoId(), candidate.getC_Currency_ID());
 		Assert.assertThat("Candidate - Invalid TotalAmt", candidate.getTotalAmt(), comparesEqualTo(new BigDecimal("150")));
 		Assert.assertThat("Candidate - Invalid OpenAmt", candidate.getOpenAmt(), comparesEqualTo(new BigDecimal("150")));
 	}
@@ -243,7 +243,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(25) // daysDue, suitable for level 2
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
@@ -263,7 +263,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	{
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(25) // daysDue, suitable for level 2
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
@@ -282,7 +282,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	{
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(35) // daysDue, suitable for level 3
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
@@ -316,7 +316,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(25) // daysDue, suitable for level 2
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
@@ -359,7 +359,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 
 		final IDunnableDoc sourceDoc = mkDunnableDocBuilder()
 				.setDaysDue(25) // daysDue, suitable for level 2
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"))
 				.create();
@@ -382,7 +382,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	{
 		final DunnableDocBuilder builder = mkDunnableDocBuilder()
 				.setDaysDue(25) // daysDue, suitable for level 2
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setTotalAmt(new BigDecimal("100"))
 				.setOpenAmt(new BigDecimal("100"));
 
@@ -434,7 +434,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_getLastDunningDateEffective()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -479,7 +479,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test(expected = AdempiereException.class)
 	public void test_getLastDunningDateEffective_null_DunningDateEffective()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -505,7 +505,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_getDaysAfterLastDunningEffective()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -571,7 +571,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test(expected = InconsistentDunningCandidateStateException.class)
 	public void test_isDaysBetweenDunningsRespected_LastDunningDateEffective_NotAvailable()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(false);
@@ -590,7 +590,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_isDaysBetweenDunningsRespected_DaysAfterLast_FutureCandidates()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -609,7 +609,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_isDaysBetweenDunningsRespected_DaysAfterLast_NotPassedYet()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -628,7 +628,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 	@Test
 	public void test_isDaysBetweenDunningsRespected_DaysAfterLast_Satisfied()
 	{
-		final List<I_C_Dunning_Candidate> candidates = new ArrayList<I_C_Dunning_Candidate>();
+		final List<I_C_Dunning_Candidate> candidates = new ArrayList<>();
 		{
 			final I_C_Dunning_Candidate c = db.newInstance(I_C_Dunning_Candidate.class);
 			c.setIsDunningDocProcessed(true);
@@ -652,7 +652,7 @@ public class DefaultDunningCandidateProducerTest extends DunningTestBase
 				.setC_BPartner_ID(1)
 				.setC_BPartner_Location_ID(1)
 				.setContact_ID(1)
-				.setC_Currency(currencyEUR)
+				.setC_Currency_ID(currencyEUR.getRepoId())
 				.setInDispute(false) // isInDispute
 				//
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,

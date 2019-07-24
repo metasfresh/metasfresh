@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.OrgId;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
@@ -40,6 +39,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaElementType;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
 
 /**

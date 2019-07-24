@@ -49,7 +49,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Cost;
@@ -71,6 +70,8 @@ import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -102,31 +103,33 @@ public class CopyPriceToStandard extends JavaProcess
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
-		for (int i = 0; i < para.length; i++)
+		for (ProcessInfoParameter element : para)
 		{
-			String name = para[i].getParameterName();
+			String name = element.getParameterName();
 
-			if (para[i].getParameter() == null)
-				;
+			if (element.getParameter() == null)
+			{
+				
+			}
 			else if (name.equals("M_CostType_ID"))
 			{
-				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(para[i].getParameterAsInt());
+				p_M_CostType_ID = CostTypeId.ofRepoIdOrNull(element.getParameterAsInt());
 			}
 			else if (name.equals("AD_Org_ID"))
 			{
-				p_AD_Org_ID = OrgId.ofRepoIdOrAny(para[i].getParameterAsInt());
+				p_AD_Org_ID = OrgId.ofRepoIdOrAny(element.getParameterAsInt());
 			}
 			else if (name.equals("C_AcctSchema_ID"))
 			{
-				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(para[i].getParameterAsInt());
+				p_C_AcctSchema_ID = AcctSchemaId.ofRepoId(element.getParameterAsInt());
 			}
 			else if (name.equals("M_CostElement_ID"))
 			{
-				p_M_CostElement_ID = CostElementId.ofRepoIdOrNull(para[i].getParameterAsInt());
+				p_M_CostElement_ID = CostElementId.ofRepoIdOrNull(element.getParameterAsInt());
 			}
 			else if (name.equals("M_PriceList_Version_ID"))
 			{
-				p_M_PriceList_Version_ID = ((BigDecimal)para[i].getParameter()).intValue();
+				p_M_PriceList_Version_ID = ((BigDecimal)element.getParameter()).intValue();
 			}
 			else
 			{
@@ -152,12 +155,15 @@ public class CopyPriceToStandard extends JavaProcess
 		{
 			BigDecimal price = pprice.getPriceStd();
 			final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(plv.getM_PriceList_ID());
-			int C_Currency_ID = pl.getC_Currency_ID();
-			if (C_Currency_ID != acctSchema.getCurrencyId().getRepoId())
+			CurrencyId C_Currency_ID = CurrencyId.ofRepoId(pl.getC_Currency_ID());
+			if (!CurrencyId.equals(C_Currency_ID, acctSchema.getCurrencyId()))
 			{
-				price = currencyConversionBL.convert(getCtx(), pprice.getPriceStd(),
-						C_Currency_ID, acctSchema.getCurrencyId().getRepoId(),
-						getAD_Client_ID(), p_AD_Org_ID.getRepoId());
+				price = currencyConversionBL.convert(
+						pprice.getPriceStd(),
+						C_Currency_ID, 
+						acctSchema.getCurrencyId(),
+						ClientId.ofRepoId(getAD_Client_ID()), 
+						p_AD_Org_ID);
 			}
 
 			final I_M_Product product = Services.get(IProductDAO.class).getById(pprice.getM_Product_ID());

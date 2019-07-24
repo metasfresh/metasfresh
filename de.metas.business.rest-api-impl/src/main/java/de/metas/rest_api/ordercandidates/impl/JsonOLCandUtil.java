@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.ordercandidates.JsonOLCandCreateBulkRequest;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -45,10 +46,9 @@ public class JsonOLCandUtil
 		System.out.println(writeValueAsString(object));
 	}
 
-	public static String writeValueAsString(@NonNull final JsonOLCandCreateBulkRequest object)
+	private static String writeValueAsString(@NonNull final JsonOLCandCreateBulkRequest object)
 	{
-		final ObjectMapper jsonObjectMapper = new ObjectMapper()
-				.findAndRegisterModules()
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper()
 				.enable(SerializationFeature.INDENT_OUTPUT);
 
 		try
@@ -68,8 +68,7 @@ public class JsonOLCandUtil
 				JsonOLCandUtil.class.getResourceAsStream(resourceName),
 				"There needs to be a loadable resource with name={}", resourceName);
 
-		final ObjectMapper jsonObjectMapper = new ObjectMapper()
-				.findAndRegisterModules();
+		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 		try
 		{

@@ -227,16 +227,15 @@ public class CustomsInvoiceService
 		final Money priceActual = orderLine.getPriceActual();
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-				Env.getCtx(),
-				priceActual.getValue(),
-				priceActual.getCurrencyId().getRepoId(),
-				currencyId.getRepoId(),
-				Env.getAD_Client_ID(),
-				Env.getOrgId().getRepoId());
+				priceActual.getAsBigDecimal(),
+				priceActual.getCurrencyId(),
+				currencyId,
+				Env.getClientId(),
+				Env.getOrgId());
 
 		if (shipmentLinePriceConverted == null)
 		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyBL);
+			throw new AdempiereException("Please, add a conversion between the following currencies: " + priceActual.getCurrencyId() + ", " + currencyId);
 		}
 
 		return Money.of(shipmentLinePriceConverted, currencyId);

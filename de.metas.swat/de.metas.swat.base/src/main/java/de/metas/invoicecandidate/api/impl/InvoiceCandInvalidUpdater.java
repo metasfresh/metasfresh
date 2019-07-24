@@ -330,8 +330,12 @@ import lombok.NonNull;
 		final BigDecimal newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
 		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
 
+		invoiceCandBL.setAmountAndDateForFreightCost(ic);
+
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
+
+
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount
@@ -496,7 +500,7 @@ import lombok.NonNull;
 		private int countOk = 0;
 		private int countErrors = 0;
 
-		public final void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 		{
 			countOk++;
 		}
@@ -507,7 +511,7 @@ import lombok.NonNull;
 		}
 
 		@Override
-		public final String toString()
+		public String toString()
 		{
 			return getSummary();
 		}

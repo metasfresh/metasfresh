@@ -34,6 +34,7 @@ import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -63,8 +64,11 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
+
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+
 		ic1 = createInvoiceCandidate()
-				.setBillBPartnerId(1)
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setQty(50)
 				.setManual(false)

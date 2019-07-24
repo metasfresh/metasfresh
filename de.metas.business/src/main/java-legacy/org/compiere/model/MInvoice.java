@@ -33,14 +33,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import de.metas.currency.CurrencyPrecision;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.print.ReportEngine;
@@ -60,8 +58,11 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.cache.CCache;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -71,9 +72,12 @@ import de.metas.i18n.Msg;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -212,20 +216,20 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	public MInvoice(final Properties ctx, final int C_Invoice_ID, final String trxName)
 	{
 		super(ctx, C_Invoice_ID, trxName);
-		if (C_Invoice_ID == 0)
+		if (is_new())
 		{
-			setDocStatus(DOCSTATUS_Drafted);		// Draft
+			setDocStatus(DocStatus.Drafted.getCode());
 			setDocAction(DOCACTION_Complete);
 			//
 			// FRESH-488: Get the default payment rule form the system configuration
-			setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule());	// Payment Terms
+			setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 
 			setDateInvoiced(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
 			//
-			setChargeAmt(Env.ZERO);
-			setTotalLines(Env.ZERO);
-			setGrandTotal(Env.ZERO);
+			setChargeAmt(BigDecimal.ZERO);
+			setTotalLines(BigDecimal.ZERO);
+			setGrandTotal(BigDecimal.ZERO);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
@@ -801,7 +805,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 		// Add up due amounts
-		BigDecimal total = Env.ZERO;
+		BigDecimal total = BigDecimal.ZERO;
 		for (final MInvoicePaySchedule element : schedule)
 		{
 			element.setParent(this);
@@ -1061,7 +1065,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// BigDecimal alloc = getAllocatedAmt(); // absolute
 		// boolean hasAllocations = alloc != null; // metas: tsa: 01955
 		// if (alloc == null)
-		// alloc = Env.ZERO;
+		// alloc = BigDecimal.ZERO;
 		// BigDecimal total = getGrandTotal();
 		// // metas: tsa: begin: 01955:
 		// // If is an zero invoice, it has no allocations and the AutoPayZeroAmt is not set
@@ -1158,7 +1162,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	{
 		// ts: 04054: moving OpenAmt business logic to the implementors of IInvoiceBL
 		// if (isPaid())
-		// return Env.ZERO;
+		// return BigDecimal.ZERO;
 		// //
 		// if (m_openAmt == null)
 		// {
@@ -1242,22 +1246,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		return getPDFFileName(documentDir, getC_Invoice_ID());
 	}	// getPDFFileName
 
-	/**
-	 * Get ISO Code of Currency
-	 *
-	 * @return Currency ISO
-	 */
-	public String getCurrencyISO()
-	{
-		return Services.get(ICurrencyDAO.class).getISO_Code(getCtx(), getC_Currency_ID());
-	}	// getCurrencyISO
-
-	/**************************************************************************
-	 * Process document
-	 *
-	 * @param processAction document action
-	 * @return true if performed
-	 */
 	@Override
 	public boolean processIt(final String processAction)
 	{
@@ -1321,7 +1309,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return IDocument.STATUS_Invalid;
 		}
 		// No Cash Book
-		if (PAYMENTRULE_Cash.equals(getPaymentRule())
+		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
+		if (paymentRule.isCash()
 				&& MCashBook.get(getCtx(), getAD_Org_ID(), getC_Currency_ID()) == null)
 		{
 			m_processMsg = "@NoCashBook@";
@@ -1468,11 +1457,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 //				//	Convert into Comment Line
 //				line.setM_Product_ID (0);
 //				line.setM_AttributeSetInstance_ID (0);
-//				line.setPriceEntered (Env.ZERO);
-//				line.setPriceActual (Env.ZERO);
-//				line.setPriceLimit (Env.ZERO);
-//				line.setPriceList (Env.ZERO);
-//				line.setLineNetAmt (Env.ZERO);
+//				line.setPriceEntered (BigDecimal.ZERO);
+//				line.setPriceActual (BigDecimal.ZERO);
+//				line.setPriceLimit (BigDecimal.ZERO);
+//				line.setPriceList (BigDecimal.ZERO);
+//				line.setLineNetAmt (BigDecimal.ZERO);
 //				//
 //				String description = product.getName ();
 //				if (product.getDescription () != null)
@@ -1673,7 +1662,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 
 		// Create Cash
-		if (PAYMENTRULE_Cash.equals(getPaymentRule()) && !fromPOS)
+		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
+		if (paymentRule.isCash() && !fromPOS)
 		{
 			// Modifications for POSterita
 			//
@@ -1797,26 +1787,25 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// verify that we can deal with the invoice's currency
 		// Update total revenue and balance / credit limit (reversed on AllocationLine.processIt)
 		final BigDecimal invAmt = Services.get(ICurrencyBL.class).convertBase(
-				getCtx(),
 				getGrandTotal(true), 	// CM adjusted
-				getC_Currency_ID(),
-				getDateAcct(),
-				getC_ConversionType_ID(),
-				getAD_Client_ID(),
-				getAD_Org_ID());
+				CurrencyId.ofRepoId(getC_Currency_ID()),
+				TimeUtil.asLocalDate(getDateAcct()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(getC_ConversionType_ID()),
+				ClientId.ofRepoId(getAD_Client_ID()),
+				OrgId.ofRepoId(getAD_Org_ID()));
 
 		if (invAmt == null)
 		{
-			final I_C_Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
-			final I_C_Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(CurrencyId.ofRepoId(getC_Currency_ID()));
+			final Currency currencyTo = Services.get(ICurrencyBL.class).getBaseCurrency(ClientId.ofRepoId(getAD_Client_ID()), OrgId.ofRepoId(getAD_Org_ID()));
 			final I_C_BPartner bp = getC_BPartner();
 
 			m_processMsg = Services.get(IMsgBL.class).getMsg(getCtx(),
 					ERR_NoBaseConversionBetweenCurrencies,
 					new Object[] { bp.getName(),
 							bp.getValue(),
-							currency.getISO_Code(),
-							currencyTo.getISO_Code() });
+							currency.getCurrencyCode().toThreeLetterCode(),
+							currencyTo.getCurrencyCode().toThreeLetterCode() });
 
 			return IDocument.STATUS_Invalid;
 		}
@@ -1829,8 +1818,14 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			final int C_CurrencyTo_ID = project.getC_Currency_ID();
 			if (C_CurrencyTo_ID != getC_Currency_ID())
 			{
-				amt = Services.get(ICurrencyBL.class).convert(getCtx(), amt, getC_Currency_ID(), C_CurrencyTo_ID,
-						getDateAcct(), 0, getAD_Client_ID(), getAD_Org_ID());
+				amt = Services.get(ICurrencyBL.class).convert(
+						amt, 
+						CurrencyId.ofRepoId(getC_Currency_ID()), 
+						CurrencyId.ofRepoId(C_CurrencyTo_ID),
+						TimeUtil.asLocalDate(getDateAcct()), 
+						(CurrencyConversionTypeId)null, 
+						ClientId.ofRepoId(getAD_Client_ID()), 
+						OrgId.ofRepoId(getAD_Org_ID()));
 			}
 			if (amt == null)
 			{
@@ -2019,33 +2014,26 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			return false;
 		}
 
-		if (DOCSTATUS_Closed.equals(getDocStatus())
-				|| DOCSTATUS_Reversed.equals(getDocStatus())
-				|| DOCSTATUS_Voided.equals(getDocStatus()))
+		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if(docStatus.isClosedReversedOrVoided())
 		{
-			m_processMsg = "Document Closed: " + getDocStatus();
-			setDocAction(DOCACTION_None);
-			return false;
+			throw new AdempiereException("Document Closed: " + docStatus);
 		}
 
 		// Not Processed
-		if (DOCSTATUS_Drafted.equals(getDocStatus())
-				|| DOCSTATUS_Invalid.equals(getDocStatus())
-				|| DOCSTATUS_InProgress.equals(getDocStatus())
-				|| DOCSTATUS_Approved.equals(getDocStatus())
-				|| DOCSTATUS_NotApproved.equals(getDocStatus()))
+		if(docStatus.isNotProcessed())
 		{
 			// Set lines to 0
 			final MInvoiceLine[] lines = getLines(false);
 			for (final MInvoiceLine line : lines)
 			{
 				final BigDecimal old = line.getQtyInvoiced();
-				if (old.compareTo(Env.ZERO) != 0)
+				if (old.compareTo(BigDecimal.ZERO) != 0)
 				{
-					line.setQty(Env.ZERO);
-					line.setTaxAmt(Env.ZERO);
-					line.setLineNetAmt(Env.ZERO);
-					line.setLineTotalAmt(Env.ZERO);
+					line.setQty(BigDecimal.ZERO);
+					line.setTaxAmt(BigDecimal.ZERO);
+					line.setLineNetAmt(BigDecimal.ZERO);
+					line.setLineTotalAmt(BigDecimal.ZERO);
 					line.addDescription(Msg.getMsg(getCtx(), "Voided") + " (" + old + ")");
 					// Unlink Shipment
 					if (line.getM_InOutLine_ID() > 0)
@@ -2059,7 +2047,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					if (line.getC_OrderLine_ID() > 0)
 					{
 						final I_C_OrderLine ol = line.getC_OrderLine();
-						ol.setQtyInvoiced(Env.ZERO);
+						ol.setQtyInvoiced(BigDecimal.ZERO);
 						InterfaceWrapperHelper.save(ol);
 					}
 					line.save(get_TrxName());
@@ -2183,11 +2171,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			rLine.setQtyEntered(rLine.getQtyEntered().negate());
 			rLine.setQtyInvoiced(rLine.getQtyInvoiced().negate());
 			rLine.setLineNetAmt(rLine.getLineNetAmt().negate());
-			if (rLine.getTaxAmt() != null && rLine.getTaxAmt().compareTo(Env.ZERO) != 0)
+			if (rLine.getTaxAmt() != null && rLine.getTaxAmt().compareTo(BigDecimal.ZERO) != 0)
 			{
 				rLine.setTaxAmt(rLine.getTaxAmt().negate());
 			}
-			if (rLine.getLineTotalAmt() != null && rLine.getLineTotalAmt().compareTo(Env.ZERO) != 0)
+			if (rLine.getLineTotalAmt() != null && rLine.getLineTotalAmt().compareTo(BigDecimal.ZERO) != 0)
 			{
 				rLine.setLineTotalAmt(rLine.getLineTotalAmt().negate());
 			}
@@ -2212,7 +2200,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		reversal.setIsPaid(true);
 		reversal.closeIt();
 		reversal.setProcessing(false);
-		reversal.setDocStatus(DOCSTATUS_Reversed);
+		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);
 		InterfaceWrapperHelper.save(reversal);
 
@@ -2247,7 +2235,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setProcessed(true);
 		// FR1948157
 		setReversal_ID(reversal.getC_Invoice_ID());
-		setDocStatus(DOCSTATUS_Reversed);	// may come from void
+		setDocStatus(DocStatus.Reversed.getCode());	// may come from void
 		setDocAction(DOCACTION_None);
 		setC_Payment_ID(0);
 		setIsPaid(true);
@@ -2269,11 +2257,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				gt = gt.negate();
 			}
 			// Orig Line
-			final MAllocationLine aLine = new MAllocationLine(alloc, gt, Env.ZERO, Env.ZERO, Env.ZERO);
+			final MAllocationLine aLine = new MAllocationLine(alloc, gt, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setC_Invoice_ID(getC_Invoice_ID());
 			aLine.saveEx(); // metas: tsa: always use saveEx
 			// Reversal Line
-			final MAllocationLine rLine = new MAllocationLine(alloc, gt.negate(), Env.ZERO, Env.ZERO, Env.ZERO);
+			final MAllocationLine rLine = new MAllocationLine(alloc, gt.negate(), BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			rLine.setC_Invoice_ID(reversal.getC_Invoice_ID());
 			rLine.saveEx(); // metas: tsa: always use saveEx
 			// Process It

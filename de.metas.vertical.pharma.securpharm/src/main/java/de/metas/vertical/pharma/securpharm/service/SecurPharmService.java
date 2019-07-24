@@ -163,6 +163,8 @@ public class SecurPharmService
 		logs.add(decodeResult.getLog());
 		ProductDetails productDetails = decodeResult.getProductDetails();
 		boolean error = decodeResult.isError();
+		String resultCode = decodeResult.getResultCode();
+		String resultMessage = decodeResult.getResultMessage();
 
 		//
 		// Verify product
@@ -172,10 +174,14 @@ public class SecurPharmService
 			logs.add(verifyResult.getLog());
 			productDetails = verifyResult.getProductDetails();
 			error = verifyResult.isError();
+			resultCode = verifyResult.getResultCode();
+			resultMessage = verifyResult.getResultMessage();
 		}
 
 		final SecurPharmProduct product = SecurPharmProduct.builder()
 				.error(error)
+				.resultCode(resultCode)
+				.resultMessage(resultMessage)
 				.productDetails(productDetails)
 				.huId(huId)
 				.build();

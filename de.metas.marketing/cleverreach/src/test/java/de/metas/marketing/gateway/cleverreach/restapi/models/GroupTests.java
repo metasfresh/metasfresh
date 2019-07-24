@@ -12,7 +12,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -43,8 +44,7 @@ public class GroupTests
 	{
 		final String serializedGroups = "[{\"id\":565397,\"name\":\"rainbows and unicorns\",\"stamp\":1522324591,\"last_mailing\":1522325535,\"last_changed\":1522324674,\"isLocked\":false}]";
 
-		final ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
 		final List<Group> groups = objectMapper.readValue(serializedGroups, new TypeReference<List<Group>>() {});

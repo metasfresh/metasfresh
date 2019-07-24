@@ -3,8 +3,6 @@ package org.adempiere.test;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +26,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  */
 
 import java.util.Properties;
+
 import org.adempiere.ad.dao.impl.POJOQuery;
 import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -49,6 +48,7 @@ import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
 import ch.qos.logback.classic.Level;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CacheMgt;
@@ -177,6 +177,9 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
+		
+		// JSON
+		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
 
 		createSystemRecords();
 	}

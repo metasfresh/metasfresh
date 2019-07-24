@@ -10,6 +10,35 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.114
+
+## Features
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#1822](https://github.com/metasfresh/me03/issues/1822) Fix decimal comma in Qty Fields
+
+# metasfresh 5.113
+
+## Features
+* metasfresh
+  * [#5364](https://github.com/metasfresh/metasfresh/issues/5364) BPartner REST-API - Add Support for additional core fields
+  * [#5390](https://github.com/metasfresh/metasfresh/pull/5390) Add Quality Issue warehouse filter in Warehouse list page
+  * [#5370](https://github.com/metasfresh/metasfresh/issues/5370) Introduce more webui WidgetSizes (XL, XXL)
+
+* metasfresh-webui-frontend
+  * [#2304](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2304) Picking Terminal (Prototype): not all picking slots not displayed / close when clicking outside
+  * [#2307](https://github.com/metasfresh/metasfresh-webui-frontend/pull/2307) Set precision to 2 digits for `CableLength` field
+
+* metasfresh-e2e
+  * [#46](https://github.com/metasfresh/metasfresh-e2e/issues/46) Create test: warehouse
+  * [#121](https://github.com/metasfresh/metasfresh-e2e/issues/121) Create new Stock Control Purchase
+  * [#126](https://github.com/metasfresh/metasfresh-e2e/issues/126) Create Empties Receive
+  * [#129](https://github.com/metasfresh/metasfresh-e2e/issues/129) Create Dunning Candidates
+  * [#130](https://github.com/metasfresh/metasfresh-e2e/issues/130) Create Dunning Documents
+  * [#132](https://github.com/metasfresh/metasfresh-e2e/issues/132) Void sales invoice and invoice the billing candidates again
+  * [#162](https://github.com/metasfresh/metasfresh-e2e/issues/162) Create credit memo Vendor (Lieferant)
+
 # metasfresh 5.112
 
 ## Features

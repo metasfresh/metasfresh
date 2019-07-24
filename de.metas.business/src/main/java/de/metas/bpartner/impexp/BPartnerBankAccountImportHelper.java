@@ -73,7 +73,7 @@ import de.metas.util.Services;
 			bankAccount.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			bankAccount.setIBAN(importRecord.getIBAN());
 			bankAccount.setA_Name(importRecord.getSwiftCode());
-			bankAccount.setC_Currency_ID(Services.get(ICurrencyBL.class).getBaseCurrency(process.getCtx()).getC_Currency_ID());
+			bankAccount.setC_Currency_ID(Services.get(ICurrencyBL.class).getBaseCurrency(process.getCtx()).getId().getRepoId());
 			final I_C_Bank bank = Adempiere.getBean(BankRepository.class).findBankBySwiftCode(importRecord.getSwiftCode());
 			if (bank != null)
 			{

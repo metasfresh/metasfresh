@@ -45,8 +45,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -188,12 +190,31 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
 
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
-		// creating with: bpartner, price, qty, isManual=false, isSOTrx=true
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
-		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, false, true);
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
+
+		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
+				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
+				.setPriceEntered(10)
+				.setQty(3)
+				.setManual(false)
+				.setSOTrx(true)
+				.build();
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2, ic3);
 
 		//
@@ -322,12 +343,12 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		final BigDecimal discount1 = ic1.getDiscount();
 		BigDecimal discount_override1 = ic1.getDiscount_Override();
-		final int precision1 = invoiceCandBL.getPrecisionFromCurrency(ic1);
+		final CurrencyPrecision precision1 = invoiceCandBL.getPrecisionFromCurrency(ic1);
 
 		//
 		final BigDecimal discount2 = ic2.getDiscount();
 		final BigDecimal discount_override2 = ic2.getDiscount_Override();
-		final int precision2 = invoiceCandBL.getPrecisionFromCurrency(ic2);
+		final CurrencyPrecision precision2 = invoiceCandBL.getPrecisionFromCurrency(ic2);
 
 		// initial check
 		Check.assume(discount_override1.signum() == 0, "Discount Override should be null!", ic1.getDescription());
@@ -337,13 +358,13 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		// change discount
 		ic1.setDiscount_Override(BigDecimal.valueOf(20));
-		final BigDecimal priceActual_OverrideComputed1 = orderLineBL.subtractDiscount(ic1.getPriceEntered(), ic1.getDiscount_Override(), precision1);
+		final BigDecimal priceActual_OverrideComputed1 = orderLineBL.subtractDiscount(ic1.getPriceEntered(), ic1.getDiscount_Override(), precision1.toInt());
 		discount_override1 = ic1.getDiscount_Override();
 
 		// change priceEntered
 		ic2.setPriceEntered_Override(BigDecimal.valueOf(5));
 		InterfaceWrapperHelper.save(ic2);
-		final BigDecimal priceActual_OverrideComputed2 = orderLineBL.subtractDiscount(ic2.getPriceEntered_Override(), ic2.getDiscount(), precision2);
+		final BigDecimal priceActual_OverrideComputed2 = orderLineBL.subtractDiscount(ic2.getPriceEntered_Override(), ic2.getDiscount(), precision2.toInt());
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 

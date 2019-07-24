@@ -1709,6 +1709,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
+	 * Set IsFreightCost.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsFreightCost (boolean IsFreightCost);
+
+	/**
+	 * Get IsFreightCost.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isFreightCost();
+
+    /** Column definition for IsFreightCost */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsFreightCost = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "IsFreightCost", null);
+    /** Column name IsFreightCost */
+    public static final String COLUMNNAME_IsFreightCost = "IsFreightCost";
+
+	/**
 	 * Set Group Compensation Line.
 	 *
 	 * <br>Type: YesNo
@@ -2930,6 +2953,54 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM_Override = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM_Override", null);
     /** Column name QtyToInvoiceInPriceUOM_Override */
     public static final String COLUMNNAME_QtyToInvoiceInPriceUOM_Override = "QtyToInvoiceInPriceUOM_Override";
+
+	/**
+	 * Set Zu berechn. Menge vor Qualitätsabzug.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount);
+
+	/**
+	 * Get Zu berechn. Menge vor Qualitätsabzug.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount();
+
+    /** Column definition for QtyToInvoiceBeforeDiscount */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceBeforeDiscount = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceBeforeDiscount", null);
+    /** Column name QtyToInvoiceBeforeDiscount */
+    public static final String COLUMNNAME_QtyToInvoiceBeforeDiscount = "QtyToInvoiceBeforeDiscount";
+
+	/**
+	 * Set Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM);
+
+	/**
+	 * Get Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM();
+
+    /** Column definition for QtyToInvoiceInPriceUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM", null);
+    /** Column name QtyToInvoiceInPriceUOM */
+    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM = "QtyToInvoiceInPriceUOM";
 
 	/**
 	 * Set Minderwertige Menge.

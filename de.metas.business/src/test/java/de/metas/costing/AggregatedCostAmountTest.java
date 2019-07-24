@@ -7,13 +7,13 @@ import java.util.stream.IntStream;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 
 /*

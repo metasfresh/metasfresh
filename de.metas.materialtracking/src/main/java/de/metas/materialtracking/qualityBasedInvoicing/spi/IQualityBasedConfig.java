@@ -27,10 +27,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
+import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
@@ -96,7 +96,7 @@ public interface IQualityBasedConfig
 
 	List<IInvoicingItem> getAdditionalFeeProducts();
 
-	I_C_Currency getCurrency();
+	Currency getCurrency();
 
 	/**
 	 * Gets a list of {@link QualityInspectionLineType} which needs to be in PP Order Report.

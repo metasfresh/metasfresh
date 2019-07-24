@@ -20,13 +20,13 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.util.Services;
 
 /**
@@ -59,12 +59,7 @@ public class MOrg extends X_AD_Org
 		return LegacyAdapters.convertToPOArray(clientOrgs, MOrg.class);
 	}	//	getOfClient
 
-	/**
-	 * 	Get Org from Cache
-	 *	@param ctx context
-	 *	@param AD_Org_ID id
-	 *	@return MOrg
-	 */
+	@Deprecated
 	public static MOrg get (Properties ctx, int AD_Org_ID)
 	{
 		if (AD_Org_ID < 0)
@@ -120,37 +115,22 @@ public class MOrg extends X_AD_Org
 	/**	Linked Business Partner			*/
 	private Integer 	m_linkedBPartner = null;
 
-	/**
-	 *	Get Org Info
-	 *	@return Org Info
-	 */
-	public I_AD_OrgInfo getInfo()
-	{
-		return Services.get(IOrgDAO.class).retrieveOrgInfo(getCtx(),getAD_Org_ID(),get_TrxName());
-	}	//	getMOrgInfo
-
-
-
-	/**
-	 * 	After Save
-	 *	@param newRecord new Record
-	 *	@param success save success
-	 *	@return success
-	 */
 	@Override
 	protected boolean afterSave (boolean newRecord, boolean success)
 	{
 		if (!success)
+		{
 			return success;
+		}
 		if (newRecord)
 		{
 			//	Info
-			final I_AD_OrgInfo info = InterfaceWrapperHelper.newInstance(I_AD_OrgInfo.class);
-			info.setAD_Org_ID(this.getAD_Org_ID());
-			InterfaceWrapperHelper.saveRecord(info);
+			Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
+					.orgId(OrgId.ofRepoId(getAD_Org_ID()))
+					.build());
 
 			//	TreeNode
-			insert_Tree(MTree_Base.TREETYPE_Organization);
+			// insert_Tree(MTree_Base.TREETYPE_Organization);
 		}
 		//	Value/Name change
 		if (!newRecord && (is_ValueChanged("Value") || is_ValueChanged("Name")))
@@ -159,25 +139,13 @@ public class MOrg extends X_AD_Org
 
 			final String elementOrgTrx = Env.CTXNAME_AcctSchemaElementPrefix + X_C_AcctSchema_Element.ELEMENTTYPE_OrgTrx;
 			if ("Y".equals(Env.getContext(getCtx(), elementOrgTrx)))
+			{
 				MAccount.updateValueDescription(getCtx(), "AD_OrgTrx_ID=" + getAD_Org_ID(), get_TrxName());
+			}
 		}
 
 		return true;
 	}	//	afterSave
-
-	/**
-	 * 	After Delete
-	 *	@param success
-	 *	@return deleted
-	 */
-	@Override
-	protected boolean afterDelete (boolean success)
-	{
-		if (success)
-			delete_Tree(MTree_Base.TREETYPE_Organization);
-		return success;
-	}	//	afterDelete
-
 
 	/**
 	 * 	Get Linked BPartner
@@ -190,8 +158,10 @@ public class MOrg extends X_AD_Org
 			int C_BPartner_ID = DB.getSQLValue(trxName,
 				"SELECT C_BPartner_ID FROM C_BPartner WHERE AD_OrgBP_ID=?",
 				getAD_Org_ID());
-			if (C_BPartner_ID < 0)	//	not found = -1
+			if (C_BPartner_ID < 0)
+			{
 				C_BPartner_ID = 0;
+			}
 			m_linkedBPartner = new Integer (C_BPartner_ID);
 		}
 		return m_linkedBPartner.intValue();

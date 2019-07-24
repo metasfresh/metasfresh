@@ -2,7 +2,7 @@ package de.metas.rest_api.order.model;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import de.metas.JsonObjectMapperHolder;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.order.JsonSalesOrder;
 import de.metas.rest_api.order.JsonSalesOrderAttachment;
@@ -46,8 +47,7 @@ public class JsonSerializationDeserializationTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = new ObjectMapper();
-		jsonObjectMapper.findAndRegisterModules();
+		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
 	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
@@ -67,7 +67,7 @@ public class JsonSerializationDeserializationTest
 	{
 		testSerializeDeserialize(JsonSalesOrderCreateRequest.builder()
 				.shipBPartnerCode("123")
-				.datePromised(LocalDateTime.now())
+				.datePromised(ZonedDateTime.now())
 				.line(JsonSalesOrderLine.builder()
 						.productCode("01")
 						.qty(new BigDecimal("12.34"))

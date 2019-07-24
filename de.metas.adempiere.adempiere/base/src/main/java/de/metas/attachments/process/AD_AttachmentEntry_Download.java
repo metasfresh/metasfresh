@@ -1,6 +1,6 @@
 package de.metas.attachments.process;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 
 import de.metas.attachments.AttachmentEntry;
@@ -32,7 +32,7 @@ import de.metas.process.JavaProcess;
 
 public class AD_AttachmentEntry_Download extends JavaProcess
 {
-	private final transient AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 
 	@Override
 	protected String doIt()

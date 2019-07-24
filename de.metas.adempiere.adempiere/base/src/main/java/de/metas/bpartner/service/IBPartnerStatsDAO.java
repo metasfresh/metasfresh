@@ -2,11 +2,13 @@ package de.metas.bpartner.service;
 
 import java.math.BigDecimal;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.util.ISingletonService;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,9 +47,16 @@ public interface IBPartnerStatsDAO extends ISingletonService
 
 	default BPartnerStats getCreateBPartnerStats(final int bpartnerId)
 	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.loadOutOfTrx(bpartnerId, I_C_BPartner.class);
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		return getCreateBPartnerStats(bpartner);
 	}
+	
+	default BPartnerStats getCreateBPartnerStats(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+		return getCreateBPartnerStats(bpartner);
+	}
+
 
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql

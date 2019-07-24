@@ -40,8 +40,10 @@ import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.gljournal.IGLJournalLineGroup;
 import de.metas.acct.tax.ITaxAccountable;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -50,64 +52,51 @@ public class GLJournalLineBL implements IGLJournalLineBL
 	@Override
 	public void setAmtSourcePrecision(final I_GL_JournalLine line)
 	{
-		final int precision = getPrecision(line);
+		final CurrencyPrecision precision = getPrecision(line);
 
-		final BigDecimal amtSourceDr = line.getAmtSourceDr();
-		if (amtSourceDr.scale() > precision)
-		{
-			line.setAmtSourceDr(amtSourceDr.setScale(precision, BigDecimal.ROUND_HALF_UP));
-		}
+		final BigDecimal amtSourceDr = precision.roundIfNeeded(line.getAmtSourceDr());
+		line.setAmtSourceDr(amtSourceDr);
 
-		final BigDecimal amtSourceCr = line.getAmtSourceCr();
-		if (amtSourceCr.scale() > precision)
-		{
-			line.setAmtSourceCr(amtSourceCr.setScale(precision, BigDecimal.ROUND_HALF_UP));
-		}
+		final BigDecimal amtSourceCr = precision.roundIfNeeded(line.getAmtSourceCr());
+		line.setAmtSourceCr(amtSourceCr);
 	}
 
 	@Override
 	public void setAmtAcct(final I_GL_JournalLine glJournalLine)
 	{
 		// Acct Amts
-		final int precision = getPrecision(glJournalLine);
+		final CurrencyPrecision precision = getPrecision(glJournalLine);
 		final BigDecimal rate = glJournalLine.getCurrencyRate();
 
 		// AmtAcctDr
 		{
 			BigDecimal amtAcctDr = rate.multiply(glJournalLine.getAmtSourceDr());
-			if (amtAcctDr.scale() > precision)
-			{
-				amtAcctDr = amtAcctDr.setScale(precision, BigDecimal.ROUND_HALF_UP);
-			}
+			amtAcctDr = precision.roundIfNeeded(amtAcctDr);
 			glJournalLine.setAmtAcctDr(amtAcctDr);
 		}
 
 		// AmtAcctCr
 		{
 			BigDecimal amtAcctCr = rate.multiply(glJournalLine.getAmtSourceCr());
-			if (amtAcctCr.scale() > precision)
-			{
-				amtAcctCr = amtAcctCr.setScale(precision, BigDecimal.ROUND_HALF_UP);
-			}
+			amtAcctCr = precision.roundIfNeeded(amtAcctCr);
 			glJournalLine.setAmtAcctCr(amtAcctCr);
 		}
 
 	}
 
 	@Override
-	public int getPrecision(final I_GL_JournalLine glJournalLine)
+	public CurrencyPrecision getPrecision(final I_GL_JournalLine glJournalLine)
 	{
 		Check.assumeNotNull(glJournalLine, "glJournalLine not null");
 
-		final int currencyId = glJournalLine.getC_Currency_ID();
-		if (currencyId > 0)
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournalLine.getC_Currency_ID());
+		if (currencyId != null)
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(glJournalLine);
-			return Services.get(ICurrencyDAO.class).getStdPrecision(ctx, currencyId);
+			return Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 		}
 		else
 		{
-			return 2; // default
+			return ICurrencyDAO.DEFAULT_PRECISION;
 		}
 	}	// getPrecision
 

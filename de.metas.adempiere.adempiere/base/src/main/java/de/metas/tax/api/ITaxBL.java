@@ -28,7 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.TaxNoExemptFoundException;
 import de.metas.location.CountryId;
-import org.adempiere.service.OrgId;
+import de.metas.organization.OrgId;
+
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Tax;
 

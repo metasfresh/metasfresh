@@ -19,6 +19,9 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -154,8 +157,10 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setDeliveryRule(order.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(order.getDeliveryViaRule());
 
-		shipmentSchedule.setC_DocType_ID(order.getC_DocType_ID());
-		shipmentSchedule.setDocSubType(order.getC_DocType().getDocSubType());
+		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
+		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
+		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
+		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
 	}
 
 	/**

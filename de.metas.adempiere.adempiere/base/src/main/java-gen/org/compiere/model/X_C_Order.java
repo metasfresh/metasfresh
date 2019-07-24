@@ -15,7 +15,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 96764115L;
+	private static final long serialVersionUID = -648746277L;
 
     /** Standard Constructor */
     public X_C_Order (Properties ctx, int C_Order_ID, String trxName)
@@ -82,18 +82,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
       return poi;
     }
 
-	@Override
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class);
-	}
-
-	@Override
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_OrgTrx_ID, org.compiere.model.I_AD_Org.class, AD_OrgTrx);
-	}
-
 	/** Set Buchende Organisation.
 		@param AD_OrgTrx_ID 
 		Performing or initiating organization
@@ -117,18 +105,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setAD_User(org.compiere.model.I_AD_User AD_User)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
 	}
 
 	/** Set Ansprechpartner.
@@ -194,18 +170,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return bd;
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_BPartner_ID, org.compiere.model.I_C_BPartner.class, Bill_BPartner);
-	}
-
 	/** Set Rechnungspartner.
 		@param Bill_BPartner_ID 
 		Geschäftspartner für die Rechnungsstellung
@@ -246,18 +210,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Bill_BPartner_Memo);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getBill_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setBill_Location(org.compiere.model.I_C_BPartner_Location Bill_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_Location_ID, org.compiere.model.I_C_BPartner_Location.class, Bill_Location);
-	}
-
 	/** Set Rechnungsstandort.
 		@param Bill_Location_ID 
 		Business Partner Location for invoicing
@@ -281,18 +233,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getBill_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setBill_User(org.compiere.model.I_AD_User Bill_User)
-	{
-		set_ValueFromPO(COLUMNNAME_Bill_User_ID, org.compiere.model.I_AD_User.class, Bill_User);
 	}
 
 	/** Set Rechnungskontakt.
@@ -353,7 +293,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_Activity getC_Activity()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
 	}
@@ -390,7 +330,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
+	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
 	}
@@ -426,18 +366,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
 	/** Set Geschäftspartner.
 		@param C_BPartner_ID 
 		Identifies a Business Partner
@@ -461,18 +389,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_ID, org.compiere.model.I_C_BPartner_Location.class, C_BPartner_Location);
 	}
 
 	/** Set Standort.
@@ -516,7 +432,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException
+	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
 	}
@@ -553,7 +469,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_CashLine getC_CashLine() throws RuntimeException
+	public org.compiere.model.I_C_CashLine getC_CashLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_CashLine_ID, org.compiere.model.I_C_CashLine.class);
 	}
@@ -590,7 +506,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException
+	public org.compiere.model.I_C_Charge getC_Charge()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Charge_ID, org.compiere.model.I_C_Charge.class);
 	}
@@ -626,18 +542,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_ConversionType getC_ConversionType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class);
-	}
-
-	@Override
-	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class, C_ConversionType);
-	}
-
 	/** Set Kursart.
 		@param C_ConversionType_ID 
 		Currency Conversion Rate Type
@@ -661,18 +565,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -700,18 +592,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
-	}
-
 	/** Set Belegart.
 		@param C_DocType_ID 
 		Document type or rules
@@ -735,18 +615,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_DocType getC_DocTypeTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class);
-	}
-
-	@Override
-	public void setC_DocTypeTarget(org.compiere.model.I_C_DocType C_DocTypeTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_C_DocTypeTarget_ID, org.compiere.model.I_C_DocType.class, C_DocTypeTarget);
 	}
 
 	/** Set Zielbelegart.
@@ -800,7 +668,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Payment getC_Payment() throws RuntimeException
+	public org.compiere.model.I_C_Payment getC_Payment()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
 	}
@@ -837,7 +705,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
+	public org.compiere.model.I_C_PaymentTerm getC_PaymentTerm()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class);
 	}
@@ -874,7 +742,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_POS getC_POS() throws RuntimeException
+	public org.compiere.model.I_C_POS getC_POS()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_POS_ID, org.compiere.model.I_C_POS.class);
 	}
@@ -911,7 +779,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException
+	public org.compiere.model.I_C_Project getC_Project()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
 	}
@@ -1343,18 +1211,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner getDropShip_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner);
-	}
-
 	/** Set Lieferempfänger.
 		@param DropShip_BPartner_ID 
 		Business Partner to ship to
@@ -1395,18 +1251,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_DropShip_BPartner_Memo);
 	}
 
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getDropShip_Location() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_Location_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setDropShip_Location(org.compiere.model.I_C_BPartner_Location DropShip_Location)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_Location_ID, org.compiere.model.I_C_BPartner_Location.class, DropShip_Location);
-	}
-
 	/** Set Lieferadresse.
 		@param DropShip_Location_ID 
 		Business Partner Location for shipping to
@@ -1430,18 +1274,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getDropShip_User() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_DropShip_User_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setDropShip_User(org.compiere.model.I_AD_User DropShip_User)
-	{
-		set_ValueFromPO(COLUMNNAME_DropShip_User_ID, org.compiere.model.I_AD_User.class, DropShip_User);
 	}
 
 	/** Set Lieferkontakt.
@@ -2004,7 +1836,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getLink_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getLink_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_Link_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -2041,7 +1873,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_M_FreightCategory getM_FreightCategory() throws RuntimeException
+	public org.compiere.model.I_M_FreightCategory getM_FreightCategory()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_FreightCategory_ID, org.compiere.model.I_M_FreightCategory.class);
 	}
@@ -2077,18 +1909,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PriceList getM_PriceList() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class);
-	}
-
-	@Override
-	public void setM_PriceList(org.compiere.model.I_M_PriceList M_PriceList)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PriceList_ID, org.compiere.model.I_M_PriceList.class, M_PriceList);
-	}
-
 	/** Set Preisliste.
 		@param M_PriceList_ID 
 		Unique identifier of a Price List
@@ -2114,18 +1934,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
-	}
-
 	/** Set Preissystem.
 		@param M_PricingSystem_ID 
 		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
@@ -2149,18 +1957,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -2189,7 +1985,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_M_Shipper getM_Shipper() throws RuntimeException
+	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class);
 	}
@@ -2223,18 +2019,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse getM_Warehouse() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class);
-	}
-
-	@Override
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_ID, org.compiere.model.I_M_Warehouse.class, M_Warehouse);
 	}
 
 	/** Set Lager.
@@ -2363,6 +2147,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String PAYMENTRULE_DirectDebit = "D";
 	/** Mixed = M */
 	public static final String PAYMENTRULE_Mixed = "M";
+	/** PayPal = L */
+	public static final String PAYMENTRULE_PayPal = "L";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		How you pay the invoice
@@ -2616,7 +2402,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getRef_Order() throws RuntimeException
+	public org.compiere.model.I_C_Order getRef_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_Ref_Order_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -2653,7 +2439,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getRef_Proposal() throws RuntimeException
+	public org.compiere.model.I_C_Order getRef_Proposal()
 	{
 		return get_ValueAsPO(COLUMNNAME_Ref_Proposal_ID, org.compiere.model.I_C_Order.class);
 	}
@@ -2687,18 +2473,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class);
-	}
-
-	@Override
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep)
-	{
-		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
 	/** Set Aussendienst.
@@ -2772,7 +2546,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser1()
 	{
 		return get_ValueAsPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class);
 	}
@@ -2809,7 +2583,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException
+	public org.compiere.model.I_C_ElementValue getUser2()
 	{
 		return get_ValueAsPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class);
 	}
