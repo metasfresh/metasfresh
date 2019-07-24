@@ -15,6 +15,8 @@ Here come the actual release notes:
 ## Features
 
 ## Fixes
+* metasfresh-webui-frontend
+  * [#1822](https://github.com/metasfresh/me03/issues/1822) Fix decimal comma in Qty Fields
 
 # metasfresh 5.113
 
