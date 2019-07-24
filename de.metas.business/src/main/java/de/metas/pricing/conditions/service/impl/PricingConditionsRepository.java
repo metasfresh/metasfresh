@@ -33,7 +33,6 @@ import java.util.Collection;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -52,7 +51,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -121,7 +119,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		final int discountSchemaId = id.getDiscountSchemaId();
 		final I_M_DiscountSchema discountSchemaRecord = loadOutOfTrx(discountSchemaId, I_M_DiscountSchema.class);
-		final List<I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(Env.getCtx(), ImmutableList.of(discountSchemaId), ITrx.TRXNAME_None)
+		final List<I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(ImmutableList.of(discountSchemaId))
 				.collect(ImmutableList.toImmutableList());
 
 		return toPricingConditions(discountSchemaRecord, schemaBreakRecords);
@@ -136,7 +134,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		final Set<Integer> discountSchemaIds = PricingConditionsId.toDiscountSchemaIds(ids);
 
-		final ListMultimap<Integer, I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(Env.getCtx(), discountSchemaIds, ITrx.TRXNAME_None)
+		final ListMultimap<Integer, I_M_DiscountSchemaBreak> schemaBreakRecords = streamSchemaBreakRecords(discountSchemaIds)
 				.collect(GuavaCollectors.toImmutableListMultimap(I_M_DiscountSchemaBreak::getM_DiscountSchema_ID));
 
 		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_DiscountSchema.class)
@@ -293,7 +291,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@VisibleForTesting
-	/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Properties ctx, final Collection<Integer> discountSchemaIds, final String trxName)
+	/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Collection<Integer> discountSchemaIds)
 	{
 		if (discountSchemaIds.isEmpty())
 		{
@@ -301,7 +299,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DiscountSchemaBreak.class, ctx, trxName)
+				.createQueryBuilder(I_M_DiscountSchemaBreak.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, discountSchemaIds)
 				.orderBy(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID)
@@ -312,10 +310,10 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@VisibleForTesting
-	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final Properties ctx, final int discountSchemaId, final String trxName)
+	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final int discountSchemaId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_DiscountSchemaLine.class, ctx, trxName)
+				.createQueryBuilder(I_M_DiscountSchemaLine.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId)
 				.orderBy(I_M_DiscountSchemaLine.COLUMNNAME_SeqNo)
@@ -336,7 +334,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		int countUpdated = 0;
 
-		final List<I_M_DiscountSchemaLine> lines = retrieveLines(Env.getCtx(), discountSchemaId, ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_DiscountSchemaLine> lines = retrieveLines(discountSchemaId);
 		int i = 0;
 		for (final I_M_DiscountSchemaLine currentLine : lines)
 		{
@@ -357,7 +355,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	{
 		int countUpdated = 0;
 
-		final List<I_M_DiscountSchemaBreak> breaks = streamSchemaBreakRecords(Env.getCtx(), ImmutableList.of(discountSchemaId), ITrx.TRXNAME_ThreadInherited)
+		final List<I_M_DiscountSchemaBreak> breaks = streamSchemaBreakRecords(ImmutableList.of(discountSchemaId))
 				.collect(ImmutableList.toImmutableList());
 		int i = 0;
 		for (final I_M_DiscountSchemaBreak br : breaks)
@@ -540,7 +538,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherDiscountSchemas = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherDiscountSchemas = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
 				.addFilter(queryFilter)
 				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, discountSchemaId);
@@ -551,7 +549,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			copyDiscountSchemaBreak(schemaBreak, discountSchemaId);
 		}
-
 	}
 
 	private List<I_M_DiscountSchemaBreak> retrieveDiscountSchemaBreakRecords(@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
@@ -567,10 +564,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final I_M_DiscountSchemaBreak from,
 			@NonNull final DiscountSchemaId toDiscountSchemaId)
 	{
-
 		final I_M_DiscountSchemaBreak newBreak = copy()
-				.setSkipCalculatedColumns(true)
-				.addTargetColumnNameToSkip(I_M_DiscountSchemaLine.COLUMNNAME_M_DiscountSchema_ID)
 				.setFrom(from)
 				.copyToNew(I_M_DiscountSchemaBreak.class);
 
@@ -578,5 +572,4 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		saveRecord(newBreak);
 	}
-
 }
