@@ -65,12 +65,6 @@ public enum JSONLayoutWidgetType
 			throw new IllegalArgumentException("Cannot convert " + widgetType + " to " + JSONLayoutWidgetType.class);
 		}
 		
-		if(DateTimeConverters.isLegacyDateTimeFormats()
-				&& (ZonedDateTime.equals(jsonWidgetType) || Timestamp.equals(jsonWidgetType)))
-		{
-			return DateTime; 
-		}
-		
 		return jsonWidgetType;
 	}
 	

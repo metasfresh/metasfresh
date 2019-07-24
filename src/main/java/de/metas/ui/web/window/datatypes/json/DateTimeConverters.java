@@ -3,7 +3,6 @@ package de.metas.ui.web.window.datatypes.json;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,7 +15,6 @@ import org.compiere.util.TimeUtil;
 
 import com.google.common.annotations.VisibleForTesting;
 
-import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -46,24 +44,10 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class DateTimeConverters
 {
-	public static void setEnableLegacyDateTimeWidgets(final boolean enable)
+	private static JSONDateConfig getConfig()
 	{
-		DateTimeConverters._config = enable ? JSONDateConfig.LEGACY : JSONDateConfig.DEFAULT;
+		return JSONDateConfig.DEFAULT;
 	}
-
-	public static JSONDateConfig getConfig()
-	{
-		return _config;
-	}
-
-	public static boolean isLegacyDateTimeFormats()
-	{
-		return getConfig().isLegacy();
-	}
-
-	private static JSONDateConfig _config = JSONDateConfig.LEGACY;
-
-	private static final LocalDate LOCALDATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
 
 	public static String toJson(@NonNull final LocalDate localDate)
 	{
@@ -75,20 +59,7 @@ public final class DateTimeConverters
 	static String toJson(@NonNull final LocalDate localDate, @NonNull final JSONDateConfig config)
 	{
 		final DateTimeFormatter formatter = config.getLocalDateFormatter();
-
-		if (config.isConvertToZonedDateTimeBeforeFormatting())
-		{
-			final ZoneId timeZone = config.getFixedTimeZone() != null
-					? config.getFixedTimeZone()
-					: UserSession.getTimeZoneOrSystemDefault();
-
-			final ZonedDateTime zonedDateTime = localDate.atStartOfDay(timeZone);
-			return formatter.format(zonedDateTime);
-		}
-		else
-		{
-			return formatter.format(localDate);
-		}
+		return formatter.format(localDate);
 	}
 
 	public static String toJson(@NonNull final Instant instant, @NonNull final ZoneId zoneId)
@@ -113,22 +84,7 @@ public final class DateTimeConverters
 	public static String toJson(@NonNull final LocalTime localTime, @NonNull final JSONDateConfig config)
 	{
 		final DateTimeFormatter formatter = config.getLocalTimeFormatter();
-
-		if (config.isConvertToZonedDateTimeBeforeFormatting())
-		{
-			final ZoneId timeZone = config.getFixedTimeZone() != null
-					? config.getFixedTimeZone()
-					: UserSession.getTimeZoneOrSystemDefault();
-
-			final ZonedDateTime zonedDateTime = LOCALDATE_1970_01_01
-					.atTime(localTime)
-					.atZone(timeZone);
-			return formatter.format(zonedDateTime);
-		}
-		else
-		{
-			return formatter.format(localTime);
-		}
+		return formatter.format(localTime);
 	}
 
 	public static String toJson(@NonNull final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)

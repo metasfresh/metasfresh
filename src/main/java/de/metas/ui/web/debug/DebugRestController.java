@@ -69,7 +69,6 @@ import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -521,14 +520,6 @@ public class DebugRestController
 		sendWebsocketViewChangedNotification(viewId, rowIds);
 
 		return "Deleted " + countDeleted + " rows";
-	}
-
-	@GetMapping("/legacyDateTimeWidgets")
-	public String setEnableLegacyDateTimeWidgets(@RequestParam("enable") final boolean enable)
-	{
-		DateTimeConverters.setEnableLegacyDateTimeWidgets(enable);
-
-		return DateTimeConverters.getConfig().toString();
 	}
 
 	@GetMapping("/changeJsonEngineCofiguration")
