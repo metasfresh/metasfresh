@@ -166,12 +166,13 @@ declare namespace Cypress {
      * Better use {@link openReferencedDocuments} instead!
      *
      * @param internalReferenceName
+     * @param timeout time to wait for the reference to be available
      * @example
      * // this should work from a sales order
      * cy.get('body').type('{alt}6'); // open referenced-records-sidelist
      * cy.selectReference('C_Order_C_Invoice_Candidate').click();
      */
-    selectReference(internalReferenceName: string): Chainable<any>
+    selectReference(internalReferenceName: string, timeout: number): Chainable<any>
 
     /**
      * Opens a new single document window
