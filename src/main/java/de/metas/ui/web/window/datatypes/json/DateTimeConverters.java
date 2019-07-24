@@ -64,7 +64,6 @@ public final class DateTimeConverters
 	private static JSONDateConfig _config = JSONDateConfig.LEGACY;
 
 	private static final LocalDate LOCALDATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
-	private static final Instant INSTANT_0 = Instant.ofEpochMilli(0);
 
 	public static String toJson(@NonNull final LocalDate localDate)
 	{
