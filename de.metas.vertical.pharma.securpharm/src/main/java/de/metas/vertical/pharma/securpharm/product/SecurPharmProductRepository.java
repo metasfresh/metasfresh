@@ -69,6 +69,8 @@ public class SecurPharmProductRepository
 		}
 
 		record.setIsError(product.isError());
+		record.setLastResultCode(product.getResultCode());
+		record.setLastResultMessage(product.getResultMessage());
 		record.setM_HU_ID(product.getHuId().getRepoId());
 
 		//
@@ -155,6 +157,8 @@ public class SecurPharmProductRepository
 
 		return SecurPharmProduct.builder()
 				.error(error)
+				.resultCode(record.getLastResultCode())
+				.resultMessage(record.getLastResultMessage())
 				.productDetails(!error ? toProductDetails(record) : null)
 				.huId(HuId.ofRepoId(record.getM_HU_ID()))
 				.id(SecurPharmProductId.ofRepoId(record.getM_Securpharm_Productdata_Result_ID()))

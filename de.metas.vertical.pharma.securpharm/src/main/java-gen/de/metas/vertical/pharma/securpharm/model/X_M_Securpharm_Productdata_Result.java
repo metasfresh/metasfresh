@@ -14,7 +14,7 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 300034730L;
+	private static final long serialVersionUID = 2079408842L;
 
     /** Standard Constructor */
     public X_M_Securpharm_Productdata_Result (Properties ctx, int M_Securpharm_Productdata_Result_ID, String trxName)
@@ -190,6 +190,38 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return false;
 	}
 
+	/** Set Last Result Code.
+		@param LastResultCode Last Result Code	  */
+	@Override
+	public void setLastResultCode (java.lang.String LastResultCode)
+	{
+		set_Value (COLUMNNAME_LastResultCode, LastResultCode);
+	}
+
+	/** Get Last Result Code.
+		@return Last Result Code	  */
+	@Override
+	public java.lang.String getLastResultCode () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastResultCode);
+	}
+
+	/** Set Last Result Message.
+		@param LastResultMessage Last Result Message	  */
+	@Override
+	public void setLastResultMessage (java.lang.String LastResultMessage)
+	{
+		set_Value (COLUMNNAME_LastResultMessage, LastResultMessage);
+	}
+
+	/** Get Last Result Message.
+		@return Last Result Message	  */
+	@Override
+	public java.lang.String getLastResultMessage () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LastResultMessage);
+	}
+
 	/** Set Chargennummer.
 		@param LotNumber Chargennummer	  */
 	@Override
@@ -228,8 +260,8 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 		return ii.intValue();
 	}
 
-	/** Set SecurPharm product data result.
-		@param M_Securpharm_Productdata_Result_ID SecurPharm product data result	  */
+	/** Set Securpharm Produktdaten Ergebnise.
+		@param M_Securpharm_Productdata_Result_ID Securpharm Produktdaten Ergebnise	  */
 	@Override
 	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID)
 	{
@@ -239,8 +271,8 @@ public class X_M_Securpharm_Productdata_Result extends org.compiere.model.PO imp
 			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Productdata_Result_ID, Integer.valueOf(M_Securpharm_Productdata_Result_ID));
 	}
 
-	/** Get SecurPharm product data result.
-		@return SecurPharm product data result	  */
+	/** Get Securpharm Produktdaten Ergebnise.
+		@return Securpharm Produktdaten Ergebnise	  */
 	@Override
 	public int getM_Securpharm_Productdata_Result_ID () 
 	{
