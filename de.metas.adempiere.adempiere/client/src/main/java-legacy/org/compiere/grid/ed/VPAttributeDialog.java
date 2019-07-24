@@ -44,7 +44,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -366,9 +365,7 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 				public void mouseClicked(MouseEvent e)
 				{
 					if (SwingUtilities.isRightMouseButton(e))
-					{
 						popupMenu.show((Component)e.getSource(), e.getX(), e.getY());
-					}
 				}
 			});
 			mZoom = new CMenuItem(msgBL.getMsg(ctx, "Zoom"), Images.getImageIcon2("Zoom16"));
@@ -511,13 +508,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					}
 				}
 				if (found)
-				{
 					log.debug("Attribute=" + attribute.getName() + " #" + values.length + " - found: " + instance);
-				}
 				else
-				{
 					log.warn("Attribute=" + attribute.getName() + " #" + values.length + " - NOT found: " + instance);
-				}
 			}	// setComboBox
 			else
 			{
@@ -526,13 +519,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
-			{
 				editor.setEnabled(false);
-			}
 			else
-			{
 				attributeId2editor.put(attributeId, editor);
-			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Number.equals(attribute.getAttributeValueType()))
 		{
@@ -563,13 +552,9 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
-			{
 				editor.setEnabled(false);
-			}
 			else
-			{
 				attributeId2editor.put(attributeId, editor);
-			}
 		}
 		else if (MAttribute.ATTRIBUTEVALUETYPE_Date.equals(attribute.getAttributeValueType()))
 		{
@@ -582,19 +567,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					attribute.getName() // title
 			);
 			if (instance != null)
-			{
 				editor.setValue(instance.getValueDate());
-			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
-			{
 				editor.setEnabled(false);
-			}
 			else
-			{
 				attributeId2editor.put(attributeId, editor);
-			}
 		}
 		else
 		// Text Field
@@ -610,19 +589,13 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 					null // ObscureType
 			);
 			if (instance != null)
-			{
 				editor.setText(instance.getValue());
-			}
 			label.setLabelFor(editor);
 			centerPanel.add(editor, null);
 			if (readOnly)
-			{
 				editor.setEnabled(false);
-			}
 			else
-			{
 				attributeId2editor.put(attributeId, editor);
-			}
 		}
 
 		//
@@ -866,16 +839,14 @@ public class VPAttributeDialog extends CDialog implements ActionListener
 		int M_Lot_ID = 0;
 		KeyNamePair pp = fieldLot.getSelectedItem();
 		if (pp != null)
-		{
 			M_Lot_ID = pp.getKey();
-		}
 		MQuery zoomQuery = new MQuery("M_Lot");
 		zoomQuery.addRestriction("M_Lot_ID", Operator.EQUAL, M_Lot_ID);
 		log.info(zoomQuery.toString());
 		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		//
-		AdWindowId AD_Window_ID = AdWindowId.ofRepoId(257);		// Lot
+		int AD_Window_ID = 257;		// Lot
 		AWindow frame = new AWindow();
 		if (frame.initWindow(AD_Window_ID, zoomQuery))
 		{

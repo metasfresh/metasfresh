@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -71,7 +70,6 @@ import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -154,10 +152,10 @@ public class LookupDAO implements ILookupDAO
 		private final boolean translated;
 		private final String whereClause;
 		private final String orderByClause;
-		private final AdWindowId zoomSO_Window_ID;
-		private final AdWindowId zoomPO_Window_ID;
+		private final int zoomSO_Window_ID;
+		private final int zoomPO_Window_ID;
 		private final String displayColumnSQL;
-		private final AdWindowId zoomAD_Window_ID_Override;
+		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 
 		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
@@ -205,9 +203,9 @@ public class LookupDAO implements ILookupDAO
 				orderByClause = null;
 			}
 
-			zoomSO_Window_ID = builder.zoomSO_Window_ID;
-			zoomPO_Window_ID = builder.zoomPO_Window_ID;
-			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override;
+			zoomSO_Window_ID = builder.zoomSO_Window_ID <= 0 ? -1 : builder.zoomSO_Window_ID;
+			zoomPO_Window_ID = builder.zoomPO_Window_ID <= 0 ? -1 : builder.zoomPO_Window_ID;
+			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override <= 0 ? -1 : builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
 		}
@@ -235,9 +233,9 @@ public class LookupDAO implements ILookupDAO
 		private boolean translated = false;
 		private String whereClause = null;
 		private String orderByClause = null;
-		private AdWindowId zoomSO_Window_ID;
-		private AdWindowId zoomPO_Window_ID;
-		private AdWindowId zoomAD_Window_ID_Override;
+		private int zoomSO_Window_ID = -1;
+		private int zoomPO_Window_ID = -1;
+		private int zoomAD_Window_ID_Override = -1;
 		private boolean autoComplete = true;
 
 		private TableRefInfoBuilder()
@@ -297,19 +295,19 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setZoomSO_Window_ID(final AdWindowId zoomPO_Window_ID)
+		public TableRefInfoBuilder setZoomSO_Window_ID(final int zoomPO_Window_ID)
 		{
 			this.zoomSO_Window_ID = zoomPO_Window_ID;
 			return this;
 		}
 
-		public TableRefInfoBuilder setZoomPO_Window_ID(final AdWindowId zoomPO_Window_ID)
+		public TableRefInfoBuilder setZoomPO_Window_ID(final int zoomPO_Window_ID)
 		{
 			this.zoomPO_Window_ID = zoomPO_Window_ID;
 			return this;
 		}
 
-		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final AdWindowId zoomAD_Window_ID_Override)
+		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final int zoomAD_Window_ID_Override)
 		{
 			this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
 			return this;
@@ -331,14 +329,12 @@ public class LookupDAO implements ILookupDAO
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
 	{
 		private final List<ILookupDisplayColumn> lookupDisplayColumns;
-		private final AdWindowId zoomWindow;
-		private final AdWindowId zoomWindowPO;
+		private final int zoomWindow;
+		private final int zoomWindowPO;
 		private final boolean translated;
 
-		public LookupDisplayInfo(
-				final List<ILookupDisplayColumn> lookupDisplayColumns,
-				final AdWindowId zoomWindow,
-				final AdWindowId zoomWindowPO,
+		public LookupDisplayInfo(final List<ILookupDisplayColumn> lookupDisplayColumns,
+				final int zoomWindow, final int zoomWindowPO,
 				final boolean translated)
 		{
 			Check.assumeNotEmpty(lookupDisplayColumns, "lookupDisplayColumns not empty");
@@ -356,13 +352,13 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		@Override
-		public AdWindowId getZoomWindow()
+		public int getZoomWindow()
 		{
 			return zoomWindow;
 		}
 
 		@Override
-		public AdWindowId getZoomWindowPO()
+		public int getZoomWindowPO()
 		{
 			return zoomWindowPO;
 		}
@@ -498,16 +494,16 @@ public class LookupDAO implements ILookupDAO
 				final String TableName = rs.getString(1);
 				final String KeyColumn = rs.getString(2);
 				final String DisplayColumn = rs.getString(3);
-				final boolean isValueDisplayed = StringUtils.toBoolean(rs.getString(4));
-				final boolean IsTranslated = StringUtils.toBoolean(rs.getString(5));
+				final boolean isValueDisplayed = "Y".equals(rs.getString(4));
+				final boolean IsTranslated = "Y".equals(rs.getString(5));
 				final String WhereClause = rs.getString(6);
 				final String OrderByClause = rs.getString(7);
-				final AdWindowId zoomSO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt(8));
-				final AdWindowId zoomPO_Window_ID = AdWindowId.ofRepoIdOrNull(rs.getInt(9));
+				final int zoomSO_Window_ID = rs.getInt(8);
+				final int zoomPO_Window_ID = rs.getInt(9);
 				// AD_Table_ID = rs.getInt(10);
 				final String displayColumnSQL = rs.getString(11);
-				final AdWindowId zoomAD_Window_ID_Override = AdWindowId.ofRepoIdOrNull(rs.getInt(12));
-				final boolean autoComplete = StringUtils.toBoolean(rs.getString(13));
+				final int zoomAD_Window_ID_Override = rs.getInt(12);
+				final boolean autoComplete = "Y".equals(rs.getString(13));
 				final String referenceName = rs.getString("ReferenceName");
 
 				tableRefInfo = TableRefInfo.builder()
@@ -600,8 +596,8 @@ public class LookupDAO implements ILookupDAO
 	{
 		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
-		AdWindowId ZoomWindow = null;
-		AdWindowId ZoomWindowPO = null;
+		int ZoomWindow = 0;
+		int ZoomWindowPO = 0;
 
 		//
 		// Column filter
@@ -719,8 +715,8 @@ public class LookupDAO implements ILookupDAO
 				{
 					isTranslated = true;
 				}
-				ZoomWindow = AdWindowId.ofRepoIdOrNull(rs.getInt(5));
-				ZoomWindowPO = AdWindowId.ofRepoIdOrNull(rs.getInt(6));
+				ZoomWindow = rs.getInt(5);
+				ZoomWindowPO = rs.getInt(6);
 			}
 		}
 		catch (final SQLException e)
@@ -743,10 +739,8 @@ public class LookupDAO implements ILookupDAO
 					+ "\n HINT: please go to Table and columns, and set IsIdentifier=Y on columns which you want to be part of record's display string.");
 		}
 
-		final ILookupDisplayInfo lookupDisplayInfo = new LookupDisplayInfo(
-				lookupDisplayColumns,
-				ZoomWindow,
-				ZoomWindowPO,
+		final ILookupDisplayInfo lookupDisplayInfo = new LookupDisplayInfo(lookupDisplayColumns,
+				ZoomWindow, ZoomWindowPO,
 				isTranslated);
 		return lookupDisplayInfo;
 	}

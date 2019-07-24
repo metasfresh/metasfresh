@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -219,16 +218,12 @@ public class InfoPayment extends Info
 		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
-		{
 			fBPartner_ID.setValue(new Integer(bp));
-		}
 
 		//  prepare table
 		StringBuffer where = new StringBuffer("p.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-		{
 			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Payment.", "p."));
-		}
 		prepareTable(s_paymentLayout,
 			" C_Payment_v p",
 			where.toString(),
@@ -250,31 +245,21 @@ public class InfoPayment extends Info
 	{
 		StringBuffer sql = new StringBuffer();
 		if (fDocumentNo.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(p.DocumentNo) LIKE ?");
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
-		{
 			sql.append(" AND p.C_BPartner_ID=?");
-		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND TRUNC(p.DateTrx) <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND TRUNC(p.DateTrx) >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND TRUNC(p.DateTrx) BETWEEN ? AND ?");
-			}
 		}
 		//
 		if (fAmtFrom.getValue() != null || fAmtTo.getValue() != null)
@@ -282,17 +267,11 @@ public class InfoPayment extends Info
 			BigDecimal from = (BigDecimal)fAmtFrom.getValue();
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND p.PayAmt <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND p.PayAmt >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND p.PayAmt BETWEEN ? AND ?");
-			}
 		}
 		sql.append(" AND p.IsReceipt=?");
 
@@ -312,9 +291,7 @@ public class InfoPayment extends Info
 	{
 		int index = 1;
 		if (fDocumentNo.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDocumentNo));
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
 		{
@@ -329,13 +306,9 @@ public class InfoPayment extends Info
 			Timestamp to = fDateTo.getValue();
 			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setTimestamp(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setTimestamp(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setTimestamp(index++, from);
@@ -349,13 +322,9 @@ public class InfoPayment extends Info
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			log.debug("Amt From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setBigDecimal(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setBigDecimal(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setBigDecimal(index++, from);
@@ -374,9 +343,7 @@ public class InfoPayment extends Info
 	{
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
-		{
 			s += "%";
-		}
 		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
@@ -390,13 +357,11 @@ public class InfoPayment extends Info
 		log.info( "InfoPayment.zoom");
 		Integer C_Payment_ID = getSelectedRowKey();
 		if (C_Payment_ID == null)
-		{
 			return;
-		}
 		MQuery query = new MQuery("C_Payment");
 		query.addRestriction("C_Payment_ID", Operator.EQUAL, C_Payment_ID);
 		query.setRecordCount(1);
-		AdWindowId AD_WindowNo = getAD_Window_ID("C_Payment", fIsReceipt.isSelected());
+		int AD_WindowNo = getAD_Window_ID("C_Payment", fIsReceipt.isSelected());
 		zoom (AD_WindowNo, query);
 	}	//	zoom
 

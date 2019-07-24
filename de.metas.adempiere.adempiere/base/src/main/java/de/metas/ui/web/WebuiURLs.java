@@ -2,7 +2,6 @@ package de.metas.ui.web;
 
 import java.util.Map;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
@@ -105,11 +104,6 @@ public class WebuiURLs
 		}
 
 		return url;
-	}
-
-	public String getDocumentUrl(@NonNull final AdWindowId windowId, final int documentId)
-	{
-		return getDocumentUrl(String.valueOf(windowId.getRepoId()), String.valueOf(documentId));
 	}
 
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)

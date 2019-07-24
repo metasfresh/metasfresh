@@ -23,7 +23,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -220,16 +219,12 @@ public class InfoOrder extends Info
 		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
-		{
 			fBPartner_ID.setValue(new Integer(bp));
-		}
 
 		//  prepare table
 		StringBuffer where = new StringBuffer("o.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-		{
 			where.append(" AND ").append(StringUtils.replace(p_whereClause, "C_Order.", "o."));
-		}
 		prepareTable(s_invoiceLayout,
 			" C_Order o",
 			where.toString(),
@@ -250,39 +245,25 @@ public class InfoOrder extends Info
 	{
 		StringBuffer sql = new StringBuffer();
 		if (fDocumentNo.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(o.DocumentNo) LIKE ?");
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(o.Description) LIKE ?");
-		}
 		if (fPOReference.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(o.POReference) LIKE ?");
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
-		{
 			sql.append(" AND o.C_BPartner_ID=?");
-		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND TRUNC(o.DateOrdered) <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND TRUNC(o.DateOrdered) >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND TRUNC(o.DateOrdered) BETWEEN ? AND ?");
-			}
 		}
 		//
 		if (fAmtFrom.getValue() != null || fAmtTo.getValue() != null)
@@ -290,17 +271,11 @@ public class InfoOrder extends Info
 			BigDecimal from = (BigDecimal)fAmtFrom.getValue();
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND o.GrandTotal <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND o.GrandTotal >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND o.GrandTotal BETWEEN ? AND ?");
-			}
 		}
 		sql.append(" AND o.IsSOTrx=?");
 
@@ -320,17 +295,11 @@ public class InfoOrder extends Info
 	{
 		int index = 1;
 		if (fDocumentNo.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDocumentNo));
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDescription));
-		}
 		if (fPOReference.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fPOReference));
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
 		{
@@ -345,13 +314,9 @@ public class InfoOrder extends Info
 			Timestamp to = fDateTo.getValue();
 			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setTimestamp(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setTimestamp(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setTimestamp(index++, from);
@@ -365,13 +330,9 @@ public class InfoOrder extends Info
 			BigDecimal to = (BigDecimal)fAmtTo.getValue();
 			log.debug("Amt From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setBigDecimal(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setBigDecimal(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setBigDecimal(index++, from);
@@ -390,9 +351,7 @@ public class InfoOrder extends Info
 	{
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
-		{
 			s += "%";
-		}
 		log.debug("String=" + s);
 		return s;
 	}   //  getSQLText
@@ -407,13 +366,11 @@ public class InfoOrder extends Info
 		log.info("");
 		Integer C_Order_ID = getSelectedRowKey();
 		if (C_Order_ID == null)
-		{
 			return;
-		}
 		MQuery query = new MQuery("C_Order");
 		query.addRestriction("C_Order_ID", Operator.EQUAL, C_Order_ID);
 		query.setRecordCount(1);
-		AdWindowId AD_WindowNo = getAD_Window_ID("C_Order", fIsSOTrx.isSelected());
+		int AD_WindowNo = getAD_Window_ID("C_Order", fIsSOTrx.isSelected());
 		zoom (AD_WindowNo, query);
 	}	//	zoom
 

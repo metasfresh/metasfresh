@@ -23,11 +23,8 @@ import java.awt.HeadlessException;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-import javax.annotation.Nullable;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import org.adempiere.ad.element.api.AdWindowId;
 
 /**
  * 	Adempiere Frame
@@ -81,7 +78,7 @@ public class CFrame extends JFrame
 	}	//	CFrame
 
 	/** Window ID			*/
-	private AdWindowId adWindowId;
+	private int		p_AD_Window_ID = 0;
 	
 	/**
 	 * 	Frame Init.
@@ -131,9 +128,7 @@ public class CFrame extends JFrame
 			{
 				int mnemonic = title.toUpperCase().charAt(pos+1);
 				if (mnemonic != ' ')
-				{
 					title = title.substring(0, pos) + title.substring(pos+1);
-				}
 			}
 		}
 		return title;
@@ -149,13 +144,19 @@ public class CFrame extends JFrame
 		super.setTitle(cleanup(title));
 	}	//	setTitle
 
-	public AdWindowId getAdWindowId()
+	/**
+	 * @return Returns the AD_Window_ID.
+	 */
+	public int getAD_Window_ID ()
 	{
-		return adWindowId;
+		return p_AD_Window_ID;
 	}	//	getAD_Window_ID
 
-	public void setAdWindowId(@Nullable final AdWindowId adWindowId)
+	/**
+	 * @param window_ID The AD_Window_ID to set.
+	 */
+	public void setAD_Window_ID (int window_ID)
 	{
-		this.adWindowId = adWindowId;
-	}
+		p_AD_Window_ID = window_ID;
+	}	//	getAD_Window_ID
 }	//	CFrame

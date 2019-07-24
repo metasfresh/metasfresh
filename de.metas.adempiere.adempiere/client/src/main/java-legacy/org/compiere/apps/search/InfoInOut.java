@@ -22,7 +22,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
@@ -202,16 +201,12 @@ public class InfoInOut extends Info
 		final int p_WindowNo = getWindowNo();
 		String bp = Env.getContext(Env.getCtx(), p_WindowNo, "C_BPartner_ID");
 		if (bp != null && bp.length() != 0)
-		{
 			fBPartner_ID.setValue(new Integer(bp));
-		}
 
 		//  prepare table
 		StringBuffer where = new StringBuffer("i.IsActive='Y'");
 		if (p_whereClause.length() > 0)
-		{
 			where.append(" AND ").append(StringUtils.replace(p_whereClause, "M_InOut.", "i."));
-		}
 		prepareTable(s_invoiceLayout,
 			" M_InOut i",
 			where.toString(),
@@ -233,39 +228,25 @@ public class InfoInOut extends Info
 	{
 		StringBuffer sql = new StringBuffer();
 		if (fDocumentNo.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(i.DocumentNo) LIKE ?");
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(i.Description) LIKE ?");
-		}
 		if (fPOReference.getText().length() > 0)
-		{
 			sql.append(" AND UPPER(i.POReference) LIKE ?");
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
-		{
 			sql.append(" AND i.C_BPartner_ID=?");
-		}
 		//
 		if (fDateFrom.getValue() != null || fDateTo.getValue() != null)
 		{
 			Timestamp from = fDateFrom.getValue();
 			Timestamp to = fDateTo.getValue();
 			if (from == null && to != null)
-			{
 				sql.append(" AND TRUNC(i.MovementDate) <= ?");
-			}
 			else if (from != null && to == null)
-			{
 				sql.append(" AND TRUNC(i.MovementDate) >= ?");
-			}
 			else if (from != null && to != null)
-			{
 				sql.append(" AND TRUNC(i.MovementDate) BETWEEN ? AND ?");
-			}
 		}
 		sql.append(" AND i.IsSOTrx=?");
 
@@ -285,17 +266,11 @@ public class InfoInOut extends Info
 	{
 		int index = 1;
 		if (fDocumentNo.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDocumentNo));
-		}
 		if (fDescription.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fDescription));
-		}
 		if (fPOReference.getText().length() > 0)
-		{
 			pstmt.setString(index++, getSQLText(fPOReference));
-		}
 		//
 		if (fBPartner_ID.getValue() != null)
 		{
@@ -310,13 +285,9 @@ public class InfoInOut extends Info
 			Timestamp to = fDateTo.getValue();
 			log.debug("Date From=" + from + ", To=" + to);
 			if (from == null && to != null)
-			{
 				pstmt.setTimestamp(index++, to);
-			}
 			else if (from != null && to == null)
-			{
 				pstmt.setTimestamp(index++, from);
-			}
 			else if (from != null && to != null)
 			{
 				pstmt.setTimestamp(index++, from);
@@ -335,9 +306,7 @@ public class InfoInOut extends Info
 	{
 		String s = f.getText().toUpperCase();
 		if (!s.endsWith("%"))
-		{
 			s += "%";
-		}
 		log.debug( "String=" + s);
 		return s;
 	}   //  getSQLText
@@ -351,13 +320,11 @@ public class InfoInOut extends Info
 		log.info( "InfoInOut.zoom");
 		Integer M_InOut_ID = getSelectedRowKey();
 		if (M_InOut_ID == null)
-		{
 			return;
-		}
 		MQuery query = new MQuery("M_InOut");
 		query.addRestriction("M_InOut_ID", Operator.EQUAL, M_InOut_ID);
 		query.setRecordCount(1);
-		AdWindowId AD_WindowNo = getAD_Window_ID("M_InOut", fIsSOTrx.isSelected());
+		int AD_WindowNo = getAD_Window_ID("M_InOut", fIsSOTrx.isSelected());
 		zoom (AD_WindowNo, query);
 	}	//	zoom
 

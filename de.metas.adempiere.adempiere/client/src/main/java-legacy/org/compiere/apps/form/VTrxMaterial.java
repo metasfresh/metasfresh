@@ -270,18 +270,12 @@ public class VTrxMaterial extends TrxMaterial
 	public void actionPerformed (ActionEvent e)
 	{
 		if (e.getActionCommand().equals(ConfirmPanel.A_CANCEL))
-		{
 			dispose();
-		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_REFRESH)
 				|| e.getActionCommand().equals(ConfirmPanel.A_OK))
-		{
 			refresh();
-		}
 		else if (e.getActionCommand().equals(ConfirmPanel.A_ZOOM))
-		{
 			zoom();
-		}
 	}   //  actionPerformed
 
 	
@@ -330,7 +324,14 @@ public class VTrxMaterial extends TrxMaterial
 		final Object bpartnerId = bpartnerField.getValue();
 		
 		
-		Services.get(IClientUI.class).executeLongOperation(panel, () -> refresh(organization, locator, product, movementType, movementDateFrom, movementDateTo, bpartnerId, statusBar));
+		Services.get(IClientUI.class).executeLongOperation(panel, new Runnable()
+		{
+			@Override
+			public void run()
+			{
+				refresh(organization, locator, product, movementType, movementDateFrom, movementDateTo, bpartnerId, statusBar);
+			}
+		});
 	}   //  refresh
 
 	/**
@@ -344,7 +345,7 @@ public class VTrxMaterial extends TrxMaterial
 		//  Zoom
 		panel.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(adWindowId, query))
+		if (!frame.initWindow(AD_Window_ID, query))
 		{
 			panel.setCursor(Cursor.getDefaultCursor());
 			return;

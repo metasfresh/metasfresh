@@ -1,7 +1,5 @@
 package org.adempiere.service.impl;
 
-import org.adempiere.ad.element.api.AdWindowId;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -41,7 +39,7 @@ public class RolePermLoggingBL implements IRolePermLoggingBL
 	}
 
 	@Override
-	public void logWindowAccess(RoleId roleId, AdWindowId id, Boolean access, String description)
+	public void logWindowAccess(RoleId roleId, int id, Boolean access, String description)
 	{
 		MRolePermRequest.logWindowAccess(roleId, id, access, description);
 	}

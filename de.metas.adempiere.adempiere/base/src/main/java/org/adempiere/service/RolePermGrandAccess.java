@@ -118,7 +118,7 @@ public class RolePermGrandAccess
 						.readWrite(request.isReadWrite())
 						.build());
 
-		final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(adWindowId);
+		final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(adWindowId.getRepoId());
 		logGranted(I_AD_Window.COLUMNNAME_AD_Window_ID, windowName);
 	}
 

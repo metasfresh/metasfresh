@@ -52,7 +52,7 @@ public class MWindow extends X_AD_Window
 	public MWindow (Properties ctx, int AD_Window_ID, String trxName)
 	{
 		super (ctx, AD_Window_ID, trxName);
-		if (is_new())
+		if (AD_Window_ID == 0)
 		{
 			setWindowType (WINDOWTYPE_Maintain);	// M
 			setEntityType (ENTITYTYPE_UserMaintained);	// U
@@ -97,9 +97,7 @@ public class MWindow extends X_AD_Window
 	public MTab[] getTabs (boolean reload, String trxName)
 	{
 		if (m_tabs != null && !reload)
-		{
 			return m_tabs;
-		}
 		String sql = "SELECT * FROM AD_Tab WHERE AD_Window_ID=? ORDER BY SeqNo";
 		ArrayList<MTab> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
@@ -110,9 +108,7 @@ public class MWindow extends X_AD_Window
 			pstmt.setInt (1, getAD_Window_ID());
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
-			{
 				list.add (new MTab (getCtx(), rs, trxName));
-			}
 		}
 		catch (Exception e)
 		{
@@ -148,34 +144,32 @@ public class MWindow extends X_AD_Window
 			|| is_ValueChanged("Description") || is_ValueChanged("Help"))
 		{
 			MMenu[] menues = MMenu.get(getCtx(), "AD_Window_ID=" + getAD_Window_ID(), get_TrxName());
-			for (MMenu menue : menues)
+			for (int i = 0; i < menues.length; i++)
 			{
-				menue.setName(getName());
-				menue.setDescription(getDescription());
-				menue.setIsActive(isActive());
-				menue.save();
+				menues[i].setName(getName());
+				menues[i].setDescription(getDescription());
+				menues[i].setIsActive(isActive());
+				menues[i].save();
 			}
 			//
 			X_AD_WF_Node[] nodes = getWFNodes(getCtx(), "AD_Window_ID=" + getAD_Window_ID(), get_TrxName());
-			for (X_AD_WF_Node node : nodes)
+			for (int i = 0; i < nodes.length; i++)
 			{
 				boolean changed = false;
-				if (node.isActive() != isActive())
+				if (nodes[i].isActive() != isActive())
 				{
-					node.setIsActive(isActive());
+					nodes[i].setIsActive(isActive());
 					changed = true;
 				}
-				if (node.isCentrallyMaintained())
+				if (nodes[i].isCentrallyMaintained())
 				{
-					node.setName(getName());
-					node.setDescription(getDescription());
-					node.setHelp(getHelp());
+					nodes[i].setName(getName());
+					nodes[i].setDescription(getDescription());
+					nodes[i].setHelp(getHelp());
 					changed = true;
 				}
 				if (changed)
-				{
-					node.save();
-				}
+					nodes[i].save();
 			}
 		}
 		return success;
@@ -194,9 +188,7 @@ public class MWindow extends X_AD_Window
 	{
 		String sql = "SELECT * FROM AD_WF_Node";
 		if (whereClause != null && whereClause.length() > 0)
-		{
 			sql += " WHERE " + whereClause;
-		}
 		ArrayList<X_AD_WF_Node> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -205,9 +197,7 @@ public class MWindow extends X_AD_Window
 			pstmt = DB.prepareStatement (sql, trxName);
 			rs = pstmt.executeQuery ();
 			while (rs.next ())
-			{
 				list.add (new X_AD_WF_Node (ctx, rs, trxName));
-			}
 		}
 		catch (Exception e)
 		{
@@ -239,9 +229,7 @@ public class MWindow extends X_AD_Window
 			pstmt.setString(1, windowName);
 			rs = pstmt.executeQuery();
 			if (rs.next())
-			{
 				retValue = rs.getInt(1);
-			}
 		}
 		catch (SQLException e)
 		{

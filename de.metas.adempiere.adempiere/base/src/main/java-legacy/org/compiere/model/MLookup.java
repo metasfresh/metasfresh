@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
@@ -47,7 +46,6 @@ import org.compiere.util.NamePair;
 import org.compiere.util.Util.ArrayKey;
 import org.compiere.util.ValueNamePair;
 
-import de.metas.lang.SOTrx;
 import de.metas.util.AbstractPropertiesProxy;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,7 +73,7 @@ public final class MLookup extends Lookup implements Serializable
 	 */
 	private static final long serialVersionUID = 5784044288965615466L;
 
-	public interface ILookupData
+	public static interface ILookupData
 	{
 		ArrayKey getValidationKey();
 
@@ -155,7 +153,7 @@ public final class MLookup extends Lookup implements Serializable
 		{
 			return 0;
 		}
-	}
+	};
 
 	private static final ILookupData LOOKUPDATA_NOTINITIALIZED = new EmptyLookupData(null, true, false); // dirty, not all loaded
 	private static final ILookupData LOOKUPDATA_HIGHVOLUME = new EmptyLookupData(null, false, false);
@@ -250,9 +248,7 @@ public final class MLookup extends Lookup implements Serializable
 	public void dispose()
 	{
 		if (m_info != null)
-		{
 			log.debug("Disposing: {}", m_info.getKeyColumn());
-		}
 
 		interruptLoading();
 		//
@@ -295,7 +291,7 @@ public final class MLookup extends Lookup implements Serializable
 		CURRENT_OR_NULL,
 		CURRENT_OR_NEW,
 		NEW,
-	}
+	};
 
 	private Future<ILookupData> getFutureLookupData(final FutureLookupDataState state)
 	{
@@ -345,13 +341,13 @@ public final class MLookup extends Lookup implements Serializable
 		return _futureLookupData;
 	}
 
-	private enum LookupDataState
+	private static enum LookupDataState
 	{
 		CURRENT,
 		NEW_IF_LOADING,
 		NEW,
 		ALWAYS_NEW,
-	}
+	};
 
 	private ILookupData getCurrentLookupData()
 	{
@@ -366,7 +362,7 @@ public final class MLookup extends Lookup implements Serializable
 	 * @param state
 	 * @return lookup data
 	 */
-	private ILookupData getLookupData(final LookupDataState state)
+	private final ILookupData getLookupData(final LookupDataState state)
 	{
 		final FutureLookupDataState futureLookupDataState;
 		if (state == LookupDataState.CURRENT)
@@ -511,9 +507,7 @@ public final class MLookup extends Lookup implements Serializable
 	public String getDisplay(final IValidationContext evalCtx, final Object key)
 	{
 		if (key == null)
-		{
 			return "";
-		}
 		//
 		final Object display = get(evalCtx, key);
 		if (display == null)
@@ -695,6 +689,16 @@ public final class MLookup extends Lookup implements Serializable
 	}   // getValidation
 
 	/**
+	 * Get Reference Value
+	 *
+	 * @return Reference Value
+	 */
+	public int getAD_Reference_Value_ID()
+	{
+		return m_info.getAD_Reference_Value_ID();
+	}   // getAD_Reference_Value_ID
+
+	/**
 	 * Has inactive elements in list
 	 *
 	 * @return true, if list contains inactive values
@@ -867,9 +871,7 @@ public final class MLookup extends Lookup implements Serializable
 		if (cacheLocal && directValue != null)
 		{
 			if (m_lookupDirect == null)
-			{
 				m_lookupDirect = new HashMap<>();
-			}
 			m_lookupDirect.put(key, directValue);
 		}
 
@@ -892,7 +894,7 @@ public final class MLookup extends Lookup implements Serializable
 	 * @return Zoom AD_Window_ID
 	 */
 	@Override
-	public AdWindowId getZoom()
+	public int getZoom()
 	{
 		return m_info.getZoomSO_Window_ID();
 	}	// getZoom
@@ -904,18 +906,19 @@ public final class MLookup extends Lookup implements Serializable
 	 * @return Zoom Window
 	 */
 	@Override
-	public AdWindowId getZoomAD_Window_ID(final MQuery query)
+	public int getZoomAD_Window_ID(final MQuery query)
 	{
 		// Case: there is no ZoomWindowPO or query is null
 		// => return m_info.ZoomWindow directly because there is no point to search forward
-		if (m_info.getZoomPO_Window_ID() == null || query == null)
+		if (m_info.getZoomPO_Window_ID() <= 0 || query == null)
 		{
 			return m_info.getZoomSO_Window_ID();
 		}
 
 		// Need to check SO/PO
-		final SOTrx soTrx = DB.retrieveRecordSOTrx(m_info.getTableName(), query.getWhereClause(false)).orElse(SOTrx.SALES);
-		if (soTrx.isPurchase())
+		final boolean isSOTrx = DB.isSOTrx(m_info.getTableName(), query.getWhereClause(false));
+		//
+		if (!isSOTrx)
 		{
 			return m_info.getZoomPO_Window_ID();
 		}
@@ -963,9 +966,7 @@ public final class MLookup extends Lookup implements Serializable
 	public int refresh()
 	{
 		if (m_refreshing)
-		{
 			return 0;
-		}
 		return refresh(true);
 	}	// refresh
 
@@ -983,9 +984,7 @@ public final class MLookup extends Lookup implements Serializable
 		}
 
 		if (!loadParent && m_info.isParent())
-		{
 			return 0;
-		}
 
 		// Don't load Search or CreatedBy/UpdatedBy
 		if (isHighVolume())

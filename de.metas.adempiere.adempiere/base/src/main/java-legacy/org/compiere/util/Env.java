@@ -36,7 +36,6 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import javax.swing.JFrame;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.session.ISessionBL;
@@ -1367,7 +1366,7 @@ public final class Env
 	 * @param system System level preferences (vs. user defined)
 	 * @return preference value
 	 */
-	public static String getPreference(final Properties ctx, final AdWindowId adWindowId, final String context, final boolean system)
+	public static String getPreference(final Properties ctx, final int AD_Window_ID, final String context, final boolean system)
 	{
 		if (ctx == null || context == null)
 		{
@@ -1377,10 +1376,10 @@ public final class Env
 		//
 		if (!system)            // User Preferences
 		{
-			retValue = getProperty(ctx, createPreferenceName(adWindowId, context));// Window Pref
+			retValue = getProperty(ctx, createPreferenceName(AD_Window_ID, context));// Window Pref
 			if (retValue == null)
 			{
-				retValue = getProperty(ctx, createPreferenceName((AdWindowId)null, context));            // Global Pref
+				retValue = getProperty(ctx, createPreferenceName(IUserValuePreference.AD_WINDOW_ID_NONE, context));            // Global Pref
 			}
 		}
 		else
@@ -1398,20 +1397,20 @@ public final class Env
 
 	public static void setPreference(final Properties ctx, final IUserValuePreference userValuePreference)
 	{
-		final String preferenceName = createPreferenceName(userValuePreference.getAdWindowId(), userValuePreference.getName());
+		final String preferenceName = createPreferenceName(userValuePreference.getAD_Window_ID(), userValuePreference.getName());
 		final String preferenceValue = userValuePreference.getValue();
 		setContext(ctx, preferenceName, preferenceValue);
 	}
 
-	private static String createPreferenceName(final AdWindowId adWindowId, final String baseName)
+	private static String createPreferenceName(final int AD_Window_ID, final String baseName)
 	{
-		if (adWindowId == null)
+		if (AD_Window_ID <= 0 || AD_Window_ID == IUserValuePreference.AD_WINDOW_ID_NONE)
 		{
 			return "P|" + baseName;
 		}
 		else
 		{
-			return "P" + adWindowId.getRepoId() + "|" + baseName;
+			return "P" + AD_Window_ID + "|" + baseName;
 		}
 	}
 
@@ -1908,12 +1907,12 @@ public final class Env
 	/**
 	 * Show Window
 	 *
-	 * @param adWindowId window
+	 * @param AD_Window_ID window
 	 * @return {@link CFrame} or <code>null</code> if not found
 	 */
-	public static CFrame showWindow(final AdWindowId adWindowId)
+	public static CFrame showWindow(final int AD_Window_ID)
 	{
-		return windows.showWindowByWindowId(adWindowId);
+		return windows.showWindowByWindowId(AD_Window_ID);
 	}
 
 	/**

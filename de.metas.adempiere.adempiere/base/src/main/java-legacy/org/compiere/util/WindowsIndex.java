@@ -17,7 +17,6 @@ import javax.swing.JFrame;
 import javax.swing.RepaintManager;
 import javax.swing.SwingUtilities;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IWindowNoAware;
 import org.compiere.swing.CFrame;
@@ -210,13 +209,13 @@ import lombok.NonNull;
 		for (final CFrame hidden : hiddenWindows)
 		{
 			logger.debug("Checking hidden window: {}", hidden);
-			if(AdWindowId.equals(hidden.getAdWindowId(), window.getAdWindowId()))
+			if (hidden.getAD_Window_ID() == window.getAD_Window_ID())
 			{
 				return false;	// already there
 			}
 		}
 
-		if (window.getAdWindowId() != null)         	// workbench
+		if (window.getAD_Window_ID() > 0)         	// workbench
 		{
 			if (hiddenWindows.add(window))
 			{
@@ -248,12 +247,12 @@ import lombok.NonNull;
 	 * @param AD_Window_ID window
 	 * @return {@link CFrame} or <code>null</code> if not found
 	 */
-	public CFrame showWindowByWindowId(final AdWindowId adWindowId)
+	public CFrame showWindowByWindowId(final int AD_Window_ID)
 	{
 		for (int i = 0; i < hiddenWindows.size(); i++)
 		{
 			final CFrame hiddenFrame = hiddenWindows.get(i);
-			if (AdWindowId.equals(hiddenFrame.getAdWindowId(), adWindowId))
+			if (hiddenFrame.getAD_Window_ID() == AD_Window_ID)
 			{
 				hiddenWindows.remove(i); // NOTE: we can safely remove here because we are also returning (no future iterations)
 				logger.debug("Showing window: {}", hiddenFrame);
