@@ -55,7 +55,7 @@ public class DistributeAndMoveReceiptCreatorTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		
+
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		distributeAndMoveReceiptCreator = new DistributeAndMoveReceiptCreator(new LotNumberQuarantineRepository());
@@ -80,7 +80,7 @@ public class DistributeAndMoveReceiptCreatorTest
 
 		final I_M_InOutLine receiptLineRecord = newInstance(I_M_InOutLine.class);
 		receiptLineRecord.setM_InOut(receiptRecord);
-		receiptLineRecord.setM_Locator(receiptLineLocator);
+		receiptLineRecord.setM_Locator_ID(receiptLineLocator.getM_Locator_ID());
 		receiptLineRecord.setM_Product_ID(productId.getRepoId());
 		saveRecord(receiptLineRecord);
 

@@ -63,6 +63,18 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertQty(
+			@NonNull final UOMConversionContext conversionCtx /*could technically be nullable, right now I don't see why we should allow it*/,
+			@NonNull final BigDecimal qty,
+			@NonNull final UomId uomFrom,
+			@NonNull final UomId uomTo)
+	{
+		return convertQty(conversionCtx.getProductId(), qty,
+				loadOutOfTrx(uomFrom, I_C_UOM.class),
+				loadOutOfTrx(uomTo, I_C_UOM.class));
+	}
+
+	@Override
+	public BigDecimal convertQty(
 			@Nullable final ProductId productId,
 			@NonNull final BigDecimal qty,
 			@NonNull final I_C_UOM fromUOM,

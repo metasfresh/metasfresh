@@ -1,5 +1,7 @@
 package de.metas.customs;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -253,7 +255,7 @@ public class CustomsInvoiceService
 
 		final BigDecimal movementQty = inoutLineRecord.getMovementQty();
 
-		final Quantity lineQty = Quantity.of(movementQty, inoutLineRecord.getC_UOM());
+		final Quantity lineQty = Quantity.of(movementQty, loadOutOfTrx(inoutLineRecord.getC_UOM_ID(), I_C_UOM.class));
 
 		final ProductId productId = ProductId.ofRepoId(inoutLineRecord.getM_Product_ID());
 

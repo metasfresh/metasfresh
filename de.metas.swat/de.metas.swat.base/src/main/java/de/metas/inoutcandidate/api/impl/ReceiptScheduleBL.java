@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -440,7 +442,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			return Collections.emptyList();
 		}
 
-		final I_C_UOM qtyToAllocateUOM = receiptLine.getC_UOM();
+		final I_C_UOM qtyToAllocateUOM = loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class);
 
 		//
 		// Iterate receipt schedules and try to allocate on them as much as possible

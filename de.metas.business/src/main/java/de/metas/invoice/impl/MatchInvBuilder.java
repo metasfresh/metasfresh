@@ -10,12 +10,12 @@ package de.metas.invoice.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +46,7 @@ import de.metas.util.Services;
 
 /**
  * Helper class used to create a quantity matching between {@link I_C_InvoiceLine} and {@link I_M_InOutLine} (i.e. {@link I_M_MatchInv}).
- * 
+ *
  * @author tsa
  */
 /* package */class MatchInvBuilder implements IMatchInvBuilder
@@ -106,7 +106,7 @@ import de.metas.util.Services;
 		{
 			throw new MatchInvException("@Invalid@ @M_Product_ID@"
 					+ "\n @C_InvoiceLine_ID@: " + invoiceLine + ", @M_Product_ID@=" + invoiceLine.getM_Product()
-					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product());
+					+ "\n @M_InOutLine_ID@: " + inoutLine + ", @M_Product_ID@=" + inoutLine.getM_Product_ID());
 		}
 
 		// Create the new M_MatchInv record
@@ -160,7 +160,7 @@ import de.metas.util.Services;
 
 	/**
 	 * Convenient method to returned from {@link #build()} when NO {@link I_M_MatchInv} record is needed
-	 * 
+	 *
 	 * @return false
 	 */
 	private final boolean noMatchInvNeeded()

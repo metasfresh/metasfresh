@@ -77,7 +77,7 @@ import mockit.Expectations;
 public class M_Transaction_InOutLineEventCreatorTest
 {
 
-	private static final BigDecimal SEVEN = new BigDecimal("7");;
+	private static final BigDecimal SEVEN = new BigDecimal("7");
 	private static final BigDecimal THREE = new BigDecimal("3");
 	private static final BigDecimal TWO = new BigDecimal("2");
 	private static final BigDecimal MINUS_ONE = new BigDecimal("-1");
@@ -114,7 +114,7 @@ public class M_Transaction_InOutLineEventCreatorTest
 		save(inout);
 
 		inoutLine = newInstance(I_M_InOutLine.class);
-		inoutLine.setM_Product(product);
+		inoutLine.setM_Product_ID(product.getM_Product_ID());
 		inoutLine.setM_InOut(inout);
 		save(inoutLine);
 

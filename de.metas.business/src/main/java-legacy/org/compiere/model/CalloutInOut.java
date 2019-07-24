@@ -1,20 +1,22 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -37,8 +39,10 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -56,7 +60,6 @@ import de.metas.util.Services;
 // metas: synched with rev. 10203
 public class CalloutInOut extends CalloutEngine
 {
-
 
 	public static final String MSG_SERIALNO_QTY_ONE = "CalloutInOut.QtySerNoMustBeOne";
 
@@ -468,8 +471,8 @@ public class CalloutInOut extends CalloutEngine
 
 		//
 		// Set UOM/Qty
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(inoutLine.getM_Product_ID());
-		inoutLine.setC_UOM(productUOM);
+		final UomId productUOM = Services.get(IProductBL.class).getStockingUOMId(inoutLine.getM_Product_ID());
+		inoutLine.setC_UOM_ID(productUOM.getRepoId());
 
 		//
 		final I_M_InOut inout = inoutLine.getM_InOut();
@@ -516,16 +519,20 @@ public class CalloutInOut extends CalloutEngine
 		//
 		// Validate current locator and if OK, do nothing
 		{
-			final I_M_Locator currentLocator = inoutLine.getM_Locator();
-			if (currentLocator != null && allowedWarehouseRecordId == currentLocator.getM_Warehouse_ID())
+			final int locatorRepoId = inoutLine.getM_Locator_ID();
+			if (locatorRepoId > 0)
 			{
-				return;
+				final I_M_Locator currentLocator = loadOutOfTrx(locatorRepoId, I_M_Locator.class);
+				if (allowedWarehouseRecordId == currentLocator.getM_Warehouse_ID())
+				{
+					return;
+				}
 			}
 		}
 
 		//
 		// Set product's default locator, if valid
-		final I_M_Product product = inoutLine.getM_Product();
+		final I_M_Product product = loadOutOfTrx(inoutLine.getM_Product_ID(), I_M_Product.class);
 
 		int productLocatorRecordId = product.getM_Locator_ID();
 
@@ -535,7 +542,7 @@ public class CalloutInOut extends CalloutEngine
 
 			final LocatorId locatorId = LocatorId.ofRepoIdOrNull(allowedWarehouseId, productLocatorRecordId);
 
-			if(locatorId != null)
+			if (locatorId != null)
 			{
 				inoutLine.setM_Locator_ID(productLocatorRecordId);
 				return;
@@ -544,11 +551,11 @@ public class CalloutInOut extends CalloutEngine
 
 		//
 		// Set warehouse's default locator
-		final I_M_Warehouse allowedWarehouse = inout.getM_Warehouse();
-		if (allowedWarehouse != null)  // shall never be null
+		final WarehouseId allowedWarehouseId = WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
+		if (allowedWarehouseId != null)  // shall never be null
 		{
-			final I_M_Locator defaultLocator = Services.get(IWarehouseBL.class).getDefaultLocator(allowedWarehouse);
-			inoutLine.setM_Locator(defaultLocator);
+			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(allowedWarehouseId);
+			inoutLine.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 
 		//
@@ -652,9 +659,10 @@ public class CalloutInOut extends CalloutEngine
 			BigDecimal MovementQty = inoutLine.getMovementQty();
 			BigDecimal QtyEntered;
 
-			final I_M_Product product = inoutLine.getM_Product();
-			if (product != null && C_UOM_To_ID > 0)
+			final ProductId productId = ProductId.ofRepoIdOrNull(inoutLine.getM_Product_ID());
+			if (productId != null && C_UOM_To_ID > 0)
 			{
+				final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
 				final UOMPrecision precision = Services.get(IProductBL.class).getUOMPrecision(product);
 				final BigDecimal MovementQty1 = precision.round(MovementQty);
 				if (MovementQty.compareTo(MovementQty1) != 0)

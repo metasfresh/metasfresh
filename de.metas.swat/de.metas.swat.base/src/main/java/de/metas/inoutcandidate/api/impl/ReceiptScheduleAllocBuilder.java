@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -96,7 +96,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 			{
 				throw new AdempiereException("Receipt schedule and receipt line have different products."
 						+ "\nReceipt Line: " + receiptLine
-						+ "\nReceipt Line Product: " + receiptLine.getM_Product()
+						+ "\nReceipt Line M_Product_ID: " + receiptLine.getM_Product_ID()
 						+ "\nReceipt Schedule: " + receiptSchedule
 						+ "\nReceipt Schedule Product: " + receiptSchedule.getM_Product());
 			}
@@ -109,7 +109,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 						+ "\nReceipt Schedule: " + receiptSchedule
 						+ "\nReceipt Schedule UOM: " + receiptSchedule.getC_UOM()
 						+ "\nReceipt Line: " + receiptLine
-						+ "\nReceipt Line UOM: " + receiptLine.getC_UOM());
+						+ "\nReceipt Line C_UOM_ID: " + receiptLine.getC_UOM_ID());
 			}
 		}
 	}

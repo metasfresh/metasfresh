@@ -240,9 +240,9 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		newInOutLine.setAD_Org_ID(inout.getAD_Org_ID());
 		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
-		newInOutLine.setM_Product(originInOutLine.getM_Product());
+		newInOutLine.setM_Product_ID(originInOutLine.getM_Product_ID());
 
-		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
+		newInOutLine.setC_UOM_ID(originInOutLine.getC_UOM_ID());
 
 		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
 

@@ -75,6 +75,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -2530,7 +2531,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
 		for (final I_M_InOutLine inoutLine : getLines())
 		{
-			final I_M_Product product = inoutLine.getM_Product();
+
 			final BigDecimal movementQty = inoutLine.getMovementQty();
 
 			// RMA
@@ -2579,10 +2580,12 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Delete M_CostDetails
 			costDetailService.voidAndDeleteForDocument(CostingDocumentRef.ofShipmentLineId(inoutLine.getM_InOutLine_ID()));
 
+			final ProductId productId = ProductId.ofRepoIdOrNull(inoutLine.getM_Product_ID());
+
 			// Update Order Line
 			final I_C_OrderLine orderLine = inoutLine.getC_OrderLine();
 			if (isSOTrx() // task 09266: the order lines for PO-inouts are handeled in the MatchPO business logic
-					&& product != null && orderLine != null && orderLine.getC_OrderLine_ID() > 0)
+					&& productId != null && orderLine != null && orderLine.getC_OrderLine_ID() > 0)
 			{
 				// task 09358: get rid of this; instead, update qtyReserved at one central place
 				// orderLine.setQtyReserved(orderLine.getQtyReserved().add(movementQty));

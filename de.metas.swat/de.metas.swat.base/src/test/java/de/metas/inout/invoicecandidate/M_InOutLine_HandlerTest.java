@@ -103,7 +103,7 @@ public class M_InOutLine_HandlerTest
 
 		packagingInOutLine = newInstance(I_M_InOutLine.class);
 		packagingInOutLine.setM_InOut(inout);
-		packagingInOutLine.setM_Product(packagingProduct);
+		packagingInOutLine.setM_Product_ID(packagingProduct.getM_Product_ID());
 		packagingInOutLine.setIsPackagingMaterial(true);
 		packagingInOutLine.setMovementQty(TEN);
 		save(packagingInOutLine);
@@ -694,7 +694,7 @@ public class M_InOutLine_HandlerTest
 		materialInOutLine.setIsActive(true);
 		materialInOutLine.setM_InOut(inout);
 		materialInOutLine.setC_OrderLine(orderLine);
-		materialInOutLine.setM_Product(materialProduct);
+		materialInOutLine.setM_Product_ID(materialProduct.getM_Product_ID());
 		materialInOutLine.setQtyEnteredTU(qtyEnteredTU);
 		materialInOutLine.setIsPackagingMaterial(false);
 		save(materialInOutLine);

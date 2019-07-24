@@ -45,6 +45,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -169,7 +170,7 @@ public class M_InOutLine
 		else
 		{
 			// Case: there is no line were we can add the difference, so we are creating one now
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(inOutLine.getM_Product()); // we assume MovementQty is in product's stocking UOM
+			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(ProductId.ofRepoId(inOutLine.getM_Product_ID())); // we assume MovementQty is in product's stocking UOM
 
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked adjustments_allocNew = //

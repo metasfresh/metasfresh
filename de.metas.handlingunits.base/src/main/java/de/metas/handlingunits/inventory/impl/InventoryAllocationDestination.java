@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inventory.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -50,6 +51,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
@@ -299,7 +301,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			final InventoryLineCandidate candidate = InventoryLineCandidate.builder()
 					.movementDate(request.getDate())
 					.productId(request.getProductId())
-					.qty(Quantity.of(BigDecimal.ZERO, receiptLine.getC_UOM()))
+					.qty(Quantity.zero(loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class)))
 
 					.topLevelHUId(topLevelHuId)
 					.poReference(poReference)

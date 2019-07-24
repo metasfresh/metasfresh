@@ -293,7 +293,7 @@ public class WaschprobeStandardMasterData
 
 		final I_M_InOutLine iol = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class, context);
 		iol.setM_InOut(io);
-		iol.setM_Product(product);
+		iol.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(iol);
 
 		return iol;

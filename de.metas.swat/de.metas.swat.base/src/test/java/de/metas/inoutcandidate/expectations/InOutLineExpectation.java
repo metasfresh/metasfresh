@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.expectations;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -74,7 +76,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		final I_M_Product expectedProduct = getM_Product();
 		if (expectedProduct != null)
 		{
-			final I_M_Product actualProduct = inoutLine.getM_Product();
+			final I_M_Product actualProduct = loadOutOfTrx(inoutLine.getM_Product_ID(), I_M_Product.class);
 			assertModelEquals(message.expect("Invalid product"), expectedProduct, actualProduct);
 		}
 

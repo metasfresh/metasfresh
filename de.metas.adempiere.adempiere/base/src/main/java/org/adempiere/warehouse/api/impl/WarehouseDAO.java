@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -62,6 +63,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
 import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -272,7 +274,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		return loadOutOfTrx(locatorId, modelClass);
 	}
-	
+
 	@Override
 	public <T extends I_M_Locator> T getLocatorByIdInTrx(@NonNull final LocatorId locatorId, @NonNull Class<T> modelClass)
 	{
@@ -518,5 +520,42 @@ public class WarehouseDAO implements IWarehouseDAO
 				.id(WarehouseTypeId.ofRepoId(record.getM_Warehouse_Type_ID()))
 				.name(name)
 				.build();
+	}
+
+	public static final String MSG_M_Warehouse_NoQuarantineWarehouse = "M_Warehouse_NoQuarantineWarehouse";
+
+	@Override
+	@Cached(cacheName = I_M_Warehouse.Table_Name + "#" + org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse)
+	public I_M_Warehouse retrieveWarehouseForIssuesOrNull(@CacheCtx final Properties ctx)
+	{
+		final I_M_Warehouse warehouse = Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnly(I_M_Warehouse.class);
+		return warehouse;
+	}
+
+	@Override
+	public final I_M_Warehouse retrieveWarehouseForIssues(Properties ctx)
+	{
+		final I_M_Warehouse warehouse = retrieveWarehouseForIssuesOrNull(ctx);
+		if (warehouse == null)
+		{
+			throw new AdempiereException("@NotFound@ @M_Warehouse_ID@ (@IsIssueWarehouse@=@Y@)");
+		}
+		return warehouse;
+	}
+
+	@Override
+	public org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull()
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Warehouse.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(org.adempiere.warehouse.model.I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse, true)
+				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
+				.create()
+				.first();
 	}
 }

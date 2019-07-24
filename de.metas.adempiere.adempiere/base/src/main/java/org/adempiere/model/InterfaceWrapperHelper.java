@@ -360,9 +360,9 @@ public class InterfaceWrapperHelper
 	/**
 	 * Loads given model, out of transaction.
 	 * NOTE: to be used, mainly for loading master data models.
+	 * NOTE: when we are where we want to be, this will only be invoked from repositories!
 	 *
 	 * @param id model's ID
-	 * @param modelClass
 	 * @return loaded model
 	 */
 	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
