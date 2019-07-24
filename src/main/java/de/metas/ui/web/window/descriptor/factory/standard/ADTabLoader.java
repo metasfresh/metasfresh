@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 
@@ -36,7 +37,7 @@ import lombok.Value;
 @Builder
 public class ADTabLoader
 {
-	int adWindowId;
+	AdWindowId adWindowId;
 
 	@NonNull
 	LayoutFactory rootLayoutFactory;
