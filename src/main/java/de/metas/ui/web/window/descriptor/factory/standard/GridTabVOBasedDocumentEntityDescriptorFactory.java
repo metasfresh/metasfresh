@@ -39,6 +39,7 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -211,7 +212,7 @@ import lombok.NonNull;
 		//
 		// Entity descriptor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
-				.setDocumentType(gridTabVO.getAdWindowId())
+				.setDocumentType(DocumentType.Window, gridTabVO.getAD_Window_ID())
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())
 				//

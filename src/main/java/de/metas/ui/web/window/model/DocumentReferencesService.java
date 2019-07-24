@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory;
@@ -89,7 +88,7 @@ public class DocumentReferencesService
 
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
 
-			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toAdWindowId());
+			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toInt());
 			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument);
 			return createDocumentReference(zoomInfo, filterCaption);
 		});
@@ -137,7 +136,7 @@ public class DocumentReferencesService
 				.id(zoomInfo.getId())
 				.internalName(zoomInfo.getInternalName())
 				.caption(zoomInfo.getLabel())
-				.windowId(WindowId.of(zoomInfo.getAdWindowId()))
+				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
 				.documentsCount(zoomInfo.getRecordCount())
 				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
 				.loadDuration(zoomInfo.getRecordCountDuration())
@@ -149,7 +148,7 @@ public class DocumentReferencesService
 		private final Properties ctx;
 		private final Evaluatee evaluationContext;
 
-		private final AdWindowId adWindowId;
+		private final int adWindowId;
 		private final int adTableId;
 		private final int recordId;
 		private final String keyColumnName;
@@ -168,7 +167,7 @@ public class DocumentReferencesService
 			evaluationContext = document.asEvaluatee();
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-			adWindowId = entityDescriptor.getWindowId().toAdWindowId();
+			adWindowId = entityDescriptor.getWindowId().toInt();
 			tableName = entityDescriptor.getTableName();
 
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
@@ -232,7 +231,7 @@ public class DocumentReferencesService
 		}
 
 		@Override
-		public AdWindowId getAD_Window_ID()
+		public int getAD_Window_ID()
 		{
 			return adWindowId;
 		}

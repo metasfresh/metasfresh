@@ -25,6 +25,7 @@ import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.dataentry.model.I_DataEntry_SubTab;
 import de.metas.dataentry.model.I_DataEntry_Tab;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -324,7 +325,7 @@ public class DataEntryTabLoader
 
 		final DocumentEntityDescriptor documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
-				.setDocumentType(getAdWindowId())
+				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
 				.setDetailId(createDetailIdFor(dataEntryTab))
 				.setInternalName(dataEntryTab.getInternalName())
 				.setCaption(dataEntryTab.getCaption())
@@ -353,7 +354,7 @@ public class DataEntryTabLoader
 		final DocumentEntityDescriptor.Builder documentEntityDescriptor = DocumentEntityDescriptor
 				.builder()
 				.setSingleRowDetail(true)
-				.setDocumentType(getAdWindowId())
+				.setDocumentType(DocumentType.Window, getAdWindowId().getRepoId())
 				.setDetailId(createDetailIdFor(dataEntrySubTab))
 				.setInternalName(dataEntrySubTab.getInternalName())
 				.setCaption(dataEntrySubTab.getCaption())

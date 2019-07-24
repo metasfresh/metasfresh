@@ -20,7 +20,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -95,7 +94,7 @@ import lombok.NonNull;
 
 public final class Document
 {
-	public static Builder builder(final DocumentEntityDescriptor entityDescriptor)
+	public static final Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return new Builder(entityDescriptor);
 	}
@@ -160,7 +159,7 @@ public final class Document
 	// Misc
 	private Map<String, Object> _dynAttributes = null; // lazy
 
-	public interface DocumentValuesSupplier
+	public static interface DocumentValuesSupplier
 	{
 		Object NO_VALUE = new String("NO_VALUE");
 
@@ -405,7 +404,7 @@ public final class Document
 		return _writable;
 	}
 
-	private void initializeFields(final FieldInitializationMode mode, final DocumentValuesSupplier documentValuesSupplier)
+	private final void initializeFields(final FieldInitializationMode mode, final DocumentValuesSupplier documentValuesSupplier)
 	{
 		logger.trace("Initializing fields: mode={}", mode);
 
@@ -658,7 +657,7 @@ public final class Document
 			return parentSupplier.getVersion();
 		}
 
-		private IDocumentEvaluatee getEvaluatee(final DocumentFieldDescriptor fieldInScope)
+		private final IDocumentEvaluatee getEvaluatee(final DocumentFieldDescriptor fieldInScope)
 		{
 			if (fieldInScope == null)
 			{
@@ -734,7 +733,7 @@ public final class Document
 			if (documentType == DocumentType.Window && !fieldDescriptor.isVirtualField())
 			{
 				final Properties ctx = Env.getCtx();
-				final AdWindowId adWindowId = documentTypeId.toId(AdWindowId::ofRepoId);
+				final int adWindowId = documentTypeId.toInt();
 				final String fieldName = fieldDescriptor.getFieldName();
 
 				//
@@ -766,7 +765,7 @@ public final class Document
 		}
 	}
 
-	public enum CopyMode
+	public static enum CopyMode
 	{
 		CheckOutWritable(true), CheckInReadonly(false);
 
@@ -794,7 +793,7 @@ public final class Document
 		return new Document(this, parentDocumentCopy, copyMode, parentDocumentCopy.changesCollector);
 	}
 
-	/* package */void assertWritable()
+	/* package */final void assertWritable()
 	{
 		if (isInitializing())
 		{
@@ -823,7 +822,7 @@ public final class Document
 	}
 
 	@Override
-	public String toString()
+	public final String toString()
 	{
 		// NOTE: keep it short
 
@@ -1073,7 +1072,7 @@ public final class Document
 		return _valid;
 	}
 
-	private DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
+	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
 
@@ -1108,7 +1107,7 @@ public final class Document
 		return _saveStatus;
 	}
 
-	private DocumentSaveStatus setSaveStatusAndReturn(@NonNull final DocumentSaveStatus saveStatus)
+	private final DocumentSaveStatus setSaveStatusAndReturn(@NonNull final DocumentSaveStatus saveStatus)
 	{
 		_saveStatus = saveStatus;
 		final DocumentSaveStatus saveStatusOnCheckoutOld = _saveStatusOnCheckout;
@@ -1212,7 +1211,7 @@ public final class Document
 		setValue(documentField, value, reason);
 	}
 
-	private void setValue(final IDocumentField documentField, final Object value, final ReasonSupplier reason)
+	private final void setValue(final IDocumentField documentField, final Object value, final ReasonSupplier reason)
 	{
 		assertWritable();
 
@@ -1309,7 +1308,7 @@ public final class Document
 		getFields().forEach(documentField -> updateFieldReadOnlyAndCollect(documentField, reason));
 	}
 
-	private DocumentReadonly computeReadonly()
+	private final DocumentReadonly computeReadonly()
 	{
 		final ILogicExpression allFieldsReadonlyLogic = getEntityDescriptor().getReadonlyLogic();
 		LogicExpressionResult allFieldsReadonly;
@@ -1332,7 +1331,7 @@ public final class Document
 		return readonlyComputed;
 	}
 
-	private void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
+	private final void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
 	{
 		final LogicExpressionResult readonlyOld = documentField.getReadonly();
 		final LogicExpressionResult readonlyNew = computeFieldReadOnly(documentField);
@@ -1343,7 +1342,7 @@ public final class Document
 		}
 	}
 
-	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
+	private final LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
 		// Check document's readonly logic
 		final DocumentReadonly documentReadonlyLogic = getReadonly();
@@ -1367,7 +1366,7 @@ public final class Document
 
 	}
 
-	private void updateFieldDisplayed(final IDocumentField documentField)
+	private final void updateFieldDisplayed(final IDocumentField documentField)
 	{
 		LogicExpressionResult displayed = LogicExpressionResult.FALSE; // default false, i.e. not displayed
 		final ILogicExpression displayLogic = documentField.getDescriptor().getDisplayLogic();
@@ -1384,7 +1383,7 @@ public final class Document
 		documentField.setDisplayed(displayed);
 	}
 
-	private void updateFieldsWhichDependsOn(final String triggeringFieldName)
+	private final void updateFieldsWhichDependsOn(final String triggeringFieldName)
 	{
 		final DocumentFieldDependencyMap dependencies = getEntityDescriptor().getDependencies();
 		dependencies.consumeForChangedFieldName(triggeringFieldName, (dependentFieldName, dependencyType) -> {
@@ -1601,13 +1600,13 @@ public final class Document
 	 * @param name
 	 * @param value
 	 */
-	public Object setDynAttribute(final String name, final Object value)
+	public final Object setDynAttribute(final String name, final Object value)
 	{
 		assertWritable();
 		return setDynAttributeNoCheck(name, value);
 	}
 
-	private Object setDynAttributeNoCheck(final String name, final Object value)
+	private final Object setDynAttributeNoCheck(final String name, final Object value)
 	{
 		Check.assumeNotEmpty(name, "name not empty");
 
@@ -1627,7 +1626,7 @@ public final class Document
 	 * @param name
 	 * @return attribute value or null if not found
 	 */
-	public <T> T getDynAttribute(final String name)
+	public final <T> T getDynAttribute(final String name)
 	{
 		final T defaultValue = null;
 		return getDynAttribute(name, defaultValue);
@@ -1640,7 +1639,7 @@ public final class Document
 	 * @param defaultValue
 	 * @return attribute value or <code>defaultValue</code> if not found
 	 */
-	public <T> T getDynAttribute(final String name, final T defaultValue)
+	public final <T> T getDynAttribute(final String name, final T defaultValue)
 	{
 		if (_dynAttributes == null)
 		{
@@ -1658,7 +1657,7 @@ public final class Document
 		return value;
 	}
 
-	public boolean hasDynAttribute(final String name)
+	public final boolean hasDynAttribute(final String name)
 	{
 		final Map<String, Object> dynAttributes = _dynAttributes;
 		return dynAttributes != null && dynAttributes.get(name) != null;
@@ -1674,14 +1673,14 @@ public final class Document
 		return ImmutableSet.copyOf(dynAttributes.keySet());
 	}
 
-	/* package */ interface OnValidStatusChanged
+	/* package */ static interface OnValidStatusChanged
 	{
 		void onInvalidStatus(Document document, DocumentValidStatus invalidStatus);
 
-		OnValidStatusChanged DO_NOTHING = (document, invalidStatus) -> {
+		public static final OnValidStatusChanged DO_NOTHING = (document, invalidStatus) -> {
 		};
 
-		OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
+		public static final OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
 			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus));
 		};
 
@@ -1700,7 +1699,7 @@ public final class Document
 	 *
 	 * @param onValidStatusChanged callback to be called when the valid state of this document or of any of it's included documents was changed
 	 */
-	/* package */ DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
+	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
 	{
 		//
 		// Check document fields
@@ -2200,7 +2199,7 @@ public final class Document
 			return build();
 		}
 
-		private DocumentId getDocumentId()
+		private final DocumentId getDocumentId()
 		{
 			return _documentValuesSupplier.getDocumentId();
 		}
