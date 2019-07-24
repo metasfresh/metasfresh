@@ -401,7 +401,6 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	private GridTabVO (final Properties ctx, final int windowNo, final int tabNo, final boolean loadAllLanguages, final boolean applyRolePermissions)
 	{
-		super();
 		this.ctx = ctx;
 		this.WindowNo = windowNo;
 		this.TabNo = tabNo;
