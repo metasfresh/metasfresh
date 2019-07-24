@@ -55,8 +55,6 @@ public interface I_M_Securpharm_Productdata_Result
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Client>(I_M_Securpharm_Productdata_Result.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -81,10 +79,6 @@ public interface I_M_Securpharm_Productdata_Result
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, org.compiere.model.I_AD_Org>(I_M_Securpharm_Productdata_Result.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -287,6 +281,52 @@ public interface I_M_Securpharm_Productdata_Result
     public static final String COLUMNNAME_IsPackVerified = "IsPackVerified";
 
 	/**
+	 * Set Last Result Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastResultCode (java.lang.String LastResultCode);
+
+	/**
+	 * Get Last Result Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastResultCode();
+
+    /** Column definition for LastResultCode */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_LastResultCode = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "LastResultCode", null);
+    /** Column name LastResultCode */
+    public static final String COLUMNNAME_LastResultCode = "LastResultCode";
+
+	/**
+	 * Set Last Result Message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLastResultMessage (java.lang.String LastResultMessage);
+
+	/**
+	 * Get Last Result Message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLastResultMessage();
+
+    /** Column definition for LastResultMessage */
+    public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object> COLUMN_LastResultMessage = new org.adempiere.model.ModelColumn<I_M_Securpharm_Productdata_Result, Object>(I_M_Securpharm_Productdata_Result.class, "LastResultMessage", null);
+    /** Column name LastResultMessage */
+    public static final String COLUMNNAME_LastResultMessage = "LastResultMessage";
+
+	/**
 	 * Set Chargennummer.
 	 *
 	 * <br>Type: String
@@ -333,7 +373,7 @@ public interface I_M_Securpharm_Productdata_Result
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set SecurPharm product data result.
+	 * Set Securpharm Produktdaten Ergebnise.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -342,7 +382,7 @@ public interface I_M_Securpharm_Productdata_Result
 	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID);
 
 	/**
-	 * Get SecurPharm product data result.
+	 * Get Securpharm Produktdaten Ergebnise.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

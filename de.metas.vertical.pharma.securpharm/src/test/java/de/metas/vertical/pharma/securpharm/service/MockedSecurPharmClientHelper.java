@@ -51,6 +51,15 @@ import lombok.NonNull;
 @Ignore
 public class MockedSecurPharmClientHelper
 {
+	public static final String RESULT_CODE_OK = "OK_Code";
+	public static final String RESULT_MESSAGE_OK = "OK message";
+
+	public static final String RESULT_CODE_DECODE_ERROR = "decodeErrorCode";
+	public static final String RESULT_MESSAGE_DECODE_ERROR = "decodeErrorMessage";
+
+	public static final String RESULT_CODE_VERIFY_ERROR = "verifyErrorCode";
+	public static final String RESULT_MESSAGE_VERIFY_ERROR = "verifyErrorMessage";
+
 	private final SecurPharmClient client;
 	@Getter
 	private final SecurPharmConfigRespository configRespository;
@@ -126,6 +135,8 @@ public class MockedSecurPharmClientHelper
 	{
 		Mockito.when(client.decodeDataMatrix(dataMatrix))
 				.thenReturn(DecodeDataMatrixClientResponse.builder()
+						.resultCode(RESULT_CODE_OK)
+						.resultMessage(RESULT_MESSAGE_OK)
 						.productDetails(productDetailsToReturn)
 						.log(generateDummyLogOK())
 						.build());
@@ -136,8 +147,8 @@ public class MockedSecurPharmClientHelper
 		Mockito.when(client.decodeDataMatrix(dataMatrix))
 				.thenReturn(DecodeDataMatrixClientResponse.builder()
 						.error(true)
-						.resultCode("errorCode")
-						.resultMessage("errorMessage")
+						.resultCode(RESULT_CODE_DECODE_ERROR)
+						.resultMessage(RESULT_MESSAGE_DECODE_ERROR)
 						.log(generateDummyLogERROR())
 						.build());
 	}
@@ -146,7 +157,8 @@ public class MockedSecurPharmClientHelper
 	{
 		Mockito.when(client.verifyProduct(productDetails))
 				.thenReturn(VerifyProductClientResponse.builder()
-						.resultCode("200")
+						.resultCode(RESULT_CODE_OK)
+						.resultMessage(RESULT_MESSAGE_OK)
 						.productDetails(productDetails)
 						.log(generateDummyLogOK())
 						.build());
@@ -156,7 +168,8 @@ public class MockedSecurPharmClientHelper
 	{
 		Mockito.when(client.verifyProduct(productDetails))
 				.thenReturn(VerifyProductClientResponse.builder()
-						.resultCode("200")
+						.resultCode(RESULT_CODE_VERIFY_ERROR)
+						.resultMessage(RESULT_MESSAGE_VERIFY_ERROR)
 						.productDetails(null)
 						.log(generateDummyLogERROR())
 						.build());
