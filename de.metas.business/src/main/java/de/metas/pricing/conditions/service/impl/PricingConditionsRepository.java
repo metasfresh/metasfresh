@@ -313,7 +313,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.create()
 				.stream();
 	}
-
 	@VisibleForTesting
 	/* package */ List<I_M_DiscountSchemaLine> retrieveLines(final int discountSchemaId)
 	{
@@ -545,12 +544,12 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherDiscountSchemas = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
 				.addFilter(queryFilter)
 				.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditionsId);
 
-		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherDiscountSchemas);
+		final List<I_M_DiscountSchemaBreak> discountSchemaBreakRecords = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
 
 		for (I_M_DiscountSchemaBreak schemaBreak : discountSchemaBreakRecords)
 		{
