@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -60,7 +61,12 @@ public final class UserRolePermissionsKey implements Serializable
 	public static UserRolePermissionsKey fromContext(@NonNull final Properties ctx)
 	{
 		final RoleId roleId = Env.getLoggedRoleId(ctx);
-		final UserId userId = Env.getLoggedUserId(ctx);
+		final UserId userId = Env
+				.getLoggedUserIdIfExists(ctx)
+				.orElseThrow(() -> new AdempiereException("Given ctx contains no " + Env.CTXNAME_AD_User_ID)
+						.appendParametersToMessage()
+						.setParameter("ctx", ctx));
+
 		final ClientId adClientId = Env.getClientId(ctx);
 		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 		return new UserRolePermissionsKey(roleId, userId, adClientId, date);

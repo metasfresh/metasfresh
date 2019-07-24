@@ -192,14 +192,6 @@ public class GridTabVO implements Evaluatee, Serializable
 				return false;
 			}
 
-			//
-			// If EntityType is not displayed, hide this tab
-			vo.entityType = rs.getString("EntityType");
-			if (!Check.isEmpty(vo.entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(vo.entityType))
-			{
-				vo.addLoadErrorMessage("EntityType not displayed");
-				return false;
-			}
 
 			//	DisplayLogic
 			final String DisplayLogic = rs.getString("DisplayLogic");
@@ -218,6 +210,14 @@ public class GridTabVO implements Evaluatee, Serializable
 			// Apply role permissions
 			if(vo.applyRolePermissions)
 			{
+				// If EntityType is not displayed, hide this tab; note that this decision role-specific
+				vo.entityType = rs.getString("EntityType");
+				if (!Check.isEmpty(vo.entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(vo.entityType))
+				{
+					vo.addLoadErrorMessage("EntityType not displayed");
+					return false;
+				}
+
 				final IUserRolePermissions role = Env.getUserRolePermissions(vo.ctx);
 
 				if (!role.canView(vo.AccessLevel))	// No Access
@@ -318,10 +318,10 @@ public class GridTabVO implements Evaluatee, Serializable
 			catch (Exception e)
 			{
 			}
-			
+
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
-			
+
 			loadTabDetails_metas(vo, rs); // metas
 		}
 		catch (SQLException ex)
@@ -508,7 +508,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	private List<GridFieldVO> _fields = null; // lazy
 	private Optional<GridFieldVO> _keyField = null; // lazy
 	private Set<String> _linkColumnNames = null; // lazy
-	
+
 	@Getter
 	private boolean allowQuickInput;
 	@Getter
@@ -734,10 +734,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		//  Derived
 		clone.onlyCurrentRows = true;
 		clone.onlyCurrentDays = 0;
-		
+
 		clone.allowQuickInput = allowQuickInput;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
-		
+
 		clone_metas(ctx, windowNo, clone); // metas
 
 		final List<GridFieldVO> fields = _fields;
