@@ -41,9 +41,19 @@ class TableCell extends PureComponent {
 
       // For German natives we want to show numbers with comma as a value separator
       // https://github.com/metasfresh/me03/issues/1822
-      return isGerman && parseFloat(returnValue) != null
-        ? `${returnValue}`.replace('.', ',')
-        : returnValue;
+      if (isGerman && parseFloat(returnValue) != null) {
+        const commaRegexp = /,/g;
+        commaRegexp.test(returnValue);
+        const lastIdx = commaRegexp.lastIndex;
+
+        if (lastIdx) {
+          return returnValue;
+        }
+
+        return `${returnValue}`.replace('.', ',');
+      }
+
+      return returnValue;
     }
 
     return '';
