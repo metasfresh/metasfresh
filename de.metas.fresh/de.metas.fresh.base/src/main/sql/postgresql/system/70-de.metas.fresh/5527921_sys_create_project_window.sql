@@ -1,3 +1,46 @@
+INSERT INTO t_alter_column values('c_project_user','C_Project_User_ID','NUMERIC(10)',null,null)
+;
+-- 2018-04-12T15:24:02.079
+-- project window
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,559677,543957,0,13,540961,'N','C_Project_User_ID',TO_TIMESTAMP('2018-04-12 15:24:02','YYYY-MM-DD HH24:MI:SS'),100,'U',10,'Y','Y','N','N','N','Y','Y','N','N','N','N','Projektkontakt',TO_TIMESTAMP('2018-04-12 15:24:02','YYYY-MM-DD HH24:MI:SS'),100,1)
+;
+
+-- 2018-04-12T15:24:02.082
+-- project window
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=559677 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2018-04-12T15:24:02.090
+-- project window
+CREATE SEQUENCE C_PROJECT_USER_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
+;
+alter table  c_project_user drop column c_project_user_id;
+
+-- 2018-04-12T15:24:02.095
+-- project window
+ALTER TABLE C_Project_User ADD COLUMN C_Project_User_ID numeric(10,0) NOT NULL DEFAULT nextval('c_project_user_seq')
+;
+
+-- 2018-04-12T15:24:02.103
+-- project window
+ALTER TABLE C_Project_User DROP CONSTRAINT IF EXISTS c_project_user_pkey
+;
+
+-- 2018-04-12T15:24:02.104
+-- project window
+ALTER TABLE C_Project_User DROP CONSTRAINT IF EXISTS c_project_user_key
+;
+
+-- 2018-04-12T15:24:02.104
+-- project window
+ALTER TABLE C_Project_User ADD CONSTRAINT c_project_user_pkey PRIMARY KEY (C_Project_User_ID)
+;
+
+-- 2018-04-12T15:24:11.832
+-- project window
+INSERT INTO t_alter_column values('c_project_user','Created','TIMESTAMP WITH TIME ZONE',null,null)
+;
+
 
 -- 2019-07-23T19:29:14.294
 -- URL zum Konzept
