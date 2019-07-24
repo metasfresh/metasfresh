@@ -5,10 +5,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -29,6 +31,8 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.util.Services;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 public class ValuePreferenceBL implements IValuePreferenceBL
 {
 	@Override
@@ -48,7 +52,7 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 	}
 
 	@Cached(cacheName = I_AD_Preference.Table_Name + "#by#AD_Window_ID#Attribute")
-	Map<AdWindowId, IUserValuePreferences> retrieveAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
+	Map<Optional<AdWindowId>, IUserValuePreferences> retrieveAllWindowPreferences(final int AD_Client_ID, final int AD_Org_ID, final int AD_User_ID)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Preference.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -66,25 +70,24 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 				//
 				.create().stream()
 				.collect(UserValuePreferencesBuilder.byWindowIdCollector())
-		//
-		;
+				//
+				;
 	}
 
 	@Value(staticConstructor = "of")
 	private static final class UserValuePreference implements IUserValuePreference
 	{
-		private final AdWindowId adWindowId;
+		private final Optional<AdWindowId> adWindowIdOptional;
 		private final String name;
 		private final String value;
-		
+
 		@Override
 		public <T> T getValue(final Class<T> clazz)
 		{
 			final String valueStr = getValue();
 			if (String.class.equals(clazz))
 			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)valueStr;
+				@SuppressWarnings("unchecked") final T value = (T)valueStr;
 				return value;
 			}
 
@@ -92,22 +95,19 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 			{
 				try
 				{
-					@SuppressWarnings("unchecked")
-					final T value = (T)(Integer)Integer.parseInt(valueStr);
+					@SuppressWarnings("unchecked") final T value = (T)(Integer)Integer.parseInt(valueStr);
 					return value;
 				}
 				catch (final NumberFormatException e)
 				{
-					@SuppressWarnings("unchecked")
-					final T value = (T)Integer.valueOf(0);
+					@SuppressWarnings("unchecked") final T value = (T)Integer.valueOf(0);
 					return value;
 				}
 			}
 
 			if (Boolean.class.equals(clazz))
 			{
-				@SuppressWarnings("unchecked")
-				final T value = (T)(Boolean)DisplayType.toBoolean(valueStr);
+				@SuppressWarnings("unchecked") final T value = (T)(Boolean)DisplayType.toBoolean(valueStr);
 				return value;
 			}
 
@@ -129,25 +129,30 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 
 			return null;
 		}
+
+		@Override public AdWindowId getAdWindowId()
+		{
+			return adWindowIdOptional.orElse(null);
+		}
+
 	}
 
 	private static final class UserValuePreferences implements IUserValuePreferences
 	{
 		public static final UserValuePreferences EMPTY = new UserValuePreferences();
 
-		private final AdWindowId adWindowId;
+		private final Optional<AdWindowId> adWindowIdOptional;
 		private final Map<String, IUserValuePreference> name2value;
 
-		private UserValuePreferences(final UserValuePreferencesBuilder builder)
+		private UserValuePreferences(@NonNull final UserValuePreferencesBuilder builder)
 		{
-			adWindowId = builder.adWindowId;
+			adWindowIdOptional = builder.adWindowIdOptional;
 			name2value = ImmutableMap.copyOf(builder.name2value);
 		}
 
-		/** empty constructor */
 		private UserValuePreferences()
 		{
-			adWindowId = null;
+			adWindowIdOptional = Optional.empty();
 			name2value = ImmutableMap.of();
 		}
 
@@ -155,15 +160,15 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
-					.add("AD_Window_ID", adWindowId)
+					.add("AD_Window_ID", adWindowIdOptional)
 					.add("values", name2value)
 					.toString();
 		}
 
-		@Override
+		@Nullable @Override
 		public AdWindowId getAdWindowId()
 		{
-			return adWindowId;
+			return adWindowIdOptional.orElse(null);
 		}
 
 		@Override
@@ -197,10 +202,10 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 
 	private static final class UserValuePreferencesBuilder
 	{
-		public static Collector<I_AD_Preference, ?, ImmutableMap<AdWindowId, IUserValuePreferences>> byWindowIdCollector()
+		public static Collector<I_AD_Preference, ?, ImmutableMap<Optional<AdWindowId>, IUserValuePreferences>> byWindowIdCollector()
 		{
 			return Collectors.collectingAndThen(
-					Collectors.groupingBy(adPreference -> extractAdWindowId(adPreference), collector()) // downstream collector: AD_Window_ID->IUserValuePreferences
+					Collectors.groupingBy((I_AD_Preference adPreference) -> extractAdWindowId(adPreference), collector()) // downstream collector: AD_Window_ID->IUserValuePreferences
 					, ImmutableMap::copyOf // finisher
 			);
 		}
@@ -216,12 +221,12 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 			);
 		}
 
-		private static AdWindowId extractAdWindowId(final I_AD_Preference adPreference)
+		private static Optional<AdWindowId> extractAdWindowId(final I_AD_Preference adPreference)
 		{
-			return AdWindowId.ofRepoIdOrNull(adPreference.getAD_Window_ID());
+			return AdWindowId.optionalOfRepoId(adPreference.getAD_Window_ID());
 		}
 
-		private AdWindowId adWindowId;
+		private Optional<AdWindowId> adWindowIdOptional;
 		private final Map<String, IUserValuePreference> name2value = new HashMap<>();
 
 		private UserValuePreferencesBuilder()
@@ -245,19 +250,20 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 
 		public UserValuePreferencesBuilder add(final I_AD_Preference adPreference)
 		{
-			final AdWindowId currentWindowId = extractAdWindowId(adPreference);
+			final Optional<AdWindowId> currentWindowId = extractAdWindowId(adPreference);
 			if (isEmpty())
 			{
-				adWindowId = currentWindowId;
+				adWindowIdOptional = currentWindowId;
 			}
-			else if (!AdWindowId.equals(adWindowId, currentWindowId))
+
+			else if (!adWindowIdOptional.equals(currentWindowId))
 			{
-				throw new IllegalArgumentException("Preference " + adPreference + "'s AD_Window_ID=" + currentWindowId + " is not matching builder's AD_Window_ID=" + adWindowId);
+				throw new IllegalArgumentException("Preference " + adPreference + "'s AD_Window_ID=" + currentWindowId + " is not matching builder's AD_Window_ID=" + adWindowIdOptional);
 			}
 
 			final String attributeName = adPreference.getAttribute();
 			final String attributeValue = adPreference.getValue();
-			name2value.put(attributeName, UserValuePreference.of(adWindowId, attributeName, attributeValue));
+			name2value.put(attributeName, UserValuePreference.of(adWindowIdOptional, attributeName, attributeValue));
 			return this;
 		}
 
@@ -268,9 +274,9 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 				return this;
 			}
 
-			if (!isEmpty() && adWindowId != fromBuilder.adWindowId)
+			if (!isEmpty() && !adWindowIdOptional.equals(fromBuilder.adWindowIdOptional))
 			{
-				throw new IllegalArgumentException("Builder " + fromBuilder + "'s AD_Window_ID=" + fromBuilder.adWindowId + " is not matching builder's AD_Window_ID=" + adWindowId);
+				throw new IllegalArgumentException("Builder " + fromBuilder + "'s AD_Window_ID=" + fromBuilder.adWindowIdOptional + " is not matching builder's AD_Window_ID=" + adWindowIdOptional);
 			}
 
 			name2value.putAll(fromBuilder.name2value);

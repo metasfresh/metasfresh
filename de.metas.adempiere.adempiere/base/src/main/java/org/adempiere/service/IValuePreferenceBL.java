@@ -30,11 +30,13 @@ import org.adempiere.ad.element.api.AdWindowId;
 
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IValuePreferenceBL extends ISingletonService
 {
 	public interface IUserValuePreference
 	{
-		AdWindowId getAdWindowId();
+		@Nullable AdWindowId getAdWindowId();
 
 		String getName();
 
@@ -45,7 +47,7 @@ public interface IValuePreferenceBL extends ISingletonService
 
 	public interface IUserValuePreferences
 	{
-		AdWindowId getAdWindowId();
+		@Nullable AdWindowId getAdWindowId();
 
 		String getValue(String name);
 

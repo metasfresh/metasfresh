@@ -1,14 +1,15 @@
 package org.adempiere.ad.element.api;
 
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,13 +36,13 @@ import lombok.Value;
 @Value
 public class AdWindowId implements RepoIdAware
 {
-	@JsonCreator
+	@NonNull @JsonCreator
 	public static AdWindowId ofRepoId(final int repoId)
 	{
 		return new AdWindowId(repoId);
 	}
 
-	public static AdWindowId ofRepoIdOrNull(final int repoId)
+	@Nullable public static AdWindowId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdWindowId(repoId) : null;
 	}
