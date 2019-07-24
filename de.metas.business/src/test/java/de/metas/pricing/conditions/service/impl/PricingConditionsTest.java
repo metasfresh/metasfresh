@@ -107,7 +107,8 @@ public class PricingConditionsTest
 
 		final I_M_DiscountSchemaBreak schemaBreak3 = PricingConditionsTestUtils.createBreak(schema2, 10);
 
-		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(ImmutableList.of(schema1.getM_DiscountSchema_ID()))
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(schema1.getM_DiscountSchema_ID());
+		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(ImmutableList.of(pricingConditionsId))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(breaks).hasSize(2);

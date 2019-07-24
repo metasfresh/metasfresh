@@ -5,7 +5,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
-import de.metas.pricing.DiscountSchemaId;
+import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -42,7 +42,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema extends JavaProcess impleme
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Param(parameterName = I_M_DiscountSchema.COLUMNNAME_M_DiscountSchema_ID)
-	private DiscountSchemaId p_DiscountSchemaId;
+	private PricingConditionsId p_PricingConditionsId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -64,7 +64,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema extends JavaProcess impleme
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		pricingConditionsRepo.copyDiscountSchemaBreaks(p_DiscountSchemaId, queryFilter);
+		pricingConditionsRepo.copyDiscountSchemaBreaks(p_PricingConditionsId, queryFilter);
 
 		return MSG_OK;
 	}

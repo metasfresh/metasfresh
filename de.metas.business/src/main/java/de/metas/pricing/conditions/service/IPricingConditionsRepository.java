@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
-import de.metas.pricing.DiscountSchemaId;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -32,6 +31,6 @@ public interface IPricingConditionsRepository extends ISingletonService
 	 */
 	int resequence(int discountSchemaId);
 
-	void copyDiscountSchemaBreaks(DiscountSchemaId discountSchemaId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
+	void copyDiscountSchemaBreaks(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
 }
