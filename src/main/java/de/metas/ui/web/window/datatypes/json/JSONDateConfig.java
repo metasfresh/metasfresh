@@ -1,9 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-
-import javax.annotation.Nullable;
 
 import org.compiere.util.Env;
 
@@ -34,7 +31,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class JSONDateConfig
 {
 	public static final JSONDateConfig DEFAULT = JSONDateConfig.builder()
@@ -44,36 +41,15 @@ public class JSONDateConfig
 			.localTimeFormatter(DateTimeFormatter.ofPattern("HH:mm"))
 			.build();
 
-	public static final JSONDateConfig LEGACY = JSONDateConfig.builder()
-			.zonedDateTimeFormatter(Env.DATE_FORMAT)
-			.timestampFormatter(Env.DATE_FORMAT)
-			.convertToZonedDateTimeBeforeFormatting(true)
-			.localDateFormatter(Env.DATE_FORMAT)
-			.localTimeFormatter(Env.DATE_FORMAT)
-			.build();
-
 	@NonNull
 	DateTimeFormatter zonedDateTimeFormatter;
 
 	@NonNull
 	DateTimeFormatter timestampFormatter;
 
-	// legacy
-	@Deprecated
-	boolean convertToZonedDateTimeBeforeFormatting;
-
 	@NonNull
 	DateTimeFormatter localDateFormatter;
 
 	@NonNull
 	DateTimeFormatter localTimeFormatter;
-
-	/** Fixed time zone, used for testing. */
-	@Nullable
-	ZoneId fixedTimeZone;
-
-	public boolean isLegacy()
-	{
-		return this == LEGACY;
-	}
 }
