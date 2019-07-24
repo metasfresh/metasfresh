@@ -292,14 +292,14 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 	}
 
 	@VisibleForTesting
-	/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Collection<PricingConditionsId> discountSchemaIds)
+	/* package */ Stream<I_M_DiscountSchemaBreak> streamSchemaBreakRecords(final Collection<PricingConditionsId> pricingConditionsId)
 	{
-		if (discountSchemaIds.isEmpty())
+		if (pricingConditionsId.isEmpty())
 		{
 			return Stream.empty();
 		}
 
-		final ImmutableList<Integer> discountSchemaRecordIds = discountSchemaIds.stream()
+		final ImmutableList<Integer> discountSchemaRecordIds = pricingConditionsId.stream()
 				.map(PricingConditionsId::getDiscountSchemaId)
 				.collect(ImmutableList.toImmutableList());
 
