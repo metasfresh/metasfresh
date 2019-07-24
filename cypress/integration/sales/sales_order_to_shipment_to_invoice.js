@@ -1,8 +1,8 @@
-import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
@@ -56,7 +56,6 @@ describe('Create Sales order', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
@@ -67,23 +66,20 @@ describe('Create Sales order', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .type('1{enter}');
-    // cy.wait('@resetQuickInputFields');
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
-    cy.wait(10000);
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -98,14 +94,14 @@ describe('Create Sales order', function() {
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
     /**Wait for the shipment schedule process to complete */
-    cy.wait(10000);
+    cy.waitUntilProcessIsFinished();
     /**Open notifications */
     cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')
       .first()
       .click();
-    cy.wait(5000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

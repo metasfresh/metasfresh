@@ -1,9 +1,9 @@
-import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from "../../support/utils/utils";
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
@@ -58,7 +58,7 @@ describe('Create Sales order', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
@@ -69,22 +69,20 @@ describe('Create Sales order', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .type('1{enter}');
-    cy.wait(3000);
+    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
-    cy.wait(8000);
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')

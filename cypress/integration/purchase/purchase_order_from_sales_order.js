@@ -4,9 +4,9 @@ import { ProductCategory, ProductPrice, Product } from '../../support/utils/prod
 import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
-import { salesOrders } from '../../page_objects/sales_orders';
 import { Builder } from '../../support/utils/builder';
-import { humanReadableNow } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Purchase order from sales order', function() {
   const date = humanReadableNow();
@@ -29,7 +29,7 @@ describe('Create Purchase order from sales order', function() {
   const vendorName = `Vendor ${date}`;
   const customerName = `Customer ${date}`;
 
-  before(function() {
+  it('Create price and product entities to be used in purchase order', function() {
     /**purchase price list */
     Builder.createBasicPriceEntities(purchasePriceSystem, purchasePriceListVersion, purchasePriceList, false);
     /**sales price list */
@@ -53,6 +53,8 @@ describe('Create Purchase order from sales order', function() {
         .addProductPrice(productPricePM2)
         .apply();
     });
+  });
+  it('Create packing related entities to be used in purchase order', function() {
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -71,6 +73,8 @@ describe('Create Purchase order from sales order', function() {
         .setPackingMaterial(packingMaterialName)
         .apply();
     });
+  });
+  it('Create product category, product, vendor and customer entities to be used in purchase order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -141,7 +145,6 @@ describe('Create Purchase order from sales order', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    // cy.wait(8000);
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
 
@@ -152,26 +155,25 @@ describe('Create Purchase order from sales order', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
+
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.wait(8000);
+    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
-    cy.wait(10000);
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+    /**Create purchase order from sales order */
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
@@ -205,6 +207,8 @@ describe('Create Purchase order from sales order', function() {
       .find('.quantity-cell')
       .contains('1');
     /**purchase order should be drafted */
-    cy.get('.tag.tag-primary').contains('Drafted');
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.get('.tag.tag-primary').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.Drafted));
+    });
   });
 });
