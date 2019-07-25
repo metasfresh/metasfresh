@@ -5,6 +5,7 @@ import java.net.URL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -17,6 +18,9 @@ import com.paypal.orders.PurchaseUnitRequest;
 import com.paypal.payments.Capture;
 
 import de.metas.currency.Amount;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMail;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.ClientEMailConfig;
@@ -25,8 +29,9 @@ import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.payment.paypal.client.PayPalClientExecutionContext;
-import de.metas.payment.paypal.client.PayPalClientExecutionContext.PayPalClientExecutionContextBuilder;
 import de.metas.payment.paypal.client.PayPalClientService;
 import de.metas.payment.paypal.client.PayPalOrder;
 import de.metas.payment.paypal.client.PayPalOrderExternalId;
@@ -125,15 +130,15 @@ public class PayPal
 	{
 		final PayPalConfig config = paypalClient.getConfig();
 
-		PayPalOrder order = paypalOrderService.create(reservation.getId());
+		PayPalOrder paypalOrder = paypalOrderService.create(reservation.getId());
 
 		final OrderRequest apiRequest = toAPIOrderRequest(reservation, config);
-		final Order apiOrder = paypalClient.createOrder(apiRequest, preparePayPalClientExecutionContext(reservation)
-				.internalPayPalOrderId(order.getId())
-				.build());
-		order = paypalOrderService.save(order.getId(), apiOrder);
+		final Order apiOrder = paypalClient.createOrder(
+				apiRequest,
+				createPayPalClientExecutionContext(reservation, paypalOrder));
+		paypalOrder = paypalOrderService.save(paypalOrder.getId(), apiOrder);
 
-		final URL payerApproveUrl = order.getPayerApproveUrl();
+		final URL payerApproveUrl = paypalOrder.getPayerApproveUrl();
 		sendPayerApprovalRequestEmail(reservation, payerApproveUrl, config.getOrderApproveMailTemplateId());
 	}
 
@@ -159,11 +164,15 @@ public class PayPal
 				.currencyCode(amount.getCurrencyCode().toThreeLetterCode());
 	}
 
-	private static PayPalClientExecutionContextBuilder preparePayPalClientExecutionContext(@NonNull final PaymentReservation reservation)
+	private static PayPalClientExecutionContext createPayPalClientExecutionContext(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final PayPalOrder paypalOrder)
 	{
 		return PayPalClientExecutionContext.builder()
 				.paymentReservationId(reservation.getId())
-				.salesOrderId(reservation.getSalesOrderId());
+				.salesOrderId(reservation.getSalesOrderId())
+				.internalPayPalOrderId(paypalOrder.getId())
+				.build();
 	}
 
 	public void sendPayerApprovalRequestEmail(final PayPalOrderId payPalOrderId)
@@ -233,9 +242,9 @@ public class PayPal
 		reservation.getStatus().assertApprovedByPayer();
 
 		PayPalOrder paypalOrder = paypalOrderService.getByReservationId(reservation.getId());
-		final Order apiOrder = paypalClient.authorizeOrder(paypalOrder.getExternalId(), preparePayPalClientExecutionContext(reservation)
-				.internalPayPalOrderId(paypalOrder.getId())
-				.build());
+		final Order apiOrder = paypalClient.authorizeOrder(
+				paypalOrder.getExternalId(),
+				createPayPalClientExecutionContext(reservation, paypalOrder));
 
 		paypalOrder = paypalOrderService.save(paypalOrder.getId(), apiOrder);
 		if (!paypalOrder.isAuthorized())
@@ -245,22 +254,35 @@ public class PayPal
 
 		reservation.changeStatusTo(paypalOrder.getStatus().toPaymentReservationStatus());
 		paymentReservationRepo.save(reservation);
+
+		completeSalesOrder(reservation.getSalesOrderId());
+	}
+
+	private void completeSalesOrder(@NonNull final OrderId salesOrderId)
+	{
+		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+
+		final I_C_Order order = ordersRepo.getById(salesOrderId);
+		final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
+		if (orderDocStatus.isWaitingForPayment())
+		{
+			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_WaitComplete);
+			ordersRepo.save(order);
+		}
 	}
 
 	public void captureMoney(final PaymentReservation reservation, final Money money)
 	{
-		PayPalOrder payPalOrder = paypalOrderService.getByReservationId(reservation.getId());
+		PayPalOrder paypalOrder = paypalOrderService.getByReservationId(reservation.getId());
 		final Boolean finalCapture = null;
 		final Capture apiCapture = paypalClient.captureOrder(
-				payPalOrder.getAuthorizationId(),
+				paypalOrder.getAuthorizationId(),
 				moneyService.toAmount(money),
 				finalCapture,
-				preparePayPalClientExecutionContext(reservation)
-						.internalPayPalOrderId(payPalOrder.getId())
-						.build());
+				createPayPalClientExecutionContext(reservation, paypalOrder));
 
-		payPalOrder = updatePayPalOrderFromAPI(payPalOrder.getExternalId());
-		updateReservationFromPayPalOrder(reservation, payPalOrder);
+		paypalOrder = updatePayPalOrderFromAPI(paypalOrder.getExternalId());
+		updateReservationFromPayPalOrder(reservation, paypalOrder);
 
 		// TODO
 		// toMoney(apiCapture.amount());
