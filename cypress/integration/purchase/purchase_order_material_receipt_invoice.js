@@ -120,7 +120,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
 
     cy.get('.form-field-Qty')
       .find('input')
-      .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
     cy.waitUntilProcessIsFinished();
@@ -138,7 +137,6 @@ describe('Create Purchase order - material receipt - invoice', function() {
 
     cy.get('.form-field-Qty')
       .find('input')
-      .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
     cy.waitUntilProcessIsFinished();
