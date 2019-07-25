@@ -1,8 +1,8 @@
 package de.metas.payment.processor;
 
-import de.metas.money.Money;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCapture;
 
 /*
  * #%L
@@ -34,5 +34,5 @@ public interface PaymentProcessor
 
 	void processReservation(PaymentReservation reservation);
 
-	void captureMoney(PaymentReservation reservation, Money amount);
+	void processCapture(final PaymentReservation reservation, PaymentReservationCapture capture);
 }

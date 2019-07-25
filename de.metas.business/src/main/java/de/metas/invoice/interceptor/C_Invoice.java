@@ -44,6 +44,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
@@ -53,9 +54,6 @@ import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.service.IPriceListDAO;
@@ -310,21 +308,21 @@ public class C_Invoice // 03771
 		}
 
 		//
-		// We capture money only for regular invoices (not credit memos)
-		// TODO: for credit memos we shall refund a part of already reserved money
-		if (!Services.get(IInvoiceBL.class).isCreditMemo(salesInvoice))
+		// Avoid reversals
+		if (Services.get(IInvoiceBL.class).isReversal(salesInvoice))
 		{
 			return;
 		}
 
 		//
-		// Make sure capturing is supported by payment rule
-		final PaymentRule paymentRule = PaymentRule.ofCode(salesInvoice.getPaymentRule());
-		if (!paymentReservationService.isPaymentCaptureRequired(paymentRule))
+		// We capture money only for regular invoices (not credit memos)
+		// TODO: for credit memos we shall refund a part of already reserved money
+		if (Services.get(IInvoiceBL.class).isCreditMemo(salesInvoice))
 		{
 			return;
 		}
 
+		//
 		//
 		// If there is no order, we cannot capture money because we don't know which is the payment reservation
 		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(salesInvoice.getC_Order_ID());
@@ -333,25 +331,27 @@ public class C_Invoice // 03771
 			return;
 		}
 
+		//
+		// No payment reservation
+		if (!paymentReservationService.hasPaymentReservation(salesOrderId))
+		{
+			return;
+		}
+
+		final LocalDate dateTrx = TimeUtil.asLocalDate(salesInvoice.getDateInvoiced());
 		final Money grandTotal = extractGrandTotal(salesInvoice);
+
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
 				.salesOrderId(salesOrderId)
-				.amount(grandTotal)
 				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+				.dateTrx(dateTrx)
+				.amount(grandTotal)
 				.build());
-
-		final LocalDate paymentDate = TimeUtil.asLocalDate(salesInvoice.getDateInvoiced());
-		final I_C_Payment payment = Services.get(IPaymentBL.class).newBuilderOfInvoice(salesInvoice)
-				.tenderType(TenderType.DirectDeposit)
-				.dateTrx(paymentDate)
-				.createAndProcess();
-		
-		// TODO: create payment
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
 	{
 		return Money.of(salesInvoice.getGrandTotal(), CurrencyId.ofRepoId(salesInvoice.getC_Currency_ID()));
 	}
-
 }

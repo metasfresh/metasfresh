@@ -41,6 +41,7 @@ import de.metas.payment.paypal.logs.PayPalLogRepository;
 import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
 import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationId;
@@ -133,6 +134,7 @@ public class PayPalCheckoutManualTest2
 				new MailTemplateRepository());
 
 		final PaymentReservationRepository paymentReservationRepo = new PaymentReservationRepository();
+		final PaymentReservationCaptureRepository paymentReservationCaptureRepo = new PaymentReservationCaptureRepository();
 
 		paypal = new PayPal(payPalOrderService, payPalClient, paymentReservationRepo, mailService, moneyService);
 
@@ -143,6 +145,7 @@ public class PayPalCheckoutManualTest2
 
 		paymentReservationService = new PaymentReservationService(
 				paymentReservationRepo,
+				paymentReservationCaptureRepo,
 				paymentProcessors);
 	}
 

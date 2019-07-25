@@ -27,7 +27,6 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
-import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -39,6 +38,7 @@ import de.metas.payment.paypal.client.PayPalOrderId;
 import de.metas.payment.paypal.client.PayPalOrderService;
 import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCapture;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.util.Services;
@@ -271,13 +271,16 @@ public class PayPal
 		}
 	}
 
-	public void captureMoney(final PaymentReservation reservation, final Money money)
+	public void processCapture(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final PaymentReservationCapture capture)
 	{
-		PayPalOrder paypalOrder = paypalOrderService.getByReservationId(reservation.getId());
+		PayPalOrder paypalOrder = paypalOrderService.getByReservationId(capture.getReservationId());
 		final Boolean finalCapture = null;
+
 		final Capture apiCapture = paypalClient.captureOrder(
 				paypalOrder.getAuthorizationId(),
-				moneyService.toAmount(money),
+				moneyService.toAmount(capture.getAmount()),
 				finalCapture,
 				createPayPalClientExecutionContext(reservation, paypalOrder));
 

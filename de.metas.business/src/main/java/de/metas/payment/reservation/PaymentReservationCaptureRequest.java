@@ -1,5 +1,8 @@
 package de.metas.payment.reservation;
 
+import java.time.LocalDate;
+
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -37,8 +40,14 @@ public class PaymentReservationCaptureRequest
 	OrderId salesOrderId;
 
 	@NonNull
-	Money amount;
+	InvoiceId salesInvoiceId;
+	
+	@NonNull
+	BPartnerId customerId;
+	
+	@NonNull
+	LocalDate dateTrx;
 
 	@NonNull
-	InvoiceId salesInvoiceId;
+	Money amount;
 }
