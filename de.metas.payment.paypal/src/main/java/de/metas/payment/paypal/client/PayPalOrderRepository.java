@@ -12,8 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.braintreepayments.http.serializer.Json;
 import com.paypal.orders.Authorization;
 import com.paypal.orders.LinkDescription;
 import com.paypal.orders.PaymentCollection;
@@ -53,20 +52,8 @@ public class PayPalOrderRepository
 {
 	private static final Logger logger = LogManager.getLogger(PayPalOrderRepository.class);
 
-	private final ObjectMapper jsonObjectMapper;
-
-	public PayPalOrderRepository(
-			@NonNull final Optional<ObjectMapper> jsonObjectMapper)
+	public PayPalOrderRepository()
 	{
-		if (jsonObjectMapper.isPresent())
-		{
-			this.jsonObjectMapper = jsonObjectMapper.get();
-		}
-		else
-		{
-			this.jsonObjectMapper = new ObjectMapper();
-			logger.warn("Using internal JSON object mapper");
-		}
 	}
 
 	public PayPalOrder getById(@NonNull final PayPalOrderId id)
@@ -229,21 +216,21 @@ public class PayPalOrderRepository
 		return null;
 	}
 
-	private String toJson(final Object obj)
+	private static String toJson(final com.paypal.orders.Order apiOrder)
 	{
-		if (obj == null)
+		if (apiOrder == null)
 		{
 			return "";
 		}
 
 		try
 		{
-			return jsonObjectMapper.writeValueAsString(obj);
+			return new Json().serialize(apiOrder);
 		}
-		catch (JsonProcessingException ex)
+		catch (final Exception ex)
 		{
-			logger.warn("Failed converting object to JSON. Returning toString(): {}", obj, ex);
-			return obj.toString();
+			logger.warn("Failed converting {} to JSON. Returning toString()", apiOrder, ex);
+			return apiOrder.toString();
 		}
 	}
 }

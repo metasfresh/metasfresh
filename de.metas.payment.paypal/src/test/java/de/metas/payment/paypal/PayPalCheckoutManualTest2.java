@@ -123,8 +123,8 @@ public class PayPalCheckoutManualTest2
 				payPalConfigProvider,
 				new PayPalLogRepository(Optional.empty()));
 
-		payPalOrderService = new PayPalOrderService(
-				new PayPalOrderRepository(Optional.empty()));
+		final PayPalOrderRepository paypalOrderRepo = new PayPalOrderRepository();
+		payPalOrderService = new PayPalOrderService(paypalOrderRepo);
 
 		final MoneyService moneyService = new MoneyService(
 				new CurrencyRepository());
