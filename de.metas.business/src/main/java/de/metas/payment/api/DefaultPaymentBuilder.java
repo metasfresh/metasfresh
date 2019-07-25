@@ -51,27 +51,6 @@ public class DefaultPaymentBuilder implements IBuilder
 	private String _docbaseType;
 	private boolean _built = false;
 
-//	public enum TenderType
-//	{
-//		ACH("A"),
-//		CREDIT_CARD("C"),
-//		DIRECT_DEBIT("D"),
-//		CASH("X");
-//
-//		private final String name;
-//
-//		private TenderType(String name)
-//		{
-//			this.name = name;
-//		}
-//
-//		@Override
-//		public String toString()
-//		{
-//			return name;
-//		}
-//	}
-
 	public DefaultPaymentBuilder(final Object contextProvider)
 	{
 		payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class, contextProvider);
