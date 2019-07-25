@@ -112,7 +112,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .should('have.value', '0.1')
       .clear()
       .type('5{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete purchase order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(

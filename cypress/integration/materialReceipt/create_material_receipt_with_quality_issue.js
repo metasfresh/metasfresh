@@ -41,15 +41,19 @@ describe('Create test: create material receipt with quality issue, https://githu
     applyFilters();
     cy.waitUntilProcessIsFinished();
     /**if found, deselect it */
-    cy.get('tr > td:nth-of-type(7)').then(el => {
-      var element = el.find('.meta-icon-checkbox-1');
-      if (element.length) {
-        cy.get(element).dblclick();
-        cy.setCheckBoxValue('IsIssueWarehouse', false);
-        cy.waitUntilProcessIsFinished();
+    cy.get('tr').then(el => {
+      if (el.length > 1) {
+        var element = el
+          .get(1)
+          .find('td:nth-of-type(7)')
+          .find('.meta-icon-checkbox-1');
+        if (element.length) {
+          cy.get(element).dblclick();
+          cy.setCheckBoxValue('IsIssueWarehouse', false);
+          cy.waitUntilProcessIsFinished();
+        }
       }
     });
-    cy.waitUntilProcessIsFinished();
     /**create a new quality issue warehouse */
     cy.visitWindow('139', 'NEW')
       .writeIntoStringField('Name', warehouseName)
@@ -136,7 +140,7 @@ describe('Create test: create material receipt with quality issue, https://githu
       .should('have.value', '0.1')
       .clear()
       .type('10{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete purchase order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
