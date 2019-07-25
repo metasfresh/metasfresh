@@ -21,12 +21,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,17 +38,14 @@ public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
 
+	/** Used by the reports service when it accesses the REST-API */
+	public static final RoleId JSON_REPORTS = new RoleId(540078);
+
 	@JsonCreator
 	public static RoleId ofRepoId(final int repoId)
 	{
-		if (repoId == SYSTEM.getRepoId())
-		{
-			return SYSTEM;
-		}
-		else
-		{
-			return new RoleId(repoId);
-		}
+		final RoleId roleId = ofRepoIdOrNull(repoId);
+		return Check.assumeNotNull(roleId, "Unable to create a roleId for repoId={}", repoId);
 	}
 
 	public static RoleId ofRepoIdOrNull(final int repoId)
@@ -56,6 +53,10 @@ public class RoleId implements RepoIdAware
 		if (repoId == SYSTEM.getRepoId())
 		{
 			return SYSTEM;
+		}
+		else if (repoId == JSON_REPORTS.getRepoId())
+		{
+			return JSON_REPORTS;
 		}
 		else
 		{

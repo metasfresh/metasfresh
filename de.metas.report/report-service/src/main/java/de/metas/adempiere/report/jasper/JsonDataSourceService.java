@@ -79,9 +79,7 @@ public class JsonDataSourceService
 	{
 		//
 		// get authorization
-		final UserId userId = Env.getLoggedUserId();
-		final RoleId roleId = Env.getLoggedRoleId();
-		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(userId, roleId);
+		final UserAuthToken token = getUserAuhToken();
 
 		//
 		// create the json data source
@@ -92,6 +90,18 @@ public class JsonDataSourceService
 
 		final InputStream is = getURLInputStream(getJasperJsonURL(request), request.getAuthenticationToken());
 		return is;
+	}
+
+	private UserAuthToken getUserAuhToken()
+	{
+		final UserAuthToken token = userAuthTokenRepo.retrieveByUserId(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
+
+		if (token == null)
+		{
+			throw new AdempiereException("Invalid token (1)");
+		}
+
+		return token;
 	}
 
 	private static InputStream getURLInputStream(@NonNull final URL reportURL, @NonNull final String token)

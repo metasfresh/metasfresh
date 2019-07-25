@@ -42,21 +42,14 @@ public class UserId implements RepoIdAware
 	public static final UserId SYSTEM = new UserId(0);
 	public static final UserId METASFRESH = new UserId(100);
 
+	/** Used by the reports service when it accesses the REST-API */
+	public static final UserId JSON_REPORTS = new UserId(540057);
+
 	@JsonCreator
 	public static UserId ofRepoId(final int repoId)
 	{
-		if (repoId == SYSTEM.getRepoId())
-		{
-			return SYSTEM;
-		}
-		else if (repoId == METASFRESH.getRepoId())
-		{
-			return METASFRESH;
-		}
-		else
-		{
-			return new UserId(repoId);
-		}
+		final UserId userId = ofRepoIdOrNull(repoId);
+		return Check.assumeNotNull(userId, "Unable to create a userId for repoId={}", repoId);
 	}
 
 	public static UserId ofRepoIdOrNull(final int repoId)
@@ -68,6 +61,10 @@ public class UserId implements RepoIdAware
 		else if (repoId == METASFRESH.getRepoId())
 		{
 			return METASFRESH;
+		}
+		else if (repoId == JSON_REPORTS.getRepoId())
+		{
+			return JSON_REPORTS;
 		}
 		else
 		{

@@ -109,7 +109,7 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_DocType newDocType = newDocTypeId != null
 				? Services.get(IDocTypeDAO.class).getById(newDocTypeId)
 				: null;
-				
+
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
 				.setNewDocType(newDocType)
@@ -305,7 +305,7 @@ public class CalloutOrder extends CalloutEngine
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		
+
 		if (order.getC_BPartner_Location_ID() <= 0)
 		{
 			orderBL.setBPLocation(order, bpartner);
@@ -481,7 +481,7 @@ public class CalloutOrder extends CalloutEngine
 				{
 					order.setDescription(soDescription);
 				}
-				
+
 				// IsDiscountPrinted
 				final boolean isDiscountPrinted = DisplayType.toBoolean(rs.getString("IsDiscountPrinted"));
 				order.setIsDiscountPrinted(isDiscountPrinted);
@@ -514,24 +514,24 @@ public class CalloutOrder extends CalloutEngine
 						{
 							paymentRule = PaymentRule.OnCredit;
 						}
-						
+
 						order.setPaymentRule(paymentRule.getCode());
 					}
-					
+
 					// Payment Term
 					final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(rs.getInt(IsSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
 					if (paymentTermId != null)
 					{
 						order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 					}
-					
+
 					// InvoiceRule
 					final String invoiceRule = rs.getString("InvoiceRule");
 					if (!Check.isEmpty(invoiceRule, true))
 					{
 						order.setInvoiceRule(invoiceRule);
 					}
-					
+
 					// DeliveryRule
 					final DeliveryRule deliveryRule = DeliveryRule.ofNullableCode(rs.getString("DeliveryRule"));
 					if (deliveryRule != null)
@@ -544,7 +544,7 @@ public class CalloutOrder extends CalloutEngine
 					{
 						order.setFreightCostRule(freightCostRule);
 					}
-					
+
 					// DeliveryViaRule
 					final String deliveryViaRule = rs.getString("DeliveryViaRule");
 					if (!Check.isEmpty(deliveryViaRule, true))
@@ -825,8 +825,8 @@ public class CalloutOrder extends CalloutEngine
 	public String priceList(final ICalloutField calloutField)
 	{
 		final I_C_Order order = calloutField.getModel(I_C_Order.class);
-		
-		final PriceListId priceListId = PriceListId.ofRepoId(order.getM_PriceList_ID());
+
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
 		if (priceListId == null)
 		{
 			return NO_ERROR;
@@ -1100,7 +1100,7 @@ public class CalloutOrder extends CalloutEngine
 		{
 			// Make sure order line is up2date before computing the limit price.
 			priceAndDiscount.applyTo(orderLine);
-			
+
 			final PriceLimitRuleResult priceLimitResult = orderLineBL.computePriceLimit(orderLine);
 			priceAndDiscount = priceAndDiscount.enforcePriceLimit(priceLimitResult);
 		}
@@ -1124,11 +1124,11 @@ public class CalloutOrder extends CalloutEngine
 		//
 		return NO_ERROR;
 	} // amt
-	
+
 	private BigDecimal calculatePriceEnteredFromPriceActual(final I_C_OrderLine orderLine)
 	{
 		final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
-		
+
 		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
 		final BigDecimal priceActual = orderLine.getPriceActual();
 		final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
@@ -1161,7 +1161,7 @@ public class CalloutOrder extends CalloutEngine
 		else if (I_C_OrderLine.COLUMNNAME_C_UOM_ID.equals(columnName))
 		{
 			final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-			
+
 			final I_C_OrderLine orderLineOld = calloutField.getModelBeforeChanges(I_C_OrderLine.class);
 			final I_C_UOM uomFrom = uomsRepo.getById(orderLineOld.getC_UOM_ID());
 			final I_C_UOM uomTo = uomsRepo.getById(orderLine.getC_UOM_ID());
@@ -1530,7 +1530,7 @@ public class CalloutOrder extends CalloutEngine
 				{
 					order.setDropShip_BPartner_ID(linkedBPartner.getC_BPartner_ID());
 				}
-				
+
 				final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID());
 				if (warehouseId != null)
 				{
