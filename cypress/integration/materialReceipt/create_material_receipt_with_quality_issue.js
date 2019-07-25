@@ -43,15 +43,13 @@ describe('Create test: create material receipt with quality issue, https://githu
     /**if found, deselect it */
     cy.get('tr').then(el => {
       if (el.length > 1) {
-        var element = el
-          .get(1)
+        debugger;
+        cy.get(el.get(1))
           .find('td:nth-of-type(7)')
-          .find('.meta-icon-checkbox-1');
-        if (element.length) {
-          cy.get(element).dblclick();
-          cy.setCheckBoxValue('IsIssueWarehouse', false);
-          cy.waitUntilProcessIsFinished();
-        }
+          .find('.meta-icon-checkbox-1')
+          .dblclick();
+        cy.setCheckBoxValue('IsIssueWarehouse', false);
+        cy.waitUntilProcessIsFinished();
       }
     });
     /**create a new quality issue warehouse */
