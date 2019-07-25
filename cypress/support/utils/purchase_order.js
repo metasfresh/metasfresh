@@ -1,7 +1,6 @@
 export class PurchaseOrder {
   constructor() {
     this.lines = [];
-    this.documentType = 'Purchase Order';
   }
 
   setBPartner(bPartner) {
@@ -61,7 +60,9 @@ function applyPurchaseOrder(purchaseOrder) {
     cy.visitWindow('181', 'NEW');
 
     cy.writeIntoLookupListField('C_BPartner_ID', purchaseOrder.bPartner, purchaseOrder.bPartner);
-    cy.writeIntoStringField('C_DocTypeTarget_ID', purchaseOrder.documentType);
+    if (purchaseOrder.doctype) {
+      cy.writeIntoStringField('C_DocTypeTarget_ID', purchaseOrder.documentType);
+    }
     if (purchaseOrder.poReference) {
       cy.writeIntoStringField('POReference', purchaseOrder.poReference);
     }
