@@ -1215,9 +1215,9 @@ public class MOrder extends X_C_Order implements IDocument
 			// Cannot change Std to anything else if different warehouses
 			if (getC_DocType_ID() != 0)
 			{
-				final MDocType dtOld = MDocType.get(getCtx(), getC_DocType_ID());
-				if (MDocType.DOCSUBTYPE_StandardOrder.equals(dtOld.getDocSubType())		// From SO
-						&& !MDocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType()))  	// To !SO
+				final I_C_DocType dtOld = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
+				if (X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dtOld.getDocSubType())		// From SO
+						&& !X_C_DocType.DOCSUBTYPE_StandardOrder.equals(dt.getDocSubType()))  	// To !SO
 				{
 					for (final MOrderLine line : lines)
 					{
@@ -1319,7 +1319,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Not binding - i.e. Target=0
 		if (DOCACTION_Void.equals(getDocAction())
 				// Closing Binding Quotation
-				|| (MDocType.DOCSUBTYPE_Quotation.equals(docSubType)
+				|| (X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType)
 						&& DOCACTION_Close.equals(getDocAction())))   // || isDropShip() )
 		{
 
@@ -1333,8 +1333,8 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Force same WH for all but SO/PO
 		WarehouseId headerWarehouseId = WarehouseId.ofRepoId(getM_Warehouse_ID());
-		if (MDocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
-				|| MDocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_StandardOrder.equals(docSubType)
+				|| X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(docSubType))
 		{
 			headerWarehouseId = null;		// don't enforce
 		}
@@ -1604,11 +1604,11 @@ public class MOrder extends X_C_Order implements IDocument
 
 		//
 		// Offers
-		if (MDocType.DOCSUBTYPE_Proposal.equals(docSubType)
-				|| MDocType.DOCSUBTYPE_Quotation.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_Proposal.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType))
 		{
 			// Binding
-			if (MDocType.DOCSUBTYPE_Quotation.equals(docSubType))
+			if (X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType))
 			{
 				reserveStock(dt, getLinesRequeryOrderedByProduct());
 			}
@@ -1667,9 +1667,9 @@ public class MOrder extends X_C_Order implements IDocument
 
 		// Create SO Shipment - Force Shipment
 		MInOut shipment = null;
-		if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)		// (W)illCall(I)nvoice
-				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(docSubType))			// (W)alkIn(R)eceipt
+		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)		// (W)illCall(I)nvoice
+				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)	// (W)illCall(P)ickup
+				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))			// (W)alkIn(R)eceipt
 		{
 			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
@@ -1690,8 +1690,8 @@ public class MOrder extends X_C_Order implements IDocument
 		}  	// Shipment
 
 		// Create SO Invoice - Always invoice complete Order
-		if (MDocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				|| MDocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
@@ -2278,24 +2278,19 @@ public class MOrder extends X_C_Order implements IDocument
 	@Override
 	public boolean reActivateIt()
 	{
-		// Before reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
 
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		final String DocSubType = dt.getDocSubType();
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());
+		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		final String docSubType = dt.getDocSubType();
 
-		// Replace Prepay with POS to revert all doc
-		if (MDocType.DOCSUBTYPE_PrepayOrder.equals(DocSubType))
+		if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(docSubType))
 		{
-			MDocType newDT = null;
-			final MDocType[] dts = MDocType.getOfClient(getCtx());
-			for (final MDocType type : dts)
+			// Replace Prepay with POS to revert all doc
+			I_C_DocType newDT = null;
+			for (final I_C_DocType type : MDocType.getOfClient(getCtx()))
 			{
-				if (MDocType.DOCSUBTYPE_PrepayOrder.equals(type.getDocSubType()))
+				if (X_C_DocType.DOCSUBTYPE_PrepayOrder.equals(type.getDocSubType()))
 				{
 					if (type.isDefault() || newDT == null)
 					{
@@ -2316,11 +2311,11 @@ public class MOrder extends X_C_Order implements IDocument
 		// PO - just re-open
 		if (!isSOTrx())
 		{
-			log.debug("Existing documents not modified - " + dt);
+			log.debug("Existing documents not modified - {}", dt);
 		}
-		else if (MDocType.DOCSUBTYPE_OnCreditOrder.equals(DocSubType)	// (W)illCall(I)nvoice
-				|| MDocType.DOCSUBTYPE_WarehouseOrder.equals(DocSubType)	// (W)illCall(P)ickup
-				|| MDocType.DOCSUBTYPE_POSOrder.equals(DocSubType))  			// (W)alkIn(R)eceipt
+		else if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)	// (W)illCall(I)nvoice
+				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)	// (W)illCall(P)ickup
+				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))  			// (W)alkIn(R)eceipt
 		{
 			if (!createReversals())
 			{
@@ -2329,7 +2324,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		else
 		{
-			log.debug("Existing documents not modified - SubType=" + DocSubType);
+			log.debug("Existing documents not modified - SubType=" + docSubType);
 		}
 
 		/* globalqss - 2317928 - Reactivating/Voiding order must reset posted */
@@ -2340,11 +2335,7 @@ public class MOrder extends X_C_Order implements IDocument
 		setProcessed(false);
 
 		// After reActivate
-		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-		if (m_processMsg != null)
-		{
-			return false;
-		}
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
 
 		// metas: commented out (legacy purposes)
 		// TODO: metas: evaluate if we can uncommented this and remove the setDocAction above
