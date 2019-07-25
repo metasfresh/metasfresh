@@ -3,7 +3,7 @@ import { BPartner } from '../../support/utils/bpartner';
 
 describe('Create Bank', function() {
   const timestamp = new Date().getTime();
-  const bankName = `Raiffeisen Test ${timestamp}`;
+  const bankName = `Bank ${timestamp}`;
   const BLZ = '80027';
   const customer1Name = `Customer ${timestamp}`;
 
@@ -16,12 +16,30 @@ describe('Create Bank', function() {
     });
   });
 
+  let bpartnerID = null;
   it('Create customer', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customer1Name)
-        .setBank(bankName)
-        .apply();
+      const bpartner = new BPartner({ ...customerJson, name: customer1Name })
+        .setCustomer(true)
+        .clearLocations()
+        .clearContacts()
+        .setBank(bankName);
+
+      bpartner.apply().then(bpartner => {
+        bpartnerID = bpartner.id;
+      });
     });
+  });
+
+  it('Verfify customer has bank', function() {
+    cy.visitWindow('123', bpartnerID);
+
+    cy.selectTab('C_BP_BankAccount')
+      .selectSingleTabRow()
+      .openAdvancedEdit()
+      .getStringFieldValue('C_Bank_ID', true)
+      .then(bankNameFieldvalue => {
+        expect(bankNameFieldvalue).to.eq(`${bankName}_${BLZ}`);
+      });
   });
 });

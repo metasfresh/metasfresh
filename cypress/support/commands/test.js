@@ -1,3 +1,6 @@
+import { getLanguageSpecific } from '../utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
+
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
     cy.server();
@@ -12,8 +15,8 @@ Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
 
       Cypress.emit('emit:addressPatchResolved', requestId);
     });
-
-    cy.on('emit:addressPatchResolved', requestId => {
+    /**for each POST address request above, the event handler code needs to happen only once */
+    cy.once('emit:addressPatchResolved', requestId => {
       cy.route('POST', `/rest/api/address/${requestId}/complete`).as('completeAddress');
 
       const outerPatchUrl = `/rest/api/address/${requestId}`;
@@ -40,7 +43,6 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
       expect(str).to.eq('Everything is awesome and the process has started');
     });
 
-    //webui.modal.actions.done
     const startText = Cypress.messages.modal.actions.start;
     cy.clickButtonWithText(startText);
   });
@@ -50,20 +52,26 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
   describe('Execute a doc action', function() {
     cy.log(`Execute doc action ${action}`);
 
+    cy.server();
+    const docActionAlias = `docAction-${new Date().getTime()}`;
+    cy.route('GET', new RegExp(`rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`)).as(docActionAlias);
+
     cy.get('.form-field-DocAction .meta-dropdown-toggle').click();
-
     cy.get('.form-field-DocAction .dropdown-status-open').should('exist');
-
     cy.get('.form-field-DocAction .dropdown-status-list')
       .find('.dropdown-status-item')
       .contains(action)
       .click();
-    // .click({ force: true }) // force is needed in some cases with chrome71 (IDK why, to the naked eye the action seems to be visible)
+
+    cy.wait(`@${docActionAlias}`, {
+      requestTimeout: 20000,
+      responseTimeout: 20000,
+    });
 
     cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
     if (expectedStatus) {
       cy.log(`Verify that the doc status is now ${expectedStatus}`);
-      cy.get('.meta-dropdown-toggle .tag-success').contains(expectedStatus);
+      cy.contains('.meta-dropdown-toggle .tag', expectedStatus);
     }
   });
 });
@@ -85,6 +93,9 @@ Cypress.Commands.add('pressDoneButton', waitBeforePress => {
     if (waitBeforePress) {
       cy.wait(waitBeforePress);
     }
+
+    // make sure that frontend & API did their things regarding possible preceeding field inputs
+    cy.get('.indicator-pending').should('not.exist');
 
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
@@ -122,6 +133,7 @@ Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName = 'newInc
       .as(includedDocumentIdAliasName);
 
     cy.get('.panel-modal').should('exist');
+    //cy.get('.modal-content-wrapper').should('exist'); // this might be another good indicator that we are done loading the modal dialog
   });
 });
 
@@ -141,5 +153,54 @@ Cypress.Commands.add('pressBatchEntryButton', waitBeforePress => {
       .click();
 
     cy.get('.quick-input-container').should('exist');
+  });
+});
+
+/**
+ * @param waitBeforePress if truthy, call cy.wait with the given parameter first
+ */
+Cypress.Commands.add('closeBatchEntry', waitBeforePress => {
+  describe("Press table's batch-entry-record-button", function() {
+    if (waitBeforePress) {
+      cy.wait(waitBeforePress);
+    }
+
+    cy.get('.quick-input-container .meta-icon-preview').should('exist'); // only close batch entry if it's empty
+    cy.get('.indicator-pending').should('not.exist');
+
+    cy.get('body').type('{alt}q'); // cypress can't type to `.quick-input-container`
+    cy.get('.quick-input-container').should('not.exist');
+    cy.get('.indicator-pending').should('not.exist');
+  });
+});
+
+Cypress.Commands.add('expectDocumentStatus', expectedDocumentStatus => {
+  describe(`Expect specific document status`, function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionaryJson => {
+      const expectedTrl = getLanguageSpecific(miscDictionaryJson, expectedDocumentStatus);
+      cy.contains('.meta-dropdown-toggle .tag', expectedTrl);
+    });
+  });
+});
+
+Cypress.Commands.add('completeDocument', () => {
+  describe('Complete the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+  });
+});
+
+Cypress.Commands.add('reactivateDocument', () => {
+  describe('Reactivate the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
+      );
+    });
   });
 });

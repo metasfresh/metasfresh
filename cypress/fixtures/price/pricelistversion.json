@@ -1,10 +1,4 @@
 {
-    "AD_Client_ID": 1000000,
-    "AD_Org_ID": 1000000,
-    "Name": "Test Preisliste DEU EUR",
-    "Description": "Test Preisliste Description",
-    "IsActive": true,
-    "M_Pricelist_Version_Base_ID": true,
-    "ValidFrom": "01/01/2019",
-    "FallbackToBasePriceListPrices": false
+  "name": "Test Preisliste DEU EUR",
+  "validFrom": "01/01/2019"
 }

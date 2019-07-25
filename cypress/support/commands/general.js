@@ -49,7 +49,7 @@ context('Reusable "login" custom command using API', function() {
 
     Cypress.log({
       name: 'loginViaAPI',
-      message: user + ' | ' + pass,
+      message: user + ' | ' + '****' /*pass*/,
     });
 
     const handleSuccess = function() {
@@ -75,6 +75,7 @@ context('Reusable "login" custom command using API', function() {
             return Cypress.reduxStore.dispatch(push('/'));
           }
 
+          cy.log(`Login failed because ${error}`);
           return Promise.reject(error);
         });
     };
@@ -212,16 +213,36 @@ function visitTableWindow(windowId) {
 }
 
 function visitDetailWindow(windowId, recordId, documentIdAliasName) {
+  describe('Open metasfresh single-record window and wait for layout and data', function() {
+    performDocumentViewAction(
+      windowId,
+      function() {
+        cy.visit(`/window/${windowId}/${recordId}`);
+      },
+      documentIdAliasName
+    );
+  });
+}
+
+Cypress.Commands.add(
+  'performDocumentViewAction',
+  (windowId, documentViewAction, documentIdAliasName = 'visitedDocumentId') => {
+    performDocumentViewAction(windowId, documentViewAction, documentIdAliasName);
+  }
+);
+
+function performDocumentViewAction(windowId, documentViewAction, documentIdAliasName) {
   cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
   const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
-  cy.visit(`/window/${windowId}/${recordId}`)
-    .wait(`@${layoutAliasName}`, {
-      requestTimeout: 20000,
-      responseTimeout: 20000,
-    })
+
+  documentViewAction();
+  cy.wait(`@${layoutAliasName}`, {
+    requestTimeout: 20000,
+    responseTimeout: 20000,
+  })
     .wait(`@${dataAliasName}`, {
       requestTimeout: 20000,
       responseTimeout: 20000,
@@ -233,14 +254,12 @@ function visitDetailWindow(windowId, recordId, documentIdAliasName) {
 }
 
 Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = 'visitedDocumentId') => {
-  describe('Open metasfresh single-record window and wait for layout and data', function() {
-    if (recordId == null) {
-      // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
-      visitTableWindow(windowId);
-    } else {
-      visitDetailWindow(windowId, recordId, documentIdAliasName);
-    }
-  });
+  if (recordId == null) {
+    // null == undefined, thx to https://stackoverflow.com/a/2647888/1012103
+    visitTableWindow(windowId);
+  } else {
+    visitDetailWindow(windowId, recordId, documentIdAliasName);
+  }
 });
 
 Cypress.Commands.add('resetNotifications', () => {
@@ -340,7 +359,7 @@ Cypress.Commands.add('getNotificationsInbox', () => {
       .its('store')
       .invoke('getState')
       .then(state => {
-        return state.appHandler.inbox;
+        return cy.wrap(state.appHandler.inbox);
       });
   });
 });
@@ -412,4 +431,30 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
   function isString(object) {
     return typeof object === 'string' || object instanceof String;
   }
+});
+
+Cypress.Commands.add('getCurrentWindowRecordId', () => {
+  describe('Select the current record ID from the url', function() {
+    return cy.url().then(ulrr => {
+      // noinspection UnnecessaryLocalVariableJS
+      const currentRecordId = ulrr.split('/').pop();
+      return currentRecordId;
+    });
+  });
+});
+
+Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
+  describe('Reading the total amount', function() {
+    return cy.get('.header-breadcrumb-sitename').then(function(si) {
+      // noinspection UnnecessaryLocalVariableJS
+      const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+      return newTotalAmount;
+    });
+  });
+});
+
+Cypress.Commands.add('waitUntilProcessIsFinished', () => {
+  describe('Wait until a process id finished', function() {
+    cy.wait(10000);
+  });
 });

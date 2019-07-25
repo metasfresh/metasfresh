@@ -11,4 +11,8 @@ export default class MetasfreshPage {
   getSitename() {
     return cy.get(this.sitename);
   }
+
+  selectAllVisibleRows() {
+    cy.get('body').type('{alt}a');
+  }
 }

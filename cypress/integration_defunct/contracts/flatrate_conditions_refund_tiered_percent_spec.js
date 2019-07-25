@@ -1,10 +1,19 @@
 /// <reference types="Cypress" />
 
-import { createAndCompleteTransition, createAndCompleteRefundPercentConditions } from '../../support/utils/contract';
+import {
+  createAndCompleteTransition,
+  createAndCompleteRefundPercentConditions,
+} from '../../support/utils/contract_static';
 import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
 import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
+import { runProcessCreateContract } from '../../support/functions/contractFunctions';
 
 describe('Create tiered percent-based (TP) refund conditions', function() {
+  before(function() {
+    // login before each test and open the flatrate conditions window
+    cy.loginByForm();
+  });
+
   it('Create tiered percent-based refund conditions and a vendor with a respective contract', function() {
     const timestamp = new Date().getTime(); // used in the document names, for ordering
 
@@ -39,10 +48,6 @@ describe('Create tiered percent-based (TP) refund conditions', function() {
       .build()
       .apply();
 
-    cy.executeHeaderAction('C_Flatrate_Term_Create_For_BPartners')
-      .selectInListField('C_Flatrate_Conditions_ID', conditionsName, conditionsName)
-      .writeIntoStringField('StartDate', '01/01/2019{enter}')
-      .pressStartButton();
-    cy.screenshot();
+    runProcessCreateContract(conditionsName);
   });
 });

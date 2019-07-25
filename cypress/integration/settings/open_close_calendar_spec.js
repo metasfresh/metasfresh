@@ -2,20 +2,20 @@ import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters }
 
 describe('Filter calendar periods', function() {
   before(function() {
-    cy.visit('/window/540349');
+    cy.visitWindow('540349');
   });
 
-  it('press filter button', function() {
+  it('Filter for Dez-18', function() {
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
     applyFilters();
   });
 
   it('change year', function() {
-    cy.selectInListField('C_Year_ID', '2018', false, null, true);
+    cy.selectInListField('C_Year_ID', '2018', false /*modal*/, null, true /*skipRequest*/);
   });
   it('write name', function() {
-    cy.writeIntoStringField('Name', 'Dez-18', false, null, true);
+    cy.writeIntoStringField('Name', 'Dez-18', false, null, true /*skipRequest*/);
   });
 
   it('Apply filter', function() {
@@ -24,23 +24,24 @@ describe('Filter calendar periods', function() {
 
   it('enter in item', function() {
     cy.wait(1000);
-    cy.get('.Text > :nth-child(1) > .cell-text-wrapper')
-      .contains('Dez-18')
-      .dblclick();
+
+    cy.performDocumentViewAction('540349', function() {
+      cy.get('.Text > :nth-child(1) > .cell-text-wrapper')
+        .contains('Dez-18')
+        .dblclick('540349');
+    });
   });
 });
 
 describe('Actions on selected item', function() {
   it('open/close action - close periods', function() {
-    cy.executeHeaderAction('C_Period_Process');
-    cy.selectInListField('PeriodAction', 'Close Period', false, null, true);
+    cy.executeHeaderActionWithDialog('C_Period_Process');
+    cy.selectInListField('PeriodAction', 'Close Period', true /*modal*/, '/rest/api/process/');
     cy.pressStartButton();
-    cy.wait(500);
   });
 
   it('open/close action - open periods', function() {
-    cy.executeHeaderAction('C_Period_Process');
-    cy.wait(700);
+    cy.executeHeaderActionWithDialog('C_Period_Process');
     cy.pressStartButton();
   });
 });
