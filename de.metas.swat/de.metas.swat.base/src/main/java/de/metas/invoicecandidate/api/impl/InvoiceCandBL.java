@@ -148,6 +148,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -1467,7 +1468,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (!InterfaceWrapperHelper.isNullOrEmpty(ic, I_C_Invoice_Candidate.COLUMNNAME_Processed_Override))
 		{
 			// #243: if it is set, then always go with the processed-override value; even if the IC has an error
-			processed = X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override());
+			processed = extractProcessedOverride(ic).isTrue();
 		}
 
 		final boolean processedCalc;
@@ -2077,26 +2078,23 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(il))
 			{
-				final de.metas.invoicecandidate.model.I_C_Invoice_Candidate candModel = InterfaceWrapperHelper.create(candidate, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-
-				if (candModel == null)
+				if (candidate == null)
 				{
 					// shall not happen
 					continue;
 				}
 
-				final String processedOverride = candModel.getProcessed_Override();
-
-				if (processedOverride == null)
+				final OptionalBoolean processedOverride = extractProcessedOverride(candidate);
+				if (processedOverride.isUnknown())
 				{
 					// nothing to do
 					continue;
 				}
 
-				if (processedOverride.equals("Y"))
+				if (processedOverride.isTrue())
 				{
-					candModel.setProcessed_Override(null);
-					InterfaceWrapperHelper.save(candModel);
+					candidate.setProcessed_Override(null);
+					InterfaceWrapperHelper.save(candidate);
 				}
 			}
 		}
@@ -2174,5 +2172,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoice(ZERO);
 			set_DateToInvoice_DefaultImpl(ic);
 		}
+	}
+
+	@Override
+	public OptionalBoolean extractProcessedOverride(@NonNull final I_C_Invoice_Candidate candidate)
+	{
+		return OptionalBoolean.ofNullableString(candidate.getProcessed_Override());
 	}
 }
