@@ -1162,7 +1162,7 @@ public final class MPayment extends X_C_Payment
 				order.setDocAction(IDocument.ACTION_WaitComplete);
 				order.setDateAcct(getDateAcct()); // Prepayment Order shall receive their DateAcct from Payment, because the Order Dateacct could be far back
 				
-				Services.get(IDocumentBL.class).processEx(orderDocStatus, IDocument.ACTION_WaitComplete);
+				Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_WaitComplete);
 				ordersRepo.save(order);
 				
 				// Set Invoice
