@@ -120,10 +120,9 @@ describe('Create Purchase order - material receipt - invoice', function() {
 
     cy.get('.form-field-Qty')
       .find('input')
-      .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
 
     cy.get('.quick-input-container .form-group').should('exist');
     cy.writeIntoLookupListField('M_Product_ID', productName2, productName2, false, false, null, true);
@@ -138,10 +137,9 @@ describe('Create Purchase order - material receipt - invoice', function() {
 
     cy.get('.form-field-Qty')
       .find('input')
-      .should('have.value', '0.1')
       .clear()
       .type('1{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete purchase order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
@@ -192,8 +190,8 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .click({ force: true });
     cy.contains('Material Receipt (#').click();
     /**Navigate back in the purchase order */
-    cy.waitUntilProcessIsFinished();
     cy.go('back');
+    cy.waitUntilProcessIsFinished();
     let grandTotal = null;
     cy.openAdvancedEdit()
       .get('.form-field-GrandTotal input')
