@@ -95,7 +95,7 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
     cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
 
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-    const patchListValueAliasName = `patchListValue-${new Date().getTime()}`;
+    const patchListValueAliasName = `patchListValue-${fieldName}-${new Date().getTime()}`;
 
     cy.server();
     cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
@@ -130,7 +130,7 @@ Cypress.Commands.add(
       cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
       const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-      const patchCheckBoxAliasName = `patchCheckBox-${new Date().getTime()}`;
+      const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
       if (!skipPatch) {
         cy.server();
         cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
@@ -195,7 +195,7 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
   describe('Enter value into string field', function() {
-    const aliasName = `writeIntoStringField-${new Date().getTime()}`;
+    const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window';
@@ -233,7 +233,7 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
   describe('Enter value into text field', function() {
     cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
-    const aliasName = `writeIntoTextField-${new Date().getTime()}`;
+    const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
@@ -274,7 +274,7 @@ Cypress.Commands.add(
         path = `.panel-modal ${path}`;
       }
 
-      const aliasName = `writeIntoLookupListField-${new Date().getTime()}`;
+      const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
       //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
       const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
       // in the default pattern we want to match URLs that do *not* end with "/NEW"
@@ -322,8 +322,8 @@ Cypress.Commands.add(
     describe('Select value in list field', function() {
       cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
-      const patchListFieldAliasName = `patchListField-${new Date().getTime()}`;
-      const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
       // here we want to match URLs that don *not* end with "/NEW"
       if (!skipRequest) {
