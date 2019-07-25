@@ -217,7 +217,7 @@ public interface I_PayPal_Order
 	 * Set Order JSON.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setPayPal_OrderJSON (java.lang.String PayPal_OrderJSON);
@@ -226,7 +226,7 @@ public interface I_PayPal_Order
 	 * Get Order JSON.
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getPayPal_OrderJSON();

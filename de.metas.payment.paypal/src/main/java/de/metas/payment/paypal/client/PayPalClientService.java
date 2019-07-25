@@ -128,8 +128,13 @@ public class PayPalClientService
 			@NonNull final PayPalClientExecutionContext context)
 	{
 		final PayPalCreateLogRequestBuilder log = PayPalCreateLogRequest.builder()
-				.salesOrderId(context.getSalesOrderId())
 				.paymentReservationId(context.getPaymentReservationId())
+				.paymentReservationCaptureId(context.getPaymentReservationCaptureId())
+				//
+				.salesOrderId(context.getSalesOrderId())
+				.salesInvoiceId(context.getSalesInvoiceId())
+				.paymentId(context.getPaymentId())
+				//
 				.internalPayPalOrderId(context.getInternalPayPalOrderId());
 
 		try

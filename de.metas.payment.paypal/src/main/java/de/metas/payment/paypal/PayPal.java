@@ -175,6 +175,22 @@ public class PayPal
 				.build();
 	}
 
+	private static PayPalClientExecutionContext createPayPalClientExecutionContext(
+			@NonNull final PaymentReservationCapture capture,
+			@NonNull final PayPalOrder paypalOrder)
+	{
+		return PayPalClientExecutionContext.builder()
+				.paymentReservationId(capture.getReservationId())
+				.paymentReservationCaptureId(capture.getId())
+				//
+				.salesOrderId(capture.getSalesOrderId())
+				.salesInvoiceId(capture.getSalesInvoiceId())
+				.paymentId(capture.getPaymentId())
+				//
+				.internalPayPalOrderId(paypalOrder.getId())
+				.build();
+	}
+
 	public void sendPayerApprovalRequestEmail(final PayPalOrderId payPalOrderId)
 	{
 		final PayPalOrder paypalOrder = paypalOrderService.getById(payPalOrderId);
@@ -282,7 +298,7 @@ public class PayPal
 				paypalOrder.getAuthorizationId(),
 				moneyService.toAmount(capture.getAmount()),
 				finalCapture,
-				createPayPalClientExecutionContext(reservation, paypalOrder));
+				createPayPalClientExecutionContext(capture, paypalOrder));
 
 		paypalOrder = updatePayPalOrderFromAPI(paypalOrder.getExternalId());
 		updateReservationFromPayPalOrder(reservation, paypalOrder);
