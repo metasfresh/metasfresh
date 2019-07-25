@@ -122,6 +122,7 @@ public class OrgId implements RepoIdAware
 		return repoId == Env.CTXVALUE_AD_Org_ID_Any;
 	}
 
+	/** @return {@code true} if the org in question is not {@code *} (i.e. "ANY"), but a specific organisation's ID */
 	public boolean isRegular()
 	{
 		return !isAny();
