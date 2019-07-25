@@ -210,7 +210,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			// Apply role permissions
 			if(vo.applyRolePermissions)
 			{
-				// If EntityType is not displayed, hide this tab; note that this decision role-specific
+				// If EntityType is not displayed, hide this tab; note that this decision is role-specific
 				vo.entityType = rs.getString("EntityType");
 				if (!Check.isEmpty(vo.entityType, true) && !UIDisplayedEntityTypes.isEntityTypeDisplayedInUIOrTrueIfNull(vo.entityType))
 				{
