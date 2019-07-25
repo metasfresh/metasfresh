@@ -11,3 +11,4 @@ debug.log
 cypress/config.js
 /cypress/config.js.remote
 /cypress/config.js.local
+/metasfresh-e2e.iml
