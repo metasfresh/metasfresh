@@ -61,6 +61,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * PayPal Service Facade
+ */
 @Service
 public class PayPal
 {

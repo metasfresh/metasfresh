@@ -38,7 +38,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1630,7 +1630,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 		//
 		// Waiting Payment - until we have a payment
-		if (prepareAndCheckWaitingForPayment(docSubType))
+		if (prepareAndReturnTrueIfWaitForPaymentIsNeeded(docSubType))
 		{
 			setProcessed(true);
 			return DocStatus.WaitingPayment;
@@ -1729,7 +1729,7 @@ public class MOrder extends X_C_Order implements IDocument
 		return DocStatus.Completed;
 	}	// completeIt
 
-	private boolean prepareAndCheckWaitingForPayment(final String docSubType)
+	private boolean prepareAndReturnTrueIfWaitForPaymentIsNeeded(final String docSubType)
 	{
 		//
 		// Prepayment
@@ -1743,7 +1743,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Payment Reservation
 		if (isSOTrx())
 		{
-			final OrderPaymentReservationService orderPaymentReservationService = Adempiere.getBean(OrderPaymentReservationService.class);
+			final OrderPaymentReservationService orderPaymentReservationService = SpringContextHolder.instance.getBean(OrderPaymentReservationService.class);
 			final OrderPaymentReservationCreateResult result = orderPaymentReservationService.createPaymentReservationIfNeeded(this);
 			final boolean waitForPayment = result.isWaitingToComplete();
 			return waitForPayment;
