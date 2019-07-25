@@ -106,10 +106,10 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 
 	private I_C_Payment createNewPayment(@NonNull final I_I_Datev_Payment importRecord)
 	{
-		return Services.get(IPaymentBL.class).newBuilder(importRecord).setAD_Org_ID(importRecord.getAD_Org_ID())
+		return Services.get(IPaymentBL.class).newBuilder(importRecord)
+				.setAD_Org_ID(importRecord.getAD_Org_ID())
 				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
-				.setDocbaseType(importRecord.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt
-						: X_C_DocType.DOCBASETYPE_APPayment)
+				.setDocbaseType(importRecord.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment)
 				.setPayAmt(importRecord.getPayAmt())
 				.setDiscountAmt(importRecord.getDiscountAmt())
 				.setTenderType(TenderType.DirectDeposit)
