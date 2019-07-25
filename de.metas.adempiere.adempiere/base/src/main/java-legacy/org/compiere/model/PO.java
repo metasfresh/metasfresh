@@ -104,6 +104,7 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -1379,7 +1380,7 @@ public abstract class PO
 		String valueString = "NULL";
 		if (value == null)
 		{
-			;
+			
 		}
 		else if (value instanceof Number)
 		{
@@ -2155,11 +2156,11 @@ public abstract class PO
 			String stringValue = null;
 			if (c == Object.class)
 			{
-				;	// saveNewSpecial (value, i));
+					// saveNewSpecial (value, i));
 			}
 			else if (value == null || value.equals(Null.NULL))
 			{
-				;
+				
 			}
 			else if (value instanceof Integer || value instanceof BigDecimal)
 			{
@@ -2180,10 +2181,10 @@ public abstract class PO
 			}
 			else if (DisplayType.isLOB(dt))
 			{
-				;
+				
 			}
 			else {
-				;	// saveNewSpecial (value, i));
+					// saveNewSpecial (value, i));
 			}
 			//
 			if (stringValue != null)
@@ -2270,26 +2271,29 @@ public abstract class PO
 	 */
 	protected final void setStandardDefaults()
 	{
-		// TODO: metas: 01537 - should we check here if object is stalled?
-
 		final Properties ctx = getCtx();
+		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
+		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final int adClientId = Env.getAD_Client_ID(ctx);
+		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		final int size = get_ColumnCount();
-		for (int i = 0; i < size; i++)
+		final int columnsCount = get_ColumnCount();
+		for (int i = 0; i < columnsCount; i++)
 		{
 			if (p_info.isVirtualColumn(i))
 			{
 				continue;
 			}
+			
 			final String colName = p_info.getColumnName(i);
 			// Set Standard Values
-			if (colName.endsWith("tedBy"))
+			if (colName.equals("CreatedBy") || colName.equals("UpdatedBy"))
 			{
-				m_newValues[i] = Env.getAD_User_ID(ctx);
+				m_newValues[i] = loggedUserId.getRepoId();
 			}
 			else if (colName.equals("Created") || colName.equals("Updated"))
 			{
-				m_newValues[i] = new Timestamp(System.currentTimeMillis());
+				m_newValues[i] = now;
 			}
 			else if (colName.equals(p_info.getTableName() + "_ID"))
 			{
@@ -2301,11 +2305,11 @@ public abstract class PO
 			}
 			else if (colName.equals("AD_Client_ID"))
 			{
-				m_newValues[i] = Env.getAD_Client_ID(ctx);
+				m_newValues[i] = adClientId;
 			}
 			else if (colName.equals("AD_Org_ID"))
 			{
-				m_newValues[i] = Env.getAD_Org_ID(ctx);
+				m_newValues[i] = adOrgId;
 			}
 			else if (colName.equals("Processed"))
 			{
@@ -3690,7 +3694,7 @@ public abstract class PO
 			final String columnName = p_info.getColumnName(i);
 			final Object value = get_Value(i);
 			final int dt = p_info.getColumnDisplayType(i);
-
+			
 			// Don't insert NULL values (allows Database defaults)
 			if (value == null)
 			{
@@ -4692,30 +4696,6 @@ public abstract class PO
 		return retValue;
 	}	// getAllIDs
 
-	/**
-	 * Get Find parameter.
-	 * Convert to upper case and add % at the end
-	 *
-	 * @param query in string
-	 * @return out string
-	 */
-	protected static String getFindParameter(String query)
-	{
-		if (query == null)
-		{
-			return null;
-		}
-		if (query.length() == 0 || query.equals("%"))
-		{
-			return null;
-		}
-		if (!query.endsWith("%"))
-		{
-			query += "%";
-		}
-		return query.toUpperCase();
-	}	// getFindParameter
-
 	/**************************************************************************
 	 * Load LOB
 	 *
@@ -4932,7 +4912,7 @@ public abstract class PO
 			final Class<?> c = p_info.getColumnClass(i);
 			if (value == null || value.equals(Null.NULL))
 			{
-				;
+				
 			}
 			else if (c == Object.class)
 			{
