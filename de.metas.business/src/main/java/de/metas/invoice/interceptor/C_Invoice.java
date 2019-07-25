@@ -54,6 +54,8 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.service.IPriceListDAO;
@@ -331,11 +333,18 @@ public class C_Invoice // 03771
 			return;
 		}
 
+		final Money grandTotal = extractGrandTotal(salesInvoice);
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
 				.salesOrderId(salesOrderId)
-				.amount(extractGrandTotal(salesInvoice))
+				.amount(grandTotal)
 				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
 				.build());
+
+		final LocalDate paymentDate = TimeUtil.asLocalDate(salesInvoice.getDateInvoiced());
+		final I_C_Payment payment = Services.get(IPaymentBL.class).newBuilderOfInvoice(salesInvoice)
+				.tenderType(TenderType.DirectDeposit)
+				.dateTrx(paymentDate)
+				.createAndProcess();
 		
 		// TODO: create payment
 	}
