@@ -143,8 +143,7 @@ public final class MPayment extends X_C_Payment
 	public MPayment(final Properties ctx, final int C_Payment_ID, final String trxName)
 	{
 		super(ctx, C_Payment_ID, trxName);
-		// New
-		if (C_Payment_ID == 0)
+		if (is_new())
 		{
 			setDocAction(DOCACTION_Complete);
 			setDocStatus(DocStatus.Drafted.getCode());

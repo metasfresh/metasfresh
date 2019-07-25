@@ -28,7 +28,6 @@ package de.metas.payment.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -37,12 +36,14 @@ import org.compiere.model.I_C_Payment;
 import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
 
-/**
- * @author cg
- * 
- */
 public interface IPaymentBL extends ISingletonService
 {
+	DefaultPaymentBuilder newInboundReceiptBuilder();
+
+	DefaultPaymentBuilder newOutboundPaymentBuilder();
+
+	DefaultPaymentBuilder newBuilderOfInvoice(I_C_Invoice invoice);
+
 	/**
 	 * 
 	 * @param payment
@@ -73,15 +74,6 @@ public interface IPaymentBL extends ISingletonService
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
-
-	/**
-	 * Creates a new payment builder.
-	 * 
-	 * @param ctxProvider
-	 *            an object that the {@link InterfaceWrapperHelper} can use to get the <code>ctx</code>and
-	 *            <code>trxName</code>.
-	 */
-	DefaultPaymentBuilder newBuilder(Object ctxProvider);
 
 	/**
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.

@@ -328,9 +328,21 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public DefaultPaymentBuilder newBuilder(final Object ctxProvider)
+	public DefaultPaymentBuilder newInboundReceiptBuilder()
 	{
-		return new DefaultPaymentBuilder(ctxProvider);
+		return DefaultPaymentBuilder.newInboundReceiptBuilder();
+	}
+	
+	@Override
+	public DefaultPaymentBuilder newOutboundPaymentBuilder()
+	{
+		return DefaultPaymentBuilder.newOutboundPaymentBuilder();
+	}
+
+	@Override
+	public DefaultPaymentBuilder newBuilderOfInvoice(@NonNull final I_C_Invoice invoice)
+	{
+		return DefaultPaymentBuilder.newBuilderOfInvoice(invoice);
 	}
 
 	@Override
