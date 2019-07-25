@@ -59,6 +59,27 @@ import de.metas.util.time.SystemTime;
 @Component("de.metas.invoice.interceptor.C_Invoice")
 public class C_Invoice // 03771
 {
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void onBeforeComplete(final I_C_Invoice invoice)
+	{
+		allocateInvoiceAgainstCreditMemo(invoice);
+		linkInvoiceToPaymentIfNeeded(invoice);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void onAfterComplete(final I_C_Invoice invoice)
+	{
+		markAsPaid(invoice);
+		allocateInvoiceAgainstPaymentIfNeeded(invoice);
+
+		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
+	public void onAfterReversal(final I_C_Invoice invoice)
+	{
+		Services.get(IInvoiceBL.class).handleReversalForInvoice(invoice);
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
 	public void updateBPartnerAddress(final I_C_Invoice doc)
@@ -78,8 +99,6 @@ public class C_Invoice // 03771
 
 	/**
 	 * 07634: Remove lines of products which are not in the invoice's price list / version.
-	 *
-	 * @param invoice
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
 	public void removeMaterialLinesNotCorrespondingToPriceList(final I_C_Invoice invoice)
@@ -107,12 +126,6 @@ public class C_Invoice // 03771
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
 		}
-	}
-
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSEACCRUAL, ModelValidator.TIMING_AFTER_REVERSECORRECT })
-	public void onInvoiceReversal(final I_C_Invoice invoice)
-	{
-		Services.get(IInvoiceBL.class).handleReversalForInvoice(invoice);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -147,12 +160,10 @@ public class C_Invoice // 03771
 
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
-	 *
-	 * @param invoice
+	 * 
 	 * @task 09489
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
-	public void markAsPaid(final I_C_Invoice invoice)
+	private void markAsPaid(final I_C_Invoice invoice)
 	{
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -165,11 +176,8 @@ public class C_Invoice // 03771
 	 * Allocate the credit memo against it's parent invoices.
 	 *
 	 * Note: ATM, there should only be one parent invoice for a credit memo, but it's possible to have more in the future.
-	 *
-	 * @param creditMemo
 	 */
-	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void allocateInvoiceAgainstCreditMemo(final I_C_Invoice creditMemo)
+	private void allocateInvoiceAgainstCreditMemo(final I_C_Invoice creditMemo)
 	{
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -201,9 +209,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_DELETE
-	})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void onDeleteInvoice_DeleteLines(final I_C_Invoice invoice)
 	{
 		// services
@@ -218,9 +224,7 @@ public class C_Invoice // 03771
 
 		// task 09026. Do not touch other invoices because it was not yet required.
 		// ONLY delete lines for credit memo or adjustment charge
-
 		final boolean isAdjustmentCharge = invoiceBL.isAdjustmentCharge(invoice);
-
 		if (isAdjustmentCharge)
 		{
 			deleteInvoiceLines(invoice);
@@ -228,7 +232,6 @@ public class C_Invoice // 03771
 		}
 
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
-
 		if (isCreditMemo)
 		{
 			deleteInvoiceLines(invoice);
@@ -242,25 +245,21 @@ public class C_Invoice // 03771
 	 * We need to delete the Invoice Lines before deleting the Invoice itself.
 	 * This is not a common thing to be done, therefore I will leave this method only here, as private (not in the DAO class).
 	 * Currently, it shall only happen in case of uncompleted invoices that are adjustment charges or credit memos.
-	 *
-	 * @param invoice
 	 */
 	private void deleteInvoiceLines(final I_C_Invoice invoice)
 	{
 		final List<I_C_InvoiceLine> lines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
-
 		for (final I_C_InvoiceLine line : lines)
 		{
 			InterfaceWrapperHelper.delete(line);
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
+	private void linkInvoiceToPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null 
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID())) 
+		if (order != null
+				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& order.getC_Payment_ID() > 0)
 		{
 			final I_C_Payment payment = order.getC_Payment();
@@ -271,22 +270,15 @@ public class C_Invoice // 03771
 		}
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
+	private void allocateInvoiceAgainstPaymentIfNeeded(final I_C_Invoice invoice)
 	{
 		final I_C_Order order = invoice.getC_Order();
-		if (order != null 
-				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID())) 
+		if (order != null
+				&& Services.get(IDocTypeBL.class).isPrepay(DocTypeId.ofRepoId(order.getC_DocType_ID()))
 				&& order.getC_Payment_ID() > 0)
 		{
 			final I_C_Payment payment = order.getC_Payment();
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 		}
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void scheduleDataExport(final I_C_Invoice invoice)
-	{
-		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
 	}
 }
