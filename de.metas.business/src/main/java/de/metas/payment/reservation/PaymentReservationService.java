@@ -54,6 +54,13 @@ public class PaymentReservationService
 				.orElse(Boolean.FALSE);
 	}
 
+	public boolean isPaymentCaptureRequired(@NonNull final PaymentRule paymentRule)
+	{
+		return getPaymentProcessorIfExists(paymentRule)
+				.map(PaymentProcessor::canReserveMoney)
+				.orElse(Boolean.FALSE);
+	}
+
 	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(@NonNull final OrderId salesOrderId)
 	{
 		return reservationsRepo.getBySalesOrderIdNotVoided(salesOrderId);
@@ -108,7 +115,12 @@ public class PaymentReservationService
 
 	public void captureAmount(@NonNull final PaymentReservationCaptureRequest request)
 	{
-		final PaymentReservation reservation = getById(request.getPaymentReservationId());
+		final PaymentReservation reservation = getBySalesOrderIdNotVoided(request.getSalesOrderId())
+				.orElse(null);
+		if(reservation == null)
+		{
+			return;
+		}
 
 		getPaymentProcessor(reservation.getPaymentRule())
 				.captureMoney(reservation, request.getAmount());

@@ -48,17 +48,32 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.reservation.PaymentReservationCaptureRequest;
+import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 @Interceptor(I_C_Invoice.class)
 @Component("de.metas.invoice.interceptor.C_Invoice")
 public class C_Invoice // 03771
 {
+	private final PaymentReservationService paymentReservationService;
+
+	public C_Invoice(@NonNull final PaymentReservationService paymentReservationService)
+	{
+		this.paymentReservationService = paymentReservationService;
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void onBeforeComplete(final I_C_Invoice invoice)
 	{
@@ -71,6 +86,7 @@ public class C_Invoice // 03771
 	{
 		markAsPaid(invoice);
 		allocateInvoiceAgainstPaymentIfNeeded(invoice);
+		captureMoneyIfNeeded(invoice);
 
 		C_Invoice_CreateExportData.scheduleOnTrxCommit(invoice);
 	}
@@ -160,7 +176,7 @@ public class C_Invoice // 03771
 
 	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
-	 * 
+	 *
 	 * @task 09489
 	 */
 	private void markAsPaid(final I_C_Invoice invoice)
@@ -281,4 +297,52 @@ public class C_Invoice // 03771
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice, payment, true);
 		}
 	}
+
+	private void captureMoneyIfNeeded(final I_C_Invoice salesInvoice)
+	{
+		//
+		// We capture money only for sales invoices
+		if (!salesInvoice.isSOTrx())
+		{
+			return;
+		}
+
+		//
+		// We capture money only for regular invoices (not credit memos)
+		// TODO: for credit memos we shall refund a part of already reserved money
+		if (!Services.get(IInvoiceBL.class).isCreditMemo(salesInvoice))
+		{
+			return;
+		}
+
+		//
+		// Make sure capturing is supported by payment rule
+		final PaymentRule paymentRule = PaymentRule.ofCode(salesInvoice.getPaymentRule());
+		if (!paymentReservationService.isPaymentCaptureRequired(paymentRule))
+		{
+			return;
+		}
+
+		//
+		// If there is no order, we cannot capture money because we don't know which is the payment reservation
+		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(salesInvoice.getC_Order_ID());
+		if (salesOrderId == null)
+		{
+			return;
+		}
+
+		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
+				.salesOrderId(salesOrderId)
+				.amount(extractGrandTotal(salesInvoice))
+				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+				.build());
+		
+		// TODO: create payment
+	}
+
+	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
+	{
+		return Money.of(salesInvoice.getGrandTotal(), CurrencyId.ofRepoId(salesInvoice.getC_Currency_ID()));
+	}
+
 }

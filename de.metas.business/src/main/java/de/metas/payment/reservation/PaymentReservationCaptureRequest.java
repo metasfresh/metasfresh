@@ -1,6 +1,8 @@
 package de.metas.payment.reservation;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,8 +34,11 @@ import lombok.Value;
 public class PaymentReservationCaptureRequest
 {
 	@NonNull
-	PaymentReservationId paymentReservationId;
+	OrderId salesOrderId;
 
 	@NonNull
 	Money amount;
+
+	@NonNull
+	InvoiceId salesInvoiceId;
 }

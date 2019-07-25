@@ -25,6 +25,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -209,16 +210,19 @@ public class PayPalCheckoutManualTest2
 		}
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(30))
+				.salesInvoiceId(InvoiceId.ofRepoId(1))
 				.build());
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(40))
+				.salesInvoiceId(InvoiceId.ofRepoId(2))
 				.build());
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(20))
+				.salesInvoiceId(InvoiceId.ofRepoId(3))
 				.build());
 
 		// TODO: refund
