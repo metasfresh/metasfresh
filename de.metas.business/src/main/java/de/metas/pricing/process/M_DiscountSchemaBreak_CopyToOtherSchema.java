@@ -42,7 +42,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema extends JavaProcess impleme
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	@Param(parameterName = I_M_DiscountSchema.COLUMNNAME_M_DiscountSchema_ID)
-	private PricingConditionsId p_PricingConditionsId;
+	private int p_PricingConditionsId;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -64,7 +64,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema extends JavaProcess impleme
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		pricingConditionsRepo.copyDiscountSchemaBreaks(p_PricingConditionsId, queryFilter);
+		pricingConditionsRepo.copyDiscountSchemaBreaks(PricingConditionsId.ofDiscountSchemaId(p_PricingConditionsId), queryFilter);
 
 		return MSG_OK;
 	}
