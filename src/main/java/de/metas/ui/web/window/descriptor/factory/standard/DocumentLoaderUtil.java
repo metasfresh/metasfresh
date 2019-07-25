@@ -38,7 +38,7 @@ public class DocumentLoaderUtil
 				.adWindowId(AD_Window_ID)
 				.adMenuId(-1) // N/A
 				.loadAllLanguages(true)
-				.applyRolePermissions(false)
+				.applyRolePermissions(false) // must be false, unless we know that we do have #AD_User_ID in the context (which oftentimes we don't)
 				.build();
 		return gridWindowVO;
 	}
