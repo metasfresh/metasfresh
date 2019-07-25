@@ -258,6 +258,7 @@ public class DefaultPaymentBuilder
 	 */
 	private final DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
 	{
+		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 		bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
 		currencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
