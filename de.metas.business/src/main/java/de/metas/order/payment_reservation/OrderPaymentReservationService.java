@@ -97,7 +97,7 @@ public class OrderPaymentReservationService
 	{
 		final BPartnerContactId payerContactId = ordersService.getBillToContactId(salesOrder);
 
-		return paymentReservationService.create(PaymentReservationCreateRequest.builder()
+		return paymentReservationService.createReservation(PaymentReservationCreateRequest.builder()
 				.clientId(ClientId.ofRepoId(salesOrder.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()))
 				.amount(extractGrandTotal(salesOrder))

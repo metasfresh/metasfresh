@@ -12,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.braintreepayments.http.serializer.Json;
 import com.paypal.orders.Authorization;
 import com.paypal.orders.LinkDescription;
 import com.paypal.orders.PaymentCollection;
@@ -71,10 +70,10 @@ public class PayPalOrderRepository
 
 	public Optional<PayPalOrder> getByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
-		return getRecordByReservationId(reservationId).map(PayPalOrderRepository::toPayPalOrder);
+		return getActiveRecordByReservationId(reservationId).map(PayPalOrderRepository::toPayPalOrder);
 	}
 
-	public Optional<I_PayPal_Order> getRecordByReservationId(@NonNull final PaymentReservationId reservationId)
+	private Optional<I_PayPal_Order> getActiveRecordByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
 		final I_PayPal_Order record = Services.get(IQueryBL.class).createQueryBuilder(I_PayPal_Order.class)
 				.addOnlyActiveRecordsFilter()
@@ -133,8 +132,12 @@ public class PayPalOrderRepository
 
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
+		final PayPalOrderStatus status = from.getStatus();
+		final boolean active = !PayPalOrderStatus.REMOTE_DELETED.equals(status);
+
 		order.setExternalId(PayPalOrderExternalId.toString(from.getExternalId()));
-		order.setStatus(from.getStatus().getCode());
+		order.setStatus(status.getCode());
+		order.setIsActive(active);
 		order.setPayPal_AuthorizationId(PayPalOrderAuthorizationId.toString(from.getAuthorizationId()));
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
@@ -225,7 +228,8 @@ public class PayPalOrderRepository
 
 		try
 		{
-			return new Json().serialize(apiOrder);
+			// IMPORTANT: we shall use paypal's JSON serializer, else we won't get any result
+			return new com.braintreepayments.http.serializer.Json().serialize(apiOrder);
 		}
 		catch (final Exception ex)
 		{
@@ -233,4 +237,20 @@ public class PayPalOrderRepository
 			return apiOrder.toString();
 		}
 	}
+
+	public PayPalOrder markRemoteDeleted(@NonNull final PayPalOrderId id)
+	{
+		final I_PayPal_Order existingRecord = getRecordById(id);
+
+		final PayPalOrder order = toPayPalOrder(existingRecord)
+				.toBuilder()
+				.status(PayPalOrderStatus.REMOTE_DELETED)
+				.build();
+
+		updateRecord(existingRecord, order);
+		saveRecord(existingRecord);
+
+		return order;
+	}
+
 }

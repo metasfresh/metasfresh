@@ -189,7 +189,7 @@ public class PayPalCheckoutManualTest2
 		// Create Reservation
 		final PaymentReservationId reservationId;
 		{
-			final PaymentReservation reservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
+			final PaymentReservation reservation = paymentReservationService.createReservation(PaymentReservationCreateRequest.builder()
 					.clientId(clientId)
 					.orgId(orgId)
 					.amount(money(100))

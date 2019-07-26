@@ -62,13 +62,6 @@ public class PaymentReservationService
 				.orElse(Boolean.FALSE);
 	}
 
-	public boolean isPaymentCaptureRequired(@NonNull final PaymentRule paymentRule)
-	{
-		return getPaymentProcessorIfExists(paymentRule)
-				.map(PaymentProcessor::canReserveMoney)
-				.orElse(Boolean.FALSE);
-	}
-
 	public boolean hasPaymentReservation(@NonNull final OrderId salesOrderId)
 	{
 		return getBySalesOrderIdNotVoided(salesOrderId).isPresent();
@@ -89,7 +82,7 @@ public class PaymentReservationService
 		reservationsRepo.save(paymentReservation);
 	}
 
-	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)
+	public PaymentReservation createReservation(@NonNull final PaymentReservationCreateRequest createRequest)
 	{
 		//
 		// Create & save
