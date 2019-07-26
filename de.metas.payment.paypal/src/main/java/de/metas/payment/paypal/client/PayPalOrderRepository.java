@@ -51,10 +51,6 @@ public class PayPalOrderRepository
 {
 	private static final Logger logger = LogManager.getLogger(PayPalOrderRepository.class);
 
-	public PayPalOrderRepository()
-	{
-	}
-
 	public PayPalOrder getById(@NonNull final PayPalOrderId id)
 	{
 		final I_PayPal_Order record = getRecordById(id);

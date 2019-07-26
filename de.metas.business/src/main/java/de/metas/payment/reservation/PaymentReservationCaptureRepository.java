@@ -4,9 +4,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Payment_Reservation_Capture;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +13,6 @@ import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -77,6 +73,7 @@ public class PaymentReservationCaptureRepository
 		return PaymentReservationCaptureId.ofRepoId(captureRecord.getC_Payment_Reservation_Capture_ID());
 	}
 
+	@SuppressWarnings("unused")
 	private static PaymentReservationCapture toPaymentReservationCapture(@NonNull final I_C_Payment_Reservation_Capture record)
 	{
 		return PaymentReservationCapture.builder()
@@ -93,14 +90,4 @@ public class PaymentReservationCaptureRepository
 				//
 				.build();
 	}
-
-	private List<I_C_Payment_Reservation_Capture> retrieveCaptureRecords(@NonNull final PaymentReservationId reservationId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Payment_Reservation_Capture.class)
-				.addEqualsFilter(I_C_Payment_Reservation_Capture.COLUMN_C_Payment_Reservation_ID, reservationId)
-				.create()
-				.listImmutable(I_C_Payment_Reservation_Capture.class);
-	}
-
 }
