@@ -11,6 +11,10 @@
     {
       "name": "TestAttributeName1",
       "value": "TestAttributeValue1"
+    },
+    {
+      "name": "TestAttributeName2",
+      "value": "TestAttributeValue2"
     }
   ]
 }
