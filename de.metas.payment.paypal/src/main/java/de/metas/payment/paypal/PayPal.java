@@ -83,11 +83,14 @@ public class PayPal
 	//
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 
 	@VisibleForTesting
 	public static final String MAIL_VAR_ApproveURL = "ApproveURL";
 	@VisibleForTesting
 	public static final String MAIL_VAR_Amount = "Amount";
+	@VisibleForTesting
+	public static final String MAIL_VAR_SalesOrderDocumentNo = "SalesOrderDocumentNo";
 
 	public PayPal(
 			@NonNull final PayPalOrderService paypalOrderService,
@@ -249,6 +252,9 @@ public class PayPal
 		mailTextBuilder.bpartnerContact(reservation.getPayerContactId());
 		mailTextBuilder.customVariable(MAIL_VAR_ApproveURL, payerApproveUrl.toExternalForm());
 		mailTextBuilder.customVariable(MAIL_VAR_Amount, moneyService.toTranslatableString(reservation.getAmount()));
+
+		final I_C_Order salesOrder = ordersRepo.getById(reservation.getSalesOrderId());
+		mailTextBuilder.customVariable(MAIL_VAR_SalesOrderDocumentNo, salesOrder.getDocumentNo());
 
 		final Mailbox mailbox = findMailbox(reservation);
 		final EMail email = mailService.createEMail(mailbox,
