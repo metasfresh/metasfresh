@@ -1,22 +1,22 @@
-import React from 'react';
-import { IndexRoute, NoMatch, Route } from 'react-router';
-import { push } from 'react-router-redux';
+import React from "react";
+import { IndexRoute, NoMatch, Route } from "react-router";
+import { push } from "react-router-redux";
 
-import { loginSuccess, logoutSuccess } from './actions/AppActions';
-import { localLoginRequest, logoutRequest, getResetPasswordInfo } from './api';
-import { clearNotifications, enableTutorial } from './actions/AppActions';
-import { createWindow } from './actions/WindowActions';
-import { setBreadcrumb } from './actions/MenuActions';
-import Translation from './components/Translation';
-import Board from './containers/Board.js';
-import Dashboard from './containers/Dashboard.js';
-import DocList from './containers/DocList.js';
-import InboxAll from './containers/InboxAll.js';
-import Login from './containers/Login.js';
-import MasterWindow from './containers/MasterWindow.js';
-import NavigationTree from './containers/NavigationTree.js';
-import PluginContainer, { pluginWrapper } from './components/PluginContainer';
-import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
+import { loginSuccess, logoutSuccess } from "./actions/AppActions";
+import { localLoginRequest, logoutRequest, getResetPasswordInfo } from "./api";
+import { clearNotifications, enableTutorial } from "./actions/AppActions";
+import { createWindow } from "./actions/WindowActions";
+import { setBreadcrumb } from "./actions/MenuActions";
+import Translation from "./components/Translation";
+import Board from "./containers/Board.js";
+import Dashboard from "./containers/Dashboard.js";
+import DocList from "./containers/DocList.js";
+import InboxAll from "./containers/InboxAll.js";
+import Login from "./containers/Login.js";
+import MasterWindow from "./containers/MasterWindow.js";
+import NavigationTree from "./containers/NavigationTree.js";
+import PluginContainer, { pluginWrapper } from "./components/PluginContainer";
+import PaypalReservationConfirm from "./containers/PaypalReservationConfirm.js";
 
 let hasTutorial = false;
 
@@ -26,7 +26,7 @@ export const getRoutes = (store, auth, plugins) => {
       nextState &&
       nextState.location &&
       nextState.location.query &&
-      typeof nextState.location.query.tutorial !== 'undefined';
+      typeof nextState.location.query.tutorial !== "undefined";
 
     if (!localStorage.isLogged) {
       localLoginRequest().then(resp => {
@@ -36,7 +36,7 @@ export const getRoutes = (store, auth, plugins) => {
         } else {
           //redirect tells that there should be
           //step back in history after login
-          store.dispatch(push('/login?redirect=true'));
+          store.dispatch(push("/login?redirect=true"));
         }
       });
     } else {
@@ -68,7 +68,7 @@ export const getRoutes = (store, auth, plugins) => {
   const logout = () => {
     logoutRequest()
       .then(() => logoutSuccess(auth))
-      .then(() => store.dispatch(push('/login')));
+      .then(() => store.dispatch(push("/login")));
   };
 
   function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
@@ -77,8 +77,8 @@ export const getRoutes = (store, auth, plugins) => {
         ...currentBreadcrumb,
         {
           caption: route.breadcrumb.caption,
-          type: route.breadcrumb.type,
-        },
+          type: route.breadcrumb.type
+        }
       ];
 
       route.onEnter = () => store.dispatch(setBreadcrumb(routeBreadcrumb));
@@ -98,7 +98,7 @@ export const getRoutes = (store, auth, plugins) => {
 
           // wrap main plugin component in a HOC that'll render it
           // inside the app using a Container element
-          if (ParentComponent.name !== 'WrappedPlugin') {
+          if (ParentComponent.name !== "WrappedPlugin") {
             const wrapped = pluginWrapper(PluginContainer, ParentComponent);
 
             pluginRoutes[0].component = wrapped;
@@ -123,42 +123,42 @@ export const getRoutes = (store, auth, plugins) => {
   const pluginRoutes = getPluginsRoutes(plugins);
   const childRoutes = [
     {
-      path: '/window/:windowType',
+      path: "/window/:windowType",
       component: nextState => (
         <DocList
           query={nextState.location.query}
           windowType={nextState.params.windowType}
         />
-      ),
+      )
     },
     {
-      path: '/window/:windowType/:docId',
+      path: "/window/:windowType/:docId",
       component: MasterWindow,
       onEnter: ({ params }) =>
-        store.dispatch(createWindow(params.windowType, params.docId)),
+        store.dispatch(createWindow(params.windowType, params.docId))
     },
     {
-      path: '/sitemap',
-      component: NavigationTree,
+      path: "/sitemap",
+      component: NavigationTree
     },
     {
-      path: '/board/:boardId',
+      path: "/board/:boardId",
       component: nextState => (
         <Board
           query={nextState.location.query}
           boardId={nextState.params.boardId}
         />
-      ),
+      )
     },
     {
-      path: '/inbox',
-      component: InboxAll,
+      path: "/inbox",
+      component: InboxAll
     },
     {
-      path: 'logout',
-      onEnter: logout,
+      path: "logout",
+      onEnter: logout
     },
-    ...pluginRoutes,
+    ...pluginRoutes
   ];
 
   return (
@@ -171,7 +171,7 @@ export const getRoutes = (store, auth, plugins) => {
         component={({ location }) => (
           <Login
             redirect={location.query.redirect}
-            logged={localStorage.getItem('isLogged') === 'true'}
+            logged={localStorage.getItem("isLogged") === "true"}
             {...{ auth }}
           />
         )}
@@ -179,7 +179,7 @@ export const getRoutes = (store, auth, plugins) => {
       <Route
         path="/forgottenPassword"
         component={({ location }) => (
-          <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
+          <Login splat={location.pathname.replace("/", "")} {...{ auth }} />
         )}
       />
       <Route
@@ -187,7 +187,7 @@ export const getRoutes = (store, auth, plugins) => {
         onEnter={onResetEnter}
         component={({ location }) => (
           <Login
-            splat={location.pathname.replace('/', '')}
+            splat={location.pathname.replace("/", "")}
             token={location.query.token}
             {...{ auth }}
           />
@@ -198,7 +198,7 @@ export const getRoutes = (store, auth, plugins) => {
         component={({ location }) => (
           <PaypalReservationConfirm
             token={location.query.token}
-            {...{ auth }} 
+            {...{ auth }}
           />
         )}
       />
