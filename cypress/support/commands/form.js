@@ -309,7 +309,7 @@ Cypress.Commands.add(
   (fieldName, listValue, modal, rewriteUrl = null, skipRequest, simpleListField = true) => {
     describe('Select value in list field', function() {
       cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
-
+      cy.wait(3000);
       const patchListFieldAliasName = `patchListField-${new Date().getTime()}`;
       const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
