@@ -42,7 +42,8 @@ class PaypalReservationConfirmForm extends Component {
 }
 
 PaypalReservationConfirmForm.propTypes = {
-  token: PropTypes.string,
+  confirmStatus: PropTypes.string,
+  message: PropTypes.string,
 };
 
 export default connect()(PaypalReservationConfirmForm);
