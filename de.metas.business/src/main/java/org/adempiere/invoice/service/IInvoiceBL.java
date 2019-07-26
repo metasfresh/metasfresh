@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
-import de.metas.document.ICopyHandler;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ImmutablePair;
@@ -40,9 +39,11 @@ import org.compiere.model.X_C_DocType;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.payment.PaymentRule;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 
@@ -403,7 +404,7 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
 	 */
-	String getDefaultPaymentRule();
+	PaymentRule getDefaultPaymentRule();
 
 	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
 

@@ -64,6 +64,17 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public I_C_Tax getTaxByIdOrNull(final int taxRepoId)
+	{
+		if (taxRepoId <= 0)
+		{
+			return null;
+		}
+
+		return loadOutOfTrx(taxRepoId, I_C_Tax.class);
+	}
+
+	@Override
 	@Cached(cacheName = I_C_VAT_SmallBusiness.Table_Name + "#By#C_BPartner_ID#Date")
 	public boolean retrieveIsTaxExempt(
 			final @CacheCtx Properties ctx,

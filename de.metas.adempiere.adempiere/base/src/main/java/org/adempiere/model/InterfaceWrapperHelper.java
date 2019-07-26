@@ -53,7 +53,6 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.Adempiere;
@@ -73,6 +72,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -960,8 +960,12 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final boolean isModelInterface(final Class<?> modelClass)
+	public static final boolean isModelInterface(@Nullable final Class<?> modelClass)
 	{
+		if (modelClass == null)
+		{
+			return false;
+		}
 		final IModelClassInfo modelClassInfo = getModelClassInfoOrNull(modelClass);
 		if (modelClassInfo == null)
 		{

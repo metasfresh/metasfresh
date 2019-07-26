@@ -34,15 +34,15 @@ import lombok.Value;
 @Builder
 public class DecodeDataMatrixClientResponse
 {
+	boolean error;
+	
+	String resultCode;
+	String resultMessage;
+
 	/** Set if not error */
 	@Nullable
 	ProductDetails productDetails;
 
 	@NonNull
 	SecurPharmLog log;
-
-	public boolean isError()
-	{
-		return getProductDetails() == null;
-	}
 }

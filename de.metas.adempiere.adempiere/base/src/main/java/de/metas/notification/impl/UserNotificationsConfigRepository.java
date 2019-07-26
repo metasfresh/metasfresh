@@ -6,7 +6,6 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
@@ -18,12 +17,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.email.EMailAddress;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.NotificationType;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -93,7 +94,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.orgId(OrgId.ofRepoId(user.getAD_Org_ID()))
 				.userNotificationGroups(userNotificationGroups)
 				.defaults(defaults)
-				.email(user.getEMail())
+				.email(EMailAddress.ofNullableString(user.getEMail()))
 				.userInChargeId(userInChargeId)
 				.build();
 	}

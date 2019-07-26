@@ -1,9 +1,9 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import lombok.Builder;

@@ -10,6 +10,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
@@ -153,7 +154,7 @@ public class OrderHeaderAggregation
 			order.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
 
-		order.setDocStatus(IDocument.STATUS_Drafted);
+		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(IDocument.ACTION_Complete);
 
 		//

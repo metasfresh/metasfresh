@@ -19,7 +19,6 @@ package org.compiere.acct;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.MInOut;
-import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
@@ -40,6 +38,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.costing.CostAmount;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.money.CurrencyId;
@@ -450,8 +449,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final CurrencyId currencyId = costs.getCurrencyId();
-		final int precision = currencyDAO.getStdPrecision(Env.getCtx(), currencyId.getRepoId());
-		final BigDecimal value = costs.getValue().setScale(precision, RoundingMode.HALF_UP);
-		return value;
+		final CurrencyPrecision precision = currencyDAO.getStdPrecision(currencyId);
+		return precision.round(costs.getValue());
 	}
 }   // Doc_InOut

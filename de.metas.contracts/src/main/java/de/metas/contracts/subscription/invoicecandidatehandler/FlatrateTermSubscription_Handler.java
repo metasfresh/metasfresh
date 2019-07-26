@@ -29,7 +29,6 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -47,6 +46,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
+import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;

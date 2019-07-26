@@ -2,7 +2,9 @@ package de.metas.i18n;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -18,10 +20,13 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.compiere.util.DisplayType;
+
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.currency.Amount;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -217,6 +222,15 @@ public class TranslatableStrings
 		return trl != null ? trl : empty();
 	}
 
+	public static ITranslatableString amount(@NonNull final Amount amount)
+	{
+		return builder()
+				.append(amount.getAsBigDecimal(), DisplayType.Amount)
+				.append(" ")
+				.append(amount.getCurrencyCode().toThreeLetterCode())
+				.build();
+	}
+
 	public static NumberTranslatableString number(final BigDecimal valueBD, final int displayType)
 	{
 		return NumberTranslatableString.of(valueBD, displayType);
@@ -242,7 +256,7 @@ public class TranslatableStrings
 		return DateTimeTranslatableString.ofObject(obj, displayType);
 	}
 
-	public static DateTimeTranslatableString dateAndTime(@NonNull final LocalDateTime date)
+	public static DateTimeTranslatableString dateAndTime(@NonNull final ZonedDateTime date)
 	{
 		return DateTimeTranslatableString.ofDateTime(date);
 	}
@@ -319,5 +333,10 @@ public class TranslatableStrings
 		}
 
 		return ofMap(trlMap, trl.getDefaultValue());
+	}
+
+	public static ITranslatableString ofTimeZone(@NonNull final ZoneId timeZone, @NonNull final TextStyle textStyle)
+	{
+		return TimeZoneTranslatableString.ofZoneId(timeZone, textStyle);
 	}
 }

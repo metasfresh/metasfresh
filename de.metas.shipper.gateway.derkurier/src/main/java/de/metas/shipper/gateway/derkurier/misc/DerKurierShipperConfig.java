@@ -4,7 +4,8 @@ import java.time.LocalTime;
 
 import javax.annotation.Nullable;
 
-import de.metas.email.Mailbox;
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,7 +44,7 @@ public class DerKurierShipperConfig
 
 	Mailbox deliveryOrderMailBoxOrNull;
 
-	String deliveryOrderRecipientEmailOrNull;
+	EMailAddress deliveryOrderRecipientEmailOrNull;
 
 	int parcelNumberAdSequenceId;
 
@@ -58,7 +59,7 @@ public class DerKurierShipperConfig
 			@NonNull final String restApiBaseUrl,
 			@NonNull final String customerNumber,
 			@Nullable final Mailbox deliveryOrderMailBoxOrNull,
-			@Nullable String deliveryOrderRecipientEmailOrNull,
+			@Nullable final EMailAddress deliveryOrderRecipientEmailOrNull,
 			@NonNull String collectorCode,
 			@NonNull String customerCode,
 			final int parcelNumberAdSequenceId,
@@ -69,7 +70,7 @@ public class DerKurierShipperConfig
 		this.restApiBaseUrl = Check.assumeNotEmpty(restApiBaseUrl, "Parameter restApiBaseUrl is not empty");
 
 		final boolean mailBoxIsSet = deliveryOrderMailBoxOrNull != null;
-		final boolean mailAddressIsSet = !Check.isEmpty(deliveryOrderRecipientEmailOrNull, true);
+		final boolean mailAddressIsSet = deliveryOrderRecipientEmailOrNull != null;
 		Check.errorIf(mailBoxIsSet != mailAddressIsSet, "If a mailbox is configured, then also a mail address needs to be set and vice versa.");
 		this.deliveryOrderRecipientEmailOrNull = deliveryOrderRecipientEmailOrNull;
 		this.deliveryOrderMailBoxOrNull = deliveryOrderMailBoxOrNull;

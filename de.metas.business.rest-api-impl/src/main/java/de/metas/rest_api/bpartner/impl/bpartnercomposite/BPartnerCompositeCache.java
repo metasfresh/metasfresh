@@ -4,9 +4,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -54,6 +58,7 @@ public class BPartnerCompositeCache
 				.initialCapacity(100)
 				.invalidationKeysMapper(cacheIndex::computeCachingKeys)
 				.removalListener(cacheIndex::remove)
+				.additionListener(cacheIndex::add)
 				.build();
 	}
 
@@ -62,5 +67,21 @@ public class BPartnerCompositeCache
 			@NonNull final Function<Collection<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
 	{
 		return cache.getAllOrLoad(keys, valuesLoader);
+	}
+
+	/** Get all the records, assuming that there is a cache entry for each single record. If not, throw an exception. */
+	@VisibleForTesting
+	public Collection<BPartnerComposite> getAssertAllCached(
+			@NonNull final Collection<BPartnerCompositeLookupKey> keys)
+	{
+		final ImmutableList.Builder<BPartnerComposite> result = ImmutableList.builder();
+		for (BPartnerCompositeLookupKey key : keys)
+		{
+			result.add(cache.getOrElseThrow(
+					key,
+					() -> new AdempiereException("Missing record for key=" + key)));
+		}
+
+		return result.build();
 	}
 }

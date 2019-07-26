@@ -54,12 +54,7 @@ import de.metas.util.Services;
  */
 public class TableColumnPathBL implements ITableColumnPathBL
 {
-	private static final Logger log = LogManager.getLogger(TableColumnPathBL.class);
-
-	public TableColumnPathBL()
-	{
-		super();
-	}
+	private static final Logger logger = LogManager.getLogger(TableColumnPathBL.class);
 
 	@Override
 	public Object getValueByPath(Properties ctx, String tableName, int id, String pathStr)
@@ -100,7 +95,7 @@ public class TableColumnPathBL implements ITableColumnPathBL
 			}
 
 			String columnSQL = null;
-			;
+			
 			if (column.isVirtualColumn())
 			{
 				columnSQL = column.getColumnSQL();
@@ -118,7 +113,9 @@ public class TableColumnPathBL implements ITableColumnPathBL
 
 		MColumn valueColumn = parentTable.getColumn(valueColumnName);
 		if (valueColumn == null)
+		{
 			throw new TableColumnPathException(pathStr, "Value column " + valueColumnName + " not found in table " + parentTable.getTableName());
+		}
 		path.setValueColumnName(parentTable.getTableName(), valueColumn.getColumnName(), valueColumn.getAD_Reference_ID());
 
 		return path;
@@ -138,7 +135,9 @@ public class TableColumnPathBL implements ITableColumnPathBL
 			else
 			{
 				if (!parentColumnSQL.startsWith("("))
+				{
 					parentColumnSQL = "( " + parentColumnSQL + " )";
+				}
 			}
 
 			sqlFROM.append("\nINNER JOIN ").append(e.getTableName()).append(" ON (")
@@ -161,7 +160,9 @@ public class TableColumnPathBL implements ITableColumnPathBL
 	{
 		String[] keyColumns = table.getKeyColumns();
 		if (keyColumns == null || keyColumns.length != 1)
+		{
 			throw new TableColumnPathException(null, "Table " + table.getTableName() + " should have one and only one key column");
+		}
 		String keyColumn = keyColumns[0];
 		return keyColumn;
 	}
@@ -177,9 +178,13 @@ public class TableColumnPathBL implements ITableColumnPathBL
 			DB.setParameters(pstmt, params);
 			rs = pstmt.executeQuery();
 			if (rs.next())
+			{
 				retValue = rs.getObject(1);
+			}
 			else
-				log.info("No Value " + sql);
+			{
+				logger.info("No Value " + sql);
+			}
 		}
 		catch (SQLException e)
 		{

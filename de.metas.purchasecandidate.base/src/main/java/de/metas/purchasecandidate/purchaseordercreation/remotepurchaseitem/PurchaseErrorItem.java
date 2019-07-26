@@ -2,9 +2,9 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.ITableRecordReference;
 
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.util.Check;
 import lombok.Builder;

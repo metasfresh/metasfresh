@@ -37,6 +37,7 @@ import de.metas.util.time.SystemTime;
 
 public class BPartnerRecordsUtil
 {
+
 	public static final String C_COUNTRY_RECORD_COUNTRY_CODE = "countryRecord.countryCode";
 
 	public static final int C_BP_GROUP_ID = 15;
@@ -46,7 +47,9 @@ public class BPartnerRecordsUtil
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
 	public static final int AD_ORG_ID = 10;
 	public static final String AD_USER_EXTERNAL_ID = "abcde";
+
 	public static final String C_BPARTNER_EXTERNAL_ID = "fghij";
+	public static final String C_BPARTNER_VALUE = "bpartnerRecord.value";
 
 	public static final int C_BPARTNER_ID = 20;
 	public static final int AD_USER_ID = 30;
@@ -63,7 +66,7 @@ public class BPartnerRecordsUtil
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setExternalId(C_BPARTNER_EXTERNAL_ID + idOffSetStr);
 		bpartnerRecord.setName("bpartnerRecord.name" + idOffSetStr);
-		bpartnerRecord.setValue("bpartnerRecord.value" + idOffSetStr);
+		bpartnerRecord.setValue(C_BPARTNER_VALUE + idOffSetStr);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, AD_USER_ID + idOffSet);
 		InterfaceWrapperHelper.setValue(bpartnerRecord, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
@@ -80,7 +83,7 @@ public class BPartnerRecordsUtil
 		contactRecord.setAD_User_ID(AD_USER_ID + idOffSet);
 		contactRecord.setC_BPartner(bpartnerRecord);
 		contactRecord.setExternalId(AD_USER_EXTERNAL_ID + idOffSetStr);
-		contactRecord.setValue("bpartnerRecord.value" + idOffSetStr);
+		contactRecord.setValue(C_BPARTNER_VALUE + idOffSetStr);
 		contactRecord.setName("bpartnerRecord.name" + idOffSetStr);
 		contactRecord.setLastname("bpartnerRecord.lastName" + idOffSetStr);
 		contactRecord.setFirstname("bpartnerRecord.firstName" + idOffSetStr);

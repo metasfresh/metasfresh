@@ -19,13 +19,13 @@ import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundBase;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.util.lang.Percent;
 

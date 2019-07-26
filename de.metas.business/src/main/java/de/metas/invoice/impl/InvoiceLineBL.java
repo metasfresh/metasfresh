@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
@@ -54,6 +53,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -246,7 +246,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
-		final I_M_PriceList priceList = order.getM_PriceList();
+		final I_M_PriceList priceList = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,

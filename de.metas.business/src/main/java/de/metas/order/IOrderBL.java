@@ -2,16 +2,15 @@ package de.metas.order;
 
 import java.util.Properties;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.I_M_FreightCostDetail;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.PriceListId;
@@ -21,18 +20,7 @@ import de.metas.util.ISingletonService;
 
 public interface IOrderBL extends ISingletonService
 {
-
-	/**
-	 * Checks if {@link I_C_Order#FREIGHTCOSTRULE_Versandkostenpauschale} is selected as the order's freight cost rule. If yes, it checks if there are {@link I_M_FreightCostDetail} records for the
-	 * given BPartner, Location and Shipper.
-	 *
-	 * @param order
-	 *
-	 * @see "<a href='http://dewiki908/mediawiki/index.php/Versandkostenermittlung/_-berechnung_(2009_0027_G28)'>DV-Konzept (2009_0027_G28)</a>"
-	 *
-	 * @throws AdempiereException in case of failure
-	 */
-	void checkFreightCost(I_C_Order order);
+	I_C_Order getById(OrderId orderId);
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
@@ -60,23 +48,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	/**
-	 * Returns the given order's <code>C_BPartner</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Partner</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner getShipToPartner(I_C_Order order);
-
 	BPartnerLocationId getShipToLocationId(I_C_Order order);
-
-	/**
-	 * Returns the given order's <code>C_BPartner_Location</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_Location</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner_Location getShipToLocation(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
@@ -86,13 +58,9 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	/**
-	 * Returns the given order's <code>C_BPartner_Location</code>, or if set then returns the <code>Bill_Location</code>.
-	 *
-	 * @param order
-	 * @return
-	 */
-	I_C_BPartner_Location getBillToLocation(I_C_Order order);
+	BPartnerLocationId getBillToLocationIdOrNull(I_C_Order order);
+
+	BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
@@ -105,14 +73,12 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void checkForPriceList(I_C_Order order);
 
-	boolean updateFreightAmt(Properties ctx, I_C_Order order, String trxName);
-
 	/**
 	 * Retrieve and set Bill_User_ID
 	 *
 	 * @return true if set
 	 */
-	public boolean setBill_User_ID(org.compiere.model.I_C_Order order);
+	boolean setBill_User_ID(I_C_Order order);
 
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
@@ -160,7 +126,7 @@ public interface IOrderBL extends ISingletonService
 	 * @param order
 	 * @return
 	 */
-	String evaluateOrderDeliveryViaRule(I_C_Order order);
+	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
 
 	/**
 	 * Set Business Partner Defaults & Details. SOTrx should be set.
@@ -187,7 +153,7 @@ public interface IOrderBL extends ISingletonService
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
 
 	CurrencyPrecision getPricePrecision(I_C_Order order);
-	
+
 	CurrencyPrecision getAmountPrecision(I_C_Order order);
 
 	CurrencyPrecision getTaxPrecision(I_C_Order order);
@@ -245,4 +211,16 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if the order is a quotation, i.e. C_Order's (target-)docType's DocBaseType = SSO and DocSubType in ('OB' , 'ON' = Quotation or Proposal)
 	 */
 	boolean isQuotation(I_C_Order order);
+
+	boolean isPrepay(OrderId orderId);
+
+	boolean isPrepay(I_C_Order order);
+
+	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
+
+	I_C_DocType getDocTypeOrNull(I_C_Order order);
+
+	I_C_BPartner getBPartner(I_C_Order order);
+
+	I_C_BPartner getBPartnerOrNull(I_C_Order order);
 }

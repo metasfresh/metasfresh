@@ -250,13 +250,14 @@ public class RefundInvoiceCandidateRepository
 		}
 
 		record.setBill_BPartner_ID(refundCandidate.getBpartnerId().getRepoId());
+		record.setBill_Location_ID(refundCandidate.getBpartnerLocationId().getRepoId());
 		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
 
 		final Money money = refundCandidate.getMoney();
-		record.setPriceActual(money.getValue());
-		record.setPriceEntered(money.getValue());
+		record.setPriceActual(money.getAsBigDecimal());
+		record.setPriceEntered(money.getAsBigDecimal());
 		record.setC_Currency_ID(money.getCurrencyId().getRepoId());
 
 		final RefundContract refundContract = refundCandidate.getRefundContract();

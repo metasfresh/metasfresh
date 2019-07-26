@@ -43,6 +43,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
+import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PricingSystemId;
@@ -104,6 +105,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
+	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
@@ -117,6 +120,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	I_AD_User getContactById(BPartnerContactId contactId);
+
+	EMailAddress getContactEMail(BPartnerContactId contactId);
 
 	/**
 	 * Returns the <code>M_PricingSystem_ID</code> to use for a given bPartner.

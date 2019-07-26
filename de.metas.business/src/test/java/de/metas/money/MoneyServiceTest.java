@@ -1,14 +1,14 @@
 package de.metas.money;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Currency;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.util.lang.Percent;
 
 /*
@@ -57,11 +57,7 @@ public class MoneyServiceTest
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		moneyService = new MoneyService(currencyRepository);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
-
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		// Currency currency = currencyRepository.getById(currencyId);
 
 		zeroEuro = Money.of(0, currencyId);
@@ -76,7 +72,7 @@ public class MoneyServiceTest
 		final Money result = moneyService.percentage(Percent.of(80), twoHundredEuro);
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getValue()).isEqualByComparingTo("160");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("160");
 	}
 
 	@Test
@@ -96,7 +92,7 @@ public class MoneyServiceTest
 		final Money result = moneyService.percentage(Percent.of(10), Money.of(14, currencyId));
 
 		assertThat(result.getCurrencyId()).isEqualTo(currencyId);
-		assertThat(result.getValue()).isEqualByComparingTo("1.4");
+		assertThat(result.getAsBigDecimal()).isEqualByComparingTo("1.4");
 	}
 
 	@Test

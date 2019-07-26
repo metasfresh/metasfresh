@@ -24,8 +24,7 @@ package de.metas.security;
 
 import java.util.Set;
 
-import org.adempiere.service.OrgId;
-
+import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.util.ISingletonService;
 

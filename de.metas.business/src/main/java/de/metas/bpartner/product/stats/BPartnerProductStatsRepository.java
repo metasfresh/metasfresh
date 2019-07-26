@@ -17,7 +17,6 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner_Product_Stats;
 import org.compiere.model.I_C_BPartner_Product_Stats_InOut_Online_v;
 import org.compiere.model.I_C_BPartner_Product_Stats_Invoice_Online_V;
@@ -34,6 +33,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -310,7 +310,7 @@ class BPartnerProductStatsRepository
 		record.setLastSalesInvoiceDate(TimeUtil.asTimestamp(invoiceDate));
 
 		final Money price = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getPrice() : null;
-		record.setLastSalesPrice(price != null ? price.getValue() : null);
+		record.setLastSalesPrice(price != null ? price.getAsBigDecimal() : null);
 		record.setLastSalesPrice_Currency_ID(price != null ? price.getCurrencyId().getRepoId() : -1);
 	}
 }

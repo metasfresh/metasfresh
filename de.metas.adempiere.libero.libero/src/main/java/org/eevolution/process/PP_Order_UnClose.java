@@ -13,15 +13,14 @@ package org.eevolution.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +38,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -48,6 +48,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -89,9 +90,10 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final I_PP_Order ppOrder = getRecord(I_PP_Order.class);
+		final PPOrderId ppOrderId = getPPOrderId();
+		final I_PP_Order ppOrder = ppOrdersRepo.getById(ppOrderId);
 		if (!isEligible(ppOrder))
 		{
 			throw new AdempiereException("@NotValid@ " + ppOrder);
@@ -100,6 +102,12 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 		unclose(ppOrder);
 
 		return MSG_OK;
+	}
+
+	private PPOrderId getPPOrderId()
+	{
+		Check.assumeEquals(getTableName(), I_PP_Order.Table_Name, "TableName");
+		return PPOrderId.ofRepoId(getRecord_ID());
 	}
 
 	private void unclose(final I_PP_Order ppOrder)
@@ -156,13 +164,14 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 				continue;
 			}
 
-			if (docActionBL.isDocumentStatusOneOf(cc, IDocument.STATUS_Closed))
+			final DocStatus costCollectorDocStatus = DocStatus.ofNullableCodeOrUnknown(cc.getDocStatus());
+			if (costCollectorDocStatus.isClosed())
 			{
-				cc.setDocStatus(IDocument.STATUS_Completed);
+				cc.setDocStatus(DocStatus.Completed.getCode());
 				Services.get(IPPCostCollectorDAO.class).save(cc);
 			}
 
-			docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			docActionBL.processEx(cc, IDocument.ACTION_Reverse_Correct, DocStatus.Reversed.getCode());
 		}
 	}
 }

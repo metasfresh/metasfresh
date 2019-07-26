@@ -81,19 +81,22 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
     /** AccessLevel
       * @return 3 - Client - Org 
       */
-    protected int get_AccessLevel()
+    @Override
+	protected int get_AccessLevel()
     {
       return accessLevel.intValue();
     }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+	protected POInfo initPO (Properties ctx)
     {
       POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
       return poi;
     }
 
-    public String toString()
+    @Override
+	public String toString()
     {
       StringBuffer sb = new StringBuffer ("X_Pay_OnlinePaymentHistory[")
         .append(get_ID()).append("]");
@@ -104,6 +107,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 		@param Amount 
 		Betrag in einer definierten Waehrung
 	  */
+	@Override
 	public void setAmount (BigDecimal Amount)
 	{
 		set_Value (COLUMNNAME_Amount, Amount);
@@ -112,11 +116,14 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Betrag.
 		@return Betrag in einer definierten Waehrung
 	  */
+	@Override
 	public BigDecimal getAmount () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amount);
 		if (bd == null)
-			 return Env.ZERO;
+		{
+			return Env.ZERO;
+		}
 		return bd;
 	}
 
@@ -142,6 +149,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 		@param CCPaymentState 
 		Status der Kreditkarten-Zahlung
 	  */
+	@Override
 	public void setCCPaymentState (String CCPaymentState)
 	{
 
@@ -151,11 +159,13 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Status der KK-Zahlung.
 		@return Status der Kreditkarten-Zahlung
 	  */
+	@Override
 	public String getCCPaymentState () 
 	{
 		return (String)get_Value(COLUMNNAME_CCPaymentState);
 	}
 
+	@Override
 	public I_C_Payment getC_Payment() throws RuntimeException
     {
 		return (I_C_Payment)MTable.get(getCtx(), I_C_Payment.Table_Name)
@@ -165,27 +175,36 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 		@param C_Payment_ID 
 		Payment identifier
 	  */
+	@Override
 	public void setC_Payment_ID (int C_Payment_ID)
 	{
-		if (C_Payment_ID < 1) 
+		if (C_Payment_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Payment_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+		}
 	}
 
 	/** Get Payment.
 		@return Payment identifier
 	  */
+	@Override
 	public int getC_Payment_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
 	/** Set Kreditkarte.
 		@param CreditCardValue Kreditkarte	  */
+	@Override
 	public void setCreditCardValue (String CreditCardValue)
 	{
 		set_Value (COLUMNNAME_CreditCardValue, CreditCardValue);
@@ -193,6 +212,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 
 	/** Get Kreditkarte.
 		@return Kreditkarte	  */
+	@Override
 	public String getCreditCardValue () 
 	{
 		return (String)get_Value(COLUMNNAME_CreditCardValue);
@@ -200,6 +220,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 
 	/** Set Fehlermeldung.
 		@param ErrorMsg Fehlermeldung	  */
+	@Override
 	public void setErrorMsg (String ErrorMsg)
 	{
 		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
@@ -207,6 +228,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 
 	/** Get Fehlermeldung.
 		@return Fehlermeldung	  */
+	@Override
 	public String getErrorMsg () 
 	{
 		return (String)get_Value(COLUMNNAME_ErrorMsg);
@@ -216,6 +238,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 		@param Orig_TrxID 
 		Original Transaction ID
 	  */
+	@Override
 	public void setOrig_TrxID (String Orig_TrxID)
 	{
 		set_Value (COLUMNNAME_Orig_TrxID, Orig_TrxID);
@@ -224,6 +247,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Original Transaction ID.
 		@return Original Transaction ID
 	  */
+	@Override
 	public String getOrig_TrxID () 
 	{
 		return (String)get_Value(COLUMNNAME_Orig_TrxID);
@@ -231,21 +255,29 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 
 	/** Set Onlinezahlungsverlauf.
 		@param Pay_OnlinePaymentHistory_ID Onlinezahlungsverlauf	  */
+	@Override
 	public void setPay_OnlinePaymentHistory_ID (int Pay_OnlinePaymentHistory_ID)
 	{
-		if (Pay_OnlinePaymentHistory_ID < 1) 
+		if (Pay_OnlinePaymentHistory_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_Pay_OnlinePaymentHistory_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_Pay_OnlinePaymentHistory_ID, Integer.valueOf(Pay_OnlinePaymentHistory_ID));
+		}
 	}
 
 	/** Get Onlinezahlungsverlauf.
 		@return Onlinezahlungsverlauf	  */
+	@Override
 	public int getPay_OnlinePaymentHistory_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Pay_OnlinePaymentHistory_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -253,6 +285,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 		@param R_AuthCode 
 		Authorization Code returned
 	  */
+	@Override
 	public void setR_AuthCode (String R_AuthCode)
 	{
 		set_Value (COLUMNNAME_R_AuthCode, R_AuthCode);
@@ -261,29 +294,31 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Authorization Code.
 		@return Authorization Code returned
 	  */
+	@Override
 	public String getR_AuthCode () 
 	{
 		return (String)get_Value(COLUMNNAME_R_AuthCode);
 	}
 
-	/** TenderType AD_Reference_ID=214 */
-	public static final int TENDERTYPE_AD_Reference_ID=214;
-	/** Kreditkarte = C */
-	public static final String TENDERTYPE_Kreditkarte = "C";
-	/** Scheck = K */
-	public static final String TENDERTYPE_Scheck = "K";
-	/** ueberweisung = A */
-	public static final String TENDERTYPE_ueberweisung = "A";
-	/** Bankeinzug = D */
-	public static final String TENDERTYPE_Bankeinzug = "D";
-	/** Account = T */
-	public static final String TENDERTYPE_Account = "T";
-	/** Bar = X */
-	public static final String TENDERTYPE_Bar = "X";
+//	/** TenderType AD_Reference_ID=214 */
+//	public static final int TENDERTYPE_AD_Reference_ID=214;
+//	/** Kreditkarte = C */
+//	public static final String TENDERTYPE_Kreditkarte = "C";
+//	/** Scheck = K */
+//	public static final String TENDERTYPE_Scheck = "K";
+//	/** ueberweisung = A */
+//	public static final String TENDERTYPE_ueberweisung = "A";
+//	/** Bankeinzug = D */
+//	public static final String TENDERTYPE_Bankeinzug = "D";
+//	/** Account = T */
+//	public static final String TENDERTYPE_Account = "T";
+//	/** Bar = X */
+//	public static final String TENDERTYPE_Bar = "X";
 	/** Set Tender type.
 		@param TenderType 
 		Method of Payment
 	  */
+	@Override
 	public void setTenderType (String TenderType)
 	{
 
@@ -293,31 +328,33 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Tender type.
 		@return Method of Payment
 	  */
+	@Override
 	public String getTenderType () 
 	{
 		return (String)get_Value(COLUMNNAME_TenderType);
 	}
 
-	/** TrxType AD_Reference_ID=215 */
-	public static final int TRXTYPE_AD_Reference_ID=215;
-	/** Verkauf = S */
-	public static final String TRXTYPE_Verkauf = "S";
-	/** Delayed Capture = D */
-	public static final String TRXTYPE_DelayedCapture = "D";
-	/** Kredit (Zahlung) = C */
-	public static final String TRXTYPE_KreditZahlung = "C";
-	/** Voice Authorization = F */
-	public static final String TRXTYPE_VoiceAuthorization = "F";
-	/** Autorisierung = A */
-	public static final String TRXTYPE_Autorisierung = "A";
-	/** Loeschen = V */
-	public static final String TRXTYPE_Loeschen = "V";
-	/** Rueckzahlung = R */
-	public static final String TRXTYPE_Rueckzahlung = "R";
+//	/** TrxType AD_Reference_ID=215 */
+//	public static final int TRXTYPE_AD_Reference_ID=215;
+//	/** Verkauf = S */
+//	public static final String TRXTYPE_Verkauf = "S";
+//	/** Delayed Capture = D */
+//	public static final String TRXTYPE_DelayedCapture = "D";
+//	/** Kredit (Zahlung) = C */
+//	public static final String TRXTYPE_KreditZahlung = "C";
+//	/** Voice Authorization = F */
+//	public static final String TRXTYPE_VoiceAuthorization = "F";
+//	/** Autorisierung = A */
+//	public static final String TRXTYPE_Autorisierung = "A";
+//	/** Loeschen = V */
+//	public static final String TRXTYPE_Loeschen = "V";
+//	/** Rueckzahlung = R */
+//	public static final String TRXTYPE_Rueckzahlung = "R";
 	/** Set Transaction Type.
 		@param TrxType 
 		Type of credit card transaction
 	  */
+	@Override
 	public void setTrxType (String TrxType)
 	{
 
@@ -327,6 +364,7 @@ public class X_Pay_OnlinePaymentHistory extends PO implements I_Pay_OnlinePaymen
 	/** Get Transaction Type.
 		@return Type of credit card transaction
 	  */
+	@Override
 	public String getTrxType () 
 	{
 		return (String)get_Value(COLUMNNAME_TrxType);

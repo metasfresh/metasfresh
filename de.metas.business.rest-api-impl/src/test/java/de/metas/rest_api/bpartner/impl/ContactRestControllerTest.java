@@ -27,7 +27,9 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.rest_api.JsonExternalId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.MetasfreshId;
 import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
@@ -38,6 +40,8 @@ import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseContactList;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.time.SystemTime;
 
@@ -86,8 +90,14 @@ class ContactRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
+		Services.registerService(IBPartnerBL.class,new BPartnerBL(new UserRepository()));
+
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(bpartnerCompositeRepository, new BPGroupRepository(), new RecordChangeLogRepository());
+		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
+				bpartnerCompositeRepository,
+				new BPGroupRepository(),
+				new GreetingRepository(),
+				new RecordChangeLogRepository());
 
 		contactRestController = new ContactRestController(new BPartnerEndpointService(jsonServiceFactory), jsonServiceFactory);
 
@@ -197,13 +207,13 @@ class ContactRestControllerTest
 				.metasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID))
 				.build();
 
-		final JsonExternalId upsertExternalId = JsonExternalId.of("externalId-1");
+		final String contactIdentifier = "ext-externalId-1";
 
 		final JsonRequestContactUpsert upsertRequest = JsonRequestContactUpsert.builder()
 				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())
 				.requestItem(JsonRequestContactUpsertItem
 						.builder()
-						.externalId(upsertExternalId)
+						.contactIdentifier(contactIdentifier)
 						.contact(jsonContact)
 						.build())
 				.build();
@@ -216,7 +226,7 @@ class ContactRestControllerTest
 		final JsonResponseUpsert resultBody = result.getBody();
 
 		assertThat(resultBody.getResponseItems()).hasSize(1);
-		assertThat(resultBody.getResponseItems().get(0).getExternalId()).isEqualTo(upsertExternalId);
+		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
 
 		final MetasfreshId insertedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
 

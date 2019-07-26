@@ -4,23 +4,27 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_AD_Client;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.email.EMail;
-import de.metas.email.IMailBL;
-import de.metas.email.IMailTextBuilder;
+import de.metas.email.EMailAddress;
+import de.metas.email.EMailCustomType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.ClientEMailConfig;
+import de.metas.email.mailboxes.UserEMailConfig;
+import de.metas.email.templates.MailTemplateId;
+import de.metas.email.templates.MailTextBuilder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -34,6 +38,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
 
 public class UserBL implements IUserBL
@@ -43,10 +48,15 @@ public class UserBL implements IUserBL
 	/**
 	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
 	 */
-	private static final String MAILCONFIG_CUSTOMTYPE_UserPasswordReset = "L";
+	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
 	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
 	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
+
+	private MailService mailService()
+	{
+		return Adempiere.getBean(MailService.class);
+	}
 
 	@Override
 	public HashableString getUserPassword(final I_AD_User user)
@@ -87,18 +97,20 @@ public class UserBL implements IUserBL
 	@Override
 	public void createResetPasswordByEMailRequest(final I_AD_User user)
 	{
-		final String emailTo = user.getEMail();
-		if (Check.isEmpty(emailTo, true))
+		final EMailAddress emailTo = EMailAddress.ofNullableString(user.getEMail());
+		if (emailTo == null)
 		{
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
 
 		final IClientDAO adClientsRepo = Services.get(IClientDAO.class);
-		final int adClientId = user.getAD_Client_ID();
-		final I_AD_Client adClient = adClientsRepo.getById(adClientId);
-		if (adClient.getPasswordReset_MailText_ID() <= 0)
+		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
+		final ClientEMailConfig tenantEmailConfig = adClientsRepo.getEMailConfigById(adClientId);
+
+		final MailTemplateId mailTemplateId = tenantEmailConfig.getPasswordResetMailTemplateId().orElse(null);
+		if (mailTemplateId == null)
 		{
-			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ", @AD_Client_ID@: " + adClientId + ")");
+			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@: {}, @AD_Client_ID@: {})", user, tenantEmailConfig);
 			throw new AdempiereException("Internal Error. Please contact the System Administrator.");
 		}
 
@@ -107,18 +119,21 @@ public class UserBL implements IUserBL
 		final String passwordResetURL = WebuiURLs.newInstance()
 				.getResetPasswordUrl(passwordResetCode);
 
-		final IMailBL mailService = Services.get(IMailBL.class);
-		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(adClient.getPasswordReset_MailText());
-		mailTextBuilder.setCustomVariable("URL", passwordResetURL);
-		mailTextBuilder.setAD_User(user);
-		if (user.getC_BPartner_ID() > 0)
+		final MailService mailService = mailService();
+		final MailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(mailTemplateId);
+		mailTextBuilder.customVariable("URL", passwordResetURL);
+		mailTextBuilder.bpartnerContact(user);
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			mailTextBuilder.setC_BPartner(user.getC_BPartner());
+			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			mailTextBuilder.bpartner(bpartner);
 		}
 
 		final String subject = mailTextBuilder.getMailHeader();
 		final EMail email = mailService.createEMail(
-				adClient,
+				tenantEmailConfig,
 				MAILCONFIG_CUSTOMTYPE_UserPasswordReset, // mailCustomType
 				null, // from email
 				emailTo, // to
@@ -292,48 +307,29 @@ public class UserBL implements IUserBL
 		// and considers the AD_User.EMail valid only if all of them are valid.
 		// see https://github.com/metasfresh/metasfresh/issues/1953
 
-		final String emailsListStr = user.getEMail();
-		final List<String> emails = EMail.toEMailsList(emailsListStr);
-		if (emails.isEmpty())
+		try
+		{
+			final List<EMailAddress> emails = EMailAddress.ofSemicolonSeparatedList(user.getEMail());
+			if (emails.isEmpty())
+			{
+				return false;
+			}
+
+			final boolean haveInvalidEMails = emails.stream().anyMatch(email -> EMailAddress.checkEMailValid(email.getAsString()) != null);
+			return !haveInvalidEMails;
+		}
+		catch (Exception ex)
 		{
 			return false;
 		}
-
-		final boolean haveInvalidEMails = emails.stream().anyMatch(email -> checkEMailValid(email) != null);
-		return !haveInvalidEMails;
 	}	// isEMailValid
 
-	private static ITranslatableString checkEMailValid(final String email)
-	{
-		if (Check.isEmpty(email, true))
-		{
-			return TranslatableStrings.constant("no email");
-		}
-		try
-		{
-			final InternetAddress ia = new InternetAddress(email, true);
-			ia.validate();	// throws AddressException
-
-			if (ia.getAddress() == null)
-			{
-				return TranslatableStrings.constant("invalid email");
-			}
-
-			return null; // OK
-		}
-		catch (AddressException ex)
-		{
-			logger.warn("Invalid email address: {}", email, ex);
-			return TranslatableStrings.constant(ex.getLocalizedMessage());
-		}
-	}
-
 	@Override
-	public ITranslatableString checkCanSendEMail(final I_AD_User user)
+	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
 	{
 		// Email
 		{
-			final ITranslatableString errmsg = checkEMailValid(user.getEMail());
+			final ITranslatableString errmsg = EMailAddress.checkEMailValid(userEmailConfig.getEmail());
 			if (errmsg != null)
 			{
 				return errmsg;
@@ -341,17 +337,18 @@ public class UserBL implements IUserBL
 		}
 
 		// STMP user/password (if SMTP authorization is required)
-		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
+		final ClientEMailConfig clientEmailConfig = Services.get(IClientDAO.class).getEMailConfigById(Env.getClientId());
+		if (clientEmailConfig.isSmtpAuthorization())
 		{
 			// SMTP user
-			final String emailUser = user.getEMailUser();
+			final String emailUser = userEmailConfig.getUsername();
 			if (Check.isEmpty(emailUser, true))
 			{
 				return TranslatableStrings.constant("no STMP user configured");
 			}
 
 			// SMTP password
-			final String emailPassword = user.getEMailUserPW();
+			final String emailPassword = userEmailConfig.getPassword();
 			if (Check.isEmpty(emailPassword, false))
 			{
 				return TranslatableStrings.constant("STMP authorization is required but no STMP password configured");
@@ -362,10 +359,17 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public ITranslatableString checkCanSendEMail(final int adUserId)
+	public void assertCanSendEMail(@NonNull final UserId adUserId)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);
-		return checkCanSendEMail(user);
+		final UserEMailConfig userEmailConfig = getEmailConfigById(adUserId);
+		final ITranslatableString errmsg = checkCanSendEMail(userEmailConfig);
+		if (errmsg != null)
+		{
+			throw new AdempiereException(TranslatableStrings.builder()
+					.append("User cannot send emails: ")
+					.append(errmsg)
+					.build());
+		}
 	}
 
 	@Override
@@ -373,11 +377,29 @@ public class UserBL implements IUserBL
 	{
 		final int bPartnerId = userRecord.getC_BPartner_ID();
 
-		final String languageStr = Util.coalesceSuppliers(
+		final String languageStr = CoalesceUtil.coalesceSuppliers(
 				() -> userRecord.getAD_Language(),
 				() -> bPartnerId > 0 ? userRecord.getC_BPartner().getAD_Language() : null,
 				() -> Env.getADLanguageOrBaseLanguage());
 
 		return Language.getLanguage(languageStr);
 	}
+
+	@Override
+	public UserEMailConfig getEmailConfigById(@NonNull final UserId userId)
+	{
+		final I_AD_User userRecord = Services.get(IUserDAO.class).getById(userId);
+		return toUserEMailConfig(userRecord);
+	}
+
+	public static UserEMailConfig toUserEMailConfig(@NonNull final I_AD_User userRecord)
+	{
+		return UserEMailConfig.builder()
+				.userId(UserId.ofRepoId(userRecord.getAD_User_ID()))
+				.email(EMailAddress.ofNullableString(userRecord.getEMail()))
+				.username(userRecord.getEMailUser())
+				.password(userRecord.getEMailUserPW())
+				.build();
+	}
+
 }

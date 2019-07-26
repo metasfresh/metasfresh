@@ -35,7 +35,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -51,6 +50,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -414,5 +414,15 @@ public final class ProductBL implements IProductBL
 			return "<" + productId + ">";
 		}
 		return product.getName();
+	}
+
+	@Override
+	public boolean isFreightCostProduct(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = Services.get(IProductDAO.class).getById(productId);
+
+		final String productType = product.getProductType();
+
+		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
 	}
 }

@@ -29,14 +29,13 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.util.Env;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.contracts.impl.FlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.money.CurrencyId;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.Verifications;
@@ -51,8 +50,7 @@ public class MockedFlatrateBLTest_Old
 	@Mocked
 	I_C_Flatrate_Term term;
 
-	@Mocked
-	I_C_Currency currency;
+	CurrencyId currencyId = CurrencyId.ofRepoId(5);
 
 	@Mocked
 	I_C_Flatrate_Conditions conditions;
@@ -494,17 +492,13 @@ public class MockedFlatrateBLTest_Old
 				minTimes = 0;
 				result = X_C_Flatrate_Conditions.TYPE_FLATRATE_Corridor_Percent;
 
-				conditions.getM_Product_Flatrate();
+				conditions.getM_Product_Flatrate_ID();
 				minTimes = 0;
-				result = flatrateProduct;
+				result = flatrateProduct.getM_Product_ID();
 
-				term.getC_Currency();
+				term.getC_Currency_ID();
 				minTimes = 0;
-				result = currency;
-
-				currency.getC_Currency_ID();
-				minTimes = 0;
-				result = 5;
+				result = currencyId.getRepoId();
 		}};
 	}
 

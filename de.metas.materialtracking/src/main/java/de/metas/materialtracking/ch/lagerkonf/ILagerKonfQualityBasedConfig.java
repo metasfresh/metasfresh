@@ -27,9 +27,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_M_Product;
 
+import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.spi.IQualityBasedConfig;
 
@@ -94,7 +94,7 @@ public interface ILagerKonfQualityBasedConfig extends IQualityBasedConfig
 	List<IInvoicingItem> getAdditionalFeeProducts();
 
 	@Override
-	I_C_Currency getCurrency();
+	Currency getCurrency();
 
 	/**
 	 * returns the last date at which this config is valid

@@ -8,7 +8,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Cost;
 import org.compiere.model.ModelValidator;
@@ -20,6 +19,7 @@ import de.metas.costing.CostElementId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.IProductCostingBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 

@@ -57,7 +57,7 @@ public class C_VAT_Code_Builder
 	{
 		final I_C_VAT_Code vatCode = InterfaceWrapperHelper.create(Env.getCtx(), I_C_VAT_Code.class, ITrx.TRXNAME_None);
 		vatCode.setC_AcctSchema_ID(C_AcctSchema_ID);
-		vatCode.setC_Tax(tax);
+		vatCode.setC_Tax_ID(tax != null ? tax.getC_Tax_ID() : -1);
 		vatCode.setIsSOTrx(isSOTrx);
 		vatCode.setValidFrom(TimeUtil.asTimestamp(validFrom));
 		vatCode.setValidTo(TimeUtil.asTimestamp(validTo));

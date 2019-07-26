@@ -1,41 +1,16 @@
 package org.adempiere.impexp.impl;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.ADUserImportProcess;
+import org.adempiere.impexp.IAsyncImportProcessBuilderFactory;
 import org.adempiere.impexp.IImportProcess;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.RequestImportProcess;
 import org.adempiere.impexp.inventory.InventoryImportProcess;
 import org.adempiere.impexp.product.ProductImportProcess;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.I_I_BPartner_GlobalID;
 import org.compiere.model.I_I_DiscountSchema;
@@ -45,23 +20,25 @@ import org.compiere.model.I_I_Product;
 import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
-
-import com.google.common.base.Supplier;
+import org.slf4j.Logger;
 
 import de.metas.bpartner.impexp.BPartnerImportProcess;
 import de.metas.dataentry.data.impexp.DataEntryRecordsImportProcess;
 import de.metas.dataentry.model.I_I_DataEntry_Record;
 import de.metas.globalid.impexp.BPartnerGlobalIDImportProcess;
 import de.metas.location.impexp.PostalCodeImportProcess;
+import de.metas.logging.LogManager;
 import de.metas.pricing.impexp.DiscountSchemaImportProcess;
 import de.metas.replenishment.impexp.ReplenishmentImportProcess;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 public class ImportProcessFactory implements IImportProcessFactory
 {
-	private final Map<Class<?>, Class<?>> modelImportClass2importProcessClasses = new HashMap<>();
-	private final Map<String, Class<?>> tableName2importProcessClasses = new HashMap<>();
-	private Supplier<IAsyncImportProcessBuilder> asyncImportProcessBuilderSupplier;
+	private static final Logger logger = LogManager.getLogger(ImportProcessFactory.class);
+
+	private final ImportProcessDescriptorsMap importProcessDescriptorsMap = new ImportProcessDescriptorsMap();
+	private final ImportTablesRelatedProcessesRegistry relatedProcessesRegistry = new ImportTablesRelatedProcessesRegistry();
+	private IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory;
 
 	public ImportProcessFactory()
 	{
@@ -79,30 +56,38 @@ public class ImportProcessFactory implements IImportProcessFactory
 	}
 
 	@Override
-	public <ImportRecordType> void registerImportProcess(final Class<ImportRecordType> modelImportClass, final Class<? extends IImportProcess<ImportRecordType>> importProcessClass)
+	public <ImportRecordType> void registerImportProcess(
+			@NonNull final Class<ImportRecordType> modelImportClass,
+			@NonNull final Class<? extends IImportProcess<ImportRecordType>> importProcessClass)
 	{
-		Check.assumeNotNull(modelImportClass, "modelImportClass not null");
-		Check.assumeNotNull(importProcessClass, "importProcessClass not null");
+		final ImportProcessDescriptor descriptor = importProcessDescriptorsMap.register(modelImportClass, importProcessClass);
+		logger.info("Registered import process: {}", descriptor);
 
-		modelImportClass2importProcessClasses.put(modelImportClass, importProcessClass);
-
-		final String tableName = InterfaceWrapperHelper.getTableName(modelImportClass);
-		tableName2importProcessClasses.put(tableName, importProcessClass);
+		relatedProcessesRegistry.registerImportTable(descriptor.getImportTableName());
 	}
 
 	@Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcess(final Class<ImportRecordType> modelImportClass)
+	public void setDeleteImportDataProcessClass(@NonNull final Class<?> deleteImportDataProcessClass)
+	{
+		relatedProcessesRegistry.setDeleteImportDataProcessClass(deleteImportDataProcessClass);
+	}
+
+	@Override
+	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcess(@NonNull final Class<ImportRecordType> modelImportClass)
 	{
 		final IImportProcess<ImportRecordType> importProcess = newImportProcessOrNull(modelImportClass);
-		Check.assumeNotNull(importProcess, "importProcess not null for {}", modelImportClass);
+		if (importProcess == null)
+		{
+			throw new AdempiereException("No import process found for " + modelImportClass);
+		}
 		return importProcess;
 	}
 
-	@Nullable @Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(final Class<ImportRecordType> modelImportClass)
+	@Nullable
+	@Override
+	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(@NonNull final Class<ImportRecordType> modelImportClass)
 	{
-		Check.assumeNotNull(modelImportClass, "modelImportClass not null");
-		final Class<?> importProcessClass = modelImportClass2importProcessClasses.get(modelImportClass);
+		final Class<?> importProcessClass = importProcessDescriptorsMap.getImportProcessClassByModelImportClassOrNull(modelImportClass);
 		if (importProcessClass == null)
 		{
 			return null;
@@ -115,7 +100,8 @@ public class ImportProcessFactory implements IImportProcessFactory
 	{
 		try
 		{
-			@SuppressWarnings("unchecked") final IImportProcess<ImportRecordType> importProcess = (IImportProcess<ImportRecordType>)importProcessClass.newInstance();
+			@SuppressWarnings("unchecked")
+			final IImportProcess<ImportRecordType> importProcess = (IImportProcess<ImportRecordType>)importProcessClass.newInstance();
 			return importProcess;
 		}
 		catch (final Exception e)
@@ -124,11 +110,11 @@ public class ImportProcessFactory implements IImportProcessFactory
 		}
 	}
 
-	@Nullable @Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(final String tableName)
+	@Nullable
+	@Override
+	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(@NonNull final String importTableName)
 	{
-		Check.assumeNotNull(tableName, "tableName not null");
-		final Class<?> importProcessClass = tableName2importProcessClasses.get(tableName);
+		final Class<?> importProcessClass = importProcessDescriptorsMap.getImportProcessClassByImportTableNameOrNull(importTableName);
 		if (importProcessClass == null)
 		{
 			return null;
@@ -138,24 +124,39 @@ public class ImportProcessFactory implements IImportProcessFactory
 	}
 
 	@Override
-	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(final String tableName)
+	public <ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(@NonNull final String importTableName)
 	{
-		final IImportProcess<ImportRecordType> importProcess = newImportProcessForTableNameOrNull(tableName);
-		Check.assumeNotNull(importProcess, "importProcess not null for {}", tableName);
+		final IImportProcess<ImportRecordType> importProcess = newImportProcessForTableNameOrNull(importTableName);
+		if (importProcess == null)
+		{
+			throw new AdempiereException("No import process found for " + importTableName);
+		}
 		return importProcess;
 	}
 
 	@Override
 	public IAsyncImportProcessBuilder newAsyncImportProcessBuilder()
 	{
-		Check.assumeNotNull(asyncImportProcessBuilderSupplier, "A supplier for {} shall be registered first", IAsyncImportProcessBuilder.class);
-		return asyncImportProcessBuilderSupplier.get();
+		final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory = this.asyncImportProcessBuilderFactory;
+		if (asyncImportProcessBuilderFactory == null)
+		{
+			throw new AdempiereException("Async import is not configured");
+		}
+
+		final IAsyncImportProcessBuilder builder = asyncImportProcessBuilderFactory.newAsyncImportProcessBuilder();
+		if (builder == null)
+		{
+			// shall not happen
+			throw new AdempiereException("Got null builder from " + asyncImportProcessBuilderFactory);
+		}
+
+		return builder;
 	}
 
 	@Override
-	public void setAsyncImportProcessBuilderSupplier(final Supplier<IAsyncImportProcessBuilder> asyncImportProcessBuilderSupplier)
+	public void setAsyncImportProcessBuilderFactory(@NonNull final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory)
 	{
-		Check.assumeNotNull(asyncImportProcessBuilderSupplier, "asyncImportProcessBuilderSupplier not null");
-		this.asyncImportProcessBuilderSupplier = asyncImportProcessBuilderSupplier;
+		this.asyncImportProcessBuilderFactory = asyncImportProcessBuilderFactory;
+		logger.info("Set {}", asyncImportProcessBuilderFactory);
 	}
 }

@@ -10,12 +10,12 @@ package de.metas.materialtracking.spi.impl.listeners;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -49,7 +49,7 @@ public class InOutLineMaterialTrackingListener extends MaterialTrackingListenerA
 	public void afterModelLinked(final MTLinkRequest request)
 	{
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(request.getModel(), I_M_InOutLine.class);
-		final I_M_Material_Tracking materialTracking = request.getMaterialTracking();
+		final I_M_Material_Tracking materialTracking = request.getMaterialTrackingRecord();
 
 		if (!isEligible(receiptLine, materialTracking))
 		{
@@ -62,7 +62,7 @@ public class InOutLineMaterialTrackingListener extends MaterialTrackingListenerA
 
 		materialTracking.setQtyReceived(qtyReceivedNew);
 		InterfaceWrapperHelper.save(materialTracking);
-		
+
 		// task 08021
 		final IQualityBasedInvoicingDAO qualityBasedInvoicingDAO = Services.get(IQualityBasedInvoicingDAO.class);
 		final IMaterialTrackingDocuments materialTrackingDocuments = qualityBasedInvoicingDAO.retrieveMaterialTrackingDocuments(materialTracking);
@@ -99,7 +99,7 @@ public class InOutLineMaterialTrackingListener extends MaterialTrackingListenerA
 		{
 			return false;
 		}
-		
+
 		final I_M_InOut inout = inoutLine.getM_InOut();
 
 		// Shipments are not eligible (just in case)

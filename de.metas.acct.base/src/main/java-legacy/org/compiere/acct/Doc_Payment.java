@@ -28,6 +28,7 @@ import org.compiere.model.MCharge;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.payment.TenderType;
 import de.metas.util.Services;
 
 /**
@@ -52,7 +53,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	}
 
 	/** Tender Type */
-	private String m_TenderType = null;
+	private TenderType _tenderType;
 	/** Prepayment */
 	private boolean m_Prepayment = false;
 
@@ -62,7 +63,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		final I_C_Payment pay = getModel(I_C_Payment.class);
 		setDateDoc(pay.getDateTrx());
 		setC_BP_BankAccount_ID(pay.getC_BP_BankAccount_ID());
-		m_TenderType = pay.getTenderType();
+		_tenderType = TenderType.ofCode(pay.getTenderType());
 		m_Prepayment = pay.isPrepayment();
 
 		// Amount
@@ -108,7 +109,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		final int AD_Org_ID = getBank_Org_ID();		// Bank Account Org
 
 		// Cash Transfer
-		if ("X".equals(getTenderType()) && !isCashAsPayment())
+		if (getTenderType().isCash() && !isCashAsPayment())
 		{
 			final ArrayList<Fact> facts = new ArrayList<>();
 			facts.add(fact);
@@ -122,42 +123,62 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 			FactLine fl = fact.createLine(null, getBankAccount(as),
 					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 			//
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
+			{
 				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
+			}
 			else if (isPrepayment())
+			{
 				acct = getAccount(Doc.ACCTTYPE_C_Prepayment, as);
+			}
 			else
+			{
 				acct = getAccount(Doc.ACCTTYPE_UnallocatedCash, as);
+			}
 			fl = fact.createLine(null, acct,
 					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0
-					&& getC_Charge_ID() == 0)		// don't overwrite charge
+					&& getC_Charge_ID() == 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 		}
 		// APP
 		else if (DOCTYPE_APPayment.equals(documentType))
 		{
 			MAccount acct = null;
 			if (getC_Charge_ID() != 0)
+			{
 				acct = MCharge.getAccount(getC_Charge_ID(), as.getId(), getAmount());
+			}
 			else if (isPrepayment())
+			{
 				acct = getAccount(Doc.ACCTTYPE_V_Prepayment, as);
+			}
 			else
+			{
 				acct = getAccount(Doc.ACCTTYPE_PaymentSelect, as);
+			}
 			FactLine fl = fact.createLine(null, acct,
 					getCurrencyId(), getAmount(), null);
 			if (fl != null && AD_Org_ID != 0
-					&& getC_Charge_ID() == 0)		// don't overwrite charge
+					&& getC_Charge_ID() == 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 
 			// Asset (CR)
 			fl = fact.createLine(null, getBankAccount(as),
 					getCurrencyId(), null, getAmount());
 			if (fl != null && AD_Org_ID != 0)
+			{
 				fl.setAD_Org_ID(AD_Org_ID);
+			}
 		}
 		else
 		{
@@ -196,9 +217,9 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		return sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", defaultValue);
 	}
 
-	private String getTenderType()
+	private TenderType getTenderType()
 	{
-		return m_TenderType;
+		return _tenderType;
 	}
 
 	private final boolean isPrepayment()

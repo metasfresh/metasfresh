@@ -1,8 +1,8 @@
 package de.metas.security;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -56,7 +56,7 @@ public class UserAuthToken
 		Check.assume(userId.isRegularUser(), "userId shall be regular user: {}", userId);
 		Check.assumeNotEmpty(authToken, "authToken is not empty");
 		Check.assume(clientId.isRegular(), "clientId shall be regular");
-		Check.assume(orgId.isRegular(), "orgId shall be regular");
+		// Check.assume(orgId.isRegular(), "orgId shall be regular"); allow Org=* as well, just as we allow users to log into the UI with Org=*
 		Check.assume(roleId.isRegular(), "roleId shall be regular");
 
 		this.userId = userId;

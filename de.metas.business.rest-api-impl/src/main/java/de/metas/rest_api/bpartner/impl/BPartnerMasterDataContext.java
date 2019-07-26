@@ -2,11 +2,10 @@ package de.metas.rest_api.bpartner.impl;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.OrgId;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

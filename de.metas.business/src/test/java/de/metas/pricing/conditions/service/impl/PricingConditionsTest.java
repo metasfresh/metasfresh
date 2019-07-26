@@ -39,7 +39,6 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Function;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
@@ -52,7 +51,6 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
-import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -109,7 +107,8 @@ public class PricingConditionsTest
 
 		final I_M_DiscountSchemaBreak schemaBreak3 = PricingConditionsTestUtils.createBreak(schema2, 10);
 
-		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(Env.getCtx(), ImmutableList.of(schema1.getM_DiscountSchema_ID()), ITrx.TRXNAME_ThreadInherited)
+		final PricingConditionsId pricingConditionsId = PricingConditionsId.ofDiscountSchemaId(schema1.getM_DiscountSchema_ID());
+		final List<I_M_DiscountSchemaBreak> breaks = repo.streamSchemaBreakRecords(ImmutableList.of(pricingConditionsId))
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(breaks).hasSize(2);
@@ -128,7 +127,7 @@ public class PricingConditionsTest
 
 		final I_M_DiscountSchemaLine schemaLine3 = createLine(schema2, 10);
 
-		final List<I_M_DiscountSchemaLine> lines = repo.retrieveLines(Env.getCtx(), schema1.getM_DiscountSchema_ID(), ITrx.TRXNAME_ThreadInherited);
+		final List<I_M_DiscountSchemaLine> lines = repo.retrieveLines(schema1.getM_DiscountSchema_ID());
 
 		assertThat(lines).hasSize(2);
 		assertThat(lines).contains(schemaLine1, schemaLine2);

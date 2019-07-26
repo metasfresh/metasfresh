@@ -1,7 +1,5 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import static org.compiere.util.TimeUtil.asDate;
-import static org.compiere.util.TimeUtil.getDay;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -28,9 +26,9 @@ import static org.junit.Assert.assertThat;
  */
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -51,6 +49,9 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.MailboxRepository;
+import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -73,17 +74,20 @@ import de.metas.util.Services;
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {
-		StartupListener.class,
+		StartupListener.class, ShutdownListener.class,
+		//
 		DistributeAndMoveReceiptCreator.class,
 		LotNumberQuarantineRepository.class,
-		ShutdownListener.class })
+		//
+		MailService.class, MailboxRepository.class, MailTemplateRepository.class
+})
 public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocationWithWeightAttributeTest
 {
 	@Override
 	protected void afterInitialize()
 	{
 		super.afterInitialize();
-		
+
 		Services.registerService(IProductActivityProvider.class, Services.get(IProductAcctDAO.class));
 
 		final I_C_DocType docType = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_DocType.class);
@@ -379,8 +383,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
 
-		final Date lotNumberDate1 = asDate(getDay(2016, 01, 22));
-		final Date lotNumberDate2 = asDate(getDay(2016, 01, 23));
+		final LocalDate lotNumberDate1 = LocalDate.of(2016, 01, 22);
+		final LocalDate lotNumberDate2 = LocalDate.of(2016, 01, 23);
 
 		//
 		// Set attributes:
@@ -388,12 +392,13 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 			for (int i = 0; i < 10; i++)
 			{
 				final I_M_HU paloxe = paloxes.get(i);
-				final Date lotNumberDate = i <= 4 ? lotNumberDate1 : lotNumberDate2;
+				final LocalDate lotNumberDate = i <= 4 ? lotNumberDate1 : lotNumberDate2;
 				final IAttributeStorage atributeStorage = attributeStorageFactory.getAttributeStorage(paloxe);
 				atributeStorage.setValue(attr_LotNumberDate, lotNumberDate);
 				atributeStorage.saveChangesIfNeeded();
 				HUAttributeExpectation.newExpectation()
-						.attribute(attr_LotNumberDate).valueDate(lotNumberDate)
+						.attribute(attr_LotNumberDate)
+						.valueDate(lotNumberDate)
 						.assertExpected("precondition: AS for paloxe", atributeStorage);
 			}
 			// FIXME: workaround to make sure our changes are pushed back to database

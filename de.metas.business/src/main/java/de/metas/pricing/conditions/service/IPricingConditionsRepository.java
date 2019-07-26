@@ -2,6 +2,9 @@ package de.metas.pricing.conditions.service;
 
 import java.util.Collection;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -27,5 +30,7 @@ public interface IPricingConditionsRepository extends ISingletonService
 	 * @return number of things (lined + breaks) that were modified
 	 */
 	int resequence(int discountSchemaId);
+
+	void copyDiscountSchemaBreaks(PricingConditionsId pricingConditionsId, IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 
 }

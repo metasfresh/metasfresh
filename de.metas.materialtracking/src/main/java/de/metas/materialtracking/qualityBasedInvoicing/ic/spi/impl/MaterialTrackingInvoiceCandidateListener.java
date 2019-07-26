@@ -34,6 +34,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.MTLinkRequest;
+import de.metas.materialtracking.MTLinkRequest.IfModelAlreadyLinked;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -69,9 +70,9 @@ public class MaterialTrackingInvoiceCandidateListener implements IInvoiceCandida
 		final IMaterialTrackingBL materialTrackingBL = Services.get(IMaterialTrackingBL.class);
 		materialTrackingBL.linkModelToMaterialTracking(
 				MTLinkRequest.builder()
-						.setModel(invoice)
-						.setMaterialTracking(materialTracking)
-						.setAssumeNotAlreadyAssigned(false)
+						.model(invoice)
+						.materialTrackingRecord(materialTracking)
+						.ifModelAlreadyLinked(IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
 						.build()
 				);
 	}

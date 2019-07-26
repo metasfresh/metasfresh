@@ -11,21 +11,21 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.IOrgDAO.OrgQuery;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgQuery;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.SyncAdvise;
@@ -185,7 +185,7 @@ public final class MasterdataProvider
 
 	public JsonOrganization getJsonOrganizationById(final int orgId)
 	{
-		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId);
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 		if (orgRecord == null)
 		{
 			return null;
@@ -205,7 +205,7 @@ public final class MasterdataProvider
 				invoiceDocType.getDocSubType(),
 				DocTypeQuery.DOCSUBTYPE_NONE);
 
-		final I_AD_Org orgRecord = orgsRepo.retrieveOrg(orgId.getRepoId());
+		final I_AD_Org orgRecord = orgsRepo.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
@@ -218,17 +218,17 @@ public final class MasterdataProvider
 		return docTypeDAO.getDocTypeId(query);
 	}
 
-	public CurrencyId getCurrencyId(@NonNull final String currencyCode)
+	public CurrencyId getCurrencyId(@Nullable final String currencyCodeStr)
 	{
-		if (Check.isEmpty(currencyCode))
+		if (Check.isEmpty(currencyCodeStr, true))
 		{
 			return null;
 		}
-		final I_C_Currency currencyRecord = Services
-				.get(ICurrencyDAO.class)
-				.retrieveCurrencyByISOCode(Env.getCtx(), currencyCode);
-		Check.errorIf(currencyRecord == null, "Unable to retrieve a C_Currency for ISO code={}", currencyCode);
-		return CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
+		
+		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
+		return currenciesRepo.getByCurrencyCode(currencyCode).getId();
 	}
 
 }

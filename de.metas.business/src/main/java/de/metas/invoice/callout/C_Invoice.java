@@ -8,7 +8,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.invoice.service.IInvoiceBL;
-import de.metas.location.CountryId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -23,6 +22,8 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Services;
@@ -135,8 +136,8 @@ public class C_Invoice
 		Env.setContext(field.getCtx(), field.getWindowNo(), I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
 
 		// Task FRESH-488: Set the payment rule to the one from the sys config independent of doctype-letters
-		final String paymentRuleToUse = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
-		invoice.setPaymentRule(paymentRuleToUse);
+		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
+		invoice.setPaymentRule(paymentRule.getCode());
 
 		//
 		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);

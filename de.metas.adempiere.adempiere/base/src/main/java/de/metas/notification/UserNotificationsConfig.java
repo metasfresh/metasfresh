@@ -8,11 +8,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import de.metas.email.EMailAddress;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -57,7 +58,7 @@ public class UserNotificationsConfig
 	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
 	private final UserNotificationsGroup defaults;
 
-	private String email;
+	private EMailAddress email;
 	private UserId userInChargeId;
 
 	@Builder(toBuilder = true)
@@ -68,7 +69,7 @@ public class UserNotificationsConfig
 			final OrgId orgId,
 			@NonNull @Singular final Collection<UserNotificationsGroup> userNotificationGroups,
 			@NonNull final UserNotificationsGroup defaults,
-			final String email,
+			final EMailAddress email,
 			final UserId userInChargeId)
 	{
 		this.userId = userId;
@@ -81,7 +82,7 @@ public class UserNotificationsConfig
 		this.userNotificationGroupsByInternalName = Maps.uniqueIndex(userNotificationGroups, UserNotificationsGroup::getGroupInternalName);
 		this.defaults = defaults;
 
-		this.email = Check.isEmpty(email, true) ? null : email.trim();
+		this.email = email;
 		this.userInChargeId = userInChargeId;
 	}
 

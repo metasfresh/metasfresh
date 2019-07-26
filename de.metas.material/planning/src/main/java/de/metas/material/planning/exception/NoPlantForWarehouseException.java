@@ -13,10 +13,10 @@
  *****************************************************************************/
 package de.metas.material.planning.exception;
 
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 

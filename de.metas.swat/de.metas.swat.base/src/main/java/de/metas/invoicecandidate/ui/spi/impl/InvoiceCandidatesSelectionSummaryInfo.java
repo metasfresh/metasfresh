@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.ui.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -29,13 +29,15 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.Currency;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -45,13 +47,13 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 	private static final long serialVersionUID = 1L;
 
 	/** @return new builder */
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/** Cast given {@link IGridTabSummaryInfo} to {@link InvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
-	public static final InvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
+	public static InvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
 		if (gridTabSummaryInfo instanceof InvoiceCandidatesSelectionSummaryInfo)
 		{
@@ -197,7 +199,7 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 		{
 			if (Check.isEmpty(currencySymbol, true))
 			{
-				// NOTE: prevent adding null values because ImmutableSet.Builder will fail in this case 
+				// NOTE: prevent adding null values because ImmutableSet.Builder will fail in this case
 				this.currencySymbols.add("?");
 			}
 			else
@@ -215,20 +217,33 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 
 		public void addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 		{
+			final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 			Check.assumeNotNull(ic, "ic not null");
 
 			final BigDecimal netAmt = ic.getNetAmtToInvoice();
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing);
 
-			final I_C_Currency currency = ic.getC_Currency();
-			final String currencySymbol = currency == null ? null : currency.getCurSymbol();
+			final String currencySymbol = getCurrencySymbolOrNull(ic);
 			addCurrencySymbol(currencySymbol);
 
 			if (ic.isToRecompute())
 			{
 				addCountToRecompute(1);
 			}
+		}
+
+		private String getCurrencySymbolOrNull(final I_C_Invoice_Candidate ic)
+		{
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+			if(currencyId == null)
+			{
+				return null;
+			}
+			
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
+			return currency.getSymbol().getDefaultValue();
 		}
 	}
 }

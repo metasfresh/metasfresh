@@ -35,19 +35,18 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Invoice;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.aggregation.api.IAggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
@@ -69,6 +68,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -87,7 +87,8 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 
 		// task 05721: Set isEDIEnabled to false and disable the button for reversals
-		if (X_C_Invoice.DOCSTATUS_Reversed.equals(document.getDocStatus()) || document.getReversal_ID() > 0)
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
+		if (docStatus.isReversed() || document.getReversal_ID() > 0)
 		{
 			document.setIsEdiEnabled(false);
 			return document.isEdiEnabled();

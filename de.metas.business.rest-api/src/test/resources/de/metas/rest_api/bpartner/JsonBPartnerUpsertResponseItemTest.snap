@@ -1,6 +1,0 @@
-de.metas.rest_api.bpartner.JsonBPartnerUpsertResponseItemTest.serializeTest=[
-  {
-    "externalId": "12345",
-    "metasfreshId": 23
-  }
-]

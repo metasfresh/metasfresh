@@ -26,7 +26,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
@@ -34,13 +34,15 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.currency.ICurrencyBL;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
@@ -512,10 +514,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			Check.assumeNotNull(invoice, "invoice not null");
 			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 			invoiceCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-					invoice.getDateAcct(),
+					TimeUtil.asLocalDate(invoice.getDateAcct()),
 					CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-					invoice.getAD_Client_ID(),
-					invoice.getAD_Org_ID());
+					ClientId.ofRepoId(invoice.getAD_Client_ID()),
+					OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		}
 		return invoiceCurrencyConversionCtx;
 	}
@@ -531,19 +533,19 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			if (payment != null)
 			{
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						payment.getDateAcct(),
+						TimeUtil.asLocalDate(payment.getDateAcct()),
 						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
-						payment.getAD_Client_ID(),
-						payment.getAD_Org_ID());
+						ClientId.ofRepoId(payment.getAD_Client_ID()),
+						OrgId.ofRepoId(payment.getAD_Org_ID()));
 			}
 			else if (cashLine != null)
 			{
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						cashJournal.getDateAcct(),
+						TimeUtil.asLocalDate(cashJournal.getDateAcct()),
 						(CurrencyConversionTypeId)null, // C_ConversionType_ID - default
-						cashLine.getAD_Client_ID(),
-						cashLine.getAD_Org_ID());
+						ClientId.ofRepoId(cashLine.getAD_Client_ID()),
+						OrgId.ofRepoId(cashLine.getAD_Org_ID()));
 			}
 			else
 			{

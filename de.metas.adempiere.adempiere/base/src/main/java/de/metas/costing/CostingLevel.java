@@ -6,11 +6,11 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
 import org.compiere.model.X_C_AcctSchema;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.organization.OrgId;
 import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;

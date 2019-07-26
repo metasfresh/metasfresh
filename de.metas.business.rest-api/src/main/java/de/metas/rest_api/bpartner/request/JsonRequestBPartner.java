@@ -1,6 +1,7 @@
 package de.metas.rest_api.bpartner.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTER_SYNC_ADVISE_DOC;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,41 +40,40 @@ import lombok.Value;
  */
 
 @Value
-@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be <code>null</code>, but not both at once.")
+@ApiModel(description = "Note that given the respective use-case, either one of both properties migh be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			dataType = "java.lang.Integer", //
-			value = "This translates to <code>C_BPartner.C_BPartner_ID</code>. If set, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If the lookup does not succeed, it will fail.")
-	@JsonInclude(Include.NON_NULL)
-	MetasfreshId metasfreshId;
-
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
 			dataType = "java.lang.String", //
-			value = "This translates to <code>C_BPartner.ExternalId</code>. If set, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>code</code> and/or <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
+			value = "This translates to `C_BPartner.ExternalId`.")
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalId externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to <code>C_BPartner.Value</code>. If set and <code>externalId<code> is empty, the system will attempt a lookup.\n"
-					+ "If the lookup succeeds and <code>name</code> is not empty, then the system will update the bPartner it looked up.\n"
-					+ "If <code>null</code>, or no bPartner was found, it will create a new BPartner.")
+			value = "This translates to `C_BPartner.Value`.")
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
+	@ApiModelProperty(required = false, value = "If not specified but required (e.g. because a new partner is created), then `true` is assumed.")
+	@JsonInclude(Include.NON_NULL)
+	Boolean active;
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
-			value = "This translates to <code>C_BPartner.Name</code>.\n"
-					+ "If this is empty, and a BPartner with the given <code>code</code> does not yet exist, then the request will fail.")
+			value = "This translates to `C_BPartner.Name`.\n"
+					+ "If this is empty, and a BPartner with the given `name` does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
 	String name;
+
+	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.Name2`.")
+	@JsonInclude(Include.NON_NULL)
+	String name2;
+
+	@ApiModelProperty(allowEmptyValue = true, value = "This translates to `C_BPartner.Name3`.")
+	@JsonInclude(Include.NON_NULL)
+	String name3;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -101,38 +101,49 @@ public class JsonRequestBPartner
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
+	@JsonInclude(Include.NON_NULL)
+	String url2;
+
+	@JsonInclude(Include.NON_NULL)
+	String url3;
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "Name of the business partner's group")
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(required = false, value = BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(required = false, value = READ_ONLY_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
-
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonRequestBPartner(
-			@JsonProperty("metasfreshId") @Nullable final MetasfreshId metasfreshId,
 			@JsonProperty("externalId") @Nullable final JsonExternalId externalId,
-
 			@JsonProperty("code") @Nullable final String code,
+			@JsonProperty("active") @Nullable final Boolean active,
 			@JsonProperty("name") @Nullable final String name,
+			@JsonProperty("name2") @Nullable final String name2,
+			@JsonProperty("name3") @Nullable final String name3,
 			@JsonProperty("companyName") @Nullable final String companyName,
 			@JsonProperty("parentId") @Nullable final MetasfreshId parentId,
 			@JsonProperty("phone") @Nullable final String phone,
 			@JsonProperty("language") @Nullable final String language,
 			@JsonProperty("url") @Nullable final String url,
+			@JsonProperty("url2") @Nullable final String url2,
+			@JsonProperty("url3") @Nullable final String url3,
 			@JsonProperty("group") @Nullable final String group,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
-		this.metasfreshId = metasfreshId;
 		this.externalId = externalId;
 		this.code = code;
+		this.active = active;
 
 		this.name = name;
+		this.name2 = name2;
+		this.name3 = name3;
+
 		this.companyName = companyName;
 
 		this.parentId = parentId;
@@ -140,6 +151,9 @@ public class JsonRequestBPartner
 		this.phone = phone;
 		this.language = language;
 		this.url = url;
-		this.group = group;		this.syncAdvise = syncAdvise;
+		this.url2 = url2;
+		this.url3 = url3;
+		this.group = group;
+		this.syncAdvise = syncAdvise;
 	}
 }

@@ -3,7 +3,7 @@ package org.adempiere.ad.column.autoapplyvalrule.interceptor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.column.autoapplyvalrule.ValRuleAutoApplierService;
 import org.adempiere.ad.ui.spi.TabCalloutAdapter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import lombok.NonNull;
 
@@ -36,7 +36,7 @@ public class AD_Column_AutoApplyValRuleTabCallout extends TabCalloutAdapter
 	{
 		final Object model = calloutRecord.getModel(Object.class);
 
-		final ValRuleAutoApplierService valRuleAutoApplierService = Adempiere.getBean(ValRuleAutoApplierService.class);
+		final ValRuleAutoApplierService valRuleAutoApplierService = SpringContextHolder.instance.getBean(ValRuleAutoApplierService.class);
 		valRuleAutoApplierService.invokeApplierFor(model);
 	}
 }

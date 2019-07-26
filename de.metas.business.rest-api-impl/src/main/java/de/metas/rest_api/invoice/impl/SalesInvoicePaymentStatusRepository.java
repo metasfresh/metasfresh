@@ -15,10 +15,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.invoice.service.IInvoiceBL;
-import org.adempiere.service.IOrgDAO;
-import org.adempiere.service.IOrgDAO.OrgQuery;
-import org.adempiere.service.OrgId;
-import org.adempiere.service.OrgIdNotFoundException;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -30,7 +26,14 @@ import org.springframework.stereotype.Repository;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
+import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgIdNotFoundException;
+import de.metas.organization.OrgQuery;
 import de.metas.rest_api.invoice.SalesInvoicePayment;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatus;
 import de.metas.rest_api.invoice.SalesInvoicePaymentStatus.SalesInvoicePaymentStatusBuilder;
@@ -67,6 +70,13 @@ import lombok.Value;
 @Repository
 public class SalesInvoicePaymentStatusRepository
 {
+	private final CurrencyRepository currenciesRepo;
+	
+	public SalesInvoicePaymentStatusRepository(@NonNull final CurrencyRepository currenciesRepo)
+	{
+		this.currenciesRepo = currenciesRepo;
+	}
+
 	public ImmutableList<SalesInvoicePaymentStatus> getBy(@NonNull final PaymentStatusQuery query)
 	{
 		final OrgId orgId = retrieveOrgId(query.getOrgValue());
@@ -154,7 +164,7 @@ public class SalesInvoicePaymentStatusRepository
 					.builder()
 					.invoiceDocumentNumber(invoiceRecord.getDocumentNo())
 					.openAmt(openAmt)
-					.currency(invoiceRecord.getC_Currency().getISO_Code());
+					.currency(extractCurrencyCode(invoiceRecord).toThreeLetterCode());
 			final List<I_C_Payment> paymentrecords = allocationDAO.retrieveInvoicePayments(invoiceRecord);
 
 			for (final I_C_Payment paymentRecord : paymentrecords)
@@ -168,6 +178,12 @@ public class SalesInvoicePaymentStatusRepository
 			result.add(statusBuilder.build());
 		}
 		return result.build();
+	}
+
+	private CurrencyCode extractCurrencyCode(final I_C_Invoice invoiceRecord)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID());
+		return currenciesRepo.getCurrencyCodeById(currencyId);
 	}
 
 	private IQueryBuilder<I_C_Invoice> createCommonQueryBuilder(@NonNull final OrgId orgId)

@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -39,6 +38,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvDAO;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
@@ -516,7 +516,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		//
 		// metas: begin: US1184
-		if (!m_productPricing.calculatePrice())
+		if (!m_productPricing.recalculatePrice())
 		{
 			log.debug("Cannot calculate prices for " + m_productPricing + " [SKIP]");
 			return;

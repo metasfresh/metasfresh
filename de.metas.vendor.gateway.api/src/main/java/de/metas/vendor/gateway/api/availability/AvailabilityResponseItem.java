@@ -1,7 +1,7 @@
 package de.metas.vendor.gateway.api.availability;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
@@ -50,7 +50,7 @@ public class AvailabilityResponseItem
 	BigDecimal availableQuantity;
 
 	@Nullable
-	LocalDateTime datePromised;
+	ZonedDateTime datePromised;
 
 	@NonNull
 	Type type;

@@ -31,10 +31,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -62,24 +65,24 @@ import lombok.Value;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public class Money
+public final class Money
 {
-	public static final Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
+	public static Money of(@NonNull final String value, @NonNull final CurrencyId currencyId)
 	{
 		return of(new BigDecimal(value), currencyId);
 	}
 
-	public static final Money of(final int value, @NonNull final CurrencyId currencyId)
+	public static Money of(final int value, @NonNull final CurrencyId currencyId)
 	{
 		return of(BigDecimal.valueOf(value), currencyId);
 	}
 
-	public static final Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
+	public static Money of(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
 	{
 		return new Money(value, currencyId);
 	}
 
-	public static final Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
+	public static Money ofOrNull(@Nullable final BigDecimal value, @Nullable final CurrencyId currencyId)
 	{
 		if (value == null || currencyId == null)
 		{
@@ -88,7 +91,7 @@ public class Money
 		return new Money(value, currencyId);
 	}
 
-	public static final Money toZeroOrNull(@Nullable final Money money)
+	public static Money toZeroOrNull(@Nullable final Money money)
 	{
 		if (money == null)
 		{
@@ -97,12 +100,13 @@ public class Money
 		return money.toZero();
 	}
 
-	public static final Money zero(@NonNull final CurrencyId currencyId)
+	public static Money zero(@NonNull final CurrencyId currencyId)
 	{
 		return new Money(ZERO, currencyId);
 	}
 
 	@JsonProperty("value")
+	@Getter(AccessLevel.NONE)
 	BigDecimal value;
 
 	@JsonProperty("currencyId")
@@ -116,6 +120,20 @@ public class Money
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value); // stripping trailing zeros to make sure that 4 EUR equal 4.00 EUR
 		this.currencyId = currencyId;
+	}
+
+	public BigDecimal getAsBigDecimal()
+	{
+		return value;
+	}
+
+	public static BigDecimal getAsBigDecimalOrZero(@Nullable final Money money)
+	{
+		if (money == null)
+		{
+			return ZERO;
+		}
+		return money.getAsBigDecimal();
 	}
 
 	public int signum()
@@ -240,13 +258,18 @@ public class Money
 		return this.value.compareTo(other.value) >= 0 ? this : other;
 	}
 
-	private final void assertCurrencyIdMatching(
-			@NonNull final Money amt)
+	private void assertCurrencyIdMatching(@NonNull final Money amt)
 	{
 		if (!Objects.equals(currencyId, amt.currencyId))
 		{
 			throw new AdempiereException("Amount has invalid currencyId: " + amt + ". Expected: " + currencyId);
 		}
+	}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Money other)
+	{
+		assertCurrencyIdMatching(other);
+		return this.value.compareTo(other.value) <= 0;
 	}
 
 	public static Collector<Money, ?, Stream<Money>> sumByCurrencyAndStream()
@@ -273,17 +296,9 @@ public class Money
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static BigDecimal getValueOrZero(@Nullable final Money money)
+	public Amount toAmount(@NonNull final Function<CurrencyId, CurrencyCode> currencyCodeMapper)
 	{
-		if (money == null)
-		{
-			return ZERO;
-		}
-		return money.getValue();
+		return Amount.of(getAsBigDecimal(), currencyCodeMapper.apply(getCurrencyId()));
 	}
 
-	public Amount toAmount(@NonNull final Function<CurrencyId, String> currencyCodeMapper)
-	{
-		return Amount.of(getValue(), currencyCodeMapper.apply(getCurrencyId()));
-	}
 }

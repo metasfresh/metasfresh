@@ -2,10 +2,6 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import static java.math.BigDecimal.ZERO;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.payment.sepa
@@ -41,6 +37,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -57,15 +54,17 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.money.CurrencyId;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
 import de.metas.payment.sepa.api.SepaMarshallerException;
@@ -109,8 +108,10 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
+import lombok.NonNull;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -333,15 +334,24 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		{
 			return ArrayKey.of(
 					extractPaymentType(sepaLine),
-					sepaLine.getC_Currency().getISO_Code());
+					extractCurrencyCode(sepaLine));
 		}
-		return ArrayKey.of(sepaLine.getSEPA_Export_Line_ID());
+		else
+		{
+			return ArrayKey.of(sepaLine.getSEPA_Export_Line_ID());
+		}
 	}
 
 	private boolean extractBatchFlag(@NonNull final I_SEPA_Export_Line sepaLine)
 	{
 		final boolean batch = sepaLine.getSEPA_Export().isExportBatchBookings();
 		return batch;
+	}
+
+	private CurrencyCode extractCurrencyCode(final I_SEPA_Export_Line sepaLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(sepaLine.getC_Currency_ID());
+		return Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId);
 	}
 
 	private PaymentInstructionInformation3CH createAndAddPmtInf(
@@ -478,16 +488,17 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 			final AmountType3Choice amt = objectFactory.createAmountType3Choice();
 			final ActiveOrHistoricCurrencyAndAmount instdAmt = objectFactory.createActiveOrHistoricCurrencyAndAmount();
 
-			final I_C_Currency currency = line.getC_Currency();
+			final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
 
-			final String currencyIsoCode = currency.getISO_Code();
-			instdAmt.setCcy(currencyIsoCode);
+			final CurrencyCode currencyIsoCode = currency.getCurrencyCode();
+			instdAmt.setCcy(currencyIsoCode.toThreeLetterCode());
 
 			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
 			Check.errorIf(amount == null || amount.signum() <= 0, "Invalid amount={} of SEPA_Export_Line={}", amount, line);
-			Check.errorIf(amount.scale() > currency.getStdPrecision(),
+			Check.errorIf(amount.scale() > currency.getPrecision().toInt(),
 					"Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
-					amount, currencyIsoCode, currency.getStdPrecision(), line);
+					amount, currencyIsoCode, currency.getPrecision(), line);
 			instdAmt.setValue(amount);
 
 			amt.setInstdAmt(instdAmt);
@@ -694,7 +705,7 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 	@SafeVarargs
 	private final String getFirstNonEmpty(@NonNull final Supplier<String>... values)
 	{
-		final String result = Util.firstValidValue(
+		final String result = CoalesceUtil.firstValidValue(
 				s -> !Check.isEmpty(s, true),
 				values);
 
@@ -905,24 +916,23 @@ public class SEPACustomerCTIMarshaler_Pain_001_001_03_CH_02
 		}
 		else
 		{
-			final String currencyIso = line.getC_Currency().getISO_Code();
-
+			final CurrencyCode currencyCode = extractCurrencyCode(line);
 			final String iban = line.getIBAN();
 
 			final boolean swizzIban = isSwizzIBAN(iban);
 			if (swizzIban || bPBankAccount.isEsrAccount())
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
-				Check.errorIf(!"EUR".equals(currencyIso) && !"CHF".equals(currencyIso),
+				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
 						SepaMarshallerException.class,
 						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-						createInfo(line), currencyIso);
+						createInfo(line), currencyCode);
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
 			else
 			{
-				final boolean hasIbanAndEurCurrency = !Check.isEmpty(iban, true) && "EUR".equals(currencyIso);
+				final boolean hasIbanAndEurCurrency = !Check.isEmpty(iban, true) && currencyCode.isEuro();
 				if (hasIbanAndEurCurrency)
 				{
 					paymentMode = PAYMENT_TYPE_5;

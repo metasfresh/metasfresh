@@ -36,9 +36,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.OrgId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
@@ -57,8 +55,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
@@ -70,6 +67,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -384,15 +383,12 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 		final I_C_Order order = orderLine.getC_Order();
-
-		if (!docActionBL.isDocumentStatusOneOf(order,
-				IDocument.STATUS_InProgress, IDocument.STATUS_Completed, IDocument.STATUS_Closed))
+		final DocStatus orderDocStatus = DocStatus.ofCode(order.getDocStatus());
+		if(!orderDocStatus.isInProgressCompletedOrClosed())
 		{
-			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.",
-					new Object[] { order, orderLine, order.getDocStatus() });
+			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.", order, orderLine, orderDocStatus);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -462,8 +458,9 @@ public class OrderLineBL implements IOrderLineBL
 			final I_C_Order order = orderLine.getC_Order();
 
 			final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
-			return Services.get(IPriceListDAO.class).retrievePriceListVersionOrNull(
-					order.getM_PriceList(),
+			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+			return priceListsRepo.retrievePriceListVersionOrNull(
+					priceListsRepo.getById(order.getM_PriceList_ID()),
 					getPriceDate(orderLine, order),
 					processedPLVFiltering);
 		}

@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;
@@ -114,9 +115,9 @@ public final class OlAndSched
 		return getSalesOrderLine().getPriceActual();
 	}
 
-	public String getOrderDocStatus()
+	public DocStatus getOrderDocStatus()
 	{
-		return getSalesOrderLine().getC_Order().getDocStatus();
+		return DocStatus.ofCode(getSalesOrderLine().getC_Order().getDocStatus());
 	}
 
 	public I_M_ShipmentSchedule getSched()

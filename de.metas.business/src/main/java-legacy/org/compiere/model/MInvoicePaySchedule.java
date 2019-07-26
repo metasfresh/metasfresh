@@ -22,17 +22,16 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.util.Services;
 
 /**
  *	Invoice Payment Schedule Model 
@@ -61,21 +60,29 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	{
 		String sql = "SELECT * FROM C_InvoicePaySchedule ips ";
 		if (C_Invoice_ID != 0)
+		{
 			sql += "WHERE C_Invoice_ID=? ";
+		}
 		else
+		{
 			sql += "WHERE EXISTS (SELECT * FROM C_InvoicePaySchedule x"
 			+ " WHERE x.C_InvoicePaySchedule_ID=? AND ips.C_Invoice_ID=x.C_Invoice_ID) ";
+		}
 		sql += "ORDER BY DueDate";
 		//
-		ArrayList<MInvoicePaySchedule> list = new ArrayList<MInvoicePaySchedule>();
+		ArrayList<MInvoicePaySchedule> list = new ArrayList<>();
 		PreparedStatement pstmt = null;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
 			if (C_Invoice_ID != 0)
+			{
 				pstmt.setInt(1, C_Invoice_ID);
+			}
 			else
+			{
 				pstmt.setInt(1, C_InvoicePaySchedule_ID);
+			}
 			ResultSet rs = pstmt.executeQuery();
 			while (rs.next())
 			{
@@ -92,7 +99,9 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		try
 		{
 			if (pstmt != null)
+			{
 				pstmt.close();
+			}
 			pstmt = null;
 		}
 		catch (Exception e)
@@ -157,21 +166,22 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 		setC_PaySchedule_ID(paySchedule.getC_PaySchedule_ID());
 		
 		//	Amounts
-		int scale = Services.get(ICurrencyDAO.class).getStdPrecision(getCtx(), invoice.getC_Currency_ID());
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		final CurrencyPrecision precision = Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
 		BigDecimal due = invoice.getGrandTotal();
-		if (due.compareTo(Env.ZERO) == 0)
+		if (due.signum() == 0)
 		{
-			setDueAmt (Env.ZERO);
-			setDiscountAmt (Env.ZERO);
+			setDueAmt (BigDecimal.ZERO);
+			setDiscountAmt (BigDecimal.ZERO);
 			setIsValid(false);
 		}
 		else
 		{
 			due = due.multiply(paySchedule.getPercentage())
-				.divide(HUNDRED, scale, BigDecimal.ROUND_HALF_UP);
+					.divide(HUNDRED, precision.toInt(), precision.getRoundingMode());
 			setDueAmt (due);
 			BigDecimal discount = due.multiply(paySchedule.getDiscount())
-				.divide(HUNDRED, scale, BigDecimal.ROUND_HALF_UP);
+					.divide(HUNDRED, precision.toInt(), precision.getRoundingMode());
 			setDiscountAmt (discount);
 			setIsValid(true);
 		}
@@ -193,7 +203,9 @@ public class MInvoicePaySchedule extends X_C_InvoicePaySchedule
 	public MInvoice getParent ()
 	{
 		if (m_parent == null)
-			m_parent = new MInvoice (getCtx(), getC_Invoice_ID(), get_TrxName()); 
+		{
+			m_parent = new MInvoice (getCtx(), getC_Invoice_ID(), get_TrxName());
+		} 
 		return m_parent;
 	}	//	getParent
 	

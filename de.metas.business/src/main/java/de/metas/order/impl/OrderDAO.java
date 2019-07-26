@@ -38,11 +38,11 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.DB;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
+import de.metas.order.DeliveryViaRule;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -82,7 +82,7 @@ public class OrderDAO extends AbstractOrderDAO
 						// purchase order with BP/relations or whatever.
 						// .addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_ID, bpLoc.getC_BPartner_ID())
 
-						.addEqualsFilter(I_C_Order.COLUMNNAME_DeliveryViaRule, X_C_Order.DELIVERYVIARULE_Pickup)
+						.addEqualsFilter(I_C_Order.COLUMNNAME_DeliveryViaRule, DeliveryViaRule.Pickup)
 
 						.addEqualsFilter(I_C_Order.COLUMNNAME_C_BPartner_Location_ID, bpLoc.getC_BPartner_Location_ID())
 						

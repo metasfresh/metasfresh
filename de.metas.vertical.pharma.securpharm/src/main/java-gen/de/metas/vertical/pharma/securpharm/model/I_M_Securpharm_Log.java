@@ -32,8 +32,6 @@ public interface I_M_Securpharm_Log
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Log, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Log, org.compiere.model.I_AD_Client>(I_M_Securpharm_Log.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
@@ -87,10 +85,6 @@ public interface I_M_Securpharm_Log
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_Org_ID();
-
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
     /** Column definition for AD_Org_ID */
     public static final org.adempiere.model.ModelColumn<I_M_Securpharm_Log, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Securpharm_Log, org.compiere.model.I_AD_Org>(I_M_Securpharm_Log.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
@@ -178,7 +172,7 @@ public interface I_M_Securpharm_Log
     public static final String COLUMNNAME_IsError = "IsError";
 
 	/**
-	 * Set SecurPharm action result.
+	 * Set Securpharm Aktion Ergebnise.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -187,7 +181,7 @@ public interface I_M_Securpharm_Log
 	public void setM_Securpharm_Action_Result_ID (int M_Securpharm_Action_Result_ID);
 
 	/**
-	 * Get SecurPharm action result.
+	 * Get Securpharm Aktion Ergebnise.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -205,7 +199,7 @@ public interface I_M_Securpharm_Log
     public static final String COLUMNNAME_M_Securpharm_Action_Result_ID = "M_Securpharm_Action_Result_ID";
 
 	/**
-	 * Set SecurPharm Protocol Log.
+	 * Set Securpharm-Protokoll.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -214,7 +208,7 @@ public interface I_M_Securpharm_Log
 	public void setM_Securpharm_Log_ID (int M_Securpharm_Log_ID);
 
 	/**
-	 * Get SecurPharm Protocol Log.
+	 * Get Securpharm-Protokoll.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -228,7 +222,7 @@ public interface I_M_Securpharm_Log
     public static final String COLUMNNAME_M_Securpharm_Log_ID = "M_Securpharm_Log_ID";
 
 	/**
-	 * Set SecurPharm product data result.
+	 * Set Securpharm Produktdaten Ergebnise.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -237,7 +231,7 @@ public interface I_M_Securpharm_Log
 	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID);
 
 	/**
-	 * Get SecurPharm product data result.
+	 * Get Securpharm Produktdaten Ergebnise.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

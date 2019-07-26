@@ -115,7 +115,7 @@ public class InventoryBL implements IInventoryBL
 	public boolean isComplete(@NonNull final I_M_Inventory inventory)
 	{
 		final DocStatus docStatus = DocStatus.ofCode(inventory.getDocStatus());
-		return docStatus.isCompletedOrClosedOrReversed();
+		return docStatus.isCompletedOrClosedReversedOrVoided();
 	}
 
 	@Override

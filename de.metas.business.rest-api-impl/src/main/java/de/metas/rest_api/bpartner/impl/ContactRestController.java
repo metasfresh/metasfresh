@@ -26,8 +26,8 @@ import de.metas.rest_api.SyncAdvise;
 import de.metas.rest_api.SyncAdvise.IfExists;
 import de.metas.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.bpartner.ContactRestEndpoint;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonPersisterService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
 import de.metas.rest_api.bpartner.request.JsonResponseUpsert;
@@ -90,7 +90,7 @@ public class ContactRestController implements ContactRestEndpoint
 	@GetMapping("{contactIdentifier}")
 	@Override
 	public ResponseEntity<JsonResponseContact> retrieveContact(
-			@ApiParam(CONTACT_IDENTIFIER_DOC) //
+			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifier)
 	{
@@ -144,20 +144,22 @@ public class ContactRestController implements ContactRestEndpoint
 			@RequestBody @NonNull final JsonRequestContactUpsert contacts)
 	{
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
+		final SyncAdvise syncAdvise = SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build();
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
 		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final BPartnerContact bpartnerContact = persister.persist(
-					requestItem.getEffectiveContact(),
-					SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).ifNotExists(IfNotExists.CREATE).build());
+					requestItem.getContactIdentifier(),
+					requestItem.getContact(),
+					syncAdvise);
 
 			final MetasfreshId metasfreshId = MetasfreshId.of(bpartnerContact.getId());
 
 			final JsonResponseUpsertItem responseItem = JsonResponseUpsertItem
 					.builder()
-					.externalId(requestItem.getExternalId())
+					.identifier(requestItem.getContactIdentifier())
 					.metasfreshId(metasfreshId)
 					.build();
 			response.responseItem(responseItem);

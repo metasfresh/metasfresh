@@ -5,8 +5,7 @@ import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.OrgId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -31,6 +30,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -92,12 +92,12 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 		final I_C_Order order = orderLine.getC_Order();
 		final BigDecimal rate = currencyConversionBL.getRate(
-				poCost.getCurrencyId().getRepoId(),
-				as.getCurrencyId().getRepoId(),
-				order.getDateAcct(),
-				order.getC_ConversionType_ID(),
-				orderLine.getAD_Client_ID(),
-				orderLine.getAD_Org_ID());
+				poCost.getCurrencyId(),
+				as.getCurrencyId(),
+				TimeUtil.asLocalDate(order.getDateAcct()),
+				CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
+				ClientId.ofRepoId(orderLine.getAD_Client_ID()),
+				OrgId.ofRepoId(orderLine.getAD_Org_ID()));
 		if (rate == null)
 		{
 			throw newPostingException()
@@ -111,7 +111,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	public CostAmount getStandardCosts(final AcctSchema acctSchema)
 	{
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final CostSegment costSegment = CostSegment.builder()
 				.costingLevel(getProductCostingLevel(acctSchema))
@@ -136,7 +136,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 		final I_M_InOutLine receiptLine = getReceiptLine();
 		Check.assumeNotNull(receiptLine, "Parameter receiptLine is not null");
 
-		final ICostingService costDetailService = Adempiere.getBean(ICostingService.class);
+		final ICostingService costDetailService = SpringContextHolder.instance.getBean(ICostingService.class);
 
 		final I_C_OrderLine orderLine = getOrderLine();
 		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(orderLine.getC_Order().getC_ConversionType_ID());

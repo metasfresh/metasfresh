@@ -236,8 +236,8 @@ public class TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extends T
 	private I_C_Order createOrder(final String datePromisedStr, final Timestamp preparationDateExpected)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class, contextProvider);
-		order.setC_BPartner(bpartner);
-		order.setC_BPartner_Location(bpLocation);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 
 		order.setIsSOTrx(true);
 		order.setDatePromised(toDateTimeTimestamp(datePromisedStr));

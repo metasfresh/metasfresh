@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -48,7 +49,7 @@ import lombok.ToString;
 @ToString(exclude = "_permissionsKeyStr")
 public final class UserRolePermissionsKey implements Serializable
 {
-	public static final UserRolePermissionsKey of(
+	public static UserRolePermissionsKey of(
 			final RoleId adRoleId,
 			final UserId adUserId,
 			final ClientId adClientId,
@@ -57,10 +58,29 @@ public final class UserRolePermissionsKey implements Serializable
 		return new UserRolePermissionsKey(adRoleId, adUserId, adClientId, date);
 	}
 
-	public static final UserRolePermissionsKey fromContext(@NonNull final Properties ctx)
+	public static UserRolePermissionsKey fromContext(@NonNull final Properties ctx)
 	{
 		final RoleId roleId = Env.getLoggedRoleId(ctx);
-		final UserId userId = Env.getLoggedUserId(ctx);
+		final UserId userId = Env
+				.getLoggedUserIdIfExists(ctx)
+				.orElseThrow(() -> new AdempiereException("Given ctx contains no " + Env.CTXNAME_AD_User_ID)
+						.appendParametersToMessage()
+						.setParameter("ctx", ctx));
+
+		final ClientId adClientId = Env.getClientId(ctx);
+		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
+		return new UserRolePermissionsKey(roleId, userId, adClientId, date);
+	}
+
+	public static UserRolePermissionsKey fromContextOrNull(@NonNull final Properties ctx)
+	{
+		final RoleId roleId = Env.getLoggedRoleId(ctx);
+		final UserId userId = Env.getLoggedUserIdIfExists(ctx).orElse(null);
+		if (userId == null)
+		{
+			return null;
+		}
+
 		final ClientId adClientId = Env.getClientId(ctx);
 		final LocalDate date = TimeUtil.asLocalDate(Env.getDate(ctx));
 		return new UserRolePermissionsKey(roleId, userId, adClientId, date);
@@ -86,7 +106,7 @@ public final class UserRolePermissionsKey implements Serializable
 		return UserRolePermissionsKey.fromString(permissionsKeyStrObj.toString());
 	}
 
-	private static final String toPermissionsKeyString(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId, final LocalDate date)
+	private static String toPermissionsKeyString(final RoleId adRoleId, final UserId adUserId, final ClientId adClientId, final LocalDate date)
 	{
 		return toPermissionsKeyString(
 				RoleId.toRepoId(adRoleId),
@@ -95,13 +115,13 @@ public final class UserRolePermissionsKey implements Serializable
 				date);
 	}
 
-	private static final String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final LocalDate date)
+	private static String toPermissionsKeyString(final int adRoleId, final int adUserId, final int adClientId, final LocalDate date)
 	{
 		// NOTE: keep in sync with the counterpart (i.e. the constructor)
 		return String.join("|", String.valueOf(adRoleId), String.valueOf(adUserId), String.valueOf(adClientId), date.toString());
 	}
 
-	public static final String toPermissionsKeyString(final Properties ctx)
+	public static String toPermissionsKeyString(final Properties ctx)
 	{
 		final int adRoleId = Env.getAD_Role_ID(ctx);
 		final int adUserId = Env.getAD_User_ID(ctx);
@@ -178,12 +198,12 @@ public final class UserRolePermissionsKey implements Serializable
 		return permissionsKeyStr;
 	}
 
-	public static final long normalizeDate(final Instant date)
+	public static long normalizeDate(final Instant date)
 	{
 		return normalizeDate(TimeUtil.asDate(date));
 	}
 
-	public static final long normalizeDate(final Date date)
+	public static long normalizeDate(final Date date)
 	{
 		final long dateDayMillis = TimeUtil.truncToMillis(date, TimeUtil.TRUNC_DAY);
 

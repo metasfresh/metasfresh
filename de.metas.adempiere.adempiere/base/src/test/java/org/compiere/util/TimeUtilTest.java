@@ -5,6 +5,8 @@ package org.compiere.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -343,33 +345,34 @@ public class TimeUtilTest
 	}
 
 	@Test
-	public void testLocalDateTimeMin()
+	public void testZonedDateTimeMin()
 	{
-		final LocalDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay();
-		final LocalDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay();
-		final LocalDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay();
+		final ZoneId zone = ZoneId.systemDefault();
+		final ZonedDateTime date1 = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date1_copy = LocalDate.of(2014, 1, 1).atStartOfDay().atZone(zone);
+		final ZonedDateTime date2 = LocalDate.of(2014, 1, 2).atStartOfDay().atZone(zone);
+		final ZonedDateTime date3 = LocalDate.of(2014, 1, 3).atStartOfDay().atZone(zone);
 
 		// NULLs check
-		assertLocalDateTimeMin(null, null, null);
-		assertLocalDateTimeMin(date1, date1, null);
-		assertLocalDateTimeMin(date1, null, date1);
+		assertZonedDateTimeMin(null, null, null);
+		assertZonedDateTimeMin(date1, date1, null);
+		assertZonedDateTimeMin(date1, null, date1);
 
 		// Same (reference) value check
-		assertLocalDateTimeMin(date1, date1, date1);
+		assertZonedDateTimeMin(date1, date1, date1);
 
 		// Same (value) check
-		assertLocalDateTimeMin(date1, date1, date1_copy);
+		assertZonedDateTimeMin(date1, date1, date1_copy);
 
-		assertLocalDateTimeMin(date1, date1, date2);
-		assertLocalDateTimeMin(date1, date2, date1);
-		assertLocalDateTimeMin(date2, date2, date3);
-		assertLocalDateTimeMin(date2, date3, date2);
+		assertZonedDateTimeMin(date1, date1, date2);
+		assertZonedDateTimeMin(date1, date2, date1);
+		assertZonedDateTimeMin(date2, date2, date3);
+		assertZonedDateTimeMin(date2, date3, date2);
 	}
 
-	private void assertLocalDateTimeMin(final LocalDateTime dateExpected, final LocalDateTime date1, final LocalDateTime date2)
+	private void assertZonedDateTimeMin(final ZonedDateTime dateExpected, final ZonedDateTime date1, final ZonedDateTime date2)
 	{
-		final LocalDateTime dateMin = TimeUtil.min(date1, date2);
+		final ZonedDateTime dateMin = TimeUtil.min(date1, date2);
 
 		Assert.assertSame("Invalid minimum date: date1=" + date1 + ", date2=" + date2,
 				dateExpected, dateMin);
@@ -565,6 +568,41 @@ public class TimeUtilTest
 	private void assertLastDayOfMonth(final boolean expectation, final LocalDate date)
 	{
 		assertThat(TimeUtil.isLastDayOfMonth(date)).isEqualTo(expectation);
-
 	}
+
+	@Test
+	public void test_isDateOrTimeObject()
+	{
+		assertThat(TimeUtil.isDateOrTimeObject(new java.util.Date())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(new java.sql.Timestamp(System.currentTimeMillis()))).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(Instant.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(ZonedDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDateTime.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalDate.now())).isTrue();
+		assertThat(TimeUtil.isDateOrTimeObject(LocalTime.now())).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeObject(null)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject("aaa")).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(1)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeObject(new BigDecimal("1234"))).isFalse();
+	}
+
+	@Test
+	public void test_isDateOrTimeClass()
+	{
+		assertThat(TimeUtil.isDateOrTimeClass(java.util.Date.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(java.sql.Timestamp.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(Instant.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(ZonedDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDateTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalDate.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(LocalTime.class)).isTrue();
+		assertThat(TimeUtil.isDateOrTimeClass(XMLGregorianCalendar.class)).isTrue();
+
+		assertThat(TimeUtil.isDateOrTimeClass(String.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(Integer.class)).isFalse();
+		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
+	}
+
 }

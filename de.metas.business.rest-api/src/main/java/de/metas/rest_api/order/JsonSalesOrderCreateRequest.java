@@ -1,6 +1,6 @@
 package de.metas.rest_api.order;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -50,7 +50,7 @@ public class JsonSalesOrderCreateRequest
 	String shipBPartnerCode;
 
 	@JsonProperty("datePromised")
-	LocalDateTime datePromised;
+	ZonedDateTime datePromised;
 
 	@JsonProperty("lines")
 	List<JsonSalesOrderLine> lines;
@@ -60,7 +60,7 @@ public class JsonSalesOrderCreateRequest
 	private JsonSalesOrderCreateRequest(
 			@JsonProperty("docTypeName") @Nullable final String docTypeName,
 			@JsonProperty("shipBPartnerCode") @NonNull final String shipBPartnerCode,
-			@JsonProperty("datePromised") @NonNull final LocalDateTime datePromised,
+			@JsonProperty("datePromised") @NonNull final ZonedDateTime datePromised,
 			@JsonProperty("lines") @NonNull @Singular final List<JsonSalesOrderLine> lines)
 	{
 		Check.assumeNotEmpty(shipBPartnerCode, "shipBPartnerCode is not empty");

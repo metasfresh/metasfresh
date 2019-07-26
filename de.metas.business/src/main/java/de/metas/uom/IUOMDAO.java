@@ -38,6 +38,8 @@ public interface IUOMDAO extends ISingletonService
 
 	I_C_UOM getById(int uomId);
 
+	I_C_UOM getByIdOrNull(int uomId);
+
 	I_C_UOM getById(UomId uomId);
 
 	UomId getUomIdByX12DE355(String x12de355);
@@ -66,4 +68,5 @@ public interface IUOMDAO extends ISingletonService
 	TemporalUnit getTemporalUnitByUomId(final UomId uomId);
 
 	UOMPrecision getStandardPrecision(final UomId uomId);
+
 }

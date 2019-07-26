@@ -43,6 +43,7 @@ import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
+import de.metas.user.api.impl.UserBL;
 import de.metas.util.Services;
 
 public class AEMailLetter implements ActionListener
@@ -169,7 +170,7 @@ public class AEMailLetter implements ActionListener
 				final EMailDialog dialog = new EMailDialog(
 						Env.getWindow(parent.getWindowNo()),
 						Services.get(IMsgBL.class).getMsg(ctx, "de.metas.letters.EMail"),
-						from,
+						from != null ? UserBL.toUserEMailConfig(from) : null,
 						toEmail,
 						subject,
 						"",			// message

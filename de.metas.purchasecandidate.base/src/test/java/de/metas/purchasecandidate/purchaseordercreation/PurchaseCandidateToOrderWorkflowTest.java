@@ -10,7 +10,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -28,6 +27,7 @@ import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -241,7 +241,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.vendorProductNo(String.valueOf(productId.getRepoId()))
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
-				.purchaseDatePromised(SystemTime.asLocalDateTime().truncatedTo(ChronoUnit.DAYS))
+				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
 				.processed(false)
 				.locked(false)
 				.build();

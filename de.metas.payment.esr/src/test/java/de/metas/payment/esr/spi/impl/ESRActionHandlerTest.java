@@ -40,7 +40,6 @@ import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.junit.Test;
@@ -57,9 +56,6 @@ import de.metas.util.Services;
 
 public class ESRActionHandlerTest extends ESRTestBase
 {
-
-	protected I_C_Currency currencyEUR;
-
 	/**
 	 * Tests that this action basically does nothing
 	 */

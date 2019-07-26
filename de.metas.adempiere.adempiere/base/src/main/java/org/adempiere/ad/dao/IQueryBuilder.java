@@ -107,13 +107,12 @@ public interface IQueryBuilder<T>
 
 	/**
 	 * Convenient way of calling {@link #setOption(String, Object)} with <code>value</code> = {@link Boolean#TRUE}.
-	 *
-	 * @param name
 	 */
 	IQueryBuilder<T> setOption(String name);
 
 	int getLimit();
 
+	/** Make sure this instance now has an order-by-builder and return it. */
 	IQueryBuilderOrderByClause<T> orderBy();
 
 	//@formatter:off

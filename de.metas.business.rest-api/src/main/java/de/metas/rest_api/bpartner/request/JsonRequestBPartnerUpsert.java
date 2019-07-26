@@ -43,9 +43,10 @@ import lombok.Value;
 @ApiModel
 public class JsonRequestBPartnerUpsert
 {
+	@ApiModelProperty(position = 10)
 	List<JsonRequestBPartnerUpsertItem> requestItems;
 
-	@ApiModelProperty(value = "Default sync-advise that can be overridden by individual items\n" + BPARTER_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 20, value = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@JsonCreator

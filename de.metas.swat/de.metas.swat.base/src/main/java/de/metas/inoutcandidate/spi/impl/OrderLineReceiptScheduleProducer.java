@@ -37,7 +37,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.OrgId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_DocType;
@@ -62,6 +61,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleWarehouseDestProvider;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -406,20 +406,23 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	 */
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
+		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+		
 		final I_C_Order order = orderLine.getC_Order();
 
 		//
 		// Get Document Type from order
-		I_C_DocType docType = order.getC_DocType();
-		if (docType == null || docType.getC_DocType_ID() <= 0)
+		DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID());
+		if (docTypeId == null)
 		{
-			docType = order.getC_DocTypeTarget();
+			docTypeId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 		}
 
 		//
 		// If document type is set, get it's C_DocTypeShipment_ID (if any)
-		if (docType != null)
+		if (docTypeId != null)
 		{
+			final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 			final int receiptDocTypeId = docType.getC_DocTypeShipment_ID();
 			if (receiptDocTypeId > 0)
 			{
@@ -429,7 +432,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Fallback: get standard Material Receipt document type
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)

@@ -13,7 +13,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.service.OrgId;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -32,6 +31,7 @@ import com.google.common.base.Stopwatch;
 import de.metas.i18n.IMsgBL;
 // import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.script.ScriptExecutor;
@@ -51,29 +51,20 @@ import lombok.NonNull;
  */
 public final class ProcessExecutor
 {
-	public static final Builder builder(final ProcessInfo processInfo)
+	public static Builder builder(final ProcessInfo processInfo)
 	{
 		return new Builder(processInfo);
 	}
 
-	public static int getCurrentOrgId()
+	public static OrgId getCurrentOrgId()
 	{
 		final OrgId orgId = s_currentOrg_ID.get();
-		if (orgId == null)
-		{
-			return OrgId.ANY.getRepoId();
-		}
-		return orgId.getRepoId();
+		return orgId != null ? orgId : OrgId.ANY;
 	}
 
-	public static int getCurrentProcessId()
+	public static AdProcessId getCurrentProcessIdOrNull()
 	{
-		final AdProcessId processId = s_currentProcess_ID.get();
-		if (processId == null)
-		{
-			return 0;
-		}
-		return processId.getRepoId();
+		return s_currentProcess_ID.get();
 	}
 
 	//
@@ -106,7 +97,7 @@ public final class ProcessExecutor
 		onErrorThrowException = builder.onErrorThrowException;
 	}
 
-	private final String buildThreadName()
+	private String buildThreadName()
 	{
 		return pi.getTitle() + "-" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0);
 	}
@@ -327,7 +318,7 @@ public final class ProcessExecutor
 		}
 	}
 
-	private final void assertPermissions()
+	private void assertPermissions()
 	{
 		final IUserRolePermissions permissions = Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(
 				pi.getRoleId(),
@@ -462,7 +453,7 @@ public final class ProcessExecutor
 		}
 	}
 
-	private final void startScriptProcess(final String ruleValue)
+	private void startScriptProcess(final String ruleValue)
 	{
 		final Properties ctx = pi.getCtx();
 		final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveByValue(ctx, ruleValue);
@@ -548,7 +539,7 @@ public final class ProcessExecutor
 		result.setSummary(msgBL.parseTranslation(ctx, msg)); // Parse Variables
 	}
 
-	private final void startJavaProcess() throws Exception
+	private void startJavaProcess() throws Exception
 	{
 		final ProcessInfo pi = this.pi;
 
@@ -571,7 +562,7 @@ public final class ProcessExecutor
 	 *
 	 * @return true if success
 	 */
-	private final void startDBProcess()
+	private void startDBProcess()
 	{
 		final String dbProcedureName = pi.getDBProcedureName().get();
 		logger.debug("startDBProcess: {} ({})", dbProcedureName, pi);
