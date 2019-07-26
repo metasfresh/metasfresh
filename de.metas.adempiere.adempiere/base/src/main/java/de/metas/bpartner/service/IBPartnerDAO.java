@@ -303,4 +303,6 @@ public interface IBPartnerDAO extends ISingletonService
 	Stream<BPartnerId> streamChildBPartnerIds(BPartnerId parentPartnerId);
 
 	List<BPartnerId> getParentsUpToTheTopInTrx(BPartnerId bpartnerId);
+
+	boolean isActionPriceAllowed(BPartnerId bpartnerId);
 }
