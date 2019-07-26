@@ -1,6 +1,9 @@
 package de.metas.payment.paypal.client;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.reservation.PaymentReservationCaptureId;
 import de.metas.payment.reservation.PaymentReservationId;
 import lombok.Builder;
 import lombok.Value;
@@ -31,7 +34,12 @@ import lombok.Value;
 @Builder
 public class PayPalClientExecutionContext
 {
-	OrderId salesOrderId;
 	PaymentReservationId paymentReservationId;
+	PaymentReservationCaptureId paymentReservationCaptureId;
+
+	OrderId salesOrderId;
+	InvoiceId salesInvoiceId;
+	PaymentId paymentId;
+
 	PayPalOrderId internalPayPalOrderId;
 }

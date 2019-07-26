@@ -223,7 +223,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		POJOWrapper.setInstanceName(invoice, "invoice");
-		invoice.setC_Order(order);
+		invoice.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
@@ -324,7 +324,7 @@ public class PartitionerServiceCreatePartitionTests
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		POJOWrapper.setInstanceName(invoice, "invoice");
-		invoice.setC_Order(order);
+		invoice.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
@@ -401,7 +401,7 @@ public class PartitionerServiceCreatePartitionTests
 		InterfaceWrapperHelper.save(order);
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
-		invoice.setC_Order(order);
+		invoice.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		setupMigratorServiceMock();
@@ -590,7 +590,7 @@ public class PartitionerServiceCreatePartitionTests
 		// create an invoice
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 		POJOWrapper.setInstanceName(invoice, "invoice");
-		invoice.setC_Order(order);
+		invoice.setC_Order_ID(order.getC_Order_ID());
 		InterfaceWrapperHelper.save(invoice);
 
 		final CreatePartitionRequest partitionerRequest = PartitionRequestFactory.builder().setConfig(config).build();

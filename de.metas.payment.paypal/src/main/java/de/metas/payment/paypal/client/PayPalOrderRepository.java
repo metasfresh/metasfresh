@@ -12,8 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.orders.Authorization;
 import com.paypal.orders.LinkDescription;
 import com.paypal.orders.PaymentCollection;
@@ -53,22 +51,6 @@ public class PayPalOrderRepository
 {
 	private static final Logger logger = LogManager.getLogger(PayPalOrderRepository.class);
 
-	private final ObjectMapper jsonObjectMapper;
-
-	public PayPalOrderRepository(
-			@NonNull final Optional<ObjectMapper> jsonObjectMapper)
-	{
-		if (jsonObjectMapper.isPresent())
-		{
-			this.jsonObjectMapper = jsonObjectMapper.get();
-		}
-		else
-		{
-			this.jsonObjectMapper = new ObjectMapper();
-			logger.warn("Using internal JSON object mapper");
-		}
-	}
-
 	public PayPalOrder getById(@NonNull final PayPalOrderId id)
 	{
 		final I_PayPal_Order record = getRecordById(id);
@@ -84,10 +66,10 @@ public class PayPalOrderRepository
 
 	public Optional<PayPalOrder> getByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
-		return getRecordByReservationId(reservationId).map(PayPalOrderRepository::toPayPalOrder);
+		return getActiveRecordByReservationId(reservationId).map(PayPalOrderRepository::toPayPalOrder);
 	}
 
-	public Optional<I_PayPal_Order> getRecordByReservationId(@NonNull final PaymentReservationId reservationId)
+	private Optional<I_PayPal_Order> getActiveRecordByReservationId(@NonNull final PaymentReservationId reservationId)
 	{
 		final I_PayPal_Order record = Services.get(IQueryBL.class).createQueryBuilder(I_PayPal_Order.class)
 				.addOnlyActiveRecordsFilter()
@@ -146,8 +128,12 @@ public class PayPalOrderRepository
 
 	private static void updateRecord(final I_PayPal_Order order, final PayPalOrder from)
 	{
+		final PayPalOrderStatus status = from.getStatus();
+		final boolean active = !PayPalOrderStatus.REMOTE_DELETED.equals(status);
+
 		order.setExternalId(PayPalOrderExternalId.toString(from.getExternalId()));
-		order.setStatus(from.getStatus().getCode());
+		order.setStatus(status.getCode());
+		order.setIsActive(active);
 		order.setPayPal_AuthorizationId(PayPalOrderAuthorizationId.toString(from.getAuthorizationId()));
 		order.setPayPal_PayerApproveUrl(from.getPayerApproveUrlString());
 		order.setPayPal_OrderJSON(from.getBodyAsJson());
@@ -229,21 +215,38 @@ public class PayPalOrderRepository
 		return null;
 	}
 
-	private String toJson(final Object obj)
+	private static String toJson(final com.paypal.orders.Order apiOrder)
 	{
-		if (obj == null)
+		if (apiOrder == null)
 		{
 			return "";
 		}
 
 		try
 		{
-			return jsonObjectMapper.writeValueAsString(obj);
+			// IMPORTANT: we shall use paypal's JSON serializer, else we won't get any result
+			return new com.braintreepayments.http.serializer.Json().serialize(apiOrder);
 		}
-		catch (JsonProcessingException ex)
+		catch (final Exception ex)
 		{
-			logger.warn("Failed converting object to JSON. Returning toString(): {}", obj, ex);
-			return obj.toString();
+			logger.warn("Failed converting {} to JSON. Returning toString()", apiOrder, ex);
+			return apiOrder.toString();
 		}
 	}
+
+	public PayPalOrder markRemoteDeleted(@NonNull final PayPalOrderId id)
+	{
+		final I_PayPal_Order existingRecord = getRecordById(id);
+
+		final PayPalOrder order = toPayPalOrder(existingRecord)
+				.toBuilder()
+				.status(PayPalOrderStatus.REMOTE_DELETED)
+				.build();
+
+		updateRecord(existingRecord, order);
+		saveRecord(existingRecord);
+
+		return order;
+	}
+
 }

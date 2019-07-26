@@ -62,6 +62,8 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -540,7 +542,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setPaymentRule(order.getPaymentRule());
 			setC_PaymentTerm_ID(order.getC_PaymentTerm_ID());
 			//
-			final MDocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
+			final I_C_DocType dt = MDocType.get(getCtx(), order.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
 			{
 				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
@@ -569,7 +571,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setC_PaymentTerm_ID(rmaOrder.getC_PaymentTerm_ID());
 
 			// Retrieves the invoice DocType
-			final MDocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
+			final I_C_DocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
 			if (dt.getC_DocTypeInvoice_ID() != 0)
 			{
 				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
@@ -758,12 +760,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Deprecated
 	public boolean isCreditMemo()
 	{
-		// metas: use our service instead of old code
 		return Services.get(IInvoiceBL.class).isCreditMemo(this);
-		// MDocType dt = MDocType.get(getCtx(),
-		// getC_DocType_ID()==0 ? getC_DocTypeTarget_ID() : getC_DocType_ID());
-		// return MDocType.DOCBASETYPE_APCreditMemo.equals(dt.getDocBaseType())
-		// || MDocType.DOCBASETYPE_ARCreditMemo.equals(dt.getDocBaseType());
 	}	// isCreditMemo
 
 	/**
@@ -950,7 +947,10 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String getDocumentInfo()
 	{
-		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
+		final I_C_DocType dt = docTypeId != null
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				: null;
 		final String docTypeName = dt != null ? dt.getName() : null;
 		return Joiner.on(" ").skipNulls().join(docTypeName, getDocumentNo());
 	}
@@ -1878,7 +1878,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	 */
 	private void setDefiniteDocumentNo()
 	{
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+		final I_C_DocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		if (dt.isOverwriteDateOnComplete())
 		{
 			setDateInvoiced(SystemTime.asTimestamp());

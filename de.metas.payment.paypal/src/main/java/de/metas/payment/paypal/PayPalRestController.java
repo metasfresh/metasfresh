@@ -2,6 +2,7 @@ package de.metas.payment.paypal;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +44,7 @@ public class PayPalRestController
 		this.paypal = paypal;
 	}
 
-	@RequestMapping("/approved")
+	@RequestMapping(path = "/approved", method = { RequestMethod.GET, RequestMethod.POST })
 	public void notifyOrderApprovedByPayer(
 			@RequestParam(value = "token", required = true) final String token)
 	{
