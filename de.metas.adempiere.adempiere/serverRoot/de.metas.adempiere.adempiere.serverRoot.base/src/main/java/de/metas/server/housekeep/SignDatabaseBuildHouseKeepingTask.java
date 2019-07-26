@@ -6,6 +6,7 @@ import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
@@ -33,6 +34,7 @@ import de.metas.util.Loggables;
  * #L%
  */
 
+@Component
 public class SignDatabaseBuildHouseKeepingTask implements IStartupHouseKeepingTask
 {
 
