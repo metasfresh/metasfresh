@@ -159,7 +159,13 @@ class MasterWidget extends Component {
       widgetType,
       entity,
     } = this.props;
-    const dateParse = ['Date', 'DateTime', 'Time'];
+    const dateParse = [
+      'Date',
+      'DateTime',
+      'ZonedDateTime',
+      'Timestamp',
+      'Time',
+    ];
     let currRowId = rowId;
 
     this.setState(

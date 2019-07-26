@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { push } from 'react-router-redux';
 import { Map } from 'immutable';
 import Moment from 'moment';
-import { DateTime } from 'luxon';
+// import { DateTime } from 'luxon';
 // import { isLuxonObject } from './index';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { getSelection, getSelectionInstant } from '../reducers/windowHandler';
@@ -252,24 +252,41 @@ export function parseToDisplay(fieldsByName) {
 
 // i.e 2018-01-27T17:00:00.000-06:00
 export function parseDateWithCurrenTimezone(value) {
+  // if (value) {
+  //   let luxonOffset = 0;
+
+  //   if (!Moment.isMoment(value)) {
+  //     // if (value instanceof Date) {
+  //     //   luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+  //     // } else {
+  //     //   luxonOffset = DateTime.fromISO(value).offset;
+  //     // }
+
+  //     value = Moment(value);
+  //   } else {
+  //     // luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+  //   }
+
+  //   value.utcOffset(luxonOffset);
+
+  //   return value;
+  // }
+  // return '';
   if (value) {
-    let luxonOffset = 0;
-
-    if (!Moment.isMoment(value)) {
-      if (value instanceof Date) {
-        luxonOffset = DateTime.fromISO(value.toISOString()).offset;
-      } else {
-        luxonOffset = DateTime.fromISO(value).offset;
-      }
-
-      value = Moment(value);
+    if (value instanceof Date) {
+      return value;
+    } else if (Moment.isMoment(value)) {
+      return new Date(value);
     } else {
-      luxonOffset = DateTime.fromISO(value.toISOString()).offset;
+      // console.log('string ?: ', value)
+      // const TIMEZONE_STRING_LENGTH = 7;
+      // const newValue = value.substring(
+      //   0,
+      //   value.length - TIMEZONE_STRING_LENGTH
+      // );
+      // return new Date(newValue);
+      return new Date(value);
     }
-
-    value.utcOffset(luxonOffset);
-
-    return value;
   }
   return '';
 }
