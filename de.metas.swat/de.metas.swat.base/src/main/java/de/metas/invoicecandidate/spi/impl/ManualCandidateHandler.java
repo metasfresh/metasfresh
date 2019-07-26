@@ -44,6 +44,7 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -121,7 +122,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 	 * If the amount is negative than we calculate the over all amount of the invoice and we adjust the NetAmtToInvoice in order to get a positive GrandTotal for the invoice
 	 */
 	@Override
-	public void setNetAmtToInvoice(final I_C_Invoice_Candidate ic)
+	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		super.setNetAmtToInvoice(ic);
 

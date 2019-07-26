@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.agg.key.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -52,6 +54,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductDAO;
@@ -109,12 +112,15 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		if (agg.getM_ProductGroup_ID() > 0)
 		{
+			final I_M_ProductGroup productGroupgrcord = agg.getM_ProductGroup();
+			final I_M_Product productProxyRecord = loadOutOfTrx(productGroupgrcord.getM_Product_Proxy_ID(), I_M_Product.class);
+
 			// NOTE: the only reason why we add all these strings instead of just adding agg.getC_Invoice_Candidate_Agg_ID() is because we want an user friendly string
 			sb.append(agg.getName());
 			sb.append("_").append(agg.getSeqNo());
-			sb.append("_").append(agg.getAD_Org().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getName());
-			sb.append("_").append(agg.getM_ProductGroup().getM_Product_Proxy().getValue());
+			sb.append("_").append(agg.getAD_Org_ID());
+			sb.append("_").append(productGroupgrcord.getName());
+			sb.append("_").append(productProxyRecord.getValue());
 		}
 		else
 		{

@@ -54,7 +54,7 @@ import de.metas.util.Services;
 
 /**
  * Quanity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
- * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation created <b>two</b> invoice lines. The
+ * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation creates <b>two</b> invoice lines. The
  * fist one ignores the discount and invoices whatever is the full quantity. The second line explicitly subtracts the discount quantity (line with a negative quantity).
  *
  * <p>
@@ -86,7 +86,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	public FreshQuantityDiscountAggregator()
 	{
-		super();
 	}
 
 	@Override

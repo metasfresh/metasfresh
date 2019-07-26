@@ -15,7 +15,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 355385319L;
+	private static final long serialVersionUID = -1853962745L;
 
     /** Standard Constructor */
     public X_C_InvoiceCandidate_InOutLine (Properties ctx, int C_InvoiceCandidate_InOutLine_ID, String trxName)
@@ -44,7 +44,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
     }
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	}
@@ -122,7 +122,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.compiere.model.I_M_InOutLine getM_InOutLine() throws RuntimeException
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
 	}
@@ -181,7 +181,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Menge, die bereits in Rechnung gestellt wurde
+		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
@@ -190,7 +190,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	}
 
 	/** Get Berechn. Menge.
-		@return Menge, die bereits in Rechnung gestellt wurde
+		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public java.math.BigDecimal getQtyInvoiced () 

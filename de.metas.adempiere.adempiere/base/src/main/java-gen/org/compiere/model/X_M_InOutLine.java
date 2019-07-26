@@ -15,7 +15,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1596865778L;
+	private static final long serialVersionUID = 1192184379L;
 
     /** Standard Constructor */
     public X_M_InOutLine (Properties ctx, int M_InOutLine_ID, String trxName)
@@ -221,6 +221,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Bestätigte Menge.
+		@param ConfirmedQty 
+		Confirmation of a received quantity
+	  */
+	@Override
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	/** Get Bestätigte Menge.
+		@return Confirmation of a received quantity
+	  */
+	@Override
+	public java.math.BigDecimal getConfirmedQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
@@ -392,28 +414,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bestätigte Menge.
-		@param ConfirmedQty 
-		Confirmation of a received quantity
-	  */
-	@Override
-	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty)
-	{
-		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
-	}
-
-	/** Get Bestätigte Menge.
-		@return Confirmation of a received quantity
-	  */
-	@Override
-	public java.math.BigDecimal getConfirmedQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
 	}
 
 	/** Set Beschreibung.
@@ -630,6 +630,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
+	/** Set Bewegungs-Menge.
+		@param MovementQty 
+		Quantity of a product moved.
+	  */
+	@Override
+	public void setMovementQty (java.math.BigDecimal MovementQty)
+	{
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
+	}
+
+	/** Get Bewegungs-Menge.
+		@return Quantity of a product moved.
+	  */
+	@Override
+	public java.math.BigDecimal getMovementQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Produkt.
 		@param M_Product_ID 
 		Produkt, Leistung, Artikel
@@ -692,28 +714,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Quantity of a product moved.
-	  */
-	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	/** Get Bewegungs-Menge.
-		@return Quantity of a product moved.
-	  */
-	@Override
-	public java.math.BigDecimal getMovementQty () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
 	/** Set Picked Quantity.
 		@param PickedQty Picked Quantity	  */
 	@Override
@@ -731,6 +731,28 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Preiseinheit.
+		@param Price_UOM_ID Preiseinheit	  */
+	@Override
+	public void setPrice_UOM_ID (int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
+	}
+
+	/** Get Preiseinheit.
+		@return Preiseinheit	  */
+	@Override
+	public int getPrice_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Verarbeitet.
@@ -778,20 +800,23 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Gelieferte Menge in Preiseinheit.
-		@param QtyDeliveredInPriceUOM Gelieferte Menge in Preiseinheit	  */
+	/** Set Catch Weight Menge in Preiseinheit.
+		@param QtyDeliveredInPriceUOM_CatchWeight 
+		Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	  */
 	@Override
-	public void setQtyDeliveredInPriceUOM (java.math.BigDecimal QtyDeliveredInPriceUOM)
+	public void setQtyDeliveredInPriceUOM_CatchWeight (java.math.BigDecimal QtyDeliveredInPriceUOM_CatchWeight)
 	{
-		set_Value (COLUMNNAME_QtyDeliveredInPriceUOM, QtyDeliveredInPriceUOM);
+		set_Value (COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight, QtyDeliveredInPriceUOM_CatchWeight);
 	}
 
-	/** Get Gelieferte Menge in Preiseinheit.
-		@return Gelieferte Menge in Preiseinheit	  */
+	/** Get Catch Weight Menge in Preiseinheit.
+		@return Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	  */
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInPriceUOM () 
+	public java.math.BigDecimal getQtyDeliveredInPriceUOM_CatchWeight () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInPriceUOM);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -83,7 +83,7 @@ public class C_Invoice_Candidate
 				.groupsRepo(groupsRepo)
 				.build();
 		this.attachmentEntryService = attachmentEntryService;
-	};
+	}
 
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
@@ -101,7 +101,7 @@ public class C_Invoice_Candidate
 		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
 		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(ic.getQtyToInvoice(), ic);
 
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
+		ic.setQtyToInvoiceInPriceUOM_Nominal(qtyToInvoiceInPriceUOM);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,

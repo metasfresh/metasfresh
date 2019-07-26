@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 363557287L;
+	private static final long serialVersionUID = -1153733166L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -33,6 +33,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 			setInvoiceRule (null);
 			setIsEdiRecipient (false); // @SQL=SELECT COALESCE( (SELECT IsEDIRecipient FROM C_BPartner where C_BPartner_ID = @Bill_BPartner_ID/-1@), 'N')
 			setIsError (false); // N
+			setIsFreightCost (false); // N
 			setIsGroupCompensationLine (false); // N
 			setIsInOutApprovedForInvoicing (false); // N
 			setIsManual (false); // N
@@ -43,6 +44,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 			setIsToClear (false); // N
 			setProcessed (false); // N
 			setProcessed_Calc (false); // N
+			setQtyInPriceUOMVia (null); // Nominal
 			setQtyOrdered (BigDecimal.ZERO);
 			setQtyToInvoice (BigDecimal.ZERO); // 0
 			setQtyToInvoiceBeforeDiscount (BigDecimal.ZERO); // 0
@@ -397,18 +399,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_ConversionType getC_ConversionType()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class);
-	}
-
-	@Override
-	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType)
-	{
-		set_ValueFromPO(COLUMNNAME_C_ConversionType_ID, org.compiere.model.I_C_ConversionType.class, C_ConversionType);
 	}
 
 	/** Set Kursart.
@@ -1449,22 +1439,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey);
 	}
 
-	/** Set Kopf-Aggregationsmerkmal (vorgegeben).
-		@param HeaderAggregationKey_Calc Kopf-Aggregationsmerkmal (vorgegeben)	  */
-	@Override
-	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc)
-	{
-		set_Value (COLUMNNAME_HeaderAggregationKey_Calc, HeaderAggregationKey_Calc);
-	}
-
-	/** Get Kopf-Aggregationsmerkmal (vorgegeben).
-		@return Kopf-Aggregationsmerkmal (vorgegeben)	  */
-	@Override
-	public java.lang.String getHeaderAggregationKey_Calc () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
-	}
-
 	/** Set Header aggregation builder.
 		@param HeaderAggregationKeyBuilder_ID Header aggregation builder	  */
 	@Override
@@ -1485,6 +1459,22 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Kopf-Aggregationsmerkmal (vorgegeben).
+		@param HeaderAggregationKey_Calc Kopf-Aggregationsmerkmal (vorgegeben)	  */
+	@Override
+	public void setHeaderAggregationKey_Calc (java.lang.String HeaderAggregationKey_Calc)
+	{
+		set_Value (COLUMNNAME_HeaderAggregationKey_Calc, HeaderAggregationKey_Calc);
+	}
+
+	/** Get Kopf-Aggregationsmerkmal (vorgegeben).
+		@return Kopf-Aggregationsmerkmal (vorgegeben)	  */
+	@Override
+	public java.lang.String getHeaderAggregationKey_Calc () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_HeaderAggregationKey_Calc);
 	}
 
 	/** 
@@ -2015,25 +2005,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey);
 	}
 
-	/** Set Aggregations-Zusatz.
-		@param LineAggregationKey_Suffix 
-		Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
-	  */
-	@Override
-	public void setLineAggregationKey_Suffix (java.lang.String LineAggregationKey_Suffix)
-	{
-		set_Value (COLUMNNAME_LineAggregationKey_Suffix, LineAggregationKey_Suffix);
-	}
-
-	/** Get Aggregations-Zusatz.
-		@return Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
-	  */
-	@Override
-	public java.lang.String getLineAggregationKey_Suffix () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
-	}
-
 	/** Set Line aggregation builder.
 		@param LineAggregationKeyBuilder_ID Line aggregation builder	  */
 	@Override
@@ -2054,6 +2025,25 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Aggregations-Zusatz.
+		@param LineAggregationKey_Suffix 
+		Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	  */
+	@Override
+	public void setLineAggregationKey_Suffix (java.lang.String LineAggregationKey_Suffix)
+	{
+		set_Value (COLUMNNAME_LineAggregationKey_Suffix, LineAggregationKey_Suffix);
+	}
+
+	/** Get Aggregations-Zusatz.
+		@return Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	  */
+	@Override
+	public java.lang.String getLineAggregationKey_Suffix () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LineAggregationKey_Suffix);
 	}
 
 	/** Set Zeilennetto.
@@ -2305,28 +2295,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Preiseinheit.
-		@param Price_UOM_ID Preiseinheit	  */
-	@Override
-	public void setPrice_UOM_ID (int Price_UOM_ID)
-	{
-		if (Price_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
-	}
-
-	/** Get Preiseinheit.
-		@return Preiseinheit	  */
-	@Override
-	public int getPrice_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Einzelpreis.
 		@param PriceActual 
 		Effektiver Preis
@@ -2429,6 +2397,28 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Preiseinheit.
+		@param Price_UOM_ID Preiseinheit	  */
+	@Override
+	public void setPrice_UOM_ID (int Price_UOM_ID)
+	{
+		if (Price_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Price_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
+	}
+
+	/** Get Preiseinheit.
+		@return Preiseinheit	  */
+	@Override
+	public int getPrice_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** 
@@ -2643,9 +2633,38 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
+	/** 
+	 * QtyInPriceUOMVia AD_Reference_ID=541023
+	 * Reference name: QtyInPriceUOMVia
+	 */
+	public static final int QTYINPRICEUOMVIA_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String QTYINPRICEUOMVIA_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String QTYINPRICEUOMVIA_CatchWeight = "CatchWeight";
+	/** Set Menge in Preiseinheit durch.
+		@param QtyInPriceUOMVia 
+		Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.
+	  */
+	@Override
+	public void setQtyInPriceUOMVia (java.lang.String QtyInPriceUOMVia)
+	{
+
+		set_Value (COLUMNNAME_QtyInPriceUOMVia, QtyInPriceUOMVia);
+	}
+
+	/** Get Menge in Preiseinheit durch.
+		@return Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.
+	  */
+	@Override
+	public java.lang.String getQtyInPriceUOMVia () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_QtyInPriceUOMVia);
+	}
+
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Menge, die bereits in Rechnung gestellt wurde
+		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
@@ -2654,7 +2673,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** Get Berechn. Menge.
-		@return Menge, die bereits in Rechnung gestellt wurde
+		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public java.math.BigDecimal getQtyInvoiced () 
@@ -2728,6 +2747,91 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
+	/** Set Zu berechn. Menge vor Qualitätsabzug.
+		@param QtyToInvoiceBeforeDiscount Zu berechn. Menge vor Qualitätsabzug	  */
+	@Override
+	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceBeforeDiscount, QtyToInvoiceBeforeDiscount);
+	}
+
+	/** Get Zu berechn. Menge vor Qualitätsabzug.
+		@return Zu berechn. Menge vor Qualitätsabzug	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Catch Weight Menge in Preiseinheit.
+		@param QtyToInvoiceInPriceUOM_CatchWeight 
+		Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	  */
+	@Override
+	public void setQtyToInvoiceInPriceUOM_CatchWeight (java.math.BigDecimal QtyToInvoiceInPriceUOM_CatchWeight)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM_CatchWeight, QtyToInvoiceInPriceUOM_CatchWeight);
+	}
+
+	/** Get Catch Weight Menge in Preiseinheit.
+		@return Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_CatchWeight () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_CatchWeight);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Zu ber. Menge in Preiseinheit eff..
+		@param QtyToInvoiceInPriceUOM_Eff 
+		Effektiv zu berechnende Menge in der Mengeneinheit des Preises; abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
+	  */
+	@Override
+	public void setQtyToInvoiceInPriceUOM_Eff (java.math.BigDecimal QtyToInvoiceInPriceUOM_Eff)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM_Eff, QtyToInvoiceInPriceUOM_Eff);
+	}
+
+	/** Get Zu ber. Menge in Preiseinheit eff..
+		@return Effektiv zu berechnende Menge in der Mengeneinheit des Preises; abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
+	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Eff () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_Eff);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Nominalmenge in Preiseinheit.
+		@param QtyToInvoiceInPriceUOM_Nominal 
+		Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
+	  */
+	@Override
+	public void setQtyToInvoiceInPriceUOM_Nominal (java.math.BigDecimal QtyToInvoiceInPriceUOM_Nominal)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInPriceUOM_Nominal, QtyToInvoiceInPriceUOM_Nominal);
+	}
+
+	/** Get Nominalmenge in Preiseinheit.
+		@return Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
+	  */
+	@Override
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Nominal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_Nominal);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Zu berechn. Menge abw..
 		@param QtyToInvoice_Override 
 		Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
@@ -2767,66 +2871,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getQtyToInvoice_OverrideFulfilled () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Zu berechn. Menge vor Qualitätsabzug.
-		@param QtyToInvoiceBeforeDiscount Zu berechn. Menge vor Qualitätsabzug	  */
-	@Override
-	public void setQtyToInvoiceBeforeDiscount (java.math.BigDecimal QtyToInvoiceBeforeDiscount)
-	{
-		set_Value (COLUMNNAME_QtyToInvoiceBeforeDiscount, QtyToInvoiceBeforeDiscount);
-	}
-
-	/** Get Zu berechn. Menge vor Qualitätsabzug.
-		@return Zu berechn. Menge vor Qualitätsabzug	  */
-	@Override
-	public java.math.BigDecimal getQtyToInvoiceBeforeDiscount () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceBeforeDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Zu berechn. Menge In Preiseinheit.
-		@param QtyToInvoiceInPriceUOM 
-		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	  */
-	@Override
-	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM)
-	{
-		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInPriceUOM, QtyToInvoiceInPriceUOM);
-	}
-
-	/** Get Zu berechn. Menge In Preiseinheit.
-		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
-	  */
-	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Zu ber. Menge in Preiseinheit (abw.).
-		@param QtyToInvoiceInPriceUOM_Override Zu ber. Menge in Preiseinheit (abw.)	  */
-	@Override
-	public void setQtyToInvoiceInPriceUOM_Override (java.math.BigDecimal QtyToInvoiceInPriceUOM_Override)
-	{
-		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM_Override, QtyToInvoiceInPriceUOM_Override);
-	}
-
-	/** Get Zu ber. Menge in Preiseinheit (abw.).
-		@return Zu ber. Menge in Preiseinheit (abw.)	  */
-	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Override () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_Override);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

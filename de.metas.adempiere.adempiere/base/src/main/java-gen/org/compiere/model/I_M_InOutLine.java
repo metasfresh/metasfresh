@@ -202,6 +202,31 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_C_Customs_Invoice_Line_ID = "C_Customs_Invoice_Line_ID";
 
 	/**
+	 * Set Bestätigte Menge.
+	 * Confirmation of a received quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty);
+
+	/**
+	 * Get Bestätigte Menge.
+	 * Confirmation of a received quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getConfirmedQty();
+
+    /** Column definition for ConfirmedQty */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ConfirmedQty", null);
+    /** Column name ConfirmedQty */
+    public static final String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+
+	/**
 	 * Set Auftragsposition.
 	 * Sales Order Line
 	 *
@@ -318,56 +343,6 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Bestätigte Menge.
-	 * Confirmation of a received quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setConfirmedQty (java.math.BigDecimal ConfirmedQty);
-
-	/**
-	 * Get Bestätigte Menge.
-	 * Confirmation of a received quantity
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getConfirmedQty();
-
-    /** Column definition for ConfirmedQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "ConfirmedQty", null);
-    /** Column name ConfirmedQty */
-    public static final String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
-
-	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
@@ -396,6 +371,31 @@ public interface I_M_InOutLine
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_AD_User>(I_M_InOutLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Beschreibung.
@@ -629,6 +629,31 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Bewegungs-Menge.
+	 * Quantity of a product moved.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setMovementQty (java.math.BigDecimal MovementQty);
+
+	/**
+	 * Get Bewegungs-Menge.
+	 * Quantity of a product moved.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getMovementQty();
+
+    /** Column definition for MovementQty */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "MovementQty", null);
+    /** Column name MovementQty */
+    public static final String COLUMNNAME_MovementQty = "MovementQty";
+
+	/**
 	 * Set Produkt.
 	 * Produkt, Leistung, Artikel
 	 *
@@ -683,31 +708,6 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_M_RMALine_ID = "M_RMALine_ID";
 
 	/**
-	 * Set Bewegungs-Menge.
-	 * Quantity of a product moved.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setMovementQty (java.math.BigDecimal MovementQty);
-
-	/**
-	 * Get Bewegungs-Menge.
-	 * Quantity of a product moved.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getMovementQty();
-
-    /** Column definition for MovementQty */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_MovementQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "MovementQty", null);
-    /** Column name MovementQty */
-    public static final String COLUMNNAME_MovementQty = "MovementQty";
-
-	/**
 	 * Set Picked Quantity.
 	 *
 	 * <br>Type: Quantity
@@ -729,6 +729,29 @@ public interface I_M_InOutLine
     public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_PickedQty = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "PickedQty", null);
     /** Column name PickedQty */
     public static final String COLUMNNAME_PickedQty = "PickedQty";
+
+	/**
+	 * Set Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice_UOM_ID (int Price_UOM_ID);
+
+	/**
+	 * Get Preiseinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPrice_UOM_ID();
+
+    /** Column definition for Price_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Price_UOM_ID */
+    public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
 
 	/**
 	 * Set Verarbeitet.
@@ -781,27 +804,29 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Gelieferte Menge in Preiseinheit.
+	 * Set Catch Weight Menge in Preiseinheit.
+	 * Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInPriceUOM (java.math.BigDecimal QtyDeliveredInPriceUOM);
+	public void setQtyDeliveredInPriceUOM_CatchWeight (java.math.BigDecimal QtyDeliveredInPriceUOM_CatchWeight);
 
 	/**
-	 * Get Gelieferte Menge in Preiseinheit.
+	 * Get Catch Weight Menge in Preiseinheit.
+	 * Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInPriceUOM();
+	public java.math.BigDecimal getQtyDeliveredInPriceUOM_CatchWeight();
 
-    /** Column definition for QtyDeliveredInPriceUOM */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInPriceUOM = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInPriceUOM", null);
-    /** Column name QtyDeliveredInPriceUOM */
-    public static final String COLUMNNAME_QtyDeliveredInPriceUOM = "QtyDeliveredInPriceUOM";
+    /** Column definition for QtyDeliveredInPriceUOM_CatchWeight */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInPriceUOM_CatchWeight = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInPriceUOM_CatchWeight", null);
+    /** Column name QtyDeliveredInPriceUOM_CatchWeight */
+    public static final String COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight = "QtyDeliveredInPriceUOM_CatchWeight";
 
 	/**
 	 * Set Menge.

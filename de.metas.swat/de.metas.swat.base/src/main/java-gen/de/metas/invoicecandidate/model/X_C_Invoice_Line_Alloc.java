@@ -15,7 +15,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -782487202L;
+	private static final long serialVersionUID = 570831752L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
@@ -46,7 +46,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
     }
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg getC_Invoice_Candidate_Agg()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_Agg_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg.class);
 	}
@@ -83,7 +83,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate() throws RuntimeException
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	}
@@ -139,7 +139,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
-	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine() throws RuntimeException
+	public org.compiere.model.I_C_InvoiceLine getC_InvoiceLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class);
 	}
@@ -263,7 +263,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 
 	/** Set Berechn. Menge.
 		@param QtyInvoiced 
-		Menge, die bereits in Rechnung gestellt wurde
+		Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced)
@@ -272,7 +272,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	}
 
 	/** Get Berechn. Menge.
-		@return Menge, die bereits in Rechnung gestellt wurde
+		@return Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
 	  */
 	@Override
 	public java.math.BigDecimal getQtyInvoiced () 

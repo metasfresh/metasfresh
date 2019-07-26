@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static de.metas.util.Check.assumeEquals;
 import static java.math.BigDecimal.ONE;
 
 /*
@@ -30,6 +31,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -56,6 +59,7 @@ import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -325,7 +329,7 @@ import lombok.NonNull;
 		invoiceCandBL.setPriceActual_Override(ic);
 
 		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM);
+		ic.setQtyToInvoiceInPriceUOM_Nominal(qtyToInvoiceInPriceUOM);
 
 		final BigDecimal newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
 		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
@@ -335,16 +339,18 @@ import lombok.NonNull;
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
 
+		final Quantity qtyToInvoiceFromShipments = invoiceCandBL.computeQtyToInvoiceInPriceUOMFromShipments(ic);
+		assumeEquals(ic.getPrice_UOM_ID(), qtyToInvoiceFromShipments.getUomId().getRepoId(), "UOMs need to be equal; ic={}", ic);
 
+		ic.setQtyToInvoiceInPriceUOM_CatchWeight(qtyToInvoiceFromShipments.getAsBigDecimal());
+
+		// set setQtyToInvoiceInPriceUOM_Eff
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount
 		invoiceCandBL.setNetAmtToInvoice(ic);
 
 		invoiceCandBL.setInvoiceScheduleAmtStatus(ctx, ic);
-
-		BigDecimal qtyToInvoiceInPriceUOM_Override = invoiceCandBL.computeQtyToInvoiceInPriceUOM_Override(ic);
-		ic.setQtyToInvoiceInPriceUOM_Override(qtyToInvoiceInPriceUOM_Override);
 
 		//
 		// Save it
@@ -353,11 +359,10 @@ import lombok.NonNull;
 
 	/**
 	 * Link all orderLine's inoutLine to our invoice candidate.
-	 *
-	 * @param ic
-	 * @param orderLine
 	 */
-	private void populateC_InvoiceCandidate_InOutLine(final I_C_Invoice_Candidate ic, final org.compiere.model.I_C_OrderLine orderLine)
+	private void populateC_InvoiceCandidate_InOutLine(
+			@NonNull final I_C_Invoice_Candidate ic,
+			@Nullable final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		if (orderLine == null)
 		{

@@ -267,7 +267,7 @@ public class Percent
 	}
 
 	/**
-	 * Example: {@code Percent.of(TEN).subtractFromBase(new BigDecimal("100"))} equals to 90
+	 * Example: {@code Percent.of(TEN).subtractFromBase(new BigDecimal("100"), 0)} equals to 90
 	 */
 	public BigDecimal subtractFromBase(@NonNull final BigDecimal base, final int precision)
 	{

@@ -117,7 +117,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * It checks: Processed, IsError, DateToInvoice (if not <code>ignoreInvoiceSchedule</code>).
 	 *
 	 * NOTE: This method is called both when invoice candidates are enqueued for invoicing and during the actual invoicing.
-
+	 *
 	 * @return true if the invoice candidate is NOT eligible and shall be skipped.
 	 */
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
@@ -270,7 +270,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
 	/**
-	 * Converts the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
+	 * Convert the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
 	 * <p>
 	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
 	 * <p>
@@ -349,10 +349,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.
-	 *
-	 * @param candidate
-	 * @return
 	 */
+	// TODO kick out
 	BigDecimal getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
 
 	/**
@@ -412,7 +410,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Iterate the candidates to close and close them one by one.
 	 */
 	void closeInvoiceCandidates(Iterator<I_C_Invoice_Candidate> candidatesToClose);
-	
+
 	default void closeInvoiceCandidates(@NonNull final Iterable<I_C_Invoice_Candidate> candidatesToClose)
 	{
 		closeInvoiceCandidates(candidatesToClose.iterator());

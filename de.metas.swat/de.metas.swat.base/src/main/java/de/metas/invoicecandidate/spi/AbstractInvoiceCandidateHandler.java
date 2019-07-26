@@ -62,7 +62,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
+		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
+		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
 		final BigDecimal qtyToInvoice = ic.getQtyToInvoice();
 		final BigDecimal netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoice);
