@@ -1,8 +1,10 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var WebpackGitHash = require('webpack-git-hash');
-var fs = require('fs');
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WebpackGitHash = require('webpack-git-hash');
+const fs = require('fs');
+const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
+const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 // allow webpack.config.js to be evaluated if there is no git binary or if we are outside of the git repo;
 // useful for cypress scenarios
@@ -26,6 +28,13 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: 'index.html',
   }),
+  // new MomentTimezoneDataPlugin({
+  //   startYear: 2009,
+  //   endYear: 2030,
+  // }),
+  // new MomentLocalesPlugin({
+  //   localesToKeep: ['en', 'de', 'nl'],
+  // }),
 ];
 
 // WebpackGitHash attempts to run the git binary as well
@@ -106,9 +115,20 @@ module.exports = {
         loader: 'html-loader',
       },
       {
-        test: /\.json$/,
-        loader: 'json-loader',
+        type: 'javascript/auto',
+        test: /\.(json)/,
+        exclude: /(node_modules|bower_components)/,
+        use: [
+          {
+            loader: 'file-loader',
+            options: { name: '[name].[ext]' },
+          },
+        ],
       },
+      // {
+      //   test: /\.json$/,
+      //   loader: 'json-loader',
+      // },
     ],
   },
   resolve: {

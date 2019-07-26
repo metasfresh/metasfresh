@@ -226,7 +226,7 @@ export class RawWidget extends Component {
       dropdownOpenCallback,
       autoFocus,
       fullScreen,
-      widgetType,
+      // widgetType,
       fields,
       windowType,
       dataId,
@@ -253,9 +253,14 @@ export class RawWidget extends Component {
       dateFormat,
       initialFocus,
     } = this.props;
+    let { widgetType } = this.props;
 
     let widgetValue = data != null ? data : widgetData[0].value;
     const { isEdited } = this.state;
+
+    if (widgetType === `DateTime`) {
+      widgetType = `ZonedDateTime`;
+    }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
     const widgetField = filterWidget
@@ -351,79 +356,41 @@ export class RawWidget extends Component {
             </div>
           );
         }
-      case 'DateTime':
-        if (range) {
-          // Watch out! The datetimerange widget as exception,
-          // is non-controlled input! For further usage, needs
-          // upgrade.
-          return (
-            <DatetimeRange
-              onChange={(value, valueTo) =>
+      case 'ZonedDateTime':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              key={1}
+              field={fields[0].field}
+              timeFormat={false}
+              dateFormat={dateFormat || true}
+              hasTimeZone={true}
+              isOpenDatePicker={isOpenDatePicker}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue || widgetData[0].value}
+              onChange={date => {
+                const finalDate = date.utc ? date.utc(true) : date;
+                return handleChange(widgetField, finalDate);
+              }}
+              patch={date =>
                 this.handlePatch(
                   widgetField,
-                  value ? Moment(value).format(DATE_FORMAT) : null,
+                  this.generateMomentObj(date),
                   null,
-                  valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+                  null,
+                  true
                 )
               }
-              mandatory={widgetData[0].mandatory}
-              validStatus={widgetData[0].validStatus}
-              onShow={onShow}
-              onHide={onHide}
-              value={widgetData[0].value}
-              valueTo={widgetData[0].valueTo}
-              tabIndex={tabIndex}
-              timePicker={true}
+              {...{
+                handleBackdropLock,
+              }}
             />
-          );
-        } else {
-          return (
-            <div className={this.getClassNames({ icon: true })}>
-              <DatePicker
-                field={fields[0].field}
-                timeFormat={dateFormat ? false : true}
-                dateFormat={dateFormat || true}
-                inputProps={{
-                  placeholder: fields[0].emptyText,
-                  disabled: readonly,
-                  tabIndex: tabIndex,
-                }}
-                value={widgetValue}
-                onChange={date => handleChange(widgetField, date)}
-                patch={date =>
-                  this.handlePatch(
-                    widgetField,
-                    this.generateMomentObj(date),
-                    null,
-                    null,
-                    true
-                  )
-                }
-                tabIndex={tabIndex}
-                handleBackdropLock={handleBackdropLock}
-              />
-            </div>
-          );
-        }
-      case 'DateRange': {
-        return (
-          <DatetimeRange
-            onChange={(value, valueTo) =>
-              this.handlePatch(widgetField, {
-                ...(value && { value }),
-                ...(valueTo && { valueTo }),
-              })
-            }
-            mandatory={widgetData[0].mandatory}
-            validStatus={widgetData[0].validStatus}
-            onShow={onShow}
-            onHide={onHide}
-            value={widgetData[0].value}
-            valueTo={widgetData[0].valueTo}
-            tabIndex={tabIndex}
-          />
+          </div>
         );
-      }
       case 'Time':
         return (
           <div className={this.getClassNames({ icon: true })}>
@@ -452,6 +419,107 @@ export class RawWidget extends Component {
             />
           </div>
         );
+      case 'Timestamp':
+        return (
+          <div className={this.getClassNames({ icon: true })}>
+            <DatePicker
+              field={fields[0].field}
+              timeFormat={false}
+              dateFormat={false}
+              inputProps={{
+                placeholder: fields[0].emptyText,
+                disabled: readonly,
+                tabIndex: tabIndex,
+              }}
+              value={widgetValue}
+              onChange={date => handleChange(widgetField, date)}
+              patch={date =>
+                this.handlePatch(
+                  widgetField,
+                  this.generateMomentObj(date),
+                  null,
+                  null,
+                  true
+                )
+              }
+              tabIndex={tabIndex}
+              handleBackdropLock={handleBackdropLock}
+            />
+          </div>
+        );
+      case 'DateRange': {
+        return (
+          <DatetimeRange
+            onChange={(value, valueTo) =>
+              this.handlePatch(widgetField, {
+                ...(value && { value }),
+                ...(valueTo && { valueTo }),
+              })
+            }
+            mandatory={widgetData[0].mandatory}
+            validStatus={widgetData[0].validStatus}
+            onShow={onShow}
+            onHide={onHide}
+            value={widgetData[0].value}
+            valueTo={widgetData[0].valueTo}
+            tabIndex={tabIndex}
+          />
+        );
+      }
+      // case 'DateTime':
+      //   if (range) {
+      //     // Watch out! The datetimerange widget as exception,
+      //     // is non-controlled input! For further usage, needs
+      //     // upgrade.
+      //     return (
+      //       <DatetimeRange
+      //         onChange={(value, valueTo) =>
+      //           this.handlePatch(
+      //             widgetField,
+      //             value ? Moment(value).format(DATE_FORMAT) : null,
+      //             null,
+      //             valueTo ? Moment(valueTo).format(DATE_FORMAT) : null
+      //           )
+      //         }
+      //         mandatory={widgetData[0].mandatory}
+      //         validStatus={widgetData[0].validStatus}
+      //         onShow={onShow}
+      //         onHide={onHide}
+      //         value={widgetData[0].value}
+      //         valueTo={widgetData[0].valueTo}
+      //         tabIndex={tabIndex}
+      //         timePicker={true}
+      //       />
+      //     );
+      //   } else {
+      //     return (
+      //       <div className={this.getClassNames({ icon: true })}>
+      //         <DatePicker
+      //           field={fields[0].field}
+      //           timeFormat={dateFormat ? false : true}
+      //           dateFormat={dateFormat || true}
+      //           inputProps={{
+      //             placeholder: fields[0].emptyText,
+      //             disabled: readonly,
+      //             tabIndex: tabIndex,
+      //           }}
+      //           value={widgetValue}
+      //           onChange={date => handleChange(widgetField, date)}
+      //           patch={date =>
+      //             this.handlePatch(
+      //               widgetField,
+      //               this.generateMomentObj(date),
+      //               null,
+      //               null,
+      //               true
+      //             )
+      //           }
+      //           tabIndex={tabIndex}
+      //           handleBackdropLock={handleBackdropLock}
+      //         />
+      //       </div>
+      //     );
+      //   }
       case 'Lookup':
         return (
           <Lookup
