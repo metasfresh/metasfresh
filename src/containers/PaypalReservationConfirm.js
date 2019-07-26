@@ -44,7 +44,6 @@ class PaypalReservationConfirm extends Component {
   }
 
   render() {
-    const { token } = this.props;
     const { error, errorMessage } = this.state;
     const component = (
       <PaypalReservationConfirmForm {...{ error, errorMessage }} />
