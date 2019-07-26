@@ -10,17 +10,15 @@ class PaypalReservationConfirmForm extends Component {
   }
 
   render() {
-    const { error, errorMessage } = this.props;
+    const { error, message } = this.props;
 
     return (
       <div className="paypal-reservation-confirm-form panel panel-spaced-lg panel-shadowed panel-primary">
         <div className="text-center">
           <img src={logo} className="header-logo mt-2 mb-2" />
         </div>
-        {!error && (
-          <div className="text-center">Payment reservation confirmed.</div>
-        )}
-        {error && <div className="text-center error">{errorMessage}</div>}
+        {!error && <div className="text-center">{message}</div>}
+        {error && <div className="text-center error">{message}</div>}
       </div>
     );
   }

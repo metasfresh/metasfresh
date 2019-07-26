@@ -10,8 +10,8 @@ class PaypalReservationConfirm extends Component {
     super(props);
 
     this.state = {
-      error: true,
-      errorMessage: 'no token',
+      error: false,
+      message: 'Checking...',
     };
   }
 
@@ -22,7 +22,7 @@ class PaypalReservationConfirm extends Component {
       .then(() => {
         this.setState({
           error: false,
-          errorMessage: null,
+          message: 'Payment reservation confirmed.',
         });
       });
   };
@@ -32,21 +32,21 @@ class PaypalReservationConfirm extends Component {
       if (exchange.response.data.status == 404) {
         this.setState({
           error: true,
-          errorMessage: 'Order not found',
+          message: 'Order not found.',
         });
       } else {
         this.setState({
           error: true,
-          errorMessage: exchange.response.data.message,
+          message: exchange.response.data.message,
         });
       }
     });
   }
 
   render() {
-    const { error, errorMessage } = this.state;
+    const { error, message } = this.state;
     const component = (
-      <PaypalReservationConfirmForm {...{ error, errorMessage }} />
+      <PaypalReservationConfirmForm {...{ error, message }} />
     );
 
     return (
