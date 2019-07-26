@@ -80,9 +80,15 @@ function applyPurchaseOrder(purchaseOrder) {
 
 function applyPurchaseOrderLine(purchaseOrderLine) {
   cy.selectTab('C_OrderLine');
-  cy.pressAddNewButton();
+  cy.pressBatchEntryButton();
+  cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
+  cy.writeIntoStringField('Qty', purchaseOrderLine.quantity);
+  cy.closeBatchEntry();
 
-  cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product, false, true);
-  cy.writeIntoStringField('QtyEntered', purchaseOrderLine.quantity, true);
-  cy.pressDoneButton();
+  // // cannot use advanced edit since adding a packing item is broken.
+  // cy.selectTab('C_OrderLine');
+  // cy.pressBatchEntryButton();
+  // cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product, false, true);
+  // cy.writeIntoStringField('QtyEntered', purchaseOrderLine.quantity, true);
+  // cy.pressDoneButton();
 }
