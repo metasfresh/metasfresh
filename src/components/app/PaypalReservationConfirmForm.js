@@ -1,8 +1,8 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-import logo from "../../assets/images/metasfresh_logo_green_thumb.png";
+import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 class PaypalReservationConfirmForm extends Component {
   constructor(props) {
@@ -27,7 +27,7 @@ class PaypalReservationConfirmForm extends Component {
 }
 
 PaypalReservationConfirmForm.propTypes = {
-  token: PropTypes.string
+  token: PropTypes.string,
 };
 
 export default connect()(PaypalReservationConfirmForm);

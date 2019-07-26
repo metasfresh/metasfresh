@@ -1,9 +1,9 @@
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import axios from "axios";
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import axios from 'axios';
 
-import PaypalReservationConfirmForm from "../components/app/PaypalReservationConfirmForm";
+import PaypalReservationConfirmForm from '../components/app/PaypalReservationConfirmForm';
 
 class PaypalReservationConfirm extends Component {
   constructor(props) {
@@ -11,7 +11,7 @@ class PaypalReservationConfirm extends Component {
 
     this.state = {
       error: true,
-      errorMessage: "no token"
+      errorMessage: 'no token',
     };
   }
 
@@ -22,7 +22,7 @@ class PaypalReservationConfirm extends Component {
       .then(() => {
         this.setState({
           error: false,
-          errorMessage: null
+          errorMessage: null,
         });
       });
   };
@@ -32,12 +32,12 @@ class PaypalReservationConfirm extends Component {
       if (exchange.response.data.status == 404) {
         this.setState({
           error: true,
-          errorMessage: "Order not found"
+          errorMessage: 'Order not found',
         });
       } else {
         this.setState({
           error: true,
-          errorMessage: exchange.response.data.message
+          errorMessage: exchange.response.data.message,
         });
       }
     });
@@ -59,7 +59,7 @@ class PaypalReservationConfirm extends Component {
 }
 
 PaypalReservationConfirm.propTypes = {
-  token: PropTypes.string
+  token: PropTypes.string,
 };
 
 export default connect()(PaypalReservationConfirm);
