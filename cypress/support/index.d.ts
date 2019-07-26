@@ -50,7 +50,7 @@ declare namespace Cypress {
      * @example
      * cy.getTextFieldValue('Description').should('contain', originalDocumentDescription);
      */
-    getTextFieldValue(fieldName: string, modal?: boolean):Chainable<any>
+    getTextFieldValue(fieldName: string, modal?: boolean): Chainable<any>
 
 
     /**
@@ -406,9 +406,9 @@ declare namespace Cypress {
      * Erase the contents of this field.
      *
      * @param fieldName - name of the field is question
-     * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
+     * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
      */
-    clearField(fieldName: string, modal: boolean): Chainable<any>
+    clearField(fieldName: string, modal?: boolean): Chainable<any>
 
 
     /**
@@ -640,6 +640,13 @@ declare namespace Cypress {
 
 
     /**
+     * Expect the table to have a specific number of rows
+     *
+     * @param numberOfRows - the number of rows
+     */
+    expectNumberOfRows(numberOfRows): Chainable<any>
+
+    /**
      * Complete the current document
      */
     completeDocument(): Chainable<any>
@@ -649,10 +656,10 @@ declare namespace Cypress {
      */
     reactivateDocument(): Chainable<any>
 
-  /**
-   * Reverse the current document
-   */
-  reverseDocument(): Chainable<any>
+    /**
+     * Reverse the current document
+     */
+    reverseDocument(): Chainable<any>
   }
 
 }
