@@ -2,10 +2,8 @@ package org.eevolution.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -126,16 +124,13 @@ public class PPOrderCostDAO implements IPPOrderCostDAO
 		{
 			record = InterfaceWrapperHelper.newInstance(I_PP_Order_Cost.class);
 			record.setPP_Order_ID(orderId.getRepoId());
-			updateRecord(record, cost);
 		}
 		else
 		{
 			record = existingRecord;
-			//Applying a check to overcome updating of the records twice 
-			if(existingRecord.getCumulatedQty().compareTo(BigDecimal.ZERO) == 0) {
-				updateRecord(record, cost);
-			}
 		}
+		
+		updateRecord(record, cost);
 		
 		saveRecord(record);
 		cost.setId(PPOrderCostId.ofRepoId(record.getPP_Order_Cost_ID()));
