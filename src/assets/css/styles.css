@@ -1552,3 +1552,22 @@ td.pulse-off input {
         }
     }
 }
+
+.paypal-reservation-container {
+    position: absolute;
+    display: flex;
+    width: 100%;
+    height: calc(100% - 62px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.paypal-reservation-confirm-form {
+    width: 20%;
+    min-width: 300px;
+
+    .error {
+        color: $brand-danger-color;
+    }
+}
