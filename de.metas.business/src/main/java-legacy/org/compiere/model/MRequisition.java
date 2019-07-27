@@ -259,6 +259,47 @@ public class MRequisition extends X_M_Requisition implements IDocument
 	 */
 	@Override
 	public String completeIt()
+	  {
+	    // Re-Check
+	    if (!m_justPrepared)
+	    {
+	      final String status = prepareIt();
+	      if (!IDocument.STATUS_InProgress.equals(status))
+	      {
+	        return status;
+	      }
+	    }
+
+	    m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
+	    if (m_processMsg != null)
+	    {
+	      return IDocument.STATUS_Invalid;
+	    }
+
+	    // Implicit Approval
+	    if (!isApproved())
+	    {
+	      approveIt();
+	    }
+	    log.debug("Completed: {}", this);
+
+	    // User Validation
+	    final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
+	    if (valid != null)
+	    {
+	      m_processMsg = valid;
+	      return IDocument.STATUS_Invalid;
+	    }
+
+	    // Set the definite document number after completed (if needed)
+	    setDefiniteDocumentNo();
+
+	    //
+	    setProcessed(true);
+	    setDocAction(ACTION_ReActivate);
+	    return IDocument.STATUS_Completed;
+	  }
+	/*public String completeIt()
 	{
 		// Re-Check
 		if (!m_justPrepared)
@@ -298,7 +339,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		setProcessed(true);
 		setDocAction(ACTION_Close);
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}*/	// completeIt
 
 	/**
 	 * Set the definite document number after completed
@@ -418,6 +459,33 @@ public class MRequisition extends X_M_Requisition implements IDocument
 
 	@Override
 	public boolean reActivateIt()
+	  {
+	    // Before reActivate
+	    m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
+	    if (m_processMsg != null)
+	    {
+	      return false;
+	    }
+
+	    // setProcessed(false);
+	    /*if (!reverseCorrectIt())
+	    {
+	      return false;
+	    }*/
+
+	    setPosted(false);
+	    setDocAction(DOCACTION_Complete);
+	    setProcessed(false);
+	    // After reActivate
+	    m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+	    if (m_processMsg != null)
+	    {
+	      return false;
+	    }
+
+	    return true;
+	  }
+	/*public boolean reActivateIt()
 	{
 		// Before reActivate
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_REACTIVATE);
@@ -440,7 +508,7 @@ public class MRequisition extends X_M_Requisition implements IDocument
 		}
 
 		return true;
-	}
+	}*/
 
 	@Override
 	public String getSummary()
