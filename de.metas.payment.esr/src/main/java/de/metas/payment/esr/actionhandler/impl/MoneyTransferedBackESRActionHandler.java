@@ -24,16 +24,19 @@ package de.metas.payment.esr.actionhandler.impl;
 
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -86,17 +89,17 @@ public class MoneyTransferedBackESRActionHandler extends AbstractESRActionHandle
 			InterfaceWrapperHelper.refresh(line, ITrx.TRXNAME_ThreadInherited);
 			
 			// Create the reversal payment
+			final LocalDate dateTrx = SystemTime.asLocalDate();
 			final I_C_Payment transferBackPayment =
-					Services.get(IPaymentBL.class).newBuilder(line)
-						.setAD_Org_ID(line.getAD_Org_ID())
-						.setC_BPartner_ID(linePayment.getC_BPartner_ID())
-						.setDocbaseType(X_C_DocType.DOCBASETYPE_APPayment)
-						.setPayAmt(transferedBackAmt)
-						.setC_Currency_ID(linePayment.getC_Currency_ID())
-						.setTenderType(TenderType.DirectDeposit)
-						.setC_BP_BankAccount_ID(linePayment.getC_BP_BankAccount_ID())
-						.setDateAcct(SystemTime.asDayTimestamp())
-						.setDateTrx(SystemTime.asDayTimestamp())
+					Services.get(IPaymentBL.class).newOutboundPaymentBuilder()
+						.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
+						.bpartnerId(BPartnerId.ofRepoId(linePayment.getC_BPartner_ID()))
+						.payAmt(transferedBackAmt)
+						.currencyId(CurrencyId.ofRepoId(linePayment.getC_Currency_ID()))
+						.tenderType(TenderType.DirectDeposit)
+						.bpBankAccountId(linePayment.getC_BP_BankAccount_ID())
+						.dateAcct(dateTrx)
+						.dateTrx(dateTrx)
 						.createAndProcess();
 
 			// Create the allocation

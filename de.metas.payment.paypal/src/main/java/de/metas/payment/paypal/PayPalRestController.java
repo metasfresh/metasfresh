@@ -2,6 +2,7 @@ package de.metas.payment.paypal;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,7 +34,10 @@ import lombok.NonNull;
 
 @RestController
 @Profile(Profiles.PROFILE_Webui)
-@RequestMapping("/paypal")
+@RequestMapping({
+		"/paypal",
+		"/rest/api/paypal" // NOTE: actually this one is used by frontend because in config.js, the API_URL ends with /rest/api
+})
 public class PayPalRestController
 {
 	private final PayPal paypal;
@@ -43,7 +47,7 @@ public class PayPalRestController
 		this.paypal = paypal;
 	}
 
-	@RequestMapping("/approved")
+	@RequestMapping(path = "/approved", method = { RequestMethod.GET, RequestMethod.POST })
 	public void notifyOrderApprovedByPayer(
 			@RequestParam(value = "token", required = true) final String token)
 	{

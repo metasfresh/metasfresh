@@ -88,6 +88,118 @@ public interface I_C_Payment_Reservation_Capture
     public static final String COLUMNNAME_Amount = "Amount";
 
 	/**
+	 * Set Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Währung.
+	 * Die Währung für diesen Eintrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Currency_ID();
+
+    /** Column definition for C_Currency_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Currency>(I_C_Payment_Reservation_Capture.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_ID();
+
+	public org.compiere.model.I_C_Invoice getC_Invoice();
+
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+
+    /** Column definition for C_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Invoice>(I_C_Payment_Reservation_Capture.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
+	 * Set Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Order_ID();
+
+	public org.compiere.model.I_C_Order getC_Order();
+
+	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Order>(I_C_Payment_Reservation_Capture.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Zahlung.
+	 * Zahlung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Payment_ID (int C_Payment_ID);
+
+	/**
+	 * Get Zahlung.
+	 * Zahlung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Payment_ID();
+
+	public org.compiere.model.I_C_Payment getC_Payment();
+
+	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
+
+    /** Column definition for C_Payment_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_C_Payment_Reservation_Capture, org.compiere.model.I_C_Payment>(I_C_Payment_Reservation_Capture.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
+    /** Column name C_Payment_ID */
+    public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
 	 * Set Payment Reservation Capture.
 	 *
 	 * <br>Type: ID
