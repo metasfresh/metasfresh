@@ -80,6 +80,11 @@ public enum PaymentReservationStatus implements ReferenceListAwareEnum
 		assertEquals(APPROVED_BY_PAYER);
 	}
 
+	public void assertCompleted()
+	{
+		assertEquals(COMPLETED);
+	}
+
 	public void assertEquals(@NonNull final PaymentReservationStatus expected)
 	{
 		if (!this.equals(expected))

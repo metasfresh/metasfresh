@@ -45,6 +45,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
+import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 
 /**
@@ -461,4 +462,5 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
 
+	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
 }

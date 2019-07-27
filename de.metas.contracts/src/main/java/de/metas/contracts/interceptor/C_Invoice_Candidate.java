@@ -75,7 +75,8 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateIsToClear(final I_C_Invoice_Candidate invoiceCand)
 	{
-		if ("Y".equals(invoiceCand.getProcessed_Override()))
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		if(invoiceCandBL.extractProcessedOverride(invoiceCand).isTrue())
 		{
 			return; // #183 FRESH-511: nothing to check or update
 		}

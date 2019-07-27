@@ -682,11 +682,11 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
 	}
 
-	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
+//	@Override
+//	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+//	{
+//		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+//	}
 
 	/** Set Auftrag.
 		@param C_Order_ID 

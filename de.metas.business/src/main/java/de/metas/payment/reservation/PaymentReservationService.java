@@ -3,12 +3,17 @@ package de.metas.payment.reservation;
 import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Payment;
 import org.springframework.stereotype.Service;
 
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.util.Services;
 import lombok.NonNull;
 
 /*
@@ -37,13 +42,16 @@ import lombok.NonNull;
 public class PaymentReservationService
 {
 	private final PaymentReservationRepository reservationsRepo;
+	private final PaymentReservationCaptureRepository capturesRepo;
 	private final PaymentProcessorService paymentProcessors;
 
 	public PaymentReservationService(
 			@NonNull final PaymentReservationRepository reservationsRepo,
+			@NonNull final PaymentReservationCaptureRepository capturesRepo,
 			@NonNull final PaymentProcessorService paymentProcessors)
 	{
 		this.reservationsRepo = reservationsRepo;
+		this.capturesRepo = capturesRepo;
 		this.paymentProcessors = paymentProcessors;
 	}
 
@@ -52,6 +60,11 @@ public class PaymentReservationService
 		return getPaymentProcessorIfExists(paymentRule)
 				.map(PaymentProcessor::canReserveMoney)
 				.orElse(Boolean.FALSE);
+	}
+
+	public boolean hasPaymentReservation(@NonNull final OrderId salesOrderId)
+	{
+		return getBySalesOrderIdNotVoided(salesOrderId).isPresent();
 	}
 
 	public Optional<PaymentReservation> getBySalesOrderIdNotVoided(@NonNull final OrderId salesOrderId)
@@ -69,7 +82,7 @@ public class PaymentReservationService
 		reservationsRepo.save(paymentReservation);
 	}
 
-	public PaymentReservation create(@NonNull final PaymentReservationCreateRequest createRequest)
+	public PaymentReservation createReservation(@NonNull final PaymentReservationCreateRequest createRequest)
 	{
 		//
 		// Create & save
@@ -108,11 +121,49 @@ public class PaymentReservationService
 
 	public void captureAmount(@NonNull final PaymentReservationCaptureRequest request)
 	{
-		final PaymentReservation reservation = getById(request.getPaymentReservationId());
+		final PaymentReservation reservation = getBySalesOrderIdNotVoided(request.getSalesOrderId())
+				.orElse(null);
+		if (reservation == null)
+		{
+			return;
+		}
 
-		getPaymentProcessor(reservation.getPaymentRule())
-				.captureMoney(reservation, request.getAmount());
+		// eagerly fetching the processor to fail fast
+		final PaymentProcessor paymentProcessor = getPaymentProcessor(reservation.getPaymentRule());
 
+		final PaymentId paymentId = createPayment(request);
+
+		final PaymentReservationCapture capture = PaymentReservationCapture.builder()
+				.reservationId(reservation.getId())
+				.status(PaymentReservationCaptureStatus.NEW)
+				//
+				.orgId(reservation.getOrgId())
+				.salesOrderId(reservation.getSalesOrderId())
+				.salesInvoiceId(request.getSalesInvoiceId())
+				.paymentId(paymentId)
+				//
+				.amount(request.getAmount())
+				//
+				.build();
+		capturesRepo.save(capture);
+
+		paymentProcessor.processCapture(reservation, capture);
 		reservationsRepo.save(reservation);
+
+		capture.setStatusAsCompleted();
+		capturesRepo.save(capture);
+	}
+
+	private PaymentId createPayment(@NonNull final PaymentReservationCaptureRequest request)
+	{
+		final I_C_Payment payment = Services.get(IPaymentBL.class).newInboundReceiptBuilder()
+				.invoiceId(request.getSalesInvoiceId())
+				.bpartnerId(request.getCustomerId())
+				.payAmt(request.getAmount().getAsBigDecimal())
+				.currencyId(request.getAmount().getCurrencyId())
+				.tenderType(TenderType.DirectDeposit)
+				.dateTrx(request.getDateTrx())
+				.createAndProcess();
+		return PaymentId.ofRepoId(payment.getC_Payment_ID());
 	}
 }

@@ -40,7 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -57,6 +56,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
+import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -64,6 +64,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
@@ -652,17 +653,15 @@ public class ESRImportBL implements IESRImportBL
 		// 04607
 		Check.errorIf(line.getC_Payment_ID() > 0, "ESR_ImportLine {} has already C_Payment_ID {}", line, line.getC_Payment_ID());
 
-		return Services.get(IPaymentBL.class).newBuilder(line)
-				.setDocbaseType(X_C_DocType.DOCBASETYPE_ARReceipt)
-				.setIsReceipt(true)
-				.setAD_Org_ID(line.getAD_Org_ID())
-				.setC_BP_BankAccount_ID(line.getESR_Import().getC_BP_BankAccount_ID())
-				.setAccountNo(line.getAccountNo())
-				.setDateAcct(line.getAccountingDate())
-				.setDateTrx(line.getPaymentDate())
-				.setC_BPartner_ID(line.getC_BPartner_ID())
-				.setTenderType(TenderType.DirectDeposit)
-				.setPayAmt(payAmt)
+		return Services.get(IPaymentBL.class).newInboundReceiptBuilder()
+				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
+				.bpBankAccountId(line.getESR_Import().getC_BP_BankAccount_ID())
+				.accountNo(line.getAccountNo())
+				.dateAcct(TimeUtil.asLocalDate(line.getAccountingDate()))
+				.dateTrx(TimeUtil.asLocalDate(line.getPaymentDate()))
+				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+				.tenderType(TenderType.DirectDeposit)
+				.payAmt(payAmt)
 				.createNoSave();
 	}
 

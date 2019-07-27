@@ -59,7 +59,6 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -83,7 +82,7 @@ public class C_Invoice_Candidate
 				.groupsRepo(groupsRepo)
 				.build();
 		this.attachmentEntryService = attachmentEntryService;
-	};
+	}
 
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
@@ -379,7 +378,7 @@ public class C_Invoice_Candidate
 
 		final boolean isBackgroundProcessInProcess = invoiceCandBL.isUpdateProcessInProgress();
 		if (ic.isProcessed()
-				|| X_C_Invoice_Candidate.PROCESSED_OVERRIDE_Yes.equals(ic.getProcessed_Override())
+				|| invoiceCandBL.extractProcessedOverride(ic).isTrue()
 				|| isBackgroundProcessInProcess)
 		{
 			return; // nothing to do

@@ -571,9 +571,11 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final PricingConditionsId toPricingConditionsId)
 	{
 		final I_M_DiscountSchemaBreak newBreak = copy()
+				.setSkipCalculatedColumns(true)
 				.setFrom(from)
 				.copyToNew(I_M_DiscountSchemaBreak.class);
 
+		newBreak.setSeqNo(retrieveNextSeqNo(toPricingConditionsId.getDiscountSchemaId()));
 		newBreak.setM_DiscountSchema_ID(toPricingConditionsId.getDiscountSchemaId());
 
 		saveRecord(newBreak);
