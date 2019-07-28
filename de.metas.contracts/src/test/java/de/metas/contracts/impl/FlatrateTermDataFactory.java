@@ -13,7 +13,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -34,6 +33,8 @@ import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -182,12 +183,19 @@ public class FlatrateTermDataFactory
 	@Value
 	public static class ProductAndPricingSystem
 	{
-		final private I_M_Product product;
-		final private I_M_PricingSystem pricingSystem;
-		final private I_M_PriceList priceList;
-		final private I_M_PriceList_Version priceListVersion;
-		final private I_C_TaxCategory taxCategory;
-		final private I_C_Tax tax;
+		I_M_Product product;
+		I_M_PricingSystem pricingSystem;
+		I_M_PriceList priceList;
+		I_M_PriceList_Version priceListVersion;
+		I_C_TaxCategory taxCategory;
+		I_C_Tax tax;
+
+		public ProductAndCategoryId getProductAndCategoryId()
+		{
+			return product != null
+					? ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID())
+					: null;
+		}
 	}
 
 	@Builder(builderMethodName = "productAndPricingNew")
@@ -195,7 +203,7 @@ public class FlatrateTermDataFactory
 			final String productValue,
 			final String productName,
 			@NonNull final I_C_Country country,
-			@NonNull final I_C_Currency currency,
+			@NonNull final CurrencyId currencyId,
 			@NonNull final Timestamp validFrom,
 			final boolean isTaxInclcuded)
 	{
@@ -215,7 +223,7 @@ public class FlatrateTermDataFactory
 		final I_M_PricingSystem pricingSystem = createPricingSystem();
 
 		final I_M_PriceList priceList = priceListNew()
-				.currency(currency)
+				.currencyId(currencyId)
 				.country(country)
 				.isTaxInclcuded(isTaxInclcuded)
 				.pricingSystem(pricingSystem)
@@ -296,7 +304,7 @@ public class FlatrateTermDataFactory
 	public static I_M_PriceList createPriceList(
 			@NonNull final I_M_PricingSystem pricingSystem,
 			@NonNull final I_C_Country country,
-			@NonNull final I_C_Currency currency,
+			@NonNull final CurrencyId currencyId,
 			final boolean isTaxInclcuded)
 	{
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -305,7 +313,7 @@ public class FlatrateTermDataFactory
 		priceList.setIsSOPriceList(true);
 		priceList.setIsTaxIncluded(isTaxInclcuded);
 		priceList.setC_Country(country);
-		priceList.setC_Currency(currency);
+		priceList.setC_Currency_ID(currencyId.getRepoId());
 		save(priceList);
 		return priceList;
 	}

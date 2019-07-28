@@ -81,6 +81,7 @@ import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationDAO;
@@ -209,6 +210,23 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(contact -> contact.getAD_User_ID() == contactId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public EMailAddress getContactEMail(@NonNull final BPartnerContactId contactId)
+	{
+		final I_AD_User contact = getContactById(contactId);
+		if (contact == null)
+		{
+			throw new AdempiereException("@NotFound@ " + contactId);
+		}
+
+		final EMailAddress contactEmail = EMailAddress.ofNullableString(contact.getEMail());
+		if (contactEmail == null)
+		{
+			throw new AdempiereException("Contact has no email: " + contact.getName());
+		}
+		return contactEmail;
 	}
 
 	@Override

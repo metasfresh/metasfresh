@@ -42,6 +42,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 
 /**
@@ -142,7 +143,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 		query.setProcessed(false); // only those which are not processed
 		final int adClientId = ic.getAD_Client_ID();
 		final int adOrgId = ic.getAD_Org_ID();
-		final int targetCurrencyId = ic.getC_Currency_ID();
+		final CurrencyId targetCurrencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());
 
 		// TODO: handle the case when everything is negative
 

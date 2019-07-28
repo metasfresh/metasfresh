@@ -402,7 +402,7 @@ public class WorkflowProcessor extends AdempiereServer
 		final UserId activityUserId = UserId.ofRepoIdOrNull(activity.getAD_User_ID());
 		if (activityUserId != null)
 		{
-			if (m_client.sendEMail(activity.getAD_User_ID(), subject, message, pdf))
+			if (m_client.sendEMail(activityUserId, subject, message, pdf))
 			{
 				counter++;
 			}

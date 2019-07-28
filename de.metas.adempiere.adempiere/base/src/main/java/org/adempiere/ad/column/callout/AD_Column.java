@@ -185,7 +185,10 @@ public class AD_Column
 		{
 			updateAmountColumn(column);
 		}
-
+		else if (columnName.indexOf("Amount") != -1)
+		{
+			updateAmountColumn(column);
+		}
 		else if (columnName.toUpperCase().indexOf("QTY") != -1)
 		{
 			updateQtyColumn(column);
@@ -198,7 +201,8 @@ public class AD_Column
 
 		else if (columnName.toUpperCase().startsWith("IS")
 				|| Pattern.matches("(Allow)[A-Z].*", columnName)
-				|| Pattern.matches("(Has)[A-Z].*", columnName))
+				|| Pattern.matches("(Has)[A-Z].*", columnName)
+				|| "Processed".equals(columnName))
 		{
 			column.setAD_Reference_ID(DisplayType.YesNo);
 

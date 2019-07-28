@@ -28,7 +28,6 @@ import java.time.Month;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.junit.Assert;
@@ -110,7 +109,7 @@ public class DefaultDunningProducerTest extends DunningTestBase
 		candidate.setOpenAmt(new BigDecimal("100"));
 		candidate.setDunningInterestAmt(BigDecimal.ZERO);
 		candidate.setFeeAmt(BigDecimal.ZERO);
-		candidate.setC_Currency(currencyEUR);
+		candidate.setC_Currency_ID(currencyEUR.getRepoId());
 		//
 		candidate.setIsActive(true);
 		candidate.setProcessed(false);
@@ -173,17 +172,12 @@ public class DefaultDunningProducerTest extends DunningTestBase
 
 	private I_C_DunningDoc retrieveDunningDocForCandidate(final I_C_Dunning_Candidate candidate)
 	{
-		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, new IQueryFilter<I_C_DunningDoc_Line_Source>()
-		{
-			@Override
-			public boolean accept(I_C_DunningDoc_Line_Source pojo)
+		final I_C_DunningDoc_Line_Source lineSrc = db.getFirstOnly(I_C_DunningDoc_Line_Source.class, pojo -> {
+			if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
 			{
-				if (pojo.getC_Dunning_Candidate_ID() != candidate.getC_Dunning_Candidate_ID())
-				{
-					return false;
-				}
-				return true;
+				return false;
 			}
+			return true;
 		});
 		if (lineSrc == null)
 		{

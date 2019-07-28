@@ -148,8 +148,10 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		final ProductAndPricingSystem productAndPricingSystem = createProductAndPricingSystem(startDate);
 		createProductAcct(productAndPricingSystem);
 		final I_C_Flatrate_Conditions conditions = createFlatrateConditions(productAndPricingSystem, autoExtension);
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions, productAndPricingSystem.getProduct(), startDate);
-		return contract;
+		return createFlatrateTerm(
+				conditions, 
+				productAndPricingSystem.getProductAndCategoryId(), 
+				startDate);
 	}
 
 	private I_C_Flatrate_Term prepareContractForExtrendingAllTest(final boolean infiniteLoop)
@@ -207,8 +209,10 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 			save(transition);
 		}
 
-		final I_C_Flatrate_Term contract = createFlatrateTerm(conditions.get(0), productAndPricingSystem.getProduct(), startDate);
-		return contract;
+		return createFlatrateTerm(
+				conditions.get(0), 
+				productAndPricingSystem.getProductAndCategoryId(),
+				startDate);
 	}
 
 

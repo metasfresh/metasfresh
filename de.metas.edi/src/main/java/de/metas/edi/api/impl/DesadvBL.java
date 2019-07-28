@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 
 import de.metas.adempiere.report.jasper.JasperConstants;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.edi.api.IDesadvBL;
@@ -210,14 +211,16 @@ public class DesadvBL implements IDesadvBL
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
 
 			desadv.setPOReference(order.getPOReference());
-			desadv.setC_BPartner(orderBL.getShipToPartner(order));
-			desadv.setC_BPartner_Location(orderBL.getShipToLocation(order));
+			
+			final BPartnerLocationId shipToBPLocationId = orderBL.getShipToLocationId(order);
+			desadv.setC_BPartner_ID(shipToBPLocationId.getBpartnerId().getRepoId());
+			desadv.setC_BPartner_Location_ID(shipToBPLocationId.getRepoId());
 
 			desadv.setDateOrdered(order.getDateOrdered());
 			desadv.setMovementDate(order.getDatePromised());
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
-			desadv.setBill_Location(orderBL.getBillToLocation(order));
+			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
 			InterfaceWrapperHelper.save(desadv);
 		}
 		return desadv;

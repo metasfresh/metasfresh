@@ -96,7 +96,7 @@ public class UserAuthTokenRepository
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
-	public UserAuthToken retrieveByUserId( @NonNull final UserId userId,  @NonNull final RoleId roleId)
+	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
 		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_AuthToken.class)
@@ -106,6 +106,7 @@ public class UserAuthTokenRepository
 				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
+
 		if (userAuthTokens.isEmpty())
 		{
 			throw new AdempiereException("Invalid token (1)");
@@ -117,5 +118,4 @@ public class UserAuthTokenRepository
 
 		return toUserAuthToken(userAuthTokens.get(0));
 	}
-
 }

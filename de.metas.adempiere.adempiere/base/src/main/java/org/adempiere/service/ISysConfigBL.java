@@ -27,6 +27,8 @@ import java.util.Map;
 
 import de.metas.util.Check;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -37,7 +39,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param defaultValue
 	 * @return String
 	 */
-	public String getValue(String Name, String defaultValue);
+	String getValue(String Name, String defaultValue);
 
 	/**
 	 * Get system configuration property of type string
@@ -45,7 +47,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Name
 	 * @return String
 	 */
-	public String getValue(String Name);
+	String getValue(String Name);
 
 	/**
 	 * Get system configuration property of type int
@@ -54,7 +56,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param defaultValue
 	 * @return int
 	 */
-	public int getIntValue(String Name, int defaultValue);
+	int getIntValue(String Name, int defaultValue);
 
 	/**
 	 * Get system configuration property of type double
@@ -63,7 +65,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param defaultValue
 	 * @return double
 	 */
-	public double getDoubleValue(String Name, double defaultValue);
+	double getDoubleValue(String Name, double defaultValue);
 
 	/**
 	 * Get system configuration property of type boolean
@@ -72,7 +74,18 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param defaultValue
 	 * @return boolean
 	 */
-	public boolean getBooleanValue(String Name, boolean defaultValue);
+	boolean getBooleanValue(String Name, boolean defaultValue);
+	
+	default <T extends ReferenceListAwareEnum> T getReferenceListAware(final String name, final T defaultValue, final Class<T> type)
+	{
+		final String code = getValue(name, null);
+		if (Check.isEmpty(code, true))
+		{
+			return defaultValue;
+		}
+
+		return ReferenceListAwareEnums.ofCode(code, type);
+	}
 	
 	default <T extends Enum<T>> T getEnumValue(final String name, final T defaultValue, final Class<T> enumType)
 	{
@@ -93,7 +106,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param AD_Client_ID the system will retrieve the value from an <code>AD_SysConfig</code> record that has the given client-ID or <code>0</code>, prefering a records with a not-<code>0</code> ID.
 	 * @return String
 	 */
-	public String getValue(String Name, String defaultValue, int AD_Client_ID);
+	String getValue(String Name, String defaultValue, int AD_Client_ID);
 
 	/**
 	 * Get system configuration property of type string.<br>
@@ -103,7 +116,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Client ID
 	 * @return String
 	 */
-	public String getValue(String Name, int AD_Client_ID);
+	String getValue(String Name, int AD_Client_ID);
 
 	/**
 	 * Get system configuration property of type int
@@ -113,7 +126,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Client ID
 	 * @return int
 	 */
-	public int getIntValue(String Name, int defaultValue, int AD_Client_ID);
+	int getIntValue(String Name, int defaultValue, int AD_Client_ID);
 
 	/**
 	 * Get system configuration property of type double
@@ -123,7 +136,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Client ID
 	 * @return double
 	 */
-	public double getDoubleValue(String Name, double defaultValue, int AD_Client_ID);
+	double getDoubleValue(String Name, double defaultValue, int AD_Client_ID);
 
 	/**
 	 * Get system configuration property of type boolean. Valid SysConfig can be <code>Y</code>, <code>N</code> (case is ignored) and whatever {@link Boolean#valueOf(String)} can deal with.
@@ -133,7 +146,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Client ID
 	 * @return boolean
 	 */
-	public boolean getBooleanValue(String Name, boolean defaultValue, int AD_Client_ID);
+	boolean getBooleanValue(String Name, boolean defaultValue, int AD_Client_ID);
 
 	/**
 	 * Get client configuration property of type string
@@ -144,7 +157,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Organization ID
 	 * @return String
 	 */
-	public String getValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID);
+	String getValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Get system configuration property of type string
@@ -154,7 +167,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Organization ID
 	 * @return String
 	 */
-	public String getValue(String Name, int AD_Client_ID, int AD_Org_ID);
+	String getValue(String Name, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Get system configuration property of type int
@@ -165,7 +178,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Organization ID
 	 * @return int
 	 */
-	public int getIntValue(String Name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
+	int getIntValue(String Name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Get system configuration property of type double
@@ -176,7 +189,7 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Organization ID
 	 * @return double
 	 */
-	public double getDoubleValue(String Name, double defaultValue, int AD_Client_ID, int AD_Org_ID);
+	double getDoubleValue(String Name, double defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Get system configuration property of type boolean
@@ -187,15 +200,15 @@ public interface ISysConfigBL extends ISingletonService
 	 * @param Organization ID
 	 * @return boolean
 	 */
-	public boolean getBooleanValue(String Name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
+	boolean getBooleanValue(String Name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 
-	public void setValue(String name, int value, int AD_Org_ID);
+	void setValue(String name, int value, int AD_Org_ID);
 
-	public void setValue(String name, double value, int AD_Org_ID);
+	void setValue(String name, double value, int AD_Org_ID);
 
-	public void setValue(String name, boolean value, int AD_Org_ID);
+	void setValue(String name, boolean value, int AD_Org_ID);
 
-	public void setValue(String name, String value, int AD_Org_ID);
+	void setValue(String name, String value, int AD_Org_ID);
 
 	List<String> getNamesForPrefix(String prefix, int adClientId, int adOrgId);
 

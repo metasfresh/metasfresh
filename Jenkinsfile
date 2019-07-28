@@ -53,6 +53,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 
 final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.5'
 
+currentBuild.description = currentBuild.description ?: '';
+
 try
 {
 timestamps
@@ -118,6 +120,7 @@ node('agent && linux')
 		} // withMaven
 	} // withEnv
 
+
 	stage('Build metasfresh docker image(s)')
 	{
 		if(params.MF_SKIP_TO_DIST)
@@ -126,28 +129,43 @@ node('agent && linux')
 		}
 		else
 		{
+			final def misc = new de.metas.jenkins.Misc();
+
 			final DockerConf materialDispoDockerConf = new DockerConf(
 				'metasfresh-material-dispo', // artifactName
 				MF_UPSTREAM_BRANCH, // branchName
 				MF_VERSION, // versionSuffix
 				'de.metas.material/dispo-service/target/docker' // workDir
 			);
-			dockerBuildAndPush(materialDispoDockerConf)
+			final String publishedMaterialDispoDockerImageName = dockerBuildAndPush(materialDispoDockerConf)
 
 			final DockerConf reportDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-report')
 				.withWorkDir('de.metas.report/report-service/target/docker');
-			dockerBuildAndPush(reportDockerConf)
+			final String publishedReportDockerImageName = dockerBuildAndPush(reportDockerConf)
 
 			final DockerConf printDockerConf = materialDispoDockerConf
 				.withArtifactName('metasfresh-print')
 				.withWorkDir('de.metas.printing.rest-api-impl/target/docker');
-			dockerBuildAndPush(printDockerConf)
+			final String publishedPrintDockerImageName = dockerBuildAndPush(printDockerConf)
 
-				final DockerConf msv3ServerDockerConf = materialDispoDockerConf
+			final DockerConf msv3ServerDockerConf = materialDispoDockerConf
 				.withArtifactName('de.metas.vertical.pharma.msv3.server')
 				.withWorkDir('de.metas.vertical.pharma.msv3.server/target/docker');
-			dockerBuildAndPush(msv3ServerDockerConf)
+			final String publishedMsv3ServerImageName =dockerBuildAndPush(msv3ServerDockerConf)
+
+			currentBuild.description= """${currentBuild.description}<p/>
+			<h3>Docker</h3>
+			This build created the following deployable docker images 
+			<ul>
+			<li><code>${publishedMaterialDispoDockerImageName}</code></li>
+			<li><code>${publishedPrintDockerImageName}</code></li>
+			<li><code>${publishedMsv3ServerImageName}</code></li>
+			</ul>
+			<p>
+			This build also created the image <code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images.
+			<p>
+			"""
 
 		} // if(params.MF_SKIP_TO_DIST)
 	} // stage
@@ -163,7 +181,8 @@ final MF_ARTIFACT_VERSIONS = [:];
 final MF_DOCKER_IMAGES = [:];
 MF_DOCKER_IMAGES['metasfresh-edi'] = params.MF_METASFRESH_EDI_DOCKER_IMAGE
 
-currentBuild.description = currentBuild.description ?: '';
+currentBuild.description="""${currentBuild.description}<p/>
+			<h3>Downstream-Jobs</h3>"""
 
 // invoke external build jobs like webui
 // wait for the results, but don't block a node while waiting
@@ -293,7 +312,7 @@ This build triggered the <b>metasfresh-procurement-webui</b> jenkins job <a href
 			string(name: 'MF_METASFRESH_EDI_DOCKER_IMAGE', value: MF_DOCKER_IMAGES['metasfresh-edi'] ?: ''),
 		];
 
-  def misc = new de.metas.jenkins.Misc();
+	final def misc = new de.metas.jenkins.Misc();
 
 	// Run the downstream dist jobs in parallel.
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
@@ -353,7 +372,7 @@ Map invokeDownStreamJobs(
           final String jobFolderName
         )
 {
-  final def misc = new de.metas.jenkins.Misc();
+	final def misc = new de.metas.jenkins.Misc();
 	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
 	final buildResult = build job: jobName,

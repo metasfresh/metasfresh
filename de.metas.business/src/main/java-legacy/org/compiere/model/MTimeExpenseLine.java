@@ -22,10 +22,15 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 
 /**
@@ -55,14 +60,14 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 		//	setS_TimeExpenseLine_ID (0);		//	PK
 		//	setS_TimeExpense_ID (0);			//	Parent
 			setQty(Env.ONE);
-			setQtyInvoiced(Env.ZERO);
-			setQtyReimbursed(Env.ZERO);
+			setQtyInvoiced(BigDecimal.ZERO);
+			setQtyReimbursed(BigDecimal.ZERO);
 			//
-			setExpenseAmt(Env.ZERO);
-			setConvertedAmt(Env.ZERO);
-			setPriceReimbursed(Env.ZERO);
-			setInvoicePrice(Env.ZERO);
-			setPriceInvoiced(Env.ZERO);
+			setExpenseAmt(BigDecimal.ZERO);
+			setConvertedAmt(BigDecimal.ZERO);
+			setPriceReimbursed(BigDecimal.ZERO);
+			setInvoicePrice(BigDecimal.ZERO);
+			setPriceInvoiced(BigDecimal.ZERO);
 			//
 			setDateExpense (new Timestamp(System.currentTimeMillis()));
 			setIsInvoiced (false);
@@ -93,7 +98,9 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public MTimeExpense getParent()
 	{
 		if (m_parent == null)
+		{
 			m_parent = new MTimeExpense (getCtx(), getS_TimeExpense_ID(), get_TrxName());
+		}
 		return m_parent;
 	}	//	getParent
 
@@ -109,8 +116,10 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public BigDecimal getQtyInvoiced ()
 	{
 		BigDecimal bd = super.getQtyInvoiced ();
-		if (Env.ZERO.compareTo(bd) == 0)
+		if (BigDecimal.ZERO.compareTo(bd) == 0)
+		{
 			return getQty();
+		}
 		return bd;
 	}	//	getQtyInvoiced
 
@@ -122,8 +131,10 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public BigDecimal getQtyReimbursed ()
 	{
 		BigDecimal bd = super.getQtyReimbursed ();
-		if (Env.ZERO.compareTo(bd) == 0)
+		if (BigDecimal.ZERO.compareTo(bd) == 0)
+		{
 			return getQty();
+		}
 		return bd;
 	}	//	getQtyReimbursed
 	
@@ -136,8 +147,10 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public BigDecimal getPriceInvoiced ()
 	{
 		BigDecimal bd = super.getPriceInvoiced ();
-		if (Env.ZERO.compareTo(bd) == 0)
+		if (BigDecimal.ZERO.compareTo(bd) == 0)
+		{
 			return getInvoicePrice();
+		}
 		return bd;
 	}	//	getPriceInvoiced
 	
@@ -149,8 +162,10 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public BigDecimal getPriceReimbursed ()
 	{
 		BigDecimal bd = super.getPriceReimbursed ();
-		if (Env.ZERO.compareTo(bd) == 0)
+		if (BigDecimal.ZERO.compareTo(bd) == 0)
+		{
 			return getConvertedAmt();
+		}
 		return bd;
 	}	//	getPriceReimbursed
 	
@@ -172,7 +187,9 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 	public int getC_Currency_Report_ID()
 	{
 		if (m_C_Currency_Report_ID != 0)
+		{
 			return m_C_Currency_Report_ID;
+		}
 		//	Get it from header
 		MTimeExpense te = new MTimeExpense (getCtx(), getS_TimeExpense_ID(), get_TrxName());
 		m_C_Currency_Report_ID = te.getC_Currency_ID();
@@ -206,18 +223,25 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 		if (newRecord || is_ValueChanged("ExpenseAmt") || is_ValueChanged("C_Currency_ID"))
 		{
 			if (getC_Currency_ID() == getC_Currency_Report_ID())
+			{
 				setConvertedAmt(getExpenseAmt());
+			}
 			else
 			{
-				setConvertedAmt(Services.get(ICurrencyBL.class).convert (getCtx(),
-					getExpenseAmt(), getC_Currency_ID(), getC_Currency_Report_ID(), 
-					getDateExpense(), 0, getAD_Client_ID(), getAD_Org_ID()) );
+				setConvertedAmt(Services.get(ICurrencyBL.class).convert(
+						getExpenseAmt(),
+						CurrencyId.ofRepoId(getC_Currency_ID()),
+						CurrencyId.ofRepoId(getC_Currency_Report_ID()),
+						TimeUtil.asLocalDate(getDateExpense()),
+						(CurrencyConversionTypeId)null,
+						ClientId.ofRepoId(getAD_Client_ID()),
+						OrgId.ofRepoId(getAD_Org_ID())));
 			}
 		}
 		if (isTimeReport())
 		{
-			setExpenseAmt(Env.ZERO);
-			setConvertedAmt(Env.ZERO);
+			setExpenseAmt(BigDecimal.ZERO);
+			setConvertedAmt(BigDecimal.ZERO);
 		}
 		return true;
 	}	//	beforeSave
@@ -263,7 +287,9 @@ public class MTimeExpenseLine extends X_S_TimeExpenseLine
 					{
 						ra.setQty(getQty());
 						if (getDescription() != null && getDescription().length() > 0)
+						{
 							ra.setDescription(getDescription());
+						}
 						ra.save();
 					}
 				}

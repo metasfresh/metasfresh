@@ -1,9 +1,5 @@
 package org.adempiere.archive.api.impl;
 
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,10 +24,16 @@ import javax.annotation.Nullable;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.archive.spi.IArchiveEventListener;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
+
+import de.metas.email.EMailAddress;
+import de.metas.email.mailboxes.UserEMailConfig;
+import lombok.NonNull;
 
 public class ArchiveEventManager implements IArchiveEventManager
 {
@@ -56,7 +58,15 @@ public class ArchiveEventManager implements IArchiveEventManager
 	}
 
 	@Override
-	public void fireEmailSent(final I_AD_Archive archive, final String action, final I_AD_User user, final String emailFrom, final String emailTo, final String emailCc, final String emailBcc, final String status)
+	public void fireEmailSent(
+			final I_AD_Archive archive, 
+			final String action, 
+			final UserEMailConfig user, 
+			final EMailAddress emailFrom, 
+			final EMailAddress emailTo, 
+			final EMailAddress emailCc, 
+			final EMailAddress emailBcc, 
+			final String status)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{

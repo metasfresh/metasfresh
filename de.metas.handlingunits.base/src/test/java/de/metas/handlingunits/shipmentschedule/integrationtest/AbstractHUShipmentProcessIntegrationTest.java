@@ -489,9 +489,9 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		else
 		{
 			order = newInstance(I_C_Order.class, helper.getContextProvider());
-			order.setC_BPartner(bpartner);
-			order.setC_BPartner_Location(bpartnerLocation);
-			order.setM_Warehouse(warehouse);
+			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			order.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
+			order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 			save(order);
 
 			lastOrder = order;

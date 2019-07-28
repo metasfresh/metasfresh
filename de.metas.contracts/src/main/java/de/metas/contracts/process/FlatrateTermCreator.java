@@ -22,6 +22,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -123,7 +124,7 @@ public class FlatrateTermCreator
 					conditions,
 					startDate,
 					userInCharge,
-					product,
+					ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()),
 					false /* completeIt=false */
 			);
 

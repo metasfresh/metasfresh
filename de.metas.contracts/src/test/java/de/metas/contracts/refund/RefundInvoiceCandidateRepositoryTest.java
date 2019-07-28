@@ -66,7 +66,7 @@ public class RefundInvoiceCandidateRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools();
+		refundTestTools = RefundTestTools.newInstance();
 
 		final RefundConfigRepository refundConfigRepository = new RefundConfigRepository(new InvoiceScheduleRepository());
 		final RefundContractRepository refundContractRepository = new RefundContractRepository(refundConfigRepository);

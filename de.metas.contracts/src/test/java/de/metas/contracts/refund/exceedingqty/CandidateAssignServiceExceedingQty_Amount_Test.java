@@ -18,7 +18,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_C_Currency;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
 import de.metas.contracts.refund.AssignableInvoiceCandidateFactory;
@@ -35,6 +34,11 @@ import de.metas.contracts.refund.RefundContractRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundTestTools;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
 import de.metas.invoice.InvoiceScheduleRepository;
@@ -105,12 +109,15 @@ public class CandidateAssignServiceExceedingQty_Amount_Test
 	{
 		AdempiereTestHelper.get().init();
 
-		refundTestTools = new RefundTestTools();
+		final Currency currency = PlainCurrencyDAO.prepareCurrency()
+				.currencyId(CURRENCY_ID)
+				.currencyCode(CurrencyCode.EUR)
+				.precision(CurrencyPrecision.TWO)
+				.build();
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
+		refundTestTools = RefundTestTools.builder()
+				.currency(currency)
+				.build();
 
 		candidateAssignServiceExceedingQty = CandidateAssignServiceExceedingQty.createInstanceForUnitTesting();
 
@@ -120,7 +127,8 @@ public class CandidateAssignServiceExceedingQty_Amount_Test
 		final InvoiceScheduleRepository invoiceScheduleRepository = refundConfigRepository.getInvoiceScheduleRepository();
 
 		final AssignableInvoiceCandidateFactory assignableInvoiceCandidateFactory = new AssignableInvoiceCandidateFactory(
-				candidateAssignServiceExceedingQty.getAssignmentToRefundCandidateRepository());
+				candidateAssignServiceExceedingQty.getAssignmentToRefundCandidateRepository(),
+				new CurrencyRepository());
 
 		this.assignableInvoiceCandidateRepository = new AssignableInvoiceCandidateRepository(assignableInvoiceCandidateFactory);
 

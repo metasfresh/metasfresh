@@ -29,11 +29,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ui.api.IGridTabSummaryInfo;
-import org.compiere.model.I_C_Currency;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.Currency;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -47,13 +47,13 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 	private static final long serialVersionUID = 1L;
 
 	/** @return new builder */
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/** Cast given {@link IGridTabSummaryInfo} to {@link InvoiceCandidatesSelectionSummaryInfo} if possible. If not, null is returned */
-	public static final InvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
+	public static InvoiceCandidatesSelectionSummaryInfo castOrNull(final IGridTabSummaryInfo gridTabSummaryInfo)
 	{
 		if (gridTabSummaryInfo instanceof InvoiceCandidatesSelectionSummaryInfo)
 		{
@@ -225,14 +225,25 @@ public final class InvoiceCandidatesSelectionSummaryInfo implements IGridTabSumm
 			final boolean isApprovedForInvoicing = ic.isApprovalForInvoicing();
 			addTotalNetAmt(netAmt, isApprovedForInvoicing);
 
-			final I_C_Currency currency = currencyDAO.getById(CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID()));
-			final String currencySymbol = currency == null ? null : currency.getCurSymbol();
+			final String currencySymbol = getCurrencySymbolOrNull(ic);
 			addCurrencySymbol(currencySymbol);
 
 			if (ic.isToRecompute())
 			{
 				addCountToRecompute(1);
 			}
+		}
+
+		private String getCurrencySymbolOrNull(final I_C_Invoice_Candidate ic)
+		{
+			final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(ic.getC_Currency_ID());
+			if(currencyId == null)
+			{
+				return null;
+			}
+			
+			final Currency currency = Services.get(ICurrencyDAO.class).getById(currencyId);
+			return currency.getSymbol().getDefaultValue();
 		}
 	}
 }

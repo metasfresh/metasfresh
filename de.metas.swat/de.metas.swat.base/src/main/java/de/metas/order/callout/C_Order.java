@@ -33,8 +33,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
@@ -48,11 +48,11 @@ public class C_Order
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order, final ICalloutField field)
 	{
-		final String deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
 
-		if (!Check.isEmpty(deliveryViaRule, true))
+		if (deliveryViaRule != null)
 		{
-			order.setDeliveryViaRule(deliveryViaRule);
+			order.setDeliveryViaRule(deliveryViaRule.getCode());
 		}
 	}
 

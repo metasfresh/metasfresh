@@ -32,7 +32,7 @@ import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportProcessBuilderFactory;
 import org.adempiere.impexp.spi.impl.AsyncImportWorkpackageProcessor;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Ini;
 
@@ -79,7 +79,7 @@ public class Main extends AbstractModuleInterceptor
 		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
-		if (Adempiere.isSpringProfileActive(Profiles.PROFILE_App))
+		if (SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
 		{
 			final int initDelayMillis = getInitDelayMillis();
 			Services.get(IQueueProcessorExecutorService.class).init(initDelayMillis);

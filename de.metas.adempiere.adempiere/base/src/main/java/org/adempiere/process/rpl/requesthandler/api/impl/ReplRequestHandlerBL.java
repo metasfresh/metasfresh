@@ -43,19 +43,19 @@ import org.w3c.dom.Document;
 
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public class ReplRequestHandlerBL implements IReplRequestHandlerBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
-	public IReplRequestHandler getRequestHandlerInstance(I_IMP_RequestHandler requestHandlerDef)
+	public IReplRequestHandler getRequestHandlerInstance(@NonNull final I_IMP_RequestHandler requestHandlerDef)
 	{
-		Util.assume(requestHandlerDef != null, "requestHandlerDef is not null");
-		Util.assume(requestHandlerDef.isActive(), "Request handler {} is active", requestHandlerDef);
+		Check.assume(requestHandlerDef.isActive(), "Request handler {} is active", requestHandlerDef);
 
 		final I_IMP_RequestHandlerType requestHandlerType = requestHandlerDef.getIMP_RequestHandlerType();
-		Util.assume(requestHandlerType.isActive(), "Request handler type {} is active", requestHandlerType);
+		Check.assume(requestHandlerType.isActive(), "Request handler type {} is active", requestHandlerType);
 
 		final String classname = requestHandlerType.getClassname();
 		final IReplRequestHandler requestHandler = Util.getInstance(IReplRequestHandler.class, classname);

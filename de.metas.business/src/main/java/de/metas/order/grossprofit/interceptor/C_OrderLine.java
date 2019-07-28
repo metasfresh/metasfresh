@@ -68,6 +68,6 @@ public class C_OrderLine
 
 		final Money profitBasePrice = profitPriceActualFactory.calculateProfitPriceActual(request);
 
-		orderLineRecord.setProfitPriceActual(profitBasePrice.getValue());
+		orderLineRecord.setProfitPriceActual(profitBasePrice.getAsBigDecimal());
 	}
 }

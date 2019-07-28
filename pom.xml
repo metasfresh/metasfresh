@@ -137,6 +137,8 @@
 
 		<module>de.metas.payment.esr</module>
 		<module>de.metas.payment.sepa</module>
+		<module>de.metas.payment.paypal</module>
+
 		<module>de.metas.printing</module>
 
 		<module>de.metas.printing.rest-api-impl</module>

@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +66,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 
 	public ESModelIndexersRegistry()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 
 		logger.info("Elastic search client: {}", elasticsearchClient);
 	}

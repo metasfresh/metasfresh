@@ -14,7 +14,7 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 257750673L;
+	private static final long serialVersionUID = 1445916513L;
 
     /** Standard Constructor */
     public X_M_Securpharm_Log (Properties ctx, int M_Securpharm_Log_ID, String trxName)
@@ -43,7 +43,7 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
     }
 
 	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue() throws RuntimeException
+	public org.compiere.model.I_AD_Issue getAD_Issue()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
 	}
@@ -106,7 +106,7 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 	}
 
 	@Override
-	public de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result getM_Securpharm_Action_Result() throws RuntimeException
+	public de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result getM_Securpharm_Action_Result()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Securpharm_Action_Result_ID, de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result.class);
 	}
@@ -117,8 +117,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 		set_ValueFromPO(COLUMNNAME_M_Securpharm_Action_Result_ID, de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Action_Result.class, M_Securpharm_Action_Result);
 	}
 
-	/** Set SecurPharm action result.
-		@param M_Securpharm_Action_Result_ID SecurPharm action result	  */
+	/** Set Securpharm Aktion Ergebnise.
+		@param M_Securpharm_Action_Result_ID Securpharm Aktion Ergebnise	  */
 	@Override
 	public void setM_Securpharm_Action_Result_ID (int M_Securpharm_Action_Result_ID)
 	{
@@ -128,8 +128,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 			set_Value (COLUMNNAME_M_Securpharm_Action_Result_ID, Integer.valueOf(M_Securpharm_Action_Result_ID));
 	}
 
-	/** Get SecurPharm action result.
-		@return SecurPharm action result	  */
+	/** Get Securpharm Aktion Ergebnise.
+		@return Securpharm Aktion Ergebnise	  */
 	@Override
 	public int getM_Securpharm_Action_Result_ID () 
 	{
@@ -139,8 +139,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 		return ii.intValue();
 	}
 
-	/** Set SecurPharm Protocol Log.
-		@param M_Securpharm_Log_ID SecurPharm Protocol Log	  */
+	/** Set Securpharm-Protokoll.
+		@param M_Securpharm_Log_ID Securpharm-Protokoll	  */
 	@Override
 	public void setM_Securpharm_Log_ID (int M_Securpharm_Log_ID)
 	{
@@ -150,8 +150,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 			set_ValueNoCheck (COLUMNNAME_M_Securpharm_Log_ID, Integer.valueOf(M_Securpharm_Log_ID));
 	}
 
-	/** Get SecurPharm Protocol Log.
-		@return SecurPharm Protocol Log	  */
+	/** Get Securpharm-Protokoll.
+		@return Securpharm-Protokoll	  */
 	@Override
 	public int getM_Securpharm_Log_ID () 
 	{
@@ -162,7 +162,7 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 	}
 
 	@Override
-	public de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result getM_Securpharm_Productdata_Result() throws RuntimeException
+	public de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result getM_Securpharm_Productdata_Result()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_Securpharm_Productdata_Result_ID, de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result.class);
 	}
@@ -173,8 +173,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 		set_ValueFromPO(COLUMNNAME_M_Securpharm_Productdata_Result_ID, de.metas.vertical.pharma.securpharm.model.I_M_Securpharm_Productdata_Result.class, M_Securpharm_Productdata_Result);
 	}
 
-	/** Set SecurPharm product data result.
-		@param M_Securpharm_Productdata_Result_ID SecurPharm product data result	  */
+	/** Set Securpharm Produktdaten Ergebnise.
+		@param M_Securpharm_Productdata_Result_ID Securpharm Produktdaten Ergebnise	  */
 	@Override
 	public void setM_Securpharm_Productdata_Result_ID (int M_Securpharm_Productdata_Result_ID)
 	{
@@ -184,8 +184,8 @@ public class X_M_Securpharm_Log extends org.compiere.model.PO implements I_M_Sec
 			set_Value (COLUMNNAME_M_Securpharm_Productdata_Result_ID, Integer.valueOf(M_Securpharm_Productdata_Result_ID));
 	}
 
-	/** Get SecurPharm product data result.
-		@return SecurPharm product data result	  */
+	/** Get Securpharm Produktdaten Ergebnise.
+		@return Securpharm Produktdaten Ergebnise	  */
 	@Override
 	public int getM_Securpharm_Productdata_Result_ID () 
 	{

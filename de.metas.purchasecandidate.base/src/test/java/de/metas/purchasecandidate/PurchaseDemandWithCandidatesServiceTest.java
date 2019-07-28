@@ -14,7 +14,6 @@ import java.util.Optional;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
@@ -37,9 +36,12 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
-import de.metas.money.CurrencyRepository;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.money.grossprofit.ProfitPriceActualFactory;
@@ -122,14 +124,15 @@ public class PurchaseDemandWithCandidatesServiceTest
 		uomRecord = newInstance(I_C_UOM.class);
 		saveRecord(uomRecord);
 
-		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
-		currencyRecord.setStdPrecision(2);
-		saveRecord(currencyRecord);
-		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
+		currencyId = PlainCurrencyDAO.prepareCurrency()
+				.currencyCode(CurrencyCode.EUR)
+				.precision(CurrencyPrecision.TWO)
+				.build()
+				.getId();
 
 		final I_C_OrderLine salesOrderLineRecord = newInstance(I_C_OrderLine.class);
 		salesOrderLineRecord.setC_OrderLine_ID(10);
-		salesOrderLineRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
+		salesOrderLineRecord.setC_Currency_ID(currencyId.getRepoId());
 		salesOrderLineRecord.setProfitPriceActual(TWENTY);
 		saveRecord(salesOrderLineRecord);
 
@@ -159,7 +162,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		discountSchemaBreakRecord.setPriceBase(X_M_DiscountSchemaBreak.PRICEBASE_Fixed);
 		discountSchemaBreakRecord.setPriceStdFixed(TEN);
 		discountSchemaBreakRecord.setIsValid(true); // invalid records will be ignored
-		discountSchemaBreakRecord.setC_Currency(currencyRecord);
+		discountSchemaBreakRecord.setC_Currency_ID(currencyId.getRepoId());
 		saveRecord(discountSchemaBreakRecord);
 
 		final I_C_BPartner vendorRecord = newInstance(I_C_BPartner.class);

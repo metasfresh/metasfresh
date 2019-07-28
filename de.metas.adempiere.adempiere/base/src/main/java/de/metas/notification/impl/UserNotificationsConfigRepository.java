@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
+import de.metas.email.EMailAddress;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.IUserNotificationsConfigRepository;
 import de.metas.notification.NotificationGroupName;
@@ -93,7 +94,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 				.orgId(OrgId.ofRepoId(user.getAD_Org_ID()))
 				.userNotificationGroups(userNotificationGroups)
 				.defaults(defaults)
-				.email(user.getEMail())
+				.email(EMailAddress.ofNullableString(user.getEMail()))
 				.userInChargeId(userInChargeId)
 				.build();
 	}

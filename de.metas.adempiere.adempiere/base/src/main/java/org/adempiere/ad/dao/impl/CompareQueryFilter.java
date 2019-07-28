@@ -33,9 +33,9 @@ import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.model.MQuery;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
 
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Getter;
@@ -46,7 +46,7 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	/**
 	 * Comparison operator
 	 */
-	public static enum Operator
+	public enum Operator
 	{
 		EQUAL("=", MQuery.Operator.EQUAL), //
 		NOT_EQUAL("<>", MQuery.Operator.NOT_EQUAL), //
@@ -105,8 +105,8 @@ public class CompareQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 
 		this.operator = operator;
 
-		this.operand1Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);
-		this.operand2Modifier = Util.coalesce(modifier, NullQueryFilterModifier.instance);
+		this.operand1Modifier = CoalesceUtil.coalesce(modifier, NullQueryFilterModifier.instance);
+		this.operand2Modifier = CoalesceUtil.coalesce(modifier, NullQueryFilterModifier.instance);
 
 	}
 

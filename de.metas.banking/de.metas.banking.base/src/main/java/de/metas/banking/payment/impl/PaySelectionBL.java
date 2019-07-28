@@ -23,7 +23,7 @@ package de.metas.banking.payment.impl;
  */
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringJoiner;
@@ -35,6 +35,7 @@ import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.X_C_BP_BankAccount;
+import org.compiere.util.TimeUtil;
 
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.model.I_C_BankStatement;
@@ -47,11 +48,13 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
-import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
+import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.payment.api.IPaymentBL;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -338,18 +341,17 @@ public class PaySelectionBL implements IPaySelectionBL
 	{
 		final I_C_PaySelection paySelection = line.getC_PaySelection();
 		final int ownBankAccountId = paySelection.getC_BP_BankAccount_ID();
-		final Timestamp payDate = paySelection.getPayDate();
+		final LocalDate payDate = TimeUtil.asLocalDate(paySelection.getPayDate());
 
-		final org.compiere.model.I_C_Payment payment = Services.get(IPaymentBL.class).newBuilder(line)
-				.setC_Invoice(line.getC_Invoice())
-				.setAD_Org_ID(line.getAD_Org_ID())
-				.setC_BP_BankAccount_ID(ownBankAccountId)
-				.setDateAcct(payDate)
-				.setDateTrx(payDate)
-				.setC_BPartner_ID(line.getC_BPartner_ID())
-				.setTenderType(TenderType.ACH)
-				.setPayAmt(line.getPayAmt())
-				.setDiscountAmt(line.getDiscountAmt())
+		final org.compiere.model.I_C_Payment payment = Services.get(IPaymentBL.class).newBuilderOfInvoice(line.getC_Invoice())
+				.adOrgId(OrgId.ofRepoId(line.getAD_Org_ID()))
+				.bpBankAccountId(ownBankAccountId)
+				.dateAcct(payDate)
+				.dateTrx(payDate)
+				.bpartnerId(BPartnerId.ofRepoId(line.getC_BPartner_ID()))
+				.tenderType(TenderType.DirectDeposit)
+				.payAmt(line.getPayAmt())
+				.discountAmt(line.getDiscountAmt())
 				//
 				.createAndProcess();
 

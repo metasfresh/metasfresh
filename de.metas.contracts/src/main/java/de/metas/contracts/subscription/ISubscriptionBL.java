@@ -29,8 +29,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -43,6 +41,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
 
 public interface ISubscriptionBL extends ISingletonService
@@ -88,7 +87,11 @@ public interface ISubscriptionBL extends ISingletonService
 	 */
 	void evalCurrentSPs(I_C_Flatrate_Term sc, Timestamp currentDate);
 
-	I_C_Flatrate_Matching retrieveMatching(Properties ctx, int flatrateConditionsId, I_M_Product product, String trxName);
+	I_C_Flatrate_Matching retrieveMatching(
+			Properties ctx, 
+			int flatrateConditionsId, 
+			ProductAndCategoryId productAndCategoryId, 
+			String trxName);
 
 	/**
 	 * Use the given <code>C_Flatrate_Transition</code>'s <code>TermDurationUnit</code>,

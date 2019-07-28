@@ -51,6 +51,9 @@ import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -227,7 +230,9 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 	private I_C_OrderLine createInitialContractOrder(final I_C_Flatrate_Term contract)
 	{
 		final I_C_Order contractOrder = InterfaceWrapperHelper.create(contract.getC_OrderLine_Term().getC_Order(), I_C_Order.class);
-		final I_C_OrderLine orderLine = createOrderAndOrderLine(contract.getC_Flatrate_Conditions(), contract.getM_Product());
+		final I_C_OrderLine orderLine = createOrderAndOrderLine(
+				contract.getC_Flatrate_Conditions(),
+				ProductId.ofRepoId(contract.getM_Product_ID()));
 		contractOrder.setContractStatus(I_C_Order.CONTRACTSTATUS_Active);
 		InterfaceWrapperHelper.save(contractOrder);
 
@@ -239,7 +244,12 @@ public class ContractOrderTest extends AbstractFlatrateTermTest
 
 	private I_C_Flatrate_Term simulateExtendingContractOrder(final I_C_Flatrate_Term contract)
 	{
-		final I_C_Flatrate_Term newContract = createFlatrateTerm(contract.getC_Flatrate_Conditions(), contract.getM_Product(), TimeUtil.addDays(contract.getEndDate(), 1));
+		final ProductId productId = ProductId.ofRepoId(contract.getM_Product_ID());
+		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
+		final I_C_Flatrate_Term newContract = createFlatrateTerm(
+				contract.getC_Flatrate_Conditions(),
+				productAndCategoryId,
+				TimeUtil.addDays(contract.getEndDate(), 1));
 		contract.setC_FlatrateTerm_Next(newContract);
 		InterfaceWrapperHelper.save(contract);
 

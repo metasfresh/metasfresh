@@ -13,11 +13,11 @@ package de.metas.payment.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,7 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_Payment;
@@ -43,8 +42,11 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -57,8 +59,8 @@ public class PaymentBLTest
 	private Properties ctx;
 	private I_C_Payment payment;
 	private I_C_Invoice invoice;
-	private I_C_Currency currencyEUR;
-	private I_C_Currency currencyCHF;
+	private CurrencyId currencyEUR;
+	private CurrencyId currencyCHF;
 	private PlainCurrencyDAO currencyDAO;
 
 	private I_C_Order order;
@@ -77,19 +79,8 @@ public class PaymentBLTest
 
 		db = POJOLookupMap.get();
 
-		currencyEUR = db.newInstance(I_C_Currency.class);
-		currencyEUR.setISO_Code("EUR");
-		currencyEUR.setStdPrecision(2);
-		currencyEUR.setIsEuro(true);
-		db.save(currencyEUR);
-		POJOWrapper.enableStrictValues(currencyEUR);
-
-		currencyCHF = db.newInstance(I_C_Currency.class);
-		currencyCHF.setISO_Code("CHF");
-		currencyCHF.setStdPrecision(2);
-		currencyCHF.setIsEuro(false);
-		db.save(currencyCHF);
-		POJOWrapper.enableStrictValues(currencyCHF);
+		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
@@ -97,7 +88,7 @@ public class PaymentBLTest
 
 		invoice = db.newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(1);
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice.setGrandTotal(new BigDecimal(50.0));
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
@@ -105,7 +96,7 @@ public class PaymentBLTest
 
 		order = db.newInstance(I_C_Order.class);
 		order.setAD_Org_ID(1);
-		order.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		order.setC_Currency_ID(currencyEUR.getRepoId());
 		order.setGrandTotal(new BigDecimal(50.0));
 		order.setIsSOTrx(true);
 		order.setProcessed(true);
@@ -148,7 +139,7 @@ public class PaymentBLTest
 		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
 		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
 		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
-		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyEUR.getRepoId());
 		db.save(payment);
 
 		payment.setDiscountAmt(BigDecimal.ONE);
@@ -178,9 +169,9 @@ public class PaymentBLTest
 		Assert.assertEquals("Incorrect over/under amount", BigDecimal.ZERO, payment.getOverUnderAmt());
 		Assert.assertEquals("Incorrect discount amount", BigDecimal.ZERO, payment.getDiscountAmt());
 		Assert.assertEquals("Incorrect writteoff amount", BigDecimal.ZERO, payment.getWriteOffAmt());
-		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyEUR.getRepoId());
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		invoice.setC_Currency_ID(currencyCHF.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyCHF.getRepoId());
 
 		db.save(invoice);
 		db.save(payment);
@@ -196,18 +187,18 @@ public class PaymentBLTest
 		// and not "invoice" which we will modify below
 		payment.setC_Invoice_ID(-1);
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyEUR.getRepoId());
 		payment.setDiscountAmt(BigDecimal.ZERO);
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
+		payment.setDocStatus(DocStatus.Drafted.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
 		db.save(payment);
 
 		// Test writeoff completion
 		payment.setPayAmt(new BigDecimal(40.0));
 		db.save(payment);
-		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		invoice.setGrandTotal(new BigDecimal(50.0));
 		db.save(invoice);
 
@@ -227,7 +218,7 @@ public class PaymentBLTest
 		Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal(60.0), payment.getPayAmt());
 
 		// Test currency change
-		payment.setC_Currency_ID(currencyCHF.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyCHF.getRepoId());
 		db.save(payment);
 
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, false);
@@ -248,13 +239,13 @@ public class PaymentBLTest
 
 		payment.setC_Invoice_ID(0);
 		payment.setC_Order_ID(order.getC_Order_ID());
-		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyEUR.getRepoId());
 		payment.setPayAmt(new BigDecimal(30.0));
 		db.save(payment);
 
 		paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, false);
 
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Completed);
+		payment.setDocStatus(DocStatus.Completed.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Close);
 		db.save(payment);
 
@@ -270,13 +261,13 @@ public class PaymentBLTest
 		payment = db.newInstance(I_C_Payment.class);
 		payment.setAD_Org_ID(1);
 		payment.setC_Invoice_ID(db.getRecords(I_C_Invoice.class).get(0).getC_Invoice_ID());
-		payment.setC_Currency_ID(currencyEUR.getC_Currency_ID());
+		payment.setC_Currency_ID(currencyEUR.getRepoId());
 		payment.setDiscountAmt(BigDecimal.ZERO);
 		payment.setWriteOffAmt(BigDecimal.ZERO);
 		payment.setOverUnderAmt(BigDecimal.ZERO);
-		payment.setDocStatus(X_C_Payment.DOCSTATUS_Drafted);
+		payment.setDocStatus(DocStatus.Drafted.getCode());
 		payment.setDocAction(X_C_Payment.DOCACTION_Complete);
-		invoice.setC_Currency_ID(currencyCHF.getC_Currency_ID());
+		invoice.setC_Currency_ID(currencyCHF.getRepoId());
 
 		db.save(invoice);
 		db.save(payment);

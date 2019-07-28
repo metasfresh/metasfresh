@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.inout.spi.IMaterialBalanceConfigMatcher;
@@ -60,19 +60,19 @@ public class FlatrateMaterialBalanceConfigMatcher implements IMaterialBalanceCon
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inoutLine);
 		final String trxName = InterfaceWrapperHelper.getTrxName(inoutLine);
 		
-		final I_C_BPartner partner;
+		final BPartnerId partnerId;
 		if(order != null && order.getC_Order_ID() > 0)
 		{
-			partner = order.getBill_BPartner();
+			partnerId = BPartnerId.ofRepoId(order.getBill_BPartner_ID());
 		}
 		else
 		{
-			partner = inout.getC_BPartner();
+			partnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
 		}
 		
 		final I_M_Product product = inoutLine.getM_Product();
 		
-		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(ctx, partner.getC_BPartner_ID(), inout.getDateOrdered(), product.getM_Product_Category_ID(), product.getM_Product_ID(), inoutLine.getC_Charge_ID(), trxName);
+		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(ctx, partnerId.getRepoId(), inout.getDateOrdered(), product.getM_Product_Category_ID(), product.getM_Product_ID(), inoutLine.getC_Charge_ID(), trxName);
 		
 		if(terms.isEmpty())
 		{

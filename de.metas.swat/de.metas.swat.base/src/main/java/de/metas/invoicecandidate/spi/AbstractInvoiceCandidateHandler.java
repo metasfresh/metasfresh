@@ -23,11 +23,11 @@ package de.metas.invoicecandidate.spi;
  */
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -88,14 +88,15 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		final int precision = invoiceCandBL.getPrecisionFromCurrency(ic);
+		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
 		final BigDecimal priceActual = invoiceCandBL.getPriceActual(ic);
 		final BigDecimal qtyToInvoice = invoiceCandBL.convertToPriceUOM(
 				qty,
 				ic);
 
-		return qtyToInvoice.multiply(priceActual).setScale(precision, RoundingMode.HALF_UP);
+		final BigDecimal amt = qtyToInvoice.multiply(priceActual);
+		return precision.round(amt);
 	}
 
 	/**

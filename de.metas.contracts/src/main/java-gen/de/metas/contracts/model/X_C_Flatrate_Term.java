@@ -74,10 +74,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setAD_PInstance_EndOfTerm_ID (int AD_PInstance_EndOfTerm_ID)
 	{
-		if (AD_PInstance_EndOfTerm_ID < 1) 
+		if (AD_PInstance_EndOfTerm_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_PInstance_EndOfTerm_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_PInstance_EndOfTerm_ID, Integer.valueOf(AD_PInstance_EndOfTerm_ID));
+		}
 	}
 
 	/** Get Verarbeitung zum Laufzeitende.
@@ -87,7 +91,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_EndOfTerm_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -110,10 +116,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
 	{
-		if (AD_User_InCharge_ID < 1) 
+		if (AD_User_InCharge_ID < 1)
+		{
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+		}
 	}
 
 	/** Get Betreuer.
@@ -124,7 +134,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -147,10 +159,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setBill_BPartner_ID (int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
+		if (Bill_BPartner_ID < 1)
+		{
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+		}
 	}
 
 	/** Get Rechnungspartner.
@@ -161,7 +177,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -184,10 +202,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setBill_Location_ID (int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
+		if (Bill_Location_ID < 1)
+		{
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
+		}
 	}
 
 	/** Get Rechnungsstandort.
@@ -198,7 +220,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_Location_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -221,10 +245,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setBill_User_ID (int Bill_User_ID)
 	{
-		if (Bill_User_ID < 1) 
+		if (Bill_User_ID < 1)
+		{
 			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
+		}
 	}
 
 	/** Get Rechnungskontakt.
@@ -235,20 +263,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_User_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Currency getC_Currency() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class);
-	}
-
-	@Override
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Currency_ID, org.compiere.model.I_C_Currency.class, C_Currency);
 	}
 
 	/** Set Währung.
@@ -258,10 +276,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_Currency_ID (int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+		}
 	}
 
 	/** Get Währung.
@@ -272,7 +294,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -293,10 +317,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
 	{
-		if (C_Flatrate_Conditions_ID < 1) 
+		if (C_Flatrate_Conditions_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
+		}
 	}
 
 	/** Get Vertragsbedingungen.
@@ -306,7 +334,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -327,10 +357,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_Flatrate_Data_ID (int C_Flatrate_Data_ID)
 	{
-		if (C_Flatrate_Data_ID < 1) 
+		if (C_Flatrate_Data_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Data_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Data_ID, Integer.valueOf(C_Flatrate_Data_ID));
+		}
 	}
 
 	/** Get Datenerfassung.
@@ -340,7 +374,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Data_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -349,10 +385,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
 	{
-		if (C_Flatrate_Term_ID < 1) 
+		if (C_Flatrate_Term_ID < 1)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else 
+		}
+		else
+		{
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+		}
 	}
 
 	/** Get Pauschale - Vertragsperiode.
@@ -362,7 +402,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -383,10 +425,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_FlatrateTerm_Next_ID (int C_FlatrateTerm_Next_ID)
 	{
-		if (C_FlatrateTerm_Next_ID < 1) 
+		if (C_FlatrateTerm_Next_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_FlatrateTerm_Next_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_FlatrateTerm_Next_ID, Integer.valueOf(C_FlatrateTerm_Next_ID));
+		}
 	}
 
 	/** Get Nachfolgende Vertragsperiode.
@@ -396,7 +442,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_FlatrateTerm_Next_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -429,7 +477,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -504,10 +554,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID)
 	{
-		if (C_OrderLine_TermChange_ID < 1) 
+		if (C_OrderLine_TermChange_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, Integer.valueOf(C_OrderLine_TermChange_ID));
+		}
 	}
 
 	/** Get Änderungs-Auftragszeile.
@@ -518,7 +572,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_TermChange_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -541,10 +597,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID)
 	{
-		if (C_OrderLine_Term_ID < 1) 
+		if (C_OrderLine_Term_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_OrderLine_Term_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_OrderLine_Term_ID, Integer.valueOf(C_OrderLine_Term_ID));
+		}
 	}
 
 	/** Get Vertrags-Auftragszeile.
@@ -555,7 +615,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_Term_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -588,7 +650,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_TermChange_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -621,7 +685,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_Term_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -644,10 +710,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_TaxCategory_ID (int C_TaxCategory_ID)
 	{
-		if (C_TaxCategory_ID < 1) 
+		if (C_TaxCategory_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_TaxCategory_ID, Integer.valueOf(C_TaxCategory_ID));
+		}
 	}
 
 	/** Get Steuerkategorie.
@@ -658,20 +728,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_TaxCategory_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
 	}
 
 	/** Set Maßeinheit.
@@ -681,10 +741,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setC_UOM_ID (int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
+		if (C_UOM_ID < 1)
+		{
 			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+		}
 	}
 
 	/** Get Maßeinheit.
@@ -695,7 +759,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -927,10 +993,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID)
 	{
-		if (DropShip_BPartner_ID < 1) 
+		if (DropShip_BPartner_ID < 1)
+		{
 			set_Value (COLUMNNAME_DropShip_BPartner_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_DropShip_BPartner_ID, Integer.valueOf(DropShip_BPartner_ID));
+		}
 	}
 
 	/** Get Streckengeschäft-Kunde.
@@ -941,7 +1011,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -964,10 +1036,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setDropShip_Location_ID (int DropShip_Location_ID)
 	{
-		if (DropShip_Location_ID < 1) 
+		if (DropShip_Location_ID < 1)
+		{
 			set_Value (COLUMNNAME_DropShip_Location_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_DropShip_Location_ID, Integer.valueOf(DropShip_Location_ID));
+		}
 	}
 
 	/** Get Streckengeschäft-Ort.
@@ -978,7 +1054,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1001,10 +1079,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setDropShip_User_ID (int DropShip_User_ID)
 	{
-		if (DropShip_User_ID < 1) 
+		if (DropShip_User_ID < 1)
+		{
 			set_Value (COLUMNNAME_DropShip_User_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_DropShip_User_ID, Integer.valueOf(DropShip_User_ID));
+		}
 	}
 
 	/** Get Streckengeschäft-Ansprechpartner.
@@ -1015,7 +1097,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_User_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1073,8 +1157,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsAutoRenew);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1096,8 +1182,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsCloseInvoiceCandidate);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1121,8 +1209,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsClosingWithActualSum);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1146,8 +1236,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsClosingWithCorrectionSum);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1169,8 +1261,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsSimulation);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1195,8 +1289,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_IsTaxIncluded);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1272,10 +1368,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID < 0) 
+		if (M_AttributeSetInstance_ID < 0)
+		{
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+		}
 	}
 
 	/** Get Merkmale.
@@ -1286,7 +1386,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1309,10 +1411,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
 	{
-		if (M_PricingSystem_ID < 1) 
+		if (M_PricingSystem_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+		}
 	}
 
 	/** Get Preissystem.
@@ -1323,20 +1429,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -1346,10 +1442,14 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	@Override
 	public void setM_Product_ID (int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
+		{
 			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
+		}
+		else
+		{
 			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+		}
 	}
 
 	/** Get Produkt.
@@ -1360,7 +1460,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
 		if (ii == null)
-			 return 0;
+		{
+			return 0;
+		}
 		return ii.intValue();
 	}
 
@@ -1420,7 +1522,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQtyPerUnit);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -1461,7 +1565,9 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return BigDecimal.ZERO;
+		{
+			return BigDecimal.ZERO;
+		}
 		return bd;
 	}
 
@@ -1484,8 +1590,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_Processed);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;
@@ -1507,8 +1615,10 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		Object oo = get_Value(COLUMNNAME_Processing);
 		if (oo != null) 
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+			{
+				return ((Boolean)oo).booleanValue();
+			} 
 			return "Y".equals(oo);
 		}
 		return false;

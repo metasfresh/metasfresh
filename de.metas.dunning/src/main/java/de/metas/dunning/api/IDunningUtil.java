@@ -54,7 +54,7 @@ public interface IDunningUtil extends ISingletonService
 	 * @param AD_Org_ID
 	 * @return
 	 */
-	BigDecimal currencyConvert(Properties ctx, BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, CurrencyConversionTypeId conversionTypeId, int AD_Client_ID, int AD_Org_ID);
+	BigDecimal currencyConvert(BigDecimal Amt, int CurFrom_ID, int CurTo_ID, Timestamp ConvDate, CurrencyConversionTypeId conversionTypeId, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Returns a placeholder value for C_ConversionType_ID.

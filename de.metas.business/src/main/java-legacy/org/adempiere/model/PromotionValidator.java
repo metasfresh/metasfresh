@@ -24,6 +24,10 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
+
 /**
  *
  * @author hengsin
@@ -125,7 +129,7 @@ public class PromotionValidator implements ModelValidator {
 		int M_PromotionPreCondition_ID = 0;
 		int C_BP_Group_ID = 0;
 		try {
-			C_BP_Group_ID = order.getC_BPartner().getC_BP_Group_ID();
+			C_BP_Group_ID = Services.get(IBPartnerDAO.class).getBPGroupIdByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID())).getRepoId();
 		} catch (Exception e) {
 		}
 		if (promotionCode != null && promotionCode.trim().length() > 0) {

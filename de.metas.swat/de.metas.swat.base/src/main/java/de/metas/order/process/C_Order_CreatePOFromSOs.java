@@ -9,7 +9,7 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.model.I_C_Order;
 import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.process.impl.CreatePOFromSOsAggregator;
@@ -93,7 +93,7 @@ public class C_Order_CreatePOFromSOs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Mutable<Integer> purchaseOrderLineCount = new Mutable<Integer>(0);
+		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
 
 		final Iterator<I_C_Order> it = orderCreatePOFromSOsDAO.createSalesOrderIterator(
 				this,
@@ -146,8 +146,8 @@ public class C_Order_CreatePOFromSOs
 			return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
 		}
 
-		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx()
-				&& IDocument.STATUS_Completed.equals(order.getDocStatus()));
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx() && docStatus.isCompleted());
 	}
 
 }

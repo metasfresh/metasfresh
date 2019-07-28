@@ -31,7 +31,10 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.interceptor.CacheInterceptor;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.location.ILocationBL;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -249,19 +252,21 @@ class ClientSetup
 		return orgBPartner.getCompanyName();
 	}
 
-	public ClientSetup setC_Currency_ID(final int currencyId)
+	public ClientSetup setCurrencyId(final CurrencyId currencyId)
 	{
-		if (currencyId <= 0)
+		if (currencyId == null)
 		{
 			return this;
 		}
+		
+		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(acctSchema.getC_Currency_ID());
+		final CurrencyCode acctCurrencyCode = Services.get(ICurrencyDAO.class).getCurrencyCodeById(acctCurrencyId);
 
-		orgBankAccount.setC_Currency_ID(currencyId);
+		orgBankAccount.setC_Currency_ID(currencyId.getRepoId());
+		acctSchema.setC_Currency_ID(currencyId.getRepoId());
+		acctSchema.setName(acctSchema.getGAAP() + " / " + acctCurrencyCode.toThreeLetterCode());
 
-		acctSchema.setC_Currency_ID(currencyId);
-		acctSchema.setName(acctSchema.getGAAP() + " / " + acctSchema.getC_Currency().getISO_Code());
-
-		priceList_None.setC_Currency_ID(currencyId);
+		priceList_None.setC_Currency_ID(currencyId.getRepoId());
 
 		return this;
 	}

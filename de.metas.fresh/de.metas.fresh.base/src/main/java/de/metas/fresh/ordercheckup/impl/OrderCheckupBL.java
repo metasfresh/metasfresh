@@ -30,7 +30,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -49,6 +51,7 @@ import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.product.ResourceId;
@@ -152,7 +155,7 @@ public class OrderCheckupBL implements IOrderCheckupBL
 		// task 09508: we actually want it on the report for transportation, no matter if there is manufactoring PP_Product_Planning record.
 		{
 			// make sure the user knows if the master data is not OK, but also give them a chance to disable the error-exception in urgent cases.
-			final org.compiere.model.I_M_Warehouse warehouse = order.getM_Warehouse();
+			final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()));
 			final ResourceId plantId = ResourceId.ofRepoIdOrNull(warehouse.getPP_Plant_ID());
 
 			if (plantId == null)
@@ -236,7 +239,8 @@ public class OrderCheckupBL implements IOrderCheckupBL
 							order.getC_Order_ID() });
 			return false; // nothing to do
 		}
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
+		
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Services.get(IOrderBL.class).getBPartner(order), I_C_BPartner.class);
 		if (bpartner.isDisableOrderCheckup())
 		{
 			logger.debug("C_BPartner {} has IsDisableOrderCheckup='Y'; nothing to do for C_Order_ID {}.",
