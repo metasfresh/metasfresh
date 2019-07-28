@@ -2,7 +2,7 @@ package de.metas.ui.web.dashboard.process;
 
 import java.util.Date;
 
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
@@ -74,7 +74,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 
 	public WEBUI_KPI_TestQuery()
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 	}
 
 	@Override

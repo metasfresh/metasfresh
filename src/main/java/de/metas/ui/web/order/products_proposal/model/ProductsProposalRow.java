@@ -78,7 +78,7 @@ public class ProductsProposalRow implements IViewRow
 
 	public static final String FIELD_Currency = "currency";
 	@ViewColumn(seqNo = 50, fieldName = FIELD_Currency, captionKey = "C_Currency_ID", widgetType = DocumentFieldWidgetType.Text)
-	private final String currencyCode;
+	private final String currencyCodeStr;
 
 	public static final String FIELD_Qty = "qty";
 	@ViewColumn(seqNo = 60, fieldName = FIELD_Qty, captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, editor = ViewEditorRenderMode.ALWAYS)
@@ -135,8 +135,8 @@ public class ProductsProposalRow implements IViewRow
 
 		this.price = price;
 		this.isCampaignPrice = price.isCampaignPriceUsed();
-		this.userEnteredPrice = price.getUserEnteredPrice().getValue();
-		this.currencyCode = price.getCurrencyCode();
+		this.userEnteredPrice = price.getUserEnteredPrice().getAsBigDecimal();
+		this.currencyCodeStr = price.getCurrencyCode().toThreeLetterCode();
 
 		this.qty = qty;
 

@@ -3,6 +3,7 @@ package de.metas.ui.web.order.products_proposal.model;
 import java.math.BigDecimal;
 
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -54,5 +55,10 @@ public final class ProductProposalCampaignPrice
 	public boolean amountValueComparingEqualsTo(@NonNull final BigDecimal other)
 	{
 		return amount.valueComparingEqualsTo(other);
+	}
+
+	public CurrencyCode getCurrencyCode()
+	{
+		return amount.getCurrencyCode();
 	}
 }

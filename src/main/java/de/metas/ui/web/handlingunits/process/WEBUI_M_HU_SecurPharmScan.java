@@ -9,9 +9,12 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.process.adprocess.WebuiProcess;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScanner;
+import de.metas.vertical.pharma.securpharm.service.SecurPharmHUAttributesScannerResult;
 import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
 
 /*
@@ -36,13 +39,14 @@ import de.metas.vertical.pharma.securpharm.service.SecurPharmService;
  * #L%
  */
 
+@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public class WEBUI_M_HU_SecurPharmScan extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
 	private SecurPharmService securPharmService;
 
-	static final String PARAM_DataMatrix = "dataMatrix";
-	@Param(mandatory = true, parameterName = PARAM_DataMatrix)
+	static final String PARAM_Barcode = "Barcode";
+	@Param(mandatory = true, parameterName = PARAM_Barcode)
 	private String dataMatrixString;
 
 	@Override
@@ -81,15 +85,18 @@ public class WEBUI_M_HU_SecurPharmScan extends HUEditorProcessTemplate implement
 	{
 		final SecurPharmHUAttributesScanner scanner = securPharmService.newHUScanner();
 
-		scanner.scanAndUpdateHUAttributes(getDataMatrix(), getSelectedHuId());
+		final SecurPharmHUAttributesScannerResult result = scanner.scanAndUpdateHUAttributes(getDataMatrix(), getSelectedHuId());
 
 		//
 		// Update view
 		final HUEditorView view = getView();
-		view.addHUIds(scanner.getExtractedCUIds());
+		if (result.getExtractedCUId() != null)
+		{
+			view.addHUId(result.getExtractedCUId());
+		}
 		view.invalidateAll();
 
-		return MSG_OK;
+		return result.getResultMessageAndCode();
 	}
 
 	private HuId getSelectedHuId()

@@ -64,7 +64,6 @@ public final class DateTimeConverters
 	private static JSONDateConfig _config = JSONDateConfig.LEGACY;
 
 	private static final LocalDate LOCALDATE_1970_01_01 = LocalDate.of(1970, Month.JANUARY, 1);
-	private static final Instant INSTANT_0 = Instant.ofEpochMilli(0);
 
 	public static String toJson(@NonNull final LocalDate localDate)
 	{
@@ -147,13 +146,7 @@ public final class DateTimeConverters
 
 	public static String toJson(@NonNull final ZoneId zoneId)
 	{
-		final JSONDateConfig config = getConfig();
-		return toJson(zoneId, config);
-	}
-
-	public static String toJson(@NonNull final ZoneId zoneId, @NonNull final JSONDateConfig config)
-	{
-		return config.getTimeZoneFormatter().format(INSTANT_0.atZone(zoneId));
+		return zoneId.getId();
 	}
 
 	public static Object fromJson(

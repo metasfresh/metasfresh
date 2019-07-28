@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import de.metas.currency.ICurrencyBL;
@@ -131,7 +131,7 @@ class PricingConditionsRowReducers
 			final Percent paymentDiscountOrNull = paymentDiscountChangeRequested ? request.getPaymentDiscount().orElse(null) : null;
 			builder.paymentDiscountOverrideOrNull(paymentDiscountOrNull);
 
-			final PaymentTermService paymentTermService = Adempiere.getBean(PaymentTermService.class);
+			final PaymentTermService paymentTermService = SpringContextHolder.instance.getBean(PaymentTermService.class);
 			final PaymentTermId derivedPaymentTermIdOrNull = paymentTermService.getOrCreateDerivedPaymentTerm(paymentTermIdOrNull, paymentDiscountOrNull);
 			builder.derivedPaymentTermIdOrNull(derivedPaymentTermIdOrNull);
 		}
@@ -243,7 +243,7 @@ class PricingConditionsRowReducers
 
 		final BigDecimal amountEffective = coalesce(
 				amount,
-				fallback != null ? fallback.getValue() : BigDecimal.ZERO);
+				fallback != null ? fallback.getAsBigDecimal() : BigDecimal.ZERO);
 
 		final CurrencyId currencyIdEffective = coalesceSuppliers(
 				() -> currencyId,

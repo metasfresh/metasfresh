@@ -33,7 +33,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
@@ -43,7 +42,8 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.cache.CCache;
 import de.metas.currency.Amount;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -114,11 +114,9 @@ public class BoardDescriptorRepository
 {
 	private static final transient Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
 
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptors;
-
-	@Autowired
-	private WebsocketSender websocketSender;
+	private final DocumentDescriptorFactory documentDescriptors;
+	private final WebsocketSender websocketSender;
+	private final CurrencyRepository currenciesRepo;
 
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> builder()
 			.cacheName(I_WEBUI_Board.Table_Name + "#BoardDescriptor")
@@ -127,6 +125,16 @@ public class BoardDescriptorRepository
 			.additionalTableNameToResetFor(I_WEBUI_Board_Lane.Table_Name)
 			.additionalTableNameToResetFor(I_WEBUI_Board_CardField.Table_Name)
 			.build();
+	
+	public BoardDescriptorRepository(
+			@NonNull final DocumentDescriptorFactory documentDescriptors, 
+			@NonNull final WebsocketSender websocketSender, 
+			@NonNull final CurrencyRepository currenciesRepo)
+	{
+		this.documentDescriptors = documentDescriptors;
+		this.websocketSender = websocketSender;
+		this.currenciesRepo = currenciesRepo;
+	}
 
 	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
 	{
@@ -288,14 +296,8 @@ public class BoardDescriptorRepository
 					return valueBD;
 				}
 
-				final String currencyCode = Services.get(ICurrencyDAO.class).getISOCodeById(currencyId);
-				if (currencyCode == null)
-				{
-					return valueBD;
-				}
-
+				final CurrencyCode currencyCode = currenciesRepo.getCurrencyCodeById(currencyId);
 				return Amount.of(valueBD, currencyCode);
-
 			};
 
 		}
@@ -604,9 +606,7 @@ public class BoardDescriptorRepository
 		if (value instanceof Amount)
 		{
 			final Amount amount = (Amount)value;
-			return TranslatableStrings.join(" ",
-					TranslatableStrings.number(amount.getValue(), DisplayType.Amount),
-					TranslatableStrings.constant(amount.getCurrencyCode()));
+			return TranslatableStrings.join(" ", TranslatableStrings.amount(amount));
 
 		}
 

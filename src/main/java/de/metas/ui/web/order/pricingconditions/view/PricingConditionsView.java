@@ -193,7 +193,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			{
 				assumeNotNull(basePrice, "If type={}, then the given basePrice may not be null; pricingConditionsBreak={}", type, pricingConditionsBreak);
 
-				final BigDecimal priceEntered = limitPrice(basePrice.getValue(), orderLineRecord);
+				final BigDecimal priceEntered = limitPrice(basePrice.getAsBigDecimal(), orderLineRecord);
 
 				orderLineRecord.setIsManualPrice(true);
 				orderLineRecord.setPriceEntered(priceEntered);
@@ -206,7 +206,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 				final Money fixedPrice = price.getFixedPrice();
 				Check.assumeNotNull(fixedPrice, "fixedPrice shall not be null for {}", price);
 
-				final BigDecimal priceEntered = limitPrice(fixedPrice.getValue(), orderLineRecord);
+				final BigDecimal priceEntered = limitPrice(fixedPrice.getAsBigDecimal(), orderLineRecord);
 
 				orderLineRecord.setIsManualPrice(true);
 				orderLineRecord.setPriceEntered(priceEntered);
@@ -224,19 +224,19 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 
 			//
 			// PriceActual & Discount
-			Percent discount = pricingConditionsBreak.getDiscount();
-			final BigDecimal priceActual = discount.subtractFromBase(orderLineRecord.getPriceEntered(), CurrencyPrecision.TWO.toInt());
+			Percent discountEffective = pricingConditionsBreak.getDiscount();
+			final BigDecimal priceActual = discountEffective.subtractFromBase(orderLineRecord.getPriceEntered(), CurrencyPrecision.TWO.toInt());
 			final BigDecimal priceActualEffective = limitPrice(priceActual, orderLineRecord);
 			if (priceActualEffective.compareTo(priceActual) != 0)
 			{
-				discount = PriceAndDiscount.calculateDiscountFromPrices(
+				discountEffective = PriceAndDiscount.calculateDiscountFromPrices(
 						orderLineRecord.getPriceEntered(),
 						priceActualEffective,
 						CurrencyPrecision.TWO);
 			}
 			//
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
+			orderLineRecord.setDiscount(discountEffective.getValue());
 			orderLineRecord.setPriceActual(priceActualEffective);
 
 		}

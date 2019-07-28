@@ -13,7 +13,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -33,6 +32,8 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -104,7 +105,7 @@ public class PurchaseRowsLoaderTest
 	private I_C_Order salesOrderRecord;
 	private I_C_BPartner bPartnerVendor;
 
-	private I_C_Currency currency;
+	private CurrencyId currencyId;
 
 	private Quantity TEN;
 
@@ -144,7 +145,7 @@ public class PurchaseRowsLoaderTest
 		saveRecord(bPartnerCustomer);
 
 		salesOrderRecord = newInstance(I_C_Order.class);
-		salesOrderRecord.setC_BPartner(bPartnerCustomer);
+		salesOrderRecord.setC_BPartner_ID(bPartnerCustomer.getC_BPartner_ID());
 		salesOrderRecord.setPreparationDate(SystemTime.asTimestamp());
 		salesOrderRecord.setC_PaymentTerm_ID(30);
 		saveRecord(salesOrderRecord);
@@ -153,9 +154,7 @@ public class PurchaseRowsLoaderTest
 		bPartnerVendor.setName("bPartnerVendor.Name");
 		saveRecord(bPartnerVendor);
 
-		currency = newInstance(I_C_Currency.class);
-		currency.setStdPrecision(2);
-		saveRecord(currency);
+		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		// wire together a SalesOrder2PurchaseViewFactory
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
@@ -193,8 +192,8 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setM_Product_ID(product.getM_Product_ID());
 		salesOrderLineRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		salesOrderLineRecord.setC_Order_ID(salesOrderRecord.getC_Order_ID());
-		salesOrderLineRecord.setC_Currency_ID(currency.getC_Currency_ID());
-		salesOrderLineRecord.setC_UOM_ID(TEN.getUOMId());
+		salesOrderLineRecord.setC_Currency_ID(currencyId.getRepoId());
+		salesOrderLineRecord.setC_UOM_ID(TEN.getUomId().getRepoId());
 		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());

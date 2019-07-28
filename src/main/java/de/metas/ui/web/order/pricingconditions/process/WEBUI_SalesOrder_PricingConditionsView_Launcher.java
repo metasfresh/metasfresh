@@ -8,7 +8,7 @@ import org.compiere.model.I_C_OrderLine;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocument;
+import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -52,8 +52,8 @@ public class WEBUI_SalesOrder_PricingConditionsView_Launcher extends JavaProcess
 
 		// NOTE: we allow sales and purchase orders too; see https://github.com/metasfresh/metasfresh/issues/4017
 
-		final String docStatus = salesOrder.getDocStatus();
-		if (!IDocument.STATUS_Drafted.equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());
+		if (!docStatus.isDrafted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only draft orders are allowed");
 		}

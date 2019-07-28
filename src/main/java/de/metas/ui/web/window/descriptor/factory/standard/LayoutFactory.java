@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_AD_UI_Column;
@@ -132,7 +132,7 @@ public class LayoutFactory
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTab)
 	{
-		Adempiere.autowire(this);
+		SpringContextHolder.instance.autowire(this);
 
 		_adWindowId = gridTabVO.getAD_Window_ID();
 		windowCaption = TranslatableStrings.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
