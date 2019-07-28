@@ -16,6 +16,7 @@ import Login from './containers/Login.js';
 import MasterWindow from './containers/MasterWindow.js';
 import NavigationTree from './containers/NavigationTree.js';
 import PluginContainer, { pluginWrapper } from './components/PluginContainer';
+import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
 
 let hasTutorial = false;
 
@@ -187,6 +188,15 @@ export const getRoutes = (store, auth, plugins) => {
         component={({ location }) => (
           <Login
             splat={location.pathname.replace('/', '')}
+            token={location.query.token}
+            {...{ auth }}
+          />
+        )}
+      />
+      <Route
+        path="/paypal_confirm"
+        component={({ location }) => (
+          <PaypalReservationConfirm
             token={location.query.token}
             {...{ auth }}
           />
