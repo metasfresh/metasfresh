@@ -118,3 +118,5 @@ UPDATE AD_UI_Element SET Name='Projektnummer',Updated=TO_TIMESTAMP('2019-07-29 1
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,582478,0,541830,542695,560308,'F',TO_TIMESTAMP('2019-07-29 15:06:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Projektstatus',25,0,0,TO_TIMESTAMP('2019-07-29 15:06:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+UPDATE AD_Ref_Table SET WhereClause='R_StatusCategory_ID=540009',Updated=TO_TIMESTAMP('2019-07-29 15:21:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540849
+;
