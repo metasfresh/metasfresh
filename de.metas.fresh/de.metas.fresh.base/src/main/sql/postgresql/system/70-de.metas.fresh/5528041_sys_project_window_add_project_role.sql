@@ -1,7 +1,3 @@
-DO $$
-BEGIN
-	IF NOT EXISTS( select * from ad_element where ad_element_id = 544216  ) THEN --we do not want to create element and columns on systems where the project role element exists
-
 
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,544216,0,'c_project_role',TO_TIMESTAMP('2018-08-27 15:23:18','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','Projektrolle','Projektrolle',TO_TIMESTAMP('2018-08-27 15:23:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -70,9 +66,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_Project_User','ALTER TABLE public.C_Project_User ADD COLUMN C_Project_Role VARCHAR(2)')
 ;
 
-	END IF;
-END;
-$$;
 
 
 -- adding new field to tab project contact
