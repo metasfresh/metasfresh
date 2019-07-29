@@ -182,6 +182,6 @@ function applyAttributeSet(attributeSet) {
 function applyAttributeSetUse(attribute) {
   cy.get('#tab_M_AttributeUse').click();
   cy.pressAddNewButton();
-  cy.selectInListField('M_Attribute_ID', `${attribute.value}_${attribute.name}`, true /*modal*/);
+  cy.selectInListField('M_Attribute_ID', `${attribute}_${attribute}`, true /*modal*/);
   cy.pressDoneButton();
 }

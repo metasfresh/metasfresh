@@ -9,12 +9,12 @@
   "isAttrDocumentRelevant": true,
   "attributeValues": [
     {
-      "name": "TestAttributeName1",
-      "value": "TestAttributeValue1"
+      "name": "Attribute1",
+      "value": "Attribute1"
     },
     {
-      "name": "TestAttributeName2",
-      "value": "TestAttributeValue2"
+      "name": "Attribute2",
+      "value": "Attribute2"
     }
   ]
 }
