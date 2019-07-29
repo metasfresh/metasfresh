@@ -213,6 +213,12 @@ export class ProductCategory {
     return this;
   }
 
+  setAttributeSet(attributeSet) {
+    cy.log(`Product Category - set attributeSet = ${attributeSet}`);
+    this.attributeSet = attributeSet;
+    return this;
+  }
+
   apply() {
     cy.log(`Product Category - apply - START (name=${this.name})`);
     ProductCategory.applyProductCategory(this);
@@ -226,6 +232,9 @@ export class ProductCategory {
 
       // Value can be updated
       cy.writeIntoStringField('Value', productCategory.value);
+      if (productCategory.attributeSet) {
+        cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
+      }
     });
   }
 }
