@@ -103,7 +103,7 @@ export class Builder {
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
-        .setCUTUAllocation(packingInstructionsName)
+        .addCUTUAllocation(packingInstructionsName)
         .apply();
     });
   }
