@@ -23,4 +23,6 @@ export class RewriteURL {
   static WINDOW = '/rest/api/window/';
 
   static PROCESS = '/rest/api/process/';
+
+  static ATTRIBUTE = '/rest/api/pattribute';
 }
