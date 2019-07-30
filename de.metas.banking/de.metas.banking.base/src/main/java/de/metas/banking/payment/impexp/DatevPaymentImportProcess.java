@@ -2,6 +2,7 @@ package de.metas.banking.payment.impexp;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -11,10 +12,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 
 import de.metas.banking.model.I_I_Datev_Payment;
 import de.metas.banking.model.X_I_Datev_Payment;
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
@@ -106,17 +109,19 @@ public class DatevPaymentImportProcess extends AbstractImportProcess<I_I_Datev_P
 
 	private I_C_Payment createNewPayment(@NonNull final I_I_Datev_Payment importRecord)
 	{
-		return Services.get(IPaymentBL.class).newBuilder(importRecord).setAD_Org_ID(importRecord.getAD_Org_ID())
-				.setC_BPartner_ID(importRecord.getC_BPartner_ID())
-				.setDocbaseType(importRecord.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt
-						: X_C_DocType.DOCBASETYPE_APPayment)
-				.setPayAmt(importRecord.getPayAmt())
-				.setDiscountAmt(importRecord.getDiscountAmt())
-				.setTenderType(TenderType.DirectDeposit)
-				.setDateAcct(importRecord.getDateTrx())
-				.setDateTrx(importRecord.getDateTrx())
-				.setDescription("Import for debitorId/creditorId" + importRecord.getBPartnerValue())
-				.setC_Invoice(importRecord.getC_Invoice())
+		final LocalDate date = TimeUtil.asLocalDate(importRecord.getDateTrx());
+		
+		final IPaymentBL paymentsService = Services.get(IPaymentBL.class);
+		return paymentsService.newBuilderOfInvoice(importRecord.getC_Invoice())
+				//.receipt(importRecord.isReceipt())
+				.adOrgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
+				.bpartnerId(BPartnerId.ofRepoId(importRecord.getC_BPartner_ID()))
+				.payAmt(importRecord.getPayAmt())
+				.discountAmt(importRecord.getDiscountAmt())
+				.tenderType(TenderType.DirectDeposit)
+				.dateAcct(date)
+				.dateTrx(date)
+				.description("Import for debitorId/creditorId" + importRecord.getBPartnerValue())
 				.createAndProcess();
 	}
 

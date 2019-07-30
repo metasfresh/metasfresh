@@ -70,4 +70,22 @@ public class OptionalBooleanTest
 		assertThat(OptionalBoolean.ofBoolean(true)).isSameAs(OptionalBoolean.TRUE);
 		assertThat(OptionalBoolean.ofBoolean(false)).isSameAs(OptionalBoolean.FALSE);
 	}
+
+	@Test
+	public void test_ofNullableString()
+	{
+		assertThat(OptionalBoolean.ofNullableString("Y")).isSameAs(OptionalBoolean.TRUE);
+		assertThat(OptionalBoolean.ofNullableString("y")).isSameAs(OptionalBoolean.TRUE);
+		assertThat(OptionalBoolean.ofNullableString("true")).isSameAs(OptionalBoolean.TRUE);
+
+		assertThat(OptionalBoolean.ofNullableString("N")).isSameAs(OptionalBoolean.FALSE);
+		assertThat(OptionalBoolean.ofNullableString("n")).isSameAs(OptionalBoolean.FALSE);
+		assertThat(OptionalBoolean.ofNullableString("false")).isSameAs(OptionalBoolean.FALSE);
+
+		assertThat(OptionalBoolean.ofNullableString("wrongValue")).isSameAs(OptionalBoolean.FALSE);
+
+		assertThat(OptionalBoolean.ofNullableString(null)).isSameAs(OptionalBoolean.UNKNOWN);
+		assertThat(OptionalBoolean.ofNullableString("")).isSameAs(OptionalBoolean.UNKNOWN);
+		assertThat(OptionalBoolean.ofNullableString("      ")).isSameAs(OptionalBoolean.UNKNOWN);
+	}
 }

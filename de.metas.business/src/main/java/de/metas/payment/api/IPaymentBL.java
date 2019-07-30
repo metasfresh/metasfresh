@@ -28,22 +28,22 @@ package de.metas.payment.api;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.allocation.api.DefaultAllocationBuilder;
 import de.metas.payment.PaymentRule;
 import de.metas.util.ISingletonService;
 
-/**
- * @author cg
- * 
- */
 public interface IPaymentBL extends ISingletonService
 {
+	DefaultPaymentBuilder newInboundReceiptBuilder();
+
+	DefaultPaymentBuilder newOutboundPaymentBuilder();
+
+	DefaultPaymentBuilder newBuilderOfInvoice(I_C_Invoice invoice);
+
 	/**
 	 * 
 	 * @param payment
@@ -74,31 +74,6 @@ public interface IPaymentBL extends ISingletonService
 	 * @param creditMemoAdjusted True if we want to get absolute values for Credit Memos
 	 */
 	void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted);
-
-	/**
-	 * Creates a new payment builder.
-	 * 
-	 * @param ctxProvider
-	 *            an object that the {@link InterfaceWrapperHelper} can use to get the <code>ctx</code>and
-	 *            <code>trxName</code>.
-	 * @param implClazz
-	 *            the allocation builder implementation to use. Other modules can bring their own implementations. The
-	 *            implementing class needs to have a constructor with one <code>Object</code> where the given
-	 *            <code>ctxProvider</code> will be passed.
-	 *            <p>
-	 *            <b>IMPORTANT: when using an class that is included in another class, then this included class needs to
-	 *            be <code>static</code></b>
-	 * @return
-	 */
-	<T extends DefaultPaymentBuilder> T newBuilder(Object ctxProvider, Class<T> implClazz);
-
-	/**
-	 * Convenience method that calls {@link #newBuilder(Object, Class)} with the {@link DefaultAllocationBuilder} class.
-	 * 
-	 * @param ctxProvider
-	 * @return
-	 */
-	DefaultPaymentBuilder newBuilder(Object ctxProvider);
 
 	/**
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.

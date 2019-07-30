@@ -1,5 +1,7 @@
 package de.metas.util;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.util
@@ -30,6 +32,17 @@ public enum OptionalBoolean
 	{
 		return value ? TRUE : FALSE;
 	}
+
+	public static OptionalBoolean ofNullableBoolean(@Nullable final Boolean value)
+	{
+		return value != null ? ofBoolean(value) : UNKNOWN;
+	}
+	
+	public static OptionalBoolean ofNullableString(@Nullable final String value)
+	{
+		return ofNullableBoolean(StringUtils.toBooleanOrNull(value));
+	}
+
 
 	public boolean isTrue()
 	{

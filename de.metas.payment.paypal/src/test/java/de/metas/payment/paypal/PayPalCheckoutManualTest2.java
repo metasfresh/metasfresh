@@ -25,6 +25,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -40,6 +41,7 @@ import de.metas.payment.paypal.logs.PayPalLogRepository;
 import de.metas.payment.paypal.processor.PayPalPaymentProcessor;
 import de.metas.payment.processor.PaymentProcessorService;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
 import de.metas.payment.reservation.PaymentReservationCaptureRequest;
 import de.metas.payment.reservation.PaymentReservationCreateRequest;
 import de.metas.payment.reservation.PaymentReservationId;
@@ -121,8 +123,8 @@ public class PayPalCheckoutManualTest2
 				payPalConfigProvider,
 				new PayPalLogRepository(Optional.empty()));
 
-		payPalOrderService = new PayPalOrderService(
-				new PayPalOrderRepository(Optional.empty()));
+		final PayPalOrderRepository paypalOrderRepo = new PayPalOrderRepository();
+		payPalOrderService = new PayPalOrderService(paypalOrderRepo);
 
 		final MoneyService moneyService = new MoneyService(
 				new CurrencyRepository());
@@ -132,6 +134,7 @@ public class PayPalCheckoutManualTest2
 				new MailTemplateRepository());
 
 		final PaymentReservationRepository paymentReservationRepo = new PaymentReservationRepository();
+		final PaymentReservationCaptureRepository paymentReservationCaptureRepo = new PaymentReservationCaptureRepository();
 
 		paypal = new PayPal(payPalOrderService, payPalClient, paymentReservationRepo, mailService, moneyService);
 
@@ -142,6 +145,7 @@ public class PayPalCheckoutManualTest2
 
 		paymentReservationService = new PaymentReservationService(
 				paymentReservationRepo,
+				paymentReservationCaptureRepo,
 				paymentProcessors);
 	}
 
@@ -185,7 +189,7 @@ public class PayPalCheckoutManualTest2
 		// Create Reservation
 		final PaymentReservationId reservationId;
 		{
-			final PaymentReservation reservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
+			final PaymentReservation reservation = paymentReservationService.createReservation(PaymentReservationCreateRequest.builder()
 					.clientId(clientId)
 					.orgId(orgId)
 					.amount(money(100))
@@ -209,16 +213,19 @@ public class PayPalCheckoutManualTest2
 		}
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(30))
+				.salesInvoiceId(InvoiceId.ofRepoId(1))
 				.build());
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(40))
+				.salesInvoiceId(InvoiceId.ofRepoId(2))
 				.build());
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.paymentReservationId(reservationId)
+				.salesOrderId(salesOrderId)
 				.amount(money(20))
+				.salesInvoiceId(InvoiceId.ofRepoId(3))
 				.build());
 
 		// TODO: refund

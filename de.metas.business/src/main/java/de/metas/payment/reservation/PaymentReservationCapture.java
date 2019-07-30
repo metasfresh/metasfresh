@@ -2,7 +2,11 @@ package de.metas.payment.reservation;
 
 import javax.annotation.Nullable;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,14 +41,31 @@ import lombok.experimental.NonFinal;
 public class PaymentReservationCapture
 {
 	@NonNull
+	PaymentReservationId reservationId;
+
+	@NonNull
+	@NonFinal
 	PaymentReservationCaptureStatus status;
-	String statusDetails;
 
 	@NonNull
 	Money amount;
+
+	@NonNull
+	OrgId orgId;
+	@NonNull
+	OrderId salesOrderId;
+	@NonNull
+	InvoiceId salesInvoiceId;
+	@NonNull
+	PaymentId paymentId;
 
 	@Nullable
 	@NonFinal
 	@Setter(AccessLevel.PACKAGE)
 	PaymentReservationCaptureId id;
+
+	public void setStatusAsCompleted()
+	{
+		status = PaymentReservationCaptureStatus.COMPLETED;
+	}
 }

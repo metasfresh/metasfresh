@@ -3,11 +3,11 @@ package de.metas.payment.paypal.processor;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
-import de.metas.money.Money;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paypal.PayPal;
 import de.metas.payment.processor.PaymentProcessor;
 import de.metas.payment.reservation.PaymentReservation;
+import de.metas.payment.reservation.PaymentReservationCapture;
 import de.metas.payment.reservation.PaymentReservationStatus;
 import lombok.NonNull;
 
@@ -83,8 +83,10 @@ public class PayPalPaymentProcessor implements PaymentProcessor
 	}
 
 	@Override
-	public void captureMoney(final PaymentReservation reservation, final Money money)
+	public void processCapture(
+			@NonNull final PaymentReservation reservation,
+			@NonNull final PaymentReservationCapture capture)
 	{
-		paypal.captureMoney(reservation, money);
+		paypal.processCapture(reservation, capture);
 	}
 }

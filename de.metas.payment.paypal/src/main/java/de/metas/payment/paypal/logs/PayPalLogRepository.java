@@ -78,8 +78,6 @@ public class PayPalLogRepository
 		record.setPayPal_Order_ID(PayPalOrderId.toRepoId(log.getInternalPayPalOrderId()));
 
 		saveRecord(record);
-
-		dump(record);
 	}
 
 	private String toJson(final Object obj)
@@ -98,20 +96,5 @@ public class PayPalLogRepository
 			logger.warn("Failed converting object to JSON. Returning toString(): {}", obj, ex);
 			return obj.toString();
 		}
-	}
-
-	private static void dump(final I_PayPal_Log logRecord)
-	{
-		System.out.println("-[ Log ID=" + logRecord.getPayPal_Log_ID() + " ]-----------------------------------------------------------------------------");
-		System.out.println("Request path: " + logRecord.getRequestPath());
-		System.out.println("Request method: " + logRecord.getRequestMethod());
-		System.out.println("Request headers: " + logRecord.getRequestHeaders());
-		System.out.println("Request body: " + logRecord.getRequestBody());
-		System.out.println("----");
-		System.out.println("Response code: " + logRecord.getResponseCode());
-		System.out.println("Response headers: " + logRecord.getResponseHeaders());
-		System.out.println("Response body: " + logRecord.getResponseBody());
-		System.out.println("----");
-		System.out.println("C_Order ID: " + logRecord.getC_Order_ID());
 	}
 }

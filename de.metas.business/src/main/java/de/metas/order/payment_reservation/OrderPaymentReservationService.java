@@ -67,32 +67,12 @@ public class OrderPaymentReservationService
 			return OrderPaymentReservationCreateResult.NOT_NEEDED;
 		}
 
+		//
+		// Get existing reservation / create a new one
 		final OrderId salesOrderId = OrderId.ofRepoId(salesOrder.getC_Order_ID());
-		final PaymentReservation existingPaymentReservation = paymentReservationService
+		final PaymentReservation paymentReservation = paymentReservationService
 				.getBySalesOrderIdNotVoided(salesOrderId)
-				.orElse(null);
-
-		final PaymentReservation paymentReservation;
-		if (existingPaymentReservation == null)
-		{
-			final BPartnerContactId payerContactId = ordersService.getBillToContactId(salesOrder);
-
-			paymentReservation = paymentReservationService.create(PaymentReservationCreateRequest.builder()
-					.clientId(ClientId.ofRepoId(salesOrder.getAD_Client_ID()))
-					.orgId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()))
-					.amount(extractGrandTotal(salesOrder))
-					.payerContactId(payerContactId)
-					.payerEmail(bpartnersRepo.getContactEMail(payerContactId))
-					.salesOrderId(salesOrderId)
-					.dateTrx(SystemTime.asLocalDate())
-					.paymentRule(paymentRule)
-					.build());
-
-		}
-		else
-		{
-			paymentReservation = existingPaymentReservation;
-		}
+				.orElseGet(() -> createPaymentReservation(salesOrder));
 
 		//
 		// Result based on payment reservation's status
@@ -111,6 +91,22 @@ public class OrderPaymentReservationService
 					.setParameter("paymentReservation", paymentReservation)
 					.setParameter("salesOrderId", salesOrderId);
 		}
+	}
+
+	private PaymentReservation createPaymentReservation(final I_C_Order salesOrder)
+	{
+		final BPartnerContactId payerContactId = ordersService.getBillToContactId(salesOrder);
+
+		return paymentReservationService.createReservation(PaymentReservationCreateRequest.builder()
+				.clientId(ClientId.ofRepoId(salesOrder.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(salesOrder.getAD_Org_ID()))
+				.amount(extractGrandTotal(salesOrder))
+				.payerContactId(payerContactId)
+				.payerEmail(bpartnersRepo.getContactEMail(payerContactId))
+				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
+				.dateTrx(SystemTime.asLocalDate())
+				.paymentRule(PaymentRule.ofCode(salesOrder.getPaymentRule()))
+				.build());
 	}
 
 	private static Money extractGrandTotal(final I_C_Order salesOrder)

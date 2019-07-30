@@ -668,4 +668,13 @@ public class AdempiereException extends RuntimeException
 	{
 		return (ex instanceof AdempiereException) && ((AdempiereException)ex).isUserValidationError();
 	}
+
+	/**
+	 * Fluent version of {@link #addSuppressed(Throwable)}
+	 */
+	public AdempiereException suppressing(@NonNull final Throwable exception)
+	{
+		addSuppressed(exception);
+		return this;
+	}
 }

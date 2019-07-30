@@ -49,9 +49,10 @@ public final class PayPalOrderStatus
 	public static final PayPalOrderStatus CREATED = new PayPalOrderStatus("CREATED");
 	public static final PayPalOrderStatus APPROVED = new PayPalOrderStatus("APPROVED");
 	public static final PayPalOrderStatus COMPLETED = new PayPalOrderStatus("COMPLETED");
+	public static final PayPalOrderStatus REMOTE_DELETED = new PayPalOrderStatus("MF_REMOTE_DELETED");
 
 	private static final ImmutableMap<String, PayPalOrderStatus> cacheByCode = Maps.uniqueIndex(
-			Arrays.asList(UNKNOWN, CREATED, APPROVED, COMPLETED),
+			Arrays.asList(UNKNOWN, CREATED, APPROVED, COMPLETED, REMOTE_DELETED),
 			PayPalOrderStatus::getCode);
 
 	private final String code;
@@ -92,6 +93,10 @@ public final class PayPalOrderStatus
 		else if (this == COMPLETED)
 		{
 			return PaymentReservationStatus.COMPLETED;
+		}
+		else if (this == REMOTE_DELETED)
+		{
+			return PaymentReservationStatus.WAITING_PAYER_APPROVAL;
 		}
 		else
 		{

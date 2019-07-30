@@ -14,7 +14,7 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -298060771L;
+	private static final long serialVersionUID = -1906447858L;
 
     /** Standard Constructor */
     public X_PayPal_Log (Properties ctx, int PayPal_Log_ID, String trxName)
@@ -40,6 +40,43 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
+	}
+
+	@Override
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
+	}
+
+	/** Set Rechnung.
+		@param C_Invoice_ID 
+		Invoice Identifier
+	  */
+	@Override
+	public void setC_Invoice_ID (int C_Invoice_ID)
+	{
+		if (C_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+	}
+
+	/** Get Rechnung.
+		@return Invoice Identifier
+	  */
+	@Override
+	public int getC_Invoice_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_Order getC_Order()
@@ -73,6 +110,77 @@ public class X_PayPal_Log extends org.compiere.model.PO implements I_PayPal_Log,
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Payment getC_Payment()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class);
+	}
+
+	@Override
+	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Payment_ID, org.compiere.model.I_C_Payment.class, C_Payment);
+	}
+
+	/** Set Zahlung.
+		@param C_Payment_ID 
+		Zahlung
+	  */
+	@Override
+	public void setC_Payment_ID (int C_Payment_ID)
+	{
+		if (C_Payment_ID < 1) 
+			set_Value (COLUMNNAME_C_Payment_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+	}
+
+	/** Get Zahlung.
+		@return Zahlung
+	  */
+	@Override
+	public int getC_Payment_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Payment_Reservation_Capture getC_Payment_Reservation_Capture()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Payment_Reservation_Capture_ID, org.compiere.model.I_C_Payment_Reservation_Capture.class);
+	}
+
+	@Override
+	public void setC_Payment_Reservation_Capture(org.compiere.model.I_C_Payment_Reservation_Capture C_Payment_Reservation_Capture)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Payment_Reservation_Capture_ID, org.compiere.model.I_C_Payment_Reservation_Capture.class, C_Payment_Reservation_Capture);
+	}
+
+	/** Set Payment Reservation Capture.
+		@param C_Payment_Reservation_Capture_ID Payment Reservation Capture	  */
+	@Override
+	public void setC_Payment_Reservation_Capture_ID (int C_Payment_Reservation_Capture_ID)
+	{
+		if (C_Payment_Reservation_Capture_ID < 1) 
+			set_Value (COLUMNNAME_C_Payment_Reservation_Capture_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Payment_Reservation_Capture_ID, Integer.valueOf(C_Payment_Reservation_Capture_ID));
+	}
+
+	/** Get Payment Reservation Capture.
+		@return Payment Reservation Capture	  */
+	@Override
+	public int getC_Payment_Reservation_Capture_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Payment_Reservation_Capture_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
