@@ -38,4 +38,5 @@ UPDATE AD_Field SET DisplayLogic='',Updated=TO_TIMESTAMP('2019-07-29 22:37:15','
 -- URL zum Konzept
 UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2019-07-29 22:38:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=542695
 ;
-
+update ad_field set name = 'Geschäftspartner' where ad_field_id = 582484;
+update ad_field_trl set name = 'Geschäftspartner' where ad_field_id = 582484 and ad_language = 'de_DE';
