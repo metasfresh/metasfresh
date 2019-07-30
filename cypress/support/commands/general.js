@@ -359,7 +359,7 @@ Cypress.Commands.add('getNotificationsInbox', () => {
       .its('store')
       .invoke('getState')
       .then(state => {
-        return state.appHandler.inbox;
+        return cy.wrap(state.appHandler.inbox);
       });
   });
 });
@@ -433,12 +433,28 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
   }
 });
 
-Cypress.Commands.add('getCurrentRecordId', () => {
+Cypress.Commands.add('getCurrentWindowRecordId', () => {
   describe('Select the current record ID from the url', function() {
-    let currentRecordId = 0;
-    cy.url().then(ulrr => {
-      currentRecordId = ulrr.split('/').pop();
+    return cy.url().then(ulrr => {
+      // noinspection UnnecessaryLocalVariableJS
+      const currentRecordId = ulrr.split('/').pop();
+      return currentRecordId;
     });
-    return currentRecordId;
+  });
+});
+
+Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
+  describe('Reading the total amount', function() {
+    return cy.get('.header-breadcrumb-sitename').then(function(si) {
+      // noinspection UnnecessaryLocalVariableJS
+      const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+      return newTotalAmount;
+    });
+  });
+});
+
+Cypress.Commands.add('waitUntilProcessIsFinished', () => {
+  describe('Wait until a process id finished', function() {
+    cy.wait(10000);
   });
 });

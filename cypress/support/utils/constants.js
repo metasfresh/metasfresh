@@ -1,20 +1,14 @@
 export class DocumentStatusKey {
   static Completed = 'docStatusCompleted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusCompleted = '.tag-success';
-
-
+  static Reversed = 'docStatusReversed';
   static InProgress = 'docStatusInProgress';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusInProgress = '.tag-default';
-
   static Drafted = 'docStatusDrafted';
-  // noinspection JSUnusedGlobalSymbols
-  static _tag_docStatusDrafted = '.tag-primary';
 }
 
 export class DocumentActionKey {
   static Complete = 'docActionComplete';
+  static Void = 'docActionVoid';
+  static Reactivate = 'docActionReactivate';
 }
 
 /**
@@ -25,7 +19,7 @@ export class RewriteURL {
   /**
    * WINDOW is the default
    */
-  static WINDOW = '/rest/api/window/.*[^/][^N][^E][^W]$';
+  static WINDOW = '/rest/api/window/';
 
   static PROCESS = '/rest/api/process/';
 }

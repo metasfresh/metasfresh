@@ -1,24 +1,25 @@
-import { salesOrders } from '../../page_objects/sales_orders';
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
 
 describe('Create Sales order', function() {
-  const timestamp = new Date().getTime();
-  const customer = `CustomerTest ${timestamp}`;
-  const productName = `ProductTest ${timestamp}`;
-  const productValue = `sales_order_test ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductCategoryValue ${timestamp}`;
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const date = humanReadableNow();
+  const customer = `CustomerTest ${date}`;
+  const productName = `ProductTest ${date}`;
+  const productValue = `sales_order_test ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductCategoryValue ${date}`;
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
   const productType = 'Item';
 
   before(function() {
-    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
+    Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
       productCategoryValue,
@@ -57,9 +58,9 @@ describe('Create Sales order', function() {
       .contains(addNewText)
       .should('exist')
       .click();
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', `${timestamp}`, productName);
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
 
     cy.get('.form-field-Qty')
       .click()
@@ -68,22 +69,20 @@ describe('Create Sales order', function() {
       .find('i')
       .eq(0)
       .click();
-    cy.server();
-    cy.route('POST', `/rest/api/window/${salesOrders.windowId}/*/${salesOrders.orderLineTabId}/quickInput`).as(
-      'resetQuickInputFields'
-    );
     cy.get('.form-field-Qty')
       .find('input')
       .should('have.value', '0.1')
       .type('1{enter}');
-    cy.wait(3000);
+    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete sales order */
-    cy.get('.form-field-DocAction ul')
-      .click({ force: true })
-      .get('li')
-      .eq('1')
-      .click({ force: true });
-    cy.wait(8000);
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
+      );
+    });
+    cy.waitUntilProcessIsFinished();
     cy.get('.btn-header.side-panel-toggle').click({ force: true });
     cy.get('.order-list-nav .order-list-btn')
       .eq('1')
