@@ -25,6 +25,8 @@
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 import { purchaseOrders } from '../../page_objects/purchase_orders';
 
+// task: https://github.com/metasfresh/metasfresh-e2e/issues/153
+
 describe('Change warehouse in material receipt candidate #153', function() {
   //
   const warehouse1 = 'Hauptlager';
