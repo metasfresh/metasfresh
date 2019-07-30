@@ -418,7 +418,8 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
         return;
       }
 
-      if (actualFieldValue !== expectedFieldValue) {
+      // @TODO: Please oh please let's fix the types at one point
+      if (actualFieldValue != expectedFieldValue) {
         cy.log(
           `5 waitForFieldValue - waited for alias=${alias} and ${fieldName}='${expectedFieldValue}', but the current response body's field has ${fieldName}=${actualFieldValue}; waiting once more`
         );
