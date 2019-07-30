@@ -172,7 +172,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
 
 		ic.setQtyEntered(calculateQtyOrdered.getAsBigDecimal());
-		ic.setC_UOM_ID(calculateQtyOrdered.getUOMId());
+		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
 

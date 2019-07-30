@@ -176,6 +176,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		ic.setQtyToInvoice(ZERO); // to be computed
 
+		ic.setInvoicableQtyBasedOn(olc.getInvoicableQtyBasedOn());
 		ic.setM_PricingSystem_ID(olc.getM_PricingSystem_ID());
 		ic.setPriceActual(olc.getPriceActual());
 		ic.setPrice_UOM_ID(olCandEffectiveValuesBL.getC_UOM_Effective_ID(olc)); // 07090 when we set PriceActual, we shall also set PriceUOM.
@@ -325,15 +326,16 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_C_OLCand olc = getOLCand(ic);
 		final IPricingResult pricingResult = Services.get(IOLCandBL.class).computePriceActual(
-				olc, 
-				null, 
-				PricingSystemId.NULL, 
+				olc,
+				null,
+				PricingSystemId.NULL,
 				TimeUtil.asLocalDate(olc.getDateCandidate()));
 
 		return PriceAndTax.builder()
 				.priceUOMId(pricingResult.getPriceUomId())
 				.priceActual(pricingResult.getPriceStd())
 				.taxIncluded(pricingResult.isTaxIncluded())
+				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.build();
 	}
 

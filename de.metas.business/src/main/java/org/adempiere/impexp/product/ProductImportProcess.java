@@ -240,7 +240,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		final I_M_ProductPrice pp = Optional
 				.ofNullable(ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
 				.orElseGet(() -> InterfaceWrapperHelper.create(getCtx(), I_M_ProductPrice.class, ITrx.TRXNAME_ThreadInherited));
-		pp.setM_PriceList_Version(plv);	// FK
+		pp.setM_PriceList_Version_ID(priceListVersionId);	// FK
 		pp.setM_Product_ID(productId.getRepoId()); // FK
 		pp.setPriceLimit(PriceLimit);
 		pp.setPriceList(PriceList);
@@ -249,7 +249,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		pp.setC_UOM_ID(uomId);
 		InterfaceWrapperHelper.save(pp);
 	}
-	
+
 	private I_M_Product createMProduct(@NonNull final I_I_Product importRecord)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
@@ -273,7 +273,7 @@ public class ProductImportProcess extends AbstractImportProcess<I_I_Product>
 		product.setIsSold(importRecord.isSold());
 		product.setIsStocked(importRecord.isStocked());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
-		
+
 		return product;
 	}	// MProduct
 }

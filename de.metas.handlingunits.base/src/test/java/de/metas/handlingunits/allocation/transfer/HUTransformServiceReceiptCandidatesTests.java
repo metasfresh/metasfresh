@@ -109,7 +109,7 @@ public class HUTransformServiceReceiptCandidatesTests
 
 		final I_M_ReceiptSchedule receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class);
 		receiptSchedule.setM_Product_ID(storages.get(0).getProductId().getRepoId());
-		receiptSchedule.setC_UOM(storages.get(0).getC_UOM());
+		receiptSchedule.setC_UOM_ID(storages.get(0).getC_UOM().getC_UOM_ID());
 		InterfaceWrapperHelper.save(receiptSchedule);
 
 		final I_M_HU lu;
@@ -165,7 +165,7 @@ public class HUTransformServiceReceiptCandidatesTests
 		InterfaceWrapperHelper.save(huAssignment);
 
 		return receiptSchedule;
-	};
+	}
 
 	@Theory
 	public void testRealCU_To_NewTUs_1Tomato_TU_Capacity_2(
@@ -405,7 +405,7 @@ public class HUTransformServiceReceiptCandidatesTests
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/1177
-	 * 
+	 *
 	 */
 	@Test
 	public void testMultipleActionsIssue1177()
@@ -530,7 +530,7 @@ public class HUTransformServiceReceiptCandidatesTests
 	 * Iterates the given {@code hus} and verifies that the contained CU and TU quantities match the given {@code expectedQtyCU} and {@code expectedQtyTU}.
 	 * The method makes sure to count each HU and HU-storage only once.
 	 * The method also verifies that {@link I_M_ReceiptSchedule_Alloc} quantities match the CU qtys
-	 * 
+	 *
 	 * @param expectedQtyCU
 	 * @param expectedQtyTU
 	 * @param hus

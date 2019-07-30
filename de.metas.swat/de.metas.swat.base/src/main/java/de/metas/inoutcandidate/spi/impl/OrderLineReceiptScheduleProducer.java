@@ -197,7 +197,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			// Destination Warehouse
 
 			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
-			receiptSchedule.setM_Warehouse_Dest(warehouseDest);
+			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest.getM_Warehouse_ID());
 		}
 
 		//
@@ -407,7 +407,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	private int retrieveReceiptDocTypeId(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		
+
 		final I_C_Order order = orderLine.getC_Order();
 
 		//

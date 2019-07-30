@@ -15,7 +15,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1192184379L;
+	private static final long serialVersionUID = 1936779053L;
 
     /** Standard Constructor */
     public X_M_InOutLine (Properties ctx, int M_InOutLine_ID, String trxName)
@@ -108,6 +108,31 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getC_Activity_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Catch Weight Einheit.
+		@param Catch_UOM_ID 
+		Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+	}
+
+	/** Get Catch Weight Einheit.
+		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
+	  */
+	@Override
+	public int getCatch_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -733,28 +758,6 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return bd;
 	}
 
-	/** Set Preiseinheit.
-		@param Price_UOM_ID Preiseinheit	  */
-	@Override
-	public void setPrice_UOM_ID (int Price_UOM_ID)
-	{
-		if (Price_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Price_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Price_UOM_ID, Integer.valueOf(Price_UOM_ID));
-	}
-
-	/** Get Preiseinheit.
-		@return Preiseinheit	  */
-	@Override
-	public int getPrice_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Price_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -800,23 +803,23 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Catch Weight Menge in Preiseinheit.
-		@param QtyDeliveredInPriceUOM_CatchWeight 
-		Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	/** Set Menge in Catch Weight Einheit.
+		@param QtyDeliveredInCatchUOM 
+		Tatsächlich gelieferte Menge in Catch Weight Einheit.
 	  */
 	@Override
-	public void setQtyDeliveredInPriceUOM_CatchWeight (java.math.BigDecimal QtyDeliveredInPriceUOM_CatchWeight)
+	public void setQtyDeliveredInCatchUOM (java.math.BigDecimal QtyDeliveredInCatchUOM)
 	{
-		set_Value (COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight, QtyDeliveredInPriceUOM_CatchWeight);
+		set_Value (COLUMNNAME_QtyDeliveredInCatchUOM, QtyDeliveredInCatchUOM);
 	}
 
-	/** Get Catch Weight Menge in Preiseinheit.
-		@return Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	/** Get Menge in Catch Weight Einheit.
+		@return Tatsächlich gelieferte Menge in Catch Weight Einheit.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInPriceUOM_CatchWeight () 
+	public java.math.BigDecimal getQtyDeliveredInCatchUOM () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInCatchUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1153733166L;
+	private static final long serialVersionUID = 1341442905L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -30,6 +30,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 			setC_Invoice_Candidate_ID (0);
 			setC_Tax_ID (0);
 			setDiscount (BigDecimal.ZERO);
+			setInvoicableQtyBasedOn (null); // Nominal
 			setInvoiceRule (null);
 			setIsEdiRecipient (false); // @SQL=SELECT COALESCE( (SELECT IsEDIRecipient FROM C_BPartner where C_BPartner_ID = @Bill_BPartner_ID/-1@), 'N')
 			setIsError (false); // N
@@ -44,7 +45,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 			setIsToClear (false); // N
 			setProcessed (false); // N
 			setProcessed_Calc (false); // N
-			setQtyInPriceUOMVia (null); // Nominal
 			setQtyOrdered (BigDecimal.ZERO);
 			setQtyToInvoice (BigDecimal.ZERO); // 0
 			setQtyToInvoiceBeforeDiscount (BigDecimal.ZERO); // 0
@@ -1478,6 +1478,35 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
+	}
+
+	/** 
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -2631,35 +2660,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** 
-	 * QtyInPriceUOMVia AD_Reference_ID=541023
-	 * Reference name: QtyInPriceUOMVia
-	 */
-	public static final int QTYINPRICEUOMVIA_AD_Reference_ID=541023;
-	/** Nominal = Nominal */
-	public static final String QTYINPRICEUOMVIA_Nominal = "Nominal";
-	/** CatchWeight = CatchWeight */
-	public static final String QTYINPRICEUOMVIA_CatchWeight = "CatchWeight";
-	/** Set Menge in Preiseinheit durch.
-		@param QtyInPriceUOMVia 
-		Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.
-	  */
-	@Override
-	public void setQtyInPriceUOMVia (java.lang.String QtyInPriceUOMVia)
-	{
-
-		set_Value (COLUMNNAME_QtyInPriceUOMVia, QtyInPriceUOMVia);
-	}
-
-	/** Get Menge in Preiseinheit durch.
-		@return Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.
-	  */
-	@Override
-	public java.lang.String getQtyInPriceUOMVia () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_QtyInPriceUOMVia);
 	}
 
 	/** Set Berechn. Menge.

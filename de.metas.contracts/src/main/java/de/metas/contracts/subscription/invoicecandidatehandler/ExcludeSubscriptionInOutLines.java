@@ -2,7 +2,7 @@ package de.metas.contracts.subscription.invoicecandidatehandler;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOutLine;
 
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
@@ -20,12 +20,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -46,7 +46,7 @@ public class ExcludeSubscriptionInOutLines
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.contracts.model.I_M_InOutLine.COLUMNNAME_C_SubscriptionProgress_ID, null);
 
-		final InOutLinesWithMissingInvoiceCandidate dao = Adempiere.getBean(InOutLinesWithMissingInvoiceCandidate.class);
+		final InOutLinesWithMissingInvoiceCandidate dao = SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class);
 		dao.addAdditionalFilter(filter);
 	}
 }

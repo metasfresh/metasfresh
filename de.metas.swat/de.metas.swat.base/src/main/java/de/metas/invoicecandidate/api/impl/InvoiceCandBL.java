@@ -2128,7 +2128,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Quantity effectiveQty;
 
 			final org.compiere.model.I_M_InOutLine inoutLinerecord = icInOutLine.getM_InOutLine();
-			if (isNull(inoutLinerecord, I_M_InOutLine.COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight))
+			if (isNull(inoutLinerecord, I_M_InOutLine.COLUMNNAME_QtyDeliveredInCatchUOM))
 			{
 				effectiveQty = Quantity.of(
 						inoutLinerecord.getMovementQty(),
@@ -2137,8 +2137,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			else
 			{
 				effectiveQty = Quantity.of(
-						inoutLinerecord.getQtyDeliveredInPriceUOM_CatchWeight(),
-						loadOutOfTrx(inoutLinerecord.getPrice_UOM_ID(), I_C_UOM.class));
+						inoutLinerecord.getQtyDeliveredInCatchUOM(),
+						loadOutOfTrx(inoutLinerecord.getCatch_UOM_ID(), I_C_UOM.class));
 			}
 
 			effectiveQties.add(effectiveQty);
@@ -2146,7 +2146,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final UomId priceUomId = UomId.ofRepoId(ic.getPrice_UOM_ID());
 
-		final Quantity qtyToInvoiceInPriceUOMSum = uomConversionBL.computeSum(UOMConversionContext.of(productId), effectiveQties, priceUomId);
+		final Quantity qtyToInvoiceInPriceUOMSum = uomConversionBL.computeSum(
+				UOMConversionContext.of(productId),
+				effectiveQties,
+				priceUomId);
 
 		return qtyToInvoiceInPriceUOMSum;
 	}

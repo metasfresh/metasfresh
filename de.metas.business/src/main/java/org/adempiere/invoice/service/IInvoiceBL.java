@@ -263,7 +263,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * This method assumes that the given invoice Line has a product (with an UOM) and a C_UOM and Price_UOM set.
 	 *
 	 * @param invoiceLine
-	 * @param qtyInvoiced qtyInvoice to be set. The other two values are computed from it, using UOM conversions.
+	 * @param qtyInvoiced qtyInvoiced to be set, usually in the product's stocking UOM. The other two values are computed from it, using UOM conversions.
 	 */
 	void setQtys(I_C_InvoiceLine invoiceLine, BigDecimal qtyInvoiced);
 

@@ -15,7 +15,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -761442248L;
+	private static final long serialVersionUID = 704017220L;
 
     /** Standard Constructor */
     public X_M_ProductPrice (Properties ctx, int M_ProductPrice_ID, String trxName)
@@ -25,15 +25,16 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
         {
 			setC_TaxCategory_ID (0);
 			setC_UOM_ID (0);
+			setInvoicableQtyBasedOn (null); // Nominal
 			setIsAttributeDependant (false); // N
 			setIsDefault (false); // N
 			setIsDiscountEditable (true); // Y
 			setIsPriceEditable (true); // Y
 			setIsSeasonFixedPrice (false); // N
+			setMatchSeqNo (0); // @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
 			setM_PriceList_Version_ID (0);
 			setM_Product_ID (0);
 			setM_ProductPrice_ID (0);
-			setMatchSeqNo (0); // @SQL=SELECT COALESCE(MAX(MatchSeqNo),0)+10 AS DefaultValue FROM M_ProductPrice WHERE M_PriceList_Version_ID=@M_PriceList_Version_ID@ AND M_Product_ID=@M_Product_ID@
 			setPriceLimit (BigDecimal.ZERO);
 			setPriceList (BigDecimal.ZERO);
 			setPriceStd (BigDecimal.ZERO);
@@ -56,18 +57,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_C_TaxCategory getC_TaxCategory() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class);
-	}
-
-	@Override
-	public void setC_TaxCategory(org.compiere.model.I_C_TaxCategory C_TaxCategory)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxCategory_ID, org.compiere.model.I_C_TaxCategory.class, C_TaxCategory);
-	}
 
 	/** Set Steuerkategorie.
 		@param C_TaxCategory_ID 
@@ -94,18 +83,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
 	/** Set Maßeinheit.
 		@param C_UOM_ID 
 		Maßeinheit
@@ -129,6 +106,35 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
+	/** Set Abr. Menge basiert auf.
+		@param InvoicableQtyBasedOn 
+		Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public void setInvoicableQtyBasedOn (java.lang.String InvoicableQtyBasedOn)
+	{
+
+		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
+	}
+
+	/** Get Abr. Menge basiert auf.
+		@return Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.
+	  */
+	@Override
+	public java.lang.String getInvoicableQtyBasedOn () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	/** Set Attributabhängig.
@@ -255,8 +261,27 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return false;
 	}
 
+	/** Set Matching order.
+		@param MatchSeqNo Matching order	  */
 	@Override
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
+	public void setMatchSeqNo (int MatchSeqNo)
+	{
+		set_Value (COLUMNNAME_MatchSeqNo, Integer.valueOf(MatchSeqNo));
+	}
+
+	/** Get Matching order.
+		@return Matching order	  */
+	@Override
+	public int getMatchSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_MatchSeqNo);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
@@ -293,7 +318,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
-	public org.compiere.model.I_M_DiscountSchemaLine getM_DiscountSchemaLine() throws RuntimeException
+	public org.compiere.model.I_M_DiscountSchemaLine getM_DiscountSchemaLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_DiscountSchemaLine_ID, org.compiere.model.I_M_DiscountSchemaLine.class);
 	}
@@ -329,18 +354,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_PriceList_Version getM_PriceList_Version() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class);
-	}
-
-	@Override
-	public void setM_PriceList_Version(org.compiere.model.I_M_PriceList_Version M_PriceList_Version)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PriceList_Version_ID, org.compiere.model.I_M_PriceList_Version.class, M_PriceList_Version);
-	}
-
 	/** Set Version Preisliste.
 		@param M_PriceList_Version_ID 
 		Identifies a unique instance of a Price List
@@ -364,18 +377,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
-	}
-
-	@Override
-	public void setM_Product(org.compiere.model.I_M_Product M_Product)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
 	}
 
 	/** Set Produkt.
@@ -404,7 +405,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	@Override
-	public org.compiere.model.I_M_ProductPrice getM_ProductPrice_Base() throws RuntimeException
+	public org.compiere.model.I_M_ProductPrice getM_ProductPrice_Base()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ProductPrice_Base_ID, org.compiere.model.I_M_ProductPrice.class);
 	}
@@ -459,25 +460,6 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 		return ii.intValue();
 	}
 
-	/** Set Matching order.
-		@param MatchSeqNo Matching order	  */
-	@Override
-	public void setMatchSeqNo (int MatchSeqNo)
-	{
-		set_Value (COLUMNNAME_MatchSeqNo, Integer.valueOf(MatchSeqNo));
-	}
-
-	/** Get Matching order.
-		@return Matching order	  */
-	@Override
-	public int getMatchSeqNo () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MatchSeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Mindestpreis.
 		@param PriceLimit 
 		Lowest price for a product
@@ -523,9 +505,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	/** Set Standardpreis.
-		@param PriceStd 
-		Standard Price
-	  */
+		@param PriceStd Standardpreis	  */
 	@Override
 	public void setPriceStd (java.math.BigDecimal PriceStd)
 	{
@@ -533,8 +513,7 @@ public class X_M_ProductPrice extends org.compiere.model.PO implements I_M_Produ
 	}
 
 	/** Get Standardpreis.
-		@return Standard Price
-	  */
+		@return Standardpreis	  */
 	@Override
 	public java.math.BigDecimal getPriceStd () 
 	{

@@ -123,8 +123,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner1);
-		olCand.setM_Product(product1);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setM_Product_ID(product1.getM_Product_ID());
 
 		final String customProductDescription = "customDescription";
 		olCand.setProductDescription(customProductDescription);
@@ -140,8 +140,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner1);
-		olCand.setM_Product(product1);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setM_Product_ID(product1.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 
@@ -155,8 +155,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner2);
-		olCand.setM_Product(product2);
+		olCand.setC_BPartner_ID(bpartner2.getC_BPartner_ID());
+		olCand.setM_Product_ID(product2.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 
@@ -170,8 +170,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final IContextAware context = PlainContextAware.newOutOfTrx(ctx);
 
 		final I_C_OLCand olCand = olCand(context, I_C_OLCand.class, false); // save=false
-		olCand.setC_BPartner(bpartner3);
-		olCand.setM_Product(product3);
+		olCand.setC_BPartner_ID(bpartner3.getC_BPartner_ID());
+		olCand.setM_Product_ID(product3.getM_Product_ID());
 
 		InterfaceWrapperHelper.save(olCand);
 

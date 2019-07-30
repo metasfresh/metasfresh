@@ -1,5 +1,6 @@
 package de.metas.contracts.refund;
 
+import static de.metas.util.lang.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -21,7 +22,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
-import org.compiere.util.Util;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -255,6 +255,7 @@ public class RefundInvoiceCandidateRepository
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
 
+		// note that Quantity = 1 is set elsewhere, in the invoice candidate handler
 		final Money money = refundCandidate.getMoney();
 		record.setPriceActual(money.getAsBigDecimal());
 		record.setPriceEntered(money.getAsBigDecimal());
@@ -287,7 +288,7 @@ public class RefundInvoiceCandidateRepository
 				@NonNull final LocalDate invoicableFrom)
 		{
 			this.refundContract = refundContract;
-			this.invoicableFrom = Util.coalesce(invoicableFrom, refundContract.getStartDate());
+			this.invoicableFrom = coalesce(invoicableFrom, refundContract.getStartDate());
 		}
 	}
 }

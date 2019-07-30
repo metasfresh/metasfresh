@@ -1,5 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -138,7 +140,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 
 		//
 		// Skip receipt schedules which are not in Weight UOM
-		final I_C_UOM uom = receiptSchedule.getC_UOM();
+		final I_C_UOM uom = loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class);
 		if (!weightableBL.isWeightable(uom))
 		{
 			logger.debug("Skip receipt schedule because its UOM is not weightable: {}", uom);

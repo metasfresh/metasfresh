@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -30,6 +32,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -98,7 +102,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 						+ "\nReceipt Line: " + receiptLine
 						+ "\nReceipt Line M_Product_ID: " + receiptLine.getM_Product_ID()
 						+ "\nReceipt Schedule: " + receiptSchedule
-						+ "\nReceipt Schedule Product: " + receiptSchedule.getM_Product());
+						+ "\nReceipt Schedule Product: " + loadOutOfTrx(receiptSchedule.getM_Product_ID(), I_M_Product.class));
 			}
 
 			//
@@ -107,7 +111,7 @@ public class ReceiptScheduleAllocBuilder implements IReceiptScheduleAllocBuilder
 			{
 				throw new AdempiereException("Different UOMs on receipt schedule and receipt line is not supported."
 						+ "\nReceipt Schedule: " + receiptSchedule
-						+ "\nReceipt Schedule UOM: " + receiptSchedule.getC_UOM()
+						+ "\nReceipt Schedule UOM: " + loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class)
 						+ "\nReceipt Line: " + receiptLine
 						+ "\nReceipt Line C_UOM_ID: " + receiptLine.getC_UOM_ID());
 			}

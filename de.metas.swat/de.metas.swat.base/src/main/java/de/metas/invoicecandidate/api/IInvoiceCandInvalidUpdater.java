@@ -137,7 +137,10 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setDiscount(Percent.getValueOrNull(priceAndTax.getDiscount()));
 		}
-
+		if (priceAndTax.getInvoicableQtyBasedOn() != null)
+		{
+			ic.setInvoicableQtyBasedOn(priceAndTax.getInvoicableQtyBasedOn().getRecordString());
+		}
 		//
 		// Tax
 		if (priceAndTax.getTaxIncluded() != null)

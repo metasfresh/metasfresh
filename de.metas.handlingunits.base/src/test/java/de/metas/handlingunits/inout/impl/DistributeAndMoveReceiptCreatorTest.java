@@ -85,7 +85,7 @@ public class DistributeAndMoveReceiptCreatorTest
 		saveRecord(receiptLineRecord);
 
 		final I_M_ReceiptSchedule receiptSchedule = newInstance(I_M_ReceiptSchedule.class);
-		receiptSchedule.setM_Warehouse_Dest(destWarehouse);
+		receiptSchedule.setM_Warehouse_Dest_ID(destWarehouse.getM_Warehouse_ID());
 		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(X_M_ReceiptSchedule.ONMATERIALRECEIPTWITHDESTWAREHOUSE_CreateMovement);
 		saveRecord(receiptSchedule);
 

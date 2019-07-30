@@ -750,7 +750,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
-			
+
 			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
 			billBPContactId = billBPContact != null
 					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
@@ -772,10 +772,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(ic);
-		return calculatePriceAndQuantity(ic, inoutLine);
+		return calculatePriceAndTax(ic, inoutLine);
 	}
 
-	public static PriceAndTax calculatePriceAndQuantity(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
+	public static PriceAndTax calculatePriceAndTax(final I_C_Invoice_Candidate ic, final org.compiere.model.I_M_InOutLine inoutLine)
 	{
 		final IPricingResult pricingResult = calculatePricingResult(inoutLine);
 
@@ -790,6 +790,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
 
+
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())
 				// #367: there is a corner case where we need to know the PLV is order to later know the correct M_PriceList_ID.
@@ -801,6 +802,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				.priceEntered(pricingResult.getPriceStd())
 				.priceActual(pricingResult.getPriceStd())
 				.priceUOMId(pricingResult.getPriceUomId()) // 07090 when we set PriceActual, we shall also set PriceUOM.
+				.invoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn())
 				.taxIncluded(taxIncluded)
 				//
 				.discount(pricingResult.getDiscount())
@@ -818,9 +820,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		try
 		{
-			final PriceAndTax priceAndQty = calculatePriceAndQuantity(ic, fromInOutLine);
-			IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndQty);
-			return priceAndQty;
+			final PriceAndTax priceAndTax = calculatePriceAndTax(ic, fromInOutLine);
+			IInvoiceCandInvalidUpdater.updatePriceAndTax(ic, priceAndTax);
+			return priceAndTax;
 		}
 		catch (final ProductNotOnPriceListException e)
 		{

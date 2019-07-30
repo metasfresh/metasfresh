@@ -94,7 +94,7 @@ public class ShipmentLineBuilderTest
 		shipmentSchedule.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 		shipmentSchedule.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_OrderLine.Table_Name));
-		shipmentSchedule.setM_Product(huTestHelper.pTomato);
+		shipmentSchedule.setM_Product_ID(huTestHelper.pTomato.getM_Product_ID());
 		shipmentSchedule.setQtyTU_Calculated(TEN);
 		shipmentSchedule.setM_HU_PI_Item_Product_ID(piipWithCapacityEight.getM_HU_PI_Item_Product_ID());
 		save(shipmentSchedule);

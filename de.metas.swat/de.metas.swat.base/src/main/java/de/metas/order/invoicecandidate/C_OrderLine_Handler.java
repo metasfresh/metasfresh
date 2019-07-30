@@ -36,13 +36,13 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -63,6 +63,7 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -159,6 +160,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		setOrderedData(ic, orderLine);
 
+		ic.setInvoicableQtyBasedOn(orderLine.getInvoicableQtyBasedOn());
 		ic.setPriceActual(orderLine.getPriceActual());
 		ic.setPrice_UOM_ID(orderLine.getPrice_UOM_ID()); // 07090 when we set PiceActual, we shall also set PriceUOM.
 		ic.setPriceEntered(orderLine.getPriceEntered()); // cg : task 04917
@@ -348,7 +350,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Find out the first shipment/receipt
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 		I_M_InOut firstInOut = null;
@@ -357,7 +358,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_M_InOut inOut = icIol.getM_InOutLine().getM_InOut();
 
 			// Consider only completed shipments/receipts
-			if (!docActionBL.isDocumentCompletedOrClosed(inOut))
+			if (!DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed())
 			{
 				continue;
 			}
@@ -383,6 +384,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// ts: we *must* use the order line's data
 		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
 				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
@@ -392,7 +394,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// Percent Group Compensation Line
 		if (ic.isGroupCompensationLine() && GroupCompensationAmtType.Percent.getAdRefListValue().equals(ic.getGroupCompensationAmtType()))
 		{
-			final InvoiceCandidateGroupRepository groupsRepo = Adempiere.getBean(InvoiceCandidateGroupRepository.class);
+			final InvoiceCandidateGroupRepository groupsRepo = SpringContextHolder.instance.getBean(InvoiceCandidateGroupRepository.class);
 
 			final GroupId groupId = groupsRepo.extractGroupId(ic);
 			final Group group = groupsRepo.retrieveGroup(groupId);

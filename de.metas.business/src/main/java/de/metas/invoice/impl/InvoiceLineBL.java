@@ -420,7 +420,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId()));
 
 		invoiceLine.setPriceEntered(pricingResult.getPriceStd());
-		invoiceLine.setPriceActual(pricingResult.getPriceStd());
+		invoiceLine.setPriceActual(pricingResult.getPriceStd()); // will be updated in a few lines, if there is a discount
 
 		// Issue https://github.com/metasfresh/metasfresh/issues/2400:
 		// If the line has a discout, we assome it was manually added and stick with it

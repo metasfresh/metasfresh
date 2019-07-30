@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -562,7 +564,7 @@ public class ShipmentScheduleWithHUService
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				schedule.getM_Product(),
+				loadOutOfTrx(schedule.getM_Product_ID(),I_M_Product.class),
 				qtyToDeliver,
 				SystemTime.asDate(),
 				schedule,      // reference model

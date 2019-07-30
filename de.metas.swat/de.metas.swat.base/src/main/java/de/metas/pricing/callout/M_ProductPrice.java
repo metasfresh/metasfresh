@@ -29,6 +29,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 @Callout(I_M_ProductPrice.class)
@@ -43,10 +46,11 @@ public class M_ProductPrice
 	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_M_Product_ID })
 	public void onProductID(final I_M_ProductPrice productPrice, final ICalloutField field)
 	{
-		final I_M_Product product = productPrice.getM_Product();
-		if (product != null)
+		final ProductId productId = ProductId.ofRepoIdOrNull(productPrice.getM_Product_ID());
+		if (productId !=null)
 		{
-			productPrice.setC_UOM_ID(product.getC_UOM_ID());
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			productPrice.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 	}
 

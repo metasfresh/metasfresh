@@ -255,7 +255,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOutLine originInOutLine = inventoryLine.getM_InOutLine();
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 
-		return M_InOutLine_Handler.calculatePriceAndQuantity(ic, originInOutLine);
+		return M_InOutLine_Handler.calculatePriceAndTax(ic, originInOutLine);
 	}
 
 	@Override

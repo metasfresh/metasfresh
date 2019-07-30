@@ -87,7 +87,7 @@ public class HUShipmentProcess_AttributesAggregation_WithDifferentTemplateAttrib
 	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
 	{
 		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
-		attributeConfigRecord.setM_Attribute(attribute);
+		attributeConfigRecord.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		attributeConfigRecord.setOnlyIfInReferencedASI(false);
 		attributeConfigRecord.setM_IolCandHandler(handlerRecord);
 		save(attributeConfigRecord);

@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -303,13 +303,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// I talked with Mark and he observed that in the wiki-page of 08459 it is specified differently.
 			// I will let it here nevertheless, so we can keep track of it's way to work
 
-			final org.compiere.model.I_C_BPartner partner = sched.getC_BPartner();
+			final BPartnerId partnerId = BPartnerId.ofRepoId(sched.getC_BPartner_ID());
 
 			// FRESH-334 retrieve the bp product for org or for org 0
-			final org.compiere.model.I_M_Product product = olAndSched.getSched().getM_Product();
+			final org.compiere.model.I_M_Product product = loadOutOfTrx(sched.getM_Product_ID(), I_M_Product.class);
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-			final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(partner, product, orgId);
+			final I_C_BPartner_Product bpp = Services.get(IBPartnerProductDAO.class).retrieveBPartnerProductAssociation(ctx, partnerId, ProductId.ofRepoId(sched.getM_Product_ID()), orgId);
 			if (bpp == null)
 			{
 				// in case no dropship bpp entry was found, the schedule shall not be dropship
@@ -324,7 +324,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				{
 					// if there is bpp that is dropship and has a C_BPartner_Vendor_ID, set it in the schedule
 					final org.compiere.model.I_C_BPartner bpVendor = bpp.getC_BPartner_Vendor(); // the customer's vendor for the given product
-					sched.setC_BPartner_Vendor(bpVendor);
+					sched.setC_BPartner_Vendor_ID(bpVendor.getC_BPartner_ID());
 				}
 
 				// set the dropship flag in shipment schedule as it is in the bpp
@@ -498,10 +498,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				sched.setQtyPickList(qtyPickList);
 			}
 
-			final I_M_Product product = create(olAndSched.getSched().getM_Product(), I_M_Product.class);
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
-			if (!productBL.isStocked(product))
+			if (!productBL.isStocked(sched.getM_Product_ID()))
 			{
 				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
 				createLine(ctx, olAndSched, qtyToDeliver,
@@ -723,7 +722,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final IShipmentSchedulesDuringUpdate candidates)
 	{
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final I_C_BPartner partner = sched.getC_BPartner();
+		final I_C_BPartner partner = loadOutOfTrx(sched.getC_BPartner_ID(), I_C_BPartner.class);
 
 		final ShipmentScheduleReferencedLine scheduleSourcedoc = shipmentScheduleReferencedLineFactory.createFor(sched);
 		final String bPartnerAddress = sched.getBPartnerAddress_Override();
@@ -895,7 +894,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			logger.debug("Because '{}' has not the standard freight cost rule,  consolidation into one shipment is not allowed", order);
 			return true;
 		}
-		
+
 		return false;
 	}
 

@@ -407,15 +407,15 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 		final I_M_ReceiptSchedule rSched = InterfaceWrapperHelper.create(ctx, I_M_ReceiptSchedule.class, ITrx.TRXNAME_None);
 		rSched.setC_BPartner_ID(order.getC_BPartner_ID());
 		rSched.setC_Order(order);
-		rSched.setM_Warehouse(warehouse);
-		rSched.setM_Warehouse_Dest(warehouseDest);
+		rSched.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		rSched.setM_Warehouse_Dest_ID(warehouseDest.getM_Warehouse_ID());
 		rSched.setProcessed(false);
-		rSched.setC_UOM(uomEach);
+		rSched.setC_UOM_ID(uomEach.getC_UOM_ID());
 		rSched.setQtyOrdered(BigDecimal.valueOf(qtyInt));
 
 		//
 		// Product & ASI
-		rSched.setM_Product(product);
+		rSched.setM_Product_ID(product.getM_Product_ID());
 		rSched.setM_AttributeSetInstance(createASI());
 
 		rSched.setMovementDate(getTodayTimestamp());

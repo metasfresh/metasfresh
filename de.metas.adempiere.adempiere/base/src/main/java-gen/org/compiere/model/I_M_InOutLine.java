@@ -117,6 +117,31 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Catch Weight Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch Weight Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCatch_UOM_ID();
+
+    /** Column definition for Catch_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_Catch_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "Catch_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Catch_UOM_ID */
+    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
 	 * Set Werbemassnahme.
 	 * Marketing Campaign
 	 *
@@ -731,29 +756,6 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_PickedQty = "PickedQty";
 
 	/**
-	 * Set Preiseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPrice_UOM_ID (int Price_UOM_ID);
-
-	/**
-	 * Get Preiseinheit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPrice_UOM_ID();
-
-    /** Column definition for Price_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM> COLUMN_Price_UOM_ID = new org.adempiere.model.ModelColumn<I_M_InOutLine, org.compiere.model.I_C_UOM>(I_M_InOutLine.class, "Price_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name Price_UOM_ID */
-    public static final String COLUMNNAME_Price_UOM_ID = "Price_UOM_ID";
-
-	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -804,29 +806,29 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Catch Weight Menge in Preiseinheit.
-	 * Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	 * Set Menge in Catch Weight Einheit.
+	 * Tatsächlich gelieferte Menge in Catch Weight Einheit.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInPriceUOM_CatchWeight (java.math.BigDecimal QtyDeliveredInPriceUOM_CatchWeight);
+	public void setQtyDeliveredInCatchUOM (java.math.BigDecimal QtyDeliveredInCatchUOM);
 
 	/**
-	 * Get Catch Weight Menge in Preiseinheit.
-	 * Tatsächlich gelieferte Menge in der Mengeneinheit des Preises.
+	 * Get Menge in Catch Weight Einheit.
+	 * Tatsächlich gelieferte Menge in Catch Weight Einheit.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInPriceUOM_CatchWeight();
+	public java.math.BigDecimal getQtyDeliveredInCatchUOM();
 
-    /** Column definition for QtyDeliveredInPriceUOM_CatchWeight */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInPriceUOM_CatchWeight = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInPriceUOM_CatchWeight", null);
-    /** Column name QtyDeliveredInPriceUOM_CatchWeight */
-    public static final String COLUMNNAME_QtyDeliveredInPriceUOM_CatchWeight = "QtyDeliveredInPriceUOM_CatchWeight";
+    /** Column definition for QtyDeliveredInCatchUOM */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInCatchUOM = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInCatchUOM", null);
+    /** Column name QtyDeliveredInCatchUOM */
+    public static final String COLUMNNAME_QtyDeliveredInCatchUOM = "QtyDeliveredInCatchUOM";
 
 	/**
 	 * Set Menge.

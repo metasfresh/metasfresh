@@ -957,13 +957,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-		boolean fallback = false;
-		if (invoiceLine.getM_Product_ID() <= 0)
-		{
-			fallback = true;
-		}
+		final boolean fallback = invoiceLine.getM_Product_ID() <= 0;
 
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 
 		if (fallback)
 		{
@@ -973,6 +968,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
+		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
 		if (invoiceLine.getC_UOM_ID() <= 0)
 		{
 			invoiceLine.setQtyEntered(qtyInvoiced);
