@@ -221,10 +221,10 @@ declare namespace Cypress {
      * Write a string into an input field. Assert that the frontend performs a PATCH request with the given value.
      *
      * @param fieldName name of the field is question
-     * @param value - the value to write. This command prepends "{enter}" to that string. Also works for number or date fields, e.g. '01/01/2018' when invoked with noRequest=true.
+     * @param value - the value to write. This command prepends "{enter}" to that string. Also works for number or date fields, e.g. '01/01/2018' when invoked with skipRequest=true.
      * @param modal - optional - set true if the field in question is assumed to be in a modal/overlay dialog.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
-     * @param noRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
+     * @param skipRequest optional - set true if the command shall not very that a patch with the "right" response takes place. This is currently required if you use this command to non-string fields.
      *
      * @example
      * // This will work also with modal dialogs, *unless* there is also a description field in the underlying document
@@ -232,7 +232,7 @@ declare namespace Cypress {
      * // This will fail if the field in question is *not* in a modal dialog
      * cy.writeIntoStringField('Description', 'myname', true)
      */
-    writeIntoStringField(fieldName: string, value: string | number, modal?: boolean, rewriteUrl?: string, noRequest?: boolean): Chainable<any>
+    writeIntoStringField(fieldName: string, value: string | number, modal?: boolean, rewriteUrl?: string, skipRequest?: boolean): Chainable<any>
 
     /**
      * Write a string into a text area
@@ -350,8 +350,9 @@ declare namespace Cypress {
      * @param isChecked if true the checkbox is set to checked state, if false the checkbox is set to unchecked state
      * @param modal - optional, default = false - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
      * @param rewriteUrl - optional, default = null - specify to which URL the command expects the frontend to patch
+     * @param skipRequest - optional, default = false - if set to true, cypress won't expect a request to the server and won't wait for it
      */
-    setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL): Chainable<any>
+    setCheckBoxValue(fieldName: string, isChecked: boolean, modal ?: boolean, rewriteUrl ?: RewriteURL, skipRequest ?: boolean): Chainable<any>
 
 
     /**

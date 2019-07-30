@@ -380,7 +380,7 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
   });
 });
 
-Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null) => {
+Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null, skipRequest = false) => {
   describe(`Set the Checkbox value ${fieldName} to ${isChecked}`, function() {
     // the expected value is the same as the checked state
     // (used only for verification if the checkbox has the correct value)
@@ -391,11 +391,11 @@ Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, r
         if (theCheckboxValue) {
           // Nothing to do, already checked
         } else {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
+          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
         }
       } else {
         if (theCheckboxValue) {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl);
+          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
         } else {
           // Nothing to do, already unchecked
         }
