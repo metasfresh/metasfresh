@@ -128,12 +128,12 @@ export class RawWidget extends Component {
   // Datepicker is checking the cached value in datepicker component itself
   // and send a patch request only if date is changed
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const { handlePatch } = this.props;
+    const { handlePatch, inProgress } = this.props;
     const willPatch = this.willPatch(property, value, valueTo);
 
     // Do patch only when value is not equal state
     // or cache is set and it is not equal value
-    if ((isForce || willPatch) && handlePatch) {
+    if ((isForce || willPatch) && handlePatch && !inProgress) {
       this.setState({
         cachedValue: value,
         clearedFieldWarning: false,

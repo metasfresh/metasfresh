@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 
 export const RawWidgetPropTypes = {
   dispatch: PropTypes.func.isRequired,
+  inProgress: PropTypes.bool,
   autoFocus: PropTypes.bool,
   textSelected: PropTypes.bool,
   listenOnKeys: PropTypes.bool,
