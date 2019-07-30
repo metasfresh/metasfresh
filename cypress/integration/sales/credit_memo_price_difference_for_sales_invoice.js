@@ -112,10 +112,6 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
       originalProduct = product;
     });
 
-    cy.getStringFieldValue('QtyEntered', true).then(qty => {
-      originalQuantity = qty;
-    });
-
     cy.get('.header-breadcrumb-sitename').then(si => {
       originalSalesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
     });
@@ -175,7 +171,7 @@ describe('Create a Credit memo price difference for Sales Invoice', function () 
     cy.selectSingleTabRow();
     cy.openAdvancedEdit();
     cy.getStringFieldValue('M_Product_ID', true).should('be.equal', originalProduct);
-    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity);
+    cy.getStringFieldValue('QtyEntered', true).should('be.equal', originalQuantity.toString(10));
     cy.pressDoneButton();
   });
 

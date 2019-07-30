@@ -17,13 +17,20 @@ describe('Create Bank', function() {
   });
 
   it('Create customer', function() {
+    let bpartnerID = null;
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customer1Name)
-        .setBank(bankName)
-        .clearContacts() // save time by not creating locations and contacts which are not of this spec's concern right now
+      const bpartner = new BPartner({ ...customerJson, name: customer1Name })
+        .setCustomer(true)
         .clearLocations()
-        .apply();
+        .clearContacts()
+        .setBank(bankName);
+
+      bpartner.apply().then(bpartner => {
+        bpartnerID = bpartner.id;
+
+        cy.visitWindow('123', bpartnerID);
+      });
     });
   });
 });

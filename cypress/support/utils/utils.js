@@ -43,4 +43,36 @@ const getLanguageSpecific = (data, key) => {
   //   .as(`${key}_trl`);
 };
 
-export { getLanguageSpecific };
+/*
+ * Wrap cypress request in a Promise and resolve it on response.
+ *
+ * WARNING: Retarded Cypress request can't catch errors
+ */
+const wrapRequest = req => {
+  return new Promise(resolve => {
+    req.then(response => {
+      resolve(response.body.length ? response.body[0] : response.body.values);
+    });
+  });
+};
+
+/*
+ * Find object with certain caption in an array of elements
+ */
+const findByName = (dataArray, name) => {
+  let dataObject = null;
+
+  for (let i = 0; i < dataArray.length; i += 1) {
+    const obj = dataArray[i];
+
+    if (obj.caption === name) {
+      dataObject = obj;
+
+      break;
+    }
+  }
+
+  return dataObject;
+};
+
+export { getLanguageSpecific, wrapRequest, findByName };

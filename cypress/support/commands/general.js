@@ -75,6 +75,7 @@ context('Reusable "login" custom command using API', function() {
             return Cypress.reduxStore.dispatch(push('/'));
           }
 
+          cy.log(`Login failed because ${error}`);
           return Promise.reject(error);
         });
     };

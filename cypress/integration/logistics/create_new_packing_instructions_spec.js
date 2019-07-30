@@ -10,7 +10,7 @@ describe('create new packing instructions ', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductNameValue ${timestamp}`;
 
-  before(function() {
+  it('Set up product and partner', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -25,27 +25,22 @@ describe('create new packing instructions ', function() {
         .apply();
     });
 
-    cy.visitWindow('540192');
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
+    cy.visitWindow('540192', 'NEW');
     cy.writeIntoStringField('Name', packingMaterial);
     cy.selectInListField('M_Product_ID', productName);
 
     cy.fixture('settings/dunning_bpartner.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customerName)
-        .apply();
+      new BPartner({ ...customerJson, name: customerName }).setName(customerName).apply();
     });
   });
 
   it('creating packing instructions', function() {
-    cy.visitWindow('540343');
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
+    cy.visitWindow('540343', 'NEW');
     cy.writeIntoStringField('Name', packingMaterialInstruction);
   });
 
   it('creating packing instructions version', function() {
-    cy.visitWindow('540344');
-    cy.clickHeaderNav(Cypress.messages.window.new.caption);
+    cy.visitWindow('540344', 'NEW');
     cy.selectInListField('M_HU_PI_ID', packingMaterialInstruction);
     cy.writeIntoStringField('Name', packingMaterialInstruction);
     cy.selectInListField('HU_UnitType', 'Load/Logistique Unit');
