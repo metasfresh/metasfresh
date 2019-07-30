@@ -661,6 +661,15 @@ declare namespace Cypress {
      * Reverse the current document
      */
     reverseDocument(): Chainable<any>
+
+    /**
+     * Wait until everything is saved and all requests are finished.
+     *
+     * @param expectIndicator - optional, default false - if true, expect the ".indicator-pending" save bar to exist then disappear
+     */
+    waitUntilEverythingIsSaved(expectIndicator ?: boolean):Chainable<any>
+
+
   }
 
 }

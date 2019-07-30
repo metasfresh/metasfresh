@@ -205,7 +205,6 @@ Cypress.Commands.add('reactivateDocument', () => {
   });
 });
 
-
 Cypress.Commands.add('reverseDocument', () => {
   describe('Reverse the current document', function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {

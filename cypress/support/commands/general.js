@@ -462,3 +462,13 @@ Cypress.Commands.add('waitUntilProcessIsFinished', () => {
     cy.wait(10000);
   });
 });
+
+Cypress.Commands.add('waitUntilEverythingIsSaved', (expectIndicator = false) => {
+  describe('Wait until everything is saved and all requests are finished', function() {
+    if (expectIndicator) {
+      cy.get('.indicator-pending').should('exist');
+    }
+    cy.get('.indicator-pending').should('not.exist');
+    cy.get('.indicator-saved').should('exist');
+  });
+});
