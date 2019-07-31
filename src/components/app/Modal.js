@@ -328,9 +328,12 @@ class Modal extends Component {
         } catch (error) {
           throw error;
         } finally {
-          this.setState({
-            pending: false,
-          });
+          if (this.mounted) {
+            // prevent a memory leak
+            this.setState({
+              pending: false,
+            });
+          }
         }
       }
     );
