@@ -155,7 +155,6 @@ describe('Create a manual Payment for a Sales Invoice', function() {
   });
 
   it('Accounting transactions are created', function() {
-    cy.wait(5000); // give the system some breathing space
     cy.openReferencedDocuments('AD_RelationType_ID-540201');
   });
 

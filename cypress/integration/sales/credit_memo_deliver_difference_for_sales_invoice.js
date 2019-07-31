@@ -134,7 +134,6 @@ describe('Create a Credit memo deliver difference for Sales Invoice', function()
   });
 
   it('Open the Referenced Sales Invoice documents', function() {
-    cy.wait(5000); // give the system some breathing space
     cy.openReferencedDocuments('AD_RelationType_ID-540184');
   });
 
