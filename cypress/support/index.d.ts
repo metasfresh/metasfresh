@@ -162,20 +162,6 @@ declare namespace Cypress {
     selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, skipRequest ?: boolean, simpleListField ?: boolean): Chainable<any>
 
     /**
-     * Select a reference (zoom-to-target) from the reference-sidelist
-     *
-     * Better use {@link openReferencedDocuments} instead!
-     *
-     * @param internalReferenceName
-     * @param timeout time to wait for the reference to be available
-     * @example
-     * // this should work from a sales order
-     * cy.get('body').type('{alt}6'); // open referenced-records-sidelist
-     * cy.selectReference('C_Order_C_Invoice_Candidate').click();
-     */
-    selectReference(internalReferenceName: string, timeout: number): Chainable<any>
-
-    /**
      * Opens a new single document window
      *
      * @param windowId - the metasfresh AD_Window_ID of the window to visit
@@ -449,7 +435,7 @@ declare namespace Cypress {
      * @example
      * // This is equivalent to pressing `[alt + 6]`, then selecting one of the referenced documents:
      * cy.get('body').type('{alt}6');
-     * cy.selectReference('AD_RelationType_ID-540150').click();
+     * Select with mouse "Material Receipt Candidates"
      *
      * @example
      * // Only open the documents sidebar

@@ -46,20 +46,10 @@ Cypress.Commands.add('selectSingleTabRow', () => {
   });
 });
 
-Cypress.Commands.add('selectReference', (refName, timeout) => {
-  describe('Select reference with a certain name', function() {
-    const options = {};
-    if (timeout) {
-      options.timeout = timeout;
-    }
-    return cy.get(`.reference_${refName}`, options);
-  });
-});
-
 Cypress.Commands.add('openReferencedDocuments', (referenceId) => {
   cy.get('body').type('{alt}6');
   if (referenceId) {
-    cy.selectReference(referenceId).click();
+    cy.get(`.reference_${referenceId}`).click();
   }
 });
 
