@@ -59,9 +59,13 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-Cypress.Commands.add('executeQuickAction', (actionName, active) => {
+Cypress.Commands.add('executeQuickAction', (actionName, active, modal = false) => {
   describe('Fire a quick action with a certain name', function() {
     let path = `.quick-actions-wrapper`; // default action
+
+    if (modal) {
+      path = '.modal-content-wrapper ' + path;
+    }
 
     if (!active) {
       cy.get('.quick-actions-wrapper .btn-inline')
