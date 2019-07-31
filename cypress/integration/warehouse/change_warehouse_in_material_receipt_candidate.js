@@ -56,7 +56,6 @@ describe('Change warehouse in material receipt candidate #153', function() {
   });
 
   it('Visit referenced Material Receipt Candidates', function() {
-    cy.waitUntilProcessIsFinished();
     cy.openReferencedDocuments('M_ReceiptSchedule');
 
     cy.selectNthRow(0).dblclick();
@@ -86,7 +85,6 @@ describe('Change warehouse in material receipt candidate #153', function() {
   it('Go to the referenced Material Receipt', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
 
-    cy.waitUntilProcessIsFinished();
     cy.openReferencedDocuments('184');
 
     cy.expectNumberOfRows(1);
