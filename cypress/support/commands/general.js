@@ -419,8 +419,9 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
       }
 
       /**
-       * Here i'm using `!=` and not `!==` so that '222' == 222 (a string is equals to a number with the same value)
-       * We need this for cases such as `cy.writeIntoStringField('QtyEntered', 222, true);`
+       * TODO: Please oh please let's fix the types at one point
+       *  Here i'm using `!=` and not `!==` so that '222' == 222 (a string is equals to a number with the same value)
+       *  We need this for cases such as `cy.writeIntoStringField('QtyEntered', 222, true);`
        */
       if (actualFieldValue != expectedFieldValue) {
         cy.log(

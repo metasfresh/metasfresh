@@ -194,31 +194,29 @@ Cypress.Commands.add('selectOffsetDateViaPicker', (fieldName, dayOffset, modal) 
  * @param {boolean} noRequest - if set to true, don't wait for the response from the server
  */
 Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rewriteUrl, noRequest) => {
-  describe('Enter value into string field', function() {
-    const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
-    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
-    // in the default pattern we want to match URLs that do *not* end with "/NEW"
-    const patchUrlPattern = rewriteUrl || '/rest/api/window';
-    cy.log(
-      `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
-    );
+  const aliasName = `writeIntoStringField-${fieldName}-${new Date().getTime()}`;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+  // in the default pattern we want to match URLs that do *not* end with "/NEW"
+  const patchUrlPattern = rewriteUrl || '/rest/api/window';
+  cy.log(
+    `writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`
+  );
 
-    if (!noRequest) {
-      cy.server();
-      cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
-    }
+  if (!noRequest) {
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+  }
 
-    const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('input')
-      .type('{selectall}', { force: true })
-      .type(`${stringValue}`)
-      .type('{enter}', { force: true });
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('input')
+    .type('{selectall}', { force: true })
+    .type(stringValue)
+    .type('{enter}', { force: true });
 
-    if (!noRequest) {
-      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
-    }
-  });
+  if (!noRequest) {
+    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+  }
 });
 
 /**
@@ -381,7 +379,8 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
 });
 
 Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null, skipRequest = false) => {
-  describe(`Set the Checkbox value ${fieldName} to ${isChecked}`, function() {
+  cy.log(`Set the Checkbox value ${fieldName} to ${isChecked}`);
+
     // the expected value is the same as the checked state
     // (used only for verification if the checkbox has the correct value)
     const expectedPatchValue = isChecked;
@@ -401,5 +400,4 @@ Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, r
         }
       }
     });
-  });
 });
