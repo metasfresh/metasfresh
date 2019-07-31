@@ -87,20 +87,13 @@ describe('Change warehouse in material receipt candidate #153', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
 
     cy.waitUntilProcessIsFinished();
-    cy.openReferencedDocuments('M_ReceiptSchedule');
+    cy.openReferencedDocuments('184');
 
-    // 2 rows: the product and the packing item
-    cy.expectNumberOfRows(2);
+    cy.expectNumberOfRows(1);
     cy.selectNthRow(0).dblclick();
   });
 
-  it('Warehouse should not be changed', function() {
-    cy.getStringFieldValue('M_Warehouse_ID').should('contain', warehouse1);
-  });
-
-  it('Warehouse Override should be second warehouse', function() {
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_Warehouse_Override_ID').should('contain', warehouse2);
-    cy.pressDoneButton();
+  it('Warehouse should be 2nd warehouse', function() {
+    cy.getStringFieldValue('M_Warehouse_ID').should('contain', warehouse2);
   });
 });
