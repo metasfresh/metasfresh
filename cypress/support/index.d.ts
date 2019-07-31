@@ -178,7 +178,7 @@ declare namespace Cypress {
      * })
      *
      */
-    visitWindow(windowId: string, recordId?: string, documentIdAliasName?: string): Chainable<any>
+    visitWindow(windowId: string | number, recordId?: string | number, documentIdAliasName?: string): Chainable<any>
 
     /**
      * Wait for the response to a particular patch where a particular field value was set
