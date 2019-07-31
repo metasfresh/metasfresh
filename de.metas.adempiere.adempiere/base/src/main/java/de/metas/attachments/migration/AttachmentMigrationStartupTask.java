@@ -1,7 +1,5 @@
 package de.metas.attachments.migration;
 
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
-
 /*
  * #%L
  * de.metas.async
@@ -28,7 +26,6 @@ import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.NonNull;
 
 @Component
@@ -39,7 +36,6 @@ public class AttachmentMigrationStartupTask implements IStartupHouseKeepingTask
 	public AttachmentMigrationStartupTask(@NonNull final AttachmentMigrationService migrateAttachmentService)
 	{
 		this.migrateAttachmentService = migrateAttachmentService;
-		Services.get(IHouseKeepingBL.class).registerStartupHouseKeepingTask(this);
 	}
 
 	@Override

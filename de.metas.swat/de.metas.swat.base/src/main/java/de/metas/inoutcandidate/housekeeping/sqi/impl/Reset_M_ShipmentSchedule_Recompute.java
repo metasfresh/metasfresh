@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.housekeeping.sqi.impl;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -35,6 +36,7 @@ import de.metas.util.Loggables;
  * @task https://metasfresh.atlassian.net/browse/FRESH-342
  * @task https://github.com/metasfresh/metasfresh/issues/298
  */
+@Component
 public class Reset_M_ShipmentSchedule_Recompute implements IStartupHouseKeepingTask
 {
 	@Override
