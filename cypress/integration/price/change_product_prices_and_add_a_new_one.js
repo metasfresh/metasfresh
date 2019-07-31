@@ -308,7 +308,7 @@ function createProductPriceWithAttributes(productName) {
     cy.selectInListField(attributeName1, attributeValue1, false, RewriteURL.ATTRIBUTE);
     cy.selectInListField(attributeName2, attributeValue1, false, RewriteURL.ATTRIBUTE);
     cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
-    cy.waitUntilEverythingIsSaved(true);
+    cy.waitForSaveIndicator(true);
   });
 }
 
@@ -322,7 +322,7 @@ function editProductAttributes(productName, productID) {
   cy.selectInListField(attributeName1, attributeValue2, false, RewriteURL.ATTRIBUTE);
   cy.selectInListField(attributeName2, attributeValue2, false, RewriteURL.ATTRIBUTE);
   cy.get('.form-field-M_AttributeSetInstance_ID').click({ force: true }); // save the attributes
-  cy.waitUntilEverythingIsSaved(true);
+  cy.waitForSaveIndicator(true);
 }
 
 function expectNumberOfProductPrices(expectedNumberOfRows) {

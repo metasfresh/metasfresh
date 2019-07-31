@@ -654,7 +654,7 @@ declare namespace Cypress {
      *
      * @param expectIndicator - optional, default false - if true, expect the ".indicator-pending" save bar to exist then disappear
      */
-    waitUntilEverythingIsSaved(expectIndicator ?: boolean): Chainable<any>
+    waitForSaveIndicator(expectIndicator ?: boolean): Chainable<any>
 
 
   }
