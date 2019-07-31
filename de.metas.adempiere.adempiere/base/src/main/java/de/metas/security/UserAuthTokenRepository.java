@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User_AuthToken;
 import org.springframework.stereotype.Repository;
@@ -98,6 +99,12 @@ public class UserAuthTokenRepository
 
 	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
+
+		return toUserAuthToken(retrieveUserAuthTokenPOByUserId(userId, roleId));
+	}
+
+	public I_AD_User_AuthToken retrieveUserAuthTokenPOByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
 		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
@@ -116,6 +123,12 @@ public class UserAuthTokenRepository
 			throw new AdempiereException("Invalid token (2)");
 		}
 
-		return toUserAuthToken(userAuthTokens.get(0));
+		return userAuthTokens.get(0);
+	}
+
+	public void resetAuthTokenAndSave(final I_AD_User_AuthToken userAuthTokenPO)
+	{
+		userAuthTokenPO.setAuthToken(generateAuthTokenString());
+		InterfaceWrapperHelper.save(userAuthTokenPO);
 	}
 }
