@@ -25,6 +25,7 @@ class TableQuickInput extends Component {
       data: null,
       id: null,
       editedField: 0,
+      inProgress: false,
     };
   }
 
@@ -119,45 +120,54 @@ class TableQuickInput extends Component {
     const { docType, docId, tabId } = this.props;
     const { id } = this.state;
 
-    this.patchPromise = new Promise(resolve => {
-      patchRequest({
-        entity: 'window',
-        docType,
-        docId,
-        tabId,
-        property: prop,
-        value,
-        subentity: 'quickInput',
-        subentityId: id,
-      }).then(response => {
-        const fields = response.data[0] && response.data[0].fieldsByName;
+    this.setState(
+      {
+        inProgress: true,
+      },
+      () => {
+        this.patchPromise = new Promise(resolve => {
+          patchRequest({
+            entity: 'window',
+            docType,
+            docId,
+            tabId,
+            property: prop,
+            value,
+            subentity: 'quickInput',
+            subentityId: id,
+          }).then(response => {
+            const fields = response.data[0] && response.data[0].fieldsByName;
 
-        fields &&
-          Object.keys(fields).map(fieldName => {
-            this.setState(
-              prevState => ({
-                data: Object.assign({}, prevState.data, {
-                  [fieldName]: Object.assign(
-                    {},
-                    prevState.data[fieldName],
-                    fields[fieldName]
-                  ),
-                }),
-              }),
-              () => {
-                if (callback) {
-                  callback();
-                }
-                resolve();
-              }
-            );
+            fields &&
+              Object.keys(fields).map(fieldName => {
+                this.setState(
+                  prevState => ({
+                    data: Object.assign({}, prevState.data, {
+                      [fieldName]: Object.assign(
+                        {},
+                        prevState.data[fieldName],
+                        fields[fieldName]
+                      ),
+                    }),
+                    inProgress: false,
+                  }),
+                  () => {
+                    if (callback) {
+                      callback();
+                    }
+                    resolve();
+                  }
+                );
+              });
           });
-      });
-    });
+        });
+      }
+    );
   };
 
   renderFields = (layout, data, dataId, attributeType, quickInputId) => {
     const { tabId, docType, forceHeight } = this.props;
+    const { inProgress } = this.state;
 
     this.rawWidgets = [];
 
@@ -173,6 +183,7 @@ class TableQuickInput extends Component {
                 this.rawWidgets.push(c);
               }
             }}
+            inProgress={inProgress}
             entity={attributeType}
             subentity="quickInput"
             subentityId={quickInputId}
