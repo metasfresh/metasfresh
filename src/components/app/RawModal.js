@@ -213,6 +213,7 @@ class RawModal extends Component {
           tabIndex={!modalVisible && rawModalVisible ? 0 : -1}
           onShowTooltip={this.showTooltip}
           onHideTooltip={this.hideTooltip}
+          key={i}
         >
           {counterpart.translate(selector)}
           {showTooltip && (
