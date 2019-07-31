@@ -75,3 +75,12 @@ Cypress.Commands.add('selectNthRow', rowNumber => {
     .should('exist')
     .click({ force: true });
 });
+
+/**
+ * Expect the table to have a specific number of rows
+ *
+ * @param numberOfRows - the number of rows
+ */
+Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
+  return cy.get('table tbody tr').should('have.length', numberOfRows);
+});

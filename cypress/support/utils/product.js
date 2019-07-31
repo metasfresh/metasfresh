@@ -8,6 +8,7 @@ export class Product {
     this.name = name;
     this.attributeValues = [];
     this.productPrices = [];
+    this.packingInstructions = [];
   }
 
   setName(name) {
@@ -79,9 +80,9 @@ export class Product {
     return this;
   }
 
-  setCUTUAllocation(packingInstruction) {
-    cy.log(`Product - set packingInstruction = ${packingInstruction}`);
-    this.packingInstruction = packingInstruction;
+  addCUTUAllocation(packingInstruction) {
+    cy.log(`Product - add packingInstruction = ${packingInstruction}`);
+    this.packingInstructions.push(packingInstruction);
     return this;
   }
 
@@ -131,7 +132,7 @@ export class Product {
       cy.getStringFieldValue('ProductType').then(productTypeValue => {
         const productType = getLanguageSpecific(product, 'productType');
 
-        if (productType != productTypeValue) {
+        if (productType !== productTypeValue) {
           cy.resetListValue('ProductType');
           cy.selectInListField('ProductType', productType);
         }
@@ -140,18 +141,20 @@ export class Product {
       cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
         const c_uom = getLanguageSpecific(product, 'c_uom');
 
-        if (c_uom && c_uom != uomValue) {
+        if (c_uom && c_uom !== uomValue) {
           cy.selectInListField('C_UOM_ID', c_uom);
         }
       });
-      if (product.packingInstruction != null) {
+
+      product.packingInstructions.forEach(pi => {
         cy.selectTab('M_HU_PI_Item_Product');
         cy.pressAddNewButton();
-        cy.selectInListField('M_HU_PI_Item_ID', product.packingInstruction, true);
+        cy.selectInListField('M_HU_PI_Item_ID', pi, true);
         cy.writeIntoStringField('Qty', 10, true, null, true);
         cy.selectDateViaPicker('ValidFrom');
         cy.pressDoneButton();
-      }
+      });
+      cy.expectNumberOfRows(product.packingInstructions.length);
 
       if (product.businessPartner != null) {
         cy.selectTab('C_BPartner_Product');
@@ -213,6 +216,12 @@ export class ProductCategory {
     return this;
   }
 
+  setAttributeSet(attributeSet) {
+    cy.log(`Product Category - set attributeSet = ${attributeSet}`);
+    this.attributeSet = attributeSet;
+    return this;
+  }
+
   apply() {
     cy.log(`Product Category - apply - START (name=${this.name})`);
     ProductCategory.applyProductCategory(this);
@@ -226,6 +235,9 @@ export class ProductCategory {
 
       // Value can be updated
       cy.writeIntoStringField('Value', productCategory.value);
+      if (productCategory.attributeSet) {
+        cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
+      }
     });
   }
 }

@@ -10,7 +10,10 @@
   "docActionReactivate": "Re-activate",
   "de_DE__docActionReactivate": "Reaktivieren",
 
-  
+  "docActionReverse": "Reverse - Correct",
+  "de_DE__docActionReverse": "Storno",
+
+
 
   "docStatusCompleted": "Completed",
   "de_DE__docStatusCompleted": "Fertiggestellt",

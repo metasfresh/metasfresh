@@ -43,7 +43,6 @@ describe('Create test: create material receipt with quality issue, https://githu
     /**if found, deselect it */
     cy.get('tr').then(el => {
       if (el.length > 1) {
-        debugger;
         cy.get(el.get(1))
           .find('td:nth-of-type(7)')
           .find('.meta-icon-checkbox-1')

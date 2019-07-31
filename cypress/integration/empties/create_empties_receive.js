@@ -76,7 +76,8 @@ describe('Create Empties Receive', function() {
       cy.selectTab('M_InOutLine');
       cy.pressBatchEntryButton();
       cy.writeIntoLookupListField('M_HU_PackingMaterial_ID', productName, productName);
-      cy.writeIntoStringField('Qty', productQuantity, false, null, true).type('{enter}');
+      cy.writeIntoStringField('Qty', productQuantity, false, null, true);
+      cy.closeBatchEntry();
 
       cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
         cy.processDocument(
