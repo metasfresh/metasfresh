@@ -9,8 +9,11 @@ import com.braintreepayments.http.exceptions.HttpException;
 import com.braintreepayments.http.serializer.Json;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
+import de.metas.payment.PaymentId;
 import de.metas.payment.paypal.client.PayPalOrderId;
+import de.metas.payment.reservation.PaymentReservationCaptureId;
 import de.metas.payment.reservation.PaymentReservationId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
@@ -52,8 +55,11 @@ public class PayPalCreateLogRequest
 	ImmutableMap<String, String> responseHeaders;
 	String responseBodyAsJson;
 
-	OrderId salesOrderId;
 	PaymentReservationId paymentReservationId;
+	PaymentReservationCaptureId paymentReservationCaptureId;
+	OrderId salesOrderId;
+	InvoiceId salesInvoiceId;
+	PaymentId paymentId;
 	PayPalOrderId internalPayPalOrderId;
 
 	public static class PayPalCreateLogRequestBuilder

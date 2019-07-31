@@ -13,8 +13,25 @@ Here come the actual release notes:
 # metasfresh 5.114
 
 ## Features
+* metasfresh
+  * [#5041](https://github.com/metasfresh/metasfresh/issues/5041) Implement Paypal Plus support
+  * [#5392](https://github.com/metasfresh/metasfresh/issues/5392) Discount Rows new action "copy to discount schema" for selected rows
+  * [#5405](https://github.com/metasfresh/metasfresh/issues/5405) New Subtab in Product for Campaign prices
+
+* metasfresh-e2e
+  * [#108](https://github.com/metasfresh/metasfresh-e2e/issues/108) Create purchase order with orderline, complete / reactivate / complete again
+  * [#155](https://github.com/metasfresh/metasfresh-e2e/issues/155) Create purchase order with orderline, complete / reactivate / change qties and price in orderline / complete again
+  * [#211](https://github.com/metasfresh/metasfresh-e2e/issues/211) Create Empties Returns
+  * [#212](https://github.com/metasfresh/metasfresh-e2e/issues/212) Reactivate and change Empties Return
+  * [#230](https://github.com/metasfresh/metasfresh-e2e/issues/230) Create new Tour and Tourversion
+  * [#232](https://github.com/metasfresh/metasfresh-e2e/issues/232) Create Delivery Days
 
 ## Fixes
+* metasfresh
+  * [#5400](https://github.com/metasfresh/metasfresh/issues/5400) Error when opening Picking Terminal prototype
+
+* metasfresh-webui-frontend
+  * [#1822](https://github.com/metasfresh/me03/issues/1822) Fix decimal comma in Qty Fields
 
 # metasfresh 5.113
 

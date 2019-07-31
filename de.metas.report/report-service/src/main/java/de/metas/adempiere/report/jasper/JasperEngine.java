@@ -39,7 +39,7 @@ import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -97,7 +97,7 @@ public class JasperEngine extends AbstractReportEngine
 	private static final String PARAM_OUTPUTTYPE = "OUTPUTTYPE";
 
 	// services
-	private final JsonDataSourceService jsonDSService = Adempiere.getBean(JsonDataSourceService.class);
+	private final JsonDataSourceService jsonDSService = SpringContextHolder.instance.getBean(JsonDataSourceService.class);
 
 	private final transient Logger log = LogManager.getLogger(getClass());
 

@@ -63,6 +63,35 @@ public interface I_PayPal_Log
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Rechnung.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_ID();
+
+	public org.compiere.model.I_C_Invoice getC_Invoice();
+
+	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice);
+
+    /** Column definition for C_Invoice_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Invoice>(I_PayPal_Log.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+    /** Column name C_Invoice_ID */
+    public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
+
+	/**
 	 * Set Auftrag.
 	 * Auftrag
 	 *
@@ -90,6 +119,62 @@ public interface I_PayPal_Log
     public static final org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Order>(I_PayPal_Log.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
     /** Column name C_Order_ID */
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
+	 * Set Zahlung.
+	 * Zahlung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Payment_ID (int C_Payment_ID);
+
+	/**
+	 * Get Zahlung.
+	 * Zahlung
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Payment_ID();
+
+	public org.compiere.model.I_C_Payment getC_Payment();
+
+	public void setC_Payment(org.compiere.model.I_C_Payment C_Payment);
+
+    /** Column definition for C_Payment_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment> COLUMN_C_Payment_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment>(I_PayPal_Log.class, "C_Payment_ID", org.compiere.model.I_C_Payment.class);
+    /** Column name C_Payment_ID */
+    public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
+
+	/**
+	 * Set Payment Reservation Capture.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Payment_Reservation_Capture_ID (int C_Payment_Reservation_Capture_ID);
+
+	/**
+	 * Get Payment Reservation Capture.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Payment_Reservation_Capture_ID();
+
+	public org.compiere.model.I_C_Payment_Reservation_Capture getC_Payment_Reservation_Capture();
+
+	public void setC_Payment_Reservation_Capture(org.compiere.model.I_C_Payment_Reservation_Capture C_Payment_Reservation_Capture);
+
+    /** Column definition for C_Payment_Reservation_Capture_ID */
+    public static final org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment_Reservation_Capture> COLUMN_C_Payment_Reservation_Capture_ID = new org.adempiere.model.ModelColumn<I_PayPal_Log, org.compiere.model.I_C_Payment_Reservation_Capture>(I_PayPal_Log.class, "C_Payment_Reservation_Capture_ID", org.compiere.model.I_C_Payment_Reservation_Capture.class);
+    /** Column name C_Payment_Reservation_Capture_ID */
+    public static final String COLUMNNAME_C_Payment_Reservation_Capture_ID = "C_Payment_Reservation_Capture_ID";
 
 	/**
 	 * Set Payment Reservation.

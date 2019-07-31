@@ -449,10 +449,10 @@ public class GridWindowVO implements Serializable
 	}   //  createTabs
 
 	private GridWindowVO (
-			final Properties ctx, 
-			final int windowNo, 
-			@NonNull final AdWindowId adWindowId, 
-			final boolean loadAllLanguages, 
+			final Properties ctx,
+			final int windowNo,
+			@NonNull final AdWindowId adWindowId,
+			final boolean loadAllLanguages,
 			final boolean applyRolePermissions)
 	{
 		super();

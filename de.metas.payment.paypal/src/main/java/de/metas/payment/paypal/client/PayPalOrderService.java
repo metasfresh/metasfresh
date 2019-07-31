@@ -73,4 +73,9 @@ public class PayPalOrderService
 		return paypalOrderRepo.save(id, apiOrder);
 	}
 
+	public PayPalOrder markRemoteDeleted(@NonNull final PayPalOrderId id)
+	{
+		return paypalOrderRepo.markRemoteDeleted(id);
+	}
+
 }

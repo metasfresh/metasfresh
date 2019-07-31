@@ -39,8 +39,8 @@ import com.paypal.payments.RefundRequest;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.payment.paypal.config.PayPalConfig;
 import de.metas.payment.paypal.logs.PayPalCreateLogRequest;
-import de.metas.payment.paypal.logs.PayPalLogRepository;
 import de.metas.payment.paypal.logs.PayPalCreateLogRequest.PayPalCreateLogRequestBuilder;
+import de.metas.payment.paypal.logs.PayPalLogRepository;
 import lombok.NonNull;
 
 /*
@@ -231,14 +231,16 @@ public class PayPalCheckoutManualTest
 	 */
 	private OrderRequest buildCompleteRequestBody()
 	{
+		final String orderApproveCallbackUrl = config.getOrderApproveCallbackUrl("http://example.com");
+		
 		final OrderRequest orderRequest = new OrderRequest();
 		orderRequest.intent("AUTHORIZE");
 
 		final ApplicationContext applicationContext = new ApplicationContext()
 				.brandName("metasfresh")
 				.landingPage("BILLING")
-				.cancelUrl(config.getOrderApproveCallbackUrl())
-				.returnUrl(config.getOrderApproveCallbackUrl())
+				.cancelUrl(orderApproveCallbackUrl)
+				.returnUrl(orderApproveCallbackUrl)
 				.userAction("CONTINUE")
 				.shippingPreference("SET_PROVIDED_ADDRESS");
 		orderRequest.applicationContext(applicationContext);
@@ -297,11 +299,13 @@ public class PayPalCheckoutManualTest
 	 */
 	private OrderRequest buildMinimumRequestBody()
 	{
+		final String orderApproveCallbackUrl = config.getOrderApproveCallbackUrl("http://example.com");
+		
 		final OrderRequest orderRequest = new OrderRequest();
 		orderRequest.intent("AUTHORIZE");
 		final ApplicationContext applicationContext = new ApplicationContext()
-				.returnUrl(config.getOrderApproveCallbackUrl())
-				.cancelUrl(config.getOrderApproveCallbackUrl());
+				.returnUrl(orderApproveCallbackUrl)
+				.cancelUrl(orderApproveCallbackUrl);
 		orderRequest.applicationContext(applicationContext);
 		final List<PurchaseUnitRequest> purchaseUnitRequests = new ArrayList<>();
 		final PurchaseUnitRequest purchaseUnitRequest = new PurchaseUnitRequest()
