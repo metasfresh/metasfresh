@@ -2,7 +2,6 @@ package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User_AuthToken;
 import org.springframework.stereotype.Component;
 
 import de.metas.security.RoleId;
@@ -40,15 +39,6 @@ public class ResetJsonReportsAuthTokenHouseKeepingTask implements IStartupHouseK
 	@Override
 	public void executeTask()
 	{
-		final I_AD_User_AuthToken authToeknPO = getUserAuhTokenPO();
-		userAuthTokenRepo.resetAuthTokenAndSave(authToeknPO);
+		userAuthTokenRepo.resetAuthTokensAndSave(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
 	}
-
-
-	private I_AD_User_AuthToken getUserAuhTokenPO()
-	{
-		return userAuthTokenRepo.retrieveUserAuthTokenPOByUserId(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
-	}
-
-
 }
