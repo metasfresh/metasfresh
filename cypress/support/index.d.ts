@@ -272,12 +272,6 @@ declare namespace Cypress {
      */
     getDOMNotificationsNumber(): Chainable<number>
 
-    /**
-     * Get the notifications inbox in the app state
-     *
-     * @return notificationsNumber
-     */
-    getNotificationsInbox(): Chainable<number>
 
     /**
      * Select the notification modal element. Optionally look for text inside the notification.
@@ -575,15 +569,6 @@ declare namespace Cypress {
      * cypress/support/commands/general.js
      */
     getDOMNotificationsNumber(): Chainable<any>
-
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * cypress/support/commands/general.js
-     */
-    getNotificationsInbox(): Chainable<any>
 
 
     /**
