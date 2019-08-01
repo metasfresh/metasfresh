@@ -241,7 +241,7 @@ function createProductCategory(productCategoryName, attributeSet) {
 function createPackingEntities(productForPacking, packingInstructionsName) {
   describe(`Create packing entities for material ${productForPacking}`, function() {
     it('Create packing product', function() {
-      Builder.createBasicProductEntitiesWithPrice(priceListName, productForPacking, productForPacking, productType);
+      Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPacking, productForPacking, productType, "24_Gebinde");
     });
 
     it('Create packing material', function() {
