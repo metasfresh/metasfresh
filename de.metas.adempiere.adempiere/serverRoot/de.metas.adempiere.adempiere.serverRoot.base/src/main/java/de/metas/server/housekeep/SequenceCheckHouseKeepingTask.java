@@ -3,6 +3,7 @@ package de.metas.server.housekeep;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -28,6 +29,7 @@ import de.metas.util.Loggables;
  * #L%
  */
 
+@Component
 public class SequenceCheckHouseKeepingTask implements IStartupHouseKeepingTask
 {
 

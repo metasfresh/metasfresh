@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
+import org.springframework.stereotype.Component;
 
 import de.metas.util.Loggables;
 
@@ -38,6 +39,7 @@ import de.metas.util.Loggables;
  * 
  */
 // task 06295
+@Component
 public class ResetSchedulerState implements IStartupHouseKeepingTask
 {
 	@Override
