@@ -108,7 +108,7 @@ class TUPackingInfo implements IHUPackingInfo
 	public BigDecimal getQtyCUsPerTU()
 	{
 		final IHUProductStorage huProductStorage = getHUProductStorage();
-		return huProductStorage == null ? null : huProductStorage.getQty().getAsBigDecimal();
+		return huProductStorage == null ? null : huProductStorage.getQty().toBigDecimal();
 	}
 
 	@Override

@@ -59,7 +59,7 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		invoiceLine.setC_Invoice(invoice);
 
 		invoiceBL.setProductAndUOM(invoiceLine, invoiceLineQuickInput.getM_Product_ID());
-		fail("NOT YET IMPLMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 		//invoiceBL.setQtys(invoiceLine, invoiceLineQuickInput.getQty());
 
 		invoiceLineBL.updatePrices(invoiceLine);

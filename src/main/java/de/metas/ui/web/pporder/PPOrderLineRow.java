@@ -159,7 +159,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.includedDocuments = includedRows;
 
-		this.qty = quantity.getAsBigDecimal();
+		this.qty = quantity.toBigDecimal();
 
 		this.documentPath = computeDocumentPath();
 

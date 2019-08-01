@@ -194,8 +194,8 @@ public class PurchaseRowsLoaderTest
 		salesOrderLineRecord.setC_Order_ID(salesOrderRecord.getC_Order_ID());
 		salesOrderLineRecord.setC_Currency_ID(currencyId.getRepoId());
 		salesOrderLineRecord.setC_UOM_ID(TEN.getUomId().getRepoId());
-		salesOrderLineRecord.setQtyEntered(TEN.getAsBigDecimal());
-		salesOrderLineRecord.setQtyOrdered(TEN.getAsBigDecimal());
+		salesOrderLineRecord.setQtyEntered(TEN.toBigDecimal());
+		salesOrderLineRecord.setQtyOrdered(TEN.toBigDecimal());
 		salesOrderLineRecord.setDatePromised(SystemTime.asTimestamp());
 		save(salesOrderLineRecord);
 
@@ -244,7 +244,7 @@ public class PurchaseRowsLoaderTest
 
 		final PurchaseRow groupRow = topLevelRows.get(0);
 		assertThat(groupRow.getType()).isEqualTo(PurchaseRowType.GROUP);
-		assertThat(groupRow.getQtyToPurchase().getAsBigDecimal()).isEqualByComparingTo(TEN.getAsBigDecimal());
+		assertThat(groupRow.getQtyToPurchase().toBigDecimal()).isEqualByComparingTo(TEN.toBigDecimal());
 		assertThat(groupRow.getIncludedRows()).hasSize(1);
 
 		final PurchaseRow purchaseRow = groupRow.getIncludedRows().iterator().next();

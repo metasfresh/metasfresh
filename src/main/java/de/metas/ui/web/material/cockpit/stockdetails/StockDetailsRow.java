@@ -148,7 +148,7 @@ public class StockDetailsRow implements IViewRow
 					.findById(huStockInfo.getBPartnerId().getRepoId());
 		}
 
-		this.qty = huStockInfo.getQty().getAsBigDecimal();
+		this.qty = huStockInfo.getQty().toBigDecimal();
 
 		this.uom = lookupFactory
 				.searchInTableLookup(I_C_UOM.Table_Name)

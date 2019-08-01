@@ -271,9 +271,9 @@ public class PricingConditionsRow implements IViewRow
 				final Money basePrice = basePricingSystemPriceCalculator.calculate(calculatorRequest);
 
 				this.basePricingSystem = lookups.lookupPricingSystem(price.getBasePricingSystemId());
-				this.basePriceAmt = basePrice.getAsBigDecimal();
+				this.basePriceAmt = basePrice.toBigDecimal();
 				final Money surcharge = price.getPricingSystemSurcharge();
-				this.pricingSystemSurchargeAmt = surcharge != null ? surcharge.getAsBigDecimal() : null;
+				this.pricingSystemSurchargeAmt = surcharge != null ? surcharge.toBigDecimal() : null;
 				this.currency = lookups.lookupCurrency(surcharge != null ? surcharge.getCurrencyId() : null);
 				break;
 			}
@@ -282,7 +282,7 @@ public class PricingConditionsRow implements IViewRow
 				final Money fixedPrice = price.getFixedPrice();
 
 				this.basePricingSystem = null;
-				this.basePriceAmt = fixedPrice != null ? fixedPrice.getAsBigDecimal() : null;
+				this.basePriceAmt = fixedPrice != null ? fixedPrice.toBigDecimal() : null;
 				this.pricingSystemSurchargeAmt = null;
 				this.currency = lookups.lookupCurrency(fixedPrice != null ? fixedPrice.getCurrencyId() : null);
 				break;

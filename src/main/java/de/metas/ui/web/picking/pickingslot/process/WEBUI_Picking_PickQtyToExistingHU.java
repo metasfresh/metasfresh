@@ -127,7 +127,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			return retrieveQtyToPick().getAsBigDecimal();
+			return retrieveQtyToPick().toBigDecimal();
 		}
 		else
 		{

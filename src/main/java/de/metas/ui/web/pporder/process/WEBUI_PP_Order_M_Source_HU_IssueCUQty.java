@@ -207,7 +207,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 			if (row.isProcessed())
 			{
 				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.calculateQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
-				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.getAsBigDecimal());
+				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived.toBigDecimal());
 			}
 			else
 			{
@@ -217,7 +217,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		}
 		else
 		{
-			final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().getAsBigDecimal();
+			final BigDecimal sourceHuStorageQty = productStorages.get(0).getQty().toBigDecimal();
 
 			return sourceHuStorageQty;
 		}

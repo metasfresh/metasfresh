@@ -203,7 +203,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			return retrieveQtyToPick().getAsBigDecimal();
+			return retrieveQtyToPick().toBigDecimal();
 		}
 		else if (Objects.equals(PARAM_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
 		{
