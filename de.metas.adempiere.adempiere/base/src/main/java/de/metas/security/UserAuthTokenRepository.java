@@ -1,5 +1,7 @@
 package de.metas.security;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -48,7 +50,7 @@ public class UserAuthTokenRepository
 		return authTokensByToken.getOrLoad(token, () -> retrieveByToken(token));
 	}
 
-	private UserAuthToken retrieveByToken(final String token)
+	private UserAuthToken retrieveByToken(@NonNull final String token)
 	{
 		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_AuthToken.class)
@@ -57,38 +59,37 @@ public class UserAuthTokenRepository
 				.setLimit(2)
 				.create()
 				.list(I_AD_User_AuthToken.class);
-		if (userAuthTokens.isEmpty())
-		{
-			throw new AdempiereException("Invalid token (1)");
-		}
-		else if (userAuthTokens.size() > 1)
-		{
-			throw new AdempiereException("Invalid token (2)");
-		}
 
-		return toUserAuthToken(userAuthTokens.get(0));
+		return extractSingleToken(userAuthTokens);
 	}
 
-	private static UserAuthToken toUserAuthToken(final I_AD_User_AuthToken userAuthTokenPO)
-	{
-		return UserAuthToken.builder()
-				.userId(UserId.ofRepoId(userAuthTokenPO.getAD_User_ID()))
-				.authToken(userAuthTokenPO.getAuthToken())
-				.description(userAuthTokenPO.getDescription())
-				.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
-				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
-				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
-				.build();
-	}
-
+	/** Supposed to be called from model interceptor. */
 	public void beforeSave(final I_AD_User_AuthToken userAuthTokenPO)
 	{
 		if (Check.isEmpty(userAuthTokenPO.getAuthToken(), true))
 		{
 			userAuthTokenPO.setAuthToken(generateAuthTokenString());
 		}
+		fromRecord(userAuthTokenPO); // make sure it's valid
+	}
 
-		toUserAuthToken(userAuthTokenPO); // make sure it's valid
+	public void resetAuthTokensAndSave(@NonNull final UserId userId, @NonNull final RoleId roleId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final List<I_AD_User_AuthToken> userAuthTokenRecords = queryBL
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				// .addOnlyActiveRecordsFilter() reset 'em all; we don't want inactive tokens to retain their static values infinitely
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
+				.create()
+				.list(I_AD_User_AuthToken.class);
+
+		for (final I_AD_User_AuthToken userAuthTokenRecord : userAuthTokenRecords)
+		{
+			userAuthTokenRecord.setAuthToken(generateAuthTokenString());
+			saveRecord(userAuthTokenRecord);
+		}
 	}
 
 	private static String generateAuthTokenString()
@@ -107,6 +108,11 @@ public class UserAuthTokenRepository
 				.create()
 				.list(I_AD_User_AuthToken.class);
 
+		return extractSingleToken(userAuthTokens);
+	}
+
+	private UserAuthToken extractSingleToken(@NonNull final List<I_AD_User_AuthToken> userAuthTokens)
+	{
 		if (userAuthTokens.isEmpty())
 		{
 			throw new AdempiereException("Invalid token (1)");
@@ -116,6 +122,18 @@ public class UserAuthTokenRepository
 			throw new AdempiereException("Invalid token (2)");
 		}
 
-		return toUserAuthToken(userAuthTokens.get(0));
+		return fromRecord(userAuthTokens.get(0));
+	}
+
+	private static UserAuthToken fromRecord(final I_AD_User_AuthToken userAuthTokenPO)
+	{
+		return UserAuthToken.builder()
+				.userId(UserId.ofRepoId(userAuthTokenPO.getAD_User_ID()))
+				.authToken(userAuthTokenPO.getAuthToken())
+				.description(userAuthTokenPO.getDescription())
+				.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
+				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
+				.build();
 	}
 }
