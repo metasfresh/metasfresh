@@ -63,7 +63,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
 
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryValue,
       priceListName,

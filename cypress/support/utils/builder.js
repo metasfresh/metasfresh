@@ -75,7 +75,7 @@ export class Builder {
     });
   }
 
-  static createBasicProductEntitiesWithCUTUAllocation(
+  static createProductWithPriceAndCUTUAllocationUsingExistingCategory(
     productCategoryName,
     productCategoryValue,
     priceListName,
@@ -84,13 +84,6 @@ export class Builder {
     productType,
     packingInstructionsName
   ) {
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-
     let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
