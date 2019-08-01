@@ -1,15 +1,16 @@
-package de.metas.invoicecandidate.housekeeping.sqi.impl;
+package de.metas.server.housekeep;
 
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.util.DB;
+import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Component;
 
-import de.metas.util.Loggables;
+import de.metas.security.RoleId;
+import de.metas.security.UserAuthTokenRepository;
+import de.metas.user.UserId;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.adempiere.adempiere.serverRoot.base
  * %%
  * Copyright (C) 2016 metas GmbH
  * %%
@@ -28,20 +29,16 @@ import de.metas.util.Loggables;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-/**
- * Cleans up stale <code>C_Invoice_Candidate_Recompute</code> records that might prevent ICs from getting updated.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
- * @task https://github.com/metasfresh/metasfresh/issues/251
- */
+
 @Component
-public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeepingTask
+public class ResetJsonReportsAuthTokenHouseKeepingTask implements IStartupHouseKeepingTask
 {
+
+	private final UserAuthTokenRepository  userAuthTokenRepo = SpringContextHolder.instance.getBean(UserAuthTokenRepository.class);
+
 	@Override
 	public void executeTask()
 	{
-		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "select de_metas_invoicecandidate.Reset_C_Invoice_Candidate_Recompute();");
-		Loggables.get().addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
+		userAuthTokenRepo.resetAuthTokensAndSave(UserId.JSON_REPORTS, RoleId.JSON_REPORTS);
 	}
 }

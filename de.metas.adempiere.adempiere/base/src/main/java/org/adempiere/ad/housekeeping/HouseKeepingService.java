@@ -1,68 +1,61 @@
-package org.adempiere.ad.housekeeping.impl;
+package org.adempiere.ad.housekeeping;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.List;
+import java.util.Optional;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import lombok.NonNull;
 
-public class HouseKeepingBL implements IHouseKeepingBL
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2019 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+@Service
+public class HouseKeepingService
 {
+	private static final Logger logger = LogManager.getLogger(HouseKeepingService.class);
+
 	private static final String SYSCONFIG_SKIP_HOUSE_KEEPING = "de.metas.housekeeping.SkipHouseKeeping";
 
-	private static final Logger logger = LogManager.getLogger(HouseKeepingBL.class);
+	private final ImmutableList<IStartupHouseKeepingTask> startupTasks;
 
-	private final CopyOnWriteArrayList<IStartupHouseKeepingTask> startupTasks = new CopyOnWriteArrayList<>();
-
-	@Override
-	public void registerStartupHouseKeepingTask(@NonNull final IStartupHouseKeepingTask task)
+	public HouseKeepingService(final Optional<List<IStartupHouseKeepingTask>> startupTasks)
 	{
-		final boolean added = startupTasks.addIfAbsent(task);
-		if(added)
-		{
-			logger.info("Registered: {}", task);
-		}
-		else
-		{
-			logger.warn("Skip registering {} because it was already registered", task);
-		}
+		this.startupTasks = startupTasks.map(ImmutableList::copyOf).orElseGet(ImmutableList::of);
+		logger.info("Startup tasks: {}", this.startupTasks);
 	}
 
-	@Override
 	public void runStartupHouseKeepingTasks()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
