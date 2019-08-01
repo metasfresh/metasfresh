@@ -80,6 +80,7 @@ describe('Change warehouse in material receipt candidate #153', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
+    cy.pressDoneButton();
   });
 
   it('Go to the referenced Material Receipt', function() {
