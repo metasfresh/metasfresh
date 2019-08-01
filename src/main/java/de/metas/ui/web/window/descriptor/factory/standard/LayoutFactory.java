@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -118,7 +119,7 @@ public class LayoutFactory
 	//
 	// Parameters
 	private final GridTabVOBasedDocumentEntityDescriptorFactory descriptorsFactory;
-	private final int _adWindowId;
+	private final AdWindowId _adWindowId;
 	private final ITranslatableString windowCaption;
 
 	private final ImmutableSet<Integer> childAdTabIdsToSkip;
@@ -135,7 +136,7 @@ public class LayoutFactory
 	{
 		SpringContextHolder.instance.autowire(this);
 
-		_adWindowId = gridTabVO.getAD_Window_ID();
+		_adWindowId = gridTabVO.getAdWindowId();
 		windowCaption = TranslatableStrings.ofMap(gridWindowVO.getNameTrls(), gridWindowVO.getName());
 
 		final AdTabId templateTabId = AdTabId.ofRepoId(CoalesceUtil.firstGreaterThanZero(gridTabVO.getTemplateTabId(), gridTabVO.getAD_Tab_ID()));
@@ -206,7 +207,7 @@ public class LayoutFactory
 				.flatMap(uiElementGroup -> getUIProvider().getUIElements(uiElementGroup).stream());
 	}
 
-	private int getAD_Window_ID()
+	private AdWindowId getAdWindowId()
 	{
 		return _adWindowId;
 	}
@@ -688,7 +689,7 @@ public class LayoutFactory
 	public final ViewLayout layoutSideListView()
 	{
 		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
-				.setWindowId(WindowId.of(getAD_Window_ID()))
+				.setWindowId(WindowId.of(getAdWindowId()))
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
 

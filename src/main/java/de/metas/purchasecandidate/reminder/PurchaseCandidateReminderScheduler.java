@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -263,8 +264,8 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 
 	private WindowId getWindowId(final String tableName)
 	{
-		final int windowIdInt = RecordZoomWindowFinder.findAD_Window_ID(tableName);
-		return WindowId.of(windowIdInt);
+		final AdWindowId adWindowId = RecordZoomWindowFinder.findAdWindowId(tableName).get();
+		return WindowId.of(adWindowId);
 	}
 
 	private static class RemindersQueue
