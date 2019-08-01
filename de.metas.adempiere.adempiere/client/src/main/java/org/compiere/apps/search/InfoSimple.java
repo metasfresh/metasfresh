@@ -31,7 +31,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -46,6 +45,7 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.table.TableModel;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -107,18 +107,18 @@ public class InfoSimple extends Info
 	/**
 	 * AD_InfoColumn_ID to IInfoQueryCriteria
 	 */
-	private final Map<Integer, IInfoQueryCriteria> criteriasById = new HashMap<Integer, IInfoQueryCriteria>();
-	private final Map<String, IInfoQueryCriteria> criteriasBySelectClause = new HashMap<String, IInfoQueryCriteria>();
+	private final Map<Integer, IInfoQueryCriteria> criteriasById = new HashMap<>();
+	private final Map<String, IInfoQueryCriteria> criteriasBySelectClause = new HashMap<>();
 	/**
 	 * Displayed parameters (in order they are displayed)
 	 */
-	private final List<IInfoQueryCriteria> displayedParameters = new ArrayList<IInfoQueryCriteria>();
+	private final List<IInfoQueryCriteria> displayedParameters = new ArrayList<>();
 	private List<I_AD_InfoColumn> displayedInfoColumns = null;
 
 	/**
 	 * hash map for attributes
 	 */
-	private final Map<String, Object> attributes = new HashMap<String, Object>();
+	private final Map<String, Object> attributes = new HashMap<>();
 
 	/**
 	 * Value of this attribute will contain the text that was searched in field, before this window was opened.
@@ -183,7 +183,7 @@ public class InfoSimple extends Info
 			final int p_WindowNo = getWindowNo();
 			return Env.getContext(this, p_WindowNo, variableName);
 		}
-	};
+	}
 
 	/**
 	 * Context which first will check {@link #attributes} and then if nothing found will return from initial context
@@ -192,16 +192,11 @@ public class InfoSimple extends Info
 
 	// metas: product category tree
 	private MTreeNode treeSelectedNode = null;
-	private final PropertyChangeListener treeNodeSelectedListener = new PropertyChangeListener()
-	{
-		@Override
-		public void propertyChange(final PropertyChangeEvent evt)
-		{
-			final MTreeNode nd = (MTreeNode)evt.getNewValue();
-			log.info(nd.getNode_ID() + " - " + nd.toString());
-			treeSelectedNode = nd;
-			executeQuery();
-		}
+	private final PropertyChangeListener treeNodeSelectedListener = evt -> {
+		final MTreeNode nd = (MTreeNode)evt.getNewValue();
+		log.info(nd.getNode_ID() + " - " + nd.toString());
+		treeSelectedNode = nd;
+		executeQuery();
 	};
 
 	/**
@@ -683,7 +678,7 @@ public class InfoSimple extends Info
 	{
 		final StringBuilder where = new StringBuilder(); // clause form by query fields
 
-		final List<Object> criteriasParams = new ArrayList<Object>();
+		final List<Object> criteriasParams = new ArrayList<>();
 		final String criteriasWhereClause = getCriteriasSQLWhere(criteriasParams);
 
 		where.append(criteriasWhereClause);
@@ -736,7 +731,7 @@ public class InfoSimple extends Info
 		final Collection<IInfoQueryCriteria> criterias = criteriasBySelectClause.values();
 		for (final IInfoQueryCriteria criteria : criterias)
 		{
-			final List<Object> criteriaParams = new ArrayList<Object>();
+			final List<Object> criteriaParams = new ArrayList<>();
 			final String[] whereClauses = criteria.getWhereClauses(criteriaParams);
 			if (whereClauses != null && whereClauses.length > 0)
 			{
@@ -773,7 +768,7 @@ public class InfoSimple extends Info
 	private Collection<Integer> getSubtreeIds(final MTreeNode category)
 	{
 
-		final ArrayList<Integer> result = new ArrayList<Integer>();
+		final ArrayList<Integer> result = new ArrayList<>();
 		result.add(category.getNode_ID());
 
 		@SuppressWarnings("unchecked")
@@ -813,7 +808,7 @@ public class InfoSimple extends Info
 	@Override
 	protected String getSQLWhere()
 	{
-		sqlWhereParams.set(new ArrayList<Object>());
+		sqlWhereParams.set(new ArrayList<>());
 		return getSQLWhere(sqlWhereParams.get());
 	}
 
@@ -821,7 +816,7 @@ public class InfoSimple extends Info
 	 * This member is used by the {@link Info.Worker}'s thread only.
 	 * Still, I make it threadlocal because I don't want to worry about other code/other threads calling it without considering the implications.
 	 */
-	private final ThreadLocal<List<Object>> sqlWhereParams = new ThreadLocal<List<Object>>();
+	private final ThreadLocal<List<Object>> sqlWhereParams = new ThreadLocal<>();
 
 	/**
 	 * Called from {@link Info.Worker} only.
@@ -919,7 +914,7 @@ public class InfoSimple extends Info
 		final MQuery query = new MQuery(p_tableName);
 		query.addRestriction(p_tableName + "_ID", Operator.EQUAL, ID);
 		query.setRecordCount(1);
-		final int AD_WindowNo = getAD_Window_ID(p_tableName, true);
+		final AdWindowId AD_WindowNo = getAD_Window_ID(p_tableName, true);
 		zoom(AD_WindowNo, query);
 	} // zoom
 
@@ -1148,7 +1143,7 @@ public class InfoSimple extends Info
 	/**
 	 * Local cache
 	 */
-	private final Map<String, Integer> columnName2elementId = new HashMap<String, Integer>();
+	private final Map<String, Integer> columnName2elementId = new HashMap<>();
 
 	private int getAD_Element_ID(final String columnName)
 	{

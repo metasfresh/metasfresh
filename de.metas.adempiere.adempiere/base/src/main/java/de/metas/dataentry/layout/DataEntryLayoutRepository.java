@@ -88,7 +88,7 @@ public class DataEntryLayoutRepository
 	{
 		final ImmutableList<I_DataEntry_Tab> tabRecords = retrieveTabRecords(adWindowId);
 
-		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(adWindowId.getRepoId());
+		final I_AD_Tab firstADTab = Services.get(IADWindowDAO.class).retrieveFirstTab(adWindowId);
 		if (firstADTab == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Tab_ID@: (@AD_Window_ID@: " + adWindowId.getRepoId() + ")");

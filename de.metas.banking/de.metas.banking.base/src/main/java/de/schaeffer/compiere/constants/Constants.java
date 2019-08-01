@@ -4,6 +4,8 @@
 
 package de.schaeffer.compiere.constants;
 
+import org.adempiere.ad.element.api.AdWindowId;
+
 /*
  * #%L
  * de.metas.banking.base
@@ -41,7 +43,7 @@ public final class Constants {
 	}
 
 	/** id of bankstatement window */
-	public static final int BANKSTATEMENT_WINDOW_ID = 194;
+	public static final AdWindowId BANKSTATEMENT_WINDOW_ID = AdWindowId.ofRepoId(194);
 
 	/** system config entry for recurrent payment invoice document type */
 	public static final String RECURRENT_PAYMENT_INVOICE_DOCUMENTTYPE_ID = "RecurrentPaymentInvoice_DocumentTypeID";

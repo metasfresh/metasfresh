@@ -27,6 +27,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
@@ -55,9 +56,9 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	 * @param AD_Window_ID window ID
 	 * @return array of window customizations or empty array
 	 */
-	private static MUserDefWin[] get (Properties ctx, int AD_Window_ID)
+	private static MUserDefWin[] get (Properties ctx, AdWindowId adWindowId)
 	{
-		if (AD_Window_ID <= 0)
+		if (adWindowId == null)
 		{
 			return NoWindows;
 		}
@@ -67,7 +68,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 		final int AD_Role_ID= Env.getAD_Role_ID(ctx);
 
 		// Try from cache
-		final ArrayKey key = new ArrayKey(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID);
+		final ArrayKey key = new ArrayKey(adWindowId, AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID);
 		MUserDefWin[] arr = s_cache.get(key);
 		if (arr != null)
 		{
@@ -81,7 +82,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 							+" AND (AD_Role_ID=? OR AD_Role_ID IS NULL)"
 							+" AND (AD_User_ID=? OR AD_User_ID IS NULL)";
 		final List<MUserDefWin> list = new Query(ctx, Table_Name, whereClause, null)
-			.setParameters(AD_Window_ID, AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID)
+			.setParameters(adWindowId, AD_Client_ID, AD_Org_ID, AD_Role_ID, AD_User_ID)
 			.setOnlyActiveRecords(true)
 			.setOrderBy("AD_Client_ID, AD_Org_ID, COALESCE(AD_User_ID,0), COALESCE(AD_Role_ID,0)")
 			.list(MUserDefWin.class);
@@ -103,7 +104,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	 */
 	public static void apply(GridWindowVO vo)
 	{
-		for (MUserDefWin uw : get(vo.getCtx(), vo.getAD_Window_ID()))
+		for (MUserDefWin uw : get(vo.getCtx(), vo.getAdWindowId()))
 		{
 //			vo.Name = uw.getName();
 //			vo.Description = uw.getDescription();
@@ -120,7 +121,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	public static boolean apply(GridTabVO vo)
 	{
 		boolean isDisplayed = true;
-		for (MUserDefWin uw : get(vo.getCtx(), vo.getAD_Window_ID()))
+		for (MUserDefWin uw : get(vo.getCtx(), vo.getAdWindowId()))
 		{
 			MUserDefTab ut = uw.getTab(vo.getAD_Tab_ID());
 			if (ut != null)
@@ -138,7 +139,7 @@ public class MUserDefWin extends X_AD_UserDef_Win
 	 */
 	public static void apply(GridFieldVO vo)
 	{
-		for (MUserDefWin uw : get(vo.getCtx(), vo.AD_Window_ID))
+		for (MUserDefWin uw : get(vo.getCtx(), vo.getAdWindowId()))
 		{
 			MUserDefTab ut = uw.getTab(vo.AD_Tab_ID);
 			if (ut == null)

@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Predicate;
 
 import javax.swing.event.EventListenerList;
 
@@ -497,7 +496,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 				final int sortNo = field.getSortNo();
 				if (sortNo == 0)
 				{
-					;
+					
 				}
 				else if (Math.abs(sortNo) == 1)
 				{
@@ -552,28 +551,28 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			{
 				final GridField created = new GridField(GridFieldVO.createStdField(ctx,
 						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, true));
+						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, true));
 				m_mTable.addField(created);
 			}
 			if (m_mTable.getField("CreatedBy") == null)
 			{
 				final GridField createdBy = new GridField(GridFieldVO.createStdField(ctx,
 						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, true, false));
+						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, true, false));
 				m_mTable.addField(createdBy);
 			}
 			if (m_mTable.getField("Updated") == null)
 			{
 				final GridField updated = new GridField(GridFieldVO.createStdField(ctx,
 						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, true));
+						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, true));
 				m_mTable.addField(updated);
 			}
 			if (m_mTable.getField("UpdatedBy") == null)
 			{
 				final GridField updatedBy = new GridField(GridFieldVO.createStdField(ctx,
 						m_vo.getWindowNo(), m_vo.getTabNo(),
-						m_vo.getAD_Window_ID(), m_vo.getAD_Tab_ID(), false, false, false));
+						m_vo.getAdWindowId(), m_vo.getAD_Tab_ID(), false, false, false));
 				m_mTable.addField(updatedBy);
 			}
 		}
@@ -2203,9 +2202,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 *
 	 * @return Window ID
 	 */
-	public int getAD_Window_ID()
+	public AdWindowId getAdWindowId()
 	{
-		return m_vo.getAD_Window_ID();
+		return m_vo.getAdWindowId();
 	}	// getAD_Window_ID
 
 	/**
@@ -2618,9 +2617,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		e.setInserting(m_mTable.isInserting());
 		// Distribute/fire it
-		for (int i = 0; i < listeners.length; i++)
+		for (DataStatusListener listener : listeners)
 		{
-			listeners[i].dataStatusChanged(e);
+			listener.dataStatusChanged(e);
 			// log.debug("fini - " + e.toString());
 		}
 	}	// fireDataStatusChanged
@@ -3572,9 +3571,9 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 
 		final StateChangeEvent event = new StateChangeEvent(this, eventType);
-		for (int i = 0; i < listeners.length; i++)
+		for (StateChangeListener listener : listeners)
 		{
-			listeners[i].stateChange(event);
+			listener.stateChange(event);
 		}
 	}
 
@@ -3968,7 +3967,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	}
 
 	/** Copy mode when {@link GridTab#dataNew(boolean)} is invoked */
-	public static enum DataNewCopyMode
+	public enum DataNewCopyMode
 	{
 		NoCopy, Copy, CopyWithDetails;
 
@@ -3981,7 +3980,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return copyMode == CopyWithDetails;
 		}
-	};
+	}
 
 	/**
 	 * Field set by {@link #dataNew(boolean, boolean)} while we are in copy record mode
@@ -4049,33 +4048,28 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		final String keyPrefix = Env.createContextName(windowNo, tabNo, "");
 		final String keyPrefixToExclude = Env.createContextName(windowNo, tabNo, CTX_Prefix);
 
-		Env.removeContextMatching(ctx, new Predicate<Object>()
-		{
-			@Override
-			public boolean test(final Object key)
+		Env.removeContextMatching(ctx, key -> {
+			if (key == null)
 			{
-				if (key == null)
-				{
-					// shall not happen
-					return false;
-				}
-
-				final String name = key.toString();
-
-				// Skip special tab context variables
-				if (name.startsWith(keyPrefixToExclude))
-				{
-					return false;
-				}
-
-				// Skip those names which are not about our tab
-				if (!name.startsWith(keyPrefix))
-				{
-					return false;
-				}
-
-				return true; // remove it
+				// shall not happen
+				return false;
 			}
+
+			final String name = key.toString();
+
+			// Skip special tab context variables
+			if (name.startsWith(keyPrefixToExclude))
+			{
+				return false;
+			}
+
+			// Skip those names which are not about our tab
+			if (!name.startsWith(keyPrefix))
+			{
+				return false;
+			}
+
+			return true; // remove it
 		});
 	}
 
@@ -4216,13 +4210,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		 *
 		 * @return AD_Attachment_ID or 0, if not found
 		 */
-		public final synchronized int getAD_Attachment_ID(final int recordId)
+		public synchronized int getAD_Attachment_ID(final int recordId)
 		{
 			final boolean forceLoadIfNotExists = false;
 			return getAD_Attachment_ID(recordId, forceLoadIfNotExists);
 		}
 
-		private final synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
+		private synchronized int getAD_Attachment_ID(final int recordId, final boolean forceLoadIfNotExists)
 		{
 			if (recordId < 0)
 			{
@@ -4252,13 +4246,13 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return 0;
 		}
 
-		public final boolean hasAttachment(final int recordId)
+		public boolean hasAttachment(final int recordId)
 		{
 			final int attachmentId = getAD_Attachment_ID(recordId);
 			return attachmentId > 0;
 		}
 
-		private final Map<Integer, Integer> getMap()
+		private Map<Integer, Integer> getMap()
 		{
 			if (!canHaveAttachment())
 			{
@@ -4344,7 +4338,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		@Override
 		public AdWindowId getAdWindowId()
 		{
-			return AdWindowId.ofRepoId(gridTab.getAD_Window_ID());
+			return gridTab.getAdWindowId();
 		}
 		
 		@Override

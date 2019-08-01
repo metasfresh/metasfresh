@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.images.Images;
 import org.compiere.model.GridTab;
@@ -234,9 +235,9 @@ public class ARequest implements ActionListener
 			query.addRestriction(m_where.toString());
 		}
 		//
-		int AD_Window_ID = 232;		//	232=all - 201=my
+		final AdWindowId adWindowId = AdWindowId.ofRepoId(232);		//	232=all - 201=my
 		AWindow frame = new AWindow();
-		if (!frame.initWindow(AD_Window_ID, query))
+		if (!frame.initWindow(adWindowId, query))
 		{
 			return;
 		}

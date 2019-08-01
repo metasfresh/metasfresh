@@ -89,9 +89,9 @@ public class RelationTypeZoomProviderFactoryTest
 				.setTranslated(true)
 				.setWhereClause("")
 				.setOrderByClause("")
-				.setZoomSO_Window_ID(-1)
-				.setZoomPO_Window_ID(-1)
-				.setZoomAD_Window_ID_Override(-1)
+				.setZoomSO_Window_ID(null)
+				.setZoomPO_Window_ID(null)
+				.setZoomAD_Window_ID_Override(null)
 				.setAutoComplete(false)
 				.build();
 
@@ -138,9 +138,9 @@ public class RelationTypeZoomProviderFactoryTest
 				.setTranslated(true)
 				.setWhereClause("")
 				.setOrderByClause("")
-				.setZoomSO_Window_ID(-1)
-				.setZoomPO_Window_ID(-1)
-				.setZoomAD_Window_ID_Override(-1)
+				.setZoomSO_Window_ID(null)
+				.setZoomPO_Window_ID(null)
+				.setZoomAD_Window_ID_Override(null)
 				.setAutoComplete(false)
 				.build();
 
