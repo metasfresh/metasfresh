@@ -162,20 +162,6 @@ declare namespace Cypress {
     selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, skipRequest ?: boolean, simpleListField ?: boolean): Chainable<any>
 
     /**
-     * Select a reference (zoom-to-target) from the reference-sidelist
-     *
-     * Better use {@link openReferencedDocuments} instead!
-     *
-     * @param internalReferenceName
-     * @param timeout time to wait for the reference to be available
-     * @example
-     * // this should work from a sales order
-     * cy.get('body').type('{alt}6'); // open referenced-records-sidelist
-     * cy.selectReference('C_Order_C_Invoice_Candidate').click();
-     */
-    selectReference(internalReferenceName: string, timeout: number): Chainable<any>
-
-    /**
      * Opens a new single document window
      *
      * @param windowId - the metasfresh AD_Window_ID of the window to visit
@@ -192,7 +178,7 @@ declare namespace Cypress {
      * })
      *
      */
-    visitWindow(windowId: string, recordId?: string, documentIdAliasName?: string): Chainable<any>
+    visitWindow(windowId: string | number, recordId?: string | number, documentIdAliasName?: string): Chainable<any>
 
     /**
      * Wait for the response to a particular patch where a particular field value was set
@@ -286,12 +272,6 @@ declare namespace Cypress {
      */
     getDOMNotificationsNumber(): Chainable<number>
 
-    /**
-     * Get the notifications inbox in the app state
-     *
-     * @return notificationsNumber
-     */
-    getNotificationsInbox(): Chainable<number>
 
     /**
      * Select the notification modal element. Optionally look for text inside the notification.
@@ -449,7 +429,7 @@ declare namespace Cypress {
      * @example
      * // This is equivalent to pressing `[alt + 6]`, then selecting one of the referenced documents:
      * cy.get('body').type('{alt}6');
-     * cy.selectReference('AD_RelationType_ID-540150').click();
+     * Select with mouse "Material Receipt Candidates"
      *
      * @example
      * // Only open the documents sidebar
@@ -595,15 +575,6 @@ declare namespace Cypress {
      * Please help with documentation!
      * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
      *
-     * cypress/support/commands/general.js
-     */
-    getNotificationsInbox(): Chainable<any>
-
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
      * from cypress/support/commands/navigation.js
      */
 
@@ -668,7 +639,7 @@ declare namespace Cypress {
      *
      * @param expectIndicator - optional, default false - if true, expect the ".indicator-pending" save bar to exist then disappear
      */
-    waitUntilEverythingIsSaved(expectIndicator ?: boolean): Chainable<any>
+    waitForSaveIndicator(expectIndicator ?: boolean): Chainable<any>
 
 
   }
