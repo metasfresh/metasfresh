@@ -154,12 +154,11 @@ declare namespace Cypress {
      * @param modal optional, default = false; use true, if the field is in a modal overlay; required if the underlying window has a field with the same name.
      * @param rewriteUrl optional - specify to which URL the command expects the frontend to patch.
      * @param skipRequest optional, default false - if set to true, cypress won't expect a request to the server and won't wait for it
-     * @param simpleListField optional, default true - if set to false, cypress will look after the element with the id lookup_FieldName; see TourVersion - add tour version line
      * @example
      * // select a certain flatrate condition is a process dialog
      * cy.selectInListField('C_Flatrate_Conditions_ID', conditionsName, true, '/rest/api/process/');
      */
-    selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, skipRequest ?: boolean, simpleListField ?: boolean): Chainable<any>
+    selectInListField(fieldName: string, stringValue: string, modal?: boolean, rewriteUrl?: string, skipRequest ?: boolean): Chainable<any>
 
     /**
      * Opens a new single document window

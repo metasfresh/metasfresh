@@ -311,12 +311,10 @@ Cypress.Commands.add(
  *
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
- * @param simpleListField optional, default true - if set to false, cypress will look after the element with the id lookup_FieldName;
- * see TourVersion - add tour version line; there are situations where there are multiple elements with class=input-dropdown
  */
 Cypress.Commands.add(
   'selectInListField',
-  (fieldName, listValue, modal, rewriteUrl = null, skipRequest, simpleListField = true) => {
+  (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
     describe('Select value in list field', function() {
       cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
@@ -329,17 +327,10 @@ Cypress.Commands.add(
         cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
       }
       const path = createFieldPath(fieldName, modal);
-      if (simpleListField) {
-        cy.get(path)
-          .find('.input-dropdown')
-          .click({ force: true });
-      } else {
-        cy.get(path)
-          .find('#lookup_' + fieldName)
-          .find('.input-dropdown')
-          .click({ force: true })
-          .click({ force: true });
-      }
+      cy.get(path)
+        .find('.input-dropdown')
+        .click();
+
       // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
       cy.get('.input-dropdown-list')
         .contains(listValue)
