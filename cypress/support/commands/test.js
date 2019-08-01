@@ -111,7 +111,7 @@ Cypress.Commands.add('pressDoneButton', waitBeforePress => {
       .should('exist')
       .click();
 
-    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to disappear
       .should('not.exist');
   });
 });
