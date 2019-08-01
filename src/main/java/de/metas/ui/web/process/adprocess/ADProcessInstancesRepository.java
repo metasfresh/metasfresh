@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -206,7 +207,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		final String tableName;
 		final int recordId;
 		final String sqlWhereClause;
-		final int adWindowId;
+		final AdWindowId adWindowId;
 
 		//
 		// View
@@ -217,7 +218,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final IView view = viewsRepo.getView(viewId);
 			final DocumentIdsSelection viewDocumentIds = viewRowIdsSelection.getRowIds();
 
-			adWindowId = viewId.getWindowId().toIntOr(-1);
+			adWindowId = viewId.getWindowId().toAdWindowIdOrNull();
 
 			if (viewDocumentIds.isSingleDocumentId())
 			{
@@ -258,7 +259,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		{
 			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(singleDocumentPath);
 
-			adWindowId = singleDocumentPath.getWindowId().toIntOr(-1);
+			adWindowId = singleDocumentPath.getWindowId().toAdWindowIdOrNull();
 
 			tableName = entityDescriptor.getTableNameOrNull();
 			if (singleDocumentPath.isRootDocument())
@@ -280,7 +281,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			tableName = null;
 			recordId = -1;
 			sqlWhereClause = null;
-			adWindowId = -1;
+			adWindowId = null;
 		}
 
 		//
@@ -293,7 +294,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
-				.setAD_Window_ID(adWindowId)
+				.setAdWindowId(adWindowId)
 				.setRecord(tableName, recordId)
 				.setSelectedIncludedRecords(selectedIncludedRecords)
 				.setWhereClause(sqlWhereClause);

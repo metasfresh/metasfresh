@@ -2,6 +2,7 @@ package de.metas.ui.web.window.controller;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -53,7 +54,7 @@ public class DocumentPermissionsHelper
 
 	public static ElementPermission checkWindowAccess(@NonNull final DocumentEntityDescriptor entityDescriptor, final IUserRolePermissions permissions)
 	{
-		final int adWindowId = entityDescriptor.getWindowId().toInt();
+		final AdWindowId adWindowId = entityDescriptor.getWindowId().toAdWindowId();
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
 		final boolean readAccess = windowPermission.hasReadAccess();
 		final boolean writeAccess = windowPermission.hasWriteAccess();
@@ -81,8 +82,8 @@ public class DocumentPermissionsHelper
 	 */
 	public static void assertViewAccess(final WindowId windowId, @Nullable final String viewId, final IUserRolePermissions permissions)
 	{
-		final int adWindowId = windowId.toIntOr(-1);
-		if (adWindowId < 0)
+		final AdWindowId adWindowId = windowId.toAdWindowIdOrNull();
+		if (adWindowId == null)
 		{
 			// cannot apply window access if the WindowId is not integer.
 			// usually those are special window placeholders.
@@ -105,7 +106,7 @@ public class DocumentPermissionsHelper
 
 	private static void logAccessIfWindowExistsAndThrowEx(
 			@NonNull final IUserRolePermissions permissions,
-			final int adWindowId,
+			@NonNull final AdWindowId adWindowId,
 			@NonNull final AdempiereException ex)
 	{
 		final IRolePermLoggingBL rolePermLoggingBL = Services.get(IRolePermLoggingBL.class);
@@ -131,9 +132,8 @@ public class DocumentPermissionsHelper
 		}
 
 		// Check if we have window read permission
-		final WindowId windowId = document.getDocumentPath().getWindowId();
-		final int windowIdInt = windowId.toIntOr(-1);
-		if (windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasReadAccess())
+		final AdWindowId adWindowId = document.getDocumentPath().getWindowId().toAdWindowIdOrNull();
+		if (adWindowId != null && !permissions.checkWindowPermission(adWindowId).hasReadAccess())
 		{
 			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
 		}
@@ -190,9 +190,8 @@ public class DocumentPermissionsHelper
 		}
 
 		// Check if we have window write permission
-		final WindowId windowId = documentPath.getWindowId();
-		final int windowIdInt = windowId.toIntOr(-1);
-		if (windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasWriteAccess())
+		final AdWindowId adWindowId = documentPath.getWindowId().toAdWindowIdOrNull();
+		if (adWindowId != null && !permissions.checkWindowPermission(adWindowId).hasWriteAccess())
 		{
 			return "no window edit permission";
 		}

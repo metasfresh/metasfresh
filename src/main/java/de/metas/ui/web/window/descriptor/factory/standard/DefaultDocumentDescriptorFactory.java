@@ -76,7 +76,7 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 	private DefaultDocumentDescriptorLoader createDocumentDescriptorLoader(@NonNull final WindowId windowId)
 	{
 		return new DefaultDocumentDescriptorLoader(
-				windowId.toInt(),
+				windowId.toAdWindowId(),
 				dataEntrySubTabBindingDescriptorBuilder);
 	}
 
