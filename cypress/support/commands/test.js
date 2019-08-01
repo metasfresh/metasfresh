@@ -38,6 +38,8 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
       cy.wait(waitBeforePress);
     }
 
+    cy.waitForSaveIndicator();
+
     // fail if there is a confirm dialog because it's the "do you really want to leave" confrimation which means that the record can not be saved
     // https://docs.cypress.io/api/events/catalog-of-events.html#To-catch-a-single-uncaught-exception
     cy.on('window:confirm', str => {

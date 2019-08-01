@@ -287,13 +287,13 @@ Cypress.Commands.add(
             cy
               .get('input')
               // we can't use `clear` here as sometimes it triggers request to the server
-              // and then the whole flov becomes flaky
+              // and then the whole flow becomes flaky
               .type('{selectall}')
               .type(partialValue)
           );
         }
 
-        cy.get('.lookup-dropdown').click();
+        // cy.get('.lookup-dropdown').click(); // for tourversion -> tourversion line modal and cypress 3.4.1 it seems only 1 click is enough
         return cy.get('.lookup-dropdown').click();
       });
 
@@ -315,31 +315,29 @@ Cypress.Commands.add(
 Cypress.Commands.add(
   'selectInListField',
   (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
-    describe('Select value in list field', function() {
-      cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
+    cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
     const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
-      // here we want to match URLs that don *not* end with "/NEW"
-      if (!skipRequest) {
-        cy.server();
-        cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
-      }
-      const path = createFieldPath(fieldName, modal);
-      cy.get(path)
-        .find('.input-dropdown')
-        .click();
+    // here we want to match URLs that don *not* end with "/NEW"
+    if (!skipRequest) {
+      cy.server();
+      cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
+    }
+    const path = createFieldPath(fieldName, modal);
+    cy.get(path)
+      .find('.input-dropdown')
+      .click({ force: true }); // here force is needed bon ungodly occasions, cypress just moves the element out of view and click doesnt work. ¯\_(ツ)_/¯
 
-      // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
-      cy.get('.input-dropdown-list')
-        .contains(listValue)
-        .click({ force: true });
+    // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
+    cy.get('.input-dropdown-list')
+      .contains(listValue)
+      .click({ force: true });
 
-      if (!skipRequest) {
-        cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
-      }
-    });
+    if (!skipRequest) {
+      cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
+    }
   }
 );
 
@@ -372,23 +370,23 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
 Cypress.Commands.add('setCheckBoxValue', (fieldName, isChecked, modal = false, rewriteUrl = null, skipRequest = false) => {
   cy.log(`Set the Checkbox value ${fieldName} to ${isChecked}`);
 
-    // the expected value is the same as the checked state
-    // (used only for verification if the checkbox has the correct value)
-    const expectedPatchValue = isChecked;
+  // the expected value is the same as the checked state
+  // (used only for verification if the checkbox has the correct value)
+  const expectedPatchValue = isChecked;
 
-    cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
-      if (isChecked) {
-        if (theCheckboxValue) {
-          // Nothing to do, already checked
-        } else {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        }
+  cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
+    if (isChecked) {
+      if (theCheckboxValue) {
+        // Nothing to do, already checked
       } else {
-        if (theCheckboxValue) {
-          cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        } else {
-          // Nothing to do, already unchecked
-        }
+        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
       }
-    });
+    } else {
+      if (theCheckboxValue) {
+        cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
+      } else {
+        // Nothing to do, already unchecked
+      }
+    }
+  });
 });
