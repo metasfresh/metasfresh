@@ -13,9 +13,8 @@ import { purchaseOrders } from '../../page_objects/purchase_orders';
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/161
 
 const date = humanReadableNow();
-// const date = '01T09_21_25_532';
 const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-const packingInstructionsName = `ProductPackingInstrutions ${date}`;
+const packingInstructionsName = `ProductPackingInstructions ${date}`;
 const productName1 = `ProductTest1 ${date}`;
 const productName2 = `ProductTest2 ${date}`;
 const productValue1 = `purchase_order_test ${date}`;
@@ -133,17 +132,17 @@ describe('Create a purchase order and Material Receipts', function() {
   });
 
   it('Create Material Receipt 1', function() {
-    cy.readAllNotifications();
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
+    cy.readAllNotifications();
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
     cy.pressDoneButton();
   });
 
   it('Create Material Receipt 2', function() {
-    cy.readAllNotifications();
     cy.selectNthRow(1).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
+    cy.readAllNotifications();
     cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
     cy.pressDoneButton();
   });
