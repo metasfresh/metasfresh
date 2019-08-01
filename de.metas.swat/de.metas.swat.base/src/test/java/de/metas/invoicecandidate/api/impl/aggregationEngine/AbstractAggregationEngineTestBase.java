@@ -61,6 +61,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyIds;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Services;
@@ -268,7 +269,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler
 		// assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
 
-		assertEquals(messagePrefix + " - Invalid C_Currency_ID", fromIC.getC_Currency_ID(), invoice.getC_Currency_ID());
+		assertEquals(messagePrefix + " - Invalid C_Currency_ID", CurrencyIds.ofRecord(fromIC), invoice.getCurrencyId());
 		if (invoiceReferencesOrder)
 		{
 			assertEquals(messagePrefix + " - Invalid C_Order_ID", fromIC.getC_Order_ID(), invoice.getC_Order_ID());

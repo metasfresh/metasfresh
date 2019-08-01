@@ -63,7 +63,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
@@ -86,6 +85,8 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
@@ -223,7 +224,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_Invoice_Candidate ic = createInvoiceCandidateForInOutLineOrNull(inOutLine, lastPaymentTermId, qtyLeftToAllocate);
 			final BigDecimal allocatedQty = addIfNotNullAndReturnQty(createdInvoiceCandidates, ic);
 
-			final boolean qtyLeftShouldHaveBeenAllocated = Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(inOutLine.getM_InOut());
+			final boolean qtyLeftShouldHaveBeenAllocated = DocStatus.ofCode(inOutLine.getM_InOut().getDocStatus()).isCompletedOrClosed();
 			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
 
 			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
@@ -695,6 +696,13 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// so that's why, here, we consider the QtyDelivered as QtyOrdered.
 		final BigDecimal qtyDelivered = ic.getQtyOrdered();
 		ic.setQtyDelivered(qtyDelivered);
+
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		// TODO decide if we need to fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
+		final StockQtyAndUOMQty qtyDeliveredFromShipments = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
+		final Quantity stockQty = qtyDeliveredFromShipments.getStockQty();
+		ic.setQtyDeliveredInUOM(qtyDeliveredFromShipments.getUOMQty().orElse(stockQty).getAsBigDecimal());
 
 		//
 		// Set other delivery informations by fetching them from first shipment/receipt.

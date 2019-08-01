@@ -117,7 +117,7 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Catch Weight Einheit.
+	 * Set Catch Einheit.
 	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
 	 *
 	 * <br>Type: Table
@@ -127,7 +127,7 @@ public interface I_M_InOutLine
 	public void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get Catch Weight Einheit.
+	 * Get Catch Einheit.
 	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
 	 *
 	 * <br>Type: Table
@@ -806,29 +806,29 @@ public interface I_M_InOutLine
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Menge in Catch Weight Einheit.
-	 * Tatsächlich gelieferte Menge in Catch Weight Einheit.
+	 * Set Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInCatchUOM (java.math.BigDecimal QtyDeliveredInCatchUOM);
+	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch);
 
 	/**
-	 * Get Menge in Catch Weight Einheit.
-	 * Tatsächlich gelieferte Menge in Catch Weight Einheit.
+	 * Get Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInCatchUOM();
+	public java.math.BigDecimal getQtyDeliveredCatch();
 
-    /** Column definition for QtyDeliveredInCatchUOM */
-    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredInCatchUOM = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredInCatchUOM", null);
-    /** Column name QtyDeliveredInCatchUOM */
-    public static final String COLUMNNAME_QtyDeliveredInCatchUOM = "QtyDeliveredInCatchUOM";
+    /** Column definition for QtyDeliveredCatch */
+    public static final org.adempiere.model.ModelColumn<I_M_InOutLine, Object> COLUMN_QtyDeliveredCatch = new org.adempiere.model.ModelColumn<I_M_InOutLine, Object>(I_M_InOutLine.class, "QtyDeliveredCatch", null);
+    /** Column name QtyDeliveredCatch */
+    public static final String COLUMNNAME_QtyDeliveredCatch = "QtyDeliveredCatch";
 
 	/**
 	 * Set Menge.

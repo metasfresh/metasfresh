@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,12 +34,12 @@ import org.junit.Test;
 public class MutableQtyAndQualityTest
 {
 	/**
-	 * Tests {@link MutableQtyAndQuality#addQtyAndQualityDiscountPercent(BigDecimal, BigDecimal)} and {@link MutableQtyAndQuality#add(IQtyAndQuality)}.
+	 * Tests {@link ReceiptQty#addQtyAndQualityDiscountPercent(BigDecimal, BigDecimal)} and {@link ReceiptQty#add(IQtyAndQuality)}.
 	 */
 	@Test
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest01()
 	{
-		final QtyAndQualityExpectation<Object> expectationForOneTransaction = QtyAndQualityExpectation.newInstance()
+		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
 				.qtyPrecision(2)
 				.qty("7")
 				.qualityDiscountPercent("3")
@@ -51,7 +51,7 @@ public class MutableQtyAndQualityTest
 	@Test
 	public void test_add_sameQty_ExpectConstantPercent_SimpleTest02()
 	{
-		final QtyAndQualityExpectation<Object> expectationForOneTransaction = QtyAndQualityExpectation.newInstance()
+		final ReceiptQtyExpectation<Object> expectationForOneTransaction = ReceiptQtyExpectation.newInstance()
 				.qtyPrecision(2)
 				.qty("437.35")
 				.qualityDiscountPercent("93.18")
@@ -61,7 +61,7 @@ public class MutableQtyAndQualityTest
 	}
 
 	/**
-	 * Tests {@link MutableQtyAndQuality#addQtyAndQualityDiscountPercent(BigDecimal, BigDecimal)} and {@link MutableQtyAndQuality#add(IQtyAndQuality)}.
+	 * Tests {@link ReceiptQty#addQtyAndQualityDiscountPercent(BigDecimal, BigDecimal)} and {@link ReceiptQty#add(IQtyAndQuality)}.
 	 */
 	@Test
 	public void test_add_sameQty_ExpectConstantPercent_RandomValues()
@@ -70,21 +70,21 @@ public class MutableQtyAndQualityTest
 		{
 			for (int i = 1; i <= 10; i++)
 			{
-				final QtyAndQualityExpectation<Object> expectationForOneTransaction = randomQtyAndQualityExpectation(qtyPrecision);
+				final ReceiptQtyExpectation<Object> expectationForOneTransaction = randomQtyAndQualityExpectation(qtyPrecision);
 				test_add_sameQty_ExpectConstantPercent(expectationForOneTransaction);
 			}
 		}
 
 	}
 
-	private void test_add_sameQty_ExpectConstantPercent(final QtyAndQualityExpectation<?> expectationForOneTransaction)
+	private void test_add_sameQty_ExpectConstantPercent(final ReceiptQtyExpectation<?> expectationForOneTransaction)
 	{
 		final int qtyPrecision = expectationForOneTransaction.getQtyPrecisionToUse();
 
-		final MutableQtyAndQuality qv1 = new MutableQtyAndQuality(); // used to test #add(BigDecimal, BigDecimal)
-		final MutableQtyAndQuality qv2 = new MutableQtyAndQuality(); // used to test #add(IQtyAndQuality)
+		final ReceiptQty qv1 = new ReceiptQty(); // used to test #add(BigDecimal, BigDecimal)
+		final ReceiptQty qv2 = new ReceiptQty(); // used to test #add(IQtyAndQuality)
 
-		final QtyAndQualityExpectation<Object> expectation = QtyAndQualityExpectation.newInstance()
+		final ReceiptQtyExpectation<Object> expectation = ReceiptQtyExpectation.newInstance()
 				.qtyPrecision(qtyPrecision);
 
 		final BigDecimal qualityDiscountPercent = expectationForOneTransaction.getQualityDiscountPercent();
@@ -104,7 +104,7 @@ public class MutableQtyAndQualityTest
 			{
 				qv1.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 
-				final MutableQtyAndQuality qvToAdd = new MutableQtyAndQuality();
+				final ReceiptQty qvToAdd = new ReceiptQty();
 				qvToAdd.addQtyAndQualityDiscountPercent(qtyToAdd, qualityDiscountPercent);
 				qv2.add(qvToAdd);
 
@@ -130,17 +130,17 @@ public class MutableQtyAndQualityTest
 					.qtyWithIssues(qtyWithIssuesExpected)
 					.qtyWithoutIssues(qtyWithoutIssuesExpected)
 					.assertExpected(message.expect("valid qty&quality when adding by qty/percent"), qv1)
-					.assertExpected(message.expect("valid qty&quality when adding by " + IQtyAndQuality.class), qv2);
+					.assertExpected(message.expect("valid qty&quality when adding by " + ReceiptQty.class), qv2);
 		}
 	}
 
 	@Test
 	public void test_copy()
 	{
-		final MutableQtyAndQuality qv = new MutableQtyAndQuality();
+		final ReceiptQty qv = new ReceiptQty();
 		qv.addQtyAndQualityDiscountPercent(new BigDecimal("123"), new BigDecimal("10"));
 
-		final MutableQtyAndQuality qvCopy = qv.copy();
+		final ReceiptQty qvCopy = qv.copy();
 		Assert.assertThat("Invalid Qty", qvCopy.getQtyTotal(), Matchers.comparesEqualTo(qv.getQtyTotal()));
 		Assert.assertThat("Invalid QtyWithIssues", qvCopy.getQtyWithIssuesExact(), Matchers.comparesEqualTo(qv.getQtyWithIssuesExact()));
 	}
@@ -148,22 +148,22 @@ public class MutableQtyAndQualityTest
 	@Test
 	public void test_getQualityDiscountPercent_zeroQtys()
 	{
-		final MutableQtyAndQuality qv = new MutableQtyAndQuality();
+		final ReceiptQty qv = new ReceiptQty();
 		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent(), Matchers.comparesEqualTo(BigDecimal.ZERO));
 	}
-	
+
 	@Test
 	public void test_getQualityDiscountPercent_QtyTotalIsZero_QtyWithIssuesNotZero()
 	{
-		final MutableQtyAndQuality qv = new MutableQtyAndQuality();
+		final ReceiptQty qv = new ReceiptQty();
 		qv.addQtyAndQtyWithIssues(BigDecimal.ZERO, new BigDecimal("123"));
-		
+
 		// NOTE: at the moment we expect to return ZERO and an WARNING shall be logged
 		// TBD: throwing an exception in this case...
 		Assert.assertThat("Invalid QualityDiscountPercent", qv.getQualityDiscountPercent(), Matchers.comparesEqualTo(BigDecimal.ZERO));
 	}
 
-	public static QtyAndQualityExpectation<Object> randomQtyAndQualityExpectation(final int qtyPrecision)
+	public static ReceiptQtyExpectation<Object> randomQtyAndQualityExpectation(final int qtyPrecision)
 	{
 		// Generate random QtyToAdd
 		// Avoid having qtyToAdd == 0 because that makes no sense to our test
@@ -172,11 +172,11 @@ public class MutableQtyAndQualityTest
 		{
 			qtyToAdd = randomBigDecimal(1000, qtyPrecision);
 		}
-		
-		final BigDecimal qualityDiscountPercent = randomBigDecimal(100, MutableQtyAndQuality.QualityDiscountPercent_Precision);
+
+		final BigDecimal qualityDiscountPercent = randomBigDecimal(100, ReceiptQty.QualityDiscountPercent_Precision);
 		final BigDecimal qtyWithIssuesExpectedForOneTransactionExact = qtyToAdd.multiply(qualityDiscountPercent)
-				.divide(BigDecimal.valueOf(100), MutableQtyAndQuality.INTERNAL_PRECISION, RoundingMode.UNNECESSARY);
-		return QtyAndQualityExpectation.newInstance()
+				.divide(BigDecimal.valueOf(100), ReceiptQty.INTERNAL_PRECISION, RoundingMode.UNNECESSARY);
+		return ReceiptQtyExpectation.newInstance()
 				.qtyPrecision(qtyPrecision)
 				.qty(qtyToAdd)
 				.qualityDiscountPercent(qualityDiscountPercent)

@@ -1,5 +1,7 @@
 package de.metas.fresh.invoice.migrateMatchInv.process;
 
+import static de.metas.util.Check.fail;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -10,12 +12,12 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -178,7 +180,8 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 			MutableBigDecimal qtyMovedNotMatched = inoutLineId2qtyNotMatchedMap.get(inoutLineId);
 			if (qtyMovedNotMatched == null)
 			{
-				qtyMovedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(matchInv.getM_InOutLine()));
+				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				//qtyMovedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(matchInv.getM_InOutLine()));
 				inoutLineId2qtyNotMatchedMap.put(inoutLineId, qtyMovedNotMatched);
 			}
 
@@ -194,7 +197,8 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 			MutableBigDecimal qtyMovedNotMatched = inoutLineId2qtyNotMatchedMap.get(inoutLineId);
 			if (qtyMovedNotMatched == null)
 			{
-				qtyMovedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(inoutLine));
+				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				//qtyMovedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(inoutLine));
 				inoutLineId2qtyNotMatchedMap.put(inoutLineId, qtyMovedNotMatched);
 			}
 
@@ -274,7 +278,8 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 				}
 
 				// Create the matching
-				matchInvHelper.createMatchInv(invoiceLine, inoutLine, qtyMatched);
+				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				//matchInvHelper.createMatchInv(invoiceLine, inoutLine, qtyMatched);
 
 				// Update not matched quantities
 				qtyInvoicedNotMatched.subtract(qtyMatched);
@@ -300,7 +305,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 
 	/**
 	 * Calculate how much we can match
-	 * 
+	 *
 	 * @param qtyInvoicedNotMatched
 	 * @param qtyMovedNotMatched
 	 * @return quantity that can be matched.

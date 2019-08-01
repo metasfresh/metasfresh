@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * => Expectation: one invoice, one line; on the purchase side we want to aggregate inoutLines over different InOuts, as long as they don't differ in their "invoice-relevant" ASI-values.
- * 
+ *
  * @author ts
  *
  */
@@ -58,7 +58,7 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 	{
 		return null;
 	}
-	
+
 	@Override
 	protected void step_validate_after_aggregation(
 			final List<I_C_Invoice_Candidate> invoiceCandidates,
@@ -81,12 +81,12 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 			assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
 
 			final BigDecimal fullQty = partialQty1.add(partialQty2).add(partialQty3);
-			
+
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(3));
-			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().intValueExact());
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtyToInvoice(), comparesEqualTo(fullQty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt(), comparesEqualTo(fullQty) /* because price=1 */);
+			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
+			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(fullQty));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(fullQty) /* because price=1 */);
 
 			// validate the IC<->IL qty allocation
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullQty);

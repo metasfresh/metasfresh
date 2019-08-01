@@ -1,11 +1,12 @@
-package de.metas.money;
+package de.metas.invoicecandidate;
 
-import de.metas.uom.UomId;
-import lombok.Value;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2019 metas GmbH
  * %%
@@ -16,18 +17,20 @@ import lombok.Value;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@Value
-public class PricePerUnit
+@UtilityClass
+public class InvoiceCandidateIds
 {
-	Money money;
-	UomId uomId;
+	public InvoiceCandidateId createFor(@NonNull final I_C_Invoice_Candidate invoicecnadidateRecord)
+	{
+		return InvoiceCandidateId.ofRepoId(invoicecnadidateRecord.getC_Invoice_Candidate_ID());
+	}
 }

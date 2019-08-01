@@ -43,9 +43,14 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.money.Money;
 import de.metas.process.PInstanceId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
 /**
@@ -129,8 +134,6 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Calculate actual net price.
-	 *
-	 * @param ic
 	 */
 	void setPriceActualNet(I_C_Invoice_Candidate ic);
 
@@ -149,11 +152,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void setPriceActual_Override(I_C_Invoice_Candidate ic);
 
-	BigDecimal getPriceActual(I_C_Invoice_Candidate ic);
+	ProductPrice getPriceActual(I_C_Invoice_Candidate ic);
 
-	BigDecimal getDiscount(I_C_Invoice_Candidate ic);
+	Percent getDiscount(I_C_Invoice_Candidate ic);
 
-	BigDecimal getPriceEntered(I_C_Invoice_Candidate ic);
+	ProductPrice getPriceEntered(I_C_Invoice_Candidate ic);
 
 	boolean isTaxIncluded(I_C_Invoice_Candidate ic);
 
@@ -187,9 +190,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
-	BigDecimal calculateNetAmt(I_C_Invoice_Candidate ic);
-
-	BigDecimal calculateNetAmt(BigDecimal qty, BigDecimal price, CurrencyPrecision currencyPrecision);
+	Money calculateNetAmt(I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return the newly created, but not yet saved invoice candidate record.
@@ -240,7 +241,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
-	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, BigDecimal qtyInvoiced, String note);
+	I_C_Invoice_Line_Alloc createUpdateIla(I_C_Invoice_Candidate invoiceCand, I_C_InvoiceLine invoiceLine, StockQtyAndUOMQty qtysInvoiced, String note);
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 
@@ -286,7 +287,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @see de.metas.uom.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
 	 */
-	BigDecimal convertToPriceUOM(BigDecimal qty, I_C_Invoice_Candidate ic);
+	Quantity convertToPriceUOM(Quantity qtyInUom, I_C_Invoice_Candidate ic);
 
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
@@ -352,7 +353,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.
 	 */
 	// TODO kick out
-	BigDecimal getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
+	Percent getQualityDiscountPercentEffective(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
@@ -380,7 +381,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return current QtyToInvoice_Override or QtyToInvoice
 	 */
-	BigDecimal getQtyToInvoice(I_C_Invoice_Candidate ic);
+	Quantity getQtyToInvoiceStockUOM(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Set the QualityDiscountPercent_Override based on the QualityIssuePercentage from the discount schema.
@@ -450,15 +451,18 @@ public interface IInvoiceCandBL extends ISingletonService
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
 	/**
-	 * Compute the qty (in stocking UOM) that was ordered but not yet invoiced.<br>
+	 * Compute the qty (in the ic's UOM) that was ordered but not yet invoiced.<br>
 	 * Also account for negative ordered quantities.<br>
 	 * The result does not depend on the given ic's invoice rule.
 	 */
-	BigDecimal computeOpenQty(I_C_Invoice_Candidate ic);
+	Quantity computeOpenQty(I_C_Invoice_Candidate ic);
 
 	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
 
 	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
 
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
+
+	StockQtyAndUOMQty computeQtyDeliveredFromShipments(I_C_Invoice_Candidate ic);
+
 }

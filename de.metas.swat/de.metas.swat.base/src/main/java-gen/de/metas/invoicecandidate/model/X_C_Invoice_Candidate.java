@@ -15,7 +15,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1341442905L;
+	private static final long serialVersionUID = 558584637L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (Properties ctx, int C_Invoice_Candidate_ID, String trxName)
@@ -2242,7 +2242,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Berechneter Betrag.
+	/** Set Abgerechneter Betrag.
 		@param NetAmtInvoiced 
 		Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	  */
@@ -2252,7 +2252,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_NetAmtInvoiced, NetAmtInvoiced);
 	}
 
-	/** Get Berechneter Betrag.
+	/** Get Abgerechneter Betrag.
 		@return Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	  */
 	@Override
@@ -2264,7 +2264,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set zu berechn. Betrag.
+	/** Set Abzurechnender Betrag.
 		@param NetAmtToInvoice 
 		Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	  */
@@ -2274,7 +2274,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_NetAmtToInvoice, NetAmtToInvoice);
 	}
 
-	/** Get zu berechn. Betrag.
+	/** Get Abzurechnender Betrag.
 		@return Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	  */
 	@Override
@@ -2640,6 +2640,28 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
+	/** Set Liefermenge.
+		@param QtyDeliveredInUOM 
+		Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	  */
+	@Override
+	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInUOM, QtyDeliveredInUOM);
+	}
+
+	/** Get Liefermenge.
+		@return Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Menge.
 		@param QtyEntered 
 		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
@@ -2679,6 +2701,25 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Abgerechnet.
+		@param QtyInvoicedInUOM Abgerechnet	  */
+	@Override
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyInvoicedInUOM, QtyInvoicedInUOM);
+	}
+
+	/** Get Abgerechnet.
+		@return Abgerechnet	  */
+	@Override
+	public java.math.BigDecimal getQtyInvoicedInUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -2725,7 +2766,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set Zu berechn. Menge eff..
+	/** Set Abzurechnen eff. (Lagereinheit).
 		@param QtyToInvoice 
 		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	  */
@@ -2735,7 +2776,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_QtyToInvoice, QtyToInvoice);
 	}
 
-	/** Get Zu berechn. Menge eff..
+	/** Get Abzurechnen eff. (Lagereinheit).
 		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	  */
 	@Override
@@ -2766,67 +2807,61 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set Catch Weight Menge in Preiseinheit.
-		@param QtyToInvoiceInPriceUOM_CatchWeight 
-		Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	/** Set Zu berechn. Menge In Preiseinheit.
+		@param QtyToInvoiceInPriceUOM 
+		Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	  */
 	@Override
-	public void setQtyToInvoiceInPriceUOM_CatchWeight (java.math.BigDecimal QtyToInvoiceInPriceUOM_CatchWeight)
+	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM)
 	{
-		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM_CatchWeight, QtyToInvoiceInPriceUOM_CatchWeight);
+		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM, QtyToInvoiceInPriceUOM);
 	}
 
-	/** Get Catch Weight Menge in Preiseinheit.
-		@return Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	/** Get Zu berechn. Menge In Preiseinheit.
+		@return Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_CatchWeight () 
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_CatchWeight);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Zu ber. Menge in Preiseinheit eff..
-		@param QtyToInvoiceInPriceUOM_Eff 
-		Effektiv zu berechnende Menge in der Mengeneinheit des Preises; abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
-	  */
+	/** Set Abzurechnen eff..
+		@param QtyToInvoiceInUOM Abzurechnen eff.	  */
 	@Override
-	public void setQtyToInvoiceInPriceUOM_Eff (java.math.BigDecimal QtyToInvoiceInPriceUOM_Eff)
+	public void setQtyToInvoiceInUOM (java.math.BigDecimal QtyToInvoiceInUOM)
 	{
-		set_Value (COLUMNNAME_QtyToInvoiceInPriceUOM_Eff, QtyToInvoiceInPriceUOM_Eff);
+		set_Value (COLUMNNAME_QtyToInvoiceInUOM, QtyToInvoiceInUOM);
 	}
 
-	/** Get Zu ber. Menge in Preiseinheit eff..
-		@return Effektiv zu berechnende Menge in der Mengeneinheit des Preises; abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
-	  */
+	/** Get Abzurechnen eff..
+		@return Abzurechnen eff.	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Eff () 
+	public java.math.BigDecimal getQtyToInvoiceInUOM () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_Eff);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set Nominalmenge in Preiseinheit.
-		@param QtyToInvoiceInPriceUOM_Nominal 
-		Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
-	  */
+	/** Set Abzurechnen.
+		@param QtyToInvoiceInUOM_Calc Abzurechnen	  */
 	@Override
-	public void setQtyToInvoiceInPriceUOM_Nominal (java.math.BigDecimal QtyToInvoiceInPriceUOM_Nominal)
+	public void setQtyToInvoiceInUOM_Calc (java.math.BigDecimal QtyToInvoiceInUOM_Calc)
 	{
-		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInPriceUOM_Nominal, QtyToInvoiceInPriceUOM_Nominal);
+		set_ValueNoCheck (COLUMNNAME_QtyToInvoiceInUOM_Calc, QtyToInvoiceInUOM_Calc);
 	}
 
-	/** Get Nominalmenge in Preiseinheit.
-		@return Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
-	  */
+	/** Get Abzurechnen.
+		@return Abzurechnen	  */
 	@Override
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Nominal () 
+	public java.math.BigDecimal getQtyToInvoiceInUOM_Calc () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInPriceUOM_Nominal);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToInvoiceInUOM_Calc);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
@@ -2939,15 +2974,15 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
-	/** Set Qualitätsabzug % Eff..
-		@param QualityDiscountPercent_Effective Qualitätsabzug % Eff.	  */
+	/** Set Qualitätsabzug % eff..
+		@param QualityDiscountPercent_Effective Qualitätsabzug % eff.	  */
 	@Override
 	public void setQualityDiscountPercent_Effective (java.math.BigDecimal QualityDiscountPercent_Effective)
 	{
 		throw new IllegalArgumentException ("QualityDiscountPercent_Effective is virtual column");	}
 
-	/** Get Qualitätsabzug % Eff..
-		@return Qualitätsabzug % Eff.	  */
+	/** Get Qualitätsabzug % eff..
+		@return Qualitätsabzug % eff.	  */
 	@Override
 	public java.math.BigDecimal getQualityDiscountPercent_Effective () 
 	{
@@ -3089,6 +3124,24 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	/** Set Lagereinheit.
+		@param StockingUOM_ID Lagereinheit	  */
+	@Override
+	public void setStockingUOM_ID (int StockingUOM_ID)
+	{
+		throw new IllegalArgumentException ("StockingUOM_ID is virtual column");	}
+
+	/** Get Lagereinheit.
+		@return Lagereinheit	  */
+	@Override
+	public int getStockingUOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_StockingUOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Total des Auftrags.

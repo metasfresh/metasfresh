@@ -45,6 +45,7 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
 
 /**
@@ -169,7 +170,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		assertThat(candsForInvoiceLine1.size(), is(1));
 		assertThat(candsForInvoiceLine1.get(0), is(ic));
 
-		final BigDecimal qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
-		assertThat(qtyInvoiced, comparesEqualTo(expectedAllocatedQty));
+		final StockQtyAndUOMQty qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
+		assertThat(qtyInvoiced.getStockQty().getAsBigDecimal(), comparesEqualTo(expectedAllocatedQty));
 	}
 }

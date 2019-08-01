@@ -36,6 +36,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
@@ -59,7 +60,9 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -89,18 +92,21 @@ public class C_Invoice_Candidate
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
 			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
-			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
+			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
 			I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
 	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(ic.getC_UOM_ID());
+
 		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
 		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
-		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(ic.getQtyToInvoice(), ic);
+		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(ic.getQtyToInvoiceInUOM(), uomRecord), ic);
 
-		ic.setQtyToInvoiceInPriceUOM_Nominal(qtyToInvoiceInPriceUOM);
+		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.getAsBigDecimal());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,

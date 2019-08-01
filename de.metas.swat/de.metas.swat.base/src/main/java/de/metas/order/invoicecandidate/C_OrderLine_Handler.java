@@ -67,6 +67,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -344,13 +345,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate ic)
 	{
-		final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		ic.setQtyDelivered(orderLine.getQtyDelivered());
+		// TODO decide if we need to fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
+		final StockQtyAndUOMQty qtyDelivered = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
+		ic.setQtyDelivered(qtyDelivered.getStockQty().getAsBigDecimal());
+		ic.setQtyDeliveredInUOM(qtyDelivered.getUOMQty().get().getAsBigDecimal());
 
 		//
 		// Find out the first shipment/receipt
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 		I_M_InOut firstInOut = null;
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)

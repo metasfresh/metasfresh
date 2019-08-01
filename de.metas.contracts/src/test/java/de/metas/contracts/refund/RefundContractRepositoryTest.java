@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -53,6 +55,7 @@ public class RefundContractRepositoryTest
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(10);
 
 	private RefundContractRepository refundContractRepository;
+	private I_C_UOM uomRecord;
 
 	@Before
 	public void init()
@@ -60,6 +63,9 @@ public class RefundContractRepositoryTest
 		AdempiereTestHelper.get().init();
 
 		refundContractRepository = new RefundContractRepository(new RefundConfigRepository(new InvoiceScheduleRepository()));
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test
@@ -91,7 +97,7 @@ public class RefundContractRepositoryTest
 		assertThat(contract.getStartDate()).isEqualTo(NOW);
 		assertThat(contract.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(contract.getRefundConfigs()).hasSize(4); // we expect a 4th "artificial" config with qty=zero
-		assertThat(contract.getRefundConfig(ZERO).getPercent().isZero()).isTrue();
+		assertThat(contract.getRefundConfig(Quantity.of(ZERO, uomRecord)).getPercent().isZero()).isTrue();
 	}
 
 	private static I_C_Flatrate_Term createContractRecord(@NonNull final I_C_Flatrate_Conditions conditionsRecord)

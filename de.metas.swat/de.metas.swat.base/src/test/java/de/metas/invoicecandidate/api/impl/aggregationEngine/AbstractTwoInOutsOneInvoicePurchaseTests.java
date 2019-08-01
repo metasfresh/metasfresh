@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,16 +38,17 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductPrice;
 
 /**
  * <ul>
  * <li>two shipments, the first one with one line, the second one with two lines..each line has the same product etc
  * <li>both iols belong to the same order line and thus are associated to the same invoice candidate
  * </ul>
- * 
+ *
  * => Expectation: one invoice, but two lines, because only iols that belong to the same inOut can be aggregated into one invoice line.
  * <p>
- * 
+ *
  * @author ts
  *
  */
@@ -83,14 +84,14 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(3));
 
-			final BigDecimal priceActual = invoiceCandBL.getPriceActual(ic);
-			final BigDecimal priceEntered = invoiceCandBL.getPriceEntered(ic);
+			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
+			final ProductPrice priceEntered = invoiceCandBL.getPriceEntered(ic);
 
-			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered(), comparesEqualTo(priceEntered));
-			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual(), comparesEqualTo(priceActual));
+			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
+			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
 
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtyToInvoice(), comparesEqualTo(fullqty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt(), comparesEqualTo(fullqty.multiply(priceActual)));
+			assertThat("Invalid QtysToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(fullqty));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(fullqty.multiply(priceActual.toBigDecimal())));
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 

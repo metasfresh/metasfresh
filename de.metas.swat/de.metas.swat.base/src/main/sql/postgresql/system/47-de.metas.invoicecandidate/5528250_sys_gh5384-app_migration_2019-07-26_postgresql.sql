@@ -1080,6 +1080,6 @@ ALTER TABLE M_InOutLine ADD CONSTRAINT CatchUOM_MInOutLine FOREIGN KEY (Catch_UO
 
 -- 2019-07-29T09:54:57.643Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_InOutLine','ALTER TABLE public.M_InOutLine ADD COLUMN QtyDeliveredInCatchUOM NUMERIC')
-;
+--/* DDL */ SELECT public.db_alter_table('M_InOutLine','ALTER TABLE public.M_InOutLine ADD COLUMN QtyDeliveredInCatchUOM NUMERIC')
+--;
 

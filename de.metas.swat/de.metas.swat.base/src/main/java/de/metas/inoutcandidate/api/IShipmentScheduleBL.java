@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
@@ -41,7 +42,7 @@ import de.metas.util.ISingletonService;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
-	public static final String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
+	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
 
 	/**
 	 * Please use this method before calling {@link CreateMissingShipmentSchedulesWorkpackageProcessor#schedule(Properties, String)}, to avoid unneeded work packages.
@@ -166,10 +167,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter
-	 *
-	 * @param shipmentSchedule
 	 */
-	void openShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
+	void openShipmentSchedule(I_M_ShipmentSchedule shipmentScheduleRecord);
 
-	Quantity getQtyToDeliver(I_M_ShipmentSchedule sched);
+	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	Optional<Quantity> getCatchQty(I_M_ShipmentSchedule shipmentScheduleRecord);
 }

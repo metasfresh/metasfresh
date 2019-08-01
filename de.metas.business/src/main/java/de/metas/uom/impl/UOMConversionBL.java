@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -53,7 +54,6 @@ import de.metas.uom.UOMConversionsMap;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMUtil;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -63,7 +63,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 	@Override
 	public BigDecimal convertQty(
-			@NonNull final UOMConversionContext conversionCtx /*could technically be nullable, right now I don't see why we should allow it*/,
+			@NonNull final UOMConversionContext conversionCtx /* could technically be nullable, right now I don't see why we should allow it */,
 			@NonNull final BigDecimal qty,
 			@NonNull final UomId uomFrom,
 			@NonNull final UomId uomTo)
@@ -121,8 +121,9 @@ public class UOMConversionBL implements IUOMConversionBL
 		}
 
 		// If current UOM is the same as the UOM to which we need to convert, we shall do nothing
-		final int currentUOMId = quantity.getUOMId();
-		if (currentUOMId == uomToId.getRepoId())
+		// final int currentUOMId = quantity.getUOMId();
+		final UomId currentUomId = quantity.getUomId();
+		if (Objects.equals(currentUomId, uomToId))
 		{
 			return quantity;
 		}
@@ -130,7 +131,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		//
 		// Convert current quantity to "uomTo"
 		final BigDecimal sourceQtyNew = quantity.getAsBigDecimal();
-		final int sourceUOMNewId = currentUOMId;
+		final int sourceUOMNewId = currentUomId.getRepoId();
 		final I_C_UOM sourceUOMNew = Services.get(IUOMDAO.class).getById(sourceUOMNewId);
 		final BigDecimal qtyNew = convertQty(conversionCtx,
 				sourceQtyNew,
@@ -142,10 +143,11 @@ public class UOMConversionBL implements IUOMConversionBL
 	}
 
 	@Override
-	public BigDecimal convertQtyToProductUOM(final UOMConversionContext conversionCtx, final BigDecimal qty, final I_C_UOM uomFrom)
+	public BigDecimal convertQtyToProductUOM(
+			@NonNull final UOMConversionContext conversionCtx,
+			final BigDecimal qty,
+			final I_C_UOM uomFrom)
 	{
-		Check.assumeNotNull(conversionCtx, "conversionCtx not null");
-
 		// Get Product's stocking UOM
 		final ProductId productId = conversionCtx.getProductId();
 		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
@@ -171,7 +173,9 @@ public class UOMConversionBL implements IUOMConversionBL
 			@NonNull final Collection<Quantity> quantities,
 			@NonNull final UomId toUomId)
 	{
-		final I_C_UOM toUomRecord = loadOutOfTrx(toUomId, I_C_UOM.class);
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+
+		final I_C_UOM toUomRecord = uomDao.getById(toUomId);
 		Quantity resultInTargetUOM = Quantity.zero(toUomRecord);
 
 		for (final Quantity currentQuantity : quantities)

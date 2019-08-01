@@ -1,5 +1,7 @@
 package de.metas.fresh.invoice.migrateMatchInv.process;
 
+import static de.metas.util.Check.fail;
+
 /*
  * #%L
  * de.metas.fresh.base
@@ -10,12 +12,12 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -45,8 +47,10 @@ import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class M_MatchInv_CreateMissing extends JavaProcess
 {
@@ -145,7 +149,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 				.create()
 				.setOption(Query.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_C_InvoiceLine.class);
-		
+
 		return matchInvHelper.cacheCurrentInvoiceIterator(invoiceLines);
 	}
 
@@ -206,7 +210,9 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 			MutableBigDecimal qtyMovedNotMatched = inoutLineId2qtyNotMatched.get(inoutLineId);
 			if (qtyMovedNotMatched == null)
 			{
-				qtyMovedNotMatched = new MutableBigDecimal(retrieveQtyNotMatched(inoutLine));
+				final StockQtyAndUOMQty qtysNotMatched = retrieveQtyNotMatched(inoutLine);
+				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				//qtyMovedNotMatched = new MutableBigDecimal(qtysNotMatched);
 				inoutLineId2qtyNotMatched.put(inoutLineId, qtyMovedNotMatched);
 			}
 
@@ -216,7 +222,8 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 				continue;
 			}
 
-			createNewMatchInvoiceRecord(il, inoutLine, qtyToMatch);
+			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			//createNewMatchInvoiceRecord(il, inoutLine, qtyToMatch);
 			countMatchInvCreated++;
 
 			// Update quantities
@@ -250,12 +257,15 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 		return matchInvHelper.retrieveQtyNotMatched(il);
 	}
 
-	private BigDecimal retrieveQtyNotMatched(final I_M_InOutLine iol)
+	private StockQtyAndUOMQty retrieveQtyNotMatched(@NonNull final I_M_InOutLine iol)
 	{
 		return matchInvHelper.retrieveQtyNotMatched(iol);
 	}
 
-	private I_M_MatchInv createNewMatchInvoiceRecord(final I_C_InvoiceLine il, final I_M_InOutLine iol, final BigDecimal qtyMatched)
+	private I_M_MatchInv createNewMatchInvoiceRecord(
+			@NonNull final I_C_InvoiceLine il,
+			@NonNull final I_M_InOutLine iol,
+			@NonNull final StockQtyAndUOMQty qtyMatched)
 	{
 		return matchInvHelper.createMatchInv(il, iol, qtyMatched);
 	}

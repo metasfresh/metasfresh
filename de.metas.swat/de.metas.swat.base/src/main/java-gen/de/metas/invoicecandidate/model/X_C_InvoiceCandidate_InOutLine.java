@@ -15,7 +15,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1853962745L;
+	private static final long serialVersionUID = -604452476L;
 
     /** Standard Constructor */
     public X_C_InvoiceCandidate_InOutLine (Properties ctx, int C_InvoiceCandidate_InOutLine_ID, String trxName)
@@ -99,6 +99,31 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 		return ii.intValue();
 	}
 
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Lieferung/ Wareneingang freigeben.
 		@param IsInOutApprovedForInvoicing Lieferung/ Wareneingang freigeben	  */
 	@Override
@@ -174,6 +199,66 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	public java.math.BigDecimal getQtyDelivered () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert Catch.
+		@param QtyDeliveredInUOM_Catch 
+		Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public void setQtyDeliveredInUOM_Catch (java.math.BigDecimal QtyDeliveredInUOM_Catch)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDeliveredInUOM_Catch, QtyDeliveredInUOM_Catch);
+	}
+
+	/** Get Geliefert Catch.
+		@return Tatsächlich gelieferte Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Catch () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Catch);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert Nominal.
+		@param QtyDeliveredInUOM_Nominal Geliefert Nominal	  */
+	@Override
+	public void setQtyDeliveredInUOM_Nominal (java.math.BigDecimal QtyDeliveredInUOM_Nominal)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInUOM_Nominal, QtyDeliveredInUOM_Nominal);
+	}
+
+	/** Get Geliefert Nominal.
+		@return Geliefert Nominal	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Nominal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Nominal);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Geliefert abw..
+		@param QtyDeliveredInUOM_Override Geliefert abw.	  */
+	@Override
+	public void setQtyDeliveredInUOM_Override (java.math.BigDecimal QtyDeliveredInUOM_Override)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyDeliveredInUOM_Override, QtyDeliveredInUOM_Override);
+	}
+
+	/** Get Geliefert abw..
+		@return Geliefert abw.	  */
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInUOM_Override () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInUOM_Override);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

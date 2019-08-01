@@ -44,12 +44,12 @@ import de.metas.util.time.SystemTime;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -207,7 +207,7 @@ public class PPOrderMakeToKitHelper
 			final BigDecimal qtyToDeliver = bomLineModel.getQtyToDeliver();
 			final BigDecimal qtyScrapComponent = bomLineModel.getQtyScrapComponent();
 
-			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(M_Product_ID))
+			if (M_Product_ID > 0 && Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 			{
 				int M_AttributeSetInstance_ID = 0;
 				if (value == null && isSelected)

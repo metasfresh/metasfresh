@@ -99,10 +99,14 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -946,40 +950,46 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final BigDecimal qtyInvoiced)
+	public final void setQtys(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final StockQtyAndUOMQty qtysInvoiced)
 	{
 		// for now we are lenient, because i'm not sure because strict doesn't break stuff
 		// Check.assume(invoiceLine.getM_Product_ID() > 0, "invoiceLine {} has M_Product_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getC_UOM_ID() > 0, "invoiceLine {} has C_UOM_ID > 0", invoiceLine);
 		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {} has Price_UOM_ID > 0", invoiceLine);
 
-		invoiceLine.setQtyInvoiced(qtyInvoiced);
+		final Quantity stockQty = qtysInvoiced.getStockQty();
+		invoiceLine.setQtyInvoiced(stockQty.getAsBigDecimal());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 
-		final boolean fallback = invoiceLine.getM_Product_ID() <= 0;
-
-
+		final boolean fallback = productId == null;
 		if (fallback)
 		{
 			// without a product, we have no internal UOM, so we can't do any conversions
-			invoiceLine.setQtyEntered(qtyInvoiced);
-			invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoiced);
+			invoiceLine.setQtyEntered(stockQty.getAsBigDecimal());
+			invoiceLine.setQtyInvoicedInPriceUOM(stockQty.getAsBigDecimal());
 			return;
 		}
 
-		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
-		if (invoiceLine.getC_UOM_ID() <= 0)
+		if (qtysInvoiced.getUOMQty().isPresent())
 		{
-			invoiceLine.setQtyEntered(qtyInvoiced);
+			final Quantity uomQty = qtysInvoiced.getUOMQty().get();
+
+			invoiceLine.setC_UOM_ID(uomQty.getUomId().getRepoId());
+			invoiceLine.setQtyEntered(uomQty.getAsBigDecimal());
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), qtyInvoiced);
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.getAsBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
-		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getPrice_UOM(), qtyInvoiced);
+		final BigDecimal qtyInvoicedInPriceUOM = uomConversionBL.convertQty(
+				UOMConversionContext.of(productId),
+				invoiceLine.getQtyEntered(),
+				UomId.ofRepoId(invoiceLine.getC_UOM_ID()),
+				UomId.ofRepoId(invoiceLine.getPrice_UOM_ID()));
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

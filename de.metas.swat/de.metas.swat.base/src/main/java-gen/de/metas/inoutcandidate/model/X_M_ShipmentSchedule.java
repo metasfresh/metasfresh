@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1475059081L;
+	private static final long serialVersionUID = -1095819771L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -222,7 +222,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
 	}
 
-	/** Set Catch Weight Einheit.
+	/** Set Catch Einheit.
 		@param Catch_UOM_ID 
 		Aus dem Produktstamm übenommene Catch Weight Einheit.
 	  */
@@ -235,7 +235,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
 	}
 
-	/** Get Catch Weight Einheit.
+	/** Get Catch Einheit.
 		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
 	  */
 	@Override

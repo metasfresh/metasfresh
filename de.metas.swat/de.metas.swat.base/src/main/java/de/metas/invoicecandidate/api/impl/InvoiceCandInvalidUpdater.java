@@ -1,6 +1,5 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.util.Check.assumeEquals;
 import static java.math.BigDecimal.ONE;
 
 /*
@@ -320,31 +319,24 @@ import lombok.NonNull;
 		// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
 		invoiceCandBL.updateQtyWithIssues_Effective(ic);
 
-		//
+
 		// Set the new qtyToInvoice value, depending on invoiceRule
-		final BigDecimal newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
-		ic.setQtyToInvoice(newQtyToInvoice);
+		final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
+		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.getAsBigDecimal()); // TODO make sure it's in the UOM
 
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(ic);
 
-		final BigDecimal qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
-		ic.setQtyToInvoiceInPriceUOM_Nominal(qtyToInvoiceInPriceUOM);
+		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
+		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.getAsBigDecimal());
 
-		final BigDecimal newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
-		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount);
+		final Quantity newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
+		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.getAsBigDecimal()); // TODO make sure it's in the UOM
 
 		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 
 		// Note: ic.setProcessed is not invoked here, but in a model validator
 		// That's because QtyToOrder and QtyInvoiced could also be set somewhere else
-
-		final Quantity qtyToInvoiceFromShipments = invoiceCandBL.computeQtyToInvoiceInPriceUOMFromShipments(ic);
-		assumeEquals(ic.getPrice_UOM_ID(), qtyToInvoiceFromShipments.getUomId().getRepoId(), "UOMs need to be equal; ic={}", ic);
-
-		ic.setQtyToInvoiceInPriceUOM_CatchWeight(qtyToInvoiceFromShipments.getAsBigDecimal());
-
-		// set setQtyToInvoiceInPriceUOM_Eff
 
 		// We need to update the NetAmtToInvoice again because in some cases this value depends on overall in invoiceable amount
 		// e.g. see ManualCandidateHandler which is calculated how much we can invoice of a credit memo amount

@@ -2311,7 +2311,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Berechneter Betrag.
+	 * Set Abgerechneter Betrag.
 	 * Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	 *
 	 * <br>Type: Amount
@@ -2321,7 +2321,7 @@ public interface I_C_Invoice_Candidate
 	public void setNetAmtInvoiced (java.math.BigDecimal NetAmtInvoiced);
 
 	/**
-	 * Get Berechneter Betrag.
+	 * Get Abgerechneter Betrag.
 	 * Bezeichnet den Netto-Geldbetrag, der für diesen Rechnungskandidaten bereits in Rechnung gestellt wurde
 	 *
 	 * <br>Type: Amount
@@ -2336,7 +2336,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_NetAmtInvoiced = "NetAmtInvoiced";
 
 	/**
-	 * Set zu berechn. Betrag.
+	 * Set Abzurechnender Betrag.
 	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	 *
 	 * <br>Type: Amount
@@ -2346,7 +2346,7 @@ public interface I_C_Invoice_Candidate
 	public void setNetAmtToInvoice (java.math.BigDecimal NetAmtToInvoice);
 
 	/**
-	 * Get zu berechn. Betrag.
+	 * Get Abzurechnender Betrag.
 	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
 	 *
 	 * <br>Type: Amount
@@ -2732,6 +2732,31 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
+	 * Set Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM (java.math.BigDecimal QtyDeliveredInUOM);
+
+	/**
+	 * Get Liefermenge.
+	 * Liefermenge in der Maßeinheit der jeweiligen Zeile (kann von der Maßeinheit des betreffenden Produktes abweichen)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM();
+
+    /** Column definition for QtyDeliveredInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyDeliveredInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyDeliveredInUOM", null);
+    /** Column name QtyDeliveredInUOM */
+    public static final String COLUMNNAME_QtyDeliveredInUOM = "QtyDeliveredInUOM";
+
+	/**
 	 * Set Menge.
 	 * Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
 	 *
@@ -2782,6 +2807,29 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
+	 * Set Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM);
+
+	/**
+	 * Get Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInUOM();
+
+    /** Column definition for QtyInvoicedInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyInvoicedInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyInvoicedInUOM", null);
+    /** Column name QtyInvoicedInUOM */
+    public static final String COLUMNNAME_QtyInvoicedInUOM = "QtyInvoicedInUOM";
+
+	/**
 	 * Set Bestellt/ Beauftragt.
 	 * Bestellt/ Beauftragt
 	 *
@@ -2830,7 +2878,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyOrderedOverUnder = "QtyOrderedOverUnder";
 
 	/**
-	 * Set Zu berechn. Menge eff..
+	 * Set Abzurechnen eff. (Lagereinheit).
 	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	 *
 	 * <br>Type: Quantity
@@ -2840,7 +2888,7 @@ public interface I_C_Invoice_Candidate
 	public void setQtyToInvoice (java.math.BigDecimal QtyToInvoice);
 
 	/**
-	 * Get Zu berechn. Menge eff..
+	 * Get Abzurechnen eff. (Lagereinheit).
 	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde
 	 *
 	 * <br>Type: Quantity
@@ -2878,81 +2926,75 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QtyToInvoiceBeforeDiscount = "QtyToInvoiceBeforeDiscount";
 
 	/**
-	 * Set Catch Weight Menge in Preiseinheit.
-	 * Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	 * Set Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToInvoiceInPriceUOM_CatchWeight (java.math.BigDecimal QtyToInvoiceInPriceUOM_CatchWeight);
+	public void setQtyToInvoiceInPriceUOM (java.math.BigDecimal QtyToInvoiceInPriceUOM);
 
 	/**
-	 * Get Catch Weight Menge in Preiseinheit.
-	 * Zu berechnende tatsächliche gelieferte Menge in der Mengeneinheit des Preises.
+	 * Get Zu berechn. Menge In Preiseinheit.
+	 * Menge, die aktuell bei einem Rechnungslauf in Rechnung gestellt würde, umgerechnet in die Einheit auf die sich der Preis bezieht.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_CatchWeight();
+	public java.math.BigDecimal getQtyToInvoiceInPriceUOM();
 
-    /** Column definition for QtyToInvoiceInPriceUOM_CatchWeight */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM_CatchWeight = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM_CatchWeight", null);
-    /** Column name QtyToInvoiceInPriceUOM_CatchWeight */
-    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM_CatchWeight = "QtyToInvoiceInPriceUOM_CatchWeight";
+    /** Column definition for QtyToInvoiceInPriceUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM", null);
+    /** Column name QtyToInvoiceInPriceUOM */
+    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM = "QtyToInvoiceInPriceUOM";
 
 	/**
-	 * Set Zu ber. Menge in Preiseinheit eff..
-	 * Effektiv zu berechnende Menge in der Mengeneinheit des Preises;
- abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
+	 * Set Abzurechnen eff..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToInvoiceInPriceUOM_Eff (java.math.BigDecimal QtyToInvoiceInPriceUOM_Eff);
+	public void setQtyToInvoiceInUOM (java.math.BigDecimal QtyToInvoiceInUOM);
 
 	/**
-	 * Get Zu ber. Menge in Preiseinheit eff..
-	 * Effektiv zu berechnende Menge in der Mengeneinheit des Preises;
- abhängig davon, ob ein Catchweight-Abrechnung vorgesehen ist.
+	 * Get Abzurechnen eff..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Eff();
+	public java.math.BigDecimal getQtyToInvoiceInUOM();
 
-    /** Column definition for QtyToInvoiceInPriceUOM_Eff */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM_Eff = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM_Eff", null);
-    /** Column name QtyToInvoiceInPriceUOM_Eff */
-    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM_Eff = "QtyToInvoiceInPriceUOM_Eff";
+    /** Column definition for QtyToInvoiceInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM", null);
+    /** Column name QtyToInvoiceInUOM */
+    public static final String COLUMNNAME_QtyToInvoiceInUOM = "QtyToInvoiceInUOM";
 
 	/**
-	 * Set Nominalmenge in Preiseinheit.
-	 * Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
+	 * Set Abzurechnen.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToInvoiceInPriceUOM_Nominal (java.math.BigDecimal QtyToInvoiceInPriceUOM_Nominal);
+	public void setQtyToInvoiceInUOM_Calc (java.math.BigDecimal QtyToInvoiceInUOM_Calc);
 
 	/**
-	 * Get Nominalmenge in Preiseinheit.
-	 * Zu berechnende Nominalmenge in der Mengeneinheit des Preises.
+	 * Get Abzurechnen.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToInvoiceInPriceUOM_Nominal();
+	public java.math.BigDecimal getQtyToInvoiceInUOM_Calc();
 
-    /** Column definition for QtyToInvoiceInPriceUOM_Nominal */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInPriceUOM_Nominal = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInPriceUOM_Nominal", null);
-    /** Column name QtyToInvoiceInPriceUOM_Nominal */
-    public static final String COLUMNNAME_QtyToInvoiceInPriceUOM_Nominal = "QtyToInvoiceInPriceUOM_Nominal";
+    /** Column definition for QtyToInvoiceInUOM_Calc */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Calc = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Calc", null);
+    /** Column name QtyToInvoiceInUOM_Calc */
+    public static final String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
 
 	/**
 	 * Set Zu berechn. Menge abw..
@@ -3078,7 +3120,7 @@ public interface I_C_Invoice_Candidate
     public static final String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
 
 	/**
-	 * Set Qualitätsabzug % Eff..
+	 * Set Qualitätsabzug % eff..
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3089,7 +3131,7 @@ public interface I_C_Invoice_Candidate
 	public void setQualityDiscountPercent_Effective (java.math.BigDecimal QualityDiscountPercent_Effective);
 
 	/**
-	 * Get Qualitätsabzug % Eff..
+	 * Get Qualitätsabzug % eff..
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3243,6 +3285,33 @@ public interface I_C_Invoice_Candidate
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_SplitAmt = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, Object>(I_C_Invoice_Candidate.class, "SplitAmt", null);
     /** Column name SplitAmt */
     public static final String COLUMNNAME_SplitAmt = "SplitAmt";
+
+	/**
+	 * Set Lagereinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setStockingUOM_ID (int StockingUOM_ID);
+
+	/**
+	 * Get Lagereinheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getStockingUOM_ID();
+
+    /** Column definition for StockingUOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM> COLUMN_StockingUOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_UOM>(I_C_Invoice_Candidate.class, "StockingUOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name StockingUOM_ID */
+    public static final String COLUMNNAME_StockingUOM_ID = "StockingUOM_ID";
 
 	/**
 	 * Set Total des Auftrags.

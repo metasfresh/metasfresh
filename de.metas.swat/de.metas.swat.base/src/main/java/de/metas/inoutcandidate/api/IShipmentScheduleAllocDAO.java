@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.api;
 
 import java.math.BigDecimal;
 import java.util.List;
-
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_InOutLine;
 
@@ -122,4 +121,5 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	 * Returns the quantity that is either just picked or on a just drafted shipment line.
 	 */
 	BigDecimal retrieveQtyPickedAndUnconfirmed(I_M_ShipmentSchedule shipmentSchedule);
+
 }

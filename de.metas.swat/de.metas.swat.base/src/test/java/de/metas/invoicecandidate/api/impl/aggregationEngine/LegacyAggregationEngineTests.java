@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -102,22 +106,17 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		Assert.assertEquals("We are expecting one invoice line per IC: " + invoiceLines, 3, invoiceLines.size());
 
-		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine1.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine1.getNetLineAmt().intValue());
-
-		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine2.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine2.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine2.getNetLineAmt().intValue());
-
-		final IInvoiceLineRW invoiceLine3 = invoiceLines.get(2);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine3.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine3.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine3.getNetLineAmt().intValue());
-
+		assertLineCorrect(invoiceLines.get(0));
+		assertLineCorrect(invoiceLines.get(1));
+		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
+	}
+
+	private void assertLineCorrect(final IInvoiceLineRW invoiceLine1)
+	{
+		assertThat(invoiceLine1.getPriceActual().toMoney().getAsBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(ONE);
+		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
+		assertThat(invoiceLine1.getNetLineAmt().getAsBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(ONE);
 	}
 
 	@Test
@@ -170,20 +169,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
 		Assert.assertEquals("We are expecting one invoice line per IC: " + invoiceLines, 3, invoiceLines.size());
 
-		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine1.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine1.getNetLineAmt().intValue());
-
-		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine2.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine2.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine2.getNetLineAmt().intValue());
-
-		final IInvoiceLineRW invoiceLine3 = invoiceLines.get(2);
-		Assert.assertEquals("Invalid PriceActual", 1, invoiceLine3.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine3.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 1, invoiceLine3.getNetLineAmt().intValue());
+		assertLineCorrect(invoiceLines.get(0));
+		assertLineCorrect(invoiceLines.get(1));
+		assertLineCorrect(invoiceLines.get(2));
 		// System.out.println(invoices);
 	}
 
@@ -230,9 +218,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice line: " + invoiceLines, 1, invoiceLines.size());
 
 		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
-		Assert.assertEquals("Invalid PriceActual", 10, invoiceLine.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 10, invoiceLine.getNetLineAmt().intValue());
+		assertThat(invoiceLine.getPriceActual().toMoney().getAsBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(TEN);
+		assertThat(invoiceLine.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
+		assertThat(invoiceLine.getNetLineAmt().getAsBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(TEN);
 
 		// System.out.println(invoices);
 	}
@@ -281,9 +269,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice line: " + invoiceLines, 1, invoiceLines.size());
 
 		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
-		Assert.assertEquals("Invalid PriceActual", 10, invoiceLine.getPriceActual().intValue());
-		Assert.assertEquals("Invalid QtyToInvoice", 1, invoiceLine.getQtyToInvoice().intValue());
-		Assert.assertEquals("Invalid NetLineAmt", 10, invoiceLine.getNetLineAmt().intValue());
+		assertThat(invoiceLine.getPriceActual().toMoney().getAsBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(TEN);
+		assertThat(invoiceLine.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
+		assertThat(invoiceLine.getNetLineAmt().getAsBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(TEN);
 
 		// System.out.println(invoices);
 	}
@@ -337,16 +325,16 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 			// Invoice Line 1:
 			final IInvoiceLineRW invoiceLine1 = getInvoiceLineByCandidate(invoice, ic1);
-			Assert.assertEquals("InvoiceLine1 - Invalid PriceActual", 10, invoiceLine1.getPriceActual().intValue());
-			Assert.assertEquals("InvoiceLine1 - Invalid QtyToInvoice", 5, invoiceLine1.getQtyToInvoice().intValue());
-			Assert.assertEquals("InvoiceLine1 - Invalid NetLineAmt", 50, invoiceLine1.getNetLineAmt().intValue());
+			assertThat(invoiceLine1.getPriceActual().toMoney().getAsBigDecimal()).as("InvoiceLine1 - Invalid PriceActual").isEqualByComparingTo(TEN);
+			assertThat(invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("InvoiceLine1 - Invalid QtyToInvoice").isEqualByComparingTo("5");
+			assertThat(invoiceLine1.getNetLineAmt().getAsBigDecimal()).as("InvoiceLine1 - Invalid NetLineAmt").isEqualByComparingTo("50");
 
 			// Invoice Line 2:
 			// NOTE: only -50 was invoiced. "-10" was left in SplitAmt
 			final IInvoiceLineRW invoiceLine2 = getInvoiceLineByCandidate(invoice, ic2);
-			Assert.assertEquals("InvoiceLine2 - Invalid PriceActual", -50, invoiceLine2.getPriceActual().intValue());
-			Assert.assertEquals("InvoiceLine2 - Invalid QtyToInvoice", 1, invoiceLine2.getQtyToInvoice().intValue());
-			Assert.assertEquals("InvoiceLine2 - Invalid NetLineAmt", -50, invoiceLine2.getNetLineAmt().intValue());
+			assertThat(invoiceLine2.getPriceActual().toMoney().getAsBigDecimal()).as("InvoiceLine2 - Invalid PriceActual").isEqualByComparingTo("-50");
+			assertThat(invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("InvoiceLine2 - Invalid QtyToInvoice").isEqualByComparingTo(ONE);
+			assertThat(invoiceLine2.getNetLineAmt().getAsBigDecimal()).as("InvoiceLine2 - Invalid NetLineAmt").isEqualByComparingTo("-50");
 		}
 
 		//
@@ -466,15 +454,15 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 			// Invoice Line 1:
 			final IInvoiceLineRW invoiceLine1 = getInvoiceLineByCandidate(invoice, ic3);
-			Assert.assertEquals("InvoiceLine1 - Invalid PriceActual", 7, invoiceLine1.getPriceActual().intValue());
-			Assert.assertEquals("InvoiceLine1 - Invalid QtyToInvoice", 2, invoiceLine1.getQtyToInvoice().intValue());
-			Assert.assertEquals("InvoiceLine1 - Invalid NetLineAmt", 14, invoiceLine1.getNetLineAmt().intValue());
+			assertThat(invoiceLine1.getPriceActual().toMoney().getAsBigDecimal()).as("InvoiceLine1 - Invalid PriceActual").isEqualByComparingTo("7");
+			assertThat(invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("InvoiceLine1 - Invalid QtyToInvoice").isEqualByComparingTo("2");
+			assertThat(invoiceLine1.getNetLineAmt().getAsBigDecimal()).as("InvoiceLine1 - Invalid NetLineAmt").isEqualByComparingTo("14");
 
 			// Invoice Line 2:
 			final IInvoiceLineRW invoiceLine2 = getInvoiceLineByCandidate(invoice, ic2_split);
-			Assert.assertEquals("InvoiceLine2 - Invalid PriceActual", -4, invoiceLine2.getPriceActual().intValue());
-			Assert.assertEquals("InvoiceLine2 - Invalid QtyToInvoice", 1, invoiceLine2.getQtyToInvoice().intValue());
-			Assert.assertEquals("InvoiceLine2 - Invalid NetLineAmt", -4, invoiceLine2.getNetLineAmt().intValue());
+			assertThat(invoiceLine2.getPriceActual().toMoney().getAsBigDecimal()).as("InvoiceLine2 - Invalid PriceActual").isEqualByComparingTo("-4");
+			assertThat(invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal()).as("InvoiceLine2 - Invalid QtyToInvoice").isEqualByComparingTo("1");
+			assertThat(invoiceLine2.getNetLineAmt().getAsBigDecimal()).as("InvoiceLine2 - Invalid NetLineAmt").isEqualByComparingTo("-4");
 		}
 	}
 

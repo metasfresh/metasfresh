@@ -167,10 +167,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
+		final Percent discount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -180,7 +180,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
 		save(ic);
 
-		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
 				ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
@@ -200,10 +200,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal intialDiscount = invoiceCandBL.getDiscount(ic);
+		final Percent intialDiscount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), intialDiscount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), intialDiscount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -213,8 +213,8 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setDiscount_Override(BigDecimal.valueOf(20));
 		save(ic);
 
-		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
-		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final Percent discount = invoiceCandBL.getDiscount(ic);
+		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
 				ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
@@ -234,10 +234,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal intialDiscount = invoiceCandBL.getDiscount(ic);
+		final Percent intialDiscount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), intialDiscount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), intialDiscount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -248,8 +248,8 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
 		save(ic);
 
-		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
-		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final Percent discount = invoiceCandBL.getDiscount(ic);
+		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
 				ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
@@ -269,10 +269,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
+		final Percent discount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -282,7 +282,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
 		save(ic);
 
-		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
 				ic.getPriceActual_Override(), priceActual_OverrideComputed);
 
@@ -310,10 +310,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal intialDiscount = invoiceCandBL.getDiscount(ic);
+		final Percent intialDiscount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), intialDiscount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), intialDiscount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -346,10 +346,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
 		final BigDecimal initialPriceActualOverride = ic.getPriceActual_Override();
-		final BigDecimal intialDiscount = invoiceCandBL.getDiscount(ic);
+		final Percent intialDiscount = invoiceCandBL.getDiscount(ic);
 		final CurrencyPrecision precision = invoiceCandBL.getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), intialDiscount, precision);
+		final BigDecimal priceActualComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), intialDiscount.getValueAsBigDecimal(), precision);
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
@@ -360,8 +360,8 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
 		save(ic);
 
-		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
-		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
+		final Percent discount = invoiceCandBL.getDiscount(ic);
+		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEntered(ic).toBigDecimal(), discount.getValueAsBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
 				ic.getPriceActual_Override(), priceActual_OverrideComputed);
 
@@ -437,7 +437,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		assertThat(invoiceCandBL.getQtyDelivered_Effective(ic), comparesEqualTo(expectedQtyDelivered_Effective));
 	}
-	
+
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)
 	{
 		return Percent.of(discount).subtractFromBase(baseAmount, precision.toInt());

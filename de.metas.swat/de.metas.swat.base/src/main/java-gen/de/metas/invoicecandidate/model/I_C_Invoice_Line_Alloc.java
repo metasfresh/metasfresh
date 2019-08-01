@@ -201,6 +201,31 @@ public interface I_C_Invoice_Line_Alloc
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, org.compiere.model.I_C_UOM>(I_C_Invoice_Line_Alloc.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Belegstatus.
 	 * The current status of the document
 	 *
@@ -324,6 +349,29 @@ public interface I_C_Invoice_Line_Alloc
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyInvoiced", null);
     /** Column name QtyInvoiced */
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+
+	/**
+	 * Set Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM);
+
+	/**
+	 * Get Abgerechnet.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyInvoicedInUOM();
+
+    /** Column definition for QtyInvoicedInUOM */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_QtyInvoicedInUOM = new org.adempiere.model.ModelColumn<I_C_Invoice_Line_Alloc, Object>(I_C_Invoice_Line_Alloc.class, "QtyInvoicedInUOM", null);
+    /** Column name QtyInvoicedInUOM */
+    public static final String COLUMNNAME_QtyInvoicedInUOM = "QtyInvoicedInUOM";
 
 	/**
 	 * Set Zu berechn. Menge abw..

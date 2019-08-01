@@ -249,7 +249,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(CREDI_MEMO_QTY_INVOICE_NINE.negate()));
 			creditMemoIla = currentIla;
 		}
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft(), comparesEqualTo(BigDecimal.ONE)); // 10 invoiced, 9 credited
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft().getStockQty().getAsBigDecimal(), comparesEqualTo(BigDecimal.ONE)); // 10 invoiced, 9 credited
 
 		// create a reversal for the invoice or credit memo
 		// the actual test starts with invoiceCandBL.handleReversalForInvoice()
@@ -294,7 +294,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(reversalIlaExpectedQtyInvoiced));
 		}
 
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).getLeft().getStockQty().getAsBigDecimal(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
 	}
 
 	private void doTest(final boolean isCreditedInvoiceReinvoicable,

@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -29,6 +30,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -74,6 +76,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -96,6 +99,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -445,7 +449,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		// services
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
 
 		// if firstRun is not null, create a new instance, otherwise use firstRun
@@ -489,18 +493,29 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
 			// * QtyPicked from QtyPicked records
+			final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+
 			final BigDecimal qtyPickList;
 			{
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-				qtyPickList = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(sched);
+				final StockQtyAndUOMQty stockingAndCatchQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
 
-				// Update shipment schedule's field
+				qtyPickList = stockingAndCatchQty.getStockQty().getAsBigDecimal();
+
+				// Update shipment schedule's fields
 				sched.setQtyPickList(qtyPickList);
+
+				final Optional<Quantity> catchQty = stockingAndCatchQty.getUOMQty();
+				if (catchQty.isPresent())
+				{
+					sched.setQtyPickedCatch(catchQty.get().getAsBigDecimal());
+					sched.setCatch_UOM_ID(catchQty.get().getUomId().getRepoId());
+				}
 			}
 
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
 
-			if (!productBL.isStocked(sched.getM_Product_ID()))
+			if (!productBL.isStocked(productId))
 			{
 				// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
 				createLine(ctx, olAndSched, qtyToDeliver,
@@ -1003,6 +1018,31 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(sched);
 		final I_C_UOM uom = getUomOfProduct(sched);
 		return Quantity.of(qtyToDeliverBD, uom);
+	}
+
+	@Override
+	public Optional<Quantity> getCatchQty(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final boolean hasCatchQty = shipmentScheduleRecord.getQtyPickedCatch().signum() > 0;
+		final boolean hasCatchOverrideQty = !isNull(shipmentScheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override);
+		final boolean hasCatchUOM = shipmentScheduleRecord.getCatch_UOM_ID() > 0;
+
+		if (!hasCatchUOM)
+		{
+			return Optional.empty();
+		}
+		if (!hasCatchQty && !hasCatchOverrideQty)
+		{
+			return Optional.empty();
+		}
+
+		final Quantity result = Quantity.of(
+				!isNull(shipmentScheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override)
+						? shipmentScheduleRecord.getQtyToDeliverCatch_Override()
+						: shipmentScheduleRecord.getQtyPickedCatch(),
+				loadOutOfTrx(shipmentScheduleRecord.getCatch_UOM_ID(), I_C_UOM.class));
+
+		return Optional.of(result);
 	}
 
 }

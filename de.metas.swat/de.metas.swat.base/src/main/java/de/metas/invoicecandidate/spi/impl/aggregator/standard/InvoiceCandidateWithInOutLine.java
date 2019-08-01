@@ -13,17 +13,15 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.Set;
 
 import org.adempiere.util.lang.ObjectUtils;
@@ -33,38 +31,45 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Check;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 
-/**
- * Class used for inner IC-IOL mapping
- *
- * @author al
- */
 public final class InvoiceCandidateWithInOutLine
 {
 	// services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
+
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
 	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
 	private final boolean allocateRemainingQty;
+	private final ProductId productId;
+	private final UomId icUomId;
+	@Getter
+	private final InvoiceCandidateId invoicecandidateId;
 
-	public InvoiceCandidateWithInOutLine(final IInvoiceLineAggregationRequest request)
+	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
 	{
-		super();
-
-		Check.assumeNotNull(request, "request not null");
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
 		this.invoiceLineAttributes = ImmutableSet.copyOf(request.getInvoiceLineAttributes());
+
+		invoicecandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
+		this.productId = ProductId.ofRepoId(ic.getM_Product_ID());
+		this.icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
 	}
 
 	@Override
@@ -94,29 +99,35 @@ public final class InvoiceCandidateWithInOutLine
 		return inOutLine;
 	}
 
-	public BigDecimal getQtyAlreadyInvoiced()
+	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
 	{
 		if (iciol == null)
 		{
-			return BigDecimal.ZERO;
+			return StockQtyAndUOMQtys.createZero(productId, icUomId);
 		}
-		return matchInvDAO.retrieveQtyInvoiced(iciol.getM_InOutLine());
+
+		return matchInvDAO.retrieveQtysInvoiced(iciol.getM_InOutLine());
 	}
 
-	public BigDecimal getQtyAlreadyShipped()
+	public StockQtyAndUOMQty getQtysAlreadyShipped()
 	{
 		final I_M_InOutLine inOutLine = getM_InOutLine();
 		if (inOutLine == null)
 		{
-			return BigDecimal.ZERO;
+			return StockQtyAndUOMQtys.createZero(productId, icUomId);
 		}
 
-		final BigDecimal movementQty = inOutLine.getMovementQty();
+		final UomId catchUomId = UomId.ofRepoId(inOutLine.getCatch_UOM_ID());
+		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
+				.create(
+						productId, inOutLine.getMovementQty(),
+						catchUomId, inOutLine.getQtyDeliveredCatch());
+
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
 		{
-			return movementQty.negate();
+			return deliveredQty.negate();
 		}
-		return movementQty;
+		return deliveredQty;
 	}
 
 	public boolean isShipped()

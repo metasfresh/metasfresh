@@ -198,7 +198,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 	{
 		final IHUContext huContext = getHUContext();
 		final I_M_ReceiptSchedule rs = receiptLineCandidate.getM_ReceiptSchedule();
-		final IQtyAndQuality qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
+		final ReceiptQty qtyAndQuality = receiptLineCandidate.getQtyAndQuality();
 		final I_C_UOM uom = receiptLineCandidate.getC_UOM();
 		final int qtyPrecision = uom.getStdPrecision();
 

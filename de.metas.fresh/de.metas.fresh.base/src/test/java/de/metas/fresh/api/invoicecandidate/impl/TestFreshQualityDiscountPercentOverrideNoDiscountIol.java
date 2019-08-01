@@ -10,12 +10,12 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -85,12 +85,12 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		assertEquals("We are expecting two invoice lines: " + invoiceLines, 2, invoiceLines.size());
 
 		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
-		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtyToInvoice(), comparesEqualTo(new BigDecimal("100")));
+		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 
 		final IInvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
 		assertThat(icIolToUpdate11.getQtyInvoiced(), comparesEqualTo(new BigDecimal("90")));
 
 		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
-		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtyToInvoice(), comparesEqualTo(new BigDecimal("-10")));
+		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(new BigDecimal("-10")));
 	}
 }

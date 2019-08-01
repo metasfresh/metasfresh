@@ -36,8 +36,13 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public class MatchInvDAO implements IMatchInvDAO
 {
@@ -104,13 +109,28 @@ public class MatchInvDAO implements IMatchInvDAO
 	}
 
 	@Override
-	public BigDecimal retrieveQtyInvoiced(final I_M_InOutLine iol)
+	public StockQtyAndUOMQty retrieveQtysInvoiced(@NonNull final I_M_InOutLine iol)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
+		final List<I_M_MatchInv> matchInvRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
+				.list();
+
+		final ProductId productId = ProductId.ofRepoId(iol.getM_Product_ID());
+		final UomId iolUomId = UomId.ofRepoId(iol.getCatch_UOM_ID());
+
+		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(productId, iolUomId);
+
+		for (final I_M_MatchInv matchInvRecord : matchInvRecords)
+		{
+			final StockQtyAndUOMQty matchInvQtys = StockQtyAndUOMQtys.create(
+					productId, matchInvRecord.getQty(),
+					UomId.ofRepoId(matchInvRecord.getC_UOM_ID()), matchInvRecord.getQtyInUOM());
+			result = StockQtyAndUOMQtys.add(result, matchInvQtys);
+		}
+
+		return result;
 	}
 
 	@Override

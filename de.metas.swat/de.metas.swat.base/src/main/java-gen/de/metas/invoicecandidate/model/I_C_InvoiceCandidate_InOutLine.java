@@ -143,6 +143,31 @@ public interface I_C_InvoiceCandidate_InOutLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, org.compiere.model.I_C_UOM>(I_C_InvoiceCandidate_InOutLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Aktiv.
 	 * Der Eintrag ist im System aktiv
 	 *
@@ -247,6 +272,77 @@ public interface I_C_InvoiceCandidate_InOutLine
     public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDelivered", null);
     /** Column name QtyDelivered */
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+
+	/**
+	 * Set Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM_Catch (java.math.BigDecimal QtyDeliveredInUOM_Catch);
+
+	/**
+	 * Get Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM_Catch();
+
+    /** Column definition for QtyDeliveredInUOM_Catch */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Catch = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Catch", null);
+    /** Column name QtyDeliveredInUOM_Catch */
+    public static final String COLUMNNAME_QtyDeliveredInUOM_Catch = "QtyDeliveredInUOM_Catch";
+
+	/**
+	 * Set Geliefert Nominal.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM_Nominal (java.math.BigDecimal QtyDeliveredInUOM_Nominal);
+
+	/**
+	 * Get Geliefert Nominal.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM_Nominal();
+
+    /** Column definition for QtyDeliveredInUOM_Nominal */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Nominal = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Nominal", null);
+    /** Column name QtyDeliveredInUOM_Nominal */
+    public static final String COLUMNNAME_QtyDeliveredInUOM_Nominal = "QtyDeliveredInUOM_Nominal";
+
+	/**
+	 * Set Geliefert abw..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredInUOM_Override (java.math.BigDecimal QtyDeliveredInUOM_Override);
+
+	/**
+	 * Get Geliefert abw..
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredInUOM_Override();
+
+    /** Column definition for QtyDeliveredInUOM_Override */
+    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Override = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Override", null);
+    /** Column name QtyDeliveredInUOM_Override */
+    public static final String COLUMNNAME_QtyDeliveredInUOM_Override = "QtyDeliveredInUOM_Override";
 
 	/**
 	 * Set Berechn. Menge.

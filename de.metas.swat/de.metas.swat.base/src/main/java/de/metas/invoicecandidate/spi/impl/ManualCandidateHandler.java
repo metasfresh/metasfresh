@@ -3,6 +3,8 @@
  */
 package de.metas.invoicecandidate.spi.impl;
 
+import static de.metas.util.Check.fail;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -37,7 +39,6 @@ import org.slf4j.Logger;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -179,7 +180,8 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 			final BigDecimal qtyToInvoice = ic.getQtyToInvoice(); // Services.get(IInvoiceCandBL.class).getQtyToInvoice(ic);
 			if (BigDecimal.ONE.compareTo(qtyToInvoice) != 0)
 			{
-				throw new InvalidQtyForPartialAmtToInvoiceException(qtyToInvoice, ic, netAmtToInvoice, netAmtToInvoiceNew);
+				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				//throw new InvalidQtyForPartialAmtToInvoiceException(qtyToInvoice, ic, netAmtToInvoice, netAmtToInvoiceNew);
 			}
 		}
 

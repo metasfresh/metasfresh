@@ -149,7 +149,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggre
 		// expecting one line with the summed qty of both non-in-dispute iols icIol11 and icIol21
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(THREE.add(TEN)));
+		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(THREE.add(TEN)));
 
 		assertThat("iol21=" + iol21_ten + " is aggregated into il1=" + il1, getSingleForInOutLine(invoiceLines1, iol21_ten), is(il1));
 

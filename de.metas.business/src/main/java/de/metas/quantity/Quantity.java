@@ -517,11 +517,17 @@ public final class Quantity implements Comparable<Quantity>
 		return signum() == 0;
 	}
 
+	public boolean isOne()
+	{
+		return ONE.compareTo(qty) == 0;
+	}
+
 	/**
 	 * Adds given quantity and returns the result.
+	 * Assumes that the UOMs are equal.
 	 *
-	 * @param qtyToAdd
-	 * @return new {@link Quantity}
+	 * Note: {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)} adds by converting quantities between UOMs
+	 *
 	 * @throws QuantitiesUOMNotMatchingExpection if this quantity and qtyToAdd are not UOM compatible
 	 */
 	public Quantity add(@NonNull final Quantity qtyToAdd)

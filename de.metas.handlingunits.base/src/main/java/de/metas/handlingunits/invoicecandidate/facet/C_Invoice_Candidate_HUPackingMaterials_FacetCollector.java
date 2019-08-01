@@ -89,7 +89,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 				.addInSubQueryFilter(I_C_Invoice_Candidate.COLUMN_M_Product_ID, I_M_HU_PackingMaterial.COLUMN_M_Product_ID, isPackingMaterialQueryFilter)
 				.aggregateOnColumn(I_C_Invoice_Candidate.COLUMN_M_Product_ID);
 		aggregateOnQtyToInvoiceInPriceUOM
-				.sum(DYNATTR_QtyToInvoiceInPriceUOM, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM_Eff);
+				.sum(DYNATTR_QtyToInvoiceInPriceUOM, I_C_Invoice_Candidate.COLUMN_QtyToInvoiceInPriceUOM);
 
 		//
 		// Get aggregated products and create facets from them.

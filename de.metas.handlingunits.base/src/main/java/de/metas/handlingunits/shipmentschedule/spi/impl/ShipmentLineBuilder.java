@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -128,8 +129,12 @@ import lombok.NonNull;
 	private OrderAndLineId orderLineId = null;
 
 	private Quantity qtyEntered = null;
+
 	// note that we maintain both QtyEntered and MovementQty to avoid rounding/conversion issues
 	private Quantity movementQty = null;
+
+	// note that catchQty does not necessarily have a fixed UOM conversion rate with qtyEntered and movementQty
+	private Quantity catchQty = null;
 
 	/* Used to collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs. */
 	private HashMap<HUPIItemProductId, BigDecimal> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
@@ -261,6 +266,12 @@ import lombok.NonNull;
 		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
 
+		final Optional<I_C_UOM> catchUOM = productBL.getCatchUOM(productId);
+		if (catchUOM.isPresent())
+		{
+			catchQty = Quantity.zero(catchUOM.get());
+		}
+
 		//
 		// Order Line Link (retrieved from current Shipment)
 		orderLineId = candidate.getOrderLineId();
@@ -279,6 +290,8 @@ import lombok.NonNull;
 			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
 		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
+
+		candidate.getCatchQty().ifPresent(catchQty::add);
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
@@ -429,7 +442,7 @@ import lombok.NonNull;
 
 		//
 		// Qty Entered and UOM
-		shipmentLine.setC_UOM_ID(qtyEntered.getUOMId());
+		shipmentLine.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
 		shipmentLine.setQtyEntered(qtyEntered.getAsBigDecimal());
 
 		// Set MovementQty
@@ -437,6 +450,12 @@ import lombok.NonNull;
 			// Don't do conversions. The movementQty which we summed up already contains exactly what we need (in the stocking-UOM!)
 			shipmentLine.setQtyCU_Calculated(movementQty.getAsBigDecimal());
 			shipmentLine.setMovementQty(movementQty.getAsBigDecimal());
+		}
+
+		if (catchQty != null && catchQty.signum() != 0)
+		{
+			shipmentLine.setCatch_UOM_ID(catchQty.getUomId().getRepoId());
+			shipmentLine.setQtyDeliveredCatch(catchQty.getAsBigDecimal());
 		}
 
 		// Update packing materials info, if there is "one" info

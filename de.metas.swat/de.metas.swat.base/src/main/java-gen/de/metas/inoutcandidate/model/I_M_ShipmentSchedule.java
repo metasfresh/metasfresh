@@ -234,7 +234,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set Catch Weight Einheit.
+	 * Set Catch Einheit.
 	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
 	 *
 	 * <br>Type: Table
@@ -244,7 +244,7 @@ public interface I_M_ShipmentSchedule
 	public void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get Catch Weight Einheit.
+	 * Get Catch Einheit.
 	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
 	 *
 	 * <br>Type: Table

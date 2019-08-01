@@ -65,7 +65,7 @@ import de.metas.util.Check;
 	//
 	// Aggregated values
 	private boolean _stale = true;
-	private IQtyAndQuality _qtyAndQuality = null;
+	private ReceiptQty _qtyAndQuality = null;
 	private List<I_M_ReceiptSchedule_Alloc> _receiptScheduleAllocs = null;
 
 	public HUReceiptLineCandidate(final I_M_ReceiptSchedule receiptSchedule)
@@ -196,7 +196,7 @@ import de.metas.util.Check;
 		// * Compute qty and QtyWithIssues
 		// * Collect quality notices
 		// * Collect receipt schedule allocations
-		final MutableQtyAndQuality qtyAndQuality = new MutableQtyAndQuality();
+		final ReceiptQty qtyAndQuality = new ReceiptQty();
 		final List<I_M_ReceiptSchedule_Alloc> receiptScheduleAllocs = new ArrayList<I_M_ReceiptSchedule_Alloc>();
 		for (final HUReceiptLinePartCandidate receiptLinePart : receiptLinePartCandidates)
 		{
@@ -206,7 +206,7 @@ import de.metas.util.Check;
 				_qualityNote = receiptLinePart.getQualityNote();
 			}
 
-			final IQtyAndQuality partQtyAndQuality = receiptLinePart.getQtyAndQuality();
+			final ReceiptQty partQtyAndQuality = receiptLinePart.getQtyAndQuality();
 			if (partQtyAndQuality.isZero())
 			{
 				// skip receipt line parts where Qty is ZERO
@@ -251,7 +251,7 @@ import de.metas.util.Check;
 		return loadOutOfTrx(getM_ReceiptSchedule().getC_UOM_ID(), I_C_UOM.class);
 	}
 
-	public IQtyAndQuality getQtyAndQuality()
+	public ReceiptQty getQtyAndQuality()
 	{
 		updateIfStale();
 		return _qtyAndQuality;

@@ -88,6 +88,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -327,7 +328,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_BPartner_ID(invoiceHeader.getBill_BPartner_ID());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			invoice.setAD_User_ID(invoiceHeader.getBill_User_ID());
-			invoice.setC_Currency_ID(invoiceHeader.getC_Currency_ID()); // 03805
+			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
 
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
@@ -540,7 +541,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// invoiceLine.setC_Tax_ID(orderLine.getC_Tax_ID());
 				}
 
-				final BigDecimal qtyToInvoice = ilVO.getQtyToInvoice();
+				final StockQtyAndUOMQty qtysToInvoice = ilVO.getQtysToInvoice();
 
 				final Collection<Integer> iciolIds = ilVO.getC_InvoiceCandidate_InOutLine_IDs();
 
@@ -573,7 +574,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					invoiceLine.setM_Product_ID(ilVO.getM_Product_ID());
 				}
-				invoiceBL.setQtys(invoiceLine, qtyToInvoice); // task: 08841; note that we need to call this method *after* UOMs and product were set
+				invoiceBL.setQtys(invoiceLine, qtysToInvoice); // task: 08841; note that we need to call this method *after* UOMs and product were set
 
 				invoiceLine.setC_Charge_ID(ilVO.getC_Charge_ID());
 				invoiceLine.setIsPackagingMaterial(cand.isPackagingMaterial()); // task FRESH-273
@@ -583,9 +584,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final I_M_AttributeSetInstance asi = createASI(ilVO.getInvoiceLineAttributes());
 				invoiceLine.setM_AttributeSetInstance(asi);
 
-				invoiceLine.setPriceEntered(ilVO.getPriceEntered());
-				invoiceLine.setDiscount(ilVO.getDiscount());
-				invoiceLine.setPriceActual(ilVO.getPriceActual());
+				invoiceLine.setPriceEntered(ilVO.getPriceEntered().toMoney().getAsBigDecimal());
+				invoiceLine.setDiscount(ilVO.getDiscount().getValueAsBigDecimal());
+				invoiceLine.setPriceActual(ilVO.getPriceActual().toMoney().getAsBigDecimal());
 
 				// set activity, tax and tax category from the invoice candidate (07442)
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
@@ -626,8 +627,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// Create/Update "invoice line" to "invoice candidate" allocations
 					for (final I_C_Invoice_Candidate candForIlVO : candsForIlVO)
 					{
-						final BigDecimal qtyInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
-						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtyInvoiced, null); // TODO
+						final StockQtyAndUOMQty qtysInvoiced = aggregate.getAllocatedQty(candForIlVO, ilVO);
+						invoiceCandBL.createUpdateIla(candForIlVO, invoiceLine, qtysInvoiced, null/*note*/); // TODO
 
 						// #870
 						// Make sure the Qty and Price override are set to null when an invoiceline is created

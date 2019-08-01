@@ -1,5 +1,7 @@
 package de.metas.invoice.impl;
 
+import static de.metas.util.Check.fail;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -360,7 +362,8 @@ import de.metas.util.Services;
 		final BigDecimal qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvDAO.retrieveQtyInvoiced(inoutLine);
+			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			qtyMatched = matchInvDAO.retrieveQtysInvoiced(inoutLine).getStockQty().getAsBigDecimal();
 		}
 		else
 		{

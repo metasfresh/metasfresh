@@ -15,7 +15,7 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 570831752L;
+	private static final long serialVersionUID = 1902505094L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (Properties ctx, int C_Invoice_Line_Alloc_ID, String trxName)
@@ -175,6 +175,31 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 		return ii.intValue();
 	}
 
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
@@ -278,6 +303,25 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	public java.math.BigDecimal getQtyInvoiced () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoiced);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set Abgerechnet.
+		@param QtyInvoicedInUOM Abgerechnet	  */
+	@Override
+	public void setQtyInvoicedInUOM (java.math.BigDecimal QtyInvoicedInUOM)
+	{
+		set_Value (COLUMNNAME_QtyInvoicedInUOM, QtyInvoicedInUOM);
+	}
+
+	/** Get Abgerechnet.
+		@return Abgerechnet	  */
+	@Override
+	public java.math.BigDecimal getQtyInvoicedInUOM () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInvoicedInUOM);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

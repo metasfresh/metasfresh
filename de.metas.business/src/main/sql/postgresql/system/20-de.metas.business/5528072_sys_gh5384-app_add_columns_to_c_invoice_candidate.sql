@@ -174,4 +174,5 @@ UPDATE AD_Element_Trl SET Description='', Name='Nominal invoicable qty in price-
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542529,'en_US') 
 ;
 
-ALTER TABLE C_Invoice_Candidate RENAME COLUMN QtyToInvoiceInPriceUOM TO QtyToInvoiceInPriceUOM_Nominal;
+-- we leave this physical column as it is; some migration scripts by the line it will once again be used
+--ALTER TABLE C_Invoice_Candidate RENAME COLUMN QtyToInvoiceInPriceUOM TO QtyToInvoiceInPriceUOM_Nominal;

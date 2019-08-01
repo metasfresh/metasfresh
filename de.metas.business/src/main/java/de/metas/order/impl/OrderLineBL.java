@@ -642,7 +642,7 @@ public class OrderLineBL implements IOrderLineBL
 			return ProductPrice.builder()
 					.productId(productId)
 					.uomId(productUomId)
-					.value(Money.of(poCostPrice, currencyId))
+					.money(Money.of(poCostPrice, currencyId))
 					.build();
 		}
 
@@ -658,7 +658,7 @@ public class OrderLineBL implements IOrderLineBL
 			return ProductPrice.builder()
 					.productId(productId)
 					.uomId(priceUomId)
-					.value(Money.of(priceActual, currencyId))
+					.money(Money.of(priceActual, currencyId))
 					.build();
 		}
 
@@ -669,7 +669,7 @@ public class OrderLineBL implements IOrderLineBL
 			return ProductPrice.builder()
 					.productId(productId)
 					.uomId(priceUomId)
-					.value(Money.of(priceActual, currencyId))
+					.money(Money.of(priceActual, currencyId))
 					.build();
 		}
 
@@ -679,7 +679,7 @@ public class OrderLineBL implements IOrderLineBL
 			return ProductPrice.builder()
 					.productId(productId)
 					.uomId(priceUomId)
-					.value(Money.of(priceActual, currencyId))
+					.money(Money.of(priceActual, currencyId))
 					.build();
 		}
 
@@ -689,7 +689,7 @@ public class OrderLineBL implements IOrderLineBL
 		return ProductPrice.builder()
 				.productId(productId)
 				.uomId(priceUomId)
-				.value(Money.of(priceActualWithoutTax, currencyId))
+				.money(Money.of(priceActualWithoutTax, currencyId))
 				.build();
 	}
 

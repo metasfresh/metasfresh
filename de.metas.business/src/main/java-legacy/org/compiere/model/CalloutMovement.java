@@ -23,14 +23,15 @@ import java.util.Properties;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 
 /**
  *	Inventory Movement Callouts
- *	
+ *
  *  @author Jorg Janke
  *  @version $Id: CalloutMovement.java,v 1.2 2006/07/30 00:51:03 jjanke Exp $
- * 
+ *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>BF [ 1879568 ] CalloutMouvement QtyAvailable issues
  */
@@ -58,11 +59,11 @@ public class CalloutMovement extends CalloutEngine
 			mTab.setValue("M_AttributeSetInstance_ID", Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID"));
 		else
 			mTab.setValue("M_AttributeSetInstance_ID", null);
-		 
+
 		checkQtyAvailable(ctx, mTab, WindowNo, M_Product_ID, null);
 		return "";
 	}   //  product
-	
+
 	// Begin Armen 2006/10/01
 	/**
 	 *  Movement Line - MovementQty modified
@@ -84,10 +85,10 @@ public class CalloutMovement extends CalloutEngine
 		//
 		return "";
 	} //  qty
-	
+
 	/**
 	 * Movement Line - Locator modified
-	 * 
+	 *
 	 * @param ctx      Context
 	 * @param WindowNo current Window No
 	 * @param GridTab     Model Tab
@@ -105,7 +106,7 @@ public class CalloutMovement extends CalloutEngine
 
 	/**
 	 * Check available qty
-	 * 
+	 *
 	 * @param ctx context
 	 * @param mTab Model Tab
 	 * @param WindowNo current Window No
@@ -115,7 +116,7 @@ public class CalloutMovement extends CalloutEngine
 	private void checkQtyAvailable(Properties ctx, GridTab mTab, int WindowNo, int M_Product_ID, BigDecimal MovementQty) {
 		// Begin Armen 2006/10/01
 		if (M_Product_ID != 0) {
-			if (Services.get(IProductBL.class).isStocked(M_Product_ID)) {
+			if (Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID))) {
 				if (MovementQty == null)
 					MovementQty = (BigDecimal) mTab.getValue("MovementQty");
 				int M_Locator_ID = Env.getContextAsInt(ctx, WindowNo, "M_Locator_ID");

@@ -13,12 +13,12 @@ import java.util.Properties;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.util.Services;
 
@@ -55,10 +56,10 @@ public class DD_OrderLine
 
 	/**
 	 * Calls {@link IDDOrderLineBL#setUOMInDDOrderLine(I_DD_OrderLine)}.
-	 * 
+	 *
 	 * @param ddOrderLine
 	 * @param field
-	 * 
+	 *
 	 * @task http://dewiki908/mediawiki/index.php/08583_Erfassung_Packvorschrift_in_DD_Order_ist_crap_%28108882381939%29
 	 *       ("UOM In manual DD_OrderLine shall always be the uom of the product ( as talked with Mark) ")
 	 */
@@ -168,7 +169,7 @@ public class DD_OrderLine
 				&& QtyOrdered.signum() > 0		// no negative (returns)
 				&& ddOrderLine.getDD_Order().isSOTrx())
 		{
-			if (Services.get(IProductBL.class).isStocked(M_Product_ID))
+			if (Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 			{
 				final int M_Locator_ID = ddOrderLine.getM_Locator_ID();
 				int M_AttributeSetInstance_ID = ddOrderLine.getM_AttributeSetInstance_ID();

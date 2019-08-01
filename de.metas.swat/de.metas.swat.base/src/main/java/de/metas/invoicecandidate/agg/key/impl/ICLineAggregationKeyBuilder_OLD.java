@@ -58,6 +58,7 @@ import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.product.IProductDAO;
+import de.metas.product.ProductPrice;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -104,6 +105,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final I_C_Invoice_Candidate_Agg agg = ic.getC_Invoice_Candidate_Agg();
 		Check.assumeNotNull(agg, "invoice candidate aggregation not null for {}", ic);
@@ -148,9 +150,11 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 		final NumberFormat numberFormat = createCurrencyNumberFormat(ic);
 
-		final BigDecimal priceActual = Services.get(IInvoiceCandBL.class).getPriceActual(ic);
-		sb.append("/" + numberFormat.format(priceActual));
-		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActual));
+		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
+		final BigDecimal priceActualAmt = priceActual.toMoney().getAsBigDecimal();
+
+		sb.append("/" + numberFormat.format(priceActualAmt));
+		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActualAmt));
 
 		//
 		// 06718: Use UOM in aggregation
@@ -167,7 +171,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		sb.append("/" + ic.getC_Activity_ID());
 
 		// Add Tax
-		final I_C_Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(ic);
+		final I_C_Tax taxEffective = invoiceCandBL.getTaxEffective(ic);
 		sb.append("/" + taxEffective.getC_Tax_ID());
 
 		// Add IsPrinted

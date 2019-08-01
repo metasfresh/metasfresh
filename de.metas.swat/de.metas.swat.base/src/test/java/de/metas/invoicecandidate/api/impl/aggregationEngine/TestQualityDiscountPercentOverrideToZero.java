@@ -116,7 +116,7 @@ public class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualit
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(new BigDecimal("100")));
+		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 	}
 
 }

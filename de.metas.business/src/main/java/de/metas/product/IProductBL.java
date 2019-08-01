@@ -23,6 +23,7 @@ package de.metas.product;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -72,7 +73,7 @@ public interface IProductBL extends ISingletonService
 	 */
 	boolean isStocked(I_M_Product product);
 
-	boolean isStocked(int productId);
+	boolean isStocked(ProductId productId);
 
 	boolean isDiverse(ProductId productId);
 
@@ -126,6 +127,10 @@ public interface IProductBL extends ISingletonService
 	{
 		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
 	}
+
+	Optional<UomId> getCatchUOMId(ProductId productId);
+
+	Optional<I_C_UOM> getCatchUOM(ProductId productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

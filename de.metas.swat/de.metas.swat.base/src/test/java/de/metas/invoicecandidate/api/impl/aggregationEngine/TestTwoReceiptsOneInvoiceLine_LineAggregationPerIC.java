@@ -228,7 +228,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// Make sure our line aggregation builder was used
 		assertEquals(lineAggregation_PerInvoiceCandidate.getC_Aggregation_ID(), invoiceCandidate.getLineAggregationKeyBuilder_ID());
-	};
+	}
 
 	@Override
 	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
@@ -239,7 +239,7 @@ public class TestTwoReceiptsOneInvoiceLine_LineAggregationPerIC extends Abstract
 
 		// Assert we invoiced all inout lines
 		final BigDecimal qtyToInvoice_Expected = partialQty1.add(partialQty2).add(partialQty3);
-		assertThat(invoiceLine.getQtyToInvoice(), comparesEqualTo(qtyToInvoice_Expected));
+		assertThat(invoiceLine.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(qtyToInvoice_Expected));
 
 		// Make sure attributes were not aggregated
 		assertThat(invoiceLine.getInvoiceLineAttributes(), empty());

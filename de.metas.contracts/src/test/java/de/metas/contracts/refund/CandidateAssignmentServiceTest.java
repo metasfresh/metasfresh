@@ -100,6 +100,7 @@ public class CandidateAssignmentServiceTest
 	private RefundTestTools refundTestTools;
 	private RefundInvoiceCandidateRepository refundInvoiceCandidateRepository;
 	private RefundContractRepository refundContractRepository;
+	private I_C_UOM uomRecord;
 
 	@Before
 	public void init()
@@ -139,6 +140,9 @@ public class CandidateAssignmentServiceTest
 				refundConfigChangeService);
 
 		refundTestTools = RefundTestTools.newInstance();
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test
@@ -585,7 +589,7 @@ public class CandidateAssignmentServiceTest
 
 		final RefundInvoiceCandidate refundCandidate0 = prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(ZERO),
+				refundContract.getRefundConfig(Quantity.of(ZERO, uomRecord)),
 				FOURTEEN, // assignedQty
 				ImmutableList.of( // individualAssignments
 						new IndividualTestAssignment(assignableCandidateWithTen, TEN, ONE),
@@ -593,7 +597,7 @@ public class CandidateAssignmentServiceTest
 
 		final RefundInvoiceCandidate refundCandidate15 = prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(FIFTEEN),
+				refundContract.getRefundConfig(Quantity.of(FIFTEEN, uomRecord)),
 				THREE, // assignedQty
 				ImmutableList.of( // individualAssignments
 						new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
@@ -661,7 +665,7 @@ public class CandidateAssignmentServiceTest
 
 		return prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(ZERO),
+				refundContract.getRefundConfig(Quantity.of(ZERO, uomRecord)),
 				THIRTEEN,
 				individualAssignments);
 	}

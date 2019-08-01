@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,8 +35,8 @@ import org.junit.Test;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.expectations.InOutLineExpectation;
-import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
-import de.metas.inoutcandidate.spi.impl.QtyAndQualityExpectation;
+import de.metas.inoutcandidate.spi.impl.ReceiptQty;
+import de.metas.inoutcandidate.spi.impl.ReceiptQtyExpectation;
 import de.metas.util.Services;
 
 public class InOutCandidateBLTest
@@ -62,8 +62,8 @@ public class InOutCandidateBLTest
 				.qualityNote("note 1. note 2. note 3")
 				.createInOutLine(I_M_InOutLine.class);
 
-		final IQtyAndQuality qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
-		QtyAndQualityExpectation.newInstance()
+		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
+		ReceiptQtyExpectation.newInstance()
 				.qty("33")
 				.qtyWithIssuesExact("0")
 				.qualityNotices("note 1. note 2. note 3")
@@ -79,8 +79,8 @@ public class InOutCandidateBLTest
 				.qualityNote("note 1. note 2. note 3")
 				.createInOutLine(I_M_InOutLine.class);
 
-		final IQtyAndQuality qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
-		QtyAndQualityExpectation.newInstance()
+		final ReceiptQty qtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
+		ReceiptQtyExpectation.newInstance()
 				.qty("33")
 				.qtyWithIssuesExact("33")
 				.qualityNotices("note 1. note 2. note 3")

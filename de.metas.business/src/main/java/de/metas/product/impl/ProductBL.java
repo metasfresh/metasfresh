@@ -27,8 +27,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -36,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
@@ -47,6 +52,8 @@ import org.slf4j.Logger;
 
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.logging.LogManager;
@@ -203,9 +210,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public boolean isStocked(final int productId)
+	public boolean isStocked(@Nullable final ProductId productId)
 	{
-		if (productId <= 0)
+		if (productId == null)
 		{
 			return false;
 		}
@@ -424,5 +431,36 @@ public final class ProductBL implements IProductBL
 		final String productType = product.getProductType();
 
 		return X_M_Product.PRODUCTTYPE_FreightCost.equals(productType);
+	}
+
+	private final CCache<ProductId, Optional<UomId>> catchUomCache = CCache
+			.<ProductId, Optional<UomId>> builder()
+			.tableName(I_C_UOM_Conversion.Table_Name)
+			.cacheMapType(CacheMapType.LRU)
+			.initialCapacity(500)
+			.build();
+
+	@Override
+	public Optional<UomId> getCatchUOMId(@NonNull final ProductId productId)
+	{
+		return catchUomCache.getOrLoad(productId, this::getCatchUOMId0);
+	}
+
+	public Optional<UomId> getCatchUOMId0(@NonNull final ProductId productId)
+	{
+		final I_C_UOM_Conversion conversionRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_M_Product_ID, productId)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_IsCatchUOMForProduct, true)
+				.create()
+				.firstOnly(I_C_UOM_Conversion.class); // we have a unique constraint
+
+		return Optional.ofNullable(UomId.ofRepoIdOrNull(conversionRecord.getC_UOM_To_ID()));
+	}
+
+	@Override
+	public Optional<I_C_UOM> getCatchUOM(@NonNull final ProductId productId)
+	{
+		return getCatchUOMId(productId).map(uomId -> loadOutOfTrx(uomId, I_C_UOM.class));
 	}
 }

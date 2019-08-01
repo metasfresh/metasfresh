@@ -272,6 +272,15 @@ public final class Money
 		return this.value.compareTo(other.value) <= 0;
 	}
 
+	public boolean isEqualByComparingTo(@Nullable final Money other)
+	{
+		if (other == null)
+		{
+			return false;
+		}
+		return other.getCurrencyId().equals(currencyId) && other.getAsBigDecimal().compareTo(getAsBigDecimal()) == 0;
+	}
+
 	public static Collector<Money, ?, Stream<Money>> sumByCurrencyAndStream()
 	{
 		return sumByCurrencyAnd(map -> map.values().stream());

@@ -26,19 +26,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
@@ -130,6 +134,30 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 
 		final org.compiere.model.I_M_InOut io = line.getM_InOut();
 
-		return Services.get(IDocumentBL.class).isDocumentCompletedOrClosed(io);
+		return DocStatus.ofCode(io.getDocStatus()).isCompletedOrClosed();
 	}
+
+	@Override
+	public StockQtyAndUOMQty retrieveQtyPickedAndUnconfirmed(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+
+		final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
+		final Optional<I_C_UOM> catchUOM = productBL.getCatchUOM(productId);
+
+		final BigDecimal qtyPicked = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(shipmentSchedule);
+
+		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(Quantity.of(qtyPicked, stockingUOM));
+		if (catchUOM.isPresent())
+		{
+			result.uomQty(Quantity.zero(catchUOM.get())); // TODO retrieve the real catch quantity
+		}
+		return result.build();
+	}
+
 }

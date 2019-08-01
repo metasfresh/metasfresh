@@ -15,7 +15,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1936779053L;
+	private static final long serialVersionUID = -1250076057L;
 
     /** Standard Constructor */
     public X_M_InOutLine (Properties ctx, int M_InOutLine_ID, String trxName)
@@ -113,7 +113,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return ii.intValue();
 	}
 
-	/** Set Catch Weight Einheit.
+	/** Set Catch Einheit.
 		@param Catch_UOM_ID 
 		Aus dem Produktstamm übenommene Catch Weight Einheit.
 	  */
@@ -126,7 +126,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
 	}
 
-	/** Get Catch Weight Einheit.
+	/** Get Catch Einheit.
 		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
 	  */
 	@Override
@@ -803,23 +803,23 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 		return (java.lang.String)get_Value(COLUMNNAME_ProductDescription);
 	}
 
-	/** Set Menge in Catch Weight Einheit.
-		@param QtyDeliveredInCatchUOM 
-		Tatsächlich gelieferte Menge in Catch Weight Einheit.
+	/** Set Geliefert Catch.
+		@param QtyDeliveredCatch 
+		Tatsächlich gelieferte Menge
 	  */
 	@Override
-	public void setQtyDeliveredInCatchUOM (java.math.BigDecimal QtyDeliveredInCatchUOM)
+	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch)
 	{
-		set_Value (COLUMNNAME_QtyDeliveredInCatchUOM, QtyDeliveredInCatchUOM);
+		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
 	}
 
-	/** Get Menge in Catch Weight Einheit.
-		@return Tatsächlich gelieferte Menge in Catch Weight Einheit.
+	/** Get Geliefert Catch.
+		@return Tatsächlich gelieferte Menge
 	  */
 	@Override
-	public java.math.BigDecimal getQtyDeliveredInCatchUOM () 
+	public java.math.BigDecimal getQtyDeliveredCatch () 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredInCatchUOM);
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredCatch);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -13,18 +13,16 @@ package de.metas.fresh.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,11 +33,11 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -50,7 +48,17 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Quanity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
@@ -182,7 +190,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 				continue;
 			}
 
-			if(candidate.isFreightCost())
+			if (candidate.isFreightCost())
 			{
 				// don't create quality discounts for freight cost products
 				continue;
@@ -207,13 +215,15 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			final List<IInvoiceLineRW> originalInvoiceLineRWs = invoiceCandAggregate.getLinesFor(candidate);
 			final IInvoiceLineRW originalInvoiceLineRW = originalInvoiceLineRWs.get(0);
 
+			final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(ProductId.ofRepoId(candidate.getM_Product_ID()), qtyQualityDiscount, UomId.ofRepoId(candidate.getC_UOM_ID()));
+
 			//
 			// Adjust the original invoice line add let it include our qty with issues.
-			originalInvoiceLineRW.addQtyToInvoice(qtyQualityDiscount);
+			originalInvoiceLineRW.addQtysToInvoice(qtysToInvoice);
 			// We also need to update the invoice line's net amount
-			setNetLineAmt(originalInvoiceLineRW, invoiceCandBL.getPrecisionFromCurrency(candidate));
+			setNetLineAmt(originalInvoiceLineRW);
 			// Update aggregate's qtyAllocated
-			invoiceCandAggregate.addAllocatedQty(candidate, originalInvoiceLineRW, qtyQualityDiscount);
+			invoiceCandAggregate.addAllocatedQty(candidate, originalInvoiceLineRW, qtysToInvoice);
 
 			//
 			// Create quality discount invoice line with "minus qtyWithIssues".
@@ -240,13 +250,20 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 * @param invoiceLineAttributes attributes to be used on new invoice line
 	 * @return resulting aggregate; never return <code>null</code>.
 	 */
-	private IInvoiceCandAggregate createQualityDiscountInvoiceLine(final I_C_Invoice_Candidate candidate,
+	private IInvoiceCandAggregate createQualityDiscountInvoiceLine(
+			@NonNull final I_C_Invoice_Candidate candidate,
 			final BigDecimal qtyDiscount,
 			final IInvoiceLineRW originalInvoiceLineRW)
 	{
 		final BigDecimal qtyToInvoice = qtyDiscount.negate();
-		final BigDecimal priceActual = invoiceCandBL.getPriceActual(candidate);
-		final BigDecimal qualityDiscountPercent = getQualityDiscountPercent(candidate);
+
+		final StockQtyAndUOMQty stockQtyAndUOMQtyToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(
+				ProductId.ofRepoId(candidate.getM_Product_ID()),
+				qtyToInvoice,
+				UomId.ofRepoId(candidate.getC_UOM_ID()));
+
+		final ProductPrice priceActual = invoiceCandBL.getPriceActual(candidate);
+		final Percent qualityDiscountPercent = getQualityDiscountPercent(candidate);
 
 		final String descriptionPrefix = getDescriptionPrefix(candidate);
 		final String description = descriptionPrefix + " " + qualityDiscountPercent + "%";
@@ -260,9 +277,11 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		invoiceLine.setPriceActual(priceActual);
 		invoiceLine.setPriceEntered(priceActual);
 		invoiceLine.setDiscount(invoiceCandBL.getDiscount(candidate));
-		invoiceLine.setQtyToInvoice(qtyToInvoice);
+		invoiceLine.setQtysToInvoice(stockQtyAndUOMQtyToInvoice);
 
-		final BigDecimal lineNetAmt = invoiceCandBL.calculateNetAmt(qtyToInvoice, priceActual, invoiceCandBL.getPrecisionFromCurrency(candidate));
+		final Quantity quantity = stockQtyAndUOMQtyToInvoice.getUOMQty().get();
+		final Money lineNetAmt = computeLineNetAmt(priceActual, quantity);
+
 		invoiceLine.setNetLineAmt(lineNetAmt);
 
 		invoiceLine.setDescription(description);
@@ -280,18 +299,21 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return invoiceCandAggregate;
 	}
 
-	private final BigDecimal getQualityDiscountPercent(final I_C_Invoice_Candidate candidate)
+	private Money computeLineNetAmt(final ProductPrice priceActual, final Quantity quantity)
 	{
-		final BigDecimal qualityDiscoutPercent = invoiceCandBL.getQualityDiscountPercentEffective(candidate);
+		final Money lineNetAmt = SpringContextHolder.instance.getBean(MoneyService.class).multiply(quantity, priceActual);
+		return lineNetAmt;
+	}
 
-		return qualityDiscoutPercent.setScale(2, RoundingMode.HALF_UP); // make sure the number looks nice
+	private final Percent getQualityDiscountPercent(final I_C_Invoice_Candidate candidate)
+	{
+		final Percent qualityDiscoutPercent = invoiceCandBL.getQualityDiscountPercentEffective(candidate);
+		// return qualityDiscoutPercent.setScale(2, RoundingMode.HALF_UP); // make sure the number looks nice
+		return qualityDiscoutPercent;
 	}
 
 	/**
 	 * Gets description prefix to be used when creating an invoice line for given invoice candidate.
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	private final String getDescriptionPrefix(final I_C_Invoice_Candidate candidate)
 	{
@@ -314,11 +336,15 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		return descriptionPrefix;
 	}
 
-	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine, final CurrencyPrecision currencyPrecision)
+	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine)
 	{
-		BigDecimal qtyToInvoice = invoiceLine.getQtyToInvoice();
-		BigDecimal priceActual = invoiceLine.getPriceActual();
-		final BigDecimal lineNetAmt = invoiceCandBL.calculateNetAmt(qtyToInvoice, priceActual, currencyPrecision);
+		final Quantity stockQty = invoiceLine.getQtysToInvoice().getStockQty();
+		final Quantity uomQty = invoiceLine.getQtysToInvoice().getUOMQty().orElse(stockQty);
+
+		ProductPrice priceActual = invoiceLine.getPriceActual();
+
+		final Money lineNetAmt = computeLineNetAmt(priceActual, uomQty);
+
 		invoiceLine.setNetLineAmt(lineNetAmt);
 	}
 }

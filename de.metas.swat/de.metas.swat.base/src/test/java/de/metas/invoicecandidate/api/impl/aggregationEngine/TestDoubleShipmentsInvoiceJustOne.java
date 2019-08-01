@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,7 +41,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 /**
  * @see AbstractDoubleReceiptQtyOverride
  * @author ts
- * 
+ *
  */
 public class TestDoubleShipmentsInvoiceJustOne extends AbstractDoubleReceiptQtyOverride
 {
@@ -61,7 +61,7 @@ public class TestDoubleShipmentsInvoiceJustOne extends AbstractDoubleReceiptQtyO
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtyToInvoice(), comparesEqualTo(config_GetQtyToInvoice_Override()));
+		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol121);
 		assertNull("Unexpected IInvoiceLineRW for iol121=" + iol121, il2);

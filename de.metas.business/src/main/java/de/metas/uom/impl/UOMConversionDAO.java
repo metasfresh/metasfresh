@@ -80,7 +80,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 				.build();
 	}
 
-	private static UOMConversionRate toUOMConversionOrNull(final I_C_UOM_Conversion record)
+	private static UOMConversionRate toUOMConversionOrNull(@NonNull final I_C_UOM_Conversion record)
 	{
 		final BigDecimal fromToMultiplier = record.getMultiplyRate();
 		BigDecimal toFromMultiplier = record.getDivideRate();
@@ -102,7 +102,6 @@ public class UOMConversionDAO implements IUOMConversionDAO
 		}
 
 		return UOMConversionRate.builder()
-				// .repoId(record.getC_UOM_Conversion_ID())
 				.fromUomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.toUomId(UomId.ofRepoId(record.getC_UOM_To_ID()))
 				.fromToMultiplier(fromToMultiplier)

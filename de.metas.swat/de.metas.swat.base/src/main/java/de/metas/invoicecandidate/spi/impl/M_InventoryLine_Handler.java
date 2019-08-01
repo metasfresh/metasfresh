@@ -47,6 +47,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -307,7 +308,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final I_C_BPartner_Location billBPLocation = bPartnerDAO.retrieveBillToLocation(ctx, inOut.getC_BPartner_ID(), alsoTryBilltoRelation, ITrx.TRXNAME_None);
 			billBPLocationId = BPartnerLocationId.ofRepoId(billBPLocation.getC_BPartner_ID(), billBPLocation.getC_BPartner_Location_ID());
-			
+
 			final I_AD_User billBPContact = bPartnerBL.retrieveBillContact(ctx, billBPLocationId.getBpartnerId().getRepoId(), ITrx.TRXNAME_None);
 			billBPContactId = billBPContact != null
 					? BPartnerContactId.ofRepoIdOrNull(billBPContact.getC_BPartner_ID(), billBPContact.getAD_User_ID())
@@ -388,7 +389,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_M_Inventory inventory = inventoryLine.getM_Inventory();
 		final DocStatus inventoryDocStatus = DocStatus.ofCode(inventory.getDocStatus());
-		if(inventoryDocStatus.isCompletedOrClosed())
+		if (inventoryDocStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = ONE.negate();
 			final BigDecimal qtyDelivered = inventoryLine.getQtyInternalUse().multiply(qtyMultiplier);
@@ -413,6 +414,14 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final BigDecimal qtyDelivered = ic.getQtyOrdered();
 		ic.setQtyDelivered(qtyDelivered); // when changing this, make sure to threat ProductType.Service specially
+
+		final BigDecimal qtyInUOM = Services.get(IUOMConversionBL.class)
+				.convertFromProductUOM(
+						ProductId.ofRepoId(ic.getM_Product_ID()),
+						UomId.ofRepoId(ic.getC_UOM_ID()),
+						qtyDelivered);
+
+		ic.setQtyDeliveredInUOM(qtyInUOM);
 
 	}
 }

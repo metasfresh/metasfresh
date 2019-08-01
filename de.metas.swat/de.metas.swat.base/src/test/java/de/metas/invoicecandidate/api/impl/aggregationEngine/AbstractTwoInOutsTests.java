@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,6 +33,7 @@ import java.util.List;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.product.ProductPrice;
 
 /**
  * Test case:
@@ -41,10 +42,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
  * <li>two shipments, the first one with one line, the second one with two lines..each line has the same product etc
  * <li>both iols belong to the same order line and thus are associated to the same invoice candidate
  * </ul>
- * 
+ *
  * => Expectation: see subclasses
  * <p>
- * 
+ *
  * @author ts
  *
  */
@@ -108,11 +109,11 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 
 		if (config_GetPriceEntered_Override() != null)
 		{
-			final BigDecimal priceEntered = invoiceCandBL.getPriceEntered(ic);
-			assertThat("Invalide priceEntered", priceEntered, comparesEqualTo(config_GetPriceEntered_Override()));
-			
-			final BigDecimal priceActual = invoiceCandBL.getPriceActual(ic);
-			assertThat("Invalide priceActual", priceActual, comparesEqualTo(config_GetPriceEntered_Override())); // because we don't have a discount
+			final ProductPrice priceEntered = invoiceCandBL.getPriceEntered(ic);
+			assertThat("Invalide priceEntered", priceEntered.toBigDecimal(), comparesEqualTo(config_GetPriceEntered_Override()));
+
+			final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
+			assertThat("Invalide priceActual", priceActual.toBigDecimal(), comparesEqualTo(config_GetPriceEntered_Override())); // because we don't have a discount
 		}
 	}
 }

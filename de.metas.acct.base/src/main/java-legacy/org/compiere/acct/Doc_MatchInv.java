@@ -58,6 +58,7 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
@@ -198,7 +199,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		//
 		// Skip not stockable (e.g. service products) because they have no cost
-		final int productId = getM_MatchInv().getM_Product_ID();
+		final ProductId productId = ProductId.ofRepoIdOrNull(getM_MatchInv().getM_Product_ID());
 		if (!productBL.isStocked(productId))
 		{
 			return ImmutableList.of();
@@ -270,7 +271,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 	/**
 	 * Create the InvoicePriceVariance fact line
-	 * 
+	 *
 	 * @param fact
 	 * @param dr_NotInvoicedReceipts
 	 * @param cr_InventoryClearing

@@ -10,12 +10,12 @@ package de.metas.invoice;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -31,6 +31,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 
 public interface IMatchInvDAO extends ISingletonService
@@ -39,7 +40,7 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
-	 * 
+	 *
 	 * @param il
 	 * @return
 	 */
@@ -47,7 +48,7 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
-	 * 
+	 *
 	 * @param il
 	 * @return query builder
 	 */
@@ -55,7 +56,7 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the (active) records that reference the given inout line.
-	 * 
+	 *
 	 * @param iol
 	 * @return
 	 */
@@ -63,28 +64,25 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves all (active or not) {@link I_M_MatchInv} records of given {@link I_M_InOut}.
-	 * 
+	 *
 	 * @param inout
 	 */
 	List<I_M_MatchInv> retrieveForInOut(I_M_InOut inout);
 
 	/**
-	 * Retrieves the quantity of given <code>iol</code> which was matched with {@link I_C_InvoiceLine}s.
-	 * 
+	 * Retrieves the quantity (in stock UOM) of given <code>iol</code> which was matched with {@link I_C_InvoiceLine}s.
+	 *
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>iol</code> and returns their <code>Qty</code> sum.
-	 * 
-	 * @param iol
-	 * @return
 	 */
-	BigDecimal retrieveQtyInvoiced(I_M_InOutLine iol);
+	StockQtyAndUOMQty retrieveQtysInvoiced(I_M_InOutLine iol);
 
 	/**
 	 * Retrieves the quantity of given <code>invoiceLine</code> which was matched with {@link I_M_InOutLine}s.
-	 * 
+	 *
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>invoiceLine</code> and returns their <code>Qty</code> sum.
-	 * 
+	 *
 	 * NOTE: the quantity is NOT credit memo adjusted, NOR IsSOTrx adjusted.
-	 * 
+	 *
 	 * @param invoiceLine
 	 * @return quantity matched
 	 */

@@ -1,11 +1,14 @@
 package de.metas.contracts.refund;
 
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,6 +20,7 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
+import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import de.metas.invoice.InvoiceScheduleId;
 
@@ -55,6 +59,8 @@ public class RefundContractTest
 
 	private RefundConfig refundConfig2;
 
+	private I_C_UOM uomRecord;
+
 	@Before
 	public void init()
 	{
@@ -87,13 +93,16 @@ public class RefundContractTest
 				.refundConfig(refundConfig2)
 				.refundConfig(refundConfig1)
 				.build();
+
+		uomRecord = newInstance(I_C_UOM.class);
+		saveRecord(uomRecord);
 	}
 
 	@Test
 	public void getRefundConfig_qty_four()
 	{
 		// invoke the method under test
-		final RefundConfig result = refundContract.getRefundConfig(FOUR);
+		final RefundConfig result = refundContract.getRefundConfig(Quantity.of(FOUR, uomRecord));
 
 		assertThat(result).isEqualTo(refundConfig1);
 	}
@@ -102,7 +111,7 @@ public class RefundContractTest
 	public void getRefundConfig_qty_five()
 	{
 		// invoke the method under test
-		final RefundConfig result = refundContract.getRefundConfig(FIVE);
+		final RefundConfig result = refundContract.getRefundConfig(Quantity.of(FIVE, uomRecord));
 
 		assertThat(result).isEqualTo(refundConfig2);
 	}
