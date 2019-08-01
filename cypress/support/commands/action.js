@@ -58,7 +58,7 @@ Cypress.Commands.add('executeQuickAction', (actionName, active, modal = false) =
 
     return cy
       .get(path)
-      .click()
+      .click({ timeout: 10000 })
       .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
       .should('exist');
   });
