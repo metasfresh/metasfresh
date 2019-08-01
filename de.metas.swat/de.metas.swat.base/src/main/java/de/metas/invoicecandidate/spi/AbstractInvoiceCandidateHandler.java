@@ -75,7 +75,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		final Quantity qtyToInvoiceInUOM = Quantity.of(ic.getQtyToInvoiceInUOM(), loadOutOfTrx(ic.getC_UOM_ID(), I_C_UOM.class));
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
 
-		ic.setNetAmtToInvoice(netAmtToInvoice.getAsBigDecimal());
+		ic.setNetAmtToInvoice(netAmtToInvoice.toBigDecimal());
 		ic.setSplitAmt(BigDecimal.ZERO);
 	}
 
@@ -87,7 +87,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		final Quantity openQty = invoiceCandBL.computeOpenQty(ic);
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, openQty);
 
-		ic.setLineNetAmt(netAmtToInvoice.getAsBigDecimal());
+		ic.setLineNetAmt(netAmtToInvoice.toBigDecimal());
 	}
 
 	private Money computeNetAmtUsingQty(

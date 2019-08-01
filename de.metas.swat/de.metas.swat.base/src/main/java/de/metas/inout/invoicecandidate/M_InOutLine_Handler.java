@@ -702,7 +702,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// TODO decide if we need to fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
 		final StockQtyAndUOMQty qtyDeliveredFromShipments = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
 		final Quantity stockQty = qtyDeliveredFromShipments.getStockQty();
-		ic.setQtyDeliveredInUOM(qtyDeliveredFromShipments.getUOMQty().orElse(stockQty).getAsBigDecimal());
+		ic.setQtyDeliveredInUOM(qtyDeliveredFromShipments.getUOMQty().orElse(stockQty).toBigDecimal());
 
 		//
 		// Set other delivery informations by fetching them from first shipment/receipt.

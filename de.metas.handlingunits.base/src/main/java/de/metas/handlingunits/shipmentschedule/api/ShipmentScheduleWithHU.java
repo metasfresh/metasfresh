@@ -414,7 +414,7 @@ public class ShipmentScheduleWithHU
 		{
 			shipmentScheduleQtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class, inout);
 			shipmentScheduleQtyPicked.setM_ShipmentSchedule(shipmentSchedule);
-			shipmentScheduleQtyPicked.setQtyPicked(qtyPicked.getAsBigDecimal());
+			shipmentScheduleQtyPicked.setQtyPicked(qtyPicked.toBigDecimal());
 			// lu, tu and vhu are null, so no need to set them
 
 			if (DocStatus.ofCode(inout.getDocStatus()).isCompletedOrClosed())

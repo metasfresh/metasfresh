@@ -64,7 +64,7 @@ public class PaymentReservationCaptureRepository
 		record.setC_Invoice_ID(from.getSalesInvoiceId().getRepoId());
 		record.setC_Payment_ID(from.getPaymentId().getRepoId());
 
-		record.setAmount(from.getAmount().getAsBigDecimal());
+		record.setAmount(from.getAmount().toBigDecimal());
 		record.setC_Currency_ID(from.getAmount().getCurrencyId().getRepoId());
 	}
 

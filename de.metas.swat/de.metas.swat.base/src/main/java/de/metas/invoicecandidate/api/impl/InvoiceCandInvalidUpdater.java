@@ -322,16 +322,16 @@ import lombok.NonNull;
 
 		// Set the new qtyToInvoice value, depending on invoiceRule
 		final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
-		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.getAsBigDecimal()); // TODO make sure it's in the UOM
+		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.toBigDecimal()); // TODO make sure it's in the UOM
 
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(ic);
 
 		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.getAsBigDecimal());
+		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
 
 		final Quantity newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
-		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.getAsBigDecimal()); // TODO make sure it's in the UOM
+		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.toBigDecimal()); // TODO make sure it's in the UOM
 
 		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 

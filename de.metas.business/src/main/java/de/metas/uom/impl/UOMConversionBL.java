@@ -130,7 +130,7 @@ public class UOMConversionBL implements IUOMConversionBL
 
 		//
 		// Convert current quantity to "uomTo"
-		final BigDecimal sourceQtyNew = quantity.getAsBigDecimal();
+		final BigDecimal sourceQtyNew = quantity.toBigDecimal();
 		final int sourceUOMNewId = currentUomId.getRepoId();
 		final I_C_UOM sourceUOMNew = Services.get(IUOMDAO.class).getById(sourceUOMNewId);
 		final BigDecimal qtyNew = convertQty(conversionCtx,
@@ -158,7 +158,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	@Override
 	public Quantity convertToProductUOM(@NonNull final Quantity quantity, final ProductId productId)
 	{
-		final BigDecimal sourceQty = quantity.getAsBigDecimal();
+		final BigDecimal sourceQty = quantity.toBigDecimal();
 		final I_C_UOM sourceUOM = quantity.getUOM();
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);

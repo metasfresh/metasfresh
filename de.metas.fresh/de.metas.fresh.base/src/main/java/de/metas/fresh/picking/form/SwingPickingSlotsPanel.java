@@ -460,7 +460,7 @@ public class SwingPickingSlotsPanel
 				return;
 			}
 
-			if (qtyToRemove.compareTo(allocQty.getAsBigDecimal()) > 0)
+			if (qtyToRemove.compareTo(allocQty.toBigDecimal()) > 0)
 			{
 				warn(SwingPickingSlotsPanel.ERR_MAX_QTY);
 				setQty(BigDecimal.ZERO);

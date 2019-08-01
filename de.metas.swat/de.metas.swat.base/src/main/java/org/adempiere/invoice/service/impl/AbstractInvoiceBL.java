@@ -958,7 +958,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// Check.assume(invoiceLine.getPrice_UOM_ID() > 0, "invoiceLine {} has Price_UOM_ID > 0", invoiceLine);
 
 		final Quantity stockQty = qtysInvoiced.getStockQty();
-		invoiceLine.setQtyInvoiced(stockQty.getAsBigDecimal());
+		invoiceLine.setQtyInvoiced(stockQty.toBigDecimal());
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
@@ -967,8 +967,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		if (fallback)
 		{
 			// without a product, we have no internal UOM, so we can't do any conversions
-			invoiceLine.setQtyEntered(stockQty.getAsBigDecimal());
-			invoiceLine.setQtyInvoicedInPriceUOM(stockQty.getAsBigDecimal());
+			invoiceLine.setQtyEntered(stockQty.toBigDecimal());
+			invoiceLine.setQtyInvoicedInPriceUOM(stockQty.toBigDecimal());
 			return;
 		}
 
@@ -977,11 +977,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final Quantity uomQty = qtysInvoiced.getUOMQty().get();
 
 			invoiceLine.setC_UOM_ID(uomQty.getUomId().getRepoId());
-			invoiceLine.setQtyEntered(uomQty.getAsBigDecimal());
+			invoiceLine.setQtyEntered(uomQty.toBigDecimal());
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.getAsBigDecimal());
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.toBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 

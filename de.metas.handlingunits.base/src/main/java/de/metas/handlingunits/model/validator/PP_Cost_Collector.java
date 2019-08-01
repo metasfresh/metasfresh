@@ -157,7 +157,7 @@ public class PP_Cost_Collector
 						for (final IHUProductStorage productStorage : huStorage.getProductStorages())
 						{
 							// Skip ZERO quantity storages => those are not relevant
-							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).getAsBigDecimal();
+							final BigDecimal qty = productStorage.getQty(receiptQtyUOM).toBigDecimal();
 							if (qty.signum() == 0)
 							{
 								continue;

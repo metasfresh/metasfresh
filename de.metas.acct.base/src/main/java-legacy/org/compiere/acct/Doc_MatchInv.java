@@ -403,7 +403,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).getAsBigDecimal();
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
 		}
 		else
 		{

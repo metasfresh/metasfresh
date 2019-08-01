@@ -1140,7 +1140,7 @@ public final class Fact
 		public FactLineBuilder setQty(final Quantity qty)
 		{
 			assertNotBuild();
-			this.qty = qty.getAsBigDecimal();
+			this.qty = qty.toBigDecimal();
 			this.uomId = qty.getUOMId();
 			return this;
 		}

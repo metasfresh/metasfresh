@@ -500,7 +500,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
 				final StockQtyAndUOMQty stockingAndCatchQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
 
-				qtyPickList = stockingAndCatchQty.getStockQty().getAsBigDecimal();
+				qtyPickList = stockingAndCatchQty.getStockQty().toBigDecimal();
 
 				// Update shipment schedule's fields
 				sched.setQtyPickList(qtyPickList);
@@ -508,7 +508,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				final Optional<Quantity> catchQty = stockingAndCatchQty.getUOMQty();
 				if (catchQty.isPresent())
 				{
-					sched.setQtyPickedCatch(catchQty.get().getAsBigDecimal());
+					sched.setQtyPickedCatch(catchQty.get().toBigDecimal());
 					sched.setCatch_UOM_ID(catchQty.get().getUomId().getRepoId());
 				}
 			}

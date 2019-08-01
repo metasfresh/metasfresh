@@ -119,7 +119,7 @@ public final class Quantity implements Comparable<Quantity>
 		{
 			return ZERO;
 		}
-		return quantity.getAsBigDecimal();
+		return quantity.toBigDecimal();
 	}
 
 	public static UomId getCommonUomIdOfAll(@NonNull final Quantity... quantities)
@@ -279,18 +279,18 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return Quantity value; never return null
 	 */
-	public BigDecimal getAsBigDecimal()
+	public BigDecimal toBigDecimal()
 	{
 		return qty;
 	}
 
 	/**
-	 * @deprecated Please use {@link #getAsBigDecimal()}
+	 * @deprecated Please use {@link #toBigDecimal()}
 	 */
 	@Deprecated
 	public BigDecimal getQty()
 	{
-		return getAsBigDecimal();
+		return toBigDecimal();
 	}
 
 	/**
@@ -473,7 +473,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity switchToSource()
 	{
-		return new Quantity(getSourceQty(), getSourceUOM(), getAsBigDecimal(), getUOM());
+		return new Quantity(getSourceQty(), getSourceUOM(), toBigDecimal(), getUOM());
 	}
 
 	/**
@@ -485,7 +485,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity switchToSourceIfMorePrecise()
 	{
-		if (getSourceQty().compareTo(getAsBigDecimal()) > 0)
+		if (getSourceQty().compareTo(toBigDecimal()) > 0)
 		{
 			return switchToSource();
 		}
@@ -502,7 +502,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public int signum()
 	{
-		return getAsBigDecimal().signum();
+		return toBigDecimal().signum();
 	}
 
 	/**
@@ -544,7 +544,7 @@ public final class Quantity implements Comparable<Quantity>
 		final int qtyToAdd_sourceUomId = qtyToAdd.getSource_UOM_ID();
 		if (uomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_Value = qtyToAdd.getAsBigDecimal();
+			qtyToAdd_Value = qtyToAdd.toBigDecimal();
 		}
 		else if (uomId == qtyToAdd_sourceUomId)
 		{
@@ -565,7 +565,7 @@ public final class Quantity implements Comparable<Quantity>
 		}
 		else if (sourceUomId == qtyToAdd_uomId)
 		{
-			qtyToAdd_SourceValue = qtyToAdd.getAsBigDecimal();
+			qtyToAdd_SourceValue = qtyToAdd.toBigDecimal();
 		}
 		else
 		{
@@ -575,7 +575,7 @@ public final class Quantity implements Comparable<Quantity>
 
 		//
 		// Compute new Quantity's values
-		final BigDecimal qtyNew_Value = this.getAsBigDecimal().add(qtyToAdd_Value);
+		final BigDecimal qtyNew_Value = this.toBigDecimal().add(qtyToAdd_Value);
 		final I_C_UOM qtyNew_UOM = this.getUOM();
 		final BigDecimal qtyNew_SourceValue;
 		final I_C_UOM qtyNew_SourceUOM;

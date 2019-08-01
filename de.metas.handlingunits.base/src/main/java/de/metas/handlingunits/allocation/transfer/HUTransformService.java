@@ -929,7 +929,7 @@ public class HUTransformService
 		{
 			final IHUProductStorage firstProductStorage = productStorages.get(0);
 
-			final BigDecimal qtyOfStorage = firstProductStorage.getQty().getAsBigDecimal();
+			final BigDecimal qtyOfStorage = firstProductStorage.getQty().toBigDecimal();
 
 			final BigDecimal sourceQtyCUperTU; // will be used to get the overall cuQty to transfer, by multiplying with the given qtyTU
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))

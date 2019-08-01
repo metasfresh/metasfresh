@@ -325,7 +325,7 @@ public class OrderLineBL implements IOrderLineBL
 		final int priceListId = order.getM_PriceList_ID();
 		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(PriceListId.ofRepoId(priceListId));
 
-		BigDecimal lineNetAmt = qtyInPriceUOM.getAsBigDecimal().multiply(ol.getPriceActual());
+		BigDecimal lineNetAmt = qtyInPriceUOM.toBigDecimal().multiply(ol.getPriceActual());
 		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
 
 		logger.debug("Setting LineNetAmt={} to {}", lineNetAmt, ol);
@@ -500,7 +500,7 @@ public class OrderLineBL implements IOrderLineBL
 	public BigDecimal convertQtyEnteredToPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final Quantity qtyEntered = getQtyEntered(orderLine);
-		return convertToPriceUOM(qtyEntered, orderLine).getAsBigDecimal();
+		return convertToPriceUOM(qtyEntered, orderLine).toBigDecimal();
 	}
 
 	@Override

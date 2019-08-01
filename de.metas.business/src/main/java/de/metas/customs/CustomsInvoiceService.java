@@ -186,11 +186,11 @@ public class CustomsInvoiceService
 		{
 			final Quantity inoutLineQtyCoverted = getInOutLineQtyConverted(inoutAndLineId, uomId);
 
-			qty = qty.add(inoutLineQtyCoverted.getAsBigDecimal());
+			qty = qty.add(inoutLineQtyCoverted.toBigDecimal());
 
 			final Money inoutLinePriceConverted = getInOutLinePriceConverted(inoutAndLineId, currencyId);
 
-			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.getAsBigDecimal());
+			final Money shipmentLineNetAmt = inoutLinePriceConverted.multiply(inoutLineQtyCoverted.toBigDecimal());
 
 			lineNetAmt = lineNetAmt.add(shipmentLineNetAmt);
 
@@ -229,7 +229,7 @@ public class CustomsInvoiceService
 		final Money priceActual = orderLine.getPriceActual();
 
 		final BigDecimal shipmentLinePriceConverted = currencyBL.convert(
-				priceActual.getAsBigDecimal(),
+				priceActual.toBigDecimal(),
 				priceActual.getCurrencyId(),
 				currencyId,
 				Env.getClientId(),

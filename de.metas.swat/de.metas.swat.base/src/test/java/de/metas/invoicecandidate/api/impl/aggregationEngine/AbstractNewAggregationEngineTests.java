@@ -171,6 +171,6 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		assertThat(candsForInvoiceLine1.get(0), is(ic));
 
 		final StockQtyAndUOMQty qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
-		assertThat(qtyInvoiced.getStockQty().getAsBigDecimal(), comparesEqualTo(expectedAllocatedQty));
+		assertThat(qtyInvoiced.getStockQty().toBigDecimal(), comparesEqualTo(expectedAllocatedQty));
 	}
 }

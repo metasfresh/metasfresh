@@ -265,7 +265,7 @@ public class RefundConfigRepository
 				break;
 			case AMOUNT_PER_UNIT:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Amount);
-				configRecord.setRefundAmt(refundConfig.getAmount().getAsBigDecimal());
+				configRecord.setRefundAmt(refundConfig.getAmount().toBigDecimal());
 				configRecord.setC_Currency_ID(refundConfig.getAmount().getCurrencyId().getRepoId());
 				configRecord.setRefundPercent(null);
 				break;

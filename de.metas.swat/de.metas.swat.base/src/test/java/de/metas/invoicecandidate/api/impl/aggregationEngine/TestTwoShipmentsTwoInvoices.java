@@ -83,8 +83,8 @@ public class TestTwoShipmentsTwoInvoices extends AbstractTwoInOutsTests
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
 			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(partialQty1));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(partialQty1) /* because price=1 */);
+			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1) /* because price=1 */);
 
 			// validate the IC<->IL qty allocation
 
@@ -94,8 +94,8 @@ public class TestTwoShipmentsTwoInvoices extends AbstractTwoInOutsTests
 			assertThat("iol21 and iol22 have the same IInvoiceLineRW", getSingleForInOutLine(invoiceLines1, iol22), is(invoiceLine2));
 			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
 			assertEquals("Invalid PriceActual", 1, invoiceLine2.getPriceActual().toBigDecimal().intValueExact());
-			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)));
-			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)) /* because price=1 */);
+			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)));
+			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)) /* because price=1 */);
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine2, partialQty2.add(partialQty3));
 		}

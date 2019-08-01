@@ -115,7 +115,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		schedQtyPicked.setAD_Org_ID(sched.getAD_Org_ID());
 		schedQtyPicked.setM_ShipmentSchedule(sched);
 		schedQtyPicked.setIsActive(true);
-		schedQtyPicked.setQtyPicked(qtyPickedToAdd.getAsBigDecimal());
+		schedQtyPicked.setQtyPicked(qtyPickedToAdd.toBigDecimal());
 		saveRecord(schedQtyPicked);
 
 		return schedQtyPicked;

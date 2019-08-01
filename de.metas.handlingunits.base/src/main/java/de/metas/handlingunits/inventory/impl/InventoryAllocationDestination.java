@@ -200,7 +200,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		// For each receipt line which received this HU
 		for (final InventoryLineCandidate candidate : candidates)
 		{
-			final BigDecimal qtyToMoveTotal = qty.getAsBigDecimal();
+			final BigDecimal qtyToMoveTotal = qty.toBigDecimal();
 			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
 			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 			final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
@@ -271,7 +271,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Update the result
 			{
-				result.subtractAllocatedQty(qtySource.getAsBigDecimal());
+				result.subtractAllocatedQty(qtySource.toBigDecimal());
 
 				final IHUTransactionCandidate trx = new HUTransactionCandidate(
 						inventoryLine, // Reference model

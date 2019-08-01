@@ -119,7 +119,7 @@ public class PPOrderPojoSupplier
 
 		//
 		// Calculate duration & Planning dates
-		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.getAsBigDecimal());
+		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply.toBigDecimal());
 		final Instant dateFinishSchedule = demandDateStartSchedule;
 
 		final Instant dateStartSchedule = dateFinishSchedule.minus(durationDays, ChronoUnit.DAYS);
@@ -144,7 +144,7 @@ public class PPOrderPojoSupplier
 				.datePromised(dateFinishSchedule)
 				.dateStartSchedule(dateStartSchedule)
 
-				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
+				.qtyRequired(ppOrderQuantity.toBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId());
@@ -233,7 +233,7 @@ public class PPOrderPojoSupplier
 			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 			final Quantity qtyRequired = ppOrderBOMBL.calculateQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
 
-			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.getAsBigDecimal());
+			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.toBigDecimal());
 
 			result.add(ppOrderLine);
 		}

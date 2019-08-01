@@ -32,7 +32,7 @@ public interface CapacityInterface
 
 	boolean isAllowNegativeCapacity();
 
-	BigDecimal getCapacityQty();
+	BigDecimal toBigDecimal();
 
 	I_C_UOM getC_UOM();
 

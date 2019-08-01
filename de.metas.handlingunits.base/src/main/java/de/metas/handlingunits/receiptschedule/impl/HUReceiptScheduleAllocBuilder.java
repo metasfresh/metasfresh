@@ -68,7 +68,7 @@ public class HUReceiptScheduleAllocBuilder extends ReceiptScheduleAllocBuilder
 			final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
 			huQtyAllocated = uomConversionBL
 					.convertQuantityTo(huQtyAllocatedSrc, uomConversionCtx, uomIdTo)
-					.getAsBigDecimal();
+					.toBigDecimal();
 		}
 		else
 		{

@@ -416,10 +416,10 @@ public class InvoiceCandidateWriter
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity qtyOrdered = uomConversionBL.convertToProductUOM(qty, ProductId.ofRepoId(product.getM_Product_ID()));
-		ic.setQtyOrdered(qtyOrdered.getAsBigDecimal());
+		ic.setQtyOrdered(qtyOrdered.toBigDecimal());
 
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
-		ic.setQtyEntered(qty.getAsBigDecimal());
+		ic.setQtyEntered(qty.toBigDecimal());
 		ic.setC_UOM_ID(UomId.toRepoId(qty.getUomId()));
 
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));

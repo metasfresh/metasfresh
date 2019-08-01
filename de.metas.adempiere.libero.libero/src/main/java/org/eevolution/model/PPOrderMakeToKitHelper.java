@@ -178,7 +178,7 @@ public class PPOrderMakeToKitHelper
 
 		ppCostCollectorBL.createReceipt(candidate);
 
-		ppOrder.setQtyDelivered(qtyToReceive.getAsBigDecimal());
+		ppOrder.setQtyDelivered(qtyToReceive.toBigDecimal());
 	}
 
 	/**

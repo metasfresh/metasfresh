@@ -67,7 +67,7 @@ public class TestDoubleReceiptInvoiceOneAndAHalf extends AbstractDoubleReceiptQt
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(FIFTY.add(TWENTY))); // the first iol's QtyDelviered, plus the remaining rest of the 2nd iol..truncated according to QtyToInvoice_Override
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.add(TWENTY))); // the first iol's QtyDelviered, plus the remaining rest of the 2nd iol..truncated according to QtyToInvoice_Override
 		assertThat(il1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
 	}
 

@@ -89,6 +89,6 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(new BigDecimal("90")));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("90")));
 	}
 }

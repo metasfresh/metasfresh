@@ -118,7 +118,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 		final MTLinkRequest costCollectorLinkRequest = MTLinkRequest.builder()
 				.model(costCollectorRecord)
 				.materialTrackingRecord(materialTrackingRecord)
-				.qtyIssued(sum.getAsBigDecimal())
+				.qtyIssued(sum.toBigDecimal())
 				.ifModelAlreadyLinked(IfModelAlreadyLinked.ADD_ADDITIONAL_LINK)
 				.build();
 		materialTrackingBL.linkModelToMaterialTracking(costCollectorLinkRequest);

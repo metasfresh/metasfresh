@@ -60,12 +60,12 @@ public class TestTwoOrdersTwoReceiptsOneInvoice extends AbstractTwoOrdersTwoInOu
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol111, il1);
-		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(TEN.add(TWENTY)));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN.add(TWENTY)));
 
 		assertThat(getSingleForInOutLine(invoiceLines1, iol121), is(il1));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol211);
 		assertNotNull("Missing IInvoiceLineRW for iol21=" + iol121, il2);
-		assertThat(il2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(FIFTY));
+		assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY));
 	}
 }

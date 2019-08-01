@@ -384,11 +384,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final StockQtyAndUOMQty qtysInvoiced = qtyAndNetAmtInvoiced.getLeft();
 			final Quantity stockQty = qtysInvoiced.getStockQty();
 
-			ic.setQtyInvoiced(stockQty.getAsBigDecimal());
-			ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQty().orElse(stockQty).getAsBigDecimal());
+			ic.setQtyInvoiced(stockQty.toBigDecimal());
+			ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQty().orElse(stockQty).toBigDecimal());
 
 			final Money netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
-			ic.setNetAmtInvoiced(netAmtInvoiced.getAsBigDecimal());
+			ic.setNetAmtInvoiced(netAmtInvoiced.toBigDecimal());
 		}
 
 		updateProcessedFlag(ic); // #243: also update the processed flag if isToClear=Y. It might be the case that Processed_Override was set
@@ -619,7 +619,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final BigDecimal priceActualNet = taxBL.calculateBaseAmt(
 				tax,
-				priceActual.toMoney().getAsBigDecimal(),
+				priceActual.toMoney().toBigDecimal(),
 				taxIncluded,
 				precision.toInt());
 		ic.setPriceActual_Net_Effective(priceActualNet);
@@ -742,7 +742,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final Quantity qtyOrderedActual = calculateMaxInvoicableQtyFromEnteredAndDelivered(qtyOrdered, qtyDelivered);
 
-		return qtyOrderedActual.getAsBigDecimal();
+		return qtyOrderedActual.toBigDecimal();
 	}
 
 	@Override
@@ -1132,7 +1132,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 
 			// 05475: If exists, update the qtyInvoiced.
-			existingIla.setQtyInvoiced(qtysInvoiced.getStockQty().getAsBigDecimal());
+			existingIla.setQtyInvoiced(qtysInvoiced.getStockQty().toBigDecimal());
 			InterfaceWrapperHelper.save(existingIla);
 			return existingIla;
 		}
@@ -1144,7 +1144,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		newIla.setAD_Org_ID(invoiceCand.getAD_Org_ID());
 		newIla.setC_Invoice_Candidate(invoiceCand);
 		newIla.setC_InvoiceLine(invoiceLine);
-		newIla.setQtyInvoiced(qtysInvoiced.getStockQty().getAsBigDecimal());
+		newIla.setQtyInvoiced(qtysInvoiced.getStockQty().toBigDecimal());
 		newIla.setC_Invoice_Candidate_Agg_ID(invoiceCand.getC_Invoice_Candidate_Agg_ID());
 
 		// #870
@@ -1214,7 +1214,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			final BigDecimal priceActualOverride = discount
 					.subtractFromBase(
-							priceEntered.toMoney().getAsBigDecimal(),
+							priceEntered.toMoney().toBigDecimal(),
 							precision.toInt());
 			ic.setPriceActual_Override(priceActualOverride);
 		}
@@ -2055,7 +2055,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				Quantity.of(ic.getQtyEntered(), uomRecord),
 				Quantity.of(computeQtyDeliveredInUOM(ic, true/* useEffectiveQtyDeliviered */), uomRecord));
 
-		return getQtyToInvoice(ic, maxInvoicableQty.getAsBigDecimal(), factor);
+		return getQtyToInvoice(ic, maxInvoicableQty.toBigDecimal(), factor);
 	}
 
 	@Override

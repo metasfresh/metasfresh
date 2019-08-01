@@ -199,7 +199,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 		{
 			final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
 			assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
-			assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(THREE));
+			assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
 
 			// Validate invoice line attributes
 			ic_inout1_attributeExpectations.assertExpected("invalid il1 attribute", il1.getInvoiceLineAttributes());
@@ -213,7 +213,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 		{
 			final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol21_ten);
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21_ten, il2);
-			assertThat(il2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(TEN));
+			assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
 
 			// Validate invoice line attributes
 			ic_inout2_attributeExpectations.assertExpected("invalid il2 attribute", il2.getInvoiceLineAttributes());

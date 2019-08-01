@@ -85,8 +85,8 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(3));
 			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(fullQty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(fullQty) /* because price=1 */);
+			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(fullQty));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullQty) /* because price=1 */);
 
 			// validate the IC<->IL qty allocation
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullQty);

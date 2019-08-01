@@ -222,7 +222,7 @@ public class DDOrderPojoSupplier
 			//
 			// Crate DD order line
 			final Quantity qtyToMove = Quantity.of(
-					calculateQtyToMove(qtyToSupplyRemaining.getAsBigDecimal(), networkLine.getPercent()),
+					calculateQtyToMove(qtyToSupplyRemaining.toBigDecimal(), networkLine.getPercent()),
 					qtyToSupplyRemaining.getUOM());
 
 			final DDOrderLine ddOrderLine = createDD_OrderLine(networkLine, qtyToMove, request);
@@ -294,7 +294,7 @@ public class DDOrderPojoSupplier
 				.salesOrderLineId(request.getMrpDemandOrderLineSOId())
 				.bPartnerId(request.getMrpDemandBPartnerId())
 				.productDescriptor(productDescriptor)
-				.qty(qtyToMoveInProductUOM.getAsBigDecimal())
+				.qty(qtyToMoveInProductUOM.toBigDecimal())
 				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();

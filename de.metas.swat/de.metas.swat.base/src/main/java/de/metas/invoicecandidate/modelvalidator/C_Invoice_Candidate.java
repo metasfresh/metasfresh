@@ -106,7 +106,7 @@ public class C_Invoice_Candidate
 		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
 		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(ic.getQtyToInvoiceInUOM(), uomRecord), ic);
 
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.getAsBigDecimal());
+		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,

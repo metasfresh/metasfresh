@@ -553,9 +553,9 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		cc.setS_Resource_ID(ResourceId.toRepoId(request.getResourceId()));
 		cc.setMovementDate(TimeUtil.asTimestamp(request.getMovementDate()));
 		cc.setDateAcct(TimeUtil.asTimestamp(request.getMovementDate()));
-		cc.setMovementQty(request.getQty().getAsBigDecimal());
-		cc.setScrappedQty(request.getQtyScrap().getAsBigDecimal());
-		cc.setQtyReject(request.getQtyReject().getAsBigDecimal());
+		cc.setMovementQty(request.getQty().toBigDecimal());
+		cc.setScrappedQty(request.getQtyScrap().toBigDecimal());
+		cc.setQtyReject(request.getQtyReject().toBigDecimal());
 		cc.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
 
 		final PPOrderRoutingActivity orderActivity = request.getOrderActivity();

@@ -68,7 +68,7 @@ public interface IProductStorage
 
 	default BigDecimal getQtyAsBigDecimal()
 	{
-		return getQty().getAsBigDecimal();
+		return getQty().toBigDecimal();
 	}
 
 	/**

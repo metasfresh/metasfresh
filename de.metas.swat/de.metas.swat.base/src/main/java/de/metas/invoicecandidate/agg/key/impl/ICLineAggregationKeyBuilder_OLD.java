@@ -151,7 +151,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final NumberFormat numberFormat = createCurrencyNumberFormat(ic);
 
 		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
-		final BigDecimal priceActualAmt = priceActual.toMoney().getAsBigDecimal();
+		final BigDecimal priceActualAmt = priceActual.toMoney().toBigDecimal();
 
 		sb.append("/" + numberFormat.format(priceActualAmt));
 		sb.append("/" + NumberUtils.stripTrailingDecimalZeros(priceActualAmt));

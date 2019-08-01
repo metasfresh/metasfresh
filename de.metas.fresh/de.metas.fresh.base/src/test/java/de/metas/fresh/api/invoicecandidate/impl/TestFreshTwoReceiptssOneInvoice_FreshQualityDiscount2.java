@@ -93,8 +93,8 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 		final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines, iol11_three);
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, invoiceLine1);
 
-		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(THREE.add(FIVE)));
-		assertThat(invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(THREE.add(FIVE)));
+		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE.add(FIVE)));
+		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(THREE.add(FIVE)));
 		validateIcIlAllocationQty(ic, invoice, invoiceLine1, THREE.add(FIVE));
 		ic_inout1_attributeExpectations.assertExpected("invoiceLine1 attributes", invoiceLine1.getInvoiceLineAttributes());
 
@@ -115,9 +115,9 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 		{
 			final IInvoiceLineRW invoiceLine2 = CollectionUtils.singleElement(forIol12);
 
-			assertThat(invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(FIVE.negate()));
+			assertThat(invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIVE.negate()));
 			assertThat(invoiceLine2.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE));
-			assertThat(invoiceLine2.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(FIVE.negate()));
+			assertThat(invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIVE.negate()));
 			validateIcIlAllocationQty(ic, invoice, invoiceLine2, FIVE.negate());
 			// shall have the same attributes as the invoice line which is not about in dispute quantity (08642)
 			ic_inout1_attributeExpectations.assertExpected("invoiceLine2 attributes", invoiceLine2.getInvoiceLineAttributes());
@@ -129,8 +129,8 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount2 extends TestT
 			final IInvoiceLineRW invoiceLine3 = getSingleForInOutLine(invoiceLines, iol21_ten);
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21_ten, invoiceLine3);
 
-			assertThat(invoiceLine3.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(TEN));
-			assertThat(invoiceLine3.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(TEN));
+			assertThat(invoiceLine3.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
+			assertThat(invoiceLine3.getNetLineAmt().toBigDecimal(), comparesEqualTo(TEN));
 			validateIcIlAllocationQty(ic, invoice, invoiceLine3, TEN);
 			ic_inout2_attributeExpectations.assertExpected("invoiceLine3 attributes", invoiceLine3.getInvoiceLineAttributes());
 

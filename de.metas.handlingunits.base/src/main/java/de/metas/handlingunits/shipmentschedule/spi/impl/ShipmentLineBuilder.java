@@ -443,19 +443,19 @@ import lombok.NonNull;
 		//
 		// Qty Entered and UOM
 		shipmentLine.setC_UOM_ID(qtyEntered.getUomId().getRepoId());
-		shipmentLine.setQtyEntered(qtyEntered.getAsBigDecimal());
+		shipmentLine.setQtyEntered(qtyEntered.toBigDecimal());
 
 		// Set MovementQty
 		{
 			// Don't do conversions. The movementQty which we summed up already contains exactly what we need (in the stocking-UOM!)
-			shipmentLine.setQtyCU_Calculated(movementQty.getAsBigDecimal());
-			shipmentLine.setMovementQty(movementQty.getAsBigDecimal());
+			shipmentLine.setQtyCU_Calculated(movementQty.toBigDecimal());
+			shipmentLine.setMovementQty(movementQty.toBigDecimal());
 		}
 
 		if (catchQty != null && catchQty.signum() != 0)
 		{
 			shipmentLine.setCatch_UOM_ID(catchQty.getUomId().getRepoId());
-			shipmentLine.setQtyDeliveredCatch(catchQty.getAsBigDecimal());
+			shipmentLine.setQtyDeliveredCatch(catchQty.toBigDecimal());
 		}
 
 		// Update packing materials info, if there is "one" info
@@ -484,7 +484,7 @@ import lombok.NonNull;
 					// therefore, we make an educated guess, based on the packing instruction
 					final I_C_UOM productUOM = productBL.getStockingUOM(productId);
 					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
-					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.getAsBigDecimal(), productUOM);
+					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
 					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
 				}
 			}

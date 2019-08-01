@@ -164,7 +164,7 @@ public class PickingCandidateRepository
 
 		record.setPickFrom_HU_ID(HuId.toRepoId(from.getPickFromHuId()));
 
-		record.setQtyPicked(from.getQtyPicked().getAsBigDecimal());
+		record.setQtyPicked(from.getQtyPicked().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyPicked().getUOMId());
 		record.setQtyReview(from.getQtyReview());
 

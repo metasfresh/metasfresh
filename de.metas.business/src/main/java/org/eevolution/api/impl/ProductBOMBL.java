@@ -189,7 +189,7 @@ public class ProductBOMBL implements IProductBOMBL
 		final BOMComponentType bomComponentType = BOMComponentType.ofCode(bomLine.getComponentType());
 		Check.assume(bomComponentType.isCoProduct(), "Only co-products are allowing cost distribution percent but not {}, {}", bomComponentType, bomLine);
 
-		final BigDecimal qty = getQtyExcludingScrap(bomLine).getAsBigDecimal().negate();
+		final BigDecimal qty = getQtyExcludingScrap(bomLine).toBigDecimal().negate();
 		return Percent.of(BigDecimal.ONE, qty, 4);
 	}
 

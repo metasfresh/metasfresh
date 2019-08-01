@@ -174,7 +174,7 @@ public final class HUStorageRecord implements IStorageRecord
 	@Override
 	public BigDecimal getQtyOnHand()
 	{
-		return qtyOnHand.getAsBigDecimal();
+		return qtyOnHand.toBigDecimal();
 	}
 
 	public I_M_HU getVHU()

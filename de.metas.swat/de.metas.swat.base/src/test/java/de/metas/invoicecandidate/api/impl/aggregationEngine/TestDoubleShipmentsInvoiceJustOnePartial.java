@@ -61,7 +61,7 @@ public class TestDoubleShipmentsInvoiceJustOnePartial extends AbstractDoubleRece
 
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol111);
 		assertNotNull("Missing IInvoiceLineRW for iol111=" + iol111, il1);
-		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(config_GetQtyToInvoice_Override()));
 
 		final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol121);
 		assertNull("Unexpected IInvoiceLineRW for iol121=" + iol121, il2);

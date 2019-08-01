@@ -77,7 +77,7 @@ public class PP_Cost_Collector
 		cc.setIsSubcontracting(orderActivity.isSubcontracting());
 
 		final Quantity qtyToDeliver = orderActivity.getQtyToDeliver();
-		cc.setMovementQty(qtyToDeliver.getAsBigDecimal());
+		cc.setMovementQty(qtyToDeliver.toBigDecimal());
 		// updateDurationReal(cc); // shall be automatically triggered
 	}
 

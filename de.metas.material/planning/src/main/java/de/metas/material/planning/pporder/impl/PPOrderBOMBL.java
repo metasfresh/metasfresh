@@ -121,8 +121,8 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 
 	void setQtyRequired(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyFinishedGood)
 	{
-		final Quantity qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.getAsBigDecimal());
-		orderBOMLine.setQtyRequiered(qtyRequired.getAsBigDecimal());
+		final Quantity qtyRequired = calculateQtyRequired(fromRecord(orderBOMLine), qtyFinishedGood.toBigDecimal());
+		orderBOMLine.setQtyRequiered(qtyRequired.toBigDecimal());
 	}
 
 	/**
@@ -467,7 +467,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		if (!qtyDeliveredToAdd.isZero())
 		{
 			final BigDecimal qtyDeliveredOld = orderBOMLine.getQtyDelivered();
-			final BigDecimal qtyDeliveredNew = qtyDeliveredOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+			final BigDecimal qtyDeliveredNew = qtyDeliveredOld.add(qtyDeliveredToAdd.toBigDecimal());
 			orderBOMLine.setQtyDelivered(qtyDeliveredNew);
 
 			// Set delivered date only if is a real quantity issue/receipt.
@@ -481,7 +481,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			if (!request.isUsageVariance())
 			{
 				final BigDecimal qtyDeliveredActualOld = orderBOMLine.getQtyDeliveredActual();
-				final BigDecimal qtyDeliveredActualNew = qtyDeliveredActualOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+				final BigDecimal qtyDeliveredActualNew = qtyDeliveredActualOld.add(qtyDeliveredToAdd.toBigDecimal());
 				orderBOMLine.setQtyDeliveredActual(qtyDeliveredActualNew);
 
 			}
@@ -490,7 +490,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			else
 			{
 				final BigDecimal qtyUsageVarianceOld = orderBOMLine.getQtyUsageVariance();
-				final BigDecimal qtyUsageVarianceNew = qtyUsageVarianceOld.add(qtyDeliveredToAdd.getAsBigDecimal());
+				final BigDecimal qtyUsageVarianceNew = qtyUsageVarianceOld.add(qtyDeliveredToAdd.toBigDecimal());
 				orderBOMLine.setQtyUsageVariance(qtyUsageVarianceNew);
 			}
 
@@ -501,14 +501,14 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		final Quantity qtyScrappedToAdd = request.getQtyScrappedToAdd();
 		if (qtyScrappedToAdd != null && !qtyScrappedToAdd.isZero())
 		{
-			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(qtyScrappedToAdd.getAsBigDecimal()));
+			orderBOMLine.setQtyScrap(orderBOMLine.getQtyScrap().add(qtyScrappedToAdd.toBigDecimal()));
 		}
 
 		//
 		final Quantity qtyRejectedToAdd = request.getQtyRejectedToAdd();
 		if (qtyRejectedToAdd != null && !qtyRejectedToAdd.isZero())
 		{
-			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(qtyRejectedToAdd.getAsBigDecimal()));
+			orderBOMLine.setQtyReject(orderBOMLine.getQtyReject().add(qtyRejectedToAdd.toBigDecimal()));
 		}
 
 		orderBOMsRepo.save(orderBOMLine);

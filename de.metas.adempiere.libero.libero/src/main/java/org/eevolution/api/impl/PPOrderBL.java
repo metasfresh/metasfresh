@@ -413,7 +413,7 @@ public class PPOrderBL implements IPPOrderBL
 				final WorkingTime durationRemaining = WorkingTime.builder()
 						.durationPerOneUnit(activity.getDurationPerOneUnit())
 						.unitsPerCycle(activity.getUnitsPerCycle())
-						.qty(qtyToProcess.getAsBigDecimal())
+						.qty(qtyToProcess.toBigDecimal())
 						.activityTimeUnit(activity.getDurationUnit())
 						.build();
 

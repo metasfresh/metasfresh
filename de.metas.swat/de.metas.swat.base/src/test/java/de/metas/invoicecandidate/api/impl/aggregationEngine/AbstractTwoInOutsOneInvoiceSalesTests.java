@@ -78,8 +78,8 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 
 			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(partialQty1));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(partialQty1.multiply(priceActual.toBigDecimal())));
+			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1.multiply(priceActual.toBigDecimal())));
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, partialQty1);
 
@@ -88,8 +88,8 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
 			assertThat("Invalid PriceEntered", invoiceLine2.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine2.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)));
-			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3).multiply(priceActual.toBigDecimal())) /* because price=1 */);
+			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)));
+			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3).multiply(priceActual.toBigDecimal())) /* because price=1 */);
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine2, partialQty2.add(partialQty3));
 		}

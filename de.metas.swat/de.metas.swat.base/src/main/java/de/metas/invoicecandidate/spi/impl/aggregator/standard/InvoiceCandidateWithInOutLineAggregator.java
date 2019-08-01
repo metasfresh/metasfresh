@@ -183,7 +183,7 @@ import lombok.ToString;
 
 		// Get quantity left to be invoiced
 		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand).getAsBigDecimal();
+		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand).toBigDecimal();
 
 		//
 		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons.
@@ -226,9 +226,9 @@ import lombok.ToString;
 		{
 			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS
-					.getStockQty().getAsBigDecimal()
+					.getStockQty().toBigDecimal()
 					.multiply(factor).compareTo(qtyAlreadyInvoicedPerCurrentICS
-							.getStockQty().getAsBigDecimal()
+							.getStockQty().toBigDecimal()
 							.multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
@@ -239,7 +239,7 @@ import lombok.ToString;
 			{
 				// For partially invoiced shipment/receipt line
 				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				final BigDecimal qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS).getStockQty().getAsBigDecimal();
+				final BigDecimal qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS).getStockQty().toBigDecimal();
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
@@ -269,12 +269,12 @@ import lombok.ToString;
 			if (positiveQty)
 			{
 				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.min(qtyAlreadyShippedPerCurrentICS.getStockQty().getAsBigDecimal());
+				candQtyToInvoiceUnchecked = qtyLeftToInvoice.min(qtyAlreadyShippedPerCurrentICS.getStockQty().toBigDecimal());
 			}
 			else
 			{
 				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.max(qtyAlreadyShippedPerCurrentICS.getStockQty().getAsBigDecimal());
+				candQtyToInvoiceUnchecked = qtyLeftToInvoice.max(qtyAlreadyShippedPerCurrentICS.getStockQty().toBigDecimal());
 			}
 		}
 		else

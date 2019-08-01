@@ -363,7 +363,7 @@ import de.metas.util.Services;
 		if (isConsiderQtysAlreadyMatched())
 		{
 			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			qtyMatched = matchInvDAO.retrieveQtysInvoiced(inoutLine).getStockQty().getAsBigDecimal();
+			qtyMatched = matchInvDAO.retrieveQtysInvoiced(inoutLine).getStockQty().toBigDecimal();
 		}
 		else
 		{

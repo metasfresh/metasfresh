@@ -645,7 +645,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final I_C_UOM productStockingUOM = productBL.getStockingUOM(productId);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyDeliveredInStockingUOM = uomConversionService.convertQuantityTo(qtyDelivered, conversionCtx, productStockingUOM);
-		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.getAsBigDecimal());
+		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal());
 
 		ppOrderBOMDAO.save(orderBOMLine);
 	}

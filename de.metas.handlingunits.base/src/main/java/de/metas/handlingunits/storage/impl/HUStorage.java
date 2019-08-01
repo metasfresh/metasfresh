@@ -169,7 +169,7 @@ import lombok.NonNull;
 		final IGenericHUStorage parentStorage = getParentStorage();
 		if (parentStorage != null)
 		{
-			parentStorage.addQty(productId, qtyDelta.getAsBigDecimal(), qtyDelta.getUOM());
+			parentStorage.addQty(productId, qtyDelta.toBigDecimal(), qtyDelta.getUOM());
 		}
 	}
 

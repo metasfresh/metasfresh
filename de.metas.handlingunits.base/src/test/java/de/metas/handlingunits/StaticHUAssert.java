@@ -157,7 +157,7 @@ public final class StaticHUAssert
 				storage.getQtyFree(),
 				Matchers.comparesEqualTo(new BigDecimal(qtyFreeStr)));
 		Assert.assertThat("Invalid storage qty: " + storage,
-				storage.getQty().getAsBigDecimal(),
+				storage.getQty().toBigDecimal(),
 				Matchers.comparesEqualTo(new BigDecimal(qtyStr)));
 	}
 
@@ -188,7 +188,7 @@ public final class StaticHUAssert
 				.getStorage(hu)
 				.getProductStorage(productId)
 				.getQty()
-				.getAsBigDecimal();
+				.toBigDecimal();
 
 		Assert.assertThat("Invalid storage qty for HU=" + hu + ", product=" + productId,
 				qtyActual,

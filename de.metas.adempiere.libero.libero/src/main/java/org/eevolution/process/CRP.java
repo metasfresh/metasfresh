@@ -272,7 +272,7 @@ public class CRP extends JavaProcess
 		final WorkingTime workingTime = WorkingTime.builder()
 				.durationPerOneUnit(activity.getDurationPerOneUnit())
 				.unitsPerCycle(activity.getUnitsPerCycle())
-				.qty(qty.getAsBigDecimal())
+				.qty(qty.toBigDecimal())
 				.activityTimeUnit(activity.getDurationUnit())
 				.build();
 		totalDuration = totalDuration.plus(workingTime.getDuration());

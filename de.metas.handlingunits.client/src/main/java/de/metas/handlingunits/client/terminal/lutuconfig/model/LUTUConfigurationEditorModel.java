@@ -787,11 +787,11 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 		if (qtyCUsPerTUInfinite)
 		{
 			qtyTU = BigDecimal.ONE;
-			qtyCU = qty.getAsBigDecimal();
+			qtyCU = qty.toBigDecimal();
 		}
 		else
 		{
-			qtyTU = qty.getAsBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
+			qtyTU = qty.toBigDecimal().divide(qtyCUsPerTU, 0, RoundingMode.UP);
 			if (qtyTU.signum() <= 0)
 			{
 				// shall not be possible
@@ -799,7 +799,7 @@ public class LUTUConfigurationEditorModel extends AbstractLTCUModel
 			}
 			else if (qtyTU.compareTo(BigDecimal.ONE) == 0)
 			{
-				qtyCU = qty.getAsBigDecimal().min(qtyCUsPerTU);
+				qtyCU = qty.toBigDecimal().min(qtyCUsPerTU);
 			}
 			else
 			{

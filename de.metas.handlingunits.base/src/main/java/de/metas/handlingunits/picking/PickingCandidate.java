@@ -240,7 +240,7 @@ public class PickingCandidate
 		}
 		else
 		{
-			qtyReviewToMatch = qtyPicked.getAsBigDecimal();
+			qtyReviewToMatch = qtyPicked.toBigDecimal();
 		}
 
 		//

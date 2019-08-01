@@ -84,7 +84,7 @@ public class RefundContract
 		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 		return refundConfigs
 				.stream()
-				.filter(config -> config.getMinQty().compareTo(qty.getAsBigDecimal()) <= 0)
+				.filter(config -> config.getMinQty().compareTo(qty.toBigDecimal()) <= 0)
 				.findFirst()
 				.orElse(null);
 	}

@@ -302,7 +302,7 @@ final class OrderLinePriceCalculator
 		if (request.getQtyOverride() != null)
 		{
 			final Quantity qtyOverride = request.getQtyOverride();
-			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).getAsBigDecimal();
+			qtyInPriceUOM = orderLineBL.convertToPriceUOM(qtyOverride, orderLine).toBigDecimal();
 		}
 		else
 		{

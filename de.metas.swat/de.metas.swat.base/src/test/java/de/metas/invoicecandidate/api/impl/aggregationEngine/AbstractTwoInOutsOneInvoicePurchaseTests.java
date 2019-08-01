@@ -90,8 +90,8 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
 
-			assertThat("Invalid QtysToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(fullqty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(fullqty.multiply(priceActual.toBigDecimal())));
+			assertThat("Invalid QtysToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(fullqty));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullqty.multiply(priceActual.toBigDecimal())));
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 

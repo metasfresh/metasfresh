@@ -171,7 +171,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 
 		final Quantity calculateQtyOrdered = handler.calculateQtyEntered(ic);
 
-		ic.setQtyEntered(calculateQtyOrdered.getAsBigDecimal());
+		ic.setQtyEntered(calculateQtyOrdered.toBigDecimal());
 		ic.setC_UOM_ID(calculateQtyOrdered.getUomId().getRepoId());
 
 		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
@@ -179,7 +179,7 @@ public class FlatrateTerm_Handler extends AbstractInvoiceCandidateHandler
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(calculateQtyOrdered, productId);
-		ic.setQtyOrdered(qtyInProductUOM.getAsBigDecimal());
+		ic.setQtyOrdered(qtyInProductUOM.toBigDecimal());
 	}
 
 	/**

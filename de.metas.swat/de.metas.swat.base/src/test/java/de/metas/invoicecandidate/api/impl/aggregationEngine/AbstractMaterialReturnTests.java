@@ -127,8 +127,8 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 		assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11, il1);
 
 		assertThat(il1.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE.negate()));
-		assertThat(il1.getQtysToInvoice().getStockQty().getAsBigDecimal(), comparesEqualTo(FIFTY.negate()));
-		assertThat(il1.getNetLineAmt().getAsBigDecimal(), comparesEqualTo(FIFTY));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.negate()));
+		assertThat(il1.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIFTY));
 	}
 
 	protected abstract boolean config_IsSOTrx();
