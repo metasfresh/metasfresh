@@ -79,6 +79,7 @@ public class UserAuthTokenRepository
 
 		final List<I_AD_User_AuthToken> userAuthTokenRecords = queryBL
 				.createQueryBuilder(I_AD_User_AuthToken.class)
+				// .addOnlyActiveRecordsFilter() reset 'em all; we don't want inactive tokens to retain their static values infinitely
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_Role_ID, roleId)
 				.create()
