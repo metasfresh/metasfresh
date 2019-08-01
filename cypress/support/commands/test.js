@@ -1,5 +1,6 @@
 import { getLanguageSpecific } from '../utils/utils';
 import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
+import { checkIfWindowCanExecuteActions } from './commands_utils';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
@@ -77,10 +78,10 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 });
 
 Cypress.Commands.add('openAdvancedEdit', () => {
-  describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E');
-    cy.get('.panel-modal').should('exist');
-  });
+  checkIfWindowCanExecuteActions();
+  cy.log('Open the advanced edit overlay via ALT+E shortcut');
+  cy.get('body').type('{alt}E');
+  cy.get('.panel-modal').should('exist');
 });
 
 /*
