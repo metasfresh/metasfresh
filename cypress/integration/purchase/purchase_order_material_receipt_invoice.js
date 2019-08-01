@@ -6,41 +6,49 @@ import { PackingMaterial } from '../../support/utils/packing_material';
 import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
+import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
+import { purchaseOrders } from '../../page_objects/purchase_orders';
 
-describe('Create Purchase order - material receipt - invoice', function() {
-  const date = humanReadableNow();
-  const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-  const productPMValue = `purchase_order_testPM ${date}`;
-  const packingMaterialName = `ProductPackingMaterial ${date}`;
-  const packingInstructionsName = `ProductPackingInstrutions ${date}`;
-  const productName1 = `ProductTest ${date}`;
-  const productValue1 = `purchase_order_test ${date}`;
-  const productName2 = `ProductTest ${date}`;
-  const productValue2 = `purchase_order_test ${date}`;
-  const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
-  const discountSchemaName = `DiscountSchemaTest ${date}`;
-  const priceSystemName = `PriceSystem ${date}`;
-  const priceListName = `PriceList ${date}`;
-  const priceListVersionName = `PriceListVersion ${date}`;
-  const productType = 'Item';
-  const vendorName = `Vendor ${date}`;
+// task: https://github.com/metasfresh/metasfresh-e2e/issues/161
 
-  it('Create price and product entities to be used in purchase order', function() {
+const date = humanReadableNow();
+// const date = '01T09_21_25_532';
+const productForPackingMaterial = `ProductPackingMaterial ${date}`;
+const packingInstructionsName = `ProductPackingInstrutions ${date}`;
+const productName1 = `ProductTest1 ${date}`;
+const productName2 = `ProductTest2 ${date}`;
+const productValue1 = `purchase_order_test ${date}`;
+const productValue2 = `purchase_order_test ${date}`;
+const productCategoryName = `ProductCategoryName ${date}`;
+const discountSchemaName = `DiscountSchemaTest ${date}`;
+const priceSystemName = `PriceSystem ${date}`;
+const priceListName = `PriceList ${date}`;
+const priceListVersionName = `PriceListVersion ${date}`;
+const productType = 'Item';
+const vendorName = `Vendor ${date}`;
+const generateInvoicesNotificationModalText =
+  'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
+
+// test
+let purchaseOrderRecordId;
+let grandTotal;
+
+describe('Create test data', function() {
+  it('Create price entities', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('discount/discountschema.json').then(discountSchemaJson => {
       Object.assign(new DiscountSchema(), discountSchemaJson)
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
   });
-  it('Create packing related entities to be used in purchase order', function() {
+  it('Create packing related entities', function() {
+    // eslint-disable-next-line
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productForPackingMaterial, productType, "24_Gebinde");
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
-        .setName(packingMaterialName)
+        .setName(productForPackingMaterial)
         .setProduct(productForPackingMaterial)
         .apply();
     });
@@ -53,30 +61,30 @@ describe('Create Purchase order - material receipt - invoice', function() {
       Object.assign(new PackingInstructionsVersion(), pivJson)
         .setName(packingInstructionsName)
         .setPackingInstructions(packingInstructionsName)
-        .setPackingMaterial(packingMaterialName)
+        .setPackingMaterial(productForPackingMaterial)
         .apply();
     });
   });
-  it('Create product,category and vendor entities to be used in purchase order', function() {
+  it('Create product, category and vendor entities', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
+        .setValue(productCategoryName)
         .apply();
     });
 
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName1,
       productValue1,
       productType,
       packingInstructionsName
     );
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName2,
       productValue2,
@@ -93,136 +101,92 @@ describe('Create Purchase order - material receipt - invoice', function() {
 
     cy.readAllNotifications();
   });
-  it('Create a purchase order', function() {
-    cy.visitWindow('181', 'NEW');
-    cy.get('#lookup_C_BPartner_ID input')
-      .type(vendorName)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', vendorName).click();
+});
 
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName, false, null, true);
-    cy.writeIntoStringField('POReference', 'test', false, null, true);
-    const addNewText = Cypress.messages.window.batchEntry.caption;
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+describe('Create a purchase order and Material Receipts', function() {
+  it('Create a purchase order and visit Material Receipt Candidates', function() {
+    new PurchaseOrder()
+      .setBPartner(vendorName)
+      .setPriceSystem(priceSystemName)
+      .setPoReference('test')
+      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(1))
+      .addLine(new PurchaseOrderLine().setProduct(productName2).setQuantity(1))
+      .apply();
+    cy.completeDocument();
+  });
 
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .clear()
-      .type('1{enter}');
-    cy.waitUntilProcessIsFinished();
-
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName2, productName2, false, false, null, true);
-
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .clear()
-      .type('1{enter}');
-    cy.waitUntilProcessIsFinished();
-    /**Complete purchase order */
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
+  it('Save values needed for the next steps', function() {
+    cy.getCurrentWindowRecordId().then(recordId => {
+      purchaseOrderRecordId = recordId;
     });
-    cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    /** Go to Material Receipt Candidates*/
-    cy.get('.reference_M_ReceiptSchedule').click();
-    /**Select the first product */
-    cy.get('tbody tr')
-      .eq('0')
-      .click();
-    cy.waitUntilProcessIsFinished();
-    cy.get('.quick-actions-tag.pointer').click({ force: true });
 
-    cy.waitUntilProcessIsFinished();
-    /**Create material receipt */
-    cy.contains('Create material receipt').click();
-    cy.waitUntilProcessIsFinished();
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('GrandTotal').then(gt => {
+      grandTotal = parseFloat(gt);
+    });
     cy.pressDoneButton();
-    /**Select the second product */
-    cy.get('tbody tr')
-      .eq('1')
-      .click();
-    cy.waitUntilProcessIsFinished();
-    cy.get('.quick-actions-tag.pointer').click({ force: true });
+  });
 
-    cy.waitUntilProcessIsFinished();
-    /**Create material receipt */
-    cy.contains('Create material receipt').click();
-    cy.waitUntilProcessIsFinished();
+  it('Visit referenced Material Receipt Candidates', function() {
+    cy.openReferencedDocuments('M_ReceiptSchedule');
+    cy.expectNumberOfRows(3);
+  });
+
+  it('Create Material Receipt 1', function() {
+    cy.readAllNotifications();
+    cy.selectNthRow(0).click();
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
     cy.pressDoneButton();
-    /**Navigate back in the purchase order */
-    cy.go('back');
-    /**Go to 'Material receipt' */
-    cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    cy.contains('Material Receipt (#').click();
-    /**Navigate back in the purchase order */
-    cy.go('back');
-    cy.waitUntilProcessIsFinished();
-    let grandTotal = null;
-    cy.openAdvancedEdit()
-      .get('.form-field-GrandTotal input')
-      .then(el => {
-        grandTotal = el.val();
-      });
-    /**Go to 'Invoice disposition' */
+  });
+
+  it('Create Material Receipt 2', function() {
+    cy.readAllNotifications();
+    cy.selectNthRow(1).click();
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
     cy.pressDoneButton();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    cy.get('.reference_C_Invoice_Candidate').click();
-    cy.waitUntilProcessIsFinished();
-    cy.get('.pagination-link.pointer').click({ force: true });
-    cy.contains('generate invoices').click();
-    cy.waitUntilProcessIsFinished();
+  });
+
+  it('Go to the referenced Material Receipt and expect 2 rows/ecords', function() {
+    cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
+    cy.openReferencedDocuments('184');
+
+    cy.expectNumberOfRows(2);
+  });
+
+  it('Go to the referenced Invoice Disposition (Billing Candidates) and expect 4 rows/records', function() {
+    cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
+    cy.openReferencedDocuments('C_Invoice_Candidate');
+
+    cy.expectNumberOfRows(4); // i am not sure how many rows to expect. In video there are 6, but in manual testing i have found only 4!
+  });
+
+  it('Select all candidates and run action "Generate Invoices"', function() {
+    cy.get('body').type('{alt}a'); // select all on this page
+    cy.readAllNotifications();
+    cy.executeHeaderActionWithDialog('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+    // no parameters are changed for this process
     cy.pressStartButton();
-    cy.waitUntilProcessIsFinished();
-    /**Open notifications */
-    cy.get('.header-item-badge.icon-lg i').click();
-    cy.get('.inbox-item-unread .inbox-item-title')
-      .filter(':contains("' + vendorName + '")')
+
+    cy.getNotificationModal(generateInvoicesNotificationModalText);
+    cy.waitUntilProcessIsFinished(); // currently needed to wait for the bell notification
+    cy.getDOMNotificationsNumber().should('equal', 1);
+  });
+
+  it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {
+    cy.get('.header-item-badge.icon-lg i').click(); // notification icon
+    cy.get('.inbox-item-title') // search for text
+      .contains(vendorName)
       .first()
       .click();
-    cy.waitUntilProcessIsFinished();
+
+    // hope this is enough for the whole window to load
+    cy.waitForSaveIndicator(false);
+
     cy.openAdvancedEdit();
-    /**because should('have.value',grandTotal) evaluates using a null grand total */
-    cy.get('.form-field-GrandTotal input').should(el => {
-      expect(el).to.have.value(grandTotal);
+    cy.getStringFieldValue('GrandTotal').then(el => {
+      expect(parseFloat(el)).to.equals(grandTotal);
     });
   });
 });
