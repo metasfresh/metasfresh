@@ -1,5 +1,7 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
+import static de.metas.util.Check.fail;
+
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -57,7 +59,8 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		invoiceLine.setC_Invoice(invoice);
 
 		invoiceBL.setProductAndUOM(invoiceLine, invoiceLineQuickInput.getM_Product_ID());
-		invoiceBL.setQtys(invoiceLine, invoiceLineQuickInput.getQty());
+		fail("NOT YET IMPLMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		//invoiceBL.setQtys(invoiceLine, invoiceLineQuickInput.getQty());
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		// invoiceBL.setLineNetAmt(invoiceLine); // not needed; will be called on save
