@@ -1,10 +1,6 @@
-<<<<<<< HEAD:cypress/integration_defunct/misc/bpartner_bpartner_relation_setup_spec.js
-import { BPartner } from '../../support/utils/bpartner_ui';
-=======
-import { BPartner } from '../../support/utils/bpartner';
 import { PriceList } from '../../support/utils/pricelist';
 import { DiscountSchema } from '../../support/utils/discountschema';
->>>>>>> 0df9d44... - fixing bpartner relation test #106:cypress/integration/misc/bpartner_bpartner_relation_spec.js
+import { BPartner } from '../../support/utils/bpartner_ui';
 
 describe('BPartner relations', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
@@ -25,20 +21,36 @@ describe('BPartner relations', function() {
       Object.assign(new PriceList(priceListName), pricelistJson).apply();
     });
 
+    // cy.fixture('sales/simple_customer.json').then(customerJson => {
+    //   Object.assign(new BPartner(), customerJson)
+    //     // .setCustomer(true)
+        // .setCustomerDiscountSchema(discountSchemaName)
+        // .setCustomerPricingSystem(priceListName)
+        // .setName(customer1Name)
+        // .clearContacts()
+        // .apply();
+    // });
+
+    // cy.fixture('sales/simple_customer.json').then(customerJson => {
+    //   Object.assign(new BPartner(), customerJson)
+    //     .setName(customer2Name)
+    //     // .setCustomer(true)
+    //     .setCustomerDiscountSchema(discountSchemaName)
+    //     .setCustomerPricingSystem(priceListName)
+    //     .clearContacts()
+    //     .apply();
+    // });
+
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        // .setCustomer(true)
+      new BPartner({ ...customerJson, name: customer1Name })
         .setCustomerDiscountSchema(discountSchemaName)
         .setCustomerPricingSystem(priceListName)
-        .setName(customer1Name)
         .clearContacts()
         .apply();
     });
 
     cy.fixture('sales/simple_customer.json').then(customerJson => {
-      Object.assign(new BPartner(), customerJson)
-        .setName(customer2Name)
-        // .setCustomer(true)
+      new BPartner({ ...customerJson, name: customer2Name })
         .setCustomerDiscountSchema(discountSchemaName)
         .setCustomerPricingSystem(priceListName)
         .clearContacts()
