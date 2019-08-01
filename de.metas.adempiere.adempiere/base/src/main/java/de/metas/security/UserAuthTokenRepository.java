@@ -73,8 +73,6 @@ public class UserAuthTokenRepository
 		fromRecord(userAuthTokenPO); // make sure it's valid
 	}
 
-
-
 	public void resetAuthTokensAndSave(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
