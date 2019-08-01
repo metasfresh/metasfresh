@@ -1,7 +1,6 @@
 export class TourVersion {
-  constructor(name) {
-    cy.log(`TourVersionBuilder - set name = ${name}`);
-    this.name = name;
+  constructor() {
+    this.tourVersionLines = [];
   }
 
   setName(name) {
@@ -15,21 +14,18 @@ export class TourVersion {
     this.tour = tour;
     return this;
   }
+
   setValidFrom(validFrom) {
     cy.log(`TourVersion - set validFrom = ${validFrom}`);
     this.validFrom = validFrom;
     return this;
   }
-  setWeekly(isWeekely) {
-    cy.log(`TourVersion - set isWeekely = ${isWeekely}`);
-    this.isWeekely = isWeekely;
+
+  addLine(tourVersionLine) {
+    this.tourVersionLines.push(tourVersionLine);
     return this;
   }
-  setCustomer(customer) {
-    cy.log(`TourVersion - set customer in tour version line = ${customer}`);
-    this.customer = customer;
-    return this;
-  }
+
   apply() {
     cy.log(`TourVersion - apply - START (name=${this.name})`);
     applyTourVersion(this);
@@ -37,30 +33,59 @@ export class TourVersion {
     return this;
   }
 }
+
 function applyTourVersion(tourVersion) {
   describe(`Create new TourVersion ${tourVersion.name}`, function() {
     cy.visitWindow(540333, 'NEW');
+
     cy.writeIntoStringField('Name', tourVersion.name);
-
-    cy.selectInListField('M_Tour_ID', tourVersion.tour, false, null, true);
+    cy.selectInListField('M_Tour_ID', tourVersion.tour);
     cy.writeIntoStringField('ValidFrom', tourVersion.validFrom, false, null, true);
-    cy.clickOnCheckBox('IsWeekly', true, false, null, true);
 
-    cy.clickOnCheckBox('OnMonday', true, false, null, true);
+    cy.setCheckBoxValue('IsWeekly', true);
+    cy.setCheckBoxValue('OnMonday', true);
     cy.writeIntoStringField('PreparationTime_1', '5:00 P', false, null, true);
-    cy.clickOnCheckBox('OnTuesday', true, false, null, true);
+    cy.setCheckBoxValue('OnTuesday', true);
     cy.writeIntoStringField('PreparationTime_2', '5:00 P', false, null, true);
-    cy.clickOnCheckBox('OnWednesday', true, false, null, true);
+    cy.setCheckBoxValue('OnWednesday', true);
     cy.writeIntoStringField('PreparationTime_3', '5:00 P', false, null, true);
-    cy.clickOnCheckBox('OnThursday', true, false, null, true);
+    cy.setCheckBoxValue('OnThursday', true);
     cy.writeIntoStringField('PreparationTime_4', '5:00 P', false, null, true);
-    cy.clickOnCheckBox('OnFriday', true, false, null, true);
+    cy.setCheckBoxValue('OnFriday', true);
     cy.writeIntoStringField('PreparationTime_5', '5:00 P', false, null, true);
-    /**Add a new version line with a customer and a location */
-    cy.selectTab('M_TourVersionLine');
-    cy.pressAddNewButton();
-    cy.writeIntoLookupListField('C_BPartner_ID', tourVersion.customer, tourVersion.customer, false, true, null, true);
-    cy.selectInListField('C_BPartner_Location_ID', 'Address1', true, null, true, false);
-    cy.pressDoneButton();
+
+    tourVersion.tourVersionLines.forEach(line => {
+      applyLine(line);
+    });
   });
+}
+
+function applyLine(tourVersionLine) {
+  cy.selectTab('M_TourVersionLine');
+  cy.pressAddNewButton();
+  cy.writeIntoLookupListField('C_BPartner_ID', tourVersionLine.bPartner, tourVersionLine.bPartner, false, true);
+  // eslint-disable-next-line
+  cy.writeIntoLookupListField('C_BPartner_Location_ID', tourVersionLine.bPartnerAddress, tourVersionLine.bPartnerAddress, false, true);
+  cy.writeIntoStringField('BufferHours', tourVersionLine.buffer, true);
+  cy.pressDoneButton();
+}
+
+export class TourVersionLine {
+  setBpartner(bPartner) {
+    cy.log(`TourVersionLine - set bPartner = ${bPartner}`);
+    this.bPartner = bPartner;
+    return this;
+  }
+
+  setBuffer(buffer) {
+    cy.log(`TourVersionLine - set buffer = ${buffer}`);
+    this.buffer = buffer;
+    return this;
+  }
+
+  setBPartnerAddress(bPartnerAddress) {
+    cy.log(`TourVersionLine - set bPartnerAddress = ${bPartnerAddress}`);
+    this.bPartnerAddress = bPartnerAddress;
+    return this;
+  }
 }
