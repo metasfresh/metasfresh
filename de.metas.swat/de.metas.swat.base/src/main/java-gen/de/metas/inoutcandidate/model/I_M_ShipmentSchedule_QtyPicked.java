@@ -63,6 +63,31 @@ public interface I_M_ShipmentSchedule_QtyPicked
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch Einheit.
+	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCatch_UOM_ID();
+
+    /** Column definition for Catch_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_C_UOM> COLUMN_Catch_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, org.compiere.model.I_C_UOM>(I_M_ShipmentSchedule_QtyPicked.class, "Catch_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name Catch_UOM_ID */
+    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -245,7 +270,32 @@ public interface I_M_ShipmentSchedule_QtyPicked
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Qty Picked.
+	 * Set Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyDeliveredCatch (java.math.BigDecimal QtyDeliveredCatch);
+
+	/**
+	 * Get Geliefert Catch.
+	 * Tatsächlich gelieferte Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyDeliveredCatch();
+
+    /** Column definition for QtyDeliveredCatch */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object> COLUMN_QtyDeliveredCatch = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule_QtyPicked, Object>(I_M_ShipmentSchedule_QtyPicked.class, "QtyDeliveredCatch", null);
+    /** Column name QtyDeliveredCatch */
+    public static final String COLUMNNAME_QtyDeliveredCatch = "QtyDeliveredCatch";
+
+	/**
+	 * Set Menge (Lagereinheit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -254,7 +304,7 @@ public interface I_M_ShipmentSchedule_QtyPicked
 	public void setQtyPicked (java.math.BigDecimal QtyPicked);
 
 	/**
-	 * Get Qty Picked.
+	 * Get Menge (Lagereinheit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

@@ -35,6 +35,7 @@ import org.compiere.model.I_C_UOM;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
@@ -112,10 +113,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	boolean isChangedByUpdateProcess(I_M_ShipmentSchedule sched);
 
 	/**
-	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc
-	 *
-	 * @param sched
-	 * @return
+	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)
 	 */
 	I_C_UOM getUomOfProduct(I_M_ShipmentSchedule sched);
 
@@ -151,8 +149,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Close the given Shipment Schedule.
 	 *
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
-	 *
-	 * @param schedule
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 
@@ -172,5 +168,9 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
 
-	Optional<Quantity> getCatchQty(I_M_ShipmentSchedule shipmentScheduleRecord);
+	Optional<Quantity> getCatchQtyOverride(I_M_ShipmentSchedule shipmentScheduleRecord);
+
+	void resetCatchQtyOverride(I_M_ShipmentSchedule shipmentSchedule);
+
+	void updateCatchUoms(ProductId productId, long delayMs);
 }

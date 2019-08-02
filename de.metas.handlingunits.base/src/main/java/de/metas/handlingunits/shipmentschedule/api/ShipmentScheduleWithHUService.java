@@ -57,6 +57,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageQuery;
 import de.metas.util.Check;
@@ -203,6 +205,12 @@ public class ShipmentScheduleWithHUService
 		return pickAvailableHUsOntheFly;
 	}
 
+	/**
+	 * If there are any existing HUs that match the given {@code scheduleRecord}, then pick them now although they were not explicitly picked by users.
+	 * Goal: help keeping the metasfresh stock quantity near the real quantity and avoid some of the inventory effort.
+	 * <p>
+	 * Note that we don't use the picked HUs' catch weights since we don't know which HUs were actually picked in the real world.
+	 */
 	private ImmutableList<ShipmentScheduleWithHU> pickHUsOnTheFly(
 			@NonNull final I_M_ShipmentSchedule scheduleRecord,
 			@NonNull final Quantity qtyToDeliver,
@@ -265,9 +273,12 @@ public class ShipmentScheduleWithHUService
 				final Quantity qtyOfNewHU = extractQtyOfHU(newHURecord, productId, uomRecord);
 				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
+				// We don't extract the HU's catch weight; see method's javadoc comment.
+				final StockQtyAndUOMQty stockQty = StockQtyAndUOMQtys.createConvertToStockUom(productId, qtyOfNewHU);
+
 				result.add(huShipmentScheduleBL.addQtyPicked(
 						scheduleRecord,
-						qtyOfNewHU,
+						stockQty,
 						newHURecord,
 						huContext));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);

@@ -9,6 +9,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -735,7 +736,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 */
 	private BigDecimal getQtyOrdered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_UOM uomRecord = Services.get(IProductBL.class).getStockingUOM(ic.getM_Product_ID());
+		final I_C_UOM uomRecord = Services.get(IProductBL.class).getStockUOM(ic.getM_Product_ID());
 
 		final Quantity qtyOrdered = Quantity.of(ic.getQtyOrdered(), uomRecord);
 		final Quantity qtyDelivered = Quantity.of(getQtyDelivered_Effective(ic), uomRecord);
@@ -2332,5 +2333,36 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public OptionalBoolean extractProcessedOverride(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		return OptionalBoolean.ofNullableString(candidate.getProcessed_Override());
+	}
+
+	@Override
+	public void updateICIOLAssociationFromIOL(
+			@NonNull final I_C_InvoiceCandidate_InOutLine iciol,
+			@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	{
+		iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
+		iciol.setM_InOutLine(inOutLine);
+		// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
+
+		if (inOutLine.getCatch_UOM_ID() > 0)
+		{
+			iciol.setC_UOM_ID(inOutLine.getCatch_UOM_ID());
+			iciol.setQtyDeliveredInUOM_Catch(inOutLine.getQtyDeliveredCatch());
+
+			// make sure that both quantities have the same UOM
+			final BigDecimal nominalQty = Services.get(IUOMConversionBL.class).convertQty(
+					UOMConversionContext.of(ProductIds.ofRecord(inOutLine)),
+					inOutLine.getQtyEntered(),
+					UomId.ofRepoId(inOutLine.getC_UOM_ID()),
+					UomId.ofRepoId(inOutLine.getCatch_UOM_ID()));
+
+			iciol.setQtyDeliveredInUOM_Nominal(nominalQty);
+		}
+		else
+		{
+			iciol.setC_UOM_ID(inOutLine.getC_UOM_ID());
+			iciol.setQtyDeliveredInUOM_Catch(inOutLine.getQtyEntered());
+		}
+		saveRecord(iciol);
 	}
 }

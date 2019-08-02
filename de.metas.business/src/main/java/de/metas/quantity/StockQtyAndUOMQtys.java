@@ -1,13 +1,14 @@
 package de.metas.quantity;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_UOM;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty.StockQtyAndUOMQtyBuilder;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -42,41 +43,64 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class StockQtyAndUOMQtys
 {
-	public static StockQtyAndUOMQty createZero(
-			@NonNull final ProductId productId,
-			@NonNull final UomId uomId)
+	/**
+	 * @param uomId if not {@code null} then the result also has a zero {@code uomQty}.
+	 */
+	public static StockQtyAndUOMQty createZero(@NonNull final ProductId productId, @Nullable final UomId uomId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uomRecord = uomDao.getById(uomId);
 		final I_C_UOM stockUOMRecord = productBL.getStockingUOM(productId);
 
-		return StockQtyAndUOMQty.builder()
+		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
-				.stockQty(Quantity.zero(stockUOMRecord))
-				.uomQty(Quantity.zero(uomRecord))
-				.build();
+				.stockQty(Quantity.zero(stockUOMRecord));
+
+		if (uomId != null)
+		{
+			final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+			final I_C_UOM uomRecord = uomDao.getById(uomId);
+			result.uomQty(Quantity.zero(uomRecord));
+		}
+
+		return result.build();
 	}
 
-	public static StockQtyAndUOMQty create(
+	/**
+	 * @param uomId may be {@code null} in which case the result will contain no {@code uomQty}.
+	 * @param qtyInUOM may be {@code null} only if {@code uomId} is {@code null}.
+	 */
+	public StockQtyAndUOMQty create(
 			@NonNull final ProductId productId,
 			@NonNull final BigDecimal qtyInStockUOM,
-			@NonNull final UomId uomId,
-			@NonNull final BigDecimal qtyInUOM)
+			@Nullable final UomId uomId,
+			@Nullable final BigDecimal qtyInUOM)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
+		final Quantity stockQty = createStockQty(productId, qtyInStockUOM);
 
-		final I_C_UOM stockUOMRecord = productBL.getStockingUOM(productId);
-		final I_C_UOM uomRecord = loadOutOfTrx(uomId, I_C_UOM.class);
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(uomId);
 
-		final Quantity stockQty = Quantity.of(qtyInStockUOM, stockUOMRecord);
-		final Quantity uomQty = Quantity.of(qtyInUOM, uomRecord);
+		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(stockQty);
+
+		if (uomId != null)
+		{
+			Check.assumeNotNull(qtyInUOM, "If parameter 'uomId' is not null, then qtyInUOM needs to be not-null too; uomId={}", uomId);
+
+			final Quantity uomQty = Quantity.of(qtyInUOM, uomRecord);
+			result.uomQty(uomQty);
+		}
+		return result.build();
+	}
+
+	public StockQtyAndUOMQty create(@NonNull final ProductId productId, @NonNull final BigDecimal qtyInStockUOM)
+	{
+		final Quantity stockQty = createStockQty(productId, qtyInStockUOM);
 
 		return StockQtyAndUOMQty.builder()
 				.productId(productId)
 				.stockQty(stockQty)
-				.uomQty(uomQty)
 				.build();
 	}
 
@@ -88,12 +112,9 @@ public class StockQtyAndUOMQtys
 			@NonNull final BigDecimal qtyInStockUOM,
 			@NonNull final UomId otherUomId)
 	{
+		final Quantity stockQty = createStockQty(productId, qtyInStockUOM);
+
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IProductBL productBL = Services.get(IProductBL.class);
-
-		final I_C_UOM stockUOMRecord = productBL.getStockingUOM(productId);
-
-		final Quantity stockQty = Quantity.of(qtyInStockUOM, stockUOMRecord);
 		final Quantity uomQty = uomConversionBL.convertQuantityTo(stockQty, UOMConversionContext.of(productId), otherUomId);
 
 		return StockQtyAndUOMQty.builder()
@@ -103,7 +124,82 @@ public class StockQtyAndUOMQtys
 				.build();
 	}
 
-	public static StockQtyAndUOMQty add(
+	public StockQtyAndUOMQty createConvertToStockUom(@NonNull final ProductId productId, @NonNull final Quantity stockQtyInAnyUom)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final UomId stockUomId = productBL.getStockingUOMId(productId);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity stockQty = uomConversionBL.convertQuantityTo(stockQtyInAnyUom, UOMConversionContext.of(productId), stockUomId);
+
+		return StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(stockQty)
+				.build();
+	}
+
+	public StockQtyAndUOMQty createConvertToStockUom(
+			@NonNull final ProductId productId,
+			@NonNull final Quantity stockQtyInAnyUom,
+			@Nullable final Quantity uomQty)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final UomId stockUomId = productBL.getStockingUOMId(productId);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity stockQty = uomConversionBL.convertQuantityTo(stockQtyInAnyUom, UOMConversionContext.of(productId), stockUomId);
+
+		return StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(stockQty)
+				.uomQty(uomQty)
+				.build();
+	}
+
+	private Quantity createStockQty(@NonNull final ProductId productId, @NonNull final BigDecimal qtyInStockUOM)
+	{
+		return createStockQty(productId, qtyInStockUOM, null/* nonStockUomId */);
+	}
+
+	/**
+	 * @param anyUomId may be {@code null} if given {@code qtyInUOM} is in stock UOM
+	 */
+	public StockQtyAndUOMQty createConvertToStockUom(
+			@NonNull final ProductId productId,
+			@NonNull final BigDecimal stockQtyInAnyUOM,
+			@Nullable final UomId anyUomId)
+	{
+		return StockQtyAndUOMQty
+				.builder()
+				.productId(productId)
+				.stockQty(createStockQty(productId, stockQtyInAnyUOM, anyUomId))
+				.build();
+	}
+
+	private Quantity createStockQty(
+			@NonNull final ProductId productId,
+			@NonNull final BigDecimal qtyInUOM,
+			@Nullable final UomId nonStockUomId)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		if (nonStockUomId == null)
+		{
+			final I_C_UOM stockUOMRecord = productBL.getStockingUOM(productId);
+			final Quantity stockQty = Quantity.of(qtyInUOM, stockUOMRecord);
+			return stockQty;
+		}
+
+		final UomId stockUomId = productBL.getStockingUOMId(productId);
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM nonStockUomRecord = uomDao.getById(nonStockUomId);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity stockQty = uomConversionBL.convertQuantityTo(Quantity.of(qtyInUOM, nonStockUomRecord), UOMConversionContext.of(productId), stockUomId);
+		return stockQty;
+	}
+
+	public StockQtyAndUOMQty add(
 			@NonNull final StockQtyAndUOMQty firstAugent,
 			@NonNull final StockQtyAndUOMQty secondAugent)
 	{
@@ -129,7 +225,33 @@ public class StockQtyAndUOMQtys
 				.build();
 	}
 
-	private static ProductId extractCommonProductId(
+	public StockQtyAndUOMQty subtract(
+			@NonNull final StockQtyAndUOMQty minuend,
+			@NonNull final StockQtyAndUOMQty subtrahend)
+	{
+		final ProductId productId = extractCommonProductId(minuend, subtrahend);
+
+		final Quantity stockQty1 = minuend.getStockQty();
+		final Quantity stockQty2 = subtrahend.getStockQty();
+
+		final Quantity stockQtySum = Quantitys.subtract(
+				UOMConversionContext.of(minuend.getProductId()),
+				stockQty1,
+				stockQty2);
+
+		final Quantity uomQtySum = Quantitys.subtract(
+				UOMConversionContext.of(productId),
+				minuend.getUOMQty().orElse(stockQty1),
+				subtrahend.getUOMQty().orElse(stockQty2));
+
+		return StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(stockQtySum)
+				.uomQty(uomQtySum)
+				.build();
+	}
+
+	private ProductId extractCommonProductId(
 			@NonNull final StockQtyAndUOMQty firstAugent,
 			@NonNull final StockQtyAndUOMQty secondAugent)
 	{
@@ -141,29 +263,4 @@ public class StockQtyAndUOMQtys
 		return firstAugent.getProductId();
 	}
 
-	public static StockQtyAndUOMQty subtract(
-			@NonNull final StockQtyAndUOMQty firstAugent,
-			@NonNull final StockQtyAndUOMQty subtrahent)
-	{
-		final ProductId productId = extractCommonProductId(firstAugent, subtrahent);
-
-		final Quantity stockQty1 = firstAugent.getStockQty();
-		final Quantity stockQty2 = subtrahent.getStockQty();
-
-		final Quantity stockQtySum = Quantitys.subtract(
-				UOMConversionContext.of(firstAugent.getProductId()),
-				stockQty1,
-				stockQty2);
-
-		final Quantity uomQtySum = Quantitys.subtract(
-				UOMConversionContext.of(productId),
-				firstAugent.getUOMQty().orElse(stockQty1),
-				subtrahent.getUOMQty().orElse(stockQty2));
-
-		return StockQtyAndUOMQty.builder()
-				.productId(productId)
-				.stockQty(stockQtySum)
-				.uomQty(uomQtySum)
-				.build();
-	}
 }

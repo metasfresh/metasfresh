@@ -360,7 +360,7 @@ public class PPOrderMakeToKitHelper
 		final I_PP_Order_BOMLine orderBOMLine = InterfaceWrapperHelper.create(ctx, PP_Order_BOMLine_ID, I_PP_Order_BOMLine.class, trxName);
 
 		final int productId = orderBOMLine.getM_Product_ID();
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(productId);
 
 		BigDecimal toIssue = qty.add(qtyScrap);
 		for (final I_M_Storage storage : storages)

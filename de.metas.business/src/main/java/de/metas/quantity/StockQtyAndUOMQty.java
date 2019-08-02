@@ -36,7 +36,7 @@ public class StockQtyAndUOMQty
 	{
 		this.productId = productId;
 		this.stockQty = stockQty;
-		this.uomQty = Optional.ofNullable(stockQty);
+		this.uomQty = Optional.ofNullable(uomQty);
 	}
 
 	public StockQtyAndUOMQty add(@NonNull final StockQtyAndUOMQty other)

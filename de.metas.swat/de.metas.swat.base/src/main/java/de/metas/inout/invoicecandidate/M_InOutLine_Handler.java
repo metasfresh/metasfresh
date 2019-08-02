@@ -5,7 +5,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -186,11 +186,11 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final ImmutableListMultimap<PaymentTermId, I_M_InOutLine> paymentTermId2referencingLines = //
 				referencingLines.stream()
-				.map(referencingLine -> GuavaCollectors.entry(
-						extractPaymentTermIdOrNull(referencingLine),
-						referencingLine))
-				.filter(ImmutableMapEntry::isKeyNotNull)
-				.collect(GuavaCollectors.toImmutableListMultimap());
+						.map(referencingLine -> GuavaCollectors.entry(
+								extractPaymentTermIdOrNull(referencingLine),
+								referencingLine))
+						.filter(ImmutableMapEntry::isKeyNotNull)
+						.collect(GuavaCollectors.toImmutableListMultimap());
 
 		BigDecimal qtyLeftToAllocate = inOutLine.getMovementQty();
 
@@ -383,7 +383,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
-		save(ic);
+		saveRecord(ic);
 
 		// set Quality Issue Percentage Override
 
@@ -395,19 +395,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
 		inOutLine.setIsInvoiceCandidate(true);
-		save(inOutLine);
+		saveRecord(inOutLine);
 
 		//
 		// Create IC-IOL association (07969)
 		// Even if our IC is directly linked to M_InOutLine (by AD_Table_ID/Record_ID),
 		// we need this association in order to let our engine know this and create the M_MatchInv records.
-		{
-			final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
-			iciol.setC_Invoice_Candidate(ic);
-			iciol.setM_InOutLine(inOutLine);
-			// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
-			save(iciol);
-		}
+		final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
+		iciol.setC_Invoice_Candidate(ic);
+		Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 
 		return ic;
 	}
@@ -477,7 +473,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		// we won't create another IC, so the method we call needs to allocate it all to the given IC
 		final boolean callerCanCreateAdditionalICs = false;
-		setOrderedData(ic, null/*forceQtyOrdered*/, callerCanCreateAdditionalICs);
+		setOrderedData(ic, null/* forceQtyOrdered */, callerCanCreateAdditionalICs);
 	}
 
 	private void setOrderedData(
@@ -505,7 +501,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
-		if(docStatus.isCompletedOrClosed())
+		if (docStatus.isCompletedOrClosed())
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
@@ -797,7 +793,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			taxIncluded = pricingResult.isTaxIncluded();
 		}
-
 
 		return PriceAndTax.builder()
 				.pricingSystemId(pricingResult.getPricingSystemId())

@@ -270,7 +270,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
 					shipmentSchedule.getQtyOrdered(),
-					Services.get(IProductBL.class).getStockingUOM(shipmentSchedule.getM_Product_ID()),
+					Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID()),
 					lutuConfiguration);
 
 			builder.setQtyCUsTotal(qtyCUsTotal.getQty());

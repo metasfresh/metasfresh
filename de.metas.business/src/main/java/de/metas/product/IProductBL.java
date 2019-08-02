@@ -110,12 +110,12 @@ public interface IProductBL extends ISingletonService
 	I_C_UOM getStockingUOM(I_M_Product product);
 
 	/** @return UOM used in material storage; never return null; */
-	I_C_UOM getStockingUOM(int productId);
+	I_C_UOM getStockUOM(int productId);
 
 	/** @return UOM used in material storage; never return null; */
 	default I_C_UOM getStockingUOM(@NonNull final ProductId productId)
 	{
-		return getStockingUOM(productId.getRepoId());
+		return getStockUOM(productId.getRepoId());
 	}
 
 	default UomId getStockingUOMId(@NonNull final ProductId productId)
@@ -125,7 +125,7 @@ public interface IProductBL extends ISingletonService
 
 	default UomId getStockingUOMId(final int productId)
 	{
-		return UomId.ofRepoId(getStockingUOM(productId).getC_UOM_ID());
+		return UomId.ofRepoId(getStockUOM(productId).getC_UOM_ID());
 	}
 
 	Optional<UomId> getCatchUOMId(ProductId productId);

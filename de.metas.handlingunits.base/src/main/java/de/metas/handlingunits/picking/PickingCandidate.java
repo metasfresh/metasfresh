@@ -68,6 +68,7 @@ public class PickingCandidate
 	@Default
 	private PickingCandidateApprovalStatus approvalStatus = PickingCandidateApprovalStatus.TO_BE_APPROVED;
 
+	@Nullable
 	private final HuId pickFromHuId;
 
 	@NonNull

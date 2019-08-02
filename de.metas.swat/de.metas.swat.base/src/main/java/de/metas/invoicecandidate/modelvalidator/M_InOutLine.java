@@ -102,14 +102,11 @@ public class M_InOutLine
 		for (final I_C_Invoice_Candidate ic : invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId))
 		{
 			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, inOutLine);
-			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
-			iciol.setM_InOutLine(inOutLine);
 			iciol.setC_Invoice_Candidate(ic);
+			invoiceCandBL.updateICIOLAssociationFromIOL(iciol, inOutLine);
 
 			// TODO: QtyInvoiced shall be set! It's not so critical, atm is used on on Sales side (check call hierarchy of getQtyInvoiced())
 			// NOTE: when we will set it, because there can be more then one IC for one inoutLine we need to calculate this Qtys proportionally.
-
-			InterfaceWrapperHelper.save(iciol);
 
 			//
 			// Calculate qualityDiscountPercent taken from inoutLines (06502)

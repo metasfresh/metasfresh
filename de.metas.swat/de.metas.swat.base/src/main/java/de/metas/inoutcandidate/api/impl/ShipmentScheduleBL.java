@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -33,7 +34,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -64,6 +70,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -89,6 +96,7 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
 import de.metas.inoutcandidate.spi.impl.CompositeCandidateProcessor;
 import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
+import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
@@ -98,14 +106,15 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -202,6 +211,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
 			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+
+			updateCatchUomId(sched);
 
 			updateWarehouseId(sched);
 
@@ -498,19 +509,11 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			final BigDecimal qtyPickList;
 			{
 				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-				final StockQtyAndUOMQty stockingAndCatchQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-
-				qtyPickList = stockingAndCatchQty.getStockQty().toBigDecimal();
+				final Quantity stockingQty = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+				qtyPickList = stockingQty.toBigDecimal();
 
 				// Update shipment schedule's fields
 				sched.setQtyPickList(qtyPickList);
-
-				final Optional<Quantity> catchQty = stockingAndCatchQty.getUOMQty();
-				if (catchQty.isPresent())
-				{
-					sched.setQtyPickedCatch(catchQty.get().toBigDecimal());
-					sched.setCatch_UOM_ID(catchQty.get().getUomId().getRepoId());
-				}
 			}
 
 			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.mkQtyToDeliver(qtyRequired, qtyPickList);
@@ -782,12 +785,22 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	 *
 	 * @param sched
 	 */
-	private static void updateWarehouseId(final I_M_ShipmentSchedule sched)
+	private static void updateWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final WarehouseId warehouseId = SpringContextHolder.instance.getBean(ShipmentScheduleReferencedLineFactory.class)
 				.createFor(sched)
 				.getWarehouseId();
 		sched.setM_Warehouse_ID(warehouseId.getRepoId());
+	}
+
+	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final Optional<UomId> catchUOMId = productBL.getCatchUOMId(ProductIds.ofRecord(sched));
+		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
+
+		sched.setCatch_UOM_ID(catchUomRepoId);
 	}
 
 	/**
@@ -859,7 +872,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public I_C_UOM getUomOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		return productBL.getStockingUOM(sched.getM_Product_ID());
+		return productBL.getStockUOM(sched.getM_Product_ID());
 	}
 
 	@Override
@@ -1012,18 +1025,17 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule sched)
+	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(sched);
-		final I_C_UOM uom = getUomOfProduct(sched);
+		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
+		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
 
 	@Override
-	public Optional<Quantity> getCatchQty(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	public Optional<Quantity> getCatchQtyOverride(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final boolean hasCatchQty = shipmentScheduleRecord.getQtyPickedCatch().signum() > 0;
 		final boolean hasCatchOverrideQty = !isNull(shipmentScheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override);
 		final boolean hasCatchUOM = shipmentScheduleRecord.getCatch_UOM_ID() > 0;
 
@@ -1031,18 +1043,85 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		{
 			return Optional.empty();
 		}
-		if (!hasCatchQty && !hasCatchOverrideQty)
+		if (!hasCatchOverrideQty)
 		{
 			return Optional.empty();
 		}
 
-		final Quantity result = Quantity.of(
-				!isNull(shipmentScheduleRecord, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override)
-						? shipmentScheduleRecord.getQtyToDeliverCatch_Override()
-						: shipmentScheduleRecord.getQtyPickedCatch(),
-				loadOutOfTrx(shipmentScheduleRecord.getCatch_UOM_ID(), I_C_UOM.class));
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
+
+		final Quantity result = Quantity.of(shipmentScheduleRecord.getQtyToDeliverCatch_Override(), uomRecord);
 
 		return Optional.of(result);
+	}
+
+	@Override
+	public void resetCatchQtyOverride(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		shipmentScheduleRecord.setQtyToDeliverCatch_Override(null);
+		saveRecord(shipmentScheduleRecord);
+	}
+
+	@Override
+	public void updateCatchUoms(@NonNull final ProductId productId, long delayMs)
+	{
+		if (delayMs < 0)
+		{
+			return; // doing nothing
+		}
+
+		// lambda doesn't work; see https://stackoverflow.com/questions/37970682/passing-lambda-to-a-timer-instead-of-timertask
+		final TimerTask task = new TimerTask()
+		{
+			@Override
+			public void run()
+			{
+				updateCatchUoms(productId);
+			}
+		};
+
+		if (delayMs <= 0)
+		{
+			task.run(); // run directly
+			return;
+		}
+
+		logger.info("Going to update shipment schedules for M_Product_ID={} in {}ms", productId.getRepoId(), delayMs);
+
+		final String timerName = ShipmentScheduleBL.class.getSimpleName() + "-updateCatchUoms-productId=" + productId.getRepoId();
+		new Timer(timerName).schedule(task, delayMs);
+	}
+
+	private void updateCatchUoms(@NonNull final ProductId productId)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		final Integer catchUomRepoId = Services.get(IProductBL.class)
+				.getCatchUOMId(productId)
+				.map(UomId::getRepoId)
+				.orElse(null);
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryUpdater<I_M_ShipmentSchedule> queryUpdater = queryBL
+				.createCompositeQueryUpdater(I_M_ShipmentSchedule.class)
+				.addSetColumnValue(I_M_ShipmentSchedule.COLUMNNAME_Catch_UOM_ID, catchUomRepoId);
+
+		final ILockManager lockManager = Services.get(ILockManager.class);
+
+		final int count = queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_M_Product_ID, productId)
+				.addNotEqualsFilter(I_M_ShipmentSchedule.COLUMN_Catch_UOM_ID, catchUomRepoId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_Processed, false)
+				.filter(lockManager.getNotLockedFilter(I_M_ShipmentSchedule.class))
+				.create()
+				.update(queryUpdater);
+
+		final long durationSecs = stopwatch.stop().elapsed(TimeUnit.SECONDS);
+		logger.info("Updated {} shipment schedules for M_Product_ID={} in {}seconds", count, productId.getRepoId(), durationSecs);
 	}
 
 }

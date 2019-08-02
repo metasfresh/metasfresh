@@ -217,7 +217,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		invoiceCandBL.setQualityDiscountPercent_Override(ic, attributes);
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
@@ -228,15 +230,11 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		// Create IC-IOL association (07969)
 		// Even if our IC is directly linked to M_InOutLine (by AD_Table_ID/Record_ID),
 		// we need this association in order to let our engine know this and create the M_MatchInv records.
-		{
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
-			iciol.setC_Invoice_Candidate(ic);
-			iciol.setM_InOutLine(originInOutLine);
-			// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
-			InterfaceWrapperHelper.save(iciol);
-		}
+		final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
+		// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
+		iciol.setC_Invoice_Candidate(ic);
+		invoiceCandBL.updateICIOLAssociationFromIOL(iciol, originInOutLine);
 
-		//
 		return ic;
 	}
 

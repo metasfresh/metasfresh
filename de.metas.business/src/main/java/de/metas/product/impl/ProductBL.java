@@ -46,6 +46,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.MProductCategory;
+import org.compiere.model.X_C_UOM;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -116,7 +117,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(final int productId)
+	public I_C_UOM getStockUOM(final int productId)
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
@@ -448,14 +449,20 @@ public final class ProductBL implements IProductBL
 
 	public Optional<UomId> getCatchUOMId0(@NonNull final ProductId productId)
 	{
-		final I_C_UOM_Conversion conversionRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
+		final I_C_UOM catchUomRecord = Services.get(IQueryBL.class).createQueryBuilder(I_C_UOM_Conversion.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_M_Product_ID, productId)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMN_IsCatchUOMForProduct, true)
+				.andCollect(I_C_UOM_Conversion.COLUMN_C_UOM_To_ID)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_UOM.COLUMNNAME_UOMType, X_C_UOM.UOMTYPE_Weigth)
 				.create()
-				.firstOnly(I_C_UOM_Conversion.class); // we have a unique constraint
-
-		return Optional.ofNullable(UomId.ofRepoIdOrNull(conversionRecord.getC_UOM_To_ID()));
+				.firstOnly(I_C_UOM.class); // we have a unique constraint
+		if (catchUomRecord == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()));
 	}
 
 	@Override

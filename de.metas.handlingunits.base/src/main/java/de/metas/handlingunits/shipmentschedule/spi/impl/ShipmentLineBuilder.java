@@ -89,8 +89,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -99,9 +101,6 @@ import lombok.NonNull;
 
 /**
  * Aggregates given {@link IShipmentScheduleWithHU}s (see {@link #add(IShipmentScheduleWithHU)}) and creates the shipment line (see {@link #createShipmentLine()}).
- *
- * @author tsa
- *
  */
 /* package */class ShipmentLineBuilder
 {
@@ -289,14 +288,19 @@ import lombok.NonNull;
 		{
 			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
-		movementQty = movementQty.add(qtyToAdd); // NOTE: we assume qtyToAdd is in stocking UOM
+		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
+		final UomId stockUomId = productBL.getStockingUOMId(productId);
 
-		candidate.getCatchQty().ifPresent(catchQty::add);
+		final Quantity qtyToAddInStockUom = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, stockUomId);
+		movementQty = movementQty.add(qtyToAddInStockUom); // NOTE: we assume qtyToAdd is in stocking UOM
+
+		if (candidate.getCatchQty().isPresent())
+		{
+			catchQty = Quantitys.add(UOMConversionContext.of(productId), catchQty, candidate.getCatchQty().get());
+		}
 
 		// Convert qtyToAdd (from candidate) to shipment line's UOM
-		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyToAddConverted = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, qtyEntered.getUOM());
-
 		qtyEntered = qtyEntered.add(qtyToAddConverted);
 
 		// Enqueue candidate's LU/TU to list of HUs to be assigned

@@ -36,6 +36,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -47,6 +48,7 @@ import de.metas.picking.service.PackingItemsMap;
 import de.metas.picking.service.PackingSlot;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
@@ -514,8 +516,10 @@ public class HU2PackingItemsAllocator
 			}
 		}
 
+		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
+
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		huShipmentScheduleBL.addQtyPicked(shipmentSchedule, qtyPacked, pickFromVHU, _huContext);
+		huShipmentScheduleBL.addQtyPicked(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext);
 
 		// Transfer the qtyPicked from vhu to our target HU (if any)
 		packFromVHUToDestination(pickFromVHU, packedPart);

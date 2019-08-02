@@ -41,6 +41,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.money.Money;
@@ -465,4 +466,5 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	StockQtyAndUOMQty computeQtyDeliveredFromShipments(I_C_Invoice_Candidate ic);
 
+	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 }

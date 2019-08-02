@@ -56,7 +56,7 @@ public class PP_Order
 		// If UOM not filled, get it from Product
 		if (ppOrder.getC_UOM_ID() <= 0 && ppOrder.getM_Product_ID() > 0)
 		{
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(ppOrder.getM_Product_ID());
+			final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(ppOrder.getM_Product_ID());
 			ppOrder.setC_UOM(uom);
 		}
 

@@ -117,7 +117,7 @@ public class OrderLineBL implements IOrderLineBL
 	private I_C_UOM getStockingUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		return productBL.getStockingUOM(orderLine.getM_Product_ID());
+		return productBL.getStockUOM(orderLine.getM_Product_ID());
 	}
 
 	@Override

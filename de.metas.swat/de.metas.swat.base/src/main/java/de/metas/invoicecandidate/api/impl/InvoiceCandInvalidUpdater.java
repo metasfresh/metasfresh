@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
  * #%L
@@ -47,6 +48,7 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.inout.IInOutDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -319,7 +321,6 @@ import lombok.NonNull;
 		// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
 		invoiceCandBL.updateQtyWithIssues_Effective(ic);
 
-
 		// Set the new qtyToInvoice value, depending on invoiceRule
 		final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
 		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.toBigDecimal()); // TODO make sure it's in the UOM
@@ -371,11 +372,9 @@ import lombok.NonNull;
 				continue; // nothing to to, record already exists
 			}
 
-			final I_C_InvoiceCandidate_InOutLine iciol = InterfaceWrapperHelper.newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
-			iciol.setAD_Org_ID(inOutLine.getAD_Org_ID());
-			iciol.setM_InOutLine(inOutLine);
+			final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, context);
 			iciol.setC_Invoice_Candidate(ic);
-			InterfaceWrapperHelper.save(iciol);
+			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 		}
 	}
 

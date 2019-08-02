@@ -43,7 +43,7 @@ public class Quantitys
 
 	public static Quantity subtract(
 			@NonNull final UOMConversionContext conversionCtx,
-			@NonNull final 	Quantity minuend,
+			@NonNull final Quantity minuend,
 			@NonNull final Quantity subtrahend)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);

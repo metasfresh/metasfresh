@@ -15,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1095819771L;
+	private static final long serialVersionUID = 514692118L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -1513,28 +1513,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.math.BigDecimal getQtyOrdered_Override () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered_Override);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	/** Set Kommissionierte Catch Menge.
-		@param QtyPickedCatch 
-		Tatsächliche kommisionierte Menge in Catch Weight Einheit.
-	  */
-	@Override
-	public void setQtyPickedCatch (java.math.BigDecimal QtyPickedCatch)
-	{
-		set_Value (COLUMNNAME_QtyPickedCatch, QtyPickedCatch);
-	}
-
-	/** Get Kommissionierte Catch Menge.
-		@return Tatsächliche kommisionierte Menge in Catch Weight Einheit.
-	  */
-	@Override
-	public java.math.BigDecimal getQtyPickedCatch () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedCatch);
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;

@@ -57,6 +57,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 
 /**
@@ -155,7 +157,7 @@ public class ShipmentScheduleHelper
 		saveRecord(shipmentSchedule);
 
 		//
-		// Set inital QtyPicked and validate
+		// Set initial QtyPicked and validate
 		final ShipmentScheduleQtyPickedExpectations shipmentScheduleExpectations = new ShipmentScheduleQtyPickedExpectations()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked("0")
@@ -163,7 +165,9 @@ public class ShipmentScheduleHelper
 
 		if (qtyPickedInitial != null && qtyPickedInitial.signum() != 0)
 		{
-			shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPickedInitial);
+			shipmentScheduleAllocBL.addQtyPicked(
+					shipmentSchedule,
+					StockQtyAndUOMQtys.create(ProductId.ofRepoId(product.getM_Product_ID()), qtyPickedInitial));
 
 			shipmentScheduleExpectations
 					.qtyPicked(qtyPickedInitial)

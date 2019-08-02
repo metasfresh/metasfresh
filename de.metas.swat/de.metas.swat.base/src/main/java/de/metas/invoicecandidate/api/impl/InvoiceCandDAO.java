@@ -90,7 +90,7 @@ import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -398,10 +398,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
 	{
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
-		return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
+
+		return inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 	}
 
 	@Override
@@ -1386,14 +1385,14 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				}
 				final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID));
 				final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID));
-				
+
 				HashMap<CurrencyConversionTypeId, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 				if (conversion2Amt == null)
 				{
 					conversion2Amt = new HashMap<>();
 					currencyId2conversion2Amt.put(currencyId, conversion2Amt);
 				}
-				
+
 				conversion2Amt.put(conversionTypeId, netAmt);
 			}
 		}
@@ -1454,9 +1453,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				ic.getSchedulerResult(), ic.isError(), ic.getErrorMsg(), ic.getAD_Note_ID(), ic.getC_Invoice_Candidate_ID()
 		};
 
-		final boolean ignoreError = false;
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		DB.executeUpdate(sql, sqlParams, ignoreError, trxName);
+		DB.executeUpdateEx(sql, sqlParams, trxName);
 	}
 
 	@Override

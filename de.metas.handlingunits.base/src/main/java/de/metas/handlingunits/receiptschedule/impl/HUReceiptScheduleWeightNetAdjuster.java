@@ -1,6 +1,6 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -67,6 +67,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -138,12 +139,11 @@ public class HUReceiptScheduleWeightNetAdjuster
 		Check.assume(!receiptSchedule.isProcessed(), "receiptSchedule not processed: {}", receiptSchedule);
 		logger.debug("Adding {}", receiptSchedule);
 
-		//
-		// Skip receipt schedules which are not in Weight UOM
-		final I_C_UOM uom = loadOutOfTrx(receiptSchedule.getC_UOM_ID(), I_C_UOM.class);
-		if (!weightableBL.isWeightable(uom))
+		// Skip receipt schedules which are not in a Weight UOM
+		final UomId uomId = UomId.ofRepoIdOrNull(receiptSchedule.getC_UOM_ID());
+		if (!weightableBL.isWeightable(uomId))
 		{
-			logger.debug("Skip receipt schedule because its UOM is not weightable: {}", uom);
+			logger.debug("Skip receiptSchedule because its UOM is not weightable; receiptSchedule={}", receiptSchedule);
 			return;
 		}
 

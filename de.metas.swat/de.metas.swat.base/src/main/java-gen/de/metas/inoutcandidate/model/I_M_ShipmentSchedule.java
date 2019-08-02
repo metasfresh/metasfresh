@@ -1547,31 +1547,6 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
 
 	/**
-	 * Set Kommissionierte Catch Menge.
-	 * Tatsächliche kommisionierte Menge in Catch Weight Einheit.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyPickedCatch (java.math.BigDecimal QtyPickedCatch);
-
-	/**
-	 * Get Kommissionierte Catch Menge.
-	 * Tatsächliche kommisionierte Menge in Catch Weight Einheit.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyPickedCatch();
-
-    /** Column definition for QtyPickedCatch */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyPickedCatch = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyPickedCatch", null);
-    /** Column name QtyPickedCatch */
-    public static final String COLUMNNAME_QtyPickedCatch = "QtyPickedCatch";
-
-	/**
 	 * Set Auf Packzettel.
 	 *
 	 * <br>Type: Quantity

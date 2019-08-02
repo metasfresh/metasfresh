@@ -26,11 +26,13 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -40,7 +42,9 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -78,6 +82,8 @@ public class ProcessPickingCandidatesCommand
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IInvoiceCandDAO invoiceCandidatesRepo = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceCandBL invoiceCandidatesService = Services.get(IInvoiceCandBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
@@ -160,9 +166,19 @@ public class ProcessPickingCandidatesCommand
 				throw new AdempiereException("Nothing packed for " + pickingCandidate);
 			}
 
+			final ProductId productId = getProductId(pickingCandidate);
+
+			final I_M_HU huRecord = packToDestination.getSingleCreatedHU();
+
+			final StockQtyAndUOMQty qtyPicked = CatchWeightHelper.extractQtys(
+					huContext,
+					productId,
+					pickingCandidate.getQtyPicked(),
+					huRecord);
+
 			huShipmentScheduleBL.addQtyPickedAndUpdateHU(
 					pickingCandidate.getShipmentScheduleId(),
-					pickingCandidate.getQtyPicked(),
+					qtyPicked,
 					packedToHuId,
 					huContext);
 		}
@@ -170,6 +186,8 @@ public class ProcessPickingCandidatesCommand
 		pickingCandidate.changeStatusToProcessed(packedToHuId);
 		pickingCandidateRepository.save(pickingCandidate);
 	}
+
+
 
 	private void closeShipmentScheduleAndInvoiceCandidates(final I_M_ShipmentSchedule shipmentSchedule)
 	{
