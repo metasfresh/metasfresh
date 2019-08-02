@@ -35,7 +35,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productPMValue, productType, "24_Gebinde");
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -65,7 +65,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
 
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryValue,
       priceListName,
@@ -74,7 +74,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       productType,
       packingInstructionsName
     );
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryValue,
       priceListName,

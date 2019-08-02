@@ -135,9 +135,7 @@ describe('Create Adjustment Charge price difference (Nachbelastung Preisdifferen
   });
 
   it('Open the Referenced Sales Invoice documents', function() {
-    cy.wait(5000); // give the system some breathing space
-    cy.get('body').type('{alt}6'); // open referenced-records-sidelist
-    cy.selectReference('AD_RelationType_ID-540184').click();
+    cy.openReferencedDocuments('AD_RelationType_ID-540184');
   });
 
   it('Expect there is only 1 Sales Invoice row and open it', function() {
