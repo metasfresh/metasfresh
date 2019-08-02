@@ -27,10 +27,10 @@ declare namespace Cypress {
      * This command runs a quick actions. If the second parameter is truthy, the default action will be executed.
      *
      * @param actionName - internal name of the action to be executed
-     * @param active - optional, default false - if truthy, the default action will be executed.
+     * @param defaultAction - optional, default false - if truthy the default action will be executed.
      * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
      */
-    executeQuickAction(actionName: string, active?: boolean, modal?: boolean): Chainable<any>
+    executeQuickAction(actionName: string, defaultAction?: boolean, modal?: boolean): Chainable<any>
 
     /**
      * @param fieldName - name of the field is question
