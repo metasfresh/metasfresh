@@ -62,6 +62,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
       }
     });
   }
+  cy.get('body').type('{alt}6'); // open referenced docs
   return cy.get(`.reference_${referenceId}`).click(); // one more time just because we need to throw the error
 });
 
@@ -70,12 +71,18 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
  *
  * @param rowNumber - the row number
  */
-Cypress.Commands.add('selectNthRow', rowNumber => {
+Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
+  let path = '.table-flex-wrapper';
+
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
+
   return cy
-    .get('.table-flex-wrapper')
+    .get(path)
     .find(`tbody tr:nth-child(${rowNumber + 1})`)
     .should('exist')
-    .click({ force: true });
+    .click();
 });
 
 /**
