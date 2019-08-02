@@ -6,7 +6,6 @@ import { TourVersion, TourVersionLine } from '../../support/utils/tour_version';
 describe('Create a Tour, a Tour Version and Delivery Days', function() {
   const date = humanReadableNow();
   const customerName = `Customer ${date}`;
-  const customerAddress = 'Address1';
 
   const tourName = `TestTour_${date}`;
   const tourVersionName = `TestTourVersion_${date}`;
@@ -38,7 +37,7 @@ describe('Create a Tour, a Tour Version and Delivery Days', function() {
         .setName(tourVersionName)
         .setTour(tourName)
         // eslint-disable-next-line
-        .addLine(new TourVersionLine().setBpartner(customerName).setBuffer(0).setBPartnerAddress(customerAddress))
+        .addLine(new TourVersionLine().setBpartner(customerName).setBuffer(0))
         .apply();
     });
   });
