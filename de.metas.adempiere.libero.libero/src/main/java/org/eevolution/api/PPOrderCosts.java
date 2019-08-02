@@ -209,26 +209,33 @@ public final class PPOrderCosts
 		final ImmutableList<PPOrderCost> coProductCosts = costs.stream()
 				.filter(cost -> cost.isCoProduct())
 				.collect(ImmutableList.toImmutableList());
+		
+		final ImmutableList<PPOrderCost> byProductCosts = costs.stream()
+				.filter(cost -> cost.isByProduct())
+				.collect(ImmutableList.toImmutableList());
 
 		//
 		// Update inbound costs and calculate total inbound costs
 		inboundCosts.forEach(cost -> cost.setPostCalculationAmountAsAccumulatedAmtr());
 		final CostAmount totalInboundCostAmount = inboundCosts.stream()
-				.map(cost -> cost.getPostCalculationAmount())
+				.filter(cost -> !cost.isByProduct())
+				.filter(cost -> !cost.isMainProduct())
+				.map(cost -> cost.getPrice().getOwnCostPrice().multiply(cost.getAccumulatedQty()))
 				.reduce(CostAmount::add)
 				.orElseThrow(() -> new AdempiereException("No inbound costs found in " + costs));
 
 		//
 		// Update co-product costs and calculate total co-product costs
 		coProductCosts.forEach(cost -> cost.setPostCalculationAmount(totalInboundCostAmount.multiply(cost.getCoProductCostDistributionPercent(), precision)));
-		final CostAmount totalCoProductsCostAmount = coProductCosts.stream()
+		final CostAmount totalCoProductsCostAmount = byProductCosts.stream()
+				.filter(cost -> !cost.isMainProduct())
 				.map(cost -> cost.getPostCalculationAmount())
 				.reduce(CostAmount::add)
 				.orElseGet(totalInboundCostAmount::toZero);
 
 		//
 		// Update main product cost
-		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.subtract(totalCoProductsCostAmount));
+		mainProductCost.setPostCalculationAmount(totalInboundCostAmount.add(totalCoProductsCostAmount));
 
 		//
 		// Clear by-product costs
