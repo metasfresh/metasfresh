@@ -48,7 +48,7 @@ describe('Create a Tour, a Tour Version and Delivery Days', function() {
     cy.executeHeaderActionWithDialog('GenerateDeliveryDays');
     cy.writeIntoStringField('DateFrom', '07/01/2019', true, null, true);
     cy.writeIntoStringField('DateTo', '07/19/2019', true, null, true);
-    cy.pressStartButton(5000);
+    cy.pressStartButton();
   });
 
   it('Open Referenced Delivery Days and expect 15 rows', function() {
