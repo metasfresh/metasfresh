@@ -352,6 +352,8 @@ Cypress.Commands.add('getDOMNotificationsNumber', () => {
   });
 });
 
+// todo @kuba i think this function is useless and should be deleted.
+//  I cannot use it to check notification message and to click a specific notification to move to the relevant window
 Cypress.Commands.add('getNotificationsInbox', () => {
   describe('Get the notifications inbox in the app state', function() {
     return cy
@@ -419,8 +421,9 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
       }
 
       /**
-       * Here i'm using `!=` and not `!==` so that '222' == 222 (a string is equals to a number with the same value)
-       * We need this for cases such as `cy.writeIntoStringField('QtyEntered', 222, true);`
+       * TODO: Please oh please let's fix the types at one point
+       *  Here i'm using `!=` and not `!==` so that '222' == 222 (a string is equals to a number with the same value)
+       *  We need this for cases such as `cy.writeIntoStringField('QtyEntered', 222, true);`
        */
       if (actualFieldValue != expectedFieldValue) {
         cy.log(
@@ -463,7 +466,7 @@ Cypress.Commands.add('waitUntilProcessIsFinished', () => {
   });
 });
 
-Cypress.Commands.add('waitUntilEverythingIsSaved', (expectIndicator = false) => {
+Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
   describe('Wait until everything is saved and all requests are finished', function() {
     if (expectIndicator) {
       cy.get('.indicator-pending').should('exist');

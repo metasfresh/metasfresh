@@ -100,77 +100,76 @@ export class Product {
   }
 
   static applyProduct(product) {
-    describe(`Create new Product ${product.name}`, function() {
-      cy.visitWindow('140', 'NEW', product.name /*documentIdAliasName*/);
-      cy.writeIntoStringField('Name', product.name);
+    cy.log(`Create new Product ${product.name}`);
+    cy.visitWindow('140', 'NEW');
+    cy.writeIntoStringField('Name', product.name);
 
-      cy.selectInListField('M_Product_Category_ID', product.m_product_category);
+    cy.selectInListField('M_Product_Category_ID', product.m_product_category);
 
-      cy.writeIntoStringField('Description', product.description);
+    cy.writeIntoStringField('Description', product.description);
 
-      cy.getCheckboxValue('IsStocked').then(isIsStockedValue => {
-        if (product.isStocked && !isIsStockedValue) {
-          cy.clickOnCheckBox('IsStocked');
-        }
-      });
-      cy.getCheckboxValue('IsPurchased').then(isPurchasedValue => {
-        if (product.isPurchased && !isPurchasedValue) {
-          cy.clickOnCheckBox('IsPurchased');
-        }
-      });
-      cy.getCheckboxValue('IsSold').then(isSoldValue => {
-        if (product.isSold && !isSoldValue) {
-          cy.clickOnCheckBox('IsSold');
-        }
-      });
-      cy.getCheckboxValue('IsDiverse').then(isDiverseValue => {
-        if (product.isDiverse && !isDiverseValue) {
-          cy.clickOnCheckBox('IsDiverse');
-        }
-      });
-
-      cy.getStringFieldValue('ProductType').then(productTypeValue => {
-        const productType = getLanguageSpecific(product, 'productType');
-
-        if (productType !== productTypeValue) {
-          cy.resetListValue('ProductType');
-          cy.selectInListField('ProductType', productType);
-        }
-      });
-
-      cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
-        const c_uom = getLanguageSpecific(product, 'c_uom');
-
-        if (c_uom && c_uom !== uomValue) {
-          cy.selectInListField('C_UOM_ID', c_uom);
-        }
-      });
-
-      product.packingInstructions.forEach(pi => {
-        cy.selectTab('M_HU_PI_Item_Product');
-        cy.pressAddNewButton();
-        cy.selectInListField('M_HU_PI_Item_ID', pi, true);
-        cy.writeIntoStringField('Qty', 10, true, null, true);
-        cy.selectDateViaPicker('ValidFrom');
-        cy.pressDoneButton();
-      });
-      cy.expectNumberOfRows(product.packingInstructions.length);
-
-      if (product.businessPartner != null) {
-        cy.selectTab('C_BPartner_Product');
-        cy.pressAddNewButton();
-        cy.writeIntoLookupListField('C_BPartner_ID', product.businessPartner, product.businessPartner, true);
-        cy.clickOnCheckBox('IsCurrentVendor');
-        cy.pressDoneButton();
-      }
-
-      if (product.productPrices.length > 0) {
-        product.productPrices.forEach(function(pp) {
-          Product.applyProductPrice(pp);
-        });
-        cy.get('table tbody tr').should('have.length', product.productPrices.length);
+    cy.getCheckboxValue('IsStocked').then(isIsStockedValue => {
+      if (product.isStocked && !isIsStockedValue) {
+        cy.clickOnCheckBox('IsStocked');
       }
     });
+    cy.getCheckboxValue('IsPurchased').then(isPurchasedValue => {
+      if (product.isPurchased && !isPurchasedValue) {
+        cy.clickOnCheckBox('IsPurchased');
+      }
+    });
+    cy.getCheckboxValue('IsSold').then(isSoldValue => {
+      if (product.isSold && !isSoldValue) {
+        cy.clickOnCheckBox('IsSold');
+      }
+    });
+    cy.getCheckboxValue('IsDiverse').then(isDiverseValue => {
+      if (product.isDiverse && !isDiverseValue) {
+        cy.clickOnCheckBox('IsDiverse');
+      }
+    });
+
+    cy.getStringFieldValue('ProductType').then(productTypeValue => {
+      const productType = getLanguageSpecific(product, 'productType');
+
+      if (productType !== productTypeValue) {
+        cy.resetListValue('ProductType');
+        cy.selectInListField('ProductType', productType);
+      }
+    });
+
+    cy.getStringFieldValue('C_UOM_ID').then(uomValue => {
+      const c_uom = getLanguageSpecific(product, 'c_uom');
+
+      if (c_uom && c_uom !== uomValue) {
+        cy.selectInListField('C_UOM_ID', c_uom);
+      }
+    });
+
+    product.packingInstructions.forEach(pi => {
+      cy.selectTab('M_HU_PI_Item_Product');
+      cy.pressAddNewButton();
+      cy.selectInListField('M_HU_PI_Item_ID', pi, true);
+      cy.writeIntoStringField('Qty', 10, true, null, true);
+      cy.selectDateViaPicker('ValidFrom');
+      cy.pressDoneButton();
+    });
+    cy.expectNumberOfRows(product.packingInstructions.length);
+
+    if (product.businessPartner != null) {
+      cy.selectTab('C_BPartner_Product');
+      cy.pressAddNewButton();
+      cy.writeIntoLookupListField('C_BPartner_ID', product.businessPartner, product.businessPartner, true);
+      cy.clickOnCheckBox('IsCurrentVendor');
+      cy.pressDoneButton();
+    }
+
+    if (product.productPrices.length > 0) {
+      product.productPrices.forEach(function(pp) {
+        Product.applyProductPrice(pp);
+      });
+      cy.get('table tbody tr').should('have.length', product.productPrices.length);
+    }
   }
 
   /**
@@ -229,16 +228,15 @@ export class ProductCategory {
   }
 
   static applyProductCategory(productCategory) {
-    describe(`Create new Product ${productCategory.name}`, function() {
-      cy.visitWindow('144', 'NEW');
-      cy.writeIntoStringField('Name', productCategory.name);
+    cy.log(`Create new Product ${productCategory.name}`);
+    cy.visitWindow('144', 'NEW');
+    cy.writeIntoStringField('Name', productCategory.name);
 
-      // Value can be updated
-      cy.writeIntoStringField('Value', productCategory.value);
-      if (productCategory.attributeSet) {
-        cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
-      }
-    });
+    // Value can be updated
+    cy.writeIntoStringField('Value', productCategory.value);
+    if (productCategory.attributeSet) {
+      cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
+    }
   }
 }
 

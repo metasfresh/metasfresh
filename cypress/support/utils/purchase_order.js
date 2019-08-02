@@ -28,6 +28,12 @@ export class PurchaseOrder {
     return this;
   }
 
+  setPriceSystem(priceSystem) {
+    cy.log(`PurchaseOrder - priceSystem = ${priceSystem}`);
+    this.priceSystem = priceSystem;
+    return this;
+  }
+
   addLine(purchaseOrderLine) {
     cy.log(`PurchaseOrder - addLine = ${JSON.stringify(purchaseOrderLine)}`);
     this.lines.push(purchaseOrderLine);
@@ -65,6 +71,11 @@ function applyPurchaseOrder(purchaseOrder) {
     }
     if (purchaseOrder.poReference) {
       cy.writeIntoStringField('POReference', purchaseOrder.poReference);
+    }
+
+    if (purchaseOrder.priceSystem) {
+      cy.resetListValue('M_PricingSystem_ID');
+      cy.selectInListField('M_PricingSystem_ID', purchaseOrder.priceSystem);
     }
 
     if (purchaseOrder.isDropShip) {
