@@ -271,14 +271,14 @@ Cypress.Commands.add(
       path = `.panel-modal ${path}`;
     }
 
-      const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
+    const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
     //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
     const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
     // in the default pattern we want to match URLs that do *not* end with "/NEW"
     const patchUrlPattern = rewriteUrl || '/rest/api/window';
     if (!skipRequest) {
       cy.server();
-        cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+      cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
     }
     cy.get(path).within(el => {
       if (el.find('.lookup-widget-wrapper input').length) {
@@ -301,7 +301,7 @@ Cypress.Commands.add(
     cy.get('.input-dropdown-list').should('exist');
     cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
     if (!skipRequest) {
-        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
+      cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
     }
     cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
   }
@@ -328,7 +328,7 @@ Cypress.Commands.add(
     const path = createFieldPath(fieldName, modal);
     cy.get(path)
       .find('.input-dropdown')
-      .click({ force: true }); // here force is needed bon ungodly occasions, cypress just moves the element out of view and click doesnt work. ¯\_(ツ)_/¯
+      .click();
 
     // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
     cy.get('.input-dropdown-list')
