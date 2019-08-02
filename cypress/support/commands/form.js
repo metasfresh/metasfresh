@@ -266,44 +266,44 @@ Cypress.Commands.add(
     rewriteUrl = null,
     skipRequest = false
   ) => {
-    describe('Enter value into lookup list field', function() {
-      let path = `#lookup_${fieldName}`;
-      if (modal) {
-        path = `.panel-modal ${path}`;
-      }
+    let path = `#lookup_${fieldName}`;
+    if (modal) {
+      path = `.panel-modal ${path}`;
+    }
 
       const aliasName = `writeIntoLookupListField-${fieldName}-${new Date().getTime()}`;
-      //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
-      const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
-      // in the default pattern we want to match URLs that do *not* end with "/NEW"
-      const patchUrlPattern = rewriteUrl || '/rest/api/window';
-      if (!skipRequest) {
-        cy.server();
+    //the value to wait for would not be e.g. "Letter", but {key: "540408", caption: "Letter"}
+    const expectedPatchValue = removeSubstringsWithCurlyBrackets(partialValue);
+    // in the default pattern we want to match URLs that do *not* end with "/NEW"
+    const patchUrlPattern = rewriteUrl || '/rest/api/window';
+    if (!skipRequest) {
+      cy.server();
         cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+    }
+    cy.get(path).within(el => {
+      if (el.find('.lookup-widget-wrapper input').length) {
+        return (
+          cy
+            .get('input')
+            // we can't use `clear` here as sometimes it triggers request to the server
+            // and then the whole flow becomes flaky
+            .type('{selectall}')
+            .type(partialValue)
+        );
       }
-      cy.get(path).within(el => {
-        if (el.find('.lookup-widget-wrapper input').length) {
-          return (
-            cy
-              .get('input')
-              // we can't use `clear` here as sometimes it triggers request to the server
-              // and then the whole flow becomes flaky
-              .type('{selectall}')
-              .type(partialValue)
-          );
-        }
 
-        // cy.get('.lookup-dropdown').click(); // for tourversion -> tourversion line modal and cypress 3.4.1 it seems only 1 click is enough
-        return cy.get('.lookup-dropdown').click();
-      });
-
-      cy.get('.input-dropdown-list').should('exist');
-      cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
-      if (!skipRequest) {
-        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
-      }
-      cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
+      // this is extremely fiddly when selecting from a combo field such as bpartner address.
+      // it will work locally, but most of the times will fail in jenkins.
+      // Please create the tests such that adding an address in a combo field is not mandatory!
+      return cy.get('.lookup-dropdown').click();
     });
+
+    cy.get('.input-dropdown-list').should('exist');
+    cy.contains('.input-dropdown-list-option', expectedListValue).click(/*{ force: true }*/);
+    if (!skipRequest) {
+        cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue, typeList /*expectEmptyRequest*/);
+    }
+    cy.get('.input-dropdown-list .input-dropdown-list-header').should('not.exist');
   }
 );
 /**
