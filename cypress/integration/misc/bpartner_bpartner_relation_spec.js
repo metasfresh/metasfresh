@@ -1,13 +1,12 @@
-import { PriceList } from '../../support/utils/pricelist';
 import { DiscountSchema } from '../../support/utils/discountschema';
-import { BPartner } from '../../support/utils/bpartner_ui';
+import { BPartner } from '../../support/utils/bpartner';
 
 describe('BPartner relations', function() {
   const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const customer1Name = `Customer1 ${timestamp}`;
-  const customer2Name = `Customer2 ${timestamp}`;
-  // const timestamp = new Date().getTime();
-  const priceListName = `Test Pricelist ${timestamp}`;
+  const customer1Name = `Customer1_${timestamp}`;
+  const customer2Name = `Customer2_${timestamp}`;
+  const bPartnerRelationName = `BPartnerRelation_${timestamp}`;
+  const priceListName = 'Testpreisliste Kunden';
   const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
 
   before(function() {
@@ -16,30 +15,6 @@ describe('BPartner relations', function() {
         .setName(discountSchemaName)
         .apply();
     });
-
-    cy.fixture('price/pricelist.json').then(pricelistJson => {
-      Object.assign(new PriceList(priceListName), pricelistJson).apply();
-    });
-
-    // cy.fixture('sales/simple_customer.json').then(customerJson => {
-    //   Object.assign(new BPartner(), customerJson)
-    //     // .setCustomer(true)
-        // .setCustomerDiscountSchema(discountSchemaName)
-        // .setCustomerPricingSystem(priceListName)
-        // .setName(customer1Name)
-        // .clearContacts()
-        // .apply();
-    // });
-
-    // cy.fixture('sales/simple_customer.json').then(customerJson => {
-    //   Object.assign(new BPartner(), customerJson)
-    //     .setName(customer2Name)
-    //     // .setCustomer(true)
-    //     .setCustomerDiscountSchema(discountSchemaName)
-    //     .setCustomerPricingSystem(priceListName)
-    //     .clearContacts()
-    //     .apply();
-    // });
 
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: customer1Name })
@@ -58,27 +33,26 @@ describe('BPartner relations', function() {
     });
   });
 
-  //create bpartner relation
   it('Create a bpartner relation', function() {
-    cy.executeHeaderActionWithDialog('CreateBPRelationFromDocument');
-    cy.selectInListField('C_BPartner_Location_ID', 'Address1', true /*modal*/, '/rest/api/process/.*' /*rewriteUrl*/);
+    cy.visitWindow('313', 'NEW');
+
+    cy.writeIntoStringField(`Name`, bPartnerRelationName);
+    cy.writeIntoLookupListField('C_BPartner_ID', customer1Name, customer1Name);
+    cy.writeIntoLookupListField('C_BPartner_Location_ID',
+      'Address1',
+      'Address1',
+      true
+    );
     cy.writeIntoLookupListField(
       'C_BPartnerRelation_ID',
       customer2Name,
       customer2Name,
-      false /*typeList*/,
-      true /*modal*/,
-      '/rest/api/process/.*' /*rewriteUrl*/
     );
-    cy.selectInListField(
+    cy.writeIntoLookupListField(
       'C_BPartnerRelation_Location_ID',
       'Address1',
-      true /*modal*/,
-      '/rest/api/process/.*' /*rewriteUrl*/
+      'Address1',
+      true
     );
-
-    cy.getCheckboxValue('IsBillTo');
-    cy.clickOnCheckBox('IsShipTo', 'checked', true /*modal*/, '/rest/api/process/.*' /*rewriteUrl*/);
-    cy.pressStartButton();
   });
 });
