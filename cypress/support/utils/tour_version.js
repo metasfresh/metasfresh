@@ -67,7 +67,7 @@ function applyLine(tourVersionLine) {
   cy.writeIntoLookupListField('C_BPartner_ID', tourVersionLine.bPartner, tourVersionLine.bPartner, false, true);
   // eslint-disable-next-line
   if(tourVersionLine.bPartnerAddress) {
-    cy.log('Sorry but typing in the address field is too fiddly. Nothing will be typed.');
+    cy.log('Sorry but typing in the address field is too fiddly. Nothing will be typed. Please see: https://github.com/metasfresh/metasfresh-e2e/issues/260');
   // cy.writeIntoLookupListField('C_BPartner_Location_ID', tourVersionLine.bPartnerAddress, tourVersionLine.bPartnerAddress, false, true);
   }
   cy.writeIntoStringField('BufferHours', tourVersionLine.buffer, true);
