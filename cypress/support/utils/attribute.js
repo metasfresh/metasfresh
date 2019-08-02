@@ -1,61 +1,78 @@
 export class Attribute {
   constructor(name) {
-    cy.log(`Attribute - set name = ${name}`);
+    cy.log(`Attribute - name = ${name}`);
     this.name = name;
     this.attributeValues = [];
+    this.isInstanceAttribute = false;
+    this.isPricingRelevant = false;
+    this.isStorageRelevant = false;
+    this.isAttrDocumentRelevant = false;
   }
 
   setName(name) {
-    cy.log(`Attribute - set name = ${name}`);
+    cy.log(`Attribute - name = ${name}`);
     this.name = name;
     return this;
   }
 
   setDescription(description) {
-    cy.log(`Attribute - set description = ${description}`);
+    cy.log(`Attribute - description = ${description}`);
     this.description = description;
     return this;
   }
 
   setValue(value) {
-    cy.log(`Attribute - set value = ${value}`);
+    cy.log(`Attribute - value = ${value}`);
     this.value = value;
     return this;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   setAttributeValueType(attributeValueType) {
-    cy.log(`Attribute - set AttributeValueType = ${attributeValueType}`);
+    cy.log(`Attribute - AttributeValueType = ${attributeValueType}`);
     this.attributeValueType = attributeValueType;
     return this;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   setInstanceAttribute(isInstanceAttribute) {
-    cy.log(`Attribute - set isInstanceAttribute = ${isInstanceAttribute}`);
+    cy.log(`Attribute - isInstanceAttribute = ${isInstanceAttribute}`);
     this.isInstanceAttribute = isInstanceAttribute;
     return this;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   setPricingRelevant(isPricingRelevant) {
-    cy.log(`Attribute - set isPricingRelevant = ${isPricingRelevant}`);
+    cy.log(`Attribute - isPricingRelevant = ${isPricingRelevant}`);
     this.isPricingRelevant = isPricingRelevant;
     return this;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   setStorageRelevant(isStorageRelevant) {
-    cy.log(`Attribute - set isStorageRelevant = ${isStorageRelevant}`);
+    cy.log(`Attribute - isStorageRelevant = ${isStorageRelevant}`);
     this.isStorageRelevant = isStorageRelevant;
     return this;
   }
 
-  setAttributeDocumentRelevant(isAttributeDocumentRelevant) {
-    cy.log(`Attribute - set isAttributeDocumentRelevant = ${isAttributeDocumentRelevant}`);
-    this.isAttributeDocumentRelevant = isAttributeDocumentRelevant;
+  // noinspection JSUnusedGlobalSymbols
+  setAttrDocumentRelevant(isAttrDocumentRelevant) {
+    cy.log(`Attribute - isAttrDocumentRelevant = ${isAttrDocumentRelevant}`);
+    this.isAttrDocumentRelevant = isAttrDocumentRelevant;
     return this;
   }
 
-  addAttribiteValue(attributeValue) {
+  // noinspection JSUnusedGlobalSymbols
+  addAttributeValue(attributeValue) {
     cy.log(`Attribute - add AttributeValue = ${JSON.stringify(attributeValue)}`);
     this.attributeValues.push(attributeValue);
+    return this;
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  clearAttributeValues() {
+    cy.log(`Attribute - Clear attributeValues`);
+    this.attributeValues = [];
     return this;
   }
 
@@ -67,20 +84,21 @@ export class Attribute {
   }
 }
 
+// noinspection JSUnusedGlobalSymbols
 export class AttributeValue {
   constructor(name) {
-    cy.log(`Attribute - set name = ${name}`);
+    cy.log(`AttributeValue - name = ${name}`);
     this.name = name;
   }
 
   setName(name) {
-    cy.log(`Attribute - set name = ${name}`);
+    cy.log(`AttributeValue - name = ${name}`);
     this.name = name;
     return this;
   }
 
   setValue(value) {
-    cy.log(`AttributeValue - set value = ${value}`);
+    cy.log(`AttributeValue - value = ${value}`);
     this.value = value;
     return this;
   }
@@ -94,28 +112,15 @@ function applyAttribute(attribute) {
     cy.writeIntoStringField('Value', attribute.value);
     cy.writeIntoStringField('Description', attribute.description);
     cy.selectInListField('AttributeValueType', attribute.attributeValueType);
-    if (attribute.isInstanceAttribute) {
-      cy.clickOnCheckBox('IsInstanceAttribute');
-    }
-    if (attribute.isPricingRelevant) {
-      cy.clickOnCheckBox('IsPricingRelevant');
-    }
-    if (attribute.isStorageRelevant) {
-      cy.clickOnCheckBox('IsStorageRelevant');
-    }
-    if (attribute.isAttrDocumentRelevant) {
-      cy.clickOnCheckBox('IsAttrDocumentRelevant');
-    }
+    cy.setCheckBoxValue('IsInstanceAttribute', attribute.isInstanceAttribute);
+    cy.setCheckBoxValue('IsPricingRelevant', attribute.isPricingRelevant);
+    cy.setCheckBoxValue('IsStorageRelevant', attribute.isStorageRelevant);
+    cy.setCheckBoxValue('IsAttrDocumentRelevant', attribute.isAttrDocumentRelevant);
 
-    if (attribute.attributeValues.length > 0) {
-      attribute.attributeValues.forEach(function(attributeValue) {
-        applyAttributeValue(attributeValue);
-      });
-      cy.get('table tbody tr').should('have.length', attribute.attributeValues.length);
-
-      applyAttributeSet(attribute);
-      applyAttributeSetUse(attribute);
-    }
+    attribute.attributeValues.forEach(function(attributeValue) {
+      applyAttributeValue(attributeValue);
+    });
+    cy.expectNumberOfRows(attribute.attributeValues.length);
   });
 }
 
@@ -127,17 +132,56 @@ function applyAttributeValue(attributeValue) {
   cy.pressDoneButton();
 }
 
-function applyAttributeSet(attribute) {
-  describe(`Create new AttributeSet ${attribute.name}`, function() {
+export class AttributeSet {
+  constructor(name) {
+    cy.log(`AttributeSet - name = ${name}`);
+    this.name = name;
+    this.mandatoryType = 'Optional';
+    this.attributes = [];
+  }
+
+  setName(name) {
+    cy.log(`AttributeSet - name = ${name}`);
+    this.name = name;
+    return this;
+  }
+
+  // noinspection JSUnusedGlobalSymbols
+  setMandatoryType(mandatoryType) {
+    cy.log(`AttributeSet - mandatoryType = ${mandatoryType}`);
+    this.mandatoryType = mandatoryType;
+    return this;
+  }
+
+  addAttribute(attribute) {
+    cy.log(`AttributeSet - add attribute = ${JSON.stringify(attribute)}`);
+    this.attributes.push(attribute);
+    return this;
+  }
+
+  apply() {
+    cy.log(`AttributeSet - apply - START (${this.name})`);
+    applyAttributeSet(this);
+    cy.log(`AttributeSet - apply - END (${this.name})`);
+  }
+}
+
+function applyAttributeSet(attributeSet) {
+  describe(`Create new AttributeSet ${attributeSet.name}`, function() {
     cy.visitWindow('256', 'NEW');
-    cy.writeIntoStringField('Name', attribute.name);
-    cy.selectInListField('MandatoryType', 'Optional');
+    cy.writeIntoStringField('Name', attributeSet.name);
+    cy.selectInListField('MandatoryType', attributeSet.mandatoryType);
+
+    attributeSet.attributes.forEach(att => {
+      applyAttributeSetUse(att);
+    });
+    cy.expectNumberOfRows(attributeSet.attributes.length);
   });
 }
 
 function applyAttributeSetUse(attribute) {
   cy.get('#tab_M_AttributeUse').click();
   cy.pressAddNewButton();
-  cy.selectInListField('M_Attribute_ID', `${attribute.value}_${attribute.name}`, true /*modal*/);
+  cy.selectInListField('M_Attribute_ID', `${attribute}_${attribute}`, true /*modal*/);
   cy.pressDoneButton();
 }

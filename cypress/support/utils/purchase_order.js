@@ -1,156 +1,105 @@
 export class PurchaseOrder {
-  constructor(builder) {
-    this.bPartner = builder.bPartner;
-    this.poReference = builder.poReference;
-    this.isDropShip = builder.isDropShip;
-    this.docAction = builder.docAction;
-    this.docStatus = builder.docStatus;
-    this.lines = builder.purchaseOrderLines;
+  constructor() {
+    this.lines = [];
   }
 
-  apply() {
-    cy.log(`DiscountSchema - apply - START (poReference=${this.poReference})`);
-    applyPurchaseOrder(this);
-    cy.log(`DiscountSchema - apply - END (poReference=${this.poReference})`);
+  setBPartner(bPartner) {
+    cy.log(`PurchaseOrder - setBPartner = ${bPartner}`);
+    this.bPartner = bPartner;
     return this;
   }
 
-  static get builder() {
-    class Builder {
-      constructor() {
-        this.purchaseOrderLines = [];
-      }
+  setPoReference(poReference) {
+    cy.log(`PurchaseOrder - setPoReference = ${poReference}`);
+    this.poReference = poReference;
+    return this;
+  }
 
-      setBPartner(bPartner) {
-        cy.log(`PurchaseOrderBuilder - setBPartner = ${bPartner}`);
-        this.bPartner = bPartner;
-        return this;
-      }
+  // there's only 1 doctype: PurchaseOrder
+  setDocumentType(documentType) {
+    cy.log(`PurchaseOrder - setDocumentType = ${documentType}`);
+    this.documentType = documentType;
+    return this;
+  }
 
-      setPoReference(poReference) {
-        cy.log(`PurchaseOrderBuilder - setPoReference = ${poReference}`);
-        this.poReference = poReference;
-        return this;
-      }
+  setDropShip(isDropShip) {
+    cy.log(`PurchaseOrder - setDropShip = ${isDropShip}`);
+    this.isDropShip = isDropShip;
+    return this;
+  }
 
-      setDropShip(isDropShip) {
-        cy.log(`PurchaseOrderBuilder - setDropShip = ${isDropShip}`);
-        this.isDropShip = isDropShip;
-        return this;
-      }
+  setPriceSystem(priceSystem) {
+    cy.log(`PurchaseOrder - priceSystem = ${priceSystem}`);
+    this.priceSystem = priceSystem;
+    return this;
+  }
 
-      setDocAction(docAction) {
-        cy.log(`PurchaseOrderBuilder - setDocAction = ${docAction}`);
-        this.docAction = docAction;
-        return this;
-      }
+  addLine(purchaseOrderLine) {
+    cy.log(`PurchaseOrder - addLine = ${JSON.stringify(purchaseOrderLine)}`);
+    this.lines.push(purchaseOrderLine);
+    return this;
+  }
 
-      setDocStatus(docStatus) {
-        cy.log(`PurchaseOrderBuilder - setDocStatus = ${docStatus}`);
-        this.docStatus = docStatus;
-        return this;
-      }
-
-      addLine(purchaseOrderLine) {
-        cy.log(`PurchaseOrderBuilder - addLine = ${JSON.stringify(purchaseOrderLine)}`);
-        this.purchaseOrderLines.push(purchaseOrderLine);
-        return this;
-      }
-
-      build() {
-        return new PurchaseOrder(this);
-      }
-    }
-    return Builder;
+  apply() {
+    cy.log(`PurchaseOrder - apply - START (poReference=${this.poReference})`);
+    applyPurchaseOrder(this);
+    cy.log(`PurchaseOrder - apply - END (poReference=${this.poReference})`);
   }
 }
 
 export class PurchaseOrderLine {
-  constructor(builder) {
-    this.product = builder.product;
-    this.tuQuantity = builder.tuQuantity;
+  setProduct(product) {
+    cy.log(`PurchaseOrderLine - setProduct = ${product}`);
+    this.product = product;
+    return this;
   }
 
-  static get builder() {
-    class Builder {
-      constructor() {}
-
-      setProduct(product) {
-        cy.log(`PurchaseOrderLineBuilder - setProduct = ${product}`);
-        this.product = product;
-        return this;
-      }
-      setTuQuantity(tuQuantity) {
-        cy.log(`PurchaseOrderLineBuilder - setTuQuantity = ${tuQuantity}`);
-        this.tuQuantity = tuQuantity;
-        return this;
-      }
-
-      build() {
-        return new PurchaseOrderLine(this);
-      }
-    }
-    return Builder;
+  setQuantity(quantity) {
+    cy.log(`PurchaseOrderLine - setQuantity = ${quantity}`);
+    this.quantity = quantity;
+    return this;
   }
 }
 
 function applyPurchaseOrder(purchaseOrder) {
-  describe(`Create new purchaseOrder`, function() {
-    cy.visit('/window/181/NEW');
-    cy.wait(500);
+  describe(`Create new Purchase Order`, function() {
+    cy.visitWindow('181', 'NEW');
 
     cy.writeIntoLookupListField('C_BPartner_ID', purchaseOrder.bPartner, purchaseOrder.bPartner);
-    cy.writeIntoStringField('POReference', purchaseOrder.poReference);
+    if (purchaseOrder.doctype) {
+      cy.writeIntoStringField('C_DocTypeTarget_ID', purchaseOrder.documentType);
+    }
+    if (purchaseOrder.poReference) {
+      cy.writeIntoStringField('POReference', purchaseOrder.poReference);
+    }
+
+    if (purchaseOrder.priceSystem) {
+      cy.resetListValue('M_PricingSystem_ID');
+      cy.selectInListField('M_PricingSystem_ID', purchaseOrder.priceSystem);
+    }
 
     if (purchaseOrder.isDropShip) {
-      cy.clickOnCheckBox('IsDropShip');
+      cy.setCheckBoxValue('IsDropShip', purchaseOrder.isDropShip);
     }
 
-    // Thx to https://stackoverflow.com/questions/16626735/how-to-loop-through-an-array-containing-objects-and-access-their-properties
-    if (purchaseOrder.lines.length > 0) {
-      purchaseOrder.lines.forEach(function(purchaseOrderLine) {
-        applyPurchaseOrderLineAddNew(purchaseOrderLine);
-      });
-      cy.get('table tbody tr').should('have.length', purchaseOrder.lines.length);
-    }
-
-    if (purchaseOrder.docAction) {
-      if (purchaseOrder.docStatus) {
-        cy.processDocument(purchaseOrder.docAction, purchaseOrder.docStatus);
-      } else {
-        cy.processDocument(purchaseOrder.docAction);
-      }
-    }
+    purchaseOrder.lines.forEach(function(purchaseOrderLine) {
+      applyPurchaseOrderLine(purchaseOrderLine);
+    });
+    cy.get('table tbody tr').should('have.length', purchaseOrder.lines.length);
   });
 }
 
-function applyPurchaseOrderLineAddNew(purchaseOrderLine) {
+function applyPurchaseOrderLine(purchaseOrderLine) {
   cy.selectTab('C_OrderLine');
-  cy.pressAddNewButton();
-
+  cy.pressBatchEntryButton();
   cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
-  //cy.wait('@patchAddress');
-  //cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');
-  //cy.writeIntoLookupListField('M_HU_PI_Item_Product_ID', 'IFCO 6410 x 10 Stk');
-  cy.writeIntoStringField('QtyEnteredTU', purchaseOrderLine.tuQuantity);
-  cy.wait(500);
-  cy.pressDoneButton();
-  //});
+  cy.writeIntoStringField('Qty', purchaseOrderLine.quantity);
+  cy.closeBatchEntry();
+
+  // // cannot use advanced edit since adding a packing item is broken.
+  // cy.selectTab('C_OrderLine');
+  // cy.pressBatchEntryButton();
+  // cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product, false, true);
+  // cy.writeIntoStringField('QtyEntered', purchaseOrderLine.quantity, true);
+  // cy.pressDoneButton();
 }
-
-// doesn't work
-// function applyPurchaseOrderLineBatchEntry(purchaseOrderLine)
-// {
-//     cy.selectTab('C_OrderLine');
-//     cy.pressBatchEntryButton();
-
-//     //cy.wait('@postAddress').then(xhr => {
-//         //const requestId = xhr.response.body.id;
-
-//         //cy.route('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
-//         cy.writeIntoLookupListField('M_Product_ID', purchaseOrderLine.product, purchaseOrderLine.product);
-//         //cy.wait('@patchAddress');
-//         //cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');
-//         cy.writeIntoStringField('Qty', purchaseOrderLine.tuQuantity).type('{enter}');
-//     //});
-// }

@@ -46,21 +46,23 @@ Cypress.Commands.add('selectSingleTabRow', () => {
   });
 });
 
-Cypress.Commands.add('selectReference', (refName, timeout) => {
-  describe('Select reference with a certain name', function() {
-    const options = {};
-    if (timeout) {
-      options.timeout = timeout;
-    }
-    return cy.get(`.reference_${refName}`, options);
-  });
-});
+Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
+  // retry 8 times to open the referenced document
+  if (retriesLeft >= 1) {
+    cy.get('body').type('{alt}6'); // open referenced docs
+    cy.get('.order-list-panel .order-list-loader').should('not.exist');
 
-Cypress.Commands.add('openReferencedDocuments', (referenceId) => {
-  cy.get('body').type('{alt}6');
-  if (referenceId) {
-    cy.selectReference(referenceId).click();
+    return cy.get('body').then(body => {
+      if (body.find(`.reference_${referenceId}`).length > 0) {
+        return cy.get(`.reference_${referenceId}`).click();
+      } else {
+        cy.wait(1000);
+        cy.get('body').type('{alt}5'); // close referenced docs by switching to something else
+        return cy.openReferencedDocuments(referenceId, retriesLeft - 1);
+      }
+    });
   }
+  return cy.get(`.reference_${referenceId}`).click(); // one more time just because we need to throw the error
 });
 
 /**
@@ -74,4 +76,13 @@ Cypress.Commands.add('selectNthRow', rowNumber => {
     .find(`tbody tr:nth-child(${rowNumber + 1})`)
     .should('exist')
     .click({ force: true });
+});
+
+/**
+ * Expect the table to have a specific number of rows
+ *
+ * @param numberOfRows - the number of rows
+ */
+Cypress.Commands.add('expectNumberOfRows', numberOfRows => {
+  return cy.get('table tbody tr').should('have.length', numberOfRows);
 });

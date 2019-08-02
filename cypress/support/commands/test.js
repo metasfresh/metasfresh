@@ -1,5 +1,6 @@
 import { getLanguageSpecific } from '../utils/utils';
 import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
+import { checkIfWindowCanExecuteActions } from './commands_utils';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
   describe(`Select ${fieldName}'s address-button and invoke the given function`, function() {
@@ -77,10 +78,10 @@ Cypress.Commands.add('processDocument', (action, expectedStatus) => {
 });
 
 Cypress.Commands.add('openAdvancedEdit', () => {
-  describe('Open the advanced edit overlay via ALT+E shortcut', function() {
-    cy.get('body').type('{alt}E');
-    cy.get('.panel-modal').should('exist');
-  });
+  checkIfWindowCanExecuteActions();
+  cy.log('Open the advanced edit overlay via ALT+E shortcut');
+  cy.get('body').type('{alt}E');
+  cy.get('.panel-modal').should('exist');
 });
 
 /*
@@ -110,7 +111,7 @@ Cypress.Commands.add('pressDoneButton', waitBeforePress => {
       .should('exist')
       .click();
 
-    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+    cy.get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to disappear
       .should('not.exist');
   });
 });
@@ -200,6 +201,17 @@ Cypress.Commands.add('reactivateDocument', () => {
       cy.processDocument(
         getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
         getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
+      );
+    });
+  });
+});
+
+Cypress.Commands.add('reverseDocument', () => {
+  describe('Reverse the current document', function() {
+    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
+      cy.processDocument(
+        getLanguageSpecific(miscDictionary, DocumentActionKey.Reverse),
+        getLanguageSpecific(miscDictionary, DocumentStatusKey.Reversed)
       );
     });
   });
