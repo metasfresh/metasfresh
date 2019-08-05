@@ -20,6 +20,7 @@ const selectNotFrequentFilterWidget = filterId => {
 const applyFilters = () => {
   cy.clickElementWithClass('.filter-btn-wrapper .applyBtn', true);
   cy.wait(1000); // give time to apply the filters
+  cy.waitForSaveIndicator();
 };
 
 const confirmCalendarDay = () => {
