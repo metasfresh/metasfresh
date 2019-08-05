@@ -3,6 +3,7 @@ import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 
 describe('Create Sales order', function() {
   const date = humanReadableNow();
@@ -43,55 +44,21 @@ describe('Create Sales order', function() {
     cy.readAllNotifications();
   });
   it('Create a sales order', function() {
-    cy.visitWindow('143', 'NEW');
-    cy.get('#lookup_C_BPartner_ID input')
-      .type(customer)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', customer).click();
-
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName);
-
-    const addNewText = Cypress.messages.window.batchEntry.caption;
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
-
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .should('have.value', '0.1')
-      .type('1{enter}');
-    cy.waitUntilProcessIsFinished();
-    /**Complete sales order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
+      new SalesOrder()
+        .setBPartner(customer)
+        .setPriceSystem(priceSystemName)
+        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
+        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
+        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
+        .apply();
     });
-    cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
     /** Go to Shipment disposition*/
-    cy.get('.reference_M_ShipmentSchedule').click();
-    cy.get('tbody tr')
-      .eq('0')
-      .click({ force: true });
+    cy.openReferencedDocuments('M_ShipmentSchedule');
+    cy.selectNthRow(0).dblclick();
     /**Generate shipments */
-    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
+    // cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
     /**Wait for the shipment schedule process to complete */
     cy.waitUntilProcessIsFinished();
@@ -102,20 +69,13 @@ describe('Create Sales order', function() {
       .first()
       .click();
     cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
     /**Billing - Invoice disposition */
-    cy.get('.reference_C_Invoice_Candidate', { timeout: 10000 }).click();
-    cy.get('tbody tr')
-      .eq('0')
-      .click();
+    cy.openReferencedDocuments('C_Invoice_Candidate');
+    cy.selectNthRow(0).click();
     /**Generate invoices on billing candidates */
-    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+    cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
     cy.pressStartButton();
-    // /**Open notifications */
+    /**Open notifications */
     cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
     cy.get('.inbox-item-unread .inbox-item-title')
       .filter(':contains("' + customer + '")')

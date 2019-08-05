@@ -39,6 +39,12 @@ export class SalesOrder {
     return this;
   }
 
+  setPriceSystem(priceSystem) {
+    cy.log(`PurchaseOrder - priceSystem = ${priceSystem}`);
+    this.priceSystem = priceSystem;
+    return this;
+  }
+
   apply() {
     cy.log(`SalesOrder - apply - START (${this.reference})`);
     SalesOrder.applySalesOrder(this);
@@ -64,6 +70,11 @@ export class SalesOrder {
 
       if (salesOrder.reference) {
         cy.writeIntoStringField('POReference', salesOrder.reference);
+      }
+
+      if (salesOrder.priceSystem) {
+        cy.resetListValue('M_PricingSystem_ID');
+        cy.selectInListField('M_PricingSystem_ID', salesOrder.priceSystem);
       }
 
       salesOrder.lines.forEach(line => {

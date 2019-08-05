@@ -7,7 +7,8 @@ import { PackingInstructions } from '../../support/utils/packing_instructions';
 import { PackingInstructionsVersion } from '../../support/utils/packing_instructions_version';
 import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { DocumentStatusKey } from '../../support/utils/constants';
+import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
 describe('Create Purchase order - material receipt - invoice', function() {
   const date = humanReadableNow();
@@ -33,7 +34,13 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productPMValue, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(
+      priceListName,
+      productForPackingMaterial,
+      productPMValue,
+      productType,
+      '24_Gebinde'
+    );
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -84,42 +91,13 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.readAllNotifications();
   });
   it('Create a purchase order and complete it', function() {
-    cy.visitWindow('181', 'NEW');
-    cy.get('#lookup_C_BPartner_ID input')
-      .type(vendorName)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', vendorName).click();
-
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName, false, null, true);
-    const addNewText = Cypress.messages.window.batchEntry.caption;
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .should('have.value', '0.1')
-      .clear()
-      .type('5{enter}');
-    cy.waitUntilProcessIsFinished();
-    /**Complete purchase order */
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
+    new PurchaseOrder()
+      .setBPartner(vendorName)
+      .setPriceSystem(priceSystemName)
+      .setPoReference('test')
+      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(5))
+      .apply();
+    cy.completeDocument();
     cy.waitUntilProcessIsFinished();
     /**purchase order should be completed */
     cy.log('purchase order should be completed');
@@ -129,46 +107,31 @@ describe('Create Purchase order - material receipt - invoice', function() {
   });
   /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {
-    cy.waitUntilProcessIsFinished();
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
-      );
-    });
-    cy.waitUntilProcessIsFinished();
+    cy.reactivateDocument();
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress));
     });
     cy.log('change Quantity TU');
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.quantity-cell')
       .eq('0')
       .dblclick({ force: true })
       .writeIntoStringField('QtyEnteredTU', '4');
-    cy.get('#tab_C_OrderLine').click();
+    cy.selectTab('C_OrderLine');
     cy.log('change Quantity');
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.quantity-cell')
       .eq('1')
       .dblclick({ force: true })
       .writeIntoStringField('QtyEntered', '45');
-    cy.get('#tab_C_OrderLine').click();
+    cy.selectTab('C_OrderLine');
     cy.log('change Price');
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.costprice-cell')
       .eq('0')
       .dblclick({ force: true })
       .writeIntoStringField('PriceEntered', '4.00');
     cy.log('change Quantity');
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
-    });
+    cy.completeDocument();
   });
 });
