@@ -326,7 +326,7 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
   const path = createFieldPath(fieldName, modal);
   cy.get(path)
     .find('.input-dropdown')
-    .click();
+    .click({ force: true });
 
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
   cy.get('.input-dropdown-list')

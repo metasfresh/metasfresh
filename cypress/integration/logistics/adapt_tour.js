@@ -1,7 +1,7 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { humanReadableNow } from '../../support/utils/utils';
 import { Tour } from '../../support/utils/tour';
-import { TourVersion } from '../../support/utils/tour_version';
+import { TourVersion, TourVersionLine } from '../../support/utils/tour_version';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 
 describe('Create Purchase order - material receipt - invoice', function() {
@@ -30,16 +30,14 @@ describe('Create Purchase order - material receipt - invoice', function() {
       Object.assign(new TourVersion(), tourVersionJson)
         .setName(tourVersionName)
         .setTour(tourName)
-        .setCustomer(customerName)
+        .addLine(new TourVersionLine().setBpartner(customerName).setBuffer(0))
         .apply();
     });
     cy.writeIntoStringField('PreparationTime_5', '2:00 P', false, null, true);
-    /**Add a new version line with the same customer but a second location */
+    /**Add a new version line */
     cy.selectTab('M_TourVersionLine');
     cy.pressAddNewButton();
     cy.writeIntoLookupListField('C_BPartner_ID', customerName, customerName, false, true, null, true);
-    // cy.waitUntilProcessIsFinished();
-    cy.selectInListField('C_BPartner_Location_ID', 'Address2', true, null, true, false);
     cy.pressDoneButton();
   });
 });
