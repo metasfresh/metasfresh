@@ -154,7 +154,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.pressDoneButton();
   });
 
-  it('Go to the referenced Material Receipt and expect 2 rows/ecords', function() {
+  it('Go to the referenced Material Receipt and expect 2 rows/records', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
     cy.openReferencedDocuments('184');
 
