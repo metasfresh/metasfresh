@@ -327,12 +327,12 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
   const path = createFieldPath(fieldName, modal);
   cy.get(path)
     .find('.input-dropdown')
-    .click({ force: true });
+    .click();
 
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
   cy.get('.input-dropdown-list')
     .contains(listValue)
-    .click({ force: true });
+    .click();
 
   if (!skipRequest) {
     cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
