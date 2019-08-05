@@ -2,11 +2,19 @@ import { RewriteURL } from './constants';
 import { getLanguageSpecific } from './utils';
 
 export class Warehouse {
-  constructor(name) {
-    cy.log(`Create Warehouse - name = ${name}`);
-    this.name = name;
+  constructor() {
     this.locators = [];
     this.routes = [];
+  }
+
+  addLocator(warehouseLocator) {
+    this.locators.push(warehouseLocator);
+    return this;
+  }
+
+  addRoute(warehouseRoute) {
+    this.routes.push(warehouseRoute);
+    return this;
   }
 
   setName(name) {
@@ -26,7 +34,8 @@ export class Warehouse {
     this.C_BPartner_Location_ID = C_BPartner_Location_ID;
     return this;
   }
-  setIsQualityIssueWarehouse(isQualityIssueWarehouse){
+
+  setIsQualityIssueWarehouse(isQualityIssueWarehouse) {
     cy.log(`Warehouse - set Quality Issue Warehouse= ${isQualityIssueWarehouse}`);
     this.isQualityIssueWarehouse = isQualityIssueWarehouse;
     return this;
@@ -70,6 +79,7 @@ export class WarehouseLocator {
     this.value = value;
     return this;
   }
+
   setIsAfterPickingLocator(isAfterPickingLocator) {
     cy.log(`WarehouseLocator - set isAfterPickingLocator= ${isAfterPickingLocator}`);
     this.isAfterPickingLocator = isAfterPickingLocator;
@@ -85,37 +95,45 @@ export class WarehouseRoute {
   }
 }
 
-function applyWarehouse(Warehouse) {
-  cy.visitWindow('139', 'NEW')
-    .writeIntoStringField('Name', Warehouse.name)
-    .clearField('Value')
-    .writeIntoStringField('Value', Warehouse.value);
-  cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
-  cy.setCheckBoxValue('IsIssueWarehouse', Warehouse.isQualityIssueWarehouse);
-  Warehouse.locators.forEach(locator => {
+function applyWarehouse(warehouse) {
+  cy.visitWindow('139', 'NEW');
+  cy.writeIntoStringField('Name', warehouse.name);
+  // .clearField('Value')
+  cy.writeIntoStringField('Value', warehouse.value);
+  cy.selectNthInListField('C_BPartner_Location_ID', 1);
+  if (warehouse.isQualityIssueWarehouse) {
+    cy.setCheckBoxValue('IsIssueWarehouse', warehouse.isQualityIssueWarehouse);
+  }
+
+  warehouse.locators.forEach(locator => {
     applyLocator(locator);
-    Warehouse.routes.forEach(route => {
-      applyRoute(route);
-    });
+  });
+  warehouse.routes.forEach(route => {
+    applyRoute(route);
   });
 }
 
 function applyLocator(locator) {
-  cy.get(`#tab_M_Locator`).click();
-  cy.pressAddNewButton()
-    .clearField('Value', true)
-    .writeIntoStringField('Value', locator.value, true, null, true)
-    .writeIntoStringField('X', locator.x1, true, null, true)
-    .writeIntoStringField('X1', locator.x1, true, null, true)
-    .writeIntoStringField('Z', locator.z, true, null, true)
-    .writeIntoStringField('Y', locator.y, true, null, true)
-    .setCheckBoxValue('IsAfterPickingLocator', locator.isAfterPickingLocator, true, RewriteURL.PROCESS)
-    .pressDoneButton();
+  cy.selectTab('M_Locator');
+  cy.pressAddNewButton();
+  cy.writeIntoStringField('X', locator.x, true, null, true);
+  cy.writeIntoStringField('X1', locator.x1, true, null, true);
+  cy.writeIntoStringField('Z', locator.z, true, null, true);
+  cy.writeIntoStringField('Y', locator.y, true, null, true);
+
+  if (locator.value) {
+    cy.clearField('Value', true);
+    cy.writeIntoStringField('Value', locator.value, true, null, true);
+  }
+  if (locator.isAfterPickingLocator) {
+    cy.setCheckBoxValue('IsAfterPickingLocator', locator.isAfterPickingLocator, true, RewriteURL.PROCESS);
+  }
+  cy.pressDoneButton();
 }
 
 function applyRoute(route) {
-  cy.get(`#tab_M_Warehouse_Routing`).click();
-  cy.pressAddNewButton()
-    .selectInListField('DocBaseType', getLanguageSpecific(route, 'docBaseType'), true) // note: the way it's implemented now, there's no de_DE support!
-    .pressDoneButton();
+  cy.selectTab(`M_Warehouse_Routing`);
+  cy.pressAddNewButton();
+  cy.selectInListField('DocBaseType', getLanguageSpecific(route, 'docBaseType'), true);
+  cy.pressDoneButton();
 }

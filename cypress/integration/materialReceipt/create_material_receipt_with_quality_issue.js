@@ -3,16 +3,22 @@ import { ProductCategory } from '../../support/utils/product';
 import { Builder } from '../../support/utils/builder';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { BPartner } from '../../support/utils/bpartner';
-import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
+import { humanReadableNow } from '../../support/utils/utils';
+import { Warehouse, WarehouseRoute } from '../../support/utils/warehouse';
+import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
+import { purchaseOrders } from '../../page_objects/purchase_orders';
 
-describe('Create test: create material receipt with quality issue, https://github.com/metasfresh/metasfresh-e2e/issues/210', function() {
+describe('Create material receipt with quality issue', function() {
   const date = humanReadableNow();
+
   const qualityNoteName = `QualityNoteTest ${date}`;
   const qualityNoteValue = `QualityNoteValueTest ${date}`;
+  const qualityDiscountPercent = '50';
+  const expectedLineQty = '5';
+
   const warehouseName = `TestWarehouseName ${date}`;
-  const warehouseValue = `TestWarehouseValue ${date}`;
+
   const productName1 = `ProductTest ${date}`;
   const productValue1 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
@@ -24,6 +30,9 @@ describe('Create test: create material receipt with quality issue, https://githu
   const productType = 'Item';
   const vendorName = `Vendor ${date}`;
 
+  // test
+  let purchaseOrderRecordId;
+
   it('Create a quality note', function() {
     cy.fixture('material/quality_note.json').then(qualityNoteJson => {
       Object.assign(new QualityNote(), qualityNoteJson)
@@ -32,51 +41,34 @@ describe('Create test: create material receipt with quality issue, https://githu
         .apply();
     });
   });
-  it('Create quality issue warehouse', function() {
-    /**filter after quality issue warehouse */
+
+  it('Ensure no quality issue warehouse exists', function() {
     cy.visitWindow('139');
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
-    cy.clickOnCheckBox('IsIssueWarehouse', true, false, null, true);
+    cy.setCheckBoxValue('IsIssueWarehouse', true, false, null, true);
     applyFilters();
-    cy.waitUntilProcessIsFinished();
-    /**if found, deselect it */
+
     cy.get('tr').then(el => {
       if (el.length > 1) {
-        cy.get(el.get(1))
-          .find('td:nth-of-type(7)')
-          .find('.meta-icon-checkbox-1')
-          .dblclick();
+        cy.selectNthRow(0).dblclick();
         cy.setCheckBoxValue('IsIssueWarehouse', false);
-        cy.waitUntilProcessIsFinished();
       }
     });
-    /**create a new quality issue warehouse */
-    cy.visitWindow('139', 'NEW')
-      .writeIntoStringField('Name', warehouseName)
-      .clearField('Value')
-      .writeIntoStringField('Value', warehouseValue);
-    cy.selectNthInListField('C_BPartner_Location_ID', 1, false);
-    cy.setCheckBoxValue('IsIssueWarehouse', true);
-    //create locator
-    cy.get(`#tab_M_Locator`).click();
-    cy.pressAddNewButton()
-      .writeIntoStringField('X', '0')
-      .writeIntoStringField('X1', '0')
-      .writeIntoStringField('Z', '0')
-      .writeIntoStringField('Y', '0')
-      .pressDoneButton();
-    //create warehouse routing
-    cy.get(`#tab_M_Warehouse_Routing`).click();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', 'Sales Order', true)
-      .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', 'Match PO', true)
-      .pressDoneButton();
-    cy.pressAddNewButton()
-      .selectInListField('DocBaseType', 'Material Receipt', true)
-      .pressDoneButton();
+  });
+
+  it('Create quality issue warehouse', function() {
+    cy.fixture('misc/warehouse.json').then(warehouseJson => {
+      Object.assign(new Warehouse(), warehouseJson)
+        .setName(warehouseName)
+        .setValue(warehouseName)
+        .setIsQualityIssueWarehouse(true)
+        .addRoute(new WarehouseRoute().setDocBaseType('Match PO'))
+        .apply();
+    });
+  });
+
+  it('Create Price and ProductCategory', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
@@ -85,6 +77,7 @@ describe('Create test: create material receipt with quality issue, https://githu
         .apply();
     });
   });
+
   it('Create product and vendor', function() {
     Builder.createBasicProductEntities(
       productCategoryName,
@@ -105,104 +98,74 @@ describe('Create test: create material receipt with quality issue, https://githu
     });
     cy.readAllNotifications();
   });
+
   it('Create purchase order - material receipt with quality issue', function() {
-    /**Create a purchase order */
-    cy.visitWindow('181', 'NEW');
-    cy.get('#lookup_C_BPartner_ID input')
-      .type(vendorName)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', vendorName).click();
+    new PurchaseOrder()
+      .setBPartner(vendorName)
+      .setPriceSystem(priceSystemName)
+      .addLine(new PurchaseOrderLine().setProduct(productName1).setQuantity(10))
+      .apply();
 
-    cy.selectInListField('M_PricingSystem_ID', priceSystemName, false, null, true);
+    cy.completeDocument();
+  });
 
-    const addNewText = Cypress.messages.window.batchEntry.caption;
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
-
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .should('have.value', '0.1')
-      .clear()
-      .type('10{enter}');
-    cy.waitUntilProcessIsFinished();
-    /**Complete purchase order */
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
+  it('Save values needed for the next steps', function() {
+    cy.getCurrentWindowRecordId().then(recordId => {
+      purchaseOrderRecordId = recordId;
     });
-    cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    /** Go to Material Receipt Candidates*/
-    cy.get('.reference_M_ReceiptSchedule').click();
-    /**Select the first product */
-    cy.get('tbody tr')
-      .eq('0')
-      .click();
-    cy.waitUntilProcessIsFinished();
-    /**Receive CUs */
+  });
+
+  it('Visit referenced Material Receipt Candidates, expect 1 row', function() {
+    cy.openReferencedDocuments('M_ReceiptSchedule');
+    cy.expectNumberOfRows(1);
+  });
+
+  it('Select the row and Receive the CUs with 50% alteration', function() {
+    cy.selectNthRow(0);
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveCUs');
     /**this means that 50% of the products are altered. */
-    cy.writeIntoStringField('QualityDiscountPercent', 50, true, null, true);
+    cy.writeIntoStringField('QualityDiscountPercent', qualityDiscountPercent, true, null, true);
     cy.selectInListField('QualityNotice', qualityNoteName, true, null, true);
-    cy.waitUntilProcessIsFinished();
-    /**Create material receipt */
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams');
-    cy.waitUntilProcessIsFinished();
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
     cy.pressDoneButton();
-    cy.waitUntilProcessIsFinished();
-    cy.go('back');
-    cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
-    /** Go to Material Receipt Candidates*/
-    cy.contains('Material Receipt (#').click();
-    /**as the quantity for the product set in purchase order was 10 and 50% are altered
+  });
+
+  it('Go to the referenced Material Receipt and expect 1 rows/records', function() {
+    cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
+    cy.openReferencedDocuments('184');
+
+    cy.expectNumberOfRows(1);
+  });
+
+  it('Expect 2 Material Receipt Lines', function() {
+    /**
+     * As the quantity for the product set in purchase order was 10 and 50% are altered
      * => there should be 2 items in material receipt -
-     * 1 without quality note and quantity=5 and 1 with quality note and quantity=5 */
-    cy.get('tbody tr')
-      .eq('0')
-      .dblclick();
-    cy.get('tbody tr')
-      .eq('0')
-      .find('.quantity-cell')
-      .eq(1)
-      .contains('5');
-    cy.get('tbody tr')
-      .eq('0')
-      .find('.Text')
-      .find('.text-cell')
-      .should('be.empty');
-    cy.get('tbody tr')
-      .eq('1')
-      .find('.quantity-cell')
-      .eq(1)
-      .contains('5');
-    cy.get('tbody tr')
-      .eq('1')
-      .find('.Text')
-      .find('.text-cell')
-      .contains(qualityNoteName);
+     * 1 without quality note and quantity=5 and 1 with quality note and quantity=5
+     * */
+
+    cy.selectNthRow(0).dblclick();
+    cy.selectTab('M_InOutLine');
+    cy.expectNumberOfRows(2);
+  });
+
+  it('Check Material Receipt Line without quality issue', function() {
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty);
+    cy.getStringFieldValue('QualityNote', true).should('be.empty');
+    cy.getStringFieldValue('QualityDiscountPercent', true).should('be', '0');
+    cy.expectCheckboxValue('IsInDispute', false, true);
+    cy.pressDoneButton();
+  });
+
+  it('Check Material Receipt Line with quality issue', function() {
+    cy.selectNthRow(1);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('QtyEntered', true).should('equal', expectedLineQty);
+    cy.getStringFieldValue('QualityNote', true).should('contain', qualityNoteName);
+    cy.getStringFieldValue('QualityDiscountPercent', true).should('contain', qualityDiscountPercent);
+    cy.expectCheckboxValue('IsInDispute', true, true);
+    cy.pressDoneButton();
   });
 });
