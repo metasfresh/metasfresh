@@ -37,6 +37,7 @@ export class Builder {
         .apply();
     });
   }
+
   /**
    * Use this when you aren't interested in configuring anything (except for the name) for the ProductCategory, ProductPrice or Product, but you only need them to exist.
    *
@@ -75,7 +76,7 @@ export class Builder {
     });
   }
 
-  static createBasicProductEntitiesWithCUTUAllocation(
+  static createProductWithPriceAndCUTUAllocationUsingExistingCategory(
     productCategoryName,
     productCategoryValue,
     priceListName,
@@ -84,13 +85,6 @@ export class Builder {
     productType,
     packingInstructionsName
   ) {
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-
     let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
@@ -103,12 +97,12 @@ export class Builder {
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
-        .setCUTUAllocation(packingInstructionsName)
+        .addCUTUAllocation(packingInstructionsName)
         .apply();
     });
   }
 
-  static createBasicProductEntitiesWithPrice(priceListName, productName, productValue, productType) {
+  static createProductWithPriceUsingExistingCategory(priceListName, productName, productValue, productType, categoryName) {
     let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
@@ -119,7 +113,7 @@ export class Builder {
         .setName(productName)
         .setValue(productValue)
         .setProductType(productType)
-        .setProductCategory('24_Gebinde')
+        .setProductCategory(categoryName)
         .addProductPrice(productPrice)
         .apply();
     });

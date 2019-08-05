@@ -19,7 +19,7 @@ WORKDIR /e2e
 # I think this is needed so the npm intall will get all needed dependencies
 COPY package.json .
 
-RUN npm install --save-dev cypress@3.4.0
+RUN npm install --save-dev cypress@3.4.1
 RUN npm install
 
 COPY .babelrc .

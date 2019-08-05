@@ -1,6 +1,5 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { BillOfMaterial } from '../../support/utils/billOfMaterial';
-import { applyFilters, toggleNotFrequentFilters, selectNotFrequentFilterWidget } from '../../support/functions';
 
 describe('Create Product', function() {
   const timestamp = new Date().getTime();
@@ -35,8 +34,8 @@ describe('Create Product', function() {
         .setSold(true)
         .apply();
     });
-    cy.get(`@${productName}`).then(mainProduct => {
-      mainProductId = mainProduct.documentId;
+    cy.getCurrentWindowRecordId().then(id => {
+      mainProductId = id;
     });
   });
 
