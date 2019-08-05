@@ -33,7 +33,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createBasicProductEntitiesWithPrice(priceListName, productForPackingMaterial, productPMValue, productType);
+    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productPMValue, productType, "24_Gebinde");
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -63,7 +63,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
 
-    Builder.createBasicProductEntitiesWithCUTUAllocation(
+    Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryValue,
       priceListName,
@@ -112,7 +112,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
       .should('have.value', '0.1')
       .clear()
       .type('5{enter}');
-    cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
+    cy.waitUntilProcessIsFinished();
     /**Complete purchase order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
@@ -120,7 +120,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
       );
     });
-
+    cy.waitUntilProcessIsFinished();
     /**purchase order should be completed */
     cy.log('purchase order should be completed');
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
@@ -129,13 +129,14 @@ describe('Create Purchase order - material receipt - invoice', function() {
   });
   /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {
+    cy.waitUntilProcessIsFinished();
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.processDocument(
         getLanguageSpecific(miscDictionary, DocumentActionKey.Reactivate),
         getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress)
       );
     });
-    cy.wait(8000);
+    cy.waitUntilProcessIsFinished();
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress));
     });

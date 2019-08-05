@@ -87,7 +87,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Open the Referenced Billing Candidates', function() {
-    cy.waitUntilProcessIsFinished();
     cy.openReferencedDocuments('C_Order_C_Invoice_Candidate');
   });
 
@@ -103,8 +102,8 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Billing Candidates checks after Sales Order created', function() {
-    const qtyDelivered = '0'; // backend is flaky and keeps switching between '' and '0' and back to ''
-    const qtyInvoiced = '0'; // backend is flaky and keeps switching between '' and '0' and back to ''
+    const qtyDelivered = '0';
+    const qtyInvoiced = '0';
 
     checkBillingCandidate(qtyDelivered, qtyInvoiced);
   });
@@ -340,8 +339,20 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
     cy.getStringFieldValue('M_Product_ID').should('contain', productName);
     cy.getStringFieldValue('QtyEntered').should('equal', originalQuantity.toString(10));
     cy.getStringFieldValue('QtyOrdered').should('equal', originalQuantity.toString(10));
-    cy.getStringFieldValue('QtyDelivered ').should('equal', qtyDelivered);
-    cy.getStringFieldValue('QtyInvoiced ').should('equal', qtyInvoiced);
+
+    // backend is flaky and keeps switching between '' and '0' and back to '', so we need this workaround
+    cy.getStringFieldValue('QtyDelivered ').then(qty => {
+      if (qty === '') {
+        qty = '0';
+      }
+      expect(qty).to.equal(qtyDelivered);
+    });
+    cy.getStringFieldValue('QtyInvoiced ').then(qty => {
+      if (qty === '') {
+        qty = '0';
+      }
+      expect(qty).to.equal(qtyInvoiced);
+    });
   }
 });
 

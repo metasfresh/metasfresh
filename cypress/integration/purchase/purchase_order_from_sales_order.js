@@ -126,7 +126,7 @@ describe('Create Purchase order from sales order', function() {
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice1)
         .addProductPrice(productPrice2)
-        .setCUTUAllocation(packingInstructionsName)
+        .addCUTUAllocation(packingInstructionsName)
         .setBusinessPartner(vendorName)
         .apply();
     });

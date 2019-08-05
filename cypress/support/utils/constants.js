@@ -9,6 +9,7 @@ export class DocumentActionKey {
   static Complete = 'docActionComplete';
   static Void = 'docActionVoid';
   static Reactivate = 'docActionReactivate';
+  static Reverse = 'docActionReverse';
 }
 
 /**
@@ -22,4 +23,8 @@ export class RewriteURL {
   static WINDOW = '/rest/api/window/';
 
   static PROCESS = '/rest/api/process/';
+
+  static ATTRIBUTE = '/rest/api/pattribute';
+
+  static QUICKACTION = `/rest/api/process.*/start\$`;
 }

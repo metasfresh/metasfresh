@@ -78,13 +78,13 @@ const findByName = (dataArray, name) => {
 /**
  * Human readable date and time with millis!
  *
- * The returned time format is: `15T11:32:17.211` `([day]T[HH]:[MM]:[SS].[millis])`
+ * The returned time format is: `15T11_32_17_211` `([day]T[HH]_[MM]_[SS]_[millis])`
  *
  * @returns {string}
  */
 const humanReadableNow = () => {
   const date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString();
-  return date.slice(8, date.length - 1);
+  return date.slice(8, date.length - 1).split(/:|\./g).join('_');
 };
 
 export {getLanguageSpecific, wrapRequest, findByName, humanReadableNow};

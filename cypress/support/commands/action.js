@@ -1,27 +1,9 @@
+import { checkIfWindowCanExecuteActions } from './commands_utils';
+import { RewriteURL } from "../utils/constants";
+import { humanReadableNow } from "../utils/utils";
+
 function executeHeaderAction(actionName) {
-  /**
-   * Only specific windows can have actions. They match one of the following urls:
-   *
-   * https://dev586.metasfresh.com/window/123?viewId=123-o&page=1 - list view
-   *    - in this case also '.table-flex-wrapper' should exist
-   * https://dev586.metasfresh.com/window/123/2156425 - single view
-   *    - in this case also '.panel' should exist
-   *
-   * This match is needed because cypress is so fast that it may press the action button before any viewId is available, and the system will error out.
-   */
-  cy.url().should('matches', new RegExp(`window/[0-9]+(/[0-9]+|.*viewId=)`));
-
-  cy.url().then(url => {
-    const listViewRegexp = new RegExp(`window/[0-9]+.*viewId=`);
-    // const singleViewRegexp = new RegExp(`window/[0-9]+/[0-9]+`);
-
-    if (url.match(listViewRegexp)) {
-      cy.get('.table-flex-wrapper').should('exist');
-    } else {
-      cy.get('.panel .row').should('exist');
-    }
-  });
-
+  checkIfWindowCanExecuteActions();
   cy.get('.header-container .btn-square .meta-icon-more').click();
   cy.get('.subheader-container').should('exist');
   cy.get(`#headerAction_${actionName}`).click();
@@ -59,23 +41,34 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-Cypress.Commands.add('executeQuickAction', (actionName, active) => {
-  describe('Fire a quick action with a certain name', function() {
-    let path = `.quick-actions-wrapper`; // default action
+Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false) => {
+  let path = `.quick-actions-wrapper`; // default action
+  const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
-    if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline')
-        .eq(0)
-        .click();
-      cy.get('.quick-actions-dropdown').should('exist');
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
 
-      path = `#quickAction_${actionName}`;
-    }
+  if (!defaultAction) {
+    cy.get(`${path} .btn-inline`)
+      .eq(0)
+      .click();
+    cy.get('.quick-actions-dropdown').should('exist');
 
-    return cy
-      .get(path)
-      .click()
-      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-      .should('exist');
-  });
+    path = `#quickAction_${actionName}`;
+
+    cy.server();
+    cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
+  }
+
+  cy.get(path)
+    .should('not.have.class', 'quick-actions-item-disabled')
+    .get(path)
+    .click({ timeout: 10000 })
+    .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+    .should('exist');
+
+  if (!defaultAction) {
+    cy.wait(`@${requestAlias}`);
+  }
 });

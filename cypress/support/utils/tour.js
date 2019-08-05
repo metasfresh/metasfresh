@@ -1,10 +1,11 @@
 export class Tour {
   constructor(name) {
+    cy.log(`TourBuilder - set name = ${name}`);
     this.name = name;
   }
 
   setName(name) {
-    cy.log(`Tour - set name = ${name}`);
+    cy.log(`TourBuilder - set name = ${name}`);
     this.name = name;
     return this;
   }
@@ -16,9 +17,9 @@ export class Tour {
     return this;
   }
 }
-
 function applyTour(tour) {
-  cy.visitWindow('540331');
-  cy.clickHeaderNav(Cypress.messages.window.new.caption);
-  cy.writeIntoStringField('Name', tour.name);
+  describe(`Create new Tour ${tour.name}`, function() {
+    cy.visitWindow(540331, 'NEW');
+    cy.writeIntoStringField('Name', tour.name);
+  });
 }
