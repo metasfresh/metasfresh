@@ -42,7 +42,7 @@ describe('Reverse Empties Return', function() {
   const priceListVersionName = `PriceListVersion ${date}`;
 
   // product
-  const productCategory1 = `ProductCategory ${date}`;
+  const productCategory = `ProductCategory ${date}`;
   const productName1 = `Product1 ${date}`;
   const productName2 = `Product2 ${date}`;
   const productName3 = `Product3 ${date}`;
@@ -58,30 +58,28 @@ describe('Reverse Empties Return', function() {
       Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
 
       Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
+        productCategory,
+        productCategory,
         priceListName,
         productName1,
         productName1,
         productType
       );
 
-      Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
+      Builder.createProductWithPriceUsingExistingCategory(
         priceListName,
         productName2,
         productName2,
-        productType
+        productType,
+        productCategory
       );
 
-      Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
+      Builder.createProductWithPriceUsingExistingCategory(
         priceListName,
         productName3,
         productName3,
-        productType
+        productType,
+        productCategory
       );
     });
 

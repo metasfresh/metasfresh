@@ -7,6 +7,8 @@ import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific } from '../../support/utils/utils';
 
+// task: https://github.com/metasfresh/metasfresh-e2e/issues/111
+
 describe('Create a manual Payment for a Sales Invoice', function() {
   const timestamp = new Date().getTime();
   // const timestamp = 'latest timestamp'; // to use this just comment the `before` function
@@ -63,32 +65,19 @@ describe('Create a manual Payment for a Sales Invoice', function() {
     cy.fixture('sales/simple_customer.json').then(customerJson => {
       new BPartner({ ...customerJson, name: bPartnerName }).setCustomerDiscountSchema(discountSchemaName).apply();
     });
-    cy.readAllNotifications();
   });
 
   it('Create a Sales Invoice', function() {
     cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(bPartnerName, salesInvoiceTargetDocumentType)
-        .addLine(
-          new SalesInvoiceLine().setProduct(productName).setQuantity(20)
-          // todo @dh: how to add packing item
-          // .setPackingItem('IFCO 6410 x 10 Stk')
-          // .setTuQuantity(2)
-        )
-        // .addLine(
-        // todo @dh: how to add this line which depends on the packing item?
-        //   new SalesInvoiceLine()
-        //     .setProduct('IFCO 6410_P001512')
-        //     .setQuantity(2)
-        // )
+        .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(20))
         .setPriceList(priceListName)
         .setDocumentAction(getLanguageSpecific(salesInvoiceJson, 'docActionComplete'))
         .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, 'docStatusCompleted'))
         .apply();
 
-      cy.get('@newInvoiceDocumentId').then(salesInvoice => {
-        salesInvoiceID = salesInvoice.documentId;
-        cy.log(`salesInvoiceID is ${salesInvoiceID}`);
+      cy.getCurrentWindowRecordId().then(id => {
+        salesInvoiceID = id;
       });
     });
   });
@@ -104,8 +93,8 @@ describe('Create a manual Payment for a Sales Invoice', function() {
       salesInvoiceNumber = documentNumber;
     });
 
-    cy.get('.header-breadcrumb-sitename').then(si => {
-      salesInvoiceTotalAmount = parseFloat(si.html().split(' ')[2], 10); // the format is "DOC_NO MM/DD/YYYY total"
+    cy.getSalesInvoiceTotalAmount().then(totalAmount => {
+      salesInvoiceTotalAmount = totalAmount;
     });
   });
 
@@ -125,13 +114,7 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
     cy.writeIntoLookupListField('C_Invoice_ID', salesInvoiceNumber, salesInvoiceNumber);
 
-    // complete it and verify the status
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, 'docActionComplete'),
-        getLanguageSpecific(miscDictionary, 'docStatusCompleted')
-      );
-    });
+    cy.completeDocument();
   });
 
   it('Checks the paid + discount amount', function() {
@@ -147,15 +130,17 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
     cy.getStringFieldValue('Amount').then(val => {
       const value = parseFloat(val).toFixed(2);
-      paymentTotalAmount = parseFloat(salesInvoiceTotalAmount - discountAmount).toFixed(2);
+      paymentTotalAmount = salesInvoiceTotalAmount - discountAmount;
       assert.equal(value, paymentTotalAmount);
     });
 
     cy.pressDoneButton();
   });
 
-  it('Accounting transactions are created', function() {
+  it('Expect 2 Accounting transactions are created', function() {
     cy.openReferencedDocuments('AD_RelationType_ID-540201');
+    cy.expectNumberOfRows(2);
+    cy.go('back');
   });
 
   it('The paid Sales Invoice is linked to this Payment', function() {

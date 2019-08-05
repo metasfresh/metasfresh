@@ -1,4 +1,6 @@
 import { checkIfWindowCanExecuteActions } from './commands_utils';
+import { RewriteURL } from "../utils/constants";
+import { humanReadableNow } from "../utils/utils";
 
 function executeHeaderAction(actionName) {
   checkIfWindowCanExecuteActions();
@@ -39,27 +41,34 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-Cypress.Commands.add('executeQuickAction', (actionName, active, modal = false) => {
-  describe('Fire a quick action with a certain name', function() {
-    let path = `.quick-actions-wrapper`; // default action
+Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false) => {
+  let path = `.quick-actions-wrapper`; // default action
+  const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
-    if (modal) {
-      path = '.modal-content-wrapper ' + path;
-    }
+  if (modal) {
+    path = '.modal-content-wrapper ' + path;
+  }
 
-    if (!active) {
-      cy.get('.quick-actions-wrapper .btn-inline')
-        .eq(0)
-        .click();
-      cy.get('.quick-actions-dropdown').should('exist');
+  if (!defaultAction) {
+    cy.get(`${path} .btn-inline`)
+      .eq(0)
+      .click();
+    cy.get('.quick-actions-dropdown').should('exist');
 
-      path = `#quickAction_${actionName}`;
-    }
+    path = `#quickAction_${actionName}`;
 
-    return cy
-      .get(path)
-      .click({ timeout: 10000 })
-      .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-      .should('exist');
-  });
+    cy.server();
+    cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
+  }
+
+  cy.get(path)
+    .should('not.have.class', 'quick-actions-item-disabled')
+    .get(path)
+    .click({ timeout: 10000 })
+    .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+    .should('exist');
+
+  if (!defaultAction) {
+    cy.wait(`@${requestAlias}`);
+  }
 });

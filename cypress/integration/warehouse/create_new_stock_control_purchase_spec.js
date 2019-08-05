@@ -1,6 +1,6 @@
-import {StockControlPurchase, StockControlPurchaseProduct} from '../../support/utils/stockControlPurchase';
-import {Product, ProductCategory, ProductPrice} from '../../support/utils/product';
-import {Builder} from "../../support/utils/builder";
+import { StockControlPurchase, StockControlPurchaseProduct } from '../../support/utils/stockControlPurchase';
+import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
+import { Builder } from "../../support/utils/builder";
 
 describe('Create new Stock Control Purchase', function() {
   const timestamp = new Date().getTime();
@@ -13,7 +13,10 @@ describe('Create new Stock Control Purchase', function() {
   const priceListVersionName = `PriceListVersion ${timestamp}`;
   const productType = `Item`;
 
-  it('Prepare 3 products', function() {
+  // test
+  let productPrice;
+
+  it('Prepare Price, ProductCategory and Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName);
 
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
@@ -23,11 +26,12 @@ describe('Create new Stock Control Purchase', function() {
         .apply();
     });
 
-    let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);
     });
+  });
 
+  it('Prepare product 1', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
@@ -37,7 +41,9 @@ describe('Create new Stock Control Purchase', function() {
         .addProductPrice(productPrice)
         .apply();
     });
+  });
 
+  it('Prepare product 2', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName2)
@@ -47,7 +53,9 @@ describe('Create new Stock Control Purchase', function() {
         .addProductPrice(productPrice)
         .apply();
     });
+  });
 
+  it('Prepare product 3', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName3)
