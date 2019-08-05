@@ -199,9 +199,9 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   const path = createFieldPath(fieldName, modal);
   cy.get(path)
     .find('input')
-    .type('{selectall}', { force: true })
+    .type('{selectall}')
     .type(stringValue)
-    .type('{enter}', { force: true });
+    .type('{enter}');
 
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
