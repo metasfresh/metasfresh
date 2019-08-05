@@ -533,14 +533,6 @@ declare namespace Cypress {
      *
      * cypress/support/commands/general.js
      */
-    resetNotifications(): Chainable<any>
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * cypress/support/commands/general.js
-     */
     readAllNotifications(): Chainable<any>
 
 
@@ -642,6 +634,21 @@ declare namespace Cypress {
      */
     waitForSaveIndicator(expectIndicator ?: boolean): Chainable<any>
 
+    /**
+     * Open the notifications inbox/bell and select the first notification containing the expected value.
+     *
+     * @param expectedValue - the expected text of the notification. Can be string or RegExp
+     */
+    selectNotificationContaining(expectedValue: string | RegExp): Chainable<any>
+
+    /**
+     * Open the notifications inbox/bell and click the first notification containing the expected value.
+     * This expects that clicking the notification will redirect us to a new window.
+     *
+     * @param expectedValue - the expected text of the notification. Can be string or RegExp
+     * @param destinationWindowID - the expected window where the notification redirects
+     */
+    openNotificationContaining(expectedValue: string | RegExp, destinationWindowID: string | number): Chainable<any>
 
   }
 

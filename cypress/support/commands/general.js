@@ -475,3 +475,19 @@ Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
     cy.get('.indicator-saved').should('exist');
   });
 });
+
+Cypress.Commands.add('selectNotificationContaining', expectedValue => {
+  cy.get('.header-item-badge.icon-lg i').click(); // notification icon
+  return cy
+    .get('.inbox-item-title') // search for text
+    .contains(expectedValue)
+    .first();
+});
+
+Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWindowID) => {
+  cy.selectNotificationContaining(expectedValue).click();
+  // wait until current window is "destinationWindowID"
+  cy.url().should('contain', `/${destinationWindowID}`);
+  // hope this is enough for the whole window to load
+  cy.waitForSaveIndicator();
+});
