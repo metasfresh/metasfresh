@@ -78,16 +78,17 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 });
 
 Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
-  describe('Get checkbox', function() {
-    cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
-
-    const path = createFieldPath(fieldName, modal);
-    if (isChecked) {
-      cy.get(path).should('have.class', 'checked');
-    } else {
-      cy.get(path).should('not.have.class', 'checked');
-    }
-  });
+  cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
+  const path = createFieldPath(fieldName, modal);
+  if (isChecked) {
+    cy.get(path)
+      .find('.checked')
+      .should('exist');
+  } else {
+    cy.get(path)
+      .find('.checked')
+      .should('not.exist');
+  }
 });
 
 Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => {
