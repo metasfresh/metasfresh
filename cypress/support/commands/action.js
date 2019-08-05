@@ -41,7 +41,7 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
-Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false) => {
+Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false, isDialogExpected = true) => {
   let path = `.quick-actions-wrapper`; // default action
   const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
@@ -65,8 +65,13 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
     .should('not.have.class', 'quick-actions-item-disabled')
     .get(path)
     .click({ timeout: 10000 })
-    .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-    .should('exist');
+    .then(el => {
+      if (isDialogExpected) {
+        cy.wrap(el)
+          .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
+          .should('exist');
+      }
+    });
 
   if (!defaultAction) {
     cy.wait(`@${requestAlias}`);
