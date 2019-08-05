@@ -23,11 +23,16 @@
 import { Product } from '../../support/utils/product';
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
+import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
 
-const date = humanReadableNow();
+let date = humanReadableNow();
 const productName = `Product_${date}`;
-const productQty = 20;
+const productQty = 222;
 const locatorId = 'Hauptlager_StdWarehouse_Hauptlager_0_0_0';
+const notificationRegexpExpected = new RegExp(`Eigenverbrauch.*wurde erstellt.`);
+
+// test
+let huValue;
 
 describe('Create a single HU', function() {
   it('Create Product', function() {
@@ -63,5 +68,78 @@ describe('Create a single HU', function() {
         .addInventoryLine(inventoryLine)
         .apply();
     });
+  });
+});
+
+describe('Create disposal from HU Editor', function() {
+  it('Visit HU Editor, filter for the product, and expect a single row', function() {
+    cy.visitWindow(540189);
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
+    applyFilters();
+
+    cy.expectNumberOfRows(1);
+  });
+
+  it('Save the HU Value', function() {
+    cy.selectNthRow(0).dblclick();
+    cy.waitForSaveIndicator();
+    cy.getStringFieldValue('Value').then(value => {
+      huValue = value;
+    });
+    cy.go('back');
+  });
+
+  it('Run quick-action "Dispose"', function() {
+    cy.selectNthRow(0).click();
+    cy.executeQuickAction('WEBUI_M_HU_MoveToGarbage', false, false, false);
+  });
+
+  it('Visit HU Editor, filter for the product, and expect no records', function() {
+    cy.visitWindow(540189);
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, false, null, true);
+    applyFilters();
+
+    cy.expectNumberOfRows(0);
+  });
+});
+
+describe('Open Internal Use from notifications bell and do the checks', function() {
+  it('Open Internal Use from notifications bell', function() {
+    //window is "InternalUse"
+    cy.openNotificationContaining(notificationRegexpExpected, 341).click();
+  });
+
+  it('Check Internal Use document', function() {
+    cy.getStringFieldValue('M_Warehouse_ID').then(warehouseName => {
+      expect(locatorId).contains(warehouseName);
+    });
+    cy.expectCheckboxValue('IsApproved', true);
+    cy.getStringFieldValue('C_DocType_ID').should('equal', 'Disposal');
+  });
+
+  it('Check tab Handling Unit Assignment', function() {
+    cy.selectTab('M_HU_Assignment');
+    cy.expectNumberOfRows(1);
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_HU_ID', true).then(val => {
+      expect(val).contains(huValue);
+    });
+    cy.pressDoneButton();
+  });
+
+  it('Check tab Internal Use Line', function() {
+    cy.selectTab('M_InventoryLine');
+    cy.expectNumberOfRows(1);
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_Product_ID', true).should('contain', productName);
+    cy.getStringFieldValue('QtyInternalUse', true).should('equal', productQty.toString(10));
+    cy.getStringFieldValue('M_Locator_ID', true).should('contain', locatorId);
+    cy.pressDoneButton();
   });
 });
