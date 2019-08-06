@@ -4,7 +4,7 @@ import { Tour } from '../../support/utils/tour';
 import { TourVersion, TourVersionLine } from '../../support/utils/tour_version';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 
-describe('Create Purchase order - material receipt - invoice', function() {
+describe('Adapt tour version', function() {
   const date = humanReadableNow();
   const customerName = `Customer ${date}`;
   const tourName = `TestTour ${date}`;
