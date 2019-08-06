@@ -42,3 +42,10 @@ before(function() {
     whitelist: ['SESSION', 'isLogged'],
   });
 });
+
+Cypress.on('scrolled', $el => {
+  $el.get(0).scrollIntoView({
+    block: 'center',
+    inline: 'center',
+  });
+});
