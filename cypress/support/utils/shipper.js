@@ -1,9 +1,4 @@
 export class Shipper {
-  constructor(name) {
-    cy.log(`ShipperBuilder - set name = ${name}`);
-    this.name = name;
-  }
-
   setName(name) {
     cy.log(`ShipperBuilder - set name = ${name}`);
     this.name = name;

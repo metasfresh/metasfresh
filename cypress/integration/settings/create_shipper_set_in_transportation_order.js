@@ -33,7 +33,7 @@ describe('create new shipper and set it to transportation order', function() {
     });
   });
 
-  it('create tour and transportation order', function() {
+  it('Create transportation order with tour and shipper', function() {
     cy.fixture('logistics/transportation_order.json').then(tour => {
       Object.assign(new TransportationOrder(), tour)
         .setShipperBPartnerID(shipperBPartner)
