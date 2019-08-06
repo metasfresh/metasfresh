@@ -3,7 +3,7 @@ import { Tour } from '../../support/utils/tour';
 import { Shipper } from '../../support/utils/shipper';
 import { TransportationOrder } from '../../support/utils/transportationOrder';
 
-describe('create new tour and transportation order', function() {
+describe('create new shipper and set it to transportation order', function() {
   const date = humanReadableNow();
   let shipperBPartner;
   const shipperLocation = `Am Nossbacher Weg 2`;
@@ -33,7 +33,7 @@ describe('create new tour and transportation order', function() {
     });
   });
 
-  it('create tour and transportation order', function() {
+  it('Create transportation order with tour and shipper', function() {
     cy.fixture('logistics/transportation_order.json').then(tour => {
       Object.assign(new TransportationOrder(), tour)
         .setShipperBPartnerID(shipperBPartner)
