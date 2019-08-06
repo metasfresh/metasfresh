@@ -36,7 +36,13 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .setName(discountSchemaName)
         .apply();
     });
-    Builder.createProductWithPriceUsingExistingCategory(priceListName, productForPackingMaterial, productPMValue, productType, "24_Gebinde");
+    Builder.createProductWithPriceUsingExistingCategory(
+      priceListName,
+      productForPackingMaterial,
+      productPMValue,
+      productType,
+      '24_Gebinde'
+    );
     cy.fixture('product/packing_material.json').then(packingMaterialJson => {
       Object.assign(new PackingMaterial(), packingMaterialJson)
         .setName(packingMaterialName)
@@ -58,7 +64,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
   });
-  it('Create product entities and a vendor to be used in purchase order', function() {
+  it('Create product entities to be used in purchase order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -84,15 +90,15 @@ describe('Create Purchase order - material receipt - invoice', function() {
       productType,
       packingInstructionsName
     );
-    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
-      new BPartner({ name: vendorName })
-        .setVendor(true)
-        .setVendorPricingSystem(priceSystemName)
-        .setVendorDiscountSchema(discountSchemaName)
-        .setPaymentTerm('30 days net')
-        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-        .apply();
-    });
+  });
+  it('Create vendor', function() {
+    new BPartner({ name: vendorName })
+      .setVendor(true)
+      .setVendorPricingSystem(priceSystemName)
+      .setVendorDiscountSchema(discountSchemaName)
+      .setPaymentTerm('30 days net')
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+      .apply();
     cy.readAllNotifications();
   });
   it('Create a purchase order', function() {
@@ -123,6 +129,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       cy.get('.tag.tag-success').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed));
     });
+    cy.waitUntilProcessIsFinished();
   });
   /**Reactivate purchase order */
   it('Reactivate the purchase order', function() {

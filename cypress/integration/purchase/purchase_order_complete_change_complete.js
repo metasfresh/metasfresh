@@ -10,7 +10,7 @@ import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
-describe('Create Purchase order - material receipt - invoice', function() {
+describe('Create Purchase order - complete - change - complete', function() {
   const date = humanReadableNow();
   const productForPackingMaterial = `ProductPackingMaterial ${date}`;
   const productPMValue = `purchase_order_testPM ${date}`;
@@ -62,7 +62,7 @@ describe('Create Purchase order - material receipt - invoice', function() {
         .apply();
     });
   });
-  it('Create product and vendor to be used in purchase order', function() {
+  it('Create product to be used in purchase order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
@@ -79,15 +79,15 @@ describe('Create Purchase order - material receipt - invoice', function() {
       productType,
       packingInstructionsName
     );
-    cy.fixture('sales/simple_vendor.json').then(vendorJson => {
-      new BPartner({ name: vendorName })
-        .setVendor(true)
-        .setVendorPricingSystem(priceSystemName)
-        .setVendorDiscountSchema(discountSchemaName)
-        .setPaymentTerm('30 days net')
-        .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
-        .apply();
-    });
+  });
+  it('Create vendor', function() {
+    new BPartner({ name: vendorName })
+      .setVendor(true)
+      .setVendorPricingSystem(priceSystemName)
+      .setVendorDiscountSchema(discountSchemaName)
+      .setPaymentTerm('30 days net')
+      .addLocation(new BPartnerLocation('Address1').setCity('Cologne').setCountry('Deutschland'))
+      .apply();
     cy.readAllNotifications();
   });
   it('Create a purchase order and complete it', function() {
