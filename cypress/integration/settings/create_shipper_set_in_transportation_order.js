@@ -3,7 +3,7 @@ import { Tour } from '../../support/utils/tour';
 import { Shipper } from '../../support/utils/shipper';
 import { TransportationOrder } from '../../support/utils/transportationOrder';
 
-describe('create new tour and transportation order', function() {
+describe('create new shipper and set it to transportation order', function() {
   const date = humanReadableNow();
   let shipperBPartner;
   const shipperLocation = `Am Nossbacher Weg 2`;
