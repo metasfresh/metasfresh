@@ -56,17 +56,9 @@ describe('Change warehouse in material receipt candidate #153', function() {
   });
 
   it('Visit referenced Material Receipt Candidates', function() {
-    cy.waitUntilProcessIsFinished();
     cy.openReferencedDocuments('M_ReceiptSchedule');
 
     cy.selectNthRow(0).dblclick();
-    // todo fixme
-    // const tableRows = '.table-flex-wrapper-row';
-    // const rowSelector = 'tbody tr';
-    // cy.get(tableRows)
-    //   .find(rowSelector)
-    //   .eq(0)
-    //   .dblclick();
   });
 
   it('Check Warehouse', function() {
@@ -75,7 +67,7 @@ describe('Change warehouse in material receipt candidate #153', function() {
 
   it('Change the warehouse with Warehouse Override', function() {
     cy.openAdvancedEdit();
-    cy.writeIntoStringField('M_Warehouse_Override_ID', warehouse2, true);
+    cy.selectInListField('M_Warehouse_Override_ID', warehouse2, true);
     cy.pressDoneButton();
   });
 
@@ -85,20 +77,23 @@ describe('Change warehouse in material receipt candidate #153', function() {
 
   it('Go back to the filtered view of Material Receipt Candidates and create the Material Receipt', function() {
     cy.go('back');
-    cy.selectNthRow(0).dblclick();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true);
+    cy.selectNthRow(0).click();
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
+    cy.selectNthRow(0, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
+    cy.pressDoneButton();
   });
 
   it('Go to the referenced Material Receipt', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
 
-    cy.waitUntilProcessIsFinished();
-    cy.openReferencedDocuments('M_ReceiptSchedule');
+    cy.openReferencedDocuments('184');
 
+    cy.expectNumberOfRows(1);
     cy.selectNthRow(0).dblclick();
-    // todo:
-    //    expect only 1 row
-    //    the warehouse should be Lager für Streckengeschäft
+  });
+
+  it('Warehouse should be 2nd warehouse', function() {
+    cy.getStringFieldValue('M_Warehouse_ID').should('contain', warehouse2);
   });
 });
