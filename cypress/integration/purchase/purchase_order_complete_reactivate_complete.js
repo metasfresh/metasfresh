@@ -10,7 +10,7 @@ import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils
 import { DocumentStatusKey } from '../../support/utils/constants';
 import { PurchaseOrder, PurchaseOrderLine } from '../../support/utils/purchase_order';
 
-describe('Create Purchase order - material receipt - invoice', function() {
+describe('Create Purchase order - complete - reactivate - complete', function() {
   const date = humanReadableNow();
   const productForPackingMaterial = `ProductPackingMaterial ${date}`;
   const productPMValue = `purchase_order_testPM ${date}`;
