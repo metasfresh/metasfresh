@@ -1,6 +1,6 @@
 import { checkIfWindowCanExecuteActions } from './commands_utils';
-import { RewriteURL } from "../utils/constants";
-import { humanReadableNow } from "../utils/utils";
+import { RewriteURL } from '../utils/constants';
+import { humanReadableNow } from '../utils/utils';
 
 function executeHeaderAction(actionName) {
   checkIfWindowCanExecuteActions();
@@ -41,25 +41,26 @@ Cypress.Commands.add('executeHeaderActionWithDialog', actionName => {
   });
 });
 
+// eslint-disable-next-line prettier/prettier
 Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, modal = false, isDialogExpected = true) => {
-  let path = `.quick-actions-wrapper`; // default action
-  const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
+    let path = `.quick-actions-wrapper`; // default action
+    const requestAlias = `quickAction-${actionName}-${humanReadableNow()}`;
 
-  if (modal) {
-    path = '.modal-content-wrapper ' + path;
-  }
+    if (modal) {
+      path = '.modal-content-wrapper ' + path;
+    }
 
-  if (!defaultAction) {
-    cy.get(`${path} .btn-inline`)
-      .eq(0)
-      .click();
-    cy.get('.quick-actions-dropdown').should('exist');
+    if (!defaultAction) {
+      cy.get(`${path} .btn-inline`)
+        .eq(0)
+        .click();
+      cy.get('.quick-actions-dropdown').should('exist');
 
-    path = `#quickAction_${actionName}`;
+      path = `#quickAction_${actionName}`;
 
-    cy.server();
-    cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
-  }
+      cy.server();
+      cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
+    }
 
     cy.get(path)
       .should('not.have.class', 'quick-actions-item-disabled')
