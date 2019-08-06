@@ -42,7 +42,7 @@ describe('Create material receipt with quality issue', function() {
     });
   });
 
-  it('Ensure no quality issue warehouse exists', function() {
+  it('Disable all other quality issue warehouses', function() {
     cy.visitWindow('139');
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
@@ -55,6 +55,16 @@ describe('Create material receipt with quality issue', function() {
         cy.setCheckBoxValue('IsIssueWarehouse', false);
       }
     });
+  });
+
+  it('Ensure no quality issue warehouse exists', function() {
+    cy.visitWindow('139');
+    toggleNotFrequentFilters();
+    selectNotFrequentFilterWidget('default');
+    cy.setCheckBoxValue('IsIssueWarehouse', true, false, null, true);
+    applyFilters();
+
+    cy.expectNumberOfRows(0);
   });
 
   it('Create quality issue warehouse', function() {
