@@ -1,12 +1,13 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { ProductProcurementContracts } from '../../support/utils/productProcurementContracts';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product', function() {
-  const timestamp = new Date().getTime();
-  const productName = `ProductName ${timestamp}`;
-  const productValue = `ProductNameValue ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const date = humanReadableNow();
+  const productName = `ProductName ${date}`;
+  const productValue = `ProductNameValue ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductNameValue ${date}`;
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {

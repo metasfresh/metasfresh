@@ -1,9 +1,10 @@
 import { Taxcategory } from '../../support/utils/taxcategory';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Taxcategory for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/75', function() {
   it('Create and deactivate new Taxcategory', function() {
-    const timestamp = new Date().getTime();
-    const name = `Test Steuer ${timestamp}`;
+    const date = humanReadableNow();
+    const name = `Test Steuer ${date}`;
 
     // 1. New Taxcategory and deactivate the Taxcategory
     cy.log(`Taxcategory new`);

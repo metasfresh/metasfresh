@@ -1,16 +1,17 @@
 import { StockControlPurchase, StockControlPurchaseProduct } from '../../support/utils/stockControlPurchase';
 import { Product, ProductCategory, ProductPrice } from '../../support/utils/product';
-import { Builder } from "../../support/utils/builder";
+import { Builder } from '../../support/utils/builder';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create new Stock Control Purchase', function() {
-  const timestamp = new Date().getTime();
-  const productName1 = `StockControlPurchase1 ${timestamp}`;
-  const productName2 = `StockControlPurchase2 ${timestamp}`;
-  const productName3 = `StockControlPurchase3 ${timestamp}`;
-  const productCategoryName = `ProductCategory ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const date = humanReadableNow();
+  const productName1 = `StockControlPurchase1 ${date}`;
+  const productName2 = `StockControlPurchase2 ${date}`;
+  const productName3 = `StockControlPurchase3 ${date}`;
+  const productCategoryName = `ProductCategory ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
   const productType = `Item`;
 
   // test
