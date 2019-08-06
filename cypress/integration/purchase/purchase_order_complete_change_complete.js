@@ -112,26 +112,24 @@ describe('Create Purchase order - complete - change - complete', function() {
       cy.get('.tag.tag-default').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.InProgress));
     });
     cy.log('change Quantity TU');
-    cy.selectNthRow(0)
-      .find('.quantity-cell')
-      .eq('0')
-      .dblclick({ force: true })
-      .writeIntoStringField('QtyEnteredTU', '4');
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('QtyEnteredTU', '4');
+    cy.pressDoneButton();
     cy.selectTab('C_OrderLine');
     cy.log('change Quantity');
-    cy.selectNthRow(0)
-      .find('.quantity-cell')
-      .eq('1')
-      .dblclick({ force: true })
-      .writeIntoStringField('QtyEntered', '45');
+
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('QtyEntered', '45');
+    cy.pressDoneButton();
     cy.selectTab('C_OrderLine');
     cy.log('change Price');
-    cy.selectNthRow(0)
-      .find('.costprice-cell')
-      .eq('0')
-      .dblclick({ force: true })
-      .writeIntoStringField('PriceEntered', '4.00');
-    cy.log('change Quantity');
+
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.writeIntoStringField('PriceEntered', '4.00');
+    cy.pressDoneButton();
     cy.completeDocument();
   });
 });
