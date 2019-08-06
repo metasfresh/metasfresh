@@ -61,19 +61,21 @@ Cypress.Commands.add('executeQuickAction', (actionName, defaultAction = false, m
     cy.route('GET', new RegExp(RewriteURL.QUICKACTION)).as(requestAlias);
   }
 
-  cy.get(path)
-    .should('not.have.class', 'quick-actions-item-disabled')
-    .get(path)
-    .click({ timeout: 10000 })
-    .then(el => {
-      if (isDialogExpected) {
-        cy.wrap(el)
-          .get('.panel-modal', { timeout: 10000 }) // wait up to 10 secs for the modal to appear
-          .should('exist');
-      }
-    });
+    cy.get(path)
+      .should('not.have.class', 'quick-actions-item-disabled')
+      .get(path)
+      .click({ timeout: 10_000 })
+      .then(el => {
+        if (isDialogExpected) {
+          cy.wrap(el)
+            .get('.panel-modal', { timeout: 10_000 }) // wait up to 10 secs for the modal to appear
+            .should('exist');
+        }
+      });
 
-  if (!defaultAction) {
-    cy.wait(`@${requestAlias}`);
+    if (!defaultAction) {
+      cy.wait(`@${requestAlias}`);
+    }
+    cy.waitForSaveIndicator();
   }
-});
+);
