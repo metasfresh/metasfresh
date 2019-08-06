@@ -62,12 +62,7 @@ describe('Create Sales order', function() {
     /**Wait for the shipment schedule process to complete */
     cy.waitUntilProcessIsFinished();
     /**Open notifications */
-    cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
-    cy.get('.inbox-item-unread .inbox-item-title')
-      .filter(':contains("' + customer + '")')
-      .first()
-      .click();
-    cy.waitUntilProcessIsFinished();
+    cy.openNotificationWithText(customer);
     /**Billing - Invoice disposition */
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();
@@ -76,10 +71,6 @@ describe('Create Sales order', function() {
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
     /**Open notifications */
-    cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
-    cy.get('.inbox-item-unread .inbox-item-title')
-      .filter(':contains("' + customer + '")')
-      .first()
-      .click();
+    cy.openNotificationWithText(customer);
   });
 });
