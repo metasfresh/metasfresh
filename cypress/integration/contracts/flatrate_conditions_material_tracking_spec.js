@@ -9,26 +9,25 @@ import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
-import { getLanguageSpecific } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 
 describe('Create material tracking contract conditions', function() {
-  const timestamp = new Date().getTime();
-  //const timestamp = 1562596599851;
+  const date = humanReadableNow();
 
   // pricing
-  const priceSystemName = `MaterialTracking ${timestamp}`;
-  const priceListName = `MaterialTracking ${timestamp}`;
-  const priceListVersionName = `MaterialTracking ${timestamp}`;
+  const priceSystemName = `MaterialTracking ${date}`;
+  const priceListName = `MaterialTracking ${date}`;
+  const priceListVersionName = `MaterialTracking ${date}`;
 
   // product
-  const productCategoryName = `MaterialTracking ${timestamp}`;
+  const productCategoryName = `MaterialTracking ${date}`;
   const productCategoryValue = productCategoryName;
-  const scrapProductName = `Scrap ${timestamp}`;
-  const processingFeeProductName = `ProcessingFee ${timestamp}`;
-  const productionProductName = `Production ${timestamp}`;
-  const witholdingProductName = `Witholding ${timestamp}`;
+  const scrapProductName = `Scrap ${date}`;
+  const processingFeeProductName = `ProcessingFee ${date}`;
+  const productionProductName = `Production ${date}`;
+  const witholdingProductName = `Witholding ${date}`;
 
-  const rawProductName = `Raw ${timestamp}`;
+  const rawProductName = `Raw ${date}`;
 
   let countryName;
   before(function() {
@@ -42,7 +41,7 @@ describe('Create material tracking contract conditions', function() {
     const calendarBaseName = `MaterialTracking`;
     const currentYear = new Date().getFullYear();
     new Calendar(calendarBaseName)
-      .setTimestamp(timestamp)
+      .setTimestamp(date)
       .addYear(new Year(`${currentYear}`))
       .addYear(new Year(`${currentYear + 1}`))
       .apply();
@@ -50,15 +49,15 @@ describe('Create material tracking contract conditions', function() {
 
   it('Create transition', function() {
     new ContractTransition({ baseName: 'MaterialTracking' })
-      .setTimestamp(timestamp)
-      .setCalendar(timestamp)
+      .setTimestamp(date)
+      .setCalendar(date)
       .apply();
     cy.screenshot();
   });
 
   it('Create LagerKonferenz PLV', function() {
     // priceList
-    const priceListName = `MaterialTracking ${timestamp}`;
+    const priceListName = `MaterialTracking ${date}`;
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
       Object.assign(
         new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
@@ -141,7 +140,7 @@ describe('Create material tracking contract conditions', function() {
 
   it('Create LagerKonferenz', function() {
     new LagerKonferenz({ baseName: 'LagerKonferenz' })
-      .setTimestamp(timestamp)
+      .setTimestamp(date)
       .addSettingsLine(
         new LagerKonferenzVersion()
           .setValidFrom('01/01/2019')
@@ -172,16 +171,16 @@ describe('Create material tracking contract conditions', function() {
     });
 
     new ContractConditions({ baseName: 'test-conditions' })
-      .setTimestamp(timestamp)
+      .setTimestamp(date)
       .setConditionsType(ConditionsType.QualityBased)
-      .setTransition(timestamp)
-      .setLagerKonferenz(timestamp)
-      .addProductAllocation(new ProductAllocation().setProductCategory(timestamp).setProduct(rawProductName))
+      .setTransition(date)
+      .setLagerKonferenz(date)
+      .addProductAllocation(new ProductAllocation().setProductCategory(date).setProduct(rawProductName))
       .apply();
   });
 
   it('Create vendor', function() {
-    const vendorName = `vendor ${timestamp}`;
+    const vendorName = `vendor ${date}`;
     new BPartner({ name: vendorName })
       .setCustomer(false)
       .setBank(undefined)
@@ -190,6 +189,6 @@ describe('Create material tracking contract conditions', function() {
       .addLocation(new BPartnerLocation('Address1').setCity('Bern').setCountry(countryName))
       .apply();
 
-    runProcessCreateContract(timestamp);
+    runProcessCreateContract(date);
   });
 });

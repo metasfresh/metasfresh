@@ -2,12 +2,12 @@ import { Product } from '../../support/utils/product';
 
 import { Inventory, InventoryLine } from '../../support/utils/inventory';
 
-import { getLanguageSpecific } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 
 describe('Aggregated-HUs inventory test', function() {
-  const timestamp = new Date().getTime();
-  const productName = `AggregatedHUsInventory ${timestamp}`;
-  const productValue = `${timestamp}`;
+  const date = humanReadableNow();
+  const productName = `AggregatedHUsInventory ${date}`;
+  const productValue = `${date}`;
 
   before(function() {
     cy.wait(1000); // see comment/doc of getLanguageSpecific

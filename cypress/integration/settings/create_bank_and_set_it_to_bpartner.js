@@ -1,11 +1,12 @@
 import { Bank } from '../../support/utils/bank';
 import { BPartner } from '../../support/utils/bpartner';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Bank', function() {
-  const timestamp = new Date().getTime();
-  const bankName = `Bank ${timestamp}`;
+  const date = humanReadableNow();
+  const bankName = `Bank ${date}`;
   const BLZ = '80027';
-  const customer1Name = `Customer ${timestamp}`;
+  const customer1Name = `Customer ${date}`;
 
   it('Create Bank', function() {
     cy.fixture('finance/bank.json').then(productJson => {

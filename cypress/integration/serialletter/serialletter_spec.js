@@ -1,10 +1,12 @@
+import { humanReadableNow } from '../../support/utils/utils';
+
 describe('Serial letter tests', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const printFormatName = `${timestamp} Serial letter printformat`;
-  const marketingPlatformName = `${timestamp} Serial letter marketing platform`;
-  const boilerPlateName = `${timestamp}_Serial_letter_text_snippet`;
-  const marketingCampaignName = `${timestamp} Serial letter marketing campaign`;
-  const marketingContactName = `${timestamp} Serial letter marketing contact`;
+  const date = humanReadableNow();
+  const printFormatName = `${date} Serial letter printformat`;
+  const marketingPlatformName = `${date} Serial letter marketing platform`;
+  const boilerPlateName = `${date}_Serial_letter_text_snippet`;
+  const marketingCampaignName = `${date} Serial letter marketing campaign`;
+  const marketingContactName = `${date} Serial letter marketing contact`;
 
   it('Create print format', function() {
     cy.visitWindow('240', 'NEW');

@@ -82,7 +82,11 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
     .get(path)
     .find(`tbody tr:nth-child(${rowNumber + 1})`)
     .should('exist')
-    .click();
+    .click()
+    .then(el => {
+      cy.waitForSaveIndicator();
+      return cy.wrap(el);
+    });
 });
 
 /**

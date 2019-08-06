@@ -1,17 +1,18 @@
 import { DataEntryTab, DataEntrySubTab } from '../../support/utils/dataEntryTab';
 import { DataEntrySection, DataEntryLine } from '../../support/utils/dataEntrySection';
 import { DataEntryField, DataEntryListValue } from '../../support/utils/dataEntryField';
+import { humanReadableNow } from "../../support/utils/utils";
 
 describe('Create bpartner with custom dataentry based tabs', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const dataEntryTabName = `Group1 ${timestamp}`;
+  const date = humanReadableNow();
+  const dataEntryTabName = `Group1 ${date}`;
   let dataEntryTabId;
 
-  const dataEntrySubTab1Name = `SubGroup1-1 ${timestamp}`;
+  const dataEntrySubTab1Name = `SubGroup1-1 ${date}`;
   let dataEntrySubTab1Id;
 
-  const dataEntrySection1Name = `Section1-1 ${timestamp}`;
-  const dataEntrySection2Name = `Section1-2 ${timestamp}`;
+  const dataEntrySection1Name = `Section1-1 ${date}`;
+  const dataEntrySection2Name = `Section1-2 ${date}`;
 
   it('Create dataentry tab and subtab', function() {
     new DataEntryTab(dataEntryTabName, 'Business Partner')
@@ -123,7 +124,7 @@ describe('Create bpartner with custom dataentry based tabs', function() {
 
   it('Create a bpartner and check the dataentry tab', function() {
     cy.visitWindow('123', 'NEW');
-    cy.writeIntoStringField('CompanyName', `DataEntryBPartnerTestName ${timestamp}`);
+    cy.writeIntoStringField('CompanyName', `DataEntryBPartnerTestName ${date}`);
 
     cy.log(`going to open the tab for dataEntryTabId=${dataEntryTabId}`);
     cy.selectTab(`DataEntry_Tab_ID-${dataEntryTabId}`);
