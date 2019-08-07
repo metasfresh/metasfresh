@@ -1,9 +1,10 @@
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { BPartner } from '../../support/utils/bpartner';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create test: discount schema set to customer, https://github.com/metasfresh/metasfresh-e2e/issues/113', function() {
-  const timestamp = new Date().getTime();
-  const discountSchemaName = `DiscountSchemaTest ${timestamp}`;
+  const date = humanReadableNow();
+  const discountSchemaName = `DiscountSchemaTest ${date}`;
   let bpartnerID = null;
 
   before(function() {

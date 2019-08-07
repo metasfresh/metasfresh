@@ -4,11 +4,12 @@ import { BPartner } from '../../support/utils/bpartner';
 import { BPartnerLocation, BPartnerContact } from '../../support/utils/bpartner_ui';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import config from '../../config';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('purchase - vendor spec', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const vendorName = `Vendor ${timestamp}`;
-  const discountSchemaName = `DiscountSchema ${timestamp}`;
+  const date = humanReadableNow();
+  const vendorName = `Vendor ${date}`;
+  const discountSchemaName = `DiscountSchema ${date}`;
 
   before(function() {
     new DiscountSchema(discountSchemaName).setValidFrom('01/01/2019{enter}').apply();

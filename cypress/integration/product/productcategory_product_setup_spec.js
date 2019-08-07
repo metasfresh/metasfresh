@@ -1,12 +1,13 @@
 import { Product, ProductCategory } from '../../support/utils/product';
+import { humanReadableNow } from '../../support/utils/utils';
 
 // Masterdata for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/40
 describe('Create Product', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const productName = `ProductName ${timestamp}`;
-  const productValue = `ProductNameValue ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const date = humanReadableNow();
+  const productName = `ProductName ${date}`;
+  const productValue = `ProductNameValue ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductNameValue ${date}`;
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {

@@ -1,16 +1,17 @@
 import { Product, ProductCategory } from '../../support/utils/product';
 import { BillOfMaterial } from '../../support/utils/billOfMaterial';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product', function() {
-  const timestamp = new Date().getTime();
-  const productName = `ProductName ${timestamp}`;
-  const productValue = `ProductNameValue ${timestamp}`;
-  const bomName = `BOM ${timestamp}`;
+  const date = humanReadableNow();
+  const productName = `ProductName ${date}`;
+  const productValue = `ProductNameValue ${date}`;
+  const bomName = `BOM ${date}`;
 
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
-  const productComponentName = `ProductComponentName ${timestamp}`;
-  const productComponentValue = `ProductComponentValue ${timestamp}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductNameValue ${date}`;
+  const productComponentName = `ProductComponentName ${date}`;
+  const productComponentValue = `ProductComponentValue ${date}`;
 
   it('Create a new ProductCategory', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {

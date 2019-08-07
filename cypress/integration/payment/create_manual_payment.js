@@ -5,13 +5,10 @@ import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoic
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Bank } from '../../support/utils/bank';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific } from '../../support/utils/utils';
-
-// task: https://github.com/metasfresh/metasfresh-e2e/issues/111
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 
 describe('Create a manual Payment for a Sales Invoice', function() {
-  const timestamp = new Date().getTime();
-  // const timestamp = 'latest timestamp'; // to use this just comment the `before` function
+  const date = humanReadableNow();
 
   const salesInvoiceTargetDocumentType = 'Sales Invoice';
   let salesInvoiceNumber;
@@ -23,20 +20,20 @@ describe('Create a manual Payment for a Sales Invoice', function() {
 
   // data for "before" section
   // priceList
-  const priceSystemName = `PriceSystem ${timestamp}`;
-  const priceListName = `PriceList ${timestamp}`;
-  const priceListVersionName = `PriceListVersion ${timestamp}`;
+  const priceSystemName = `PriceSystem ${date}`;
+  const priceListName = `PriceList ${date}`;
+  const priceListVersionName = `PriceListVersion ${date}`;
 
   // product
-  const productCategoryName = `ProductCategory ${timestamp}`;
+  const productCategoryName = `ProductCategory ${date}`;
   const productCategoryValue = productCategoryName;
-  const productName = `Product ${timestamp}`;
+  const productName = `Product ${date}`;
   const productValue = productName;
   const productType = 'Service';
 
   // BPartner
-  const discountSchemaName = `DiscountSchema ${timestamp}`;
-  const bPartnerName = `BPartner ${timestamp}`;
+  const discountSchemaName = `DiscountSchema ${date}`;
+  const bPartnerName = `BPartner ${date}`;
 
   it('Prepare product and pricing', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
