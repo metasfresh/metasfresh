@@ -49,9 +49,9 @@ describe('BPartner relations', function() {
 
     cy.writeIntoStringField(`Name`, bPartnerRelationName);
     cy.writeIntoLookupListField('C_BPartner_ID', customer1Name, customer1Name);
-    cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Address1', 'Address1', true);
+    // cy.writeIntoLookupListField('C_BPartner_Location_ID', 'Address1', 'Address1', true);
     cy.writeIntoLookupListField('C_BPartnerRelation_ID', customer2Name, customer2Name);
-    cy.writeIntoLookupListField('C_BPartnerRelation_Location_ID', 'Address1', 'Address1', true);
+    // cy.writeIntoLookupListField('C_BPartnerRelation_Location_ID', 'Address1', 'Address1', true);
   });
 
   it('Set bpartner relation inactive', function() {
