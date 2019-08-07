@@ -388,6 +388,16 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
     }
   });
 });
+/**
+ * Opens the notification with the given text
+ */
+Cypress.Commands.add('openNotificationWithText', text => {
+  cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
+  cy.get('.inbox-item-unread .inbox-item-title')
+    .filter(':contains("' + text + '")')
+    .first()
+    .click();
+});
 
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
