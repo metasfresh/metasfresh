@@ -216,11 +216,11 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().getValue());
+			orderLineRecord.setDiscount(pricingConditionsBreak.getDiscount().toBigDecimal());
 
 			orderLineRecord.setIsManualPaymentTerm(true); // make sure it's not overwritten by whatever the system comes up with when we save the orderLine.
 			orderLineRecord.setC_PaymentTerm_Override_ID(PaymentTermId.toRepoId(pricingConditionsBreak.getDerivedPaymentTermIdOrNull()));
-			orderLineRecord.setPaymentDiscount(Percent.getValueOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
+			orderLineRecord.setPaymentDiscount(Percent.toBigDecimalOrNull(pricingConditionsBreak.getPaymentDiscountOverrideOrNull()));
 
 			//
 			// PriceActual & Discount
@@ -236,7 +236,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			}
 			//
 			orderLineRecord.setIsManualDiscount(true);
-			orderLineRecord.setDiscount(discountEffective.getValue());
+			orderLineRecord.setDiscount(discountEffective.toBigDecimal());
 			orderLineRecord.setPriceActual(priceActualEffective);
 
 		}

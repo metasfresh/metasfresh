@@ -242,13 +242,13 @@ public class PricingConditionsRow implements IViewRow
 
 		this.paymentDiscountOverride = Optional
 				.ofNullable(pricingConditionsBreak.getPaymentDiscountOverrideOrNull())
-				.map(Percent::getValue)
+				.map(Percent::toBigDecimal)
 				.orElse(null);
 
 		final PriceSpecification price = pricingConditionsBreak.getPriceSpecification();
 		this.basePriceType = lookups.lookupPriceType(price.getType());
 
-		this.discount = pricingConditionsBreak.getDiscount().getValue();
+		this.discount = pricingConditionsBreak.getDiscount().toBigDecimal();
 
 		this.basePricingSystemPriceCalculator = basePricingSystemPriceCalculator;
 		switch (price.getType())
