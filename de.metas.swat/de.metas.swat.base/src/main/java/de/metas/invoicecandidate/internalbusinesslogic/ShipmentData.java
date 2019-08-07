@@ -5,7 +5,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -14,6 +13,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -76,6 +76,10 @@ public class ShipmentData
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
 	{
+		if(empty)
+		{
+			return StockQtyAndUOMQtys.createZero(productId, getQtyNominal().getUomId());
+		}
 		Quantity deliveredInUom;
 		switch (invoicableQtyBasedOn)
 		{

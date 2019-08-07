@@ -62,6 +62,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * This helper class declares master data and objects that are useful for testing.
@@ -398,9 +399,9 @@ public class HUDocumentSelectTestHelper extends HUTestHelper
 	}
 
 	public I_M_ReceiptSchedule createReceiptSchedule(final I_M_Warehouse warehouse,
-			final I_M_Warehouse warehouseDest,
-			final I_C_Order order,
-			final I_M_Product product,
+			@NonNull final I_M_Warehouse warehouseDest,
+			@NonNull final I_C_Order order,
+			@NonNull final I_M_Product product,
 			final int qtyInt,
 			final I_M_HU_PI_Item_Product pip)
 	{

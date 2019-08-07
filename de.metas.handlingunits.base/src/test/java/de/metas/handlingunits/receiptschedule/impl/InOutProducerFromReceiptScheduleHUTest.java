@@ -112,10 +112,12 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final I_M_InOut receipt = generateReceiptFromReceiptSchedule(paloxes);
 
 		final StockQtyAndUOMQty qtys_4300 = StockQtyAndUOMQtys.create(
-				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("4300"), UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("4300"));
+				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("4300"),
+				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("4300"));
 
 		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
-				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("10"), UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("10"));
+				ProductId.ofRepoId(pPaloxe.getM_Product_ID()), new BigDecimal("10"),
+				UomId.ofRepoId(uomEach.getC_UOM_ID()), new BigDecimal("10"));
 
 		//
 		// Validate Receipt
@@ -216,8 +218,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal(430 * 8));
 
 		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
-				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("10"),
-				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("10"));
+				ProductId.ofRepoId(pPaloxe.getM_Product_ID()), new BigDecimal("10"),
+				UomId.ofRepoId(uomEach.getC_UOM_ID()), new BigDecimal("10"));
 
 		//
 		// Validate generated receipt
@@ -362,8 +364,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("64.25"));
 
 		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
-				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("10"),
-				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("10"));
+				ProductId.ofRepoId(pPaloxe.getM_Product_ID()), new BigDecimal("10"),
+				UomId.ofRepoId(uomEach.getC_UOM_ID()), new BigDecimal("10"));
 
 		//
 		// Validate generated receipt
@@ -456,8 +458,8 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal(4300 / 2));
 
 		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(
-				ProductId.ofRepoId(pTomato.getM_Product_ID()), new BigDecimal("10"),
-				UomId.ofRepoId(uomKg.getC_UOM_ID()), new BigDecimal("10"));
+				ProductId.ofRepoId(pPaloxe.getM_Product_ID()), new BigDecimal("10"),
+				UomId.ofRepoId(uomEach.getC_UOM_ID()), new BigDecimal("10"));
 
 		//
 		// Validate Receipt

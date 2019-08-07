@@ -5,8 +5,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 
+import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.X_M_Attribute;
 import org.junit.Assert;
 
 import de.metas.handlingunits.attribute.strategy.impl.CopyHUAttributeTransferStrategy;
@@ -84,6 +86,9 @@ public class HUShipmentProcess_AttributesAggregation_WithSameTemplateAttribute_T
 	@Override
 	protected void initializeAttributeConfig(@NonNull final I_M_IolCandHandler handlerRecord)
 	{
+		this.attribute = new AttributesTestHelper().createM_Attribute("Discriminator", X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+
+
 		final I_M_ShipmentSchedule_AttributeConfig attributeConfigRecord = newInstance(I_M_ShipmentSchedule_AttributeConfig.class);
 		attributeConfigRecord.setM_Attribute_ID(attribute.getM_Attribute_ID());
 		attributeConfigRecord.setOnlyIfInReferencedASI(false);

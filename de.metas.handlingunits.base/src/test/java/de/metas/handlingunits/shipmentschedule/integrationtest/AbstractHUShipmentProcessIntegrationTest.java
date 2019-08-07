@@ -49,7 +49,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -94,8 +93,6 @@ import lombok.NonNull;
  * <li>generate shipment
  * <li>shipper transportation: make sure M_Packages are updated correctly after shipment
  * </ul>
- *
- * @author tsa
  *
  */
 public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractHUTest

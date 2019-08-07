@@ -355,9 +355,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	}
 
 	/**
-	 * @param ctx
-	 * @param line
-	 * @param trxName
 	 * @return destination warehouse for given order line or <code>null</code>
 	 */
 	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
