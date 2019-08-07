@@ -370,16 +370,12 @@ Cypress.Commands.add(
 
     cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
       if (isChecked) {
-        if (theCheckboxValue) {
-          // Nothing to do, already checked
-        } else {
+        if (!theCheckboxValue) {
           cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
         }
       } else {
         if (theCheckboxValue) {
           cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        } else {
-          // Nothing to do, already unchecked
         }
       }
     });

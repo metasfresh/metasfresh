@@ -137,7 +137,7 @@ export class SalesOrder {
 
     const invoicePartnerLocationRequest = wrapRequest(
       cy.request({
-        url: `${basicUri}/${salesOrder.id}/field/Bill_BPartner_Location_ID/dropdown`,
+        url: `${basicUri}/${salesOrder.id}/field/Bill_Location_ID/dropdown`,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +210,7 @@ export class SalesOrder {
       if (salesOrder.invoicePartnerLocation && invoicePartnerLocation) {
         dataObject.push({
           op: 'replace',
-          path: 'Bill_BPartner_Location_ID',
+          path: 'Bill_Location_ID',
           value: {
             key: invoicePartnerLocation.key,
             caption: invoicePartnerLocation.caption,
