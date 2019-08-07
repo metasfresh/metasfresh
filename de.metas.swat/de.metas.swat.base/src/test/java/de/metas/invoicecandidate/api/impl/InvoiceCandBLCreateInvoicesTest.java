@@ -57,6 +57,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBLCreateInvoices.IInvoiceGeneratorRunnable;
@@ -73,7 +74,7 @@ import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
+public class InvoiceCandBLCreateInvoicesTest
 {
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
@@ -81,6 +82,10 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 	// services
 	private InvoiceCandBLCreateInvoices invoiceCandBLCreateInvoices;
 	protected IOrderLineBL orderLineBL;
+
+	private AbstractICTestSupport icTestSupport;
+
+	private IInvoiceCandBL invoiceCandBL;
 
 	/**
 	 * Dummy Invoice Generator which:
@@ -146,14 +151,18 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 	@Before
 	public void init()
 	{
+		icTestSupport = new AbstractICTestSupport();
+		icTestSupport.initStuff();
+		icTestSupport.registerModelInterceptors();
+
+		invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
-		//
-		// Register C_Invoice_Candidate model interceptor
-		registerModelInterceptors();
+
 	}
 
 	/**
@@ -164,8 +173,8 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 	@Test
 	public void test_InvalidInvoiceCandidate_NoUserInCharge_FlagItAsError()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10/* priceEntered */, 3/* qty */, false/* isManual */, true/* isSOTrx */);
 		InterfaceWrapperHelper.save(ic);
 
 		// clear C_Invoice_Candidate_Recompute; otherwise we won't get our error out of DefaultAggregator.mkLineAggregationKeyToUse()
@@ -202,7 +211,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
 				.setQtyOrdered(3)
@@ -210,7 +219,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 				.setSOTrx(true)
 				.build();
 
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
+		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
 				.setQtyOrdered(3)
@@ -218,7 +227,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 				.setSOTrx(true)
 				.build();
 
-		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
+		final I_C_Invoice_Candidate ic3 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
 				.setQtyOrdered(3)
@@ -229,9 +238,9 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		//
 		// Update/refresh invalid candidates
-		updateInvalid(invoiceCandidates);
+		icTestSupport.updateInvalid(invoiceCandidates);
 
-		final InvoiceCandidateExpectation<Object> expectation = newInvoiceCandidateExpectation()
+		final InvoiceCandidateExpectation<Object> expectation = icTestSupport.newInvoiceCandidateExpectation()
 				.error(false)
 				.netAmtToInvoice(300); // priceEntered=10 and uomQty=30
 
@@ -248,8 +257,6 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 			InterfaceWrapperHelper.save(ic1);
 		}
 
-		//
-		// Generate the dummy invoice
 		final IInvoiceGenerateResult result = invoiceCandBL.createInvoiceGenerateResult(true); // shallStoreInvoices=true
 		// final boolean ignoreInvoiceSchedule = true;
 		// invoiceCandBLCreateInvoices.generateInvoices(ctx, invoiceCandidates.iterator(), ignoreInvoiceSchedule, result, NullLoggable.instance, trxName);
@@ -276,11 +283,11 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
 
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
+		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
 		ic1.setDescription("IC1 - normal");
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
+		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true);
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
 
@@ -295,7 +302,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		//
 		// Update/refresh invalid candidates
-		updateInvalid(invoiceCandidates);
+		icTestSupport.updateInvalid(invoiceCandidates);
 
 		final BigDecimal discount1 = ic1.getDiscount();
 		final BigDecimal discount_override1 = ic1.getDiscount_Override();
@@ -342,12 +349,12 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
 
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic1.setDescription("IC1 - normal");
 
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
 
@@ -387,12 +394,12 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		//
 		// Update/refresh invalid candidates
-		updateInvalid(invoiceCandidates);
+		icTestSupport.updateInvalid(invoiceCandidates);
 
-		newInvoiceCandidateExpectation()
+		icTestSupport.newInvoiceCandidateExpectation()
 				.priceActualOverride(priceActual_OverrideComputed1)
 				.assertExpected("Price Actual Override should be same with price actual computed!", ic1);
-		newInvoiceCandidateExpectation()
+		icTestSupport.newInvoiceCandidateExpectation()
 				.priceActualOverride(priceActual_OverrideComputed2)
 				.assertExpected("Price Actual Override should be same with price actual computed!", ic2);
 

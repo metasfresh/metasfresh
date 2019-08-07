@@ -3,6 +3,7 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -38,9 +39,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,16 +68,20 @@ import de.metas.util.lang.Percent;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-public class InvoiceCandBLTest extends AbstractICTestSupport
+public class InvoiceCandBLTest //extends AbstractICTestSupport
 {
 	private InvoiceCandBL invoiceCandBL;
+	private AbstractICTestSupport icTestSupport;
 
 	@Before
 	public void init()
 	{
-		invoiceCandBL = new InvoiceCandBL();
+		AdempiereTestHelper.get().init();
 
-		registerModelInterceptors();
+		invoiceCandBL = new InvoiceCandBL();
+		icTestSupport = new AbstractICTestSupport();
+		icTestSupport.initStuff();
+		icTestSupport.registerModelInterceptors();
 
 		POJOWrapper.setDefaultStrictValues(false);
 
@@ -92,13 +97,13 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_PriceEnteredInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic1.setDescription("IC1 - normal");
 		save(ic1);
 
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
+		final I_C_Invoice_Candidate ic2 = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
 		save(ic2);
@@ -130,7 +135,7 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		save(ic2);
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
-		updateInvalid(invoiceCandidates);
+		icTestSupport.updateInvalid(invoiceCandidates);
 
 		assertThat("Price Actual Override should be same with price actual computed for " + ic1.getDescription(), ic1.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed1));
 		assertThat("Price Actual Override should be same with price actual computed for " + ic2.getDescription(), ic2.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed2));
@@ -161,9 +166,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_PriceEnteredOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -194,9 +199,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_DiscountOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -228,9 +233,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_PriceEnteredOverride_DiscountOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -263,9 +268,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_RemovePriceEnteredOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -304,9 +309,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_RemoveDiscountOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -340,9 +345,9 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 	@Test
 	public void test_RemovePriceEnteredOverride_DiscountOverrideInvoiceCandidates()
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
 
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual, isSOTrx
+		final I_C_Invoice_Candidate ic = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual, isSOTrx
 		ic.setDescription("IC - normal");
 
 		final BigDecimal initialPriceActual = ic.getPriceActual();
@@ -406,9 +411,11 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 			final BigDecimal qualityDiscountPercent_Override,
 			final BigDecimal expectedQtyDelivered_Effective)
 	{
-		final I_C_BPartner bpartner = bpartner("test-bp");
-		final I_C_Invoice_Candidate icRecord = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual, isSOTrx
+		final I_C_BPartner bpartner = icTestSupport.bpartner("test-bp");
+		final I_C_Invoice_Candidate icRecord = icTestSupport.createInvoiceCandidate(bpartner.getC_BPartner_ID()/*partner*/, 10/*priceEntered*/, 3/*qty*/, 10/*discount*/, false/*isManual*/, false/*isSOTrx*/);
 
+		// the qtys we set here don't really matter; the invoice candidate will be updated
+		icRecord.setM_Product_ID(icTestSupport.getProductId().getRepoId());
 		icRecord.setQtyDelivered(qtyDelivered);
 		icRecord.setQtyWithIssues(qtyWithIssues);
 		icRecord.setQualityDiscountPercent(qualityDiscountPercent); // shall be ignored, because it's not used in this method at all..QtyWithIssues is used instead
@@ -424,16 +431,36 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		inOut.setDocStatus(IDocument.STATUS_Completed);
 		save(inOut);
 
-		final I_M_InOutLine iol = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+		//
+		final de.metas.inout.model.I_M_InOutLine iol = InterfaceWrapperHelper.create(ctx, de.metas.inout.model.I_M_InOutLine.class, trxName);
 		iol.setM_InOut(inOut);
-		iol.setMovementQty(qtyDelivered);
+		iol.setM_Product_ID(icTestSupport.getProductId().getRepoId());
+		iol.setMovementQty(qtyDelivered.subtract(qtyWithIssues));
+		iol.setC_UOM_ID(icTestSupport.getUomId().getRepoId());
+		iol.setQtyEntered(qtyDelivered.subtract(qtyWithIssues).multiply(TEN));
+		iol.setIsInDispute(false);
 		save(iol);
 
 		final I_C_InvoiceCandidate_InOutLine icIol = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
 		icIol.setC_Invoice_Candidate(icRecord);
-		icIol.setM_InOutLine(iol);
+		invoiceCandBL.updateICIOLAssociationFromIOL(icIol, iol);
 		save(icIol);
 
+		final de.metas.inout.model.I_M_InOutLine iol2 = InterfaceWrapperHelper.create(ctx, de.metas.inout.model.I_M_InOutLine.class, trxName);
+		iol2.setM_InOut(inOut);
+		iol2.setM_Product_ID(icTestSupport.getProductId().getRepoId());
+		iol2.setMovementQty(qtyWithIssues);
+		iol2.setC_UOM_ID(icTestSupport.getUomId().getRepoId());
+		iol2.setQtyEntered(qtyWithIssues.multiply(TEN));
+		iol2.setIsInDispute(true);
+		save(iol2);
+
+		final I_C_InvoiceCandidate_InOutLine icIol2 = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
+		icIol2.setC_Invoice_Candidate(icRecord);
+		invoiceCandBL.updateICIOLAssociationFromIOL(icIol2, iol2);
+		save(icIol);
+
+		// invoke the stuff under test
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = new InvoiceCandidateRecordService();
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);

@@ -117,8 +117,9 @@ import de.metas.testsupport.AbstractTestSupport;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
+import lombok.Getter;
 
-public abstract class AbstractICTestSupport extends AbstractTestSupport
+public class AbstractICTestSupport extends AbstractTestSupport
 {
 	// services
 	protected PlainCurrencyBL currencyConversionBL;
@@ -154,7 +155,11 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	// task 07442
 	protected ClientId clientId;
 	protected OrgId orgId;
+
+	@Getter
 	protected ProductId productId;
+
+	@Getter
 	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
@@ -190,7 +195,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_Date, SystemTime.asDayTimestamp());
 
-		//final String trxName = Trx.createTrxName();
+		// final String trxName = Trx.createTrxName();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
@@ -462,7 +467,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		InterfaceWrapperHelper.save(priceListVersion_PO);
 	}
 
-	protected final C_Invoice_Candidate_Builder createInvoiceCandidate()
+	public final C_Invoice_Candidate_Builder createInvoiceCandidate()
 	{
 		return new C_Invoice_Candidate_Builder(this)
 				// Set defaults (backward compatibility with existing tests)
@@ -479,7 +484,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	 *
 	 * @see #createInvoiceCandidate()
 	 */
-	protected final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
+	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
 			final int priceEntered,
 			final int qty,
 			final boolean isManual,
@@ -499,7 +504,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	 *
 	 * @see #createInvoiceCandidate()
 	 */
-	protected final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
+	public final I_C_Invoice_Candidate createInvoiceCandidate(final int billBPartnerId,
 			final int priceEntered,
 			final int qty,
 			final int discount,
@@ -516,7 +521,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 				.build();
 	}
 
-	protected final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo)
+	public final I_M_InOut createInOut(final int bpartnerId, final int orderId, final String documentNo)
 	{
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
 		inOut.setC_BPartner_ID(bpartnerId);
@@ -603,7 +608,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	/**
 	 * Updates all invalid invoice candidates
 	 */
-	protected final void updateInvalidCandidates()
+	public final void updateInvalidCandidates()
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -656,10 +661,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	 * <li>this method is refreshing the invoice candidates after updating them (just to make sure we get the up2date result).
 	 * <li>this method is <b>NOT</b> simulating the IC model interceptor like {@link #updateInvalidCandidates()} it does; it just assumes the model interceptor is there and running.
 	 * </ul>
-	 *
-	 * @param invoiceCandidates
 	 */
-	protected void updateInvalid(final Iterable<I_C_Invoice_Candidate> invoiceCandidates)
+	public void updateInvalid(final Iterable<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -712,7 +715,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		return modelInterceptorsRegistered;
 	}
 
-	protected final void registerModelInterceptors()
+	public final void registerModelInterceptors()
 	{
 		if (modelInterceptorsRegistered)
 		{
@@ -726,7 +729,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		modelInterceptorsRegistered = true;
 	}
 
-	protected final InvoiceCandidateExpectation<Object> newInvoiceCandidateExpectation()
+	public final InvoiceCandidateExpectation<Object> newInvoiceCandidateExpectation()
 	{
 		return InvoiceCandidateExpectation.newExpectation();
 	}

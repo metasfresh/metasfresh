@@ -63,7 +63,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 	@Override
 	protected List<I_C_Invoice_Candidate> step10_createInvoiceCandidates()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
+		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartner(bpartner1)
 				.setPriceEntered(1)
 				.setQtyOrdered(10)
@@ -71,7 +71,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 				.setSOTrx(true)
 				.build();
 
-		updateInvalidCandidates();
+		icTestSupport.updateInvalidCandidates();
 
 		return ImmutableList.<I_C_Invoice_Candidate> of(ic1);
 	}

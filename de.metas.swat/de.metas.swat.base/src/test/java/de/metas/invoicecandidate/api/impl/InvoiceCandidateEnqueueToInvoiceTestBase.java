@@ -52,6 +52,7 @@ import de.metas.async.processor.IQueueProcessor;
 import de.metas.async.processor.IQueueProcessorFactory;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -80,7 +81,7 @@ import static org.junit.Assert.assertTrue;
  * @author tsa
  *
  */
-public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractICTestSupport
+public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 {
 	protected PlainLockManager lockManager;
 	protected PlainLockDatabase locksDatabase;
@@ -91,13 +92,14 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 
 	protected List<I_C_Invoice_Candidate> invoiceCandidates;
 	protected IInvoiceCandidateEnqueueResult enqueueResult;
+	protected AbstractICTestSupport icTestSupport;
 
 	@Before
 	public void init()
 	{
-		//
-		// Register C_Invoice_Candidate model interceptor
-		registerModelInterceptors();
+		icTestSupport = new AbstractICTestSupport();
+		icTestSupport.initStuff();
+		icTestSupport.registerModelInterceptors();
 
 		this.lockManager = (PlainLockManager)Services.get(ILockManager.class);
 		this.locksDatabase = lockManager.getLockDatabase();
@@ -105,11 +107,11 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		this.ctx = Env.getCtx();
 		this.loggable = new ConsoleLoggable();
 
-		this.bpartner1 = bpartner("test-bp");
+		this.bpartner1 = icTestSupport.bpartner("test-bp");
 	}
 
 	@Test
-	public final void test()
+	public void test()
 	{
 		//
 		// Create the initial invoice candidates
@@ -135,7 +137,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		invoicingParams.setIgnoreInvoiceSchedule(true);
 		invoicingParams.setOnlyApprovedForInvoicing(false);
 
-		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
+		final IInvoiceCandidateEnqueueResult enqueueResult = Services.get(IInvoiceCandBL.class).enqueueForInvoicing()
 				.setContext(ctx)
 				.setFailIfNothingEnqueued(true)
 				.setFailOnChanges(true)
