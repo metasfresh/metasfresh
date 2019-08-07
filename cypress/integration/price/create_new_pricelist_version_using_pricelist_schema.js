@@ -34,6 +34,7 @@ const priceSystemName = `PriceSystem_${date}`;
 const priceListVersionName = `PriceListVersion_${date}`;
 const priceListName = `PriceList_${date}`;
 const priceListSchemaVersionName = `PriceListSchemaVersion_${date}`;
+const priceListVersion2ValidFrom = '01/02/2019';
 
 // Product
 const categoryName = `Category_${date}`;
@@ -51,30 +52,29 @@ let originalPriceLimit;
 let originalPriceList;
 let originalUOM;
 let originalTaxCategory;
-describe('Data creation', function() {
+
+describe('Create Price and Product', function() {
   it('Create Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
 
-    cy.getCurrentWindowRecordId().then(id => {
-      priceListID = id;
-    });
+    cy.getCurrentWindowRecordId().then(id => (priceListID = id));
   });
 
   it('Create Product and Category', function() {
     // eslint-disable-next-line prettier/prettier
     Builder.createBasicProductEntities(categoryName, categoryName, priceListName, productName, productName, productType);
   });
+});
 
-  it('Create PriceList Schema', function() {
+describe('Create Price List Schema for Product Category', function() {
+  it('Create Price List Schema', function() {
     new PriceListSchema()
       .setName(priceListSchemaName)
       // eslint-disable-next-line prettier/prettier
       .addLine(new PriceListSchemaLine().setProductCategory(categoryName).setStandardPriceSurchargeAmount(surchargeAmount))
       .apply();
   });
-});
 
-describe('Create and use the Price List Schema', function() {
   it('Expect Product has a single Product Price', function() {
     filterProductPricesByProduct(productName);
     cy.expectNumberOfRows(1);
@@ -98,13 +98,15 @@ describe('Create and use the Price List Schema', function() {
       originalTaxCategory = val;
     });
   });
+});
 
+describe('Create new Price List Version using the Price List Schema', function() {
   it('Add the Schema PriceList Version', function() {
     cy.visitWindow('540321', priceListID);
     PriceList.applyPriceListVersion(
       new PriceListVersion()
         .setName(priceListSchemaVersionName)
-        .setValidFrom('01/02/2019')
+        .setValidFrom(priceListVersion2ValidFrom)
         .setDiscountSchema(priceListSchemaName)
         .setBasisPricelistVersion(priceListVersionName)
     );
@@ -135,6 +137,7 @@ describe('Create and use the Price List Schema', function() {
     cy.getStringFieldValue('PriceList').should(val => {
       expect(parseFloat(val)).to.be.closeTo(originalPriceList, 0.01);
     });
+    cy.getStringFieldValue('M_Product_ID').should('contains', productName);
     cy.getStringFieldValue('M_Product_Category_ID').should('contain', categoryName);
     cy.getStringFieldValue('M_PriceList_Version_ID').should('contain', priceListName);
     cy.getStringFieldValue('C_UOM_ID').should('contain', originalUOM);
