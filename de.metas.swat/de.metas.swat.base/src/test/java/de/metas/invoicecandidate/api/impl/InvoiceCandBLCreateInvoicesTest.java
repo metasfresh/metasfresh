@@ -44,25 +44,35 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBLCreateInvoices.IInvoiceGeneratorRunnable;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 {
 	@Rule
@@ -195,7 +205,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
-				.setQty(3)
+				.setQtyOrdered(3)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -203,7 +213,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
-				.setQty(3)
+				.setQtyOrdered(3)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -211,7 +221,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
-				.setQty(3)
+				.setQtyOrdered(3)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -223,7 +233,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		final InvoiceCandidateExpectation<Object> expectation = newInvoiceCandidateExpectation()
 				.error(false)
-				.netAmtToInvoice(30);
+				.netAmtToInvoice(300); // priceEntered=10 and uomQty=30
 
 		//
 		// Check NetAmtToInvoice

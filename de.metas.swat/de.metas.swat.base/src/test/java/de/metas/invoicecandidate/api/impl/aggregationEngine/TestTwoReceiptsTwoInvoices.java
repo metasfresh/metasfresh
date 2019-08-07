@@ -33,17 +33,25 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 
 /**
  * => Expectation: one invoice, one line; on the purchase side we want to aggregate inoutLines over different InOuts, as long as they don't differ in their "invoice-relevant" ASI-values.
- *
- * @author ts
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 {
 
@@ -80,13 +88,13 @@ public class TestTwoReceiptsTwoInvoices extends AbstractTwoInOutsTests
 			final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 			assertEquals("We are expecting one invoice line: " + invoiceLines1, 1, invoiceLines1.size());
 
-			final BigDecimal fullQty = partialQty1.add(partialQty2).add(partialQty3);
+			final BigDecimal fullQty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
 
 			final IInvoiceLineRW invoiceLine1 = getSingleForInOutLine(invoiceLines1, iol11);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(3));
 			assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
 			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(fullQty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullQty) /* because price=1 */);
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullQty.multiply(TEN)) /* because price=1 and uomQty is stockQty x 10 */);
 
 			// validate the IC<->IL qty allocation
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullQty);

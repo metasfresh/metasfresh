@@ -73,7 +73,7 @@ public class C_UOM_Conversion
 					&& (changeType.isNew() || InterfaceWrapperHelper.isValueChanged(uomConversion, I_C_UOM_Conversion.COLUMNNAME_M_Product_ID)))
 			{
 				final UomId fromUomId = UomId.ofRepoId(uomConversion.getC_UOM_ID());
-				final UomId productStockingUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+				final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 				if (!productStockingUomId.equals(fromUomId))
 				{
 					final I_C_UOM uom = Services.get(IUOMDAO.class).getById(productStockingUomId);

@@ -1,5 +1,7 @@
 package de.metas.invoice.impl;
 
+
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -118,15 +120,16 @@ public class MatchInvDAO implements IMatchInvDAO
 				.list();
 
 		final ProductId productId = ProductId.ofRepoId(iol.getM_Product_ID());
-		final UomId iolUomId = UomId.ofRepoId(iol.getCatch_UOM_ID());
+		final UomId iolUomId = UomId.ofRepoId(iol.getC_UOM_ID());
 
 		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(productId, iolUomId);
 
 		for (final I_M_MatchInv matchInvRecord : matchInvRecords)
 		{
-			final StockQtyAndUOMQty matchInvQtys = StockQtyAndUOMQtys.create(
-					productId, matchInvRecord.getQty(),
-					UomId.ofRepoId(matchInvRecord.getC_UOM_ID()), matchInvRecord.getQtyInUOM());
+			final StockQtyAndUOMQty matchInvQtys = StockQtyAndUOMQtys
+					.create(
+							productId, matchInvRecord.getQty(),
+							UomId.ofRepoIdOrNull(matchInvRecord.getC_UOM_ID()), matchInvRecord.getQtyInUOM());
 			result = StockQtyAndUOMQtys.add(result, matchInvQtys);
 		}
 

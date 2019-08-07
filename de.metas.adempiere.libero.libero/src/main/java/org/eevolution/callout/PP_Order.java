@@ -101,7 +101,7 @@ public class PP_Order extends CalloutEngine
 			return;
 		}
 
-		final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 		ppOrder.setC_UOM_ID(uomId.getRepoId());
 
 		final I_PP_Product_Planning pp = findPP_Product_Planning(ppOrder);

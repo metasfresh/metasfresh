@@ -36,14 +36,13 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ReceiptQualityData
+public class ReceiptData
 {
 	@NonNull
 	StockQtyAndUOMQty qtysWithIssues;
 
 	@NonNull
 	StockQtyAndUOMQty qtysTotal;
-
 
 	public StockQtyAndUOMQty computeQtysWithIssuesEffective(@Nullable final Percent qualityDiscountOverride)
 	{
@@ -52,23 +51,21 @@ public class ReceiptQualityData
 			return qtysWithIssues;
 		}
 
-		final Quantity qtyWithIssues = qtysWithIssues.getUOMQtyOpt().get();
-		final Quantity qtyWithcIssuesInStockUom = qtysWithIssues.getStockQty();
+		final Quantity qtyTotal = qtysTotal.getUOMQtyOpt().get();
+		final Quantity qtyTotalInStockUom = qtysTotal.getStockQty();
 
 		final BigDecimal qtyWithIssuesEffective = qualityDiscountOverride.multiply(
-				qtyWithIssues.toBigDecimal(),
-				qtyWithIssues.getUOM().getStdPrecision());
+				qtyTotal.toBigDecimal(),
+				qtyTotal.getUOM().getStdPrecision());
 
 		final BigDecimal qtyWithIssuesInStockUomEffective = qualityDiscountOverride.multiply(
-				qtyWithcIssuesInStockUom.toBigDecimal(),
-				qtyWithcIssuesInStockUom.getUOM().getStdPrecision());
+				qtyTotalInStockUom.toBigDecimal(),
+				qtyTotalInStockUom.getUOM().getStdPrecision());
 
 		return StockQtyAndUOMQtys.create(
 				qtysWithIssues.getProductId(), qtyWithIssuesInStockUomEffective,
-				qtyWithIssues.getUomId(), qtyWithIssuesEffective);
+				qtyTotal.getUomId(), qtyWithIssuesEffective);
 	}
-
-
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@Nullable final Percent qualityDiscountOverride)
 	{
@@ -76,9 +73,14 @@ public class ReceiptQualityData
 		return qtysTotal.subtract(qtysWithIssuesEffective);
 	}
 
+	public Percent computeQualityDiscount()
+	{
+		return Percent.of(
+				qtysWithIssues.getStockQty().toBigDecimal(),
+				qtysTotal.getStockQty().toBigDecimal());
+	}
 
-
-	private ReceiptQualityData(
+	private ReceiptData(
 			@NonNull final StockQtyAndUOMQty qtysWithIssues,
 			@NonNull final StockQtyAndUOMQty qtysTotal)
 	{
@@ -87,6 +89,5 @@ public class ReceiptQualityData
 
 		StockQtyAndUOMQtys.assumeCommonProductAndUom(qtysWithIssues, qtysTotal);
 	}
-
 
 }

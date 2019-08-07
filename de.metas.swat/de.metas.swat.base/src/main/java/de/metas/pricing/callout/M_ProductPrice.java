@@ -49,7 +49,7 @@ public class M_ProductPrice
 		final ProductId productId = ProductId.ofRepoIdOrNull(productPrice.getM_Product_ID());
 		if (productId !=null)
 		{
-			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(productId);
 			productPrice.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 	}

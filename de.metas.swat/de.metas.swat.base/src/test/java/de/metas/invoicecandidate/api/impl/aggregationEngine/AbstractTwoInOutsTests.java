@@ -34,6 +34,8 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 
 /**
  * Test case:
@@ -51,10 +53,9 @@ import de.metas.product.ProductPrice;
  */
 public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngineTests
 {
-
-	protected static final BigDecimal partialQty1 = new BigDecimal("32");
-	protected static final BigDecimal partialQty2 = new BigDecimal("8");
-	protected static final BigDecimal partialQty3 = new BigDecimal("4");
+	protected static final BigDecimal partialQty1_32 = new BigDecimal("32");
+	protected static final BigDecimal partialQty2_8 = new BigDecimal("8");
+	protected static final BigDecimal partialQty3_4 = new BigDecimal("4");
 
 	protected I_M_InOut inOut1;
 	protected I_M_InOutLine iol11;
@@ -81,16 +82,19 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 		// Partially invoice both at the same time
 		{
 			final String inOutDocumentNo = "1";
+			final StockQtyAndUOMQty qtysDelivered_1_32 = StockQtyAndUOMQtys.create(productId, partialQty1_32, uomId, new BigDecimal("320"));
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, partialQty1, inOutDocumentNo); // inOutLineDescription
+			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_1_32, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}
 
 		{
 			final String inOutDocumentNo = "2";
+			final StockQtyAndUOMQty qtysDelivered_2_8 = StockQtyAndUOMQtys.create(productId, partialQty2_8, uomId, new BigDecimal("80"));
+			final StockQtyAndUOMQty qtysDelivered_3_4 = StockQtyAndUOMQtys.create(productId, partialQty3_4, uomId, new BigDecimal("40"));
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, partialQty2, inOutDocumentNo + "_1"); // inOutLineDescription
-			iol22 = createInvoiceCandidateInOutLine(ic, inOut2, partialQty3, inOutDocumentNo + "_2"); // inOutLineDescription
+			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_2_8, inOutDocumentNo + "_1"); // inOutLineDescription
+			iol22 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_3_4, inOutDocumentNo + "_2"); // inOutLineDescription
 			completeInOut(inOut2);
 		}
 
@@ -103,7 +107,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
-		final BigDecimal summedQty = partialQty1.add(partialQty2).add(partialQty3);
+		final BigDecimal summedQty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
 		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty));
 		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty));
 

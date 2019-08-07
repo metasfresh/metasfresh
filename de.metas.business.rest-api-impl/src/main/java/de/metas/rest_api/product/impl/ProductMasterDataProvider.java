@@ -205,7 +205,7 @@ public class ProductMasterDataProvider
 		}
 		else
 		{
-			return productsBL.getStockingUOMId(productId);
+			return productsBL.getStockUOMId(productId);
 		}
 	}
 }

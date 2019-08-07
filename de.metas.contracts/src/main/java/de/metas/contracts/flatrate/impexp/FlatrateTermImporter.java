@@ -174,7 +174,7 @@ import lombok.NonNull;
 
 	private void setUOM(@NonNull final I_C_Flatrate_Term contract, @NonNull final ProductId productId)
 	{
-		final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 		contract.setC_UOM_ID(uomId.getRepoId());
 	}
 

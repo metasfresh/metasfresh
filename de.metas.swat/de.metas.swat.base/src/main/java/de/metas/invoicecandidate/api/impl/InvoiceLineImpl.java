@@ -33,9 +33,9 @@ import org.compiere.model.I_C_Tax;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -91,7 +91,7 @@ import lombok.ToString;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
-	private List<IInvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
+	private List<InvoiceCandidateInOutLineToUpdate> iciolsToUpdate = new ArrayList<>();
 	private int C_PaymentTerm_ID;
 
 	@Override
@@ -237,7 +237,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
+	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return iciolsToUpdate;
 	}

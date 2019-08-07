@@ -605,7 +605,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	
 	protected final UomId getProductStockingUOMId()
 	{
-		return productBL.getStockingUOMId(getProductId());
+		return productBL.getStockUOMId(getProductId());
 	}
 
 

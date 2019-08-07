@@ -109,7 +109,7 @@ public class HUPPOrderMaterialTrackingBL implements IHUPPOrderMaterialTrackingBL
 
 		// Assign PP_Cost_Collector and quantity to material tracking
 		final ProductId productId = ProductId.ofRepoId(materialTrackingRecord.getM_Product_ID());
-		final UomId toUOMId = productBL.getStockingUOMId(productId);
+		final UomId toUOMId = productBL.getStockUOMId(productId);
 		final Quantity sum = uomConversionBL.computeSum(
 				UOMConversionContext.of(productId),
 				materialTrackingWithQuantity.getQuantities(),

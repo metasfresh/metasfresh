@@ -118,7 +118,7 @@ public interface IProductBL extends ISingletonService
 		return getStockUOM(productId.getRepoId());
 	}
 
-	default UomId getStockingUOMId(@NonNull final ProductId productId)
+	default UomId getStockUOMId(@NonNull final ProductId productId)
 	{
 		return getStockingUOMId(productId.getRepoId());
 	}

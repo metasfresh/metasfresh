@@ -152,7 +152,7 @@ public class PriceListVersion extends AbstractPriceListBasedRule
 		}
 
 		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-		return productsService.getStockingUOMId(productId);
+		return productsService.getStockUOMId(productId);
 	}
 
 	private static void updatePricingResultFromBOMPrices(final IPricingResult to, final BOMPrices from)

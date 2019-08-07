@@ -40,6 +40,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
@@ -197,7 +198,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	I_C_Invoice_Candidate splitCandidate(I_C_Invoice_Candidate ic);
 
-	String getInvoiceRule(I_C_Invoice_Candidate ic);
+	InvoiceRule getInvoiceRule(I_C_Invoice_Candidate ic);
 
 	Timestamp getDateToInvoice(I_C_Invoice_Candidate ic);
 
@@ -325,21 +326,21 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
-	/**
-	 * Update invoice candidate's QtyWithIssues and depending cols by taking it from inout lines. Updates
-	 * <ul>
-	 * <li>QtyWithIssues
-	 * <li>QualityDiscountPercent
-	 * <li>QualityDiscountPercent_Override to <code>null</code>, if <code>QualityDiscountPercent</code> was changed
-	 * <li>IsInDispute to <code>true</code> if <code>QualityDiscountPercent</code> was changed and the new value is <b>not</b> zero.
-	 * </ul>
-	 *
-	 * NOTE: this method is NOT saving the invoice candidate.
-	 *
-	 * @param ic
-	 * @task 06502
-	 */
-	void updateQtyWithIssues(I_C_Invoice_Candidate ic);
+//	/**
+//	 * Update invoice candidate's QtyWithIssues and depending cols by taking it from inout lines. Updates
+//	 * <ul>
+//	 * <li>QtyWithIssues
+//	 * <li>QualityDiscountPercent
+//	 * <li>QualityDiscountPercent_Override to <code>null</code>, if <code>QualityDiscountPercent</code> was changed
+//	 * <li>IsInDispute to <code>true</code> if <code>QualityDiscountPercent</code> was changed and the new value is <b>not</b> zero.
+//	 * </ul>
+//	 *
+//	 * NOTE: this method is NOT saving the invoice candidate.
+//	 *
+//	 * @param ic
+//	 * @task 06502
+//	 */
+//	void updateQtyWithIssues(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise

@@ -34,9 +34,9 @@ import java.util.Properties;
 
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.impl.aggregationEngine.TestQualityDiscountPercentOverrideNoDiscountIol;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
@@ -87,8 +87,8 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 		final IInvoiceLineRW invoiceLine1 = invoiceLines.get(0);
 		assertThat("Invalid invoice line 1 - QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("100")));
 
-		final IInvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-		assertThat(icIolToUpdate11.getQtyInvoiced(), comparesEqualTo(new BigDecimal("90")));
+		final InvoiceCandidateInOutLineToUpdate icIolToUpdate11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
+		assertThat(icIolToUpdate11.getQtyInvoiced().getUomQty().toBigDecimal(), comparesEqualTo(new BigDecimal("90")));
 
 		final IInvoiceLineRW invoiceLine2 = invoiceLines.get(1);
 		assertThat("Invalid invoice line 2 - QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("-10")));

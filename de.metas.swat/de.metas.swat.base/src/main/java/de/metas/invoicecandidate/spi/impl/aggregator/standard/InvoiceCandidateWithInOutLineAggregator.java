@@ -1,7 +1,6 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
-import static de.metas.util.Check.fail;
-import static java.math.BigDecimal.ZERO;
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -35,26 +34,31 @@ import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.exceptions.InvalidQtyForPartialAmtToInvoiceException;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
@@ -74,9 +78,12 @@ import lombok.ToString;
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
 
+	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final transient MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
 	// Parameters
 	@ToStringBuilder(skip = true)
-	private HashMap<InvoiceCandidateId, Quantity> _ic2QtyInvoiceable;
+	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
 
 	// State variables
 	private boolean _initialized = false;
@@ -97,9 +104,9 @@ import lombok.ToString;
 	private boolean _hasAtLeastOneValidICS = false;
 	private final Collection<Integer> _iciolIds = new HashSet<>();
 	private final List<InvoiceCandidateWithInOutLine> _invoiceCandidateWithInOutLines = new ArrayList<>();
-	private final List<IInvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
+	private final List<InvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
 
-	public void setInvoiceableQtys(@NonNull final HashMap<InvoiceCandidateId, Quantity> ic2QtyInvoiceable)
+	public void setInvoiceableQtys(@NonNull final HashMap<InvoiceCandidateId, StockQtyAndUOMQty> ic2QtyInvoiceable)
 	{
 		this._ic2QtyInvoiceable = ic2QtyInvoiceable;
 	}
@@ -165,7 +172,10 @@ import lombok.ToString;
 
 	public void addInvoiceCandidateWithInOutLines(@NonNull final List<InvoiceCandidateWithInOutLine> icsCollection)
 	{
-		icsCollection.forEach(ics -> addInvoiceCandidateWithInOutLine(ics));
+		for (final InvoiceCandidateWithInOutLine ics : icsCollection)
+		{
+			addInvoiceCandidateWithInOutLine(ics);
+		}
 	}
 
 	private void addInvoiceCandidateWithInOutLine(@NonNull final InvoiceCandidateWithInOutLine ics)
@@ -179,11 +189,9 @@ import lombok.ToString;
 		// task 08606: if we need to allocate the full remaining qty we can't take care to stay within the limits of the current iol's shipped quantity
 		final boolean stayWithinShippedQty = !ics.isAllocateRemainingQty();
 
-		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
-
 		// Get quantity left to be invoiced
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand).toBigDecimal();
+		// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		final StockQtyAndUOMQty qtyLeftToInvoice = getQtyInvoiceable(ics.getInvoicecandidateId());
 
 		//
 		// we introduce a multiplier that can be 1 or -1. We will apply the factor in comparisons.
@@ -220,15 +228,16 @@ import lombok.ToString;
 
 		//
 		// Calculate how much we can MAXIMUM invoice for current invoice candidate line
-		final BigDecimal maxQtyToInvoicePerLine;
+		final StockQtyAndUOMQty maxQtyToInvoicePerLine;
 		// If qty was shipped (i.e. EXISTS IC-IOL)
 		if (shipped && stayWithinShippedQty)
 		{
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS
-					.getStockQty().toBigDecimal()
-					.multiply(factor).compareTo(qtyAlreadyInvoicedPerCurrentICS
-							.getStockQty().toBigDecimal()
+					.getUomQty()
+					.multiply(factor)
+					.compareTo(qtyAlreadyInvoicedPerCurrentICS
+							.getUomQty()
 							.multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
@@ -238,17 +247,17 @@ import lombok.ToString;
 			else
 			{
 				// For partially invoiced shipment/receipt line
-				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				final BigDecimal qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS).getStockQty().toBigDecimal();
+				// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				final StockQtyAndUOMQty qtyShippedButNotInvoiced = qtyAlreadyShippedPerCurrentICS.subtract(qtyAlreadyInvoicedPerCurrentICS);
 				if (positiveQty)
 				{
 					// e.g. qtyShippedButNotInvoiced = 50 and qtyLeft = 40 => maxQtyToInvoicePerLine = 40
-					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.min(qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.minUomQty(qtyLeftToInvoice);
 				}
 				else
 				{
 					// e.g. qtyShippedButNotInvoiced = -50 and qtyLeft = -40 => maxQtyToInvoicePerLine = -40
-					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.max(qtyLeftToInvoice);
+					maxQtyToInvoicePerLine = qtyShippedButNotInvoiced.maxUomQty(qtyLeftToInvoice);
 				}
 			}
 		}
@@ -261,20 +270,20 @@ import lombok.ToString;
 		//
 		// Calculate how much we can invoice for current invoice candidate line,
 		// without checking the upper limit (see maxQtyToInvoicePerLine).
-		final BigDecimal candQtyToInvoiceUnchecked;
+		final StockQtyAndUOMQty candQtyToInvoiceUnchecked;
 		if (shipped && stayWithinShippedQty)
 		{
 			//
 			// We don't want to invoice more than shipped
 			if (positiveQty)
 			{
-				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.min(qtyAlreadyShippedPerCurrentICS.getStockQty().toBigDecimal());
+				// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				candQtyToInvoiceUnchecked = qtyLeftToInvoice.minUomQty(qtyAlreadyShippedPerCurrentICS);
 			}
 			else
 			{
-				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				candQtyToInvoiceUnchecked = qtyLeftToInvoice.max(qtyAlreadyShippedPerCurrentICS.getStockQty().toBigDecimal());
+				// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+				candQtyToInvoiceUnchecked = qtyLeftToInvoice.maxUomQty(qtyAlreadyShippedPerCurrentICS);
 			}
 		}
 		else
@@ -287,8 +296,8 @@ import lombok.ToString;
 		//
 		// Calculate how much we can invoice for this invoice candidate (final result)
 		// i.e. if the "candQtyToInvoiceUnchecked" does not fit within the calculated limits, use max value
-		final BigDecimal candQtyToInvoiceFinal;
-		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.compareTo(candQtyToInvoiceUnchecked) < 0;
+		final StockQtyAndUOMQty candQtyToInvoiceFinal;
+		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUomQty().compareTo(candQtyToInvoiceUnchecked.getUomQty()) < 0;
 		if (doesNofitWithinLimits && stayWithinShippedQty)
 		{
 			candQtyToInvoiceFinal = maxQtyToInvoicePerLine;
@@ -299,7 +308,7 @@ import lombok.ToString;
 		}
 
 		final boolean forcedAdditionalQty = false;
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 		setAdditionalStuff(ics, candQtyToInvoiceFinal, forcedAdditionalQty);
 
 		//
@@ -317,15 +326,14 @@ import lombok.ToString;
 
 	private void setAdditionalStuff(
 			final InvoiceCandidateWithInOutLine ics,
-			//@NonNull final Quantity candQtyToInvoiceFinal,
-			@NonNull final BigDecimal candQtyToInvoiceFinal,
+			@NonNull final StockQtyAndUOMQty candQtyToInvoiceFinal,
 			final boolean forcedAdditionalQty)
 	{
 		final I_C_Invoice_Candidate cand = ics.getC_Invoice_Candidate();
 
 		//
 		// Calculate PriceActual and NetAmount depending on whether is Amount based invoicing or Qty based invoicing
-		final Money candPriceActual;
+		final ProductPrice candPriceActual;
 		final Money candNetAmtToInvoice;
 		if (isAmountBasedInvoicing(cand))
 		{
@@ -336,36 +344,46 @@ import lombok.ToString;
 
 			if (!candNetAmtToInvoiceOrig.isEqualByComparingTo(candNetAmtToInvoiceCalc))
 			{
-
-				//if (!candQtyToInvoiceFinal.isOne())
-				if (true)
+				if (!candQtyToInvoiceFinal.getUomQty().isOne())
 				{
-					fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-					//throw new InvalidQtyForPartialAmtToInvoiceException(candQtyToInvoiceFinal, cand, candNetAmtToInvoiceOrig, candNetAmtToInvoiceCalc);
+					// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+					throw new InvalidQtyForPartialAmtToInvoiceException(
+							candQtyToInvoiceFinal.getUomQty(),
+							cand,
+							candNetAmtToInvoiceOrig,
+							candNetAmtToInvoiceCalc);
 				}
-				candPriceActual = candNetAmtToInvoiceOrig;
+				candPriceActual = ProductPrice.builder()
+						.money(candNetAmtToInvoiceOrig)
+						.productId(ics.getProductId())
+						.uomId(candQtyToInvoiceFinal.getUomQty().getUomId())
+						.build();
 			}
 			else
 			{
-				candPriceActual = invoiceCandBL.getPriceActual(cand).toMoney();
+				candPriceActual = invoiceCandBL.getPriceActual(cand);
 			}
 		}
 		else
 		{
 			final CurrencyPrecision currencyPrecision = invoiceCandBL.getPrecisionFromCurrency(cand);
 			// 07202: Make sure we adapt the quantity we use to the product and price UOM of the candidate.
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			final BigDecimal candQtyToInvoiceFinalInPriceUOM = ZERO;
-					//invoiceCandBL.convertToPriceUOM(candQtyToInvoiceFinal, cand);
-			candPriceActual = invoiceCandBL.getPriceActual(cand).toMoney();
+			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			//candNetAmtToInvoice = SpringContextHolder.instance.getBean(MoneyService.class).multiply(candQtyToInvoiceFinal, candPriceActual);
-			//candNetAmtToInvoice = invoiceCandBL.calculateNetAmt(candQtyToInvoiceFinal, candPriceActual, currencyPrecision);
+			final Quantity candQtyToInvoiceFinalInPriceUOM = uomConversionBL.convertQuantityTo(
+					candQtyToInvoiceFinal.getUomQty(),
+					UOMConversionContext.of(ics.getProductId()),
+					UomId.ofRepoId(firstGreaterThanZero(cand.getPrice_UOM_ID(), cand.getC_UOM_ID())));
+
+			candPriceActual = invoiceCandBL.getPriceActual(cand);
+
+			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUomQty(), candPriceActual);
+
 		}
 
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		//setPriceActual(candPriceActual);
+		// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		setPriceActual(candPriceActual);
 
 		//
 		// Set/validate overall "PriceEntered"
@@ -391,8 +409,8 @@ import lombok.ToString;
 		// Add QtyToInvoice and LineNetAmount from this candidate
 		addQtyToInvoice(candQtyToInvoiceFinal, ics, forcedAdditionalQty);
 
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		//addLineNetAmount(candNetAmtToInvoice);
+		//fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		addLineNetAmount(candNetAmtToInvoice);
 	}
 
 	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
@@ -427,6 +445,9 @@ import lombok.ToString;
 		_printed = _firstCand.isPrinted();
 		_invoiceLineNo = _firstCand.getLine();
 
+		_qtysToInvoice = StockQtyAndUOMQtys.createZero(ics.getProductId(), ics.getIcUomId());
+		_netLineAmt = Money.zero(ics.getCurrencyId());
+
 		// Flag it as initialized
 		_initialized = true;
 	}
@@ -437,9 +458,8 @@ import lombok.ToString;
 		return _firstCand;
 	}
 
-	private final void setPriceActual(final ProductPrice candPriceActual)
+	private void setPriceActual(@NonNull final ProductPrice candPriceActual)
 	{
-		Check.assumeNotNull(candPriceActual, "candPriceActual not null");
 		if (_priceActual == null)
 		{
 			_priceActual = candPriceActual;
@@ -596,13 +616,13 @@ import lombok.ToString;
 		return invoiceCandBL.getTaxEffective(firstCand);
 	}
 
-	public List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
+	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
 	{
 		return _iciolsToUpdate;
 	}
 
-	private final void addQtyToInvoice(
-			final BigDecimal candQtyToInvoice,
+	private void addQtyToInvoice(
+			@NonNull final StockQtyAndUOMQty candQtyToInvoice,
 			@NonNull final InvoiceCandidateWithInOutLine fromICS,
 			final boolean forcedAdditionalQty)
 	{
@@ -610,44 +630,41 @@ import lombok.ToString;
 		final I_C_InvoiceCandidate_InOutLine iciol = fromICS.getC_InvoiceCandidate_InOutLine();
 		if (iciol != null && !forcedAdditionalQty)
 		{
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-//			final Quantity qtyAlreadyInvoiced = fromICS.getQtysAlreadyInvoiced();
-//			final BigDecimal qtyAlreadyInvoicedNew = qtyAlreadyInvoiced.add(candQtyToInvoice);
-//			// task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
-//			final IInvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
-//			_iciolsToUpdate.add(invoiceCandidateInOutLineToUpdate);
+			//fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			final StockQtyAndUOMQty qtyAlreadyInvoiced = fromICS.getQtysAlreadyInvoiced();
+			final StockQtyAndUOMQty qtyAlreadyInvoicedNew = qtyAlreadyInvoiced.add(candQtyToInvoice);
+			// // task 07988: *don't* store/persist anything in here..just add, so it will be persisted later when the actual invoice was created
+			final InvoiceCandidateInOutLineToUpdate invoiceCandidateInOutLineToUpdate = new InvoiceCandidateInOutLineToUpdate(iciol, qtyAlreadyInvoicedNew);
+			_iciolsToUpdate.add(invoiceCandidateInOutLineToUpdate);
 		}
 
 		//
 		// Increase QtyToInvoice
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		//_qtysToInvoice = _qtysToInvoice.add(candQtyToInvoice);
+		//fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+		_qtysToInvoice = _qtysToInvoice.add(candQtyToInvoice);
 
 		//
 		// Update IC-QtyInvoiceable map (i.e. decrease invoiceable quantity)
 		{
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			final I_C_Invoice_Candidate cand = fromICS.getC_Invoice_Candidate();
-			//subtractQtyInvoiceable(cand, candQtyToInvoice);
+			//fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+			subtractQtyInvoiceable(fromICS.getInvoicecandidateId(), candQtyToInvoice);
 		}
 	}
 
-	private final void subtractQtyInvoiceable(final I_C_Invoice_Candidate ic, final Quantity qtyInvoiced)
+	private void subtractQtyInvoiceable(
+			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@NonNull final StockQtyAndUOMQty qtyInvoiced)
 	{
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.ofRecord(ic);
-
-		final Quantity qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
-		final Quantity qtyInvoiceableNew = qtyInvoiceable.subtract(qtyInvoiced);
+		final StockQtyAndUOMQty qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
+		final StockQtyAndUOMQty qtyInvoiceableNew = qtyInvoiceable.subtract(qtyInvoiced);
 
 		_ic2QtyInvoiceable.put(invoiceCandidateId, qtyInvoiceableNew);
 	}
 
-	private Quantity getQtyInvoiceable(@NonNull final I_C_Invoice_Candidate ic)
+	private StockQtyAndUOMQty getQtyInvoiceable(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.ofRecord(ic);
-
-		final Quantity qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
-		return Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);
+		final StockQtyAndUOMQty qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
+		return Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for invoiceCandidateId={}", invoiceCandidateId);
 	}
 
 	private void addLineNetAmount(final Money candLineNetAmt)
@@ -666,9 +683,6 @@ import lombok.ToString;
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
 	 *
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
-	 *
-	 * @param cand
-	 * @return
 	 */
 	private boolean isAmountBasedInvoicing(final I_C_Invoice_Candidate cand)
 	{

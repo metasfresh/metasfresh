@@ -36,19 +36,30 @@ import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_C_DocType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.currency.CurrencyRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 
 /**
  * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEngineTestBase
 {
 	// /**
@@ -124,22 +135,22 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		// Partially invoice both at the same time
 		final I_M_InOut inOut1;
 		final I_M_InOutLine iol11;
-		final BigDecimal partialQty1 = new BigDecimal("32");
+		final StockQtyAndUOMQty partialQty1_32 = StockQtyAndUOMQtys.create(productId, new BigDecimal("32"), uomId, new BigDecimal("320"));
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, partialQty1, inOutDocumentNo); // inOutLineDescription
+			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, partialQty1_32, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}
 
 		final I_M_InOut inOut2;
 
-		final BigDecimal partialQty2 = new BigDecimal("8");
+		final StockQtyAndUOMQty partialQty2_8 = StockQtyAndUOMQtys.create(productId, new BigDecimal("8"), uomId, new BigDecimal("80"));
 		final I_M_InOutLine iol21;
 		{
 			final String inOutDocumentNo = "2";
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, partialQty2, inOutDocumentNo); // inOutLineDescription
+			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, partialQty2_8, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut2);
 		}
 
@@ -150,8 +161,8 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		// InterfaceWrapperHelper.refresh(ic);
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
-		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1.add(partialQty2)));
-		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1.add(partialQty2)));
+		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32.add(partialQty2_8).getStockQty().toBigDecimal()));
+		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1_32.add(partialQty2_8).getStockQty().toBigDecimal()));
 
 		final AggregationEngine engine = new AggregationEngine();
 		engine.addInvoiceCandidate(ic);
@@ -174,8 +185,8 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11, invoiceLine1);
 			assertThat(invoiceLine1.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
 			Assert.assertEquals("Invalid PriceActual", 1, invoiceLine1.getPriceActual().toBigDecimal().intValueExact());
-			Assert.assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1));
-			Assert.assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1) /* because price=1 */);
+			Assert.assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1_32.getStockQty().toBigDecimal()));
+			Assert.assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1_32.getUomQty().toBigDecimal()) /* because price=1 */);
 		}
 
 		//
@@ -193,8 +204,8 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21, invoiceLine2);
 			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
 			Assert.assertEquals("Invalid PriceActual", 1, invoiceLine2.getPriceActual().toBigDecimal().intValueExact());
-			Assert.assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2));
-			Assert.assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2) /* remember, price=1 */);
+			Assert.assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8.getStockQty().toBigDecimal()));
+			Assert.assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8.getUomQty().toBigDecimal()) /* remember, price=1 */);
 		}
 
 		//
@@ -210,7 +221,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				.setInstanceName("ic")
 				.setBillBPartnerId(1)
 				.setPriceEntered(1)
-				.setQty(qtyOrdered)
+				.setQtyOrdered(qtyOrdered)
 				.setSOTrx(false)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
@@ -221,7 +232,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 
 		//
 		// Partially invoice 1
-		final BigDecimal partialQty1_32 = new BigDecimal("32");
+		final StockQtyAndUOMQty partialQty1_32 = StockQtyAndUOMQtys.create(productId, new BigDecimal("32"), uomId, new BigDecimal("320"));
 		{
 			{
 				inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), "1"); // DocumentNo
@@ -237,10 +248,10 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			updateInvalidCandidates();
 			InterfaceWrapperHelper.refresh(ic);
 			// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
-			assertThat("Invalid QtyDelivered on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32));
+			assertThat("Invalid QtyDelivered on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32.getStockQty().toBigDecimal()));
 			if (X_C_Invoice_Candidate.INVOICERULE_AfterDelivery.equals(invoiceRuleOverride))
 			{
-				assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1_32));
+				assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty1_32.getStockQty().toBigDecimal()));
 			}
 			else
 			{
@@ -265,14 +276,16 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol11, invoiceLine);
 			assertThat(invoiceLine.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(1));
 			assertThat("Invalid PriceActual", invoiceLine.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE) /* the price set above */);
-			assertThat("Invalid QtyToInvoice", invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1_32));
-			assertThat("Invalid NetLineAmt", invoiceLine.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1_32));
+			assertThat("Invalid QtyToInvoice", invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1_32.getStockQty().toBigDecimal()));
+			assertThat("Invalid NetLineAmt", invoiceLine.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1_32.getUomQty().toBigDecimal()));
 		}
 
 		//
 		// create a matchInv record for iol11 to make sure that the system know that qty is already invoiced.
 		final I_M_MatchInv im11 = InterfaceWrapperHelper.newInstance(I_M_MatchInv.class, iol11);
-		im11.setQty(partialQty1_32);
+		im11.setQty(partialQty1_32.getStockQty().toBigDecimal());
+		im11.setQtyInUOM(partialQty1_32.getUomQty().toBigDecimal());
+		im11.setC_UOM_ID(partialQty1_32.getUomQty().getUomId().getRepoId());
 		im11.setM_InOutLine(iol11);
 		InterfaceWrapperHelper.save(im11);
 
@@ -285,7 +298,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 
 		//
 		// Partially invoice 2
-		final BigDecimal partialQty2_8 = new BigDecimal("8");
+		final StockQtyAndUOMQty partialQty2_8 = StockQtyAndUOMQtys.create(productId, new BigDecimal("8"), uomId, new BigDecimal("80"));
 		{
 			final I_M_InOut inOut2;
 			{
@@ -297,16 +310,18 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 				// Invoice partially
 				ic.setInvoiceRule_Override(invoiceRuleOverride);
 
-				ic.setQtyInvoiced(partialQty1_32);
-				ic.setQtyToInvoice(partialQty2_8);
+				ic.setQtyInvoiced(partialQty1_32.getStockQty().toBigDecimal());
+				ic.setQtyInvoicedInUOM(partialQty1_32.getUomQty().toBigDecimal());
 
+				ic.setQtyToInvoice(partialQty2_8.getStockQty().toBigDecimal());
+				ic.setQtyToInvoiceInUOM(partialQty2_8.getUomQty().toBigDecimal());
 				InterfaceWrapperHelper.save(ic);
 			}
 
 			// updateInvalidCandidates();
 			InterfaceWrapperHelper.refresh(ic);
 			// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
-			Assert.assertThat("Invalid QtyDelivered on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32.add(partialQty2_8)));
+			Assert.assertThat("Invalid QtyDelivered on the IC level", ic.getQtyDelivered(), comparesEqualTo(partialQty1_32.add(partialQty2_8).getStockQty().toBigDecimal()));
 			// TODO this is not working atm (instead of 8, we get 32)
 			// Assert.assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(partialQty2));
 
@@ -327,8 +342,8 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 
 			final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
 			Assert.assertEquals("Invalid PriceActual", 1, invoiceLine.getPriceActual().toBigDecimal().intValue());
-			Assert.assertThat("Invalid QtysToInvoice", invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8));
-			Assert.assertThat("Invalid NetLineAmt", invoiceLine.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8) /* price=1 */);
+			Assert.assertThat("Invalid QtysToInvoice", invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8.getStockQty().toBigDecimal()));
+			Assert.assertThat("Invalid NetLineAmt", invoiceLine.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8.getUomQty().toBigDecimal()) /* price=1 */);
 		}
 	}
 }

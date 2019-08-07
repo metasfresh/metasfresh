@@ -44,6 +44,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
@@ -68,6 +69,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -348,14 +350,23 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		// TODO decide if we need to fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
-		final StockQtyAndUOMQty qtyDelivered = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
+		StockQtyAndUOMQty qtyDelivered = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
+		if (qtyDelivered.getStockQty().isZero())
+		{
+			final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+			if (orderLine.getQtyDelivered().signum() > 0)
+			{
+				// fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
+				qtyDelivered = StockQtyAndUOMQtys.create(
+						ProductId.ofRepoId(orderLine.getM_Product_ID()), orderLine.getQtyDelivered(),
+						UomId.ofRepoId(orderLine.getC_UOM_ID()), orderLine.getQtyEntered());
+			}
+		}
 		ic.setQtyDelivered(qtyDelivered.getStockQty().toBigDecimal());
-		ic.setQtyDeliveredInUOM(qtyDelivered.getUOMQtyOpt().get().toBigDecimal());
-
+		ic.setQtyDeliveredInUOM(qtyDelivered.getUomQty().toBigDecimal());
 		//
 		// Find out the first shipment/receipt
-		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic));
 		I_M_InOut firstInOut = null;
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)
 		{

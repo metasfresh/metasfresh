@@ -1,12 +1,17 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import java.math.BigDecimal;
+
 import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.internalbusinesslogic.OrderedData.OrderedDataBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderDAO;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,7 +55,8 @@ public class OrderedDataLoader
 
 		final boolean hasInvalidOrder = null != order && !DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed();
 
-		final OrderedDataBuilder result = OrderedData.builder();
+		final OrderedDataBuilder result = OrderedData.builder()
+				.orderFullyDelivered(isOrderFullyDelivered());
 
 		if (hasInvalidOrder)
 		{
@@ -64,5 +70,30 @@ public class OrderedDataLoader
 		}
 
 		return result.build();
+	}
+
+	private boolean isOrderFullyDelivered()
+	{
+		if (invoiceCandidateRecord.getC_Order_ID() <= 0)
+		{
+			return false;
+		}
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+		for (final I_C_OrderLine oLine : orderDAO.retrieveOrderLines(invoiceCandidateRecord.getC_Order()))
+		{
+			final BigDecimal toInvoice = oLine.getQtyOrdered().subtract(oLine.getQtyInvoiced());
+			if (toInvoice.signum() == 0 && oLine.getM_Product_ID() > 0)
+			{
+				continue;
+			}
+			//
+			final boolean fullyDelivered = oLine.getQtyOrdered().compareTo(oLine.getQtyDelivered()) == 0;
+			if (!fullyDelivered)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.equalTo;
@@ -78,20 +77,20 @@ public abstract class AbstractTwoInOutsOneInvoiceSalesTests extends AbstractTwoI
 
 			assertThat("Invalid PriceEntered", invoiceLine1.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1.multiply(priceActual.toBigDecimal())));
+			assertThat("Invalid QtyToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty1_32));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty1_32.multiply(TEN).multiply(priceActual.toBigDecimal()))/* uomQty is stockQty x 10 */);
 
-			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, partialQty1);
+			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, partialQty1_32);
 
 			final IInvoiceLineRW invoiceLine2 = getSingleForInOutLine(invoiceLines1, iol21);
 			assertThat("iol21 and iol22 have the same IInvoiceLineRW", getSingleForInOutLine(invoiceLines1, iol22), is(invoiceLine2));
 			assertThat(invoiceLine2.getC_InvoiceCandidate_InOutLine_IDs().size(), equalTo(2));
 			assertThat("Invalid PriceEntered", invoiceLine2.getPriceEntered().toBigDecimal(), comparesEqualTo(priceEntered.toBigDecimal()));
 			assertThat("Invalid PriceActual", invoiceLine2.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
-			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3)));
-			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2.add(partialQty3).multiply(priceActual.toBigDecimal())) /* because price=1 */);
+			assertThat("Invalid QtyToInvoice", invoiceLine2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(partialQty2_8.add(partialQty3_4)));
+			assertThat("Invalid NetLineAmt", invoiceLine2.getNetLineAmt().toBigDecimal(), comparesEqualTo(partialQty2_8.add(partialQty3_4).multiply(priceActual.toBigDecimal()).multiply(TEN))/* price=1 and uomQty is stockQty x 10 */);
 
-			validateIcIlAllocationQty(ic, invoice1, invoiceLine2, partialQty2.add(partialQty3));
+			validateIcIlAllocationQty(ic, invoice1, invoiceLine2, partialQty2_8.add(partialQty3_4));
 		}
 
 		//

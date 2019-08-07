@@ -96,7 +96,7 @@ public interface IInvoiceLineRW
 	/** @return product attributes */
 	Set<IInvoiceLineAttribute> getInvoiceLineAttributes();
 
-	List<IInvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate();
+	List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate();
 
 	int getC_PaymentTerm_ID();
 

@@ -55,7 +55,6 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -90,30 +89,34 @@ public class C_Invoice_Candidate
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	/**
-	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
-			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
-			I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
-	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate icRecord)
-	{
-//		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+//	/**
+//	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
+//	 */
+//	@ModelChange(//
+//			timings = {
+//					/* ModelValidator.TYPE_BEFORE_NEW, if we don't yet have a C_Invoice_candidate_ID our code won't work; also, QtyToInvoiceInUOM won't yet be computed */
+//					ModelValidator.TYPE_BEFORE_CHANGE }, //
+//			ifColumnsChanged = {
+//					I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
+//					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
+//					I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
+//	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate icRecord)
+//	{
+//		// final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+//		//
+//		// final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+//		// final I_C_UOM uomRecord = uomDao.getById(icRecord.getC_UOM_ID());
 //
-//		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-//		final I_C_UOM uomRecord = uomDao.getById(icRecord.getC_UOM_ID());
-
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
-		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
-
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
-		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
-		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
-//		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(icRecord.getQtyToInvoiceInUOM(), uomRecord), icRecord);
+//		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+//		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 //
-//		icRecord.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
-	}
+//		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
+//		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
+//		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
+//		// final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(icRecord.getQtyToInvoiceInUOM(), uomRecord), icRecord);
+//		//
+//		// icRecord.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
+//	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,
 			ModelValidator.TYPE_BEFORE_SAVE_TRX }, ifColumnsChanged = {

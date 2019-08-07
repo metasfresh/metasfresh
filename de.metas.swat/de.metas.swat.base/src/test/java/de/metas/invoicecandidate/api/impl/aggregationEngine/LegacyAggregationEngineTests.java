@@ -38,40 +38,49 @@ import org.compiere.model.X_C_DocType;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 
 /**
  *
- * <b>IMPORTANT:</b> these tests are still valid! It's just the way they are implemented that is "legacy".
- *
+ * <b>IMPORTANT:</b> these tests are still valid! Just the way the tests are implemented is "legacy".
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestBase
 {
+	private static final BigDecimal HUNDRET = new BigDecimal("100");
+
 	@Test
 	public void test_simple01()
 	{
-
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
-
 		POJOWrapper.setInstanceName(ic1, "ic1");
 
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -80,7 +89,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -116,7 +125,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	{
 		assertThat(invoiceLine1.getPriceActual().toMoney().toBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(ONE);
 		assertThat(invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
-		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(ONE);
+		assertThat(invoiceLine1.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(TEN);
 	}
 
 	@Test
@@ -128,7 +137,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(false)
 				.build();
@@ -137,7 +146,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(false)
 				.build();
@@ -146,7 +155,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate ic3 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(false)
 				.build();
@@ -186,7 +195,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(true)
 				.build();
@@ -195,7 +204,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(-10)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(true)
 				.setSOTrx(true)
 				.build();
@@ -220,7 +229,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
 		assertThat(invoiceLine.getPriceActual().toMoney().toBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(TEN);
 		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
-		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(TEN);
+		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(HUNDRET); // price=10 times qtyInUom=10
 
 		// System.out.println(invoices);
 	}
@@ -236,7 +245,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(10)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(false)
 				.setSOTrx(false)
 				.build();
@@ -245,7 +254,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final I_C_Invoice_Candidate manualIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(-10)
-				.setQty(1)
+				.setQtyOrdered(1)
 				.setManual(true)
 				.setSOTrx(false)
 				.build();
@@ -271,7 +280,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		final IInvoiceLineRW invoiceLine = invoiceLines.get(0);
 		assertThat(invoiceLine.getPriceActual().toMoney().toBigDecimal()).as("Invalid PriceActual").isEqualByComparingTo(TEN);
 		assertThat(invoiceLine.getQtysToInvoice().getStockQty().toBigDecimal()).as("Invalid QtyToInvoice").isEqualByComparingTo(ONE);
-		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(TEN);
+		assertThat(invoiceLine.getNetLineAmt().toBigDecimal()).as("Invalid NetLineAmt").isEqualByComparingTo(HUNDRET); // price=10 times qtyInUom=10
 
 		// System.out.println(invoices);
 	}

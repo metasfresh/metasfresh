@@ -75,13 +75,13 @@ import de.metas.invoicecandidate.api.IAggregationEngine;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.invoicecandidate.api.IInvoiceGenerator;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -649,7 +649,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					// task 08507: also create them for sale invoices, to track the invoiced Qtys per il and iol
 					if (!matchInvCreatedElsewhere)
 					{
-						for (final IInvoiceCandidateInOutLineToUpdate iciolToUpdate : ilVO.getInvoiceCandidateInOutLinesToUpdate())
+						for (final InvoiceCandidateInOutLineToUpdate iciolToUpdate : ilVO.getInvoiceCandidateInOutLinesToUpdate())
 						{
 							final I_C_InvoiceCandidate_InOutLine icIol = iciolToUpdate.getC_InvoiceCandidate_InOutLine();
 							final I_M_InOutLine inOutLine = icIol.getM_InOutLine();

@@ -93,16 +93,20 @@ class InvoiceCandidateRecordServiceTest
 	void getById()
 	{
 		final I_C_UOM stockUomRecord = uomConversionHelper.createUOM(2);
+		stockUomRecord.setC_UOM_ID(STOCK_UOM_ID.getRepoId());
 		saveRecord(stockUomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
+		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		saveRecord(productRecord);
 
 		final I_C_UOM icUomRecord = uomConversionHelper.createUOM(2);
+		icUomRecord.setC_UOM_ID(IC_UOM_ID.getRepoId());
 		saveRecord(icUomRecord);
 
 		final I_C_Currency currencyRecord = newInstance(I_C_Currency.class);
+		currencyRecord.setC_Currency_ID(CURRENCY_ID.getRepoId());
 		saveRecord(currencyRecord);
 
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class);
@@ -120,14 +124,15 @@ class InvoiceCandidateRecordServiceTest
 		io.setDocStatus(X_M_InOut.DOCSTATUS_Completed);
 		saveRecord(io);
 
+		final I_C_UOM shipmentUomRecord = uomConversionHelper.createUOM(2);
+		saveRecord(shipmentUomRecord);
+
 		final I_M_InOutLine iol = newInstance(I_M_InOutLine.class);
 		iol.setM_Product_ID(productRecord.getM_Product_ID());
 		iol.setM_InOut_ID(io.getM_InOut_ID());
+		iol.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
 		iol.setMovementQty(TEN);
 		saveRecord(iol);
-
-		final I_C_UOM shipmentUomRecord = uomConversionHelper.createUOM(2);
-		saveRecord(shipmentUomRecord);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(UomIds.ofRecord(icUomRecord))
@@ -142,7 +147,7 @@ class InvoiceCandidateRecordServiceTest
 		icIol.setM_InOutLine_ID(iol.getM_InOutLine_ID());
 		icIol.setQtyDeliveredInUOM_Nominal(FOUR_HUNDRET);
 		icIol.setQtyDeliveredInUOM_Catch(FOUR_HUNDRET_TWENTY);
-		icIol.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
+		icIol.setC_UOM_ID(iol.getC_UOM_ID());
 		saveRecord(icIol);
 
 		final I_M_InOut io2 = newInstance(I_M_InOut.class);
@@ -151,6 +156,7 @@ class InvoiceCandidateRecordServiceTest
 
 		final I_M_InOutLine iol2 = newInstance(I_M_InOutLine.class);
 		iol2.setM_Product_ID(productRecord.getM_Product_ID());
+		iol2.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
 		iol2.setM_InOut_ID(io2.getM_InOut_ID());
 		iol2.setMovementQty(FIVE);
 		saveRecord(iol2);
@@ -160,7 +166,7 @@ class InvoiceCandidateRecordServiceTest
 		icIol2.setM_InOutLine_ID(iol2.getM_InOutLine_ID());
 		icIol2.setQtyDeliveredInUOM_Nominal(TWO_HUNDRET);
 		icIol2.setQtyDeliveredInUOM_Catch(ONE_HUNDRET_NINETY);
-		icIol2.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
+		icIol2.setC_UOM_ID(iol2.getC_UOM_ID());
 		saveRecord(icIol2);
 
 		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());

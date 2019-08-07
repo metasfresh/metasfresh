@@ -435,7 +435,7 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setM_Product_ID(productId.getRepoId());
 		if (setUOM)
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
 			orderLine.setC_UOM_ID(uomId.getRepoId());
 		}
 
@@ -637,7 +637,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal poCostPrice = orderLine.getPriceCost();
 		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			final UomId productUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+			final UomId productUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
 			return ProductPrice.builder()
 					.productId(productId)

@@ -40,7 +40,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 	private UOMConversionsMap retrieveProductConversions(@NonNull final ProductId productId)
 	{
-		final UomId productStockingUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId productStockingUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 
 		final ImmutableList<UOMConversionRate> rates = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_UOM_Conversion.class)

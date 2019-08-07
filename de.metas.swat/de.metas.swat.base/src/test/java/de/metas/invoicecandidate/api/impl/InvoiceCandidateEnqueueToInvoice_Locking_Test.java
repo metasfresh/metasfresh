@@ -59,7 +59,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartner(bpartner1)
 				.setPriceEntered(1)
-				.setQty(10)
+				.setQtyOrdered(10)
 				.setManual(true)
 				.setSOTrx(true)
 				.build();

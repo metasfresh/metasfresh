@@ -290,6 +290,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			return null; // we won't create a new IC that has qtyOrdered=zero right from the start
 		}
 
+		//
+		// Product & Charge - product and its UOM are needed when setting the delivered data
+		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
+		final int chargeId = inOutLine.getC_Charge_ID();
+		{
+			ic.setM_Product_ID(productId.getRepoId());
+			ic.setC_Charge_ID(chargeId);
+		}
+		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
+
 		setDeliveredData(ic);
 
 		final ClientId clientId = ClientId.ofRepoId(inOutLine.getAD_Client_ID());
@@ -318,15 +328,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			setBPartnerData(ic, inOutLine);
 		}
 
-		//
-		// Product & Charge
-		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
-		final int chargeId = inOutLine.getC_Charge_ID();
-		{
-			ic.setM_Product_ID(productId.getRepoId());
-			ic.setC_Charge_ID(chargeId);
-			ic.setQtyToInvoice(ZERO); // to be computed
-		}
+		ic.setQtyToInvoice(ZERO); // to be computed
 
 		//
 		// Pricing Informations
@@ -497,8 +499,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setC_Order(null);
 			ic.setDateOrdered(inOut.getMovementDate());
 		}
-
-		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 		if (docStatus.isCompletedOrClosed())

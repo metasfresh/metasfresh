@@ -273,7 +273,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		final UomId fromUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId fromUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 		final UomId toUomId = UomId.ofRepoId(uomDest.getC_UOM_ID());
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
@@ -380,7 +380,7 @@ public class UOMConversionBL implements IUOMConversionBL
 			return qtyToConvert;
 		}
 
-		final UomId toUomId = Services.get(IProductBL.class).getStockingUOMId(productId);
+		final UomId toUomId = Services.get(IProductBL.class).getStockUOMId(productId);
 		final UOMConversionRate rate = getRateIfExists(productId, fromUomId, toUomId).orElse(null);
 		if (rate != null)
 		{

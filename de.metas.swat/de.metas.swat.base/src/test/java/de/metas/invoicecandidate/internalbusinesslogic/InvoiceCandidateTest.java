@@ -61,6 +61,7 @@ class InvoiceCandidateTest
 		final Quantity qtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
 
 		final OrderedData orderedData = OrderedData.builder()
+				.orderFullyDelivered(false)
 				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
 				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
 				.build();
@@ -238,6 +239,19 @@ class InvoiceCandidateTest
 		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("11"); // qtyToInvoiceOverride
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void afterOrderDelivered()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("afterOrderDelivered");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
 }

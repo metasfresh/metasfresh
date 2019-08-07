@@ -35,8 +35,8 @@ import lombok.Value;
 @Value
 public class ShippedQtyItem
 {
-
 	Quantity qtyInStockUom;
+
 	Quantity qtyNominal;
 
 	Quantity qtyCatch;
@@ -46,10 +46,10 @@ public class ShippedQtyItem
 	@Builder
 	@JsonCreator
 	private ShippedQtyItem(
-			@JsonProperty("qtyInStockUom") @NonNull Quantity qtyInStockUom,
-			@JsonProperty("qtyNominal") @NonNull Quantity qtyNominal,
-			@JsonProperty("qtyCatch") @Nullable Quantity qtyCatch,
-			@JsonProperty("qtyOverride") @Nullable Quantity qtyOverride)
+			@JsonProperty("qtyInStockUom") @NonNull final Quantity qtyInStockUom,
+			@JsonProperty("qtyNominal") @NonNull final Quantity qtyNominal,
+			@JsonProperty("qtyCatch") @Nullable final Quantity qtyCatch,
+			@JsonProperty("qtyOverride") @Nullable final Quantity qtyOverride)
 	{
 		this.qtyInStockUom = qtyInStockUom;
 		this.qtyNominal = qtyNominal;

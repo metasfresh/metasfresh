@@ -84,7 +84,6 @@ public class StockQtyAndUOMQtys
 		final Quantity stockQty = createStockQty(productId, qtyInStockUOM);
 
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-		final I_C_UOM uomRecord = uomDao.getById(uomId);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -92,6 +91,7 @@ public class StockQtyAndUOMQtys
 
 		if (uomId != null)
 		{
+			final I_C_UOM uomRecord = uomDao.getById(uomId);
 			Check.assumeNotNull(qtyInUOM, "If parameter 'uomId' is not null, then qtyInUOM needs to be not-null too; uomId={}", uomId);
 
 			final Quantity uomQty = Quantity.of(qtyInUOM, uomRecord);
@@ -133,7 +133,7 @@ public class StockQtyAndUOMQtys
 	public StockQtyAndUOMQty createConvertToStockUom(@NonNull final ProductId productId, @NonNull final Quantity stockQtyInAnyUom)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final UomId stockUomId = productBL.getStockingUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(stockQtyInAnyUom, UOMConversionContext.of(productId), stockUomId);
@@ -150,7 +150,7 @@ public class StockQtyAndUOMQtys
 			@Nullable final Quantity uomQty)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final UomId stockUomId = productBL.getStockingUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(stockQtyInAnyUom, UOMConversionContext.of(productId), stockUomId);
@@ -196,7 +196,7 @@ public class StockQtyAndUOMQtys
 			return stockQty;
 		}
 
-		final UomId stockUomId = productBL.getStockingUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM nonStockUomRecord = uomDao.getById(nonStockUomId);
 
@@ -273,7 +273,7 @@ public class StockQtyAndUOMQtys
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final UomId productStockUomId = productBL.getStockingUOMId(qtys.getProductId());
+		final UomId productStockUomId = productBL.getStockUOMId(qtys.getProductId());
 		if (!Objects.equals(productStockUomId, qtys.getStockQty().getUomId()))
 		{
 			throw new AdempiereException("Product's stock UOM does not match stockQty's UOM")

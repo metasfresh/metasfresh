@@ -289,7 +289,7 @@ import lombok.NonNull;
 			Loggables.get().addLog("IShipmentScheduleWithHU {} has QtyPicked={}", candidate, qtyToAdd);
 		}
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-		final UomId stockUomId = productBL.getStockingUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 
 		final Quantity qtyToAddInStockUom = uomConversionBL.convertQuantityTo(qtyToAdd, conversionCtx, stockUomId);
 		movementQty = movementQty.add(qtyToAddInStockUom); // NOTE: we assume qtyToAdd is in stocking UOM

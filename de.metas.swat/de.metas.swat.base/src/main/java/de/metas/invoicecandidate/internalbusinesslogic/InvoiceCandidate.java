@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.ToInvoiceExclOverride.InvoicedQtys;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData.ToInvoiceDataBuilder;
 import de.metas.lang.SOTrx;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -156,6 +157,11 @@ public class InvoiceCandidate
 		this.invoiceRule = newValue;
 	}
 
+	public void changeQualityDiscountOverride(@NonNull final Percent qualityDiscountOverride)
+	{
+		this.qualityDiscountOverride = qualityDiscountOverride;
+	}
+
 	public ToInvoiceData computeToInvoiceData()
 	{
 		final ToInvoiceExclOverride toInvoiceExclOverride = computeToInvoiceExclOverride();
@@ -264,13 +270,16 @@ public class InvoiceCandidate
 		switch (invoiceRule)
 		{
 			case AfterDelivery:
-				qtyToInvoice = computeQtysDelivered();
+				qtyToInvoice = computeInvoicableQtysDelivered();
 				break;
 			case CustomerScheduleAfterDelivery:
-				qtyToInvoice = computeQtysDelivered();
+				qtyToInvoice = computeInvoicableQtysDelivered();
 				break;
 			case Immediate:
 				qtyToInvoice = computeDeliveredOrOrdered();
+				break;
+			case AfterOrderDelivered:
+				qtyToInvoice = computeDeliveredOrOrderedIfOrderComplete();
 				break;
 			default:
 				throw new AdempiereException("Unsupported invoiceRule=" + invoiceRule);
@@ -283,6 +292,18 @@ public class InvoiceCandidate
 				qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
 	}
 
+	private ToInvoiceExclOverride computeDeliveredOrOrderedIfOrderComplete()
+	{
+		if (!orderedData.isOrderFullyDelivered())
+		{
+			return new ToInvoiceExclOverride(InvoicedQtys.NOT_SUBTRACTED,
+					StockQtyAndUOMQtys.createZero(productId, uomId),
+					StockQtyAndUOMQtys.createZero(productId, uomId));
+		}
+
+		return computeDeliveredOrOrdered();
+	}
+
 	private ToInvoiceExclOverride computeDeliveredOrOrdered()
 	{
 		final Quantity orderedInStockUom = orderedData.getQtyInStockUom();
@@ -293,7 +314,7 @@ public class InvoiceCandidate
 		Quantity qtyToInvoiceInStockUomCalc;
 		Quantity qtyToInvoiceCalc;
 
-		final ToInvoiceExclOverride invoicableQtyDelivered = computeQtysDelivered();
+		final ToInvoiceExclOverride invoicableQtyDelivered = computeInvoicableQtysDelivered();
 
 		final Quantity qtyDeliveredRaw = invoicableQtyDelivered.getQtysRaw().getUOMQtyOpt().get();
 		final Quantity qtyDeliveredCalc = invoicableQtyDelivered.getQtysCalc().getUOMQtyOpt().get();
@@ -337,27 +358,7 @@ public class InvoiceCandidate
 				qtysToInvoiceRaw, qtysToInvoiceCalc);
 	}
 
-	// public StockQtyAndUOMQty computeQtysDelivered()
-	// {
-	// final Quantity qtyDelivered;
-	// if (soTrx.isSales())
-	// {
-	// qtyDelivered = deliveredData.getShippedData().computeInvoicableQtyDelivered(invoicableQtyBasedOn);
-	// }
-	// else
-	// {
-	// qtyDelivered = deliveredData.getReceiptQualityData().getQtyTotal();
-	// }
-	//
-	// return StockQtyAndUOMQty
-	// .builder()
-	// .productId(productId)
-	// .stockQty(deliveredData.getQtyInStockUom())
-	// .uomQty(qtyDelivered)
-	// .build();
-	// }
-
-	public ToInvoiceExclOverride computeQtysDelivered()
+	public ToInvoiceExclOverride computeInvoicableQtysDelivered()
 	{
 		final StockQtyAndUOMQty qtysToInvoiceRaw;
 		final StockQtyAndUOMQty qtysToInvoiceCalc;
@@ -375,6 +376,22 @@ public class InvoiceCandidate
 		return new ToInvoiceExclOverride(
 				ToInvoiceExclOverride.InvoicedQtys.NOT_SUBTRACTED,
 				qtysToInvoiceRaw, qtysToInvoiceCalc);
+	}
+
+	public StockQtyAndUOMQty computeQtysDelivered()
+	{
+		final StockQtyAndUOMQty qtysDelivered;
+
+		if (soTrx.isSales())
+		{
+			qtysDelivered = deliveredData.getShipmentData().computeInvoicableQtyDelivered(invoicableQtyBasedOn);
+		}
+		else
+		{
+			qtysDelivered = deliveredData.getReceiptData().getQtysTotal();
+
+		}
+		return qtysDelivered;
 	}
 
 	@Value

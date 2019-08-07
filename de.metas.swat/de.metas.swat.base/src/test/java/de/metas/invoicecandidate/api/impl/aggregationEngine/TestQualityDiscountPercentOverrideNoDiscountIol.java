@@ -34,12 +34,12 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import lombok.NonNull;
 
 /**
- * There is no inoutLine with indispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
- *
- * @author ts
- *
+ * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
  */
 public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTestQualityDiscountPercentOverride
 {
@@ -49,10 +49,11 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
+		final StockQtyAndUOMQty qtysDelivered_100 = StockQtyAndUOMQtys.create(productId, HUNDRET, uomId, THOUSAND);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
-			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, new BigDecimal("100"), inOutDocumentNo); // inOutLineDescription
+			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_100, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
 		}
 
@@ -66,7 +67,9 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines)
+	protected void step_validate_before_aggregation(
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
+			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, inOutLines);
 

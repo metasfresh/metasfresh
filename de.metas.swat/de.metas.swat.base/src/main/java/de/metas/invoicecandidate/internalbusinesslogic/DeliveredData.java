@@ -37,13 +37,13 @@ public class DeliveredData
 {
 	ShipmentData shipmentData;
 
-	ReceiptQualityData receiptData;
+	ReceiptData receiptData;
 
 	@Builder
 	@JsonCreator
 	private DeliveredData(
 			@JsonProperty("shipmentData") @Nullable final ShipmentData shipmentData,
-			@JsonProperty("receiptData") @Nullable final ReceiptQualityData receiptData)
+			@JsonProperty("receiptData") @Nullable final ReceiptData receiptData)
 	{
 		this.shipmentData = shipmentData;
 		this.receiptData = receiptData;

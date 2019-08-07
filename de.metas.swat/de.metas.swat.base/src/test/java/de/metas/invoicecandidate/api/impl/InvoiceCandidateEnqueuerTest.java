@@ -78,7 +78,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(priceEntered)
-				.setQty(qty)
+				.setQtyOrdered(qty)
 				.setSOTrx(isSOTrx)
 				.setManual(isManual)
 				.build();
@@ -92,7 +92,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(priceEntered)
-				.setQty(qty)
+				.setQtyOrdered(qty)
 				.setSOTrx(isSOTrx)
 				.setManual(isManual)
 				.build();

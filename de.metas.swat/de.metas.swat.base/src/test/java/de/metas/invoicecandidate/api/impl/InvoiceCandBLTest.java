@@ -43,32 +43,33 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
-/**
- * @author cg
- *
- */
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class InvoiceCandBLTest extends AbstractICTestSupport
 {
 	private InvoiceCandBL invoiceCandBL;
-
-	//
-	// @Mocked
-	// InvoiceCandDAO invoiceCandDAO;
-	//
-	// @Mocked
-	// I_C_InvoiceCandidate_InOutLine icIol;
 
 	@Before
 	public void init()
@@ -406,16 +407,16 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 			final BigDecimal expectedQtyDelivered_Effective)
 	{
 		final I_C_BPartner bpartner = bpartner("test-bp");
-		final I_C_Invoice_Candidate ic = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual, isSOTrx
+		final I_C_Invoice_Candidate icRecord = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // partner, priceEntered, qty, discount, isManual, isSOTrx
 
-		ic.setQtyDelivered(qtyDelivered);
-		ic.setQtyWithIssues(qtyWithIssues);
-		ic.setQualityDiscountPercent(qualityDiscountPercent); // shall be ignored, because it's not used in this method at all..QtyWithIssues is used instead
-		ic.setQualityDiscountPercent_Override(qualityDiscountPercent_Override);
-		save(ic);
+		icRecord.setQtyDelivered(qtyDelivered);
+		icRecord.setQtyWithIssues(qtyWithIssues);
+		icRecord.setQualityDiscountPercent(qualityDiscountPercent); // shall be ignored, because it's not used in this method at all..QtyWithIssues is used instead
+		icRecord.setQualityDiscountPercent_Override(qualityDiscountPercent_Override);
+		save(icRecord);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
+		final String trxName = InterfaceWrapperHelper.getTrxName(icRecord);
 
 		// gh #1566: we need an active and completed inout; otherwise, the iol won't be counted properly
 		final I_M_InOut inOut = newInstance(I_M_InOut.class);
@@ -429,13 +430,15 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		save(iol);
 
 		final I_C_InvoiceCandidate_InOutLine icIol = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
-		icIol.setC_Invoice_Candidate(ic);
+		icIol.setC_Invoice_Candidate(icRecord);
 		icIol.setM_InOutLine(iol);
 		save(icIol);
 
-		invoiceCandBL.updateQtyWithIssues_Effective(ic);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = new InvoiceCandidateRecordService();
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		assertThat(invoiceCandBL.getQtyDelivered_Effective(ic), comparesEqualTo(expectedQtyDelivered_Effective));
+		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord), comparesEqualTo(expectedQtyDelivered_Effective));
 	}
 
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)

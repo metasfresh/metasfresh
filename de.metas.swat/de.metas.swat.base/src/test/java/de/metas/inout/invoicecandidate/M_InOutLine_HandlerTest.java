@@ -18,6 +18,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.junit.Before;
@@ -98,12 +99,20 @@ public class M_InOutLine_HandlerTest
 		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);
 
+		final I_C_UOM packagingProductUom = newInstance(I_C_UOM.class);
+		save(packagingProductUom);
+
 		final I_M_Product packagingProduct = newInstance(I_M_Product.class);
+		packagingProduct.setC_UOM_ID(packagingProductUom.getC_UOM_ID());
 		save(packagingProduct);
+
+		final I_C_UOM packagingUom = newInstance(I_C_UOM.class);
+		save(packagingUom);
 
 		packagingInOutLine = newInstance(I_M_InOutLine.class);
 		packagingInOutLine.setM_InOut(inout);
 		packagingInOutLine.setM_Product_ID(packagingProduct.getM_Product_ID());
+		packagingInOutLine.setC_UOM_ID(packagingUom.getC_UOM_ID());
 		packagingInOutLine.setIsPackagingMaterial(true);
 		packagingInOutLine.setMovementQty(TEN);
 		save(packagingInOutLine);

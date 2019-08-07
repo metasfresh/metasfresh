@@ -37,22 +37,22 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
 
 /**
- * The general scenario if these tests is a duplicated receipt, i.e. 50 were ordered and then two inouts of 50 each were received. In this scenario, the user want to set
+ * The general scenario if these tests is a duplicated receipt, i.e. 50 were ordered and then two inouts of 50 each were received. In this scenario, the user wants to set
  * <code>QtyToInvoice_Override</code> to make sure that only the desired Qty of 50 is actually invoiced.
- *
- * @author ts
- *
+
  */
 public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggregationEngineTests
 {
-
 	protected I_M_InOut inOut11;
 	protected I_M_InOutLine iol111;
 
@@ -64,13 +64,12 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
 
 		ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
-				.setQty(50)
+				.setQtyOrdered(50)
 				.setManual(false)
 				.setSOTrx(config_IsSOTrx())
 				.setOrderDocNo("order1")
@@ -98,11 +97,13 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
+		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(productId, FIFTY, uomId, FIVE_HUNDRET);
+
 		// Deliver 50 via Wareneingang pos
 		{
 			final String inOutDocumentNo = "11";
 			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
-			iol111 = createInvoiceCandidateInOutLine(ic1, inOut11, FIFTY, inOutDocumentNo + "_1");
+			iol111 = createInvoiceCandidateInOutLine(ic1, inOut11, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut11);
 		}
 
@@ -110,10 +111,10 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 		{
 			final String inOutDocumentNo = "12";
 			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
-			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, FIFTY, inOutDocumentNo + "_1");
+			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, qtysDelivered, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
 
 		return Arrays.asList(iol111, iol121);
 	}
@@ -132,6 +133,6 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
 	}
 }

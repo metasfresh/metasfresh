@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate;
 
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -32,6 +36,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,6 +52,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -55,12 +61,10 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnableAdapter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.C_Aggregation_Attribute_Builder;
@@ -108,6 +112,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -185,7 +190,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_Date, SystemTime.asDayTimestamp());
 
-		final String trxName = Trx.createTrxName();
+		//final String trxName = Trx.createTrxName();
+		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 		currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
 
@@ -243,6 +249,13 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
 		InterfaceWrapperHelper.save(uomRecord);
 		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
+
+		final I_C_UOM_Conversion uomConversionRecord = newInstance(I_C_UOM_Conversion.class);
+		uomConversionRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
+		uomConversionRecord.setC_UOM_To_ID(uomRecord.getC_UOM_ID());
+		uomConversionRecord.setMultiplyRate(TEN);
+		uomConversionRecord.setDivideRate(ONE.divide(TEN));
+		saveRecord(uomConversionRecord);
 
 		final I_C_Activity activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
 		InterfaceWrapperHelper.save(activity);
@@ -475,7 +488,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
 				.setPriceEntered(priceEntered)
-				.setQty(qty)
+				.setQtyOrdered(qty)
 				.setManual(isManual)
 				.setSOTrx(isSOTrx)
 				.build();
@@ -496,7 +509,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		return createInvoiceCandidate()
 				.setBillBPartnerId(billBPartnerId)
 				.setPriceEntered(priceEntered)
-				.setQty(qty)
+				.setQtyOrdered(qty)
 				.setDiscount(discount)
 				.setManual(isManual)
 				.setSOTrx(isSOTrx)
@@ -518,9 +531,9 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	}
 
 	protected final I_M_InOutLine createInvoiceCandidateInOutLine(
-			final I_C_Invoice_Candidate ic,
+			final I_C_Invoice_Candidate icRecord,
 			final I_M_InOut inOut,
-			final BigDecimal qtyEntered,
+			final StockQtyAndUOMQty qtysDelivered,
 			final String inOutLineDescription)
 	{
 		final boolean assumeNew = true;
@@ -529,18 +542,20 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		// Create IOL
 		final I_M_InOutLine inOutLine = inOutLine(inOutLineDescription, assumeNew, I_M_InOutLine.class);
 		{
+			inOutLine.setM_Product_ID(assumeGreaterThanZero(icRecord.getM_Product_ID(), "icRecord.getM_Product_ID()"));
 			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
-			inOutLine.setC_OrderLine_ID(ic.getC_OrderLine_ID());
-			inOutLine.setQtyEntered(qtyEntered);
-			inOutLine.setMovementQty(qtyEntered);
+			inOutLine.setC_OrderLine_ID(icRecord.getC_OrderLine_ID());
+			inOutLine.setQtyEntered(qtysDelivered.getUomQty().toBigDecimal());
+			inOutLine.setC_UOM_ID(qtysDelivered.getUomQty().getUomId().getRepoId());
+			inOutLine.setMovementQty(qtysDelivered.getStockQty().toBigDecimal());
 			InterfaceWrapperHelper.save(inOutLine);
 		}
 
 		//
 		// Set orderLine delivered Qty
 		{
-			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(ic.getC_OrderLine(), I_C_OrderLine.class);
-			final BigDecimal qtyDeliveredOL = BigDecimal.ZERO.add(orderLine.getQtyDelivered()).add(qtyEntered);
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(icRecord.getC_OrderLine(), I_C_OrderLine.class);
+			final BigDecimal qtyDeliveredOL = orderLine.getQtyDelivered().add(qtysDelivered.getStockQty().toBigDecimal());
 			orderLine.setQtyDelivered(qtyDeliveredOL);
 
 			InterfaceWrapperHelper.save(orderLine);
@@ -549,15 +564,15 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		//
 		// Set C_Invoice_Candidate deliveredQty
 		{
-			final BigDecimal qtyDeliveredIC = BigDecimal.ZERO.add(ic.getQtyDelivered()).add(qtyEntered);
-			ic.setQtyDelivered(qtyDeliveredIC);
+			final BigDecimal qtyDeliveredIC = icRecord.getQtyDelivered().add(qtysDelivered.getStockQty().toBigDecimal());
+			icRecord.setQtyDelivered(qtyDeliveredIC);
 
-			InterfaceWrapperHelper.save(ic);
+			InterfaceWrapperHelper.save(icRecord);
 		}
 
 		//
 		// Bind IOL to IC
-		invoiceCandidateInOutLine(ic, inOutLine);
+		invoiceCandidateInOutLine(icRecord, inOutLine);
 		return inOutLine;
 	}
 
@@ -571,7 +586,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		{
 			iciol = db.newInstance(Env.getCtx(), I_C_InvoiceCandidate_InOutLine.class);
 			iciol.setC_Invoice_Candidate_ID(ic.getC_Invoice_Candidate_ID());
-			iciol.setM_InOutLine_ID(inOutLine.getM_InOutLine_ID());
+			invoiceCandBL.updateICIOLAssociationFromIOL(iciol, inOutLine);
 			InterfaceWrapperHelper.save(iciol);
 		}
 

@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate;
 
+import static de.metas.util.Check.assumeNotNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -49,6 +51,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.order.IOrderLineBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -70,7 +74,7 @@ public class C_Invoice_Candidate_Builder
 	private int priceEntered;
 	private BigDecimal priceEntered_Override;
 	private UomId uomId;
-	private BigDecimal stockQty;
+	private BigDecimal qtyOrdered;
 	private ProductId productId;
 	private int discount;
 	private boolean isManual = false;
@@ -162,11 +166,17 @@ public class C_Invoice_Candidate_Builder
 
 		ic.setBill_Location_ID(billBPartnerLocationId.getRepoId());
 
+		final StockQtyAndUOMQty qtysOrdered = StockQtyAndUOMQtys.createUsingUOMConversion(
+				productId,
+				assumeNotNull(qtyOrdered, "this builder needs qtyOrdered to be set before it is able to build an IC; this={}", this),
+				uomId);
+
 		ic.setAD_User_InCharge_ID(-1); // nobody, aka null
 		ic.setM_Product_ID(ProductId.toRepoId(productId));
 		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
-		ic.setQtyOrdered(stockQty);
+		ic.setQtyOrdered(qtysOrdered.getStockQty().toBigDecimal());
+		ic.setQtyEntered(qtysOrdered.getUomQty().toBigDecimal());
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setQtyToInvoice_Override(null); // no override
 		ic.setC_ILCandHandler(test.plainHandler);
@@ -175,7 +185,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setPriceEntered_Override(priceEntered_Override);
 		ic.setC_UOM_ID(UomId.toRepoId(uomId));
 
-		Check.errorIf(isSOTrx == null, "this builder={} needs isSOTrx to be set before it is able to build an IC", this); // avoid autoboxing-NPE
+		Check.errorIf(isSOTrx == null, "this builder needs isSOTrx to be set before it is able to build an IC; this={}", this); // avoid autoboxing-NPE
 		ic.setIsSOTrx(isSOTrx);
 
 		ic.setIsError(false); // just to avoid "refreshing changed models" exception from POJOWrapper
@@ -314,7 +324,6 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-
 	/**
 	 * Specify the new IC's M_PricingSystem_ID.
 	 * If not set,
@@ -337,8 +346,6 @@ public class C_Invoice_Candidate_Builder
 	 * <p>
 	 * Hint: when setting a customer PLV, make sure to use a date not after {@link AbstractICTestSupport#plvDate}, because currently, in {@link #build()}, we orientate the new IC's <code>DateOrdered</code> on the PLV-date.
 	 *
-	 * @param M_PriceList_Version_ID
-	 * @return
 	 */
 	public C_Invoice_Candidate_Builder setM_PriceList_Version_ID(final int M_PriceList_Version_ID)
 	{
@@ -346,14 +353,14 @@ public class C_Invoice_Candidate_Builder
 		return this;
 	}
 
-	public C_Invoice_Candidate_Builder setQty(final int qty)
+	public C_Invoice_Candidate_Builder setQtyOrdered(final int qtyOrdered)
 	{
-		return setQty(BigDecimal.valueOf(qty));
+		return setQtyOrdered(BigDecimal.valueOf(qtyOrdered));
 	}
 
-	public C_Invoice_Candidate_Builder setQty(final BigDecimal qty)
+	public C_Invoice_Candidate_Builder setQtyOrdered(final BigDecimal qtyOrdered)
 	{
-		this.stockQty = qty;
+		this.qtyOrdered = qtyOrdered;
 		return this;
 	}
 

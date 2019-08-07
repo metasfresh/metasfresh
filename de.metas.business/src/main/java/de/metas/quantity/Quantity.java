@@ -654,8 +654,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity min(@NonNull final Quantity qtyToCompare)
 	{
-		final Quantity diff = this.subtract(qtyToCompare);
-		if (diff.signum() <= 0)
+		if (this.compareTo(qtyToCompare) <= 0)
 		{
 			return this;
 		}
@@ -670,8 +669,7 @@ public final class Quantity implements Comparable<Quantity>
 	 */
 	public Quantity max(@NonNull final Quantity qtyToCompare)
 	{
-		final Quantity diff = this.subtract(qtyToCompare);
-		if (diff.signum() >= 0)
+		if (this.compareTo(qtyToCompare) >= 0)
 		{
 			return this;
 		}

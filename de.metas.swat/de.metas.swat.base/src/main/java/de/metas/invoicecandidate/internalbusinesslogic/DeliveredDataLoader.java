@@ -14,8 +14,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.api.IInOutCandidateBL;
-import de.metas.inoutcandidate.spi.impl.ReceiptQty;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
@@ -83,9 +81,16 @@ public class DeliveredDataLoader
 	{
 		final DeliveredDataBuilder result = DeliveredData.builder();
 
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
-
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
+		if (invoiceCandidateId == null)
+		{
+			icIolAssociationRecords = ImmutableList.of();
+		}
+		else
+		{
+			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+		}
 		if (soTrx.isPurchase())
 		{
 			result.receiptData(loadReceiptQualityData(icIolAssociationRecords));
@@ -164,19 +169,17 @@ public class DeliveredDataLoader
 		return build;
 	}
 
-	private ReceiptQualityData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	private ReceiptData loadReceiptQualityData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
 	{
-		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
-
 		StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.createZero(productId, icUomId);
 		StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.createZero(productId, icUomId);
 
-		final ReceiptQty receiptQtys = new ReceiptQty();
 		for (final I_C_InvoiceCandidate_InOutLine iciol : icIolAssociationRecords)
 		{
 			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
 
-			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.create(productId, iciol.getQtyDelivered(),
+			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.create(
+					productId, inoutLine.getMovementQty(),
 					UomId.ofRepoId(iciol.getC_UOM_ID()), iciol.getQtyDeliveredInUOM_Nominal());
 
 			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
@@ -184,10 +187,9 @@ public class DeliveredDataLoader
 			{
 				qtysWithIssues = StockQtyAndUOMQtys.add(qtysWithIssues, qtys);
 			}
-
 		}
 
-		return ReceiptQualityData.builder()
+		return ReceiptData.builder()
 				.qtysTotal(qtysTotal)
 				.qtysWithIssues(qtysWithIssues)
 				.build();

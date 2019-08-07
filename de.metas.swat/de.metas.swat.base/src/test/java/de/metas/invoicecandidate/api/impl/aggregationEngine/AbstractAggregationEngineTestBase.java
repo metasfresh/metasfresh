@@ -52,9 +52,9 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -64,7 +64,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyIds;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
@@ -134,7 +136,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
 				.setPriceEntered(1)
 				.setPriceEntered_Override(priceEntered_Override)
-				.setQty(40)
+				.setQtyOrdered(40)
 				.setDiscount(0)
 				.setManual(false)
 				.setSOTrx(isSOTrx)
@@ -145,8 +147,8 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected AggregationEngine test_2StepShipment_CommonSetup_Step02(final String invoiceRuleOverride,
 			final I_C_Invoice_Candidate ic,
-			final BigDecimal partialQty1,
-			final BigDecimal partialQty2)
+			final StockQtyAndUOMQty partialQty1,
+			final StockQtyAndUOMQty partialQty2)
 	{
 		//
 		// Partially invoice both at the same time
@@ -173,9 +175,9 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		InterfaceWrapperHelper.refresh(ic);
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
-		final BigDecimal summedQty = partialQty1.add(partialQty2);
-		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty));
-		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty));
+		final StockQtyAndUOMQty summedQty = partialQty1.add(partialQty2);
+		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
+		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
 
 		final AggregationEngine engine = new AggregationEngine();
 		engine.addInvoiceCandidate(ic);
@@ -233,7 +235,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		return result.get(0);
 	}
 
-	protected List<IInvoiceHeader> invokeAggregationEngine(final AggregationEngine engine)
+	protected List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)
 	{
 		final List<IInvoiceHeader> invoices = engine.aggregate();
 
@@ -277,9 +279,9 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		assertEquals(messagePrefix + " - Invalid isSOTrx", fromIC.isSOTrx(), invoice.isSOTrx());
 	}
 
-	protected IInvoiceCandidateInOutLineToUpdate retrieveIcIolToUpdateIfExists(final IInvoiceLineRW invoiceLineRW, final I_M_InOutLine iol)
+	protected InvoiceCandidateInOutLineToUpdate retrieveIcIolToUpdateIfExists(final IInvoiceLineRW invoiceLineRW, final I_M_InOutLine iol)
 	{
-		for (IInvoiceCandidateInOutLineToUpdate icIolToUpdate : invoiceLineRW.getInvoiceCandidateInOutLinesToUpdate())
+		for (final InvoiceCandidateInOutLineToUpdate icIolToUpdate : invoiceLineRW.getInvoiceCandidateInOutLinesToUpdate())
 		{
 			if (iol.equals(icIolToUpdate.getC_InvoiceCandidate_InOutLine().getM_InOutLine()))
 			{

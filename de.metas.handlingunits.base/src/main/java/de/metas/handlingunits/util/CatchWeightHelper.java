@@ -83,7 +83,7 @@ public class CatchWeightHelper
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final UomId stockUOMId = productBL.getStockingUOMId(productId);
+		final UomId stockUOMId = productBL.getStockUOMId(productId);
 
 		final Quantity stockQty = uomConversionBL.convertQuantityTo(pickedQty, UOMConversionContext.of(productId), stockUOMId);
 

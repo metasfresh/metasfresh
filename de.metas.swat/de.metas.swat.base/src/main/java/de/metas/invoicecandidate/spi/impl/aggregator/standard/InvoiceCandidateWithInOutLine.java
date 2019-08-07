@@ -1,5 +1,10 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
+import static de.metas.util.Check.fail;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -36,6 +41,8 @@ import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -50,13 +57,20 @@ public final class InvoiceCandidateWithInOutLine
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 
-
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
 	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
 	private final boolean allocateRemainingQty;
+
+	@Getter
 	private final ProductId productId;
+
+	@Getter
 	private final UomId icUomId;
+
+	@Getter
+	private final CurrencyId currencyId;
+
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
 
@@ -67,9 +81,10 @@ public final class InvoiceCandidateWithInOutLine
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
 		this.invoiceLineAttributes = ImmutableSet.copyOf(request.getInvoiceLineAttributes());
 
-		invoicecandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
+		this.invoicecandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
 		this.productId = ProductId.ofRepoId(ic.getM_Product_ID());
 		this.icUomId = UomId.ofRepoId(ic.getC_UOM_ID());
+		this.currencyId = CurrencyId.ofRepoId(ic.getC_Currency_ID());
 	}
 
 	@Override
@@ -117,11 +132,34 @@ public final class InvoiceCandidateWithInOutLine
 			return StockQtyAndUOMQtys.createZero(productId, icUomId);
 		}
 
-		final UomId catchUomId = UomId.ofRepoId(inOutLine.getCatch_UOM_ID());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(ic.getInvoicableQtyBasedOn());
+		final BigDecimal uomQty;
+
+		if (!isNull(iciol, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
+		{
+			uomQty = iciol.getQtyDeliveredInUOM_Override();
+		}
+		else
+		{
+			switch (invoicableQtyBasedOn)
+			{
+				case CatchWeight:
+					uomQty = iciol.getQtyDeliveredInUOM_Catch();
+					break;
+				case NominalWeight:
+					uomQty = iciol.getQtyDeliveredInUOM_Nominal();
+					break;
+				default:
+					fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
+					uomQty = null;
+					break;
+			}
+		}
+
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
 						productId, inOutLine.getMovementQty(),
-						catchUomId, inOutLine.getQtyDeliveredCatch());
+						UomId.ofRepoId(iciol.getC_UOM_ID()), uomQty);
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
 		{

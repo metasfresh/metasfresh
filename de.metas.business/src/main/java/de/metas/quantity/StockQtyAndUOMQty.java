@@ -1,5 +1,8 @@
 package de.metas.quantity;
 
+import static de.metas.util.Check.assumeNotNull;
+
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -24,13 +27,6 @@ public class StockQtyAndUOMQty
 	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
 	Quantity uomQty;
 
-
-	@JsonIgnore
-	public Optional<Quantity> getUOMQtyOpt()
-	{// TODO consider getting rid of optional altogether
-		return Optional.ofNullable(uomQty);
-	}
-
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private StockQtyAndUOMQty(
@@ -41,6 +37,17 @@ public class StockQtyAndUOMQty
 		this.productId = productId;
 		this.stockQty = stockQty;
 		this.uomQty = uomQty;
+	}
+
+	@JsonIgnore
+	public Optional<Quantity> getUOMQtyOpt()
+	{// TODO consider getting rid of optional altogether
+		return Optional.ofNullable(uomQty);
+	}
+
+	public Quantity getUomQty()
+	{
+		return assumeNotNull(uomQty, "uomQty may not be null; this={}", this);
 	}
 
 	public StockQtyAndUOMQty add(@NonNull final StockQtyAndUOMQty other)
@@ -94,6 +101,28 @@ public class StockQtyAndUOMQty
 			result.uomQty(uomQty.subtract(other.uomQty));
 		}
 
+		return result.build();
+	}
+
+	public StockQtyAndUOMQty minUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
+	{
+		return this.getUomQty().compareTo(qtysToCompare.getUomQty()) <= 0 ? this : qtysToCompare;
+	}
+
+	public StockQtyAndUOMQty maxUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
+	{
+		return this.getUomQty().compareTo(qtysToCompare.getUomQty()) >= 0 ? this : qtysToCompare;
+	}
+
+	public StockQtyAndUOMQty multiply(@NonNull final BigDecimal factor)
+	{
+		final StockQtyAndUOMQtyBuilder result = this
+				.toBuilder()
+				.stockQty(stockQty.multiply(factor));
+		if (uomQty != null)
+		{
+			result.uomQty(uomQty.multiply(factor));
+		}
 		return result.build();
 	}
 }

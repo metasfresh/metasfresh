@@ -34,9 +34,9 @@ import java.util.Collections;
 import java.util.List;
 
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.invoicecandidate.api.IInvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
+import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.ProductPrice;
 
@@ -66,7 +66,7 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 		// config-guard
 		assertThat(config_IsSOTrx(), is(false));
 
-		final BigDecimal fullqty = partialQty1.add(partialQty2).add(partialQty3);
+		final BigDecimal fullqty = partialQty1_32.add(partialQty2_8).add(partialQty3_4);
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
@@ -95,12 +95,12 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 
-			final IInvoiceCandidateInOutLineToUpdate ic_iol11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-			assertThat(ic_iol11.getQtyInvoiced(), is(partialQty1));
-			final IInvoiceCandidateInOutLineToUpdate ic_iol21 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol21);
-			assertThat(ic_iol21.getQtyInvoiced(), is(partialQty2));
-			final IInvoiceCandidateInOutLineToUpdate ic_iol22 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol22);
-			assertThat(ic_iol22.getQtyInvoiced(), is(partialQty3));
+			final InvoiceCandidateInOutLineToUpdate ic_iol11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
+			assertThat(ic_iol11.getQtyInvoiced(), is(partialQty1_32));
+			final InvoiceCandidateInOutLineToUpdate ic_iol21 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol21);
+			assertThat(ic_iol21.getQtyInvoiced(), is(partialQty2_8));
+			final InvoiceCandidateInOutLineToUpdate ic_iol22 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol22);
+			assertThat(ic_iol22.getQtyInvoiced(), is(partialQty3_4));
 		}
 
 		//

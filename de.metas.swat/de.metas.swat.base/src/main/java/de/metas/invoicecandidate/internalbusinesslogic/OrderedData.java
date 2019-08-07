@@ -37,14 +37,18 @@ public class OrderedData
 
 	Quantity qtyInStockUom;
 
+	boolean orderFullyDelivered;
+
 	@JsonCreator
 	@Builder
 	private OrderedData(
 			@JsonProperty("qty") @NonNull final Quantity qty,
-			@JsonProperty("qtyInStockUom") @NonNull final Quantity qtyInStockUom)
+			@JsonProperty("qtyInStockUom") @NonNull final Quantity qtyInStockUom,
+			@JsonProperty("orderFullyDelivered") final boolean orderFullyDelivered)
 	{
 		this.qty = qty;
 		this.qtyInStockUom = qtyInStockUom;
+		this.orderFullyDelivered = orderFullyDelivered;
 	}
 
 }
