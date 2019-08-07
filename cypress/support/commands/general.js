@@ -238,6 +238,8 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
   const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
+  cy.log('Inside performDocumentViewAction, just before the 2 waits');
+
   documentViewAction();
   cy.wait(`@${layoutAliasName}`, {
     requestTimeout: 20000,
@@ -248,11 +250,12 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
+      cy.log('frist!: ' + JSON.stringify(xhr));
+      expect(xhr).to.not.be.empty;
       expect(xhr.status).to.eq(200);
       expect(xhr.response).to.not.be.empty;
       expect(xhr.response.body[0]).to.not.be.empty;
 
-      cy.log('frist!: ' + JSON.stringify(xhr));
       cy.log('frist! x2: ' + JSON.stringify(xhr));
       cy.log('frist[0]: ' + JSON.stringify(xhr.response.body[0]));
       return cy.wrap({ documentId: xhr.response.body[0].id });
