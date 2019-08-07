@@ -56,22 +56,20 @@ describe('Reactivate and change Empties Return', function() {
         productType
       );
 
-      Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
+      Builder.createProductWithPriceUsingExistingCategory(
         priceListName,
         productName2,
         productName2,
-        productType
+        productType,
+        productCategory1
       );
 
-      Builder.createBasicProductEntities(
-        productCategory1,
-        productCategory1,
+      Builder.createProductWithPriceUsingExistingCategory(
         priceListName,
         productName3,
         productName3,
-        productType
+        productType,
+        productCategory1
       );
     });
 
