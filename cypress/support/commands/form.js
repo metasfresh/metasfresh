@@ -11,7 +11,6 @@ function removeSubstringsWithCurlyBrackets(stringValue) {
 }
 
 Cypress.Commands.add('clearField', (fieldName, modal) => {
-  describe('Clear field', function() {
     cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
@@ -19,10 +18,8 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
       .find('input')
       .clear();
   });
-});
 
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
-  describe('Get field value', function() {
     cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
@@ -31,10 +28,8 @@ Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
       .find('input')
       .invoke('val'); /* note: beats me why .its('value'); returned undefined */
   });
-});
 
 Cypress.Commands.add('getTextFieldValue', (fieldName, modal) => {
-  describe('Get field value', function() {
     cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
@@ -43,16 +38,13 @@ Cypress.Commands.add('getTextFieldValue', (fieldName, modal) => {
       .find('textarea')
       .invoke('val'); /* note: beats me why .its('value'); returned undefined */
   });
-});
 
 Cypress.Commands.add('assertFieldNotShown', (fieldName, modal) => {
-  describe('Assert that a vield is not shown', function() {
     cy.log(`assertFieldNotShown - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
     return cy.get(path).should('not.exist');
   });
-});
 
 function createFieldPath(fieldName, modal) {
   let path = `.form-field-${fieldName}`;
@@ -63,7 +55,6 @@ function createFieldPath(fieldName, modal) {
 }
 
 Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
-  describe('Get field value', function() {
     cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
@@ -75,24 +66,26 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
       return false;
     });
   });
-});
 
 Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
+
   const path = createFieldPath(fieldName, modal);
+
   if (isChecked) {
-    cy.get(path)
+    return cy
+      .get(path)
       .find('.checked')
       .should('exist');
   } else {
-    cy.get(path)
+    return cy
+      .get(path)
       .find('.checked')
       .should('not.exist');
   }
 });
 
 Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => {
-  describe('Get field value', function() {
     cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
 
     const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
@@ -108,17 +101,14 @@ Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => 
       .click()
       .waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
   });
-});
 
 Cypress.Commands.add('clickOnIsActive', modal => {
-  describe('Click on the IsActive slider', function() {
     const path = createFieldPath('IsActive', modal);
 
     cy.get(path)
       .find('.input-slider')
       .click();
   });
-});
 
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -127,7 +117,6 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 Cypress.Commands.add(
   'clickOnCheckBox',
   (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
-    describe('Click on a checkbox field', function() {
       cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
       const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
@@ -146,7 +135,6 @@ Cypress.Commands.add(
       if (!skipPatch) {
         cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
       }
-    });
   }
 );
 /*
@@ -211,9 +199,9 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   const path = createFieldPath(fieldName, modal);
   cy.get(path)
     .find('input')
-    .type('{selectall}', { force: true })
+    .type('{selectall}')
     .type(stringValue)
-    .type('{enter}', { force: true });
+    .type('{enter}');
 
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
@@ -229,7 +217,6 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
  * @param {string} rewriteUrl - use custom url for the request
  */
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
-  describe('Enter value into text field', function() {
     cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
     const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
@@ -248,7 +235,6 @@ Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewri
       .type(`${stringValue}{enter}`);
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   });
-});
 
 /**
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -347,7 +333,6 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
 Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
-  describe('Select n-th option in list field', function() {
     cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
 
     const path = createFieldPath(fieldName, modal);
@@ -363,7 +348,6 @@ Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
       }
     });
   });
-});
 
 Cypress.Commands.add(
   'setCheckBoxValue',

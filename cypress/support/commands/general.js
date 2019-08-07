@@ -248,7 +248,14 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
-      return { documentId: xhr.response.body[0].id };
+      expect(xhr.status).to.eq(200);
+      expect(xhr.response).to.not.be.empty;
+      expect(xhr.response.body[0]).to.not.be.empty;
+
+      cy.log('frist!: ' + JSON.stringify(xhr));
+      cy.log('frist! x2: ' + JSON.stringify(xhr));
+      cy.log('frist[0]: ' + JSON.stringify(xhr.response.body[0]));
+      return cy.wrap({ documentId: xhr.response.body[0].id });
     })
     .as(documentIdAliasName);
 }
@@ -483,5 +490,23 @@ Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
     }
     cy.get('.indicator-pending').should('not.exist');
     cy.get('.indicator-saved').should('exist');
+    cy.get('.indicator-pending').should('not.exist');
+    cy.get('.indicator-saved').should('exist');
   });
+});
+
+Cypress.Commands.add('selectNotificationContaining', expectedValue => {
+  cy.get('.header-item-badge.icon-lg i').click(); // notification icon
+  return cy
+    .get('.inbox-item-title') // search for text
+    .contains(expectedValue)
+    .first();
+});
+
+Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWindowID) => {
+  cy.selectNotificationContaining(expectedValue).click();
+  // wait until current window is "destinationWindowID"
+  cy.url().should('contain', `/${destinationWindowID}`);
+  // hope this is enough for the whole window to load
+  cy.waitForSaveIndicator();
 });
