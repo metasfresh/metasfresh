@@ -74,7 +74,7 @@ describe('Data creation', function() {
   });
 });
 
-describe('DA TEST', function() {
+describe('Create and use the Price List Schema', function() {
   it('Expect Product has a single Product Price', function() {
     filterProductPricesByProduct(productName);
     cy.expectNumberOfRows(1);
