@@ -291,11 +291,11 @@ public class CandidateAssignmentService
 		// therefore we can get the "biggest" refund config like this.
 		final RefundConfig oldRefundConfig = refundCandidate
 				.getRefundContract()
-				.getRefundConfig(previouslyAssignedQty);
+				.getRefundConfig(previouslyAssignedQty.toBigDecimal());
 
 		final RefundConfig newRefundConfig = refundCandidate
 				.getRefundContract()
-				.getRefundConfig(refundCandidate.getAssignedQuantity());
+				.getRefundConfig(refundCandidate.getAssignedQuantity().toBigDecimal());
 
 		// check if the current quantity still matches the respective candidate's current refund-config's minQty;
 		if (!oldRefundConfig.getId().equals(newRefundConfig.getId()))

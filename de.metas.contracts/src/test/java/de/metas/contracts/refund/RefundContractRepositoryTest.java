@@ -24,7 +24,6 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoice.InvoiceScheduleRepository;
-import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 /*
@@ -97,7 +96,7 @@ public class RefundContractRepositoryTest
 		assertThat(contract.getStartDate()).isEqualTo(NOW);
 		assertThat(contract.getBPartnerId()).isEqualTo(BPARTNER_ID);
 		assertThat(contract.getRefundConfigs()).hasSize(4); // we expect a 4th "artificial" config with qty=zero
-		assertThat(contract.getRefundConfig(Quantity.of(ZERO, uomRecord)).getPercent().isZero()).isTrue();
+		assertThat(contract.getRefundConfig(ZERO).getPercent().isZero()).isTrue();
 	}
 
 	private static I_C_Flatrate_Term createContractRecord(@NonNull final I_C_Flatrate_Conditions conditionsRecord)

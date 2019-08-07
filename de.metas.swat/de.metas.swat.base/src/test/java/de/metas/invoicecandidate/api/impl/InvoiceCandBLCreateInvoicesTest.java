@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.ShutdownListener;
@@ -74,6 +75,7 @@ import de.metas.util.Services;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS) // without this, this test fails when run in eclipse together with all tests of this project
 public class InvoiceCandBLCreateInvoicesTest
 {
 	@Rule

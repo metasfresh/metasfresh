@@ -52,7 +52,7 @@ import de.metas.quantity.StockQtyAndUOMQtys;
  * => Expectation: the MovementQty that is in dispute and is not invoiced.
  * <p>
  */
-public class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggregationEngineTests
+public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends AbstractNewAggregationEngineTests
 {
 	protected static final BigDecimal THREE = new BigDecimal("3");
 	protected static final BigDecimal FIVE = new BigDecimal("5");

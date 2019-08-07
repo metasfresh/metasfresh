@@ -48,8 +48,6 @@ import lombok.NonNull;
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
  *
- * @author ts
- *
  */
 public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandidateHandler
 {
@@ -101,7 +99,6 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
 
 		return SpringContextHolder.instance.getBean(MoneyService.class).multiply(qty, priceActual);
-
 	}
 
 	/**

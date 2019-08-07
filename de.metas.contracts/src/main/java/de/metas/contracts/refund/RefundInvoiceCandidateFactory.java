@@ -54,7 +54,6 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductIds;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomIds;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -287,8 +286,7 @@ public class RefundInvoiceCandidateFactory
 		final BigDecimal assignedQuantity;
 		if (configIdAndQuantity.isEmpty())
 		{
-			final I_C_UOM uomRecord = uomDAO.getById(UomIds.ofRecord(refundRecord));
-			refundConfigs = ImmutableList.of(refundContract.getRefundConfig(Quantity.zero(uomRecord)));
+			refundConfigs = ImmutableList.of(refundContract.getRefundConfig(ZERO));
 			assignedQuantity = ZERO;
 		}
 		else

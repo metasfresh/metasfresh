@@ -159,7 +159,7 @@ public class RefundInvoiceCandidateService_exceed_config_qty_Test
 				.bpartnerLocationId(refundTestTools.billBPartnerLocationId)
 				.invoiceableFrom(NOW)
 				.money(Money.of(ONE, refundTestTools.getCurrencyId()))
-				.refundConfigs(ImmutableList.of(refundContract.getRefundConfig(Quantity.of(FIVE, uomRecord))))
+				.refundConfigs(ImmutableList.of(refundContract.getRefundConfig(FIVE)))
 				.refundContract(refundContract)
 				.build();
 		return refundCandidate;

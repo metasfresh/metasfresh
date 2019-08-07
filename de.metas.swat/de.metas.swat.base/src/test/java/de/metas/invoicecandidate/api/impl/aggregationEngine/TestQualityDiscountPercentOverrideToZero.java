@@ -45,7 +45,7 @@ import de.metas.util.collections.CollectionUtils;
  * <p>
  * Expectation: the full qty (including the in-dispute-qty) is invoiced in one invoice line.
  */
-public class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualityDiscountPercentOverride
+public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractTestQualityDiscountPercentOverride
 {
 
 	private I_M_InOutLine iol12_twenty_disp;

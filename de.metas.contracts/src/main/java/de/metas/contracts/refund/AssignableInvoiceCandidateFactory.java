@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -119,11 +121,13 @@ public class AssignableInvoiceCandidateFactory
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)
 	{
 		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-		final I_C_UOM uom = uomDAO.getById(assignableRecord.getC_UOM_ID());
+		final I_M_Product product = productDAO.getById(assignableRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
 		final Quantity quantity = Quantity.of(
-				assignableRecord.getQtyToInvoiceInUOM().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoicedInUOM())),
+				assignableRecord.getQtyToInvoice().add(stripTrailingDecimalZeros(assignableRecord.getQtyInvoiced())),
 				uom);
 		return quantity;
 	}

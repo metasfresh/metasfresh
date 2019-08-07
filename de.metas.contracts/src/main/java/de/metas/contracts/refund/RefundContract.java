@@ -1,6 +1,5 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.Check.fail;
 import static de.metas.util.collections.CollectionUtils.extractSingleElement;
 
 import java.math.BigDecimal;
@@ -17,7 +16,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -79,12 +77,12 @@ public class RefundContract
 		this.refundConfigs = RefundConfigs.sortByMinQtyDesc(refundConfigs);
 	}
 
-	public RefundConfig getRefundConfig(@NonNull final Quantity qty)
+	public RefundConfig getRefundConfig(@NonNull final BigDecimal qtyInStockUom)
 	{
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
+
 		return refundConfigs
 				.stream()
-				.filter(config -> config.getMinQty().compareTo(qty.toBigDecimal()) <= 0)
+				.filter(config -> config.getMinQty().compareTo(qtyInStockUom) <= 0)
 				.findFirst()
 				.orElse(null);
 	}

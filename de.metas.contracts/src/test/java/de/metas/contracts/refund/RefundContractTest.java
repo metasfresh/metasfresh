@@ -20,7 +20,6 @@ import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceSchedule.Frequency;
-import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
 import de.metas.invoice.InvoiceScheduleId;
 
@@ -102,7 +101,7 @@ public class RefundContractTest
 	public void getRefundConfig_qty_four()
 	{
 		// invoke the method under test
-		final RefundConfig result = refundContract.getRefundConfig(Quantity.of(FOUR, uomRecord));
+		final RefundConfig result = refundContract.getRefundConfig(FOUR);
 
 		assertThat(result).isEqualTo(refundConfig1);
 	}
@@ -111,7 +110,7 @@ public class RefundContractTest
 	public void getRefundConfig_qty_five()
 	{
 		// invoke the method under test
-		final RefundConfig result = refundContract.getRefundConfig(Quantity.of(FIVE, uomRecord));
+		final RefundConfig result = refundContract.getRefundConfig(FIVE);
 
 		assertThat(result).isEqualTo(refundConfig2);
 	}

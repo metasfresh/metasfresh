@@ -91,16 +91,16 @@ public abstract class AbstractTwoInOutsOneInvoicePurchaseTests extends AbstractT
 			assertThat("Invalid PriceActual", invoiceLine1.getPriceActual().toBigDecimal(), comparesEqualTo(priceActual.toBigDecimal()));
 
 			assertThat("Invalid QtysToInvoice", invoiceLine1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(fullqty));
-			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullqty.multiply(priceActual.toBigDecimal())));
+			assertThat("Invalid NetLineAmt", invoiceLine1.getNetLineAmt().toBigDecimal(), comparesEqualTo(fullqty.multiply(priceActual.toBigDecimal()).multiply(TEN)));
 
 			validateIcIlAllocationQty(ic, invoice1, invoiceLine1, fullqty);
 
 			final InvoiceCandidateInOutLineToUpdate ic_iol11 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol11);
-			assertThat(ic_iol11.getQtyInvoiced(), is(partialQty1_32));
+			assertThat(ic_iol11.getQtyInvoiced().getUomQty().toBigDecimal(), is(partialQty1_32.multiply(TEN)));
 			final InvoiceCandidateInOutLineToUpdate ic_iol21 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol21);
-			assertThat(ic_iol21.getQtyInvoiced(), is(partialQty2_8));
+			assertThat(ic_iol21.getQtyInvoiced().getUomQty().toBigDecimal(), is(partialQty2_8.multiply(TEN)));
 			final InvoiceCandidateInOutLineToUpdate ic_iol22 = retrieveIcIolToUpdateIfExists(invoiceLine1, iol22);
-			assertThat(ic_iol22.getQtyInvoiced(), is(partialQty3_4));
+			assertThat(ic_iol22.getQtyInvoiced().getUomQty().toBigDecimal(), is(partialQty3_4.multiply(TEN)));
 		}
 
 		//

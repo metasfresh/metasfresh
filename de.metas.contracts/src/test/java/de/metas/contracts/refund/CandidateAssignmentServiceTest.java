@@ -589,7 +589,7 @@ public class CandidateAssignmentServiceTest
 
 		final RefundInvoiceCandidate refundCandidate0 = prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(Quantity.of(ZERO, uomRecord)),
+				refundContract.getRefundConfig(ZERO),
 				FOURTEEN, // assignedQty
 				ImmutableList.of( // individualAssignments
 						new IndividualTestAssignment(assignableCandidateWithTen, TEN, ONE),
@@ -597,7 +597,7 @@ public class CandidateAssignmentServiceTest
 
 		final RefundInvoiceCandidate refundCandidate15 = prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(Quantity.of(FIFTEEN, uomRecord)),
+				refundContract.getRefundConfig(FIFTEEN),
 				THREE, // assignedQty
 				ImmutableList.of( // individualAssignments
 						new IndividualTestAssignment(assignableCandidateWithSeven, THREE, ONE)));
@@ -665,7 +665,7 @@ public class CandidateAssignmentServiceTest
 
 		return prepareRefundCandidate(
 				refundContract,
-				refundContract.getRefundConfig(Quantity.of(ZERO, uomRecord)),
+				refundContract.getRefundConfig(ZERO),
 				THIRTEEN,
 				individualAssignments);
 	}
