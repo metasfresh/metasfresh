@@ -31,7 +31,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.Value;
 
 /*
  * #%L
@@ -394,7 +393,7 @@ public class InvoiceCandidate
 		return qtysDelivered;
 	}
 
-	@Value
+	@lombok.Value
 	public static class ToInvoiceExclOverride
 	{
 		enum InvoicedQtys

@@ -203,7 +203,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase extends AbstractI
 		InterfaceWrapperHelper.refreshAll(invoiceCandidates);
 		for (final I_C_Invoice_Candidate ic : invoiceCandidates)
 		{
-			assertFalse("IC no error: " + ic, ic.isError());
+			assertFalse("IC shall have no error: " + ic, ic.isError());
 			assertFalse("IC is not locked: " + ic, lockManager.isLocked(ic));
 		}
 

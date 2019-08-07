@@ -1,5 +1,9 @@
 package org.adempiere.invoice.service.impl;
 
+
+
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -989,7 +993,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				UOMConversionContext.of(productId),
 				invoiceLine.getQtyEntered(),
 				UomId.ofRepoId(invoiceLine.getC_UOM_ID()),
-				UomId.ofRepoId(invoiceLine.getPrice_UOM_ID()));
+				UomId.ofRepoId(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID())));
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 

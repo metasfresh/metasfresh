@@ -26,23 +26,30 @@ import java.util.List;
 
 import org.compiere.SpringContextHolder;
 import org.junit.Before;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.currency.CurrencyRepository;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.MoneyService;
 import de.metas.util.Services;
 
 /**
  * Makes sure the invoice candidates get the right locks along the "enqueue to invoice" process.
- *
- * @author tsa
- *
  */
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandidateEnqueueToInvoiceTestBase
 {
 	@Before

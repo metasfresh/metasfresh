@@ -48,13 +48,11 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
-
 
 public class AbstractTestSupport
 {

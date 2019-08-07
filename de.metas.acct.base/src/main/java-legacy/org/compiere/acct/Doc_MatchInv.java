@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.acct;
 
+import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -466,7 +468,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setC_Activity_ID(invoiceLine.getC_Activity_ID());
 		fl.setC_Campaign_ID(invoiceLine.getC_Campaign_ID());
 		fl.setC_Project_ID(invoiceLine.getC_Project_ID());
-		fl.setC_UOM_ID(invoiceLine.getPrice_UOM_ID());
+		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));
 		fl.setUser1_ID(invoiceLine.getUser1_ID());
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
