@@ -175,10 +175,10 @@ public class M_InOutLine
 
 			// Case: we found a line where to add the difference
 			adjustments_alloc.setQtyPicked(newAllocQty.getStockQty().toBigDecimal());
-			if (newAllocQty.getUOMQty().isPresent())
+			if (newAllocQty.getUOMQtyOpt().isPresent())
 			{
-				adjustments_alloc.setCatch_UOM_ID(newAllocQty.getUOMQty().get().getUomId().getRepoId());
-				adjustments_alloc.setQtyDeliveredCatch(newAllocQty.getUOMQty().get().toBigDecimal());
+				adjustments_alloc.setCatch_UOM_ID(newAllocQty.getUOMQtyOpt().get().getUomId().getRepoId());
+				adjustments_alloc.setQtyDeliveredCatch(newAllocQty.getUOMQtyOpt().get().toBigDecimal());
 			}
 			else
 			{

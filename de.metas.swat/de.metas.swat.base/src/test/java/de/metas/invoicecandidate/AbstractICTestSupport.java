@@ -46,6 +46,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -89,6 +90,7 @@ import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -107,6 +109,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.testsupport.AbstractTestSupport;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -147,6 +150,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 	protected ClientId clientId;
 	protected OrgId orgId;
 	protected ProductId productId;
+	protected UomId uomId;
 	protected ActivityId activityId;
 	protected WarehouseId warehouseId;
 
@@ -228,9 +232,17 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		InterfaceWrapperHelper.save(warehouse);
 		warehouseId = WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 
+		final I_C_UOM stockUomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
+		InterfaceWrapperHelper.save(stockUomRecord);
+
 		final I_M_Product product = InterfaceWrapperHelper.create(ctx, I_M_Product.class, trxName);
+		product.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		InterfaceWrapperHelper.save(product);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
+
+		final I_C_UOM uomRecord = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, trxName);
+		InterfaceWrapperHelper.save(uomRecord);
+		uomId = UomId.ofRepoId(uomRecord.getC_UOM_ID());
 
 		final I_C_Activity activity = InterfaceWrapperHelper.create(ctx, I_C_Activity.class, trxName);
 		InterfaceWrapperHelper.save(activity);
@@ -443,6 +455,8 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 				// Set defaults (backward compatibility with existing tests)
 				.setOrderDocNo("order1")
 				.setOrderLineDescription("orderline1_1")
+				.setProductId(productId)
+				.setUomId(uomId)
 				.setDiscount(0)
 				.setC_Tax(tax_Default);
 	}
@@ -671,6 +685,7 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 			final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 
 			invoiceCandidateValidator = new C_Invoice_Candidate(
+					new InvoiceCandidateRecordService(),
 					groupsRepo,
 					attachmentEntryService);
 		}

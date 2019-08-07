@@ -75,7 +75,7 @@ public class C_PurchaseCandidate
 		final BigDecimal value = Optional.ofNullable(purchaseCandidate.getProfitInfoOrNull())
 				.flatMap(PurchaseProfitInfo::getProfitPercent)
 				.map(percent -> percent.roundToHalf(RoundingMode.HALF_UP))
-				.map(Percent::getValue)
+				.map(Percent::toBigDecimal)
 				.orElse(ZERO);
 		salesOrderLineRecord.setProfitPercent(value);
 		saveRecord(salesOrderLineRecord);

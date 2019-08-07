@@ -260,7 +260,7 @@ public class RefundConfigRepository
 		{
 			case PERCENTAGE:
 				configRecord.setRefundBase(X_C_Flatrate_RefundConfig.REFUNDBASE_Percentage);
-				configRecord.setRefundPercent(refundConfig.getPercent().getValue());
+				configRecord.setRefundPercent(refundConfig.getPercent().toBigDecimal());
 				configRecord.setRefundAmt(null);
 				break;
 			case AMOUNT_PER_UNIT:

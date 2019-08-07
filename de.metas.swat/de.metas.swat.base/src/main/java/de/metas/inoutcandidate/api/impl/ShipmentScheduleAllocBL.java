@@ -58,7 +58,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		schedQtyPicked.setIsActive(true);
 		schedQtyPicked.setQtyPicked(stockQtyAndCatchQty.getStockQty().toBigDecimal());
 
-		final Optional<Quantity> uomQty = stockQtyAndCatchQty.getUOMQty();
+		final Optional<Quantity> uomQty = stockQtyAndCatchQty.getUOMQtyOpt();
 		if (uomQty.isPresent())
 		{
 			schedQtyPicked.setCatch_UOM_ID(uomQty.get().getUomId().getRepoId());

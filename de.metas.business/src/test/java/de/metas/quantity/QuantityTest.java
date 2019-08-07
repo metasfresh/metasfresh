@@ -38,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.lang.Percent;
 
 public class QuantityTest
@@ -356,5 +357,38 @@ public class QuantityTest
 		final I_C_UOM sourceUOM = uomHelper.createUOM("SOURCE_UOM", 2);
 		final Quantity qty = new Quantity(BigDecimal.valueOf(5), uom, BigDecimal.valueOf(4), sourceUOM);
 		assertThat(qty.toString()).isEqualTo("5 UOM (source: 4 SOURCE_UOM)");
+	}
+
+	@Test
+	public void serialize_deserialize_with_source()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+
+		final BigDecimal sourceQty = new BigDecimal("1235");
+		final I_C_UOM sourceUOM = uomHelper.createUOM("UOM2", 2);
+
+		final Quantity quantity = new Quantity(qty, uom, sourceQty, sourceUOM);
+
+		final JSONObjectMapper<Quantity> jsonMapper = JSONObjectMapper.forClass(Quantity.class);
+		final String quantityAsString = jsonMapper.writeValueAsString(quantity);
+		final Quantity deserializedQuantity = jsonMapper.readValue(quantityAsString);
+
+		assertThat(deserializedQuantity).isEqualTo(quantity);
+	}
+
+	@Test
+	public void serialize_deserialize_without_source()
+	{
+		final BigDecimal qty = new BigDecimal("1234");
+		final I_C_UOM uom = uomHelper.createUOM("UOM1", 2);
+
+		final Quantity quantity = Quantity.of(qty, uom);
+
+		final JSONObjectMapper<Quantity> jsonMapper = JSONObjectMapper.forClass(Quantity.class);
+		final String quantityAsString = jsonMapper.writeValueAsString(quantity);
+		final Quantity deserializedQuantity = jsonMapper.readValue(quantityAsString);
+
+		assertThat(deserializedQuantity).isEqualTo(quantity);
 	}
 }

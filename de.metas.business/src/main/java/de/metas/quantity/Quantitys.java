@@ -1,7 +1,24 @@
 package de.metas.quantity;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+
+import org.compiere.model.I_C_UOM;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -29,6 +46,28 @@ import lombok.NonNull;
 
 public class Quantitys
 {
+	public static Quantity create(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
+	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(uomId);
+
+		return Quantity.of(qty, uomRecord);
+	}
+
+	public static Quantity create(
+			@NonNull final BigDecimal qty, @NonNull final UomId uomId,
+			@NonNull final BigDecimal sourceQty, @NonNull final UomId sourceUomId)
+	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(uomId);
+		final I_C_UOM sourceUomRecord = uomDao.getById(sourceUomId);
+
+		return new Quantity(qty, uomRecord, sourceQty, sourceUomRecord);
+	}
+
+	/**
+	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
+	 */
 	public static Quantity add(
 			@NonNull final UOMConversionContext conversionCtx,
 			@NonNull final Quantity firstAugent,
@@ -46,10 +85,100 @@ public class Quantitys
 			@NonNull final Quantity minuend,
 			@NonNull final Quantity subtrahend)
 	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-
-		final Quantity subtrahendConverted = uomConversionBL.convertQuantityTo(subtrahend, conversionCtx, minuend.getUomId());
+		final Quantity subtrahendConverted = create(subtrahend, conversionCtx, minuend.getUomId());
 
 		return minuend.subtract(subtrahendConverted);
+	}
+
+	public static Quantity createZero(@NonNull final UomId uomId)
+	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		final I_C_UOM uomRecord = uomDao.getById(uomId);
+
+		return Quantity.zero(uomRecord);
+	}
+
+	public static Quantity create(
+			@NonNull final Quantity qty,
+			@NonNull final UOMConversionContext conversionCtx,
+			@NonNull final UomId targedUomId)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity converted = uomConversionBL.convertQuantityTo(qty, conversionCtx, targedUomId);
+
+		return converted;
+	}
+
+	public static class QuantityDeserializer extends StdDeserializer<Quantity>
+	{
+		private static final long serialVersionUID = -5406622853902102217L;
+
+		public QuantityDeserializer()
+		{
+			super(Quantity.class);
+		}
+
+		@Override
+		public Quantity deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+		{
+			JsonNode node = p.getCodec().readTree(p);
+			final String qtyStr = node.get("qty").asText();
+			final int uomRepoId = (Integer)((IntNode)node.get("uomId")).numberValue();
+
+			final String sourceQtyStr;
+			final int sourceUomRepoId;
+			if (node.has("sourceQty"))
+			{
+				sourceQtyStr = node.get("sourceQty").asText();
+				sourceUomRepoId = (Integer)((IntNode)node.get("sourceUomId")).numberValue();
+			}
+			else
+			{
+				sourceQtyStr = qtyStr;
+				sourceUomRepoId = uomRepoId;
+			}
+			return Quantitys.create(
+					new BigDecimal(qtyStr), UomId.ofRepoId(uomRepoId),
+					new BigDecimal(sourceQtyStr), UomId.ofRepoId(sourceUomRepoId));
+		}
+	}
+
+	public static class QuantitySerializer extends StdSerializer<Quantity>
+	{
+		private static final long serialVersionUID = -8292209848527230256L;
+
+		public QuantitySerializer()
+		{
+			super(Quantity.class);
+		}
+
+		@Override
+		public void serialize(Quantity value, JsonGenerator gen, SerializerProvider provider) throws IOException
+		{
+			gen.writeStartObject();
+
+			final String qtyStr = value.toBigDecimal().toString();
+			final int uomId = value.getUomId().getRepoId();
+
+			gen.writeFieldName("qty");
+			gen.writeString(qtyStr);
+
+			gen.writeFieldName("uomId");
+			gen.writeNumber(uomId);
+
+			final String sourceQtyStr = value.getSourceQty().toString();
+			final int sourceUomId = value.getSourceUomId().getRepoId();
+
+			if (!qtyStr.equals(sourceQtyStr) || uomId != sourceUomId)
+			{
+				gen.writeFieldName("sourceQty");
+				gen.writeString(sourceQtyStr);
+
+				gen.writeFieldName("sourceUomId");
+				gen.writeNumber(sourceUomId);
+			}
+			gen.writeEndObject();
+		}
+
 	}
 }

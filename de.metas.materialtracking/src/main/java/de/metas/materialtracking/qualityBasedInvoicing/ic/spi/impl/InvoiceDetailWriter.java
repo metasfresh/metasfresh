@@ -153,7 +153,7 @@ public class InvoiceDetailWriter
 		{
 			priceUOMId = pricingResult.getPriceUomId();
 			price = pricingResult.getPriceStd();
-			discount = pricingResult.getDiscount().getValue();
+			discount = pricingResult.getDiscount().toBigDecimal();
 
 			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 			qtyEnteredInPriceUOM = uomConversionBL

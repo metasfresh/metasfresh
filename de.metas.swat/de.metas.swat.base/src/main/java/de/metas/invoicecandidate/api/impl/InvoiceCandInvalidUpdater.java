@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
@@ -54,13 +55,14 @@ import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.logging.LogManager;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -68,7 +70,6 @@ import lombok.NonNull;
 
 /* package */class InvoiceCandInvalidUpdater implements IInvoiceCandInvalidUpdater
 {
-
 	private static final Logger logger = LogManager.getLogger(InvoiceCandInvalidUpdater.class);
 
 	// services
@@ -319,20 +320,25 @@ import lombok.NonNull;
 		invoiceCandBL.updateQtyWithIssues(ic);
 
 		// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
-		invoiceCandBL.updateQtyWithIssues_Effective(ic);
+		//invoiceCandBL.updateQtyWithIssues_Effective(ic);
+
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(ic);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, ic);
 
 		// Set the new qtyToInvoice value, depending on invoiceRule
-		final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true);
-		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.toBigDecimal()); // TODO make sure it's in the UOM
+//		final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true/* useEffectiveQtyDeliviered */);
+//		ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.toBigDecimal()); // TODO make sure it's in the UOM
 
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(ic);
 
-		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(newQtyToInvoice, ic);
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
+	//	final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(ic.getQtyToInvoiceInUOM(), ic);
+		//ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
 
-		final Quantity newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false);
-		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.toBigDecimal()); // TODO make sure it's in the UOM
+//		final Quantity newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false/* useEffectiveQtyDeliviered */);
+//		ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.toBigDecimal()); // TODO make sure it's in the UOM
 
 		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 
@@ -520,18 +526,13 @@ import lombok.NonNull;
 
 	/**
 	 * IC update exception handler
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	private final class ICTrxItemExceptionHandler extends FailTrxItemExceptionHandler
 	{
 		private final ICUpdateResult result;
 
-		public ICTrxItemExceptionHandler(final ICUpdateResult result)
+		public ICTrxItemExceptionHandler(@NonNull final ICUpdateResult result)
 		{
-			super();
-			Check.assumeNotNull(result, "result not null");
 			this.result = result;
 		}
 

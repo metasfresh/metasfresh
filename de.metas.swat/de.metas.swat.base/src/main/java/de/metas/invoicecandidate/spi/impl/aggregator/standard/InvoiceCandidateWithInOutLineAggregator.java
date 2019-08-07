@@ -486,7 +486,7 @@ import lombok.ToString;
 		}
 		else
 		{
-			Check.assume(_discount.getValueAsBigDecimal().compareTo(candDiscount.getValueAsBigDecimal()) == 0,
+			Check.assume(_discount.toBigDecimal().compareTo(candDiscount.toBigDecimal()) == 0,
 					"All invoice candidates from this aggregation shall have the same Discount={}",
 					_discount);
 		}
@@ -634,7 +634,7 @@ import lombok.ToString;
 
 	private final void subtractQtyInvoiceable(final I_C_Invoice_Candidate ic, final Quantity qtyInvoiced)
 	{
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.createFor(ic);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.ofRecord(ic);
 
 		final Quantity qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
 		final Quantity qtyInvoiceableNew = qtyInvoiceable.subtract(qtyInvoiced);
@@ -644,7 +644,7 @@ import lombok.ToString;
 
 	private Quantity getQtyInvoiceable(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.createFor(ic);
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateIds.ofRecord(ic);
 
 		final Quantity qtyInvoiceable = _ic2QtyInvoiceable.get(invoiceCandidateId);
 		return Check.assumeNotNull(qtyInvoiceable, "qtyInvoiceable not null for {}", ic);

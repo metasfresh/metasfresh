@@ -47,6 +47,7 @@ import org.junit.Test;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -106,7 +107,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		invoiceCandBL.handleReversalForInvoice(invoiceAndLine.getLeft());
 
-		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(ic);
+		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 		assertThat(ilaForIc.isEmpty(), is(false));
 
 		for (final I_C_Invoice_Line_Alloc currentIla : ilaForIc)
@@ -238,7 +239,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		// guard: ad this point, we expect 1 out of the original 10 to be still invoicable
 		I_C_Invoice_Line_Alloc creditMemoIla = null;
-		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterCreditMemo = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(ic);
+		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterCreditMemo = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterCreditMemo)
 		{
@@ -276,7 +277,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		//
 		// checking the result
-		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterReversal = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(ic);
+		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterReversal = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterReversal)
 		{
@@ -330,7 +331,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 		invoiceCandBL.handleCompleteForInvoice(creditMemoAndLine.getLeft());
 
-		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(ic);
+		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 		assertThat(ilaForIc.isEmpty(), is(false));
 
 		for (final I_C_Invoice_Line_Alloc currentIla : ilaForIc)

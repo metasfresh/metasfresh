@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
@@ -272,23 +271,23 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
-	/**
-	 * Convert the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
-	 * <p>
-	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
-	 * <p>
-	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
-	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
-	 * But don't save the <code>ic</code>.
-	 *
-	 * @param qty the "raw" Qty in terms of the product UOM
-	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
-	 *
-	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
-	 *
-	 * @see de.metas.uom.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
-	 */
-	Quantity convertToPriceUOM(Quantity qtyInUom, I_C_Invoice_Candidate ic);
+//	/**
+//	 * Convert the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
+//	 * <p>
+//	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
+//	 * <p>
+//	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
+//	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
+//	 * But don't save the <code>ic</code>.
+//	 *
+//	 * @param qty the "raw" Qty in terms of the product UOM
+//	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
+//	 *
+//	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
+//	 *
+//	 * @see de.metas.uom.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
+//	 */
+//	Quantity convertToPriceUOM(Quantity qtyInUom, I_C_Invoice_Candidate ic);
 
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:

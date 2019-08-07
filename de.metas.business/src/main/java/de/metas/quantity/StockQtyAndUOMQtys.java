@@ -1,10 +1,15 @@
 package de.metas.quantity;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.Util.ArrayKey;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -15,6 +20,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -105,7 +111,7 @@ public class StockQtyAndUOMQtys
 	}
 
 	/**
-	 * @return instance with {@link StockQtyAndUOMQty#getUOMQty()} being present.
+	 * @return instance with {@link StockQtyAndUOMQty#getUOMQtyOpt()} being present.
 	 */
 	public StockQtyAndUOMQty createUsingUOMConversion(
 			@NonNull final ProductId productId,
@@ -215,8 +221,8 @@ public class StockQtyAndUOMQtys
 
 		final Quantity uomQtySum = Quantitys.add(
 				UOMConversionContext.of(productId),
-				firstAugent.getUOMQty().orElse(stockQty1),
-				secondAugent.getUOMQty().orElse(stockQty2));
+				firstAugent.getUOMQtyOpt().orElse(stockQty1),
+				secondAugent.getUOMQtyOpt().orElse(stockQty2));
 
 		return StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -241,8 +247,8 @@ public class StockQtyAndUOMQtys
 
 		final Quantity uomQtySum = Quantitys.subtract(
 				UOMConversionContext.of(productId),
-				minuend.getUOMQty().orElse(stockQty1),
-				subtrahend.getUOMQty().orElse(stockQty2));
+				minuend.getUOMQtyOpt().orElse(stockQty1),
+				subtrahend.getUOMQtyOpt().orElse(stockQty2));
 
 		return StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -261,6 +267,49 @@ public class StockQtyAndUOMQtys
 				"The two augents need to have an equal productId; firstAugent={}; secondAugent={}", firstAugent, secondAugent);
 
 		return firstAugent.getProductId();
+	}
+
+	public static void validate(@NonNull final StockQtyAndUOMQty qtys)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+
+		final UomId productStockUomId = productBL.getStockingUOMId(qtys.getProductId());
+		if (!Objects.equals(productStockUomId, qtys.getStockQty().getUomId()))
+		{
+			throw new AdempiereException("Product's stock UOM does not match stockQty's UOM")
+					.appendParametersToMessage()
+					.setParameter("qtys", qtys);
+		}
+
+		final boolean hasUomQty = qtys.getUomQty() != null;
+		if (hasUomQty)
+		{
+			final boolean stockQtyAndUomQtyHaveEqualUom = Objects.equals(qtys.getUomQty().getUomId(), qtys.getStockQty().getUomId());
+			if (stockQtyAndUomQtyHaveEqualUom)
+			{
+				final boolean stockQtyAndUomQtyHaveDifferentAmounts = qtys.getUomQty().compareTo(qtys.getStockQty()) != 0;
+				if (stockQtyAndUomQtyHaveDifferentAmounts)
+				{
+					throw new AdempiereException("StockQty and uomQty have the same UOM, but different amounts")
+							.appendParametersToMessage()
+							.setParameter("qtys", qtys);
+				}
+			}
+		}
+	}
+
+	public static void assumeCommonProductAndUom(@NonNull final StockQtyAndUOMQty... qtys)
+	{
+		// extract an arrayKey from qtys' productId and uomId and assume that there is just one distinct
+		final ImmutableList<ArrayKey> differentValues = CollectionUtils.extractDistinctElements(
+				CollectionUtils.asSet(qtys),
+				item -> ArrayKey.of(item.getProductId(), item.getUOMQtyOpt().map(Quantity::getUomId).orElse(null)));
+		if (differentValues.size() > 1)
+		{
+			throw new AdempiereException("The given StockQtyAndUOMQtys have different productIds and/or uomIds")
+					.appendParametersToMessage()
+					.setParameter("differentValues", differentValues);
+		}
 	}
 
 }

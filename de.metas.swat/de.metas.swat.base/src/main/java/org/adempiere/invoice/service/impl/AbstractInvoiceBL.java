@@ -972,9 +972,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		if (qtysInvoiced.getUOMQty().isPresent())
+		if (qtysInvoiced.getUOMQtyOpt().isPresent())
 		{
-			final Quantity uomQty = qtysInvoiced.getUOMQty().get();
+			final Quantity uomQty = qtysInvoiced.getUOMQtyOpt().get();
 
 			invoiceLine.setC_UOM_ID(uomQty.getUomId().getRepoId());
 			invoiceLine.setQtyEntered(uomQty.toBigDecimal());

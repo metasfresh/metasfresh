@@ -585,7 +585,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setM_AttributeSetInstance(asi);
 
 				invoiceLine.setPriceEntered(ilVO.getPriceEntered().toMoney().toBigDecimal());
-				invoiceLine.setDiscount(ilVO.getDiscount().getValueAsBigDecimal());
+				invoiceLine.setDiscount(ilVO.getDiscount().toBigDecimal());
 				invoiceLine.setPriceActual(ilVO.getPriceActual().toMoney().toBigDecimal());
 
 				// set activity, tax and tax category from the invoice candidate (07442)

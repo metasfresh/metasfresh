@@ -102,7 +102,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
-	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(I_C_Invoice_Candidate invoiceCand);
+	List<I_C_Invoice_Line_Alloc> retrieveIlaForIc(InvoiceCandidateId invoiceCandidateId);
 
 	List<I_C_Invoice_Line_Alloc> retrieveIlaForIl(I_C_InvoiceLine il);
 
@@ -269,6 +269,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);
 
 	/**
+	 * @deprecated please use {@link #retrieveICIOLAssociationsExclRE(InvoiceCandidateId)}
+	 */
+	@Deprecated
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
+
+	/**
 	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
 	 * <ul>
 	 * <li>belong to the given {@code invoiceCandidate}</li>
@@ -278,7 +284,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
 	/**
 	 *

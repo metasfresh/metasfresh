@@ -284,7 +284,7 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignementToRefundCandidate.getMoneyAssignedToRefundCandidate().toBigDecimal()).isEqualByComparingTo(TWO); // guard
 
 		// guard: we work with 20%, so if the assignableInvoiceCandidate has 10, then 2 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().getValue()).isEqualByComparingTo(TWENTY);
+		assertThat(extractSingleConfig(assignementToRefundCandidate.getRefundInvoiceCandidate()).getPercent().toBigDecimal()).isEqualByComparingTo(TWENTY);
 
 		// guard: we assume that the refund candidate has already 100 assigned, and btw, we know that 2 of those are "contributed" by 20% of 10 = 2 of our 'assignableCandidate'
 		assertThat(assignementToRefundCandidate.getRefundInvoiceCandidate().getMoney().toBigDecimal()).isEqualByComparingTo("100");
@@ -336,7 +336,7 @@ public class CandidateAssignmentServiceTest
 		assertThat(assignableCandidate.getQuantity().toBigDecimal()).isEqualByComparingTo(THREE);
 
 		// guard: for quantities less than 15 we work with 10%, so if the assignableInvoiceCandidate has 10, then 1 is assigned to the refundCandiate
-		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().getValue()).isEqualByComparingTo(TEN);
+		assertThat(extractSingleConfig(savedRefundCandidate).getPercent().toBigDecimal()).isEqualByComparingTo(TEN);
 
 		// invoke the method under test
 		final UpdateAssignmentResult result = invoiceCandidateAssignmentService.updateAssignment(assignableCandidate);

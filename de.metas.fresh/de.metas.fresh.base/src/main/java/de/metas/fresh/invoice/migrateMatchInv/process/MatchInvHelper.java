@@ -281,8 +281,8 @@ import lombok.NonNull;
 		matchInv.setM_InOutLine(iol);
 
 		matchInv.setQty(qtysMatched.getStockQty().toBigDecimal());
-		matchInv.setQtyInUOM(qtysMatched.getUOMQty().get().toBigDecimal());
-		matchInv.setC_UOM_ID(qtysMatched.getUOMQty().get().getUomId().getRepoId());
+		matchInv.setQtyInUOM(qtysMatched.getUOMQtyOpt().get().toBigDecimal());
+		matchInv.setC_UOM_ID(qtysMatched.getUOMQtyOpt().get().getUomId().getRepoId());
 
 		matchInv.setM_Product_ID(iol.getM_Product_ID());
 		matchInv.setM_AttributeSetInstance_ID(iol.getM_AttributeSetInstance_ID());

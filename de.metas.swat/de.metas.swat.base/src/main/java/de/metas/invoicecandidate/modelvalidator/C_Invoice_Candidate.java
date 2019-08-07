@@ -36,7 +36,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_OrderLine;
 import org.slf4j.Logger;
@@ -56,13 +55,13 @@ import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.api.impl.InvoiceCandBL;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupCompensationChangesHandler;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxDAO;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,12 +74,16 @@ public class C_Invoice_Candidate
 
 	private final AttachmentEntryService attachmentEntryService;
 
-	private InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
+
+	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 
 	public C_Invoice_Candidate(
+			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
 			@NonNull final AttachmentEntryService attachmentEntryService)
 	{
+		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
@@ -94,19 +97,22 @@ public class C_Invoice_Candidate
 			I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID,
 			I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
 			I_C_Invoice_Candidate.COLUMNNAME_Price_UOM_ID })
-	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate ic)
+	public void updateQtyToInvoiceInPriceUOM(final I_C_Invoice_Candidate icRecord)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+//		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+//
+//		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+//		final I_C_UOM uomRecord = uomDao.getById(icRecord.getC_UOM_ID());
 
-		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
-		final I_C_UOM uomRecord = uomDao.getById(ic.getC_UOM_ID());
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtDdelivered)
+		// task 08507: ic.getQtyToInvoice() is already the "effective". Qty even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
 		// final BigDecimal qtyToInvoice = invoiceCandBL.getQtyToInvoice(ic);
-		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(ic.getQtyToInvoiceInUOM(), uomRecord), ic);
-
-		ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
+//		final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(Quantity.of(icRecord.getQtyToInvoiceInUOM(), uomRecord), icRecord);
+//
+//		icRecord.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE,
@@ -207,8 +213,10 @@ public class C_Invoice_Candidate
 	 * @param candidate
 	 * @task 08457
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {
-			I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
+	@ModelChange(//
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, //
+			ifColumnsChanged = {
+					I_C_Invoice_Candidate.COLUMNNAME_PriceActual, I_C_Invoice_Candidate.COLUMNNAME_PriceActual_Override, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded, I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded_Override, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Tax_Override_ID, I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID })
 	public void updatePriceActual_Net_Effective(final I_C_Invoice_Candidate candidate)
 	{
 		Services.get(IInvoiceCandBL.class).setPriceActualNet(candidate);
@@ -262,12 +270,11 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_Invoice_Line_Allocs(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_Invoice_Line_Alloc ila : invoiceCandDAO.retrieveIlaForIc(ic))
-		{
-			InterfaceWrapperHelper.delete(ila);
-		}
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.create()
+				.delete();
 	}
 
 	/**

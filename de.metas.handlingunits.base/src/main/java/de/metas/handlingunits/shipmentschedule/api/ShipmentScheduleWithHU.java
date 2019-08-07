@@ -199,7 +199,7 @@ public class ShipmentScheduleWithHU
 				catchUomIdOrNull, allocRecord.getQtyDeliveredCatch());
 
 		this.pickedqty = stockQtyAndUOMQty.getStockQty();
-		this.catchQty = stockQtyAndUOMQty.getUOMQty();
+		this.catchQty = stockQtyAndUOMQty.getUOMQtyOpt();
 
 		this.vhu = allocRecord.getVHU_ID() > 0 ? allocRecord.getVHU() : null;
 		this.tuHU = allocRecord.getM_TU_HU_ID() > 0 ? allocRecord.getM_TU_HU() : null;
@@ -433,6 +433,7 @@ public class ShipmentScheduleWithHU
 			shipmentScheduleQtyPicked = create(
 					shipmentScheduleAllocBL.addQtyPicked(shipmentSchedule, stockQtyAndCatchQty),
 					I_M_ShipmentSchedule_QtyPicked.class);
+
 			// lu, tu and vhu are null, so no need to set them
 
 			shipmentScheduleBL.resetCatchQtyOverride(shipmentSchedule);

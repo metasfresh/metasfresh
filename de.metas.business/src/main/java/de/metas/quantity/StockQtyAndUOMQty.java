@@ -4,11 +4,13 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.product.ProductId;
 import de.metas.util.Check;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -20,23 +22,25 @@ public class StockQtyAndUOMQty
 	Quantity stockQty;
 
 	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
-	@Getter(AccessLevel.NONE)
-	Optional<Quantity> uomQty;
+	Quantity uomQty;
 
-	public Optional<Quantity> getUOMQty()
-	{
-		return uomQty;
+
+	@JsonIgnore
+	public Optional<Quantity> getUOMQtyOpt()
+	{// TODO consider getting rid of optional altogether
+		return Optional.ofNullable(uomQty);
 	}
 
-	@Builder
+	@Builder(toBuilder = true)
+	@JsonCreator
 	private StockQtyAndUOMQty(
-			@NonNull final ProductId productId,
-			@NonNull final Quantity stockQty,
-			@Nullable final Quantity uomQty)
+			@JsonProperty("productId") @NonNull final ProductId productId,
+			@JsonProperty("stockQty") @NonNull final Quantity stockQty,
+			@JsonProperty("uomQty") @Nullable final Quantity uomQty)
 	{
 		this.productId = productId;
 		this.stockQty = stockQty;
-		this.uomQty = Optional.ofNullable(uomQty);
+		this.uomQty = uomQty;
 	}
 
 	public StockQtyAndUOMQty add(@NonNull final StockQtyAndUOMQty other)
@@ -47,10 +51,10 @@ public class StockQtyAndUOMQty
 				.productId(productId)
 				.stockQty(stockQty.add(other.getStockQty()));
 
-		if (getUOMQty().isPresent())
+		if (getUOMQtyOpt().isPresent())
 		{
-			Check.assume(other.uomQty.isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
-			result.uomQty(uomQty.get().add(other.uomQty.get()));
+			Check.assume(other.getUOMQtyOpt().isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
+			result.uomQty(uomQty.add(other.uomQty));
 		}
 
 		return result.build();
@@ -68,9 +72,9 @@ public class StockQtyAndUOMQty
 				.productId(productId)
 				.stockQty(stockQty.negate());
 
-		if (uomQty.isPresent())
+		if (getUOMQtyOpt().isPresent())
 		{
-			result.uomQty(uomQty.get().negate());
+			result.uomQty(uomQty.negate());
 		}
 
 		return result.build();
@@ -84,10 +88,10 @@ public class StockQtyAndUOMQty
 				.productId(productId)
 				.stockQty(stockQty.subtract(other.getStockQty()));
 
-		if (getUOMQty().isPresent())
+		if (getUOMQtyOpt().isPresent())
 		{
-			Check.assume(other.uomQty.isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
-			result.uomQty(uomQty.get().subtract(other.uomQty.get()));
+			Check.assume(other.getUOMQtyOpt().isPresent(), "If this instance's uomQty is present, then the other instance's uomQty also needs to be present; this={}; other={}", this, other);
+			result.uomQty(uomQty.subtract(other.uomQty));
 		}
 
 		return result.build();

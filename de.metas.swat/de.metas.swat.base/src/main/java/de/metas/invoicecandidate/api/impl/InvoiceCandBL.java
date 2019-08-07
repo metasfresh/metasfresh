@@ -109,6 +109,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceSchedule;
 import de.metas.invoice.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -386,7 +387,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final Quantity stockQty = qtysInvoiced.getStockQty();
 
 			ic.setQtyInvoiced(stockQty.toBigDecimal());
-			ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQty().orElse(stockQty).toBigDecimal());
+			ic.setQtyInvoicedInUOM(qtysInvoiced.getUOMQtyOpt().orElse(stockQty).toBigDecimal());
 
 			final Money netAmtInvoiced = qtyAndNetAmtInvoiced.getRight();
 			ic.setNetAmtInvoiced(netAmtInvoiced.toBigDecimal());
@@ -411,7 +412,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	/* package */IPair<StockQtyAndUOMQty, Money> sumupQtyInvoicedAndNetAmtInvoiced(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(ic);
+		final List<I_C_Invoice_Line_Alloc> ilas = invoiceCandDB.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
@@ -579,7 +580,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public void setNetAmtToInvoice(final I_C_Invoice_Candidate ic)
+	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		// If invoice candidate has IsToClear=Y then we shall not invoice it.
 		// Also we shall set the NetAmtToInvoice to ZERO, to not affect the checksum (when invoicing).
@@ -679,7 +680,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * @param factor multiplier for the final result. Expected to be 1 or -1.
 	 * @return
 	 */
-	private Quantity getQtyToInvoice(
+	private Quantity computeQtyToInvoice(
 			@NonNull final I_C_Invoice_Candidate ic,
 			final BigDecimal maxQtyInvoicableInUOM,
 			final BigDecimal factor)
@@ -746,40 +747,40 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return qtyOrderedActual.toBigDecimal();
 	}
 
-	@Override
-	public Quantity convertToPriceUOM(
-			@NonNull final Quantity qtyInUOM,
-			@NonNull final I_C_Invoice_Candidate ic)
-	{
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		if (ic.getM_Product_ID() <= 0)
-		{
-			logger.debug("returing param qty {} as result, because ic.getM_Product_ID() <= 0");
-			return qtyInUOM;
-		}
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
-		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
-
-		final I_C_UOM priceUOM = uomDAO.getByIdOrNull(ic.getPrice_UOM_ID());
-
-		final Quantity qtyInPriceUOM = priceUOM == null ? qtyInUOM : uomConversionBL.convertQuantityTo(qtyInUOM, UOMConversionContext.of(productId), UomId.ofRepoId(ic.getPrice_UOM_ID()));
-
-		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qtyInUOM, productId, qtyInPriceUOM, ic);
-
-		if (qtyInPriceUOM == null)
-		{
-			logger.warn("Can't convert qty={} into price-UOM of ic={}; ", qtyInUOM, ic);
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
-			amendSchedulerResult(ic,
-					msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qtyInUOM, priceUOM, productName }));
-			ic.setIsError(true);
-		}
-		return qtyInPriceUOM;
-	}
+//	@Override
+//	public Quantity convertToPriceUOM(
+//			@NonNull final Quantity qtyInUom,
+//			@NonNull final I_C_Invoice_Candidate ic)
+//	{
+//		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+//		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+//
+//		if (ic.getM_Product_ID() <= 0)
+//		{
+//			logger.debug("returing param qty {} as result, because ic.getM_Product_ID() <= 0");
+//			return qtyInUOM;
+//		}
+//
+//		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
+//		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
+//
+//		final I_C_UOM priceUOM = uomDAO.getByIdOrNull(ic.getPrice_UOM_ID());
+//
+//		final Quantity qtyInPriceUOM = priceUOM == null ? qtyInUOM : uomConversionBL.convertQuantityTo(qtyInUOM, UOMConversionContext.of(productId), UomId.ofRepoId(ic.getPrice_UOM_ID()));
+//
+//		logger.debug("converted qty={} of product {} to qtyInPriceUOM={} for ic {}", qtyInUOM, productId, qtyInPriceUOM, ic);
+//
+//		if (qtyInPriceUOM == null)
+//		{
+//			logger.warn("Can't convert qty={} into price-UOM of ic={}; ", qtyInUOM, ic);
+//			final IMsgBL msgBL = Services.get(IMsgBL.class);
+//			final String productName = Services.get(IProductBL.class).getProductValueAndName(productId);
+//			amendSchedulerResult(ic,
+//					msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL__UNABLE_TO_CONVERT_QTY_3P, new Object[] { qtyInUOM, priceUOM, productName }));
+//			ic.setIsError(true);
+//		}
+//		return qtyInPriceUOM;
+//	}
 
 	/**
 	 * Adds the given <code>amendment</code> to the given <code>ic</code>'s <code>SchedulerResult</code> value, <b>unless</b> the given string is already part of the <code>SchedulerResult</code>.
@@ -1550,7 +1551,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			//
 			// we need to know if there are already any invoice lines which have not been reversed
-			final List<I_C_Invoice_Line_Alloc> ilasForIc = invoiceCandDAO.retrieveIlaForIc(ic);
+			final List<I_C_Invoice_Line_Alloc> ilasForIc = invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
 			int nonReversedIlas = 0;
 			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
@@ -1734,7 +1735,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		//
-		// so there was a change in th underlying inouts' qtysWithIssues => check if we need to set the InDispute-Flag back to true
+		// so there was a change in tho underlying inouts' qtysWithIssues => check if we need to set the InDispute-Flag back to true
 
 		// update QualityDiscountPercent from the inout lines
 		ic.setQualityDiscountPercent(qualityDiscountPercentNew);
@@ -1807,14 +1808,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		final ReceiptQty qtys = new ReceiptQty();
-		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic));
 		for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 		{
 			final org.compiere.model.I_M_InOutLine inoutLine = iciol.getM_InOutLine();
 			final ReceiptQty inoutLineQtys = inOutCandidateBL.getQtyAndQuality(inoutLine);
 			// TODO: handle UOM conversions
 
-			qtys.add(inoutLineQtys);
+
 		}
 
 		return qtys;
@@ -1942,14 +1943,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal factor,
 			final boolean useEffectiveQtyDeliviered)
 	{
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 		final String invoiceRule = getInvoiceRule(ic);
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ic.getC_Order(), I_C_Order.class);
 
-		final boolean hasInvalidOrder = null != order && !DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed();
+		final I_C_UOM uomRecord = uomDao.getById(UomIds.ofRecord(ic));
 
-		final I_C_UOM uomRecord = loadOutOfTrx(ic.getC_UOM_ID(), I_C_UOM.class);
+		final boolean hasInvalidOrder = null != order && !DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed();
 		if (hasInvalidOrder)
 		{
 			return Quantity.zero(uomRecord);
@@ -1972,7 +1974,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// 04972: as of this task QtyDelivered also includes Qtys that were already invoiced, so we have to subtract the QtyInvoiced.
 			// 08475: do not subtract the qtyInvoiced because it will be subtracted again in getQtyToInvoice()
 			final BigDecimal maxInvoicableQtyInUOM = qtyDeliveredInUOM;// .subtract(ic.getQtyInvoiced());
-			newQtyToInvoice = getQtyToInvoice(ic, maxInvoicableQtyInUOM, factor);
+			newQtyToInvoice = computeQtyToInvoice(ic, maxInvoicableQtyInUOM, factor);
 		}
 		else if (X_C_Invoice_Candidate.INVOICERULE_Immediate.equals(invoiceRule))                                // Immediate
 		{
@@ -1983,7 +1985,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// AfterOrderDelivered
 			if (isOrderFullyDelivered(ic))
 			{
-				newQtyToInvoice = getQtyToInvoice(ic, qtyDeliveredInUOM, factor);
+				newQtyToInvoice = computeQtyToInvoice(ic, qtyDeliveredInUOM, factor);
 			}
 			else
 			{
@@ -2056,7 +2058,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				Quantity.of(ic.getQtyEntered(), uomRecord),
 				Quantity.of(computeQtyDeliveredInUOM(ic, true/* useEffectiveQtyDeliviered */), uomRecord));
 
-		return getQtyToInvoice(ic, maxInvoicableQty.toBigDecimal(), factor);
+		return computeQtyToInvoice(ic, maxInvoicableQty.toBigDecimal(), factor);
 	}
 
 	@Override
@@ -2350,7 +2352,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			iciol.setQtyDeliveredInUOM_Catch(inOutLine.getQtyDeliveredCatch());
 
 			// make sure that both quantities have the same UOM
-			final BigDecimal nominalQty = Services.get(IUOMConversionBL.class).convertQty(
+			final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+			final BigDecimal nominalQty = uomConversionBL.convertQty(
 					UOMConversionContext.of(ProductIds.ofRecord(inOutLine)),
 					inOutLine.getQtyEntered(),
 					UomId.ofRepoId(inOutLine.getC_UOM_ID()),
@@ -2361,7 +2365,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else
 		{
 			iciol.setC_UOM_ID(inOutLine.getC_UOM_ID());
-			iciol.setQtyDeliveredInUOM_Catch(inOutLine.getQtyEntered());
+			iciol.setQtyDeliveredInUOM_Nominal(inOutLine.getQtyEntered());
 		}
 		saveRecord(iciol);
 	}

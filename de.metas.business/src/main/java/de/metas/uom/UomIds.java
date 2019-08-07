@@ -43,7 +43,7 @@ public class UomIds
 		final Integer uomRepoId = InterfaceWrapperHelper.getValueOrNull(recordModel, I_C_UOM.COLUMNNAME_C_UOM_ID);
 		if (uomRepoId == null)
 		{
-			throw new AdempiereException("Missing M_Product_ID value in recordModel=" + recordModel);
+			throw new AdempiereException("Missing C_UOM_ID value in recordModel=" + recordModel);
 		}
 		return UomId.ofRepoId(uomRepoId);
 	}

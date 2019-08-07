@@ -228,7 +228,7 @@ public class PriceAndDiscount
 		logger.debug("Applying {} to {}", this, orderLine);
 
 		orderLine.setPriceEntered(priceEntered);
-		orderLine.setDiscount(discount.getValue());
+		orderLine.setDiscount(discount.toBigDecimal());
 		orderLine.setPriceActual(priceActual);
 		orderLine.setPriceLimit(priceLimit);
 		orderLine.setPriceLimitNote(buildPriceLimitNote());

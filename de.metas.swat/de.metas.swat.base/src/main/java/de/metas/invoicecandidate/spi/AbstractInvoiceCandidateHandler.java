@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.spi;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 
 /*
  * #%L
@@ -27,7 +27,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
@@ -41,6 +40,8 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomIds;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -72,7 +73,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		// task 08507: ic.getQtyToInvoice() is already the "effective" qty.
 		// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on InvoiceRule and QtyDelivered)
 		// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override. Therefore we don't use invoiceCandBL.getQtyToInvoice(ic), but the getter directly
-		final Quantity qtyToInvoiceInUOM = Quantity.of(ic.getQtyToInvoiceInUOM(), loadOutOfTrx(ic.getC_UOM_ID(), I_C_UOM.class));
+
+		final Quantity qtyToInvoiceInUOM = Quantitys.create(ic.getQtyToInvoiceInUOM(), UomIds.ofRecord(ic));
 		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, qtyToInvoiceInUOM);
 
 		ic.setNetAmtToInvoice(netAmtToInvoice.toBigDecimal());

@@ -279,7 +279,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 		invoiceLine.setDiscount(invoiceCandBL.getDiscount(candidate));
 		invoiceLine.setQtysToInvoice(stockQtyAndUOMQtyToInvoice);
 
-		final Quantity quantity = stockQtyAndUOMQtyToInvoice.getUOMQty().get();
+		final Quantity quantity = stockQtyAndUOMQtyToInvoice.getUOMQtyOpt().get();
 		final Money lineNetAmt = computeLineNetAmt(priceActual, quantity);
 
 		invoiceLine.setNetLineAmt(lineNetAmt);
@@ -339,7 +339,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	private final void setNetLineAmt(final IInvoiceLineRW invoiceLine)
 	{
 		final Quantity stockQty = invoiceLine.getQtysToInvoice().getStockQty();
-		final Quantity uomQty = invoiceLine.getQtysToInvoice().getUOMQty().orElse(stockQty);
+		final Quantity uomQty = invoiceLine.getQtysToInvoice().getUOMQtyOpt().orElse(stockQty);
 
 		ProductPrice priceActual = invoiceLine.getPriceActual();
 

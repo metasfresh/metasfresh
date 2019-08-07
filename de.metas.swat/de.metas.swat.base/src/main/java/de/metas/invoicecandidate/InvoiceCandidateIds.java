@@ -29,8 +29,8 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class InvoiceCandidateIds
 {
-	public InvoiceCandidateId createFor(@NonNull final I_C_Invoice_Candidate invoicecnadidateRecord)
+	public InvoiceCandidateId ofRecord(@NonNull final I_C_Invoice_Candidate invoicecandidateRecord)
 	{
-		return InvoiceCandidateId.ofRepoId(invoicecnadidateRecord.getC_Invoice_Candidate_ID());
+		return InvoiceCandidateId.ofRepoId(invoicecandidateRecord.getC_Invoice_Candidate_ID());
 	}
 }

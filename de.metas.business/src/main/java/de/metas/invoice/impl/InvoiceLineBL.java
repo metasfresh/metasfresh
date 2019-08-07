@@ -427,7 +427,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		// When invoices are created by the system, there is no need to change an already-set discound (and this code is executed only once anyways)
 		if (invoiceLine.getDiscount().signum() == 0)
 		{
-			invoiceLine.setDiscount(pricingResult.getDiscount().getValue());
+			invoiceLine.setDiscount(pricingResult.getDiscount().toBigDecimal());
 		}
 
 		final PricingConditionsResult pricingConditions = pricingResult.getPricingConditions();

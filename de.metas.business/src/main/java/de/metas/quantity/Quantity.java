@@ -38,6 +38,8 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.compiere.model.I_C_UOM;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -62,21 +64,26 @@ import lombok.NonNull;
  * @author tsa
  *
  */
+@JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
+@JsonSerialize(using = Quantitys.QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
-	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uom)
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uomRecord)
 	{
-		return of(new BigDecimal(qty), uom);
+		return of(new BigDecimal(qty), uomRecord);
 	}
 
-	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uom)
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
-		return new Quantity(qty, uom);
+		return new Quantity(qty, uomRecord);
 	}
 
-	public static Quantity of(final int qty, @NonNull final I_C_UOM uom)
+	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	public static Quantity of(final int qty, @NonNull final I_C_UOM uomRecord)
 	{
-		return of(BigDecimal.valueOf(qty), uom);
+		return of(BigDecimal.valueOf(qty), uomRecord);
 	}
 
 	public static boolean isInfinite(final BigDecimal qty)
@@ -113,7 +120,7 @@ public final class Quantity implements Comparable<Quantity>
 		return addNullables(quantity, augentQuantity);
 	}
 
-	public static BigDecimal asBigDecimal(@Nullable final Quantity quantity)
+	public static BigDecimal toBigDecimal(@Nullable final Quantity quantity)
 	{
 		if (quantity == null)
 		{
@@ -350,13 +357,20 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * @return source quatity's C_UOM_ID
 	 */
+	@Deprecated
 	public int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}
 
+	public UomId getSourceUomId()
+	{
+		return UomId.ofRepoId(sourceUom.getC_UOM_ID());
+	}
+
 	/**
-	 * @param uom
+	 * If you don't have a {@link I_C_UOM} record, but an {@link UomId}, consider using {@link Quantitys#createZero(UomId)}.
+	 *
 	 * @return ZERO quantity (using given UOM)
 	 */
 	public static Quantity zero(final I_C_UOM uom)
@@ -442,13 +456,10 @@ public final class Quantity implements Comparable<Quantity>
 	 *
 	 * i.e. Current Weighted Avg = (<code>previousAverage</code> * <code>previousAverageWeight</code> + this quantity) / (<code>previousAverageWeight</code> + 1)
 	 *
-	 * @param previousAverage
-	 * @param previousAverageWeight
 	 * @return weighted average
 	 */
-	public Quantity weightedAverage(final BigDecimal previousAverage, final int previousAverageWeight)
+	public Quantity weightedAverage(@NonNull final BigDecimal previousAverage, final int previousAverageWeight)
 	{
-		Check.assumeNotNull(previousAverage, "previousAverage not null");
 		Check.assume(previousAverageWeight >= 0, "previousAverageWeight >= 0");
 
 		final BigDecimal previousAverageWeightBD = BigDecimal.valueOf(previousAverageWeight);
@@ -529,6 +540,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * Note: {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)} adds by converting quantities between UOMs
 	 *
 	 * @throws QuantitiesUOMNotMatchingExpection if this quantity and qtyToAdd are not UOM compatible
+	 *             To add instances with different UOMs, use {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)}.
 	 */
 	public Quantity add(@NonNull final Quantity qtyToAdd)
 	{
