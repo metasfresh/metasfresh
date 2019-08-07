@@ -458,41 +458,34 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
 });
 
 Cypress.Commands.add('getCurrentWindowRecordId', () => {
-  describe('Select the current record ID from the url', function() {
-    return cy.url().then(ulrr => {
-      // noinspection UnnecessaryLocalVariableJS
-      const currentRecordId = ulrr.split('/').pop();
-      return currentRecordId;
-    });
+  return cy.url().then(ulrr => {
+    // noinspection UnnecessaryLocalVariableJS
+    const currentRecordId = ulrr.split('/').pop();
+    return currentRecordId;
   });
 });
 
 Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
-  describe('Reading the total amount', function() {
-    return cy.get('.header-breadcrumb-sitename').then(function(si) {
-      // noinspection UnnecessaryLocalVariableJS
-      const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-      return newTotalAmount;
-    });
+  cy.waitForSaveIndicator();
+  return cy.get('.header-breadcrumb-sitename').then(function(si) {
+    // noinspection UnnecessaryLocalVariableJS
+    const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+    return newTotalAmount;
   });
 });
 
 Cypress.Commands.add('waitUntilProcessIsFinished', () => {
-  describe('Wait until a process id finished', function() {
-    cy.wait(10000);
-  });
+  cy.wait(10000);
 });
 
 Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
-  describe('Wait until everything is saved and all requests are finished', function() {
-    if (expectIndicator) {
-      cy.get('.indicator-pending').should('exist');
-    }
-    cy.get('.indicator-pending').should('not.exist');
-    cy.get('.indicator-saved').should('exist');
-    cy.get('.indicator-pending').should('not.exist');
-    cy.get('.indicator-saved').should('exist');
-  });
+  if (expectIndicator) {
+    cy.get('.indicator-pending').should('exist');
+  }
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
 });
 
 Cypress.Commands.add('selectNotificationContaining', expectedValue => {
