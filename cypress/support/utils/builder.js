@@ -12,24 +12,18 @@ export class Builder {
    */
   static createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, isSalesPriceList) {
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
-      Object.assign(
-        new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
-        priceSystemJson
-      )
+      Object.assign(new Pricesystem(), priceSystemJson)
         .setName(priceSystemName)
         .apply();
     });
 
     let priceListVersion;
     cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      priceListVersion = Object.assign(
-        new PriceListVersion(/* useless to set anything here since it's replaced by the fixture */),
-        priceListVersionJson
-      ).setName(priceListVersionName);
+      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
     });
 
     cy.fixture('price/pricelist.json').then(pricelistJson => {
-      Object.assign(new PriceList(/* useless to set anything here since it's replaced by the fixture */), pricelistJson)
+      Object.assign(new PriceList(), pricelistJson)
         .setName(priceListName)
         .setPriceSystem(priceSystemName)
         .setIsSalesPriceList(isSalesPriceList)
@@ -102,7 +96,13 @@ export class Builder {
     });
   }
 
-  static createProductWithPriceUsingExistingCategory(priceListName, productName, productValue, productType, categoryName) {
+  static createProductWithPriceUsingExistingCategory(
+    priceListName,
+    productName,
+    productValue,
+    productType,
+    categoryName
+  ) {
     let productPrice;
     cy.fixture('product/product_price.json').then(productPriceJson => {
       productPrice = Object.assign(new ProductPrice(), productPriceJson).setPriceList(priceListName);

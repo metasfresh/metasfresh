@@ -206,6 +206,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
+  cy.waitForSaveIndicator();
 });
 
 /**

@@ -20,9 +20,7 @@ describe('Create material receipt with quality issue', function() {
   const warehouseName = `TestWarehouseName ${date}`;
 
   const productName1 = `ProductTest ${date}`;
-  const productValue1 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
@@ -78,24 +76,26 @@ describe('Create material receipt with quality issue', function() {
     });
   });
 
-  it('Create Price and ProductCategory', function() {
+  it('Create Price', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, false);
+  });
+
+  it('Create Product Category', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
+        .setValue(productCategoryName)
         .apply();
     });
   });
 
   it('Create product and vendor', function() {
-    Builder.createBasicProductEntities(
-      productCategoryName,
-      productCategoryValue,
+    Builder.createProductWithPriceUsingExistingCategory(
       priceListName,
       productName1,
-      productValue1,
-      productType
+      productName1,
+      productType,
+      productCategoryName
     );
     cy.fixture('sales/simple_vendor.json').then(vendorJson => {
       new BPartner({ ...vendorJson, name: vendorName })
