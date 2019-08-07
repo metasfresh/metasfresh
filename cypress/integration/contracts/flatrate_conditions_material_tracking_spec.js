@@ -59,23 +59,17 @@ describe('Create material tracking contract conditions', function() {
     // priceList
     const priceListName = `MaterialTracking ${date}`;
     cy.fixture('price/pricesystem.json').then(priceSystemJson => {
-      Object.assign(
-        new Pricesystem(/* useless to set anything here since it's replaced by the fixture */),
-        priceSystemJson
-      )
+      Object.assign(new Pricesystem(), priceSystemJson)
         .setName(priceSystemName)
         .apply();
     });
     let priceListVersion;
     cy.fixture('price/pricelistversion.json').then(priceListVersionJson => {
-      priceListVersion = Object.assign(
-        new PriceListVersion(/* useless to set anything here since it's replaced by the fixture */),
-        priceListVersionJson
-      ).setName(priceListVersionName);
+      priceListVersion = Object.assign(new PriceListVersion(), priceListVersionJson).setName(priceListVersionName);
     });
 
     cy.fixture('price/pricelist.json').then(pricelistJson => {
-      Object.assign(new PriceList(/* useless to set anything here since it's replaced by the fixture */), pricelistJson)
+      Object.assign(new PriceList(), pricelistJson)
         .setName(priceListName)
         .setCountry(countryName)
         .setCurrency('CHF')
