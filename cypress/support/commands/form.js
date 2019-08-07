@@ -199,9 +199,9 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   const path = createFieldPath(fieldName, modal);
   cy.get(path)
     .find('input')
-    .type('{selectall}', { force: true })
+    .type('{selectall}')
     .type(stringValue)
-    .type('{enter}', { force: true });
+    .type('{enter}');
 
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
@@ -273,13 +273,15 @@ Cypress.Commands.add(
           cy
             .get('input')
             // we can't use `clear` here as sometimes it triggers request to the server
-            // and then the whole flov becomes flaky
+            // and then the whole flow becomes flaky
             .type('{selectall}')
             .type(partialValue)
         );
       }
 
-      // cy.get('.lookup-dropdown').click();
+      // this is extremely fiddly when selecting from a combo field such as bpartner address.
+      // it will work locally, but most of the times will fail in jenkins.
+      // Please create the tests such that adding an address in a combo field is not mandatory!
       return cy.get('.lookup-dropdown').click();
     });
 
@@ -296,44 +298,32 @@ Cypress.Commands.add(
  *
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  * @param {boolean} skipRequest - if set to true, cypress won't expect a request to the server and won't wait for it
- * @param simpleListField optional, default true - if set to false, cypress will look after the element with the id lookup_FieldName;
- * see TourVersion - add tour version line; there are situations where there are multiple elements with class=input-dropdown
  */
-Cypress.Commands.add(
-  'selectInListField',
-  (fieldName, listValue, modal, rewriteUrl = null, skipRequest, simpleListField = true) => {
-    cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
+Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteUrl = null, skipRequest) => {
+  cy.log(`selectInListField - fieldName=${fieldName}; listValue=${listValue}; modal=${modal}`);
 
-    const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchListFieldAliasName = `patchListField-${fieldName}-${new Date().getTime()}`;
+  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
-    // here we want to match URLs that don *not* end with "/NEW"
-    if (!skipRequest) {
-      cy.server();
-      cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
-    }
-    const path = createFieldPath(fieldName, modal);
-    if (simpleListField) {
-      cy.get(path)
-        .find('.input-dropdown')
-        .click({ force: true });
-    } else {
-      cy.get(path)
-        .find('#lookup_' + fieldName)
-        .find('.input-dropdown')
-        .click({ force: true })
-        .click({ force: true });
-    }
-    // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
-    cy.get('.input-dropdown-list')
-      .contains(listValue)
-      .click({ force: true });
-
-    if (!skipRequest) {
-      cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
-    }
+  // here we want to match URLs that don *not* end with "/NEW"
+  if (!skipRequest) {
+    cy.server();
+    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListFieldAliasName);
   }
-);
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('.input-dropdown')
+    .click();
+
+  // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
+  cy.get('.input-dropdown-list')
+    .contains(listValue)
+    .click();
+
+  if (!skipRequest) {
+    cy.waitForFieldValue(`@${patchListFieldAliasName}`, fieldName, listValue);
+  }
+});
 
 /**
  * Select the option with a given index from a static list. This command does not wait for response from the server.

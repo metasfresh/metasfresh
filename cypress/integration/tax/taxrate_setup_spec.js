@@ -1,12 +1,12 @@
 import { Taxrate } from '../../support/utils/taxrate';
-import { getLanguageSpecific } from '../../support/utils/utils';
+import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Taxrate for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/74', function() {
   it('Create new Taxrate', function() {
     cy.wait(1000); // see comment/doc of getLanguageSpecific
 
-    const timestamp = new Date().getTime();
-    const taxrateName = `Text-Tax 10% ${timestamp}`;
+    const date = humanReadableNow();
+    const taxrateName = `Text-Tax 10% ${date}`;
 
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
       const taxCategoryName = getLanguageSpecific(miscDictionary, 'defaultTaxCategory');
