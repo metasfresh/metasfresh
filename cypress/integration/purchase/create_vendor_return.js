@@ -28,13 +28,6 @@ describe('Create Purchase order - complete - change - complete', function() {
     });
   });
   it('Create product to be used in purchase order', function() {
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryName)
-        .apply();
-    });
-
     Builder.createBasicProductEntities(
       productCategoryName,
       productCategoryName,
@@ -63,11 +56,6 @@ describe('Create Purchase order - complete - change - complete', function() {
       .apply();
     cy.completeDocument();
     cy.waitUntilProcessIsFinished();
-    /**purchase order should be completed */
-    cy.log('purchase order should be completed');
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.get('.tag.tag-success').contains(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed));
-    });
   });
   it('Open Material receipt candidates and create material receipt', function() {
     cy.openReferencedDocuments('M_ReceiptSchedule');
@@ -101,6 +89,7 @@ describe('Create Purchase order - complete - change - complete', function() {
     cy.getStringFieldValue('C_DocType_ID').then(el => {
       expect(el).to.equals('Lieferantenrückgabe');
     });
+    /*cy.getStringFieldValue('C_DocType_ID').should('equal', 'Lieferantenrückgabe');*/
     cy.selectTab('M_InOutLine');
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
