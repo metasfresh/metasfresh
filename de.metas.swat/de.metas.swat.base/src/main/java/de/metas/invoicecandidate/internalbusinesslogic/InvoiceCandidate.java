@@ -94,7 +94,7 @@ public class InvoiceCandidate
 			@JsonProperty("uomId") @NonNull final UomId uomId,
 			@JsonProperty("orderedData") @NonNull final OrderedData orderedData,
 			@JsonProperty("deliveredData") @NonNull final DeliveredData deliveredData,
-			@JsonProperty("invoicedData") @NonNull final InvoicedData invoicedData,
+			@JsonProperty("invoicedData") @Nullable final InvoicedData invoicedData, // can be null if the IC is very new
 			@JsonProperty("invoicableQtyBasedOn") @NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn,
 			@JsonProperty("invoiceRule") @NonNull final InvoiceRule invoiceRule,
 			@JsonProperty("priceUomId") @Nullable final UomId priceUomId,
@@ -285,11 +285,21 @@ public class InvoiceCandidate
 				throw new AdempiereException("Unsupported invoiceRule=" + invoiceRule);
 		}
 
-		// subtract the qty that was already invoiced
-		return new ToInvoiceExclOverride(
-				ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
-				qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()),
-				qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+		if (invoicedData != null)
+		{
+			// subtract the qty that was already invoiced
+			return new ToInvoiceExclOverride(
+					ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
+					qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()),
+					qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+		}
+		else
+		{
+			return new ToInvoiceExclOverride(
+					ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
+					qtyToInvoice.getQtysRaw(),
+					qtyToInvoice.getQtysCalc());
+		}
 	}
 
 	private ToInvoiceExclOverride computeDeliveredOrOrderedIfOrderComplete()

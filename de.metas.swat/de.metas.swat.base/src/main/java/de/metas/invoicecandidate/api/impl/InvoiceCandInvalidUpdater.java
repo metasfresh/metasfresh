@@ -274,10 +274,14 @@ import lombok.NonNull;
 		// and we need them (depending on which handler) for setDeliveredData()
 		populateC_InvoiceCandidate_InOutLine(ic, ic.getC_OrderLine());
 
-		// updating qty delivered
-		// 07814-IT2 only from now on we have the correct QtyDelivered
-		// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
-		invoiceCandidateHandlerBL.setDeliveredData(ic);
+		// Update 'QtyToInvoice_OverrideFulfilled'
+		// If is turns out that the fulfillment is now sufficient,
+		// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
+		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
+
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
+		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(ic);
+		invoiceCandidateRecordService.updateRecord(invoiceCandidate, ic);
 
 		//
 		// Update Price and Quantity only if this invoice candidate was NOT approved for invoicing (08610)
@@ -308,34 +312,8 @@ import lombok.NonNull;
 			ic.setQtyOrderedOverUnder(ol.getQtyOrderedOverUnder());
 		}
 
-		// Update 'QtyToInvoice_OverrideFulfilled'
-		// If is turns out that the fulfillment is now sufficient,
-		// reset both 'QtyToInvoice_Override' and 'QtyToInvoice_OverrideFulfilled'
-		invoiceCandBL.set_QtyToInvoiceOverrideFulfilled(ic, oldQtyInvoiced, factor);
-
-//		// calculate the fields from 06502: qualityDiscountPercent, qtyWithIssues and IsInDispute.
-//		// we'll need QtyWithIssues to be up to date to date in order to have QtyWithIssues_Effective
-//		invoiceCandBL.updateQtyWithIssues(ic);
-
-		// we'll need QtyWithIssues_Effective to be up to date to date in order to have the effective qtyDelivered
-		// invoiceCandBL.updateQtyWithIssues_Effective(ic);
-
-		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
-		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(ic);
-		invoiceCandidateRecordService.updateRecord(invoiceCandidate, ic);
-
-		// Set the new qtyToInvoice value, depending on invoiceRule
-		// final Quantity newQtyToInvoice = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, true/* useEffectiveQtyDeliviered */);
-		// ic.setQtyToInvoiceInUOM_Calc(newQtyToInvoice.toBigDecimal()); // TODO make sure it's in the UOM
-
 		// we'll need both qtyToInvoice/qtyToInvoiceInPriceUOM and priceActual to compute the netAmtToInvoice further down
 		invoiceCandBL.setPriceActual_Override(ic);
-
-		// final Quantity qtyToInvoiceInPriceUOM = invoiceCandBL.convertToPriceUOM(ic.getQtyToInvoiceInUOM(), ic);
-		// ic.setQtyToInvoiceInPriceUOM(qtyToInvoiceInPriceUOM.toBigDecimal());
-
-		// final Quantity newQtyToInvoiceBeforeDiscount = invoiceCandBL.computeQtyToInvoice(ctx, ic, factor, false/* useEffectiveQtyDeliviered */);
-		// ic.setQtyToInvoiceBeforeDiscount(newQtyToInvoiceBeforeDiscount.toBigDecimal()); // TODO make sure it's in the UOM
 
 		invoiceCandBL.setAmountAndDateForFreightCost(ic);
 

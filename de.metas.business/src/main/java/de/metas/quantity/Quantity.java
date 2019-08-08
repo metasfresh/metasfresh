@@ -437,8 +437,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
-	 * @param condition
 	 * @return negated quantity if <code>condition</code> is true; else return this
 	 */
 	public Quantity negateIf(final boolean condition)

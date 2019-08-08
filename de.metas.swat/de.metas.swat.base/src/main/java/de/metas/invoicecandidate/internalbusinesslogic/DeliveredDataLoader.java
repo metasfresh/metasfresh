@@ -74,6 +74,9 @@ public class DeliveredDataLoader
 	@NonNull
 	SOTrx soTrx;
 
+	@NonNull
+	Boolean negateQtys;
+
 	@NonNull // always empty, if soTrx, sometimes set if poTrx
 	Optional<Percent> deliveryQualityDiscount;
 
@@ -149,7 +152,6 @@ public class DeliveredDataLoader
 
 		if (hasItemsWithCatch && hasItemsWithoutCatch)
 		{
-
 			throw new AdempiereException("Either all or none if the invoice candidate's deliveredQtyItemsWithoutCatch nned to have a catch quantity") // can be fixed by setting QtyCatchOverride
 					.appendParametersToMessage()
 					.setParameter("invoiceCandidateId", invoiceCandidateId)
@@ -157,7 +159,8 @@ public class DeliveredDataLoader
 					.setParameter("itemsWithoutCatch", ImmutableList.copyOf(deliveredQtyItemsWithoutCatch));
 		}
 
-		result.qtyInStockUom(qtyInStockUom)
+		result
+				.qtyInStockUom(qtyInStockUom)
 				.qtyNominal(qtyNominal);
 
 		if (hasItemsWithCatch)
@@ -178,9 +181,11 @@ public class DeliveredDataLoader
 		{
 			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
 
-			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.create(
-					inoutLine.getMovementQty(), productId,
-					iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoId(iciol.getC_UOM_ID()));
+			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
+					.create(
+							inoutLine.getMovementQty(), productId,
+							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoId(iciol.getC_UOM_ID()))
+					.negateIf(negateQtys);
 
 			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
 			if (inoutLine.isInDispute())
@@ -203,35 +208,42 @@ public class DeliveredDataLoader
 		{
 			final ShippedQtyItemBuilder deliveredQtyItem = ShippedQtyItem.builder();
 
-			final Quantity qtyInStockUom = Quantitys.create(
-					icIolAssociationRecord.getM_InOutLine().getMovementQty(),
-					stockUomId);
+			final Quantity qtyInStockUom = Quantitys
+					.create(
+							icIolAssociationRecord.getM_InOutLine().getMovementQty(),
+							stockUomId)
+					.negateIf(negateQtys);
 			deliveredQtyItem.qtyInStockUom(qtyInStockUom);
 
 			final UomId deliveryUomId = UomId.ofRepoId(icIolAssociationRecord.getC_UOM_ID());
-			final Quantity qtyNominal = Quantitys.create(
-					icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),
-					deliveryUomId);
+			final Quantity qtyNominal = Quantitys
+					.create(
+							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),
+							deliveryUomId)
+					.negateIf(negateQtys);
 			deliveredQtyItem.qtyNominal(qtyNominal);
 
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch))
 			{
-				final Quantity qtyCatch = Quantitys.create(
-						icIolAssociationRecord.getQtyDeliveredInUOM_Catch(),
-						deliveryUomId);
+				final Quantity qtyCatch = Quantitys
+						.create(
+								icIolAssociationRecord.getQtyDeliveredInUOM_Catch(),
+								deliveryUomId)
+						.negateIf(negateQtys);
 				deliveredQtyItem.qtyCatch(qtyCatch);
 			}
 
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
 			{
-				final Quantity qtyOverride = Quantitys.create(
-						icIolAssociationRecord.getQtyDeliveredInUOM_Override(),
-						deliveryUomId);
+				final Quantity qtyOverride = Quantitys
+						.create(
+								icIolAssociationRecord.getQtyDeliveredInUOM_Override(),
+								deliveryUomId)
+						.negateIf(negateQtys);
 				deliveredQtyItem.qtyOverride(qtyOverride);
 			}
 			result.add(deliveredQtyItem.build());
 		}
-
 		return result.build();
 	}
 

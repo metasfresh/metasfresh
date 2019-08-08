@@ -12,6 +12,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
 import org.compiere.model.I_C_BPartner_Location;
@@ -23,17 +24,27 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.jgoodies.common.base.Objects;
 
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.money.MoneyService;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -61,6 +72,9 @@ import de.metas.util.time.SystemTime;
  * #L%
  */
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
+@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class M_InOutLine_HandlerTest
 {
 	private static final BigDecimal TWO = new BigDecimal(2);
@@ -185,6 +199,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(FIVE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -205,6 +220,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -222,6 +238,7 @@ public class M_InOutLine_HandlerTest
 	public void createCandidatesForInOutLine_one_packagingInOutLine()
 	{
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -241,6 +258,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -261,6 +279,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, ONE);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -281,6 +300,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_assertInvariants(result);
 
@@ -321,6 +341,7 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_1st_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
@@ -353,6 +374,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, FOUR);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_both_have_smallQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -392,6 +415,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(ONE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_2nd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -433,6 +458,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermB, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_two_materialInOutLine_different_payment_terms_customerReturn_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -471,8 +498,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, FIVE);
 		createMaterialInOutLine(paymentTermA, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -496,8 +523,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, FIVE);
 		createMaterialInOutLine(paymentTermA, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -518,8 +545,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 		createMaterialInOutLine(paymentTermA, ONE);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -543,8 +570,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, ONE);
 		createMaterialInOutLine(paymentTermA, ONE);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -568,8 +595,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(null, FIVE);
 		createMaterialInOutLine(null, TEN);
 
-		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest
-				.createCandidatesForInOutLine(packagingInOutLine);
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
 
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
@@ -592,6 +619,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, TEN.add(ONE));
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_has_largeQtyEnteredTU_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same
@@ -631,6 +660,8 @@ public class M_InOutLine_HandlerTest
 		createMaterialInOutLine(paymentTermA, SIX);
 
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+
 		createCandidatesForInOutLine_three_materialInOutLine_different_payment_terms_3rd_materialIOL_exceeds_movementQty_assertInvariants(result);
 
 		// make sure that on later updates, the qty remains the same

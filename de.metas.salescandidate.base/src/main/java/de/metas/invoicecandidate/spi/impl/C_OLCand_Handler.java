@@ -318,6 +318,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		ic.setQtyDelivered(ic.getQtyOrdered()); // when changing this, make sure to threat ProductType.Service specially
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
 		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 

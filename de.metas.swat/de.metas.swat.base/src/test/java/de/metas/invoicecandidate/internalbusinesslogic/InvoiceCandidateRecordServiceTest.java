@@ -208,7 +208,7 @@ class InvoiceCandidateRecordServiceTest
 	void save()
 	{
 		createRequiredMasterdata();
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeight");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight");
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
 		// the same method can't create new records because it doesn'T make sure that *all* required columns are set
@@ -219,8 +219,7 @@ class InvoiceCandidateRecordServiceTest
 		// invoke the method under test;
 		new InvoiceCandidateRecordService().updateRecord(invoiceCandidate, icRecord);
 
-		I_C_Invoice_Candidate resultRecord = icRecord;
-
+		final I_C_Invoice_Candidate resultRecord = icRecord;
 
 		assertThat(resultRecord.getQtyToInvoice()).isEqualByComparingTo(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
 		assertThat(resultRecord.getQtyToInvoiceBeforeDiscount()).isEqualByComparingTo(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());

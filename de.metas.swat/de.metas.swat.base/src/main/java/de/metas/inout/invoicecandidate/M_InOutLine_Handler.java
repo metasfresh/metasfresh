@@ -300,7 +300,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
 
-		setDeliveredData(ic);
+		// we use our nice&generic code to set the "real" delivered data, and for that, we need the IC to be saved
+		//setDeliveredData(ic);
+		// .. however, we need the movementQty to be present in the IC for createCandidatesForInOutLine to work:
+		ic.setQtyDelivered(ic.getQtyOrdered());
 
 		final ClientId clientId = ClientId.ofRepoId(inOutLine.getAD_Client_ID());
 
@@ -689,7 +692,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Get delivered quantity and then set it to IC
 		// NOTE: setOrderedData() method sets QtyOrdered as inout lines' movement quantity,
-
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
 		final StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService

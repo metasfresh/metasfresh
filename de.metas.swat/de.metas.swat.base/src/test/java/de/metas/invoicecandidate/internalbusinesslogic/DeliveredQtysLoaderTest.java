@@ -94,6 +94,7 @@ class DeliveredQtysLoaderTest
 				.productId(ProductIds.ofRecord(productRecord))
 				.stockUomId(UomIds.ofRecord(stockUomRecord))
 				.deliveryQualityDiscount(Optional.empty())
+				.negateQtys(false)
 				.build()
 				.loadDeliveredQtys();
 
@@ -127,6 +128,7 @@ class DeliveredQtysLoaderTest
 				.icUomId(UomIds.ofRecord(icUomRecord))
 				.stockUomId(UomIds.ofRecord(stockUomRecord))
 				.deliveryQualityDiscount(Optional.empty())
+				.negateQtys(false)
 				.build();
 
 		assertThatThrownBy(() -> deliveredQtysLoader.loadDeliveredQtys())
@@ -151,6 +153,7 @@ class DeliveredQtysLoaderTest
 				.icUomId(UomIds.ofRecord(icUomRecord))
 				.stockUomId(UomIds.ofRecord(stockUomRecord))
 				.deliveryQualityDiscount(Optional.empty())
+				.negateQtys(false)
 				.build();
 
 		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
@@ -169,6 +172,44 @@ class DeliveredQtysLoaderTest
 		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
 		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
 		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
+	}
+
+	@Test
+	void loadDeliveredQtys_shippedData_one_icIol_without_catch_fixed_via_override_negate()
+	{
+		createStandardData();
+
+		// set the override-qty in place of the catch-qty
+		icIol1.setQtyDeliveredInUOM_Override(icIol1.getQtyDeliveredInUOM_Catch());
+		icIol1.setQtyDeliveredInUOM_Catch(null);
+		saveRecord(icIol1);
+
+		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
+				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
+				.soTrx(SOTrx.SALES)
+				.productId(ProductIds.ofRecord(productRecord))
+				.icUomId(UomIds.ofRecord(icUomRecord))
+				.stockUomId(UomIds.ofRecord(stockUomRecord))
+				.deliveryQualityDiscount(Optional.empty())
+				.negateQtys(true)
+				.build();
+
+		final DeliveredData result = deliveredQtysLoader.loadDeliveredQtys();
+
+		assertThat(result.getShipmentData().getShippedQtyItems())
+				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
+				.contains(tuple(TEN.negate(), FOUR_HUNDRET.negate(), null, FOUR_HUNDRET_TWENTY.negate()),
+						tuple(FIVE.negate(), TWO_HUNDRET.negate(), ONE_HUNDRET_NINETY.negate(), null));
+
+		assertThat(result.getShipmentData().getQtyInStockUom().getUomId()).isEqualTo(UomIds.ofRecord(stockUomRecord));
+		assertThat(result.getShipmentData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("-15");
+
+		assertThat(result.getShipmentData().getQtyNominal().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyNominal().toBigDecimal()).isEqualByComparingTo("-62"); // the override-qty we set for icIol1 also overrides the nomimal qty
+
+		assertThat(result.getShipmentData().getQtyCatch()).isNotNull();
+		assertThat(result.getShipmentData().getQtyCatch().getUomId()).isEqualTo(UomIds.ofRecord(icUomRecord));
+		assertThat(result.getShipmentData().getQtyCatch().toBigDecimal()).isEqualByComparingTo("-61"); // 42 + 19
 	}
 
 	private void createStandardData()

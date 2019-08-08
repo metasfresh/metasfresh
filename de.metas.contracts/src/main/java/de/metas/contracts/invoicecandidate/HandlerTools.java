@@ -141,8 +141,10 @@ public class HandlerTools
 
 	public static void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		ic.setDeliveryDate(ic.getDateOrdered());
 		ic.setQtyDelivered(ic.getQtyOrdered());
+		ic.setQtyDeliveredInUOM(ic.getQtyEntered());
+
+		ic.setDeliveryDate(ic.getDateOrdered());
 	}
 
 	public static void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic)

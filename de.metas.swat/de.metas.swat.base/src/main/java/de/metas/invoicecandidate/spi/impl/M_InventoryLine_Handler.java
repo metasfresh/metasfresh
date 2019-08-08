@@ -418,8 +418,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 						ProductId.ofRepoId(ic.getM_Product_ID()),
 						UomId.ofRepoId(ic.getC_UOM_ID()),
 						qtyDelivered);
-
 		ic.setQtyDeliveredInUOM(qtyInUOM);
+
+		ic.setDeliveryDate(ic.getDateOrdered());
 
 	}
 }

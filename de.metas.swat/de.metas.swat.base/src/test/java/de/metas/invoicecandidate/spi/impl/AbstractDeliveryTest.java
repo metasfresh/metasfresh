@@ -48,6 +48,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -190,6 +191,7 @@ public abstract class AbstractDeliveryTest
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+		order.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order);
 	}
 

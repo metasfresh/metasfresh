@@ -76,6 +76,19 @@ public class StockQtyAndUOMQty
 		return getStockQty().signum();
 	}
 
+	/**
+	 * @return negated quantity if <code>condition</code> is true; else return this
+	 */
+	public StockQtyAndUOMQty negateIf(final boolean condition)
+	{
+		return condition ? negate() : this;
+	}
+
+	public StockQtyAndUOMQty negateIfNot(final boolean condition)
+	{
+		return !condition ? negate() : this;
+	}
+
 	public StockQtyAndUOMQty negate()
 	{
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty

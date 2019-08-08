@@ -24,7 +24,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -190,27 +189,5 @@ public class InvoicedDataLoader
 		ImmutableMap<Integer, I_C_InvoiceLine> invoiceLineId2InvoiceLineRecord;
 
 		ImmutableListMultimap<Integer, I_C_Invoice_Line_Alloc> invoiceCandidateId2IlaRecords;
-
-		private boolean isEmpty()
-		{
-			return invoiceId2InvoiceRecord.isEmpty();
-		}
-
-		private CurrencyId extractCurrencyId(InvoiceCandidateId invoiceCandidateId)
-		{
-			final ImmutableList<I_C_Invoice> invoiceRecords = invoiceCandidateId2IlaRecords.get(invoiceCandidateId.getRepoId())
-					.stream()
-					.map(I_C_Invoice_Line_Alloc::getC_InvoiceLine_ID)
-					.distinct()
-					.map(ilRepoId -> invoiceLineId2InvoiceLineRecord.get(ilRepoId))
-					.map(I_C_InvoiceLine::getC_Invoice_ID)
-					.distinct()
-					.map(invoiceRepoId -> invoiceId2InvoiceRecord.get(invoiceRepoId))
-					.collect(ImmutableList.toImmutableList());
-
-			final Integer currencyRepoId = CollectionUtils.extractSingleElement(invoiceRecords, I_C_Invoice::getC_Currency_ID);
-			return CurrencyId.ofRepoId(currencyRepoId);
-		}
 	}
-
 }

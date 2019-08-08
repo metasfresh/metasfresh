@@ -90,7 +90,7 @@ public class C_Invoice_Candidate
 		this.attachmentEntryService = attachmentEntryService;
 	}
 
-	@ModelChange(//
+	@ModelChange( //
 			timings = ModelValidator.TYPE_BEFORE_CHANGE, //
 			ifColumnsChanged = {
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
@@ -110,11 +110,25 @@ public class C_Invoice_Candidate
 	 * Note: we invalidate more than just the given candidate, because at least for the case of "split"-candidates we need to do so, in order to update the new and the old candidate. See
 	 * {@link InvoiceCandBL#splitCandidate(I_C_Invoice_Candidate)}.
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, //
+	@ModelChange( //
+			timings = ModelValidator.TYPE_AFTER_CHANGE, //
 			ignoreColumnsChanged = {
+					// the following columns already trigger an "immediate update (see method updateInvoiceCandidateDirectly()); no need to invalidate the record
 					I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override,
 					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override,
-					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override })
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override,
+
+					// the following columns are "endresults" of invoice candidate updates and never need to trigger an invalidation
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceBeforeDiscount,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Calc,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective,
+					I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyDelivered,
+					I_C_Invoice_Candidate.COLUMNNAME_QtyDeliveredInUOM,
+					I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate })
 	public void invalidateCandidatesAfterChange(final I_C_Invoice_Candidate ic)
 	{
 		invalidateCandidates0(ic);

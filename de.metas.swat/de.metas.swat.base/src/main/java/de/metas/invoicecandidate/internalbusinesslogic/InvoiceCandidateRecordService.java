@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.internalbusinesslogic.DeliveredDataLoader.DeliveredDataLoaderBuilder;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.InvoiceCandidateBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -51,7 +51,7 @@ import lombok.NonNull;
 @Service
 public class InvoiceCandidateRecordService
 {
-	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
+	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
@@ -59,73 +59,90 @@ public class InvoiceCandidateRecordService
 
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID());
-		final ProductId productId = ProductId.ofRepoId(invoiceCandidateRecord.getM_Product_ID());
+		final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
+		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final UomId stockUomId = productBL.getStockUOMId(productId);
-		final UomId icUomId = UomIds.ofRecord(invoiceCandidateRecord);
-		final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceCandidateRecord.getC_Currency_ID());
-		final SOTrx soTrx = SOTrx.ofBoolean(invoiceCandidateRecord.isSOTrx());
+		final UomId icUomId = UomIds.ofRecord(icRecord);
 
-		result.id(invoiceCandidateId)
+		// might be null if the IC was just created from an inout line
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(icRecord.getC_Currency_ID());
+
+		final SOTrx soTrx = SOTrx.ofBoolean(icRecord.isSOTrx());
+
+		result
+				.id(invoiceCandidateId)
 				.soTrx(soTrx)
 				.uomId(icUomId)
 				.productId(productId)
-				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(invoiceCandidateRecord.getInvoicableQtyBasedOn()))
-				.invoiceRule(invoiceCandBL.getInvoiceRule(invoiceCandidateRecord));
+				.invoiceRule(invoiceCandBL.getInvoiceRule(icRecord));
 
-		if (!isNull(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
+		if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override))
 		{
 			final BigDecimal qtyToInvoiceOverrideInStockUom =				//
-					invoiceCandidateRecord.getQtyToInvoice_Override()
-							.subtract(invoiceCandidateRecord.getQtyToInvoice_OverrideFulfilled());
+					icRecord.getQtyToInvoice_Override()
+							.subtract(icRecord.getQtyToInvoice_OverrideFulfilled());
 
 			result.qtyToInvoiceOverrideInStockUom(qtyToInvoiceOverrideInStockUom);
 		}
 
+		// purchase specialities
+		Optional<Percent> qualityDiscountOverride = Optional.empty();
+		InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(icRecord.getInvoicableQtyBasedOn());
+		if (soTrx.isPurchase())
+		{
+			invoicableQtyBasedOn = InvoicableQtyBasedOn.NominalWeight; // for purchase candidates it's *always* nominal weight
+			if (!isNull(icRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
+			{
+				qualityDiscountOverride = Optional.of(Percent.of(icRecord.getQualityDiscountPercent_Override()));
+			}
+		}
+		result
+				.qualityDiscountOverride(qualityDiscountOverride.orElse(null))
+				.invoicableQtyBasedOn(invoicableQtyBasedOn);
+
+		// load ordered, delivered and invoiced data
 		final OrderedData orderedData = OrderedDataLoader.builder()
-				.invoiceCandidateRecord(invoiceCandidateRecord)
+				.invoiceCandidateRecord(icRecord)
 				.stockUomId(stockUomId)
 				.build()
 				.loadOrderedQtys();
 
-		final DeliveredDataLoaderBuilder deliveredDataLoader = DeliveredDataLoader.builder()
+		// if the ordered qty is negated, then also negate the delivery data;
+		// this is the case when we have ICs for material returns (both vendor and customer)
+		final boolean negateDeliveryQtys = orderedData.getQty().signum() < 0;
+
+		final DeliveredData deliveredData = DeliveredDataLoader.builder()
 				.invoiceCandidateId(invoiceCandidateId)
 				.soTrx(soTrx)
 				.productId(productId)
 				.icUomId(icUomId)
-				.stockUomId(stockUomId);
-
-		Optional<Percent> deliveryQualityDiscount = Optional.empty();
-		if (soTrx.isPurchase())
-		{
-			if (!isNull(invoiceCandidateRecord, I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override))
-			{
-				deliveryQualityDiscount = Optional.of(Percent.of(invoiceCandidateRecord.getQualityDiscountPercent_Override()));
-			}
-		}
-		result.qualityDiscountOverride(deliveryQualityDiscount.orElse(null));
-		deliveredDataLoader.deliveryQualityDiscount(deliveryQualityDiscount);
-
-		final DeliveredData deliveredData = deliveredDataLoader
+				.stockUomId(stockUomId)
+				.deliveryQualityDiscount(qualityDiscountOverride)
+				.negateQtys(negateDeliveryQtys)
 				.build()
 				.loadDeliveredQtys();
 
-		final InvoicedData invoicedData = InvoicedDataLoader.builder()
-				.icUomIds(ImmutableMap.of(invoiceCandidateId, icUomId))
-				.stockUomIds(ImmutableMap.of(invoiceCandidateId, stockUomId))
-				.productIds(ImmutableMap.of(invoiceCandidateId, productId))
-				.currencyIds(ImmutableMap.of(invoiceCandidateId, currencyId))
-				.invoiceCandidateIds(ImmutableSet.of(invoiceCandidateId))
-				.build()
-				.loadInvoicedData()
-				.get(invoiceCandidateId);
-
-		result
+		final InvoicedData invoicedData;
+		if (currencyId != null)
+		{
+			invoicedData = InvoicedDataLoader.builder()
+					.icUomIds(ImmutableMap.of(invoiceCandidateId, icUomId))
+					.stockUomIds(ImmutableMap.of(invoiceCandidateId, stockUomId))
+					.productIds(ImmutableMap.of(invoiceCandidateId, productId))
+					.currencyIds(ImmutableMap.of(invoiceCandidateId, currencyId))
+					.invoiceCandidateIds(ImmutableSet.of(invoiceCandidateId))
+					.build()
+					.loadInvoicedData()
+					.get(invoiceCandidateId);
+		}
+		else
+		{
+			invoicedData = null;
+		}
+		return result
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
-				.invoicedData(invoicedData);
-
-		return result
+				.invoicedData(invoicedData)
 				.build();
 	}
 
@@ -133,11 +150,13 @@ public class InvoiceCandidateRecordService
 			@NonNull final InvoiceCandidate invoiceCandidate,
 			@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
 	{
-
-		// setting qtyDelivered is the IInvoiceCandidateHandlers' business!
-		// final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
-		// invoiceCandidateRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
-		// invoiceCandidateRecord.setQtyDeliveredInUOM(qtysDelivered.getUomQty().toBigDecimal());
+		if (invoiceCandidateRecord.getC_ILCandHandler_ID() > 0) // in unit tests there might be no handler; don't bother in those cases
+		{
+			// updating qty delivered; this part used to be in InvoiceCandInvalidupdater
+			// 07814-IT2 only from now on we have the correct QtyDelivered
+			// note that we need this data to be set before we attempt to compute the price, because the delivered qty and date of delivery might play a role.
+			Services.get(IInvoiceCandidateHandlerBL.class).setDeliveredData(invoiceCandidateRecord);
+		}
 
 		final DeliveredData deliveredData = invoiceCandidate.getDeliveredData();
 		if (invoiceCandidate.getSoTrx().isPurchase())
@@ -184,8 +203,8 @@ public class InvoiceCandidateRecordService
 
 		invoiceCandidateRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
 		invoiceCandidateRecord.setQtyToInvoice(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
-		invoiceCandidateRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal());
 
 		invoiceCandidateRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQty().toBigDecimal());
+		invoiceCandidateRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal());
 	}
 }

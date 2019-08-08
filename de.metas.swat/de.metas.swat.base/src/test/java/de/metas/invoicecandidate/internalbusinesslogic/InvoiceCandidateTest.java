@@ -261,8 +261,9 @@ class InvoiceCandidateTest
 	void sales_afterDelivery_missing_catchWeight()
 	{
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withoutCatchWeight");
+		invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.CatchWeight);
 
-		assertThatThrownBy(() -> invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.CatchWeight))
+		assertThatThrownBy(() -> invoiceCandidate.computeToInvoiceData())
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("missing qtyCatch");
 	}
@@ -333,6 +334,9 @@ class InvoiceCandidateTest
 
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(InvoiceRule.Immediate);
 
+		final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
+		assertThat(qtysDelivered.getStockQty().toBigDecimal()).isEqualByComparingTo("-10");
+		assertThat(qtysDelivered.getUOMQty().toBigDecimal()).isEqualByComparingTo("-40");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("-60"); // delivered nominal qty
