@@ -65,10 +65,7 @@ export class PriceList {
       cy.writeIntoStringField('Name', priceList.name);
       cy.selectInListField('C_Country_ID', priceList.country);
       cy.selectInListField('C_Currency_ID', priceList.currency);
-      cy.get('.form-field-PricePrecision')
-        .find('input')
-        .clear()
-        .type(priceList.pricePrecision);
+      cy.writeIntoStringField('PricePrecision', priceList.pricePrecision);
       cy.selectInListField('M_PricingSystem_ID', priceList.priceSystem);
       cy.writeIntoStringField('Description', priceList.description);
       cy.setCheckBoxValue('IsSOPriceList', priceList.isSalesPriceList);
@@ -84,7 +81,13 @@ export class PriceList {
       cy.selectTab('M_PriceList_Version');
       cy.pressAddNewButton();
       cy.writeIntoStringField('Name', `${priceListVersion.name} ${priceListVersion.validFrom}`, true, null, true);
-      cy.writeIntoStringField('ValidFrom', `${priceListVersion.validFrom}{enter}`, true, null, true);
+      cy.writeIntoStringField('ValidFrom', priceListVersion.validFrom, true, null, true);
+      if (priceListVersion.discountSchema) {
+        cy.selectInListField('M_DiscountSchema_ID', priceListVersion.discountSchema, true);
+      }
+      if (priceListVersion.basisPricelistVersion) {
+        cy.selectInListField('M_Pricelist_Version_Base_ID', priceListVersion.basisPricelistVersion, true);
+      }
       cy.pressDoneButton();
     });
   }
@@ -107,9 +110,15 @@ export class PriceListVersion {
     return this;
   }
 
-  setActive(isActive) {
-    cy.log(`PriceListVersion - set isActive = ${isActive}`);
-    this.isActive = isActive;
+  setBasisPricelistVersion(basisPricelistVersion) {
+    cy.log(`PriceListVersion - set basisPricelistVersion = ${basisPricelistVersion}`);
+    this.basisPricelistVersion = basisPricelistVersion;
+    return this;
+  }
+
+  setDiscountSchema(discountSchema) {
+    cy.log(`PriceListVersion - set discountSchema = ${discountSchema}`);
+    this.discountSchema = discountSchema;
     return this;
   }
 

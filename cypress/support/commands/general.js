@@ -238,6 +238,8 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
   const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
   cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
+  cy.log('Inside performDocumentViewAction, just before the 2 waits');
+
   documentViewAction();
   cy.wait(`@${layoutAliasName}`, {
     requestTimeout: 20000,
@@ -248,11 +250,12 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
+      cy.log('frist!: ' + JSON.stringify(xhr));
+      expect(xhr).to.not.be.empty;
       expect(xhr.status).to.eq(200);
       expect(xhr.response).to.not.be.empty;
       expect(xhr.response.body[0]).to.not.be.empty;
 
-      cy.log('frist!: ' + JSON.stringify(xhr));
       cy.log('frist! x2: ' + JSON.stringify(xhr));
       cy.log('frist[0]: ' + JSON.stringify(xhr.response.body[0]));
       return cy.wrap({ documentId: xhr.response.body[0].id });
@@ -458,41 +461,34 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
 });
 
 Cypress.Commands.add('getCurrentWindowRecordId', () => {
-  describe('Select the current record ID from the url', function() {
-    return cy.url().then(ulrr => {
-      // noinspection UnnecessaryLocalVariableJS
-      const currentRecordId = ulrr.split('/').pop();
-      return currentRecordId;
-    });
+  return cy.url().then(ulrr => {
+    // noinspection UnnecessaryLocalVariableJS
+    const currentRecordId = ulrr.split('/').pop();
+    return currentRecordId;
   });
 });
 
 Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
-  describe('Reading the total amount', function() {
-    return cy.get('.header-breadcrumb-sitename').then(function(si) {
-      // noinspection UnnecessaryLocalVariableJS
-      const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-      return newTotalAmount;
-    });
+  cy.waitForSaveIndicator();
+  return cy.get('.header-breadcrumb-sitename').then(function(si) {
+    // noinspection UnnecessaryLocalVariableJS
+    const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+    return newTotalAmount;
   });
 });
 
 Cypress.Commands.add('waitUntilProcessIsFinished', () => {
-  describe('Wait until a process id finished', function() {
-    cy.wait(10000);
-  });
+  cy.wait(10000);
 });
 
 Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
-  describe('Wait until everything is saved and all requests are finished', function() {
-    if (expectIndicator) {
-      cy.get('.indicator-pending').should('exist');
-    }
-    cy.get('.indicator-pending').should('not.exist');
-    cy.get('.indicator-saved').should('exist');
-    cy.get('.indicator-pending').should('not.exist');
-    cy.get('.indicator-saved').should('exist');
-  });
+  if (expectIndicator) {
+    cy.get('.indicator-pending').should('exist');
+  }
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
 });
 
 Cypress.Commands.add('selectNotificationContaining', expectedValue => {

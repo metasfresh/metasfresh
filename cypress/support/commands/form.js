@@ -11,40 +11,40 @@ function removeSubstringsWithCurlyBrackets(stringValue) {
 }
 
 Cypress.Commands.add('clearField', (fieldName, modal) => {
-    cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`clearField - fieldName=${fieldName}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('input')
-      .clear();
-  });
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('input')
+    .clear();
+});
 
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
-    cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
-    return cy
-      .get(path)
-      .find('input')
-      .invoke('val'); /* note: beats me why .its('value'); returned undefined */
-  });
+  const path = createFieldPath(fieldName, modal);
+  return cy
+    .get(path)
+    .find('input')
+    .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+});
 
 Cypress.Commands.add('getTextFieldValue', (fieldName, modal) => {
-    cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
-    return cy
-      .get(path)
-      .find('textarea')
-      .invoke('val'); /* note: beats me why .its('value'); returned undefined */
-  });
+  const path = createFieldPath(fieldName, modal);
+  return cy
+    .get(path)
+    .find('textarea')
+    .invoke('val'); /* note: beats me why .its('value'); returned undefined */
+});
 
 Cypress.Commands.add('assertFieldNotShown', (fieldName, modal) => {
-    cy.log(`assertFieldNotShown - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`assertFieldNotShown - fieldName=${fieldName}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
-    return cy.get(path).should('not.exist');
-  });
+  const path = createFieldPath(fieldName, modal);
+  return cy.get(path).should('not.exist');
+});
 
 function createFieldPath(fieldName, modal) {
   let path = `.form-field-${fieldName}`;
@@ -55,17 +55,17 @@ function createFieldPath(fieldName, modal) {
 }
 
 Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
-    cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`getCheckboxValue - fieldName=${fieldName}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
+  const path = createFieldPath(fieldName, modal);
 
-    return cy.get(path).then(el => {
-      if (el.find('checked').length || el.find('.checked').length) {
-        return true;
-      }
-      return false;
-    });
+  return cy.get(path).then(el => {
+    if (el.find('checked').length || el.find('.checked').length) {
+      return true;
+    }
+    return false;
   });
+});
 
 Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
@@ -86,29 +86,29 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
 });
 
 Cypress.Commands.add('resetListValue', (fieldName, modal, rewriteUrl = null) => {
-    cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
+  cy.log(`resetListValue - fieldName=${fieldName}; modal=${modal}`);
 
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-    const patchListValueAliasName = `patchListValue-${fieldName}-${new Date().getTime()}`;
+  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const patchListValueAliasName = `patchListValue-${fieldName}-${new Date().getTime()}`;
 
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
+  cy.server();
+  cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchListValueAliasName);
 
-    const path = createFieldPath(fieldName, modal);
+  const path = createFieldPath(fieldName, modal);
 
-    cy.get(path)
-      .find('.meta-icon-close-alt')
-      .click()
-      .waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
-  });
+  cy.get(path)
+    .find('.meta-icon-close-alt')
+    .click()
+    .waitForFieldValue(`@${patchListValueAliasName}`, fieldName);
+});
 
 Cypress.Commands.add('clickOnIsActive', modal => {
-    const path = createFieldPath('IsActive', modal);
+  const path = createFieldPath('IsActive', modal);
 
-    cy.get(path)
-      .find('.input-slider')
-      .click();
-  });
+  cy.get(path)
+    .find('.input-slider')
+    .click();
+});
 
 /*
  * @param modal - use true if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -117,24 +117,24 @@ Cypress.Commands.add('clickOnIsActive', modal => {
 Cypress.Commands.add(
   'clickOnCheckBox',
   (fieldName, expectedPatchValue, modal, rewriteUrl = null, skipPatch = false) => {
-      cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}`);
 
-      const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
-      const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
-      if (!skipPatch) {
-        cy.server();
-        cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
-      }
-      cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
+    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+    const patchCheckBoxAliasName = `patchCheckBox-${fieldName}-${new Date().getTime()}`;
+    if (!skipPatch) {
+      cy.server();
+      cy.route('PATCH', new RegExp(patchUrlPattern)).as(patchCheckBoxAliasName);
+    }
+    cy.log(`clickOnCheckBox - fieldName=${fieldName}; modal=${modal};`);
 
-      const path = createFieldPath(fieldName, modal);
+    const path = createFieldPath(fieldName, modal);
 
-      cy.get(path)
-        .find('.input-checkbox-tick')
-        .click({ force: true }); // we don't care if the checkbox scrolled out of view
-      if (!skipPatch) {
-        cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
-      }
+    cy.get(path)
+      .find('.input-checkbox-tick')
+      .click({ force: true }); // we don't care if the checkbox scrolled out of view
+    if (!skipPatch) {
+      cy.waitForFieldValue(`@${patchCheckBoxAliasName}`, fieldName, expectedPatchValue);
+    }
   }
 );
 /*
@@ -206,6 +206,7 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   if (!noRequest) {
     cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
   }
+  cy.waitForSaveIndicator();
 });
 
 /**
@@ -217,24 +218,24 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
  * @param {string} rewriteUrl - use custom url for the request
  */
 Cypress.Commands.add('writeIntoTextField', (fieldName, stringValue, modal, rewriteUrl) => {
-    cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
+  cy.log(`writeIntoTextField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}`);
 
-    const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
-    const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
-    // in the default pattern we want to match URLs that do *not* end with "/NEW"
-    const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
+  const aliasName = `writeIntoTextField-${fieldName}-${new Date().getTime()}`;
+  const expectedPatchValue = removeSubstringsWithCurlyBrackets(stringValue);
+  // in the default pattern we want to match URLs that do *not* end with "/NEW"
+  const patchUrlPattern = rewriteUrl || '/rest/api/window/.*[^/][^N][^E][^W]$';
 
-    // here we want to match URLs that don *not* end with "/NEW"
-    cy.server();
-    cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
+  // here we want to match URLs that don *not* end with "/NEW"
+  cy.server();
+  cy.route('PATCH', new RegExp(patchUrlPattern)).as(aliasName);
 
-    const path = createFieldPath(fieldName, modal);
+  const path = createFieldPath(fieldName, modal);
 
-    cy.get(path)
-      .find('textarea')
-      .type(`${stringValue}{enter}`);
-    cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
-  });
+  cy.get(path)
+    .find('textarea')
+    .type(`${stringValue}{enter}`);
+  cy.waitForFieldValue(`@${aliasName}`, fieldName, expectedPatchValue);
+});
 
 /**
  * @param modal - use true, if the field is in a modal overlay; required if the underlying window has a field with the same name
@@ -333,21 +334,21 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
  * @param {boolean} modal - use true, if the field is in a modal overlay; requered if the underlying window has a field with the same name
  */
 Cypress.Commands.add('selectNthInListField', (fieldName, index, modal) => {
-    cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
+  cy.log(`selectNthInListField - fieldName=${fieldName}; index=${index}; modal=${modal}`);
 
-    const path = createFieldPath(fieldName, modal);
-    cy.get(path)
-      .find('.input-dropdown')
-      .click();
+  const path = createFieldPath(fieldName, modal);
+  cy.get(path)
+    .find('.input-dropdown')
+    .click();
 
-    cy.get('.input-dropdown-list-option').then(options => {
-      for (let i = 0; i < options.length; i += 1) {
-        if (i === index) {
-          cy.get(options[i]).click();
-        }
+  cy.get('.input-dropdown-list-option').then(options => {
+    for (let i = 0; i < options.length; i += 1) {
+      if (i === index) {
+        cy.get(options[i]).click();
       }
-    });
+    }
   });
+});
 
 Cypress.Commands.add(
   'setCheckBoxValue',
@@ -360,16 +361,12 @@ Cypress.Commands.add(
 
     cy.getCheckboxValue(fieldName, modal).then(theCheckboxValue => {
       if (isChecked) {
-        if (theCheckboxValue) {
-          // Nothing to do, already checked
-        } else {
+        if (!theCheckboxValue) {
           cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
         }
       } else {
         if (theCheckboxValue) {
           cy.clickOnCheckBox(fieldName, expectedPatchValue, modal, rewriteUrl, skipRequest);
-        } else {
-          // Nothing to do, already unchecked
         }
       }
     });

@@ -12,13 +12,10 @@ import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 describe('Create Purchase order from sales order', function() {
   const date = humanReadableNow();
   const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-  const productPMValue = `purchase_order_testPM ${date}`;
   const packingMaterialName = `ProductPackingMaterial ${date}`;
   const packingInstructionsName = `ProductPackingInstrutions ${date}`;
   const productName1 = `ProductTest ${date}`;
-  const productValue1 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const purchasePriceSystem = `PurchasePriceSystem ${date}`;
   const purchasePriceList = `PurchasePriceList ${date}`;
@@ -47,7 +44,7 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productForPackingMaterial)
-        .setValue(productPMValue)
+        .setValue(productForPackingMaterial)
         .setProductType(productType)
         .setProductCategory('24_Gebinde')
         .addProductPrice(productPricePM1)
@@ -79,7 +76,7 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
+        .setValue(productCategoryName)
         .apply();
     });
     /**Create vendor to use in product - Business partner tab - current vendor */
@@ -103,13 +100,6 @@ describe('Create Purchase order from sales order', function() {
         .apply();
     });
 
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-
     let productPrice1;
     let productPrice2;
     cy.fixture('product/product_price.json').then(productPriceJson => {
@@ -122,9 +112,9 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setValue(productValue1)
+        .setValue(productName1)
         .setProductType(productType)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice1)
         .addProductPrice(productPrice2)
         .addCUTUAllocation(packingInstructionsName)

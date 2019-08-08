@@ -5,8 +5,6 @@ export class SalesOrder {
   constructor({ reference, ...vals }) {
     cy.log(`SalesOrder - set reference = ${reference}`);
     this.reference = reference;
-    this.bPartner = undefined;
-    this.bPartnerLocation = undefined;
 
     for (let [key, val] of Object.entries(vals)) {
       this[key] = val;
@@ -23,6 +21,18 @@ export class SalesOrder {
   setBPartnerLocation(location) {
     cy.log(`SalesOrder - setBPartnerLocation = ${location}`);
     this.bPartnerLocation = location;
+    return this;
+  }
+
+  setInvoicePartner(invoicePartner) {
+    cy.log(`SalesOrder - setInvoicePartner = ${invoicePartner}`);
+    this.invoicePartner = invoicePartner;
+    return this;
+  }
+
+  setInvoicePartnerLocation(location) {
+    cy.log(`SalesOrder - setInvoicePartnerLocation = ${location}`);
+    this.invoicePartnerLocation = location;
     return this;
   }
 
@@ -112,6 +122,29 @@ export class SalesOrder {
       })
     );
 
+    const invoicePartnerRequest = wrapRequest(
+      cy.request({
+        url: `${basicUri}/${salesOrder.id}/field/Bill_BPartner_ID/typeahead`,
+        method: 'GET',
+        qs: {
+          query: salesOrder.bPartner,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    );
+
+    const invoicePartnerLocationRequest = wrapRequest(
+      cy.request({
+        url: `${basicUri}/${salesOrder.id}/field/Bill_Location_ID/dropdown`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    );
+
     const warehouseRequest = wrapRequest(
       cy.request({
         url: `${basicUri}/${salesOrder.id}/field/M_Warehouse_ID/dropdown`,
@@ -122,8 +155,20 @@ export class SalesOrder {
       })
     );
 
-    return Cypress.Promise.all([bPartnerRequest, bPartnerLocationRequest, warehouseRequest]).then(vals => {
-      const [bPartnerResponse, bPartnerLocationResponse, warehouseResponse] = vals;
+    return Cypress.Promise.all([
+      bPartnerRequest,
+      bPartnerLocationRequest,
+      invoicePartnerRequest,
+      invoicePartnerLocationRequest,
+      warehouseRequest,
+    ]).then(vals => {
+      const [
+        bPartnerResponse,
+        bPartnerLocationResponse,
+        invoicePartnerResponse,
+        invoicePartnerLocationResponse,
+        warehouseResponse,
+      ] = vals;
 
       const bPartner = findByName(bPartnerResponse, salesOrder.bPartner);
       if (salesOrder.bPartner && bPartner) {
@@ -145,6 +190,30 @@ export class SalesOrder {
           value: {
             key: location.key,
             caption: location.caption,
+          },
+        });
+      }
+
+      const invoicePartner = findByName(invoicePartnerResponse, salesOrder.invoicePartner);
+      if (salesOrder.invoicePartner && invoicePartner) {
+        dataObject.push({
+          op: 'replace',
+          path: 'Bill_BPartner_ID',
+          value: {
+            key: invoicePartner.key,
+            caption: invoicePartner.caption,
+          },
+        });
+      }
+
+      const invoicePartnerLocation = findByName(invoicePartnerLocationResponse, salesOrder.invoicePartnerLocation);
+      if (salesOrder.invoicePartnerLocation && invoicePartnerLocation) {
+        dataObject.push({
+          op: 'replace',
+          path: 'Bill_Location_ID',
+          value: {
+            key: invoicePartnerLocation.key,
+            caption: invoicePartnerLocation.caption,
           },
         });
       }
