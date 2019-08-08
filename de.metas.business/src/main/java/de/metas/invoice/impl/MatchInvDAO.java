@@ -1,7 +1,5 @@
 package de.metas.invoice.impl;
 
-
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,14 +22,12 @@ package de.metas.invoice.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -137,13 +133,27 @@ public class MatchInvDAO implements IMatchInvDAO
 	}
 
 	@Override
-	public BigDecimal retrieveQtyMatched(final I_C_InvoiceLine invoiceLine)
+	public StockQtyAndUOMQty retrieveQtyMatched(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, invoiceLine)
+		final ProductId resultProductId = ProductId.ofRepoId(invoiceLine.getM_Product_ID());
+
+		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(resultProductId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+
+		final List<I_M_MatchInv> matchInvRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, invoiceLine)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_C_InvoiceLine_ID, invoiceLine.getC_InvoiceLine_ID())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_MatchInv.COLUMNNAME_Qty, Aggregate.SUM, BigDecimal.class);
+				.list();
+		for (final I_M_MatchInv matchInvRecord : matchInvRecords)
+		{
+			final ProductId productId = ProductId.ofRepoId(matchInvRecord.getM_Product_ID());
+			final StockQtyAndUOMQty matchInvRecordQtys = StockQtyAndUOMQtys.create(
+					matchInvRecord.getQty(), productId,
+					matchInvRecord.getQtyInUOM(), UomId.ofRepoIdOrNull(matchInvRecord.getC_UOM_ID()));
+			result = StockQtyAndUOMQtys.add(result, matchInvRecordQtys);
+
+		}
+		return result;
 	}
 
 	@Override

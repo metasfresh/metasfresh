@@ -1,6 +1,6 @@
 package de.metas.fresh.invoice.migrateMatchInv.process;
 
-import static de.metas.util.Check.fail;
+
 
 /*
  * #%L
@@ -15,17 +15,15 @@ import static de.metas.util.Check.fail;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,19 +33,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.Query;
-
 import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -147,7 +143,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 
 		final Iterator<I_C_InvoiceLine> invoiceLines = queryBuilder
 				.create()
-				.setOption(Query.OPTION_IteratorBufferSize, 1000)
+				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)
 				.iterate(I_C_InvoiceLine.class);
 
 		return matchInvHelper.cacheCurrentInvoiceIterator(invoiceLines);
@@ -189,7 +185,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 
 		//
 		// Retrieve how much we need to match on this invoice line.
-		final MutableBigDecimal qtyInvoicedNotMatched = new MutableBigDecimal(retrieveQtyNotMatched(il));
+		StockQtyAndUOMQty qtyInvoicedNotMatched = retrieveQtyNotMatched(il);
 		if (qtyInvoicedNotMatched.signum() == 0)
 		{
 			incrementCounterAndGet(COUNTER_NOTHING_TO_BE_DONE);
@@ -198,7 +194,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 
 		//
 		// Iterate each M_InOutLine and try to match as much as possible
-		final Map<Integer, MutableBigDecimal> inoutLineId2qtyNotMatched = new HashMap<>();
+		final Map<Integer, StockQtyAndUOMQty> inoutLineId2qtyNotMatched = new HashMap<>();
 		int countMatchInvCreated = 0;
 		int countInOutLinesChecked = 0;
 		for (final I_M_InOutLine inoutLine : retrieveInOutLines(il))
@@ -207,28 +203,26 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 
 			// Get M_InOutLine's MovementQty that was not already matched
 			final int inoutLineId = inoutLine.getM_InOutLine_ID();
-			MutableBigDecimal qtyMovedNotMatched = inoutLineId2qtyNotMatched.get(inoutLineId);
+			StockQtyAndUOMQty qtyMovedNotMatched = inoutLineId2qtyNotMatched.get(inoutLineId);
 			if (qtyMovedNotMatched == null)
 			{
 				final StockQtyAndUOMQty qtysNotMatched = retrieveQtyNotMatched(inoutLine);
-				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				//qtyMovedNotMatched = new MutableBigDecimal(qtysNotMatched);
+				qtyMovedNotMatched = qtysNotMatched;
 				inoutLineId2qtyNotMatched.put(inoutLineId, qtyMovedNotMatched);
 			}
 
-			final BigDecimal qtyToMatch = qtyInvoicedNotMatched.min(qtyMovedNotMatched).getValue();
+			final StockQtyAndUOMQty qtyToMatch = StockQtyAndUOMQtys.minUomQty(qtyInvoicedNotMatched,qtyMovedNotMatched);
 			if (qtyToMatch.signum() == 0)
 			{
 				continue;
 			}
 
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			//createNewMatchInvoiceRecord(il, inoutLine, qtyToMatch);
+			createNewMatchInvoiceRecord(il, inoutLine, qtyToMatch);
 			countMatchInvCreated++;
 
 			// Update quantities
-			qtyInvoicedNotMatched.subtract(qtyToMatch);
-			qtyMovedNotMatched.subtract(qtyToMatch);
+			qtyInvoicedNotMatched = StockQtyAndUOMQtys.subtract(qtyInvoicedNotMatched, qtyToMatch);
+			qtyMovedNotMatched = StockQtyAndUOMQtys.subtract(qtyMovedNotMatched, qtyToMatch);
 		}
 
 		//
@@ -252,7 +246,7 @@ public class M_MatchInv_CreateMissing extends JavaProcess
 		return matchInvHelper.retrieveInOutLines(il);
 	}
 
-	private BigDecimal retrieveQtyNotMatched(final I_C_InvoiceLine il)
+	private StockQtyAndUOMQty retrieveQtyNotMatched(final I_C_InvoiceLine il)
 	{
 		return matchInvHelper.retrieveQtyNotMatched(il);
 	}

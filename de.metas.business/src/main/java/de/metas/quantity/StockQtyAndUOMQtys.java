@@ -260,6 +260,20 @@ public class StockQtyAndUOMQtys
 		return qtys;
 	}
 
+	public static ProductId extractCommonProductId(@NonNull final StockQtyAndUOMQty... qtys)
+	{
+		final ImmutableList<ProductId> differentValues = CollectionUtils.extractDistinctElements(
+				CollectionUtils.asSet(qtys),
+				StockQtyAndUOMQty::getProductId);
+		if (differentValues.size() > 1)
+		{
+			throw new AdempiereException("The given StockQtyAndUOMQtys have different productIds")
+					.appendParametersToMessage()
+					.setParameter("differentValues", differentValues);
+		}
+		return differentValues.get(0);
+	}
+
 	public static void assumeCommonProductAndUom(@NonNull final StockQtyAndUOMQty... qtys)
 	{
 		// extract an arrayKey from qtys' productId and uomId and assume that there is just one distinct
@@ -274,4 +288,54 @@ public class StockQtyAndUOMQtys
 		}
 	}
 
+	public StockQtyAndUOMQty minUomQty(
+			@NonNull final StockQtyAndUOMQty qtysToCompare1,
+			@NonNull final StockQtyAndUOMQty qtysToCompare2)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
+
+		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
+				qtysToCompare2.getUOMQty(),
+				UOMConversionContext.of(productId),
+				qtysToCompare1.getUOMQty().getUomId());
+
+		return uomQty1.compareTo(uomQty2) <= 0 ? qtysToCompare1 : qtysToCompare2;
+	}
+
+	public StockQtyAndUOMQty maxUomQty(
+			@NonNull final StockQtyAndUOMQty qtysToCompare1,
+			@NonNull final StockQtyAndUOMQty qtysToCompare2)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
+
+		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
+				qtysToCompare2.getUOMQty(),
+				UOMConversionContext.of(productId),
+				qtysToCompare1.getUOMQty().getUomId());
+
+		return uomQty1.compareTo(uomQty2) >= 0 ? qtysToCompare1 : qtysToCompare2;
+	}
+
+	public int compareUomQty(
+			@NonNull final StockQtyAndUOMQty qtysToCompare1,
+			@NonNull final StockQtyAndUOMQty qtysToCompare2)
+	{
+		final Quantity uomQty1 = qtysToCompare1.getUOMQty();
+
+		final ProductId productId = extractCommonProductId(qtysToCompare1, qtysToCompare2);
+
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final Quantity uomQty2 = uomConversionBL.convertQuantityTo(
+				qtysToCompare2.getUOMQty(),
+				UOMConversionContext.of(productId),
+				qtysToCompare1.getUOMQty().getUomId());
+
+		return uomQty1.compareTo(uomQty2);
+	}
 }

@@ -22,7 +22,6 @@ package de.metas.invoice;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -86,7 +85,7 @@ public interface IMatchInvDAO extends ISingletonService
 	 * @param invoiceLine
 	 * @return quantity matched
 	 */
-	BigDecimal retrieveQtyMatched(I_C_InvoiceLine invoiceLine);
+	StockQtyAndUOMQty retrieveQtyMatched(I_C_InvoiceLine invoiceLine);
 
 	boolean hasMatchInvs(I_C_InvoiceLine invoiceLine, I_M_InOutLine inoutLine, String trxName);
 }

@@ -1,7 +1,5 @@
 package org.adempiere.invoice.service.impl;
 
-
-
 import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /*
@@ -105,6 +103,7 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
@@ -1454,12 +1453,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				final I_M_InOutLine inoutLine = matchInv.getM_InOutLine();
 
+				final StockQtyAndUOMQty qtyToMatchExact = StockQtyAndUOMQtys.create(
+						matchInv.getQty().negate(), ProductId.ofRepoId(inoutLine.getM_Product_ID()),
+						matchInv.getQtyInUOM().negate(), UomId.ofRepoId(matchInv.getC_UOM_ID()));
+
 				matchInvBL.createMatchInvBuilder()
 						.setContext(reversalLine)
 						.setC_InvoiceLine(reversalLine)
 						.setM_InOutLine(inoutLine)
 						.setDateTrx(reversalInvoice.getDateInvoiced())
-						.setQtyToMatchExact(matchInv.getQty().negate())
+						.setQtyToMatchExact(qtyToMatchExact)
 						.build();
 			}
 		}

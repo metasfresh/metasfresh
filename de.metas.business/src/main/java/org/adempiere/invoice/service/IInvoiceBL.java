@@ -249,9 +249,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * Product ID and UOM ID are set to the product and it's respective UOM or to 0 if the given <code>productId</code> is 0. The ASI ID is always set to 0.
 	 * <p>
 	 * Important note: what we do <b>not</b> set there is the price UOM because that one is set only together with the price.
-	 *
-	 * @param invoiceLine
-	 * @param productId
 	 */
 	void setProductAndUOM(I_C_InvoiceLine invoiceLine, int productId);
 

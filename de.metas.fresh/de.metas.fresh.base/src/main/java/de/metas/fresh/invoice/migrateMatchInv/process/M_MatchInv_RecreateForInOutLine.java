@@ -1,6 +1,5 @@
 package de.metas.fresh.invoice.migrateMatchInv.process;
 
-import static de.metas.util.Check.fail;
 import static java.math.BigDecimal.ZERO;
 
 /*
@@ -16,15 +15,14 @@ import static java.math.BigDecimal.ZERO;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -37,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.MutableBigDecimal;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOut;
@@ -48,6 +45,10 @@ import de.metas.document.engine.IDocument;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.IProcessor;
 import de.metas.util.Services;
 
@@ -160,14 +161,16 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 
 	private void rebuildMatchInvs(final I_M_InOutLine inoutLine)
 	{
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		//final BigDecimal qtyMovedNotMatchedInitial = matchInvHelper.retrieveQtyNotMatched(inoutLine);
-		final MutableBigDecimal qtyMovedNotMatched = new MutableBigDecimal(ZERO);
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
+
+		final StockQtyAndUOMQty qtyMovedNotMatchedInitial = matchInvHelper.retrieveQtyNotMatched(inoutLine);
+		StockQtyAndUOMQty qtyMovedNotMatched = StockQtyAndUOMQtys.createZero(productId, uomId);
 
 		//
 		// "C_InvoiceLine_ID to QtyMovedNotMatched" map
 		// NOTE: linked HashMap because we want to preserve the order
-		final Map<Integer, MutableBigDecimal> invoiceLineId2qtyNotMatchedMap = new LinkedHashMap<>();
+		final Map<Integer, StockQtyAndUOMQty> invoiceLineId2qtyNotMatchedMap = new LinkedHashMap<>();
 		final Map<Integer, I_C_InvoiceLine> invoiceLines = new LinkedHashMap<>();
 
 		//
@@ -177,10 +180,10 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 		{
 			final int invoiceLineId = matchInv.getC_InvoiceLine_ID();
 			final I_C_InvoiceLine invoiceLine = matchInv.getC_InvoiceLine();
-			MutableBigDecimal qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
+			StockQtyAndUOMQty qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
 			if (qtyInvoicedNotMatched == null)
 			{
-				qtyInvoicedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(invoiceLine));
+				qtyInvoicedNotMatched = matchInvHelper.retrieveQtyNotMatched(invoiceLine);
 				invoiceLineId2qtyNotMatchedMap.put(invoiceLineId, qtyInvoicedNotMatched);
 			}
 
@@ -193,10 +196,10 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 		{
 			// Get M_InOutLine's MovementQty that was not already matched
 			final int invoiceLineId = invoiceLine.getC_InvoiceLine_ID();
-			MutableBigDecimal qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
+			StockQtyAndUOMQty qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
 			if (qtyInvoicedNotMatched == null)
 			{
-				qtyInvoicedNotMatched = new MutableBigDecimal(matchInvHelper.retrieveQtyNotMatched(invoiceLine));
+				qtyInvoicedNotMatched = matchInvHelper.retrieveQtyNotMatched(invoiceLine);
 				invoiceLineId2qtyNotMatchedMap.put(invoiceLineId, qtyInvoicedNotMatched);
 			}
 
@@ -207,16 +210,18 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 		// Set all M_MatchInv to ZERO
 		for (final I_M_MatchInv matchInv : existingMatchInvs)
 		{
-			final BigDecimal qty = matchInv.getQty();
-			matchInv.setQty(BigDecimal.ZERO);
+			final StockQtyAndUOMQty qty = StockQtyAndUOMQtys.create(matchInv.getQty(), productId, matchInv.getQtyInUOM(), uomId);
+
+			matchInv.setQty(ZERO);
+			matchInv.setQtyInUOM(ZERO);
 
 			// Increase the qtyMoved not matched
-			qtyMovedNotMatched.add(qty);
+			qtyMovedNotMatched = StockQtyAndUOMQtys.add(qtyMovedNotMatched, qty);
 
 			// Increase the qtyInvoiced not matched
 			final int invoiceLineId = matchInv.getC_InvoiceLine_ID();
-			final MutableBigDecimal qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
-			qtyInvoicedNotMatched.add(qty);
+			final StockQtyAndUOMQty qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
+			invoiceLineId2qtyNotMatchedMap.put(invoiceLineId, StockQtyAndUOMQtys.add(qtyInvoicedNotMatched, qty));
 		}
 
 		//
@@ -224,9 +229,9 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 		for (final I_M_MatchInv matchInv : existingMatchInvs)
 		{
 			final int invoiceLineId = matchInv.getC_InvoiceLine_ID();
-			final MutableBigDecimal qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
+			final StockQtyAndUOMQty qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
 
-			final BigDecimal qtyMatched = qtyInvoicedNotMatched.min(qtyMovedNotMatched).getValue();
+			final StockQtyAndUOMQty qtyMatched = StockQtyAndUOMQtys.minUomQty(qtyInvoicedNotMatched, qtyMovedNotMatched);
 			if (qtyMatched.signum() == 0)
 			{
 				matchInv.setProcessed(false);
@@ -234,44 +239,44 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 			}
 			else
 			{
-				matchInv.setQty(qtyMatched);
+				matchInv.setQty(qtyMatched.getStockQty().toBigDecimal());
+				matchInv.setQtyInUOM(qtyMatched.getUOMQty().toBigDecimal());
+				matchInv.setC_UOM_ID(qtyMatched.getUOMQty().getUomId().getRepoId());
 				InterfaceWrapperHelper.save(matchInv);
 			}
 
-			qtyInvoicedNotMatched.subtract(qtyMatched);
-			qtyMovedNotMatched.subtract(qtyMatched);
+			invoiceLineId2qtyNotMatchedMap.put(invoiceLineId, StockQtyAndUOMQtys.subtract(qtyInvoicedNotMatched, qtyMatched));
+			qtyMovedNotMatched = StockQtyAndUOMQtys.subtract(qtyMovedNotMatched, qtyMatched);
 		}
 
 		//
 		// If we still have QtyMoved which was not matched, check remaining C_InvoiceLines
 		if (qtyMovedNotMatched.signum() != 0)
 		{
-			for (final Map.Entry<Integer, MutableBigDecimal> e : invoiceLineId2qtyNotMatchedMap.entrySet())
+			for (final int invoiceLineId : invoiceLineId2qtyNotMatchedMap.keySet())
 			{
 				if (qtyMovedNotMatched.signum() == 0)
 				{
 					break;
 				}
 
-				final MutableBigDecimal qtyInvoicedNotMatched = e.getValue();
+				final StockQtyAndUOMQty qtyInvoicedNotMatched = invoiceLineId2qtyNotMatchedMap.get(invoiceLineId);
 				if (qtyInvoicedNotMatched.signum() == 0)
 				{
 					continue;
 				}
 
-				final BigDecimal qtyMatched = qtyInvoicedNotMatched.min(qtyMovedNotMatched).getValue();
+				final StockQtyAndUOMQty qtyMatched = StockQtyAndUOMQtys.minUomQty(qtyInvoicedNotMatched, qtyMovedNotMatched);
 				if (qtyMatched.signum() == 0)
 				{
 					continue;
 				}
 
-				final int invoiceLineId = e.getKey();
 				final I_C_InvoiceLine invoiceLine = invoiceLines.get(invoiceLineId);
-				fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-				//matchInvHelper.createMatchInv(invoiceLine, inoutLine, qtyMatched);
+				matchInvHelper.createMatchInv(invoiceLine, inoutLine, qtyMatched);
 
-				qtyInvoicedNotMatched.subtract(qtyMatched);
-				qtyMovedNotMatched.subtract(qtyMatched);
+				invoiceLineId2qtyNotMatchedMap.put(invoiceLineId, StockQtyAndUOMQtys.subtract(qtyInvoicedNotMatched, qtyMatched));
+				qtyMovedNotMatched = StockQtyAndUOMQtys.subtract(qtyMovedNotMatched, qtyMatched);
 			}
 		}
 
@@ -281,10 +286,8 @@ public class M_MatchInv_RecreateForInOutLine extends JavaProcess
 		{
 			matchInvHelper.incrementCounterAndGet(MatchInvHelper.COUNTER_FullyMatched);
 		}
-		//else if (qtyMovedNotMatchedInitial.compareTo(qtyMovedNotMatched.getValue()) == 0)
-		else if (true)
+		else if (StockQtyAndUOMQtys.compareUomQty(qtyMovedNotMatchedInitial, qtyMovedNotMatched) == 0)
 		{
-			fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 			matchInvHelper.incrementCounterAndGet(MatchInvHelper.COUNTER_NotMatched);
 		}
 		else

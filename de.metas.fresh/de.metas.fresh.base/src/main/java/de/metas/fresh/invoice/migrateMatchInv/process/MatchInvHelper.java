@@ -22,7 +22,6 @@ package de.metas.fresh.invoice.migrateMatchInv.process;
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -230,9 +229,12 @@ import lombok.NonNull;
 				.list(I_C_InvoiceLine.class);
 	}
 
-	public BigDecimal retrieveQtyNotMatched(final I_C_InvoiceLine il)
+	public StockQtyAndUOMQty retrieveQtyNotMatched(@NonNull final I_C_InvoiceLine il)
 	{
-		BigDecimal qtyInvoiced = il.getQtyInvoiced();
+		StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys
+				.create(
+						il.getQtyInvoiced(), ProductId.ofRepoId(il.getM_Product_ID()),
+						il.getQtyEntered(), UomId.ofRepoId(il.getC_UOM_ID()));
 
 		// Negate the qtyInvoiced if this is an CreditMemo
 		final I_C_Invoice invoice = il.getC_Invoice();
@@ -241,8 +243,8 @@ import lombok.NonNull;
 			qtyInvoiced = qtyInvoiced.negate();
 		}
 
-		final BigDecimal qtyMatched = matchInvDAO.retrieveQtyMatched(il);
-		final BigDecimal qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
+		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtyMatched(il);
+		final StockQtyAndUOMQty qtyNotMatched = qtyInvoiced.subtract(qtyMatched);
 		return qtyNotMatched;
 	}
 

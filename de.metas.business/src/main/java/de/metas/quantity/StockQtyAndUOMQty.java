@@ -108,16 +108,6 @@ public class StockQtyAndUOMQty
 		return result.build();
 	}
 
-	public StockQtyAndUOMQty minUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
-	{
-		return this.getUOMQty().compareTo(qtysToCompare.getUOMQty()) <= 0 ? this : qtysToCompare;
-	}
-
-	public StockQtyAndUOMQty maxUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
-	{
-		return this.getUOMQty().compareTo(qtysToCompare.getUOMQty()) >= 0 ? this : qtysToCompare;
-	}
-
 	public StockQtyAndUOMQty multiply(@NonNull final BigDecimal factor)
 	{
 		final StockQtyAndUOMQtyBuilder result = this
