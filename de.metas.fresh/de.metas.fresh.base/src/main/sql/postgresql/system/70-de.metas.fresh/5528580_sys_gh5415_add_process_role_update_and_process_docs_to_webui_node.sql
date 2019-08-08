@@ -13,7 +13,7 @@ INSERT  INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,U
 ;
 
 -- add new menu node "Rollenzugriff aktualisieren" to webui menu node "System"
-UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=(select max(seqno) from AD_TreeNodeMM where Parent_ID=1000098) , Updated=now(), UpdatedBy=100 WHERE  Node_ID=53246 AND AD_Tree_ID=10
+UPDATE AD_TreeNodeMM SET Parent_ID=1000098, SeqNo=(select max(seqno) from AD_TreeNodeMM where Parent_ID=1000098) , Updated=now(), UpdatedBy=100 WHERE  Node_ID=541326 AND AD_Tree_ID=10
 ;
 
 --add existing process "belege verarbeiten" to webui menu node "System"
