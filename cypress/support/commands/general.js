@@ -392,9 +392,9 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
   });
 });
 /**
- * Opens the notification with the given text
+ * Opens the inbox notification with the given text
  */
-Cypress.Commands.add('openNotificationWithText', text => {
+Cypress.Commands.add('openInboxNotificationWithText', text => {
   cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
   cy.get('.inbox-item-unread .inbox-item-title')
     .filter(':contains("' + text + '")')
