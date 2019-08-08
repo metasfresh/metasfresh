@@ -197,7 +197,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			// Destination Warehouse
 
 			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
-			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest.getM_Warehouse_ID());
+			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest == null ? 0 : warehouseDest.getM_Warehouse_ID());
 		}
 
 		//
