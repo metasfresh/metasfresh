@@ -85,7 +85,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
         .apply();
     });
 
@@ -97,7 +96,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(scrapProductName)
-        .setValue(scrapProductName)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -106,7 +104,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(processingFeeProductName)
-        .setValue(processingFeeProductName)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -115,7 +112,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productionProductName)
-        .setValue(productionProductName)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -124,7 +120,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(witholdingProductName)
-        .setValue(witholdingProductName)
         .setProductType(productType)
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)
@@ -157,7 +152,6 @@ describe('Create material tracking contract conditions', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(rawProductName)
-        .setValue(rawProductName)
         .setProductType('Item')
         .setProductCategory(productCategoryValue + '_' + productCategoryName)
         .addProductPrice(productPrice)

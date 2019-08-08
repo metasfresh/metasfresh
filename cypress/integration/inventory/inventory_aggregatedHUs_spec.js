@@ -14,7 +14,6 @@ describe('Aggregated-HUs inventory test', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName)
-        .setValue(productValue)
         .apply();
     });
   });

@@ -17,12 +17,6 @@ export class Product {
     return this;
   }
 
-  setValue(value) {
-    cy.log(`Product value is never used`);
-    this.value = value;
-    return this;
-  }
-
   setDescription(description) {
     cy.log(`Product - set description = ${description}`);
     this.description = description;
@@ -203,12 +197,6 @@ export class ProductCategory {
     return this;
   }
 
-  setValue(value) {
-    cy.log(`Product Category - set value = ${value}`);
-    this.value = value;
-    return this;
-  }
-
   setAttributeSet(attributeSet) {
     cy.log(`Product Category - set attributeSet = ${attributeSet}`);
     this.attributeSet = attributeSet;
@@ -226,8 +214,7 @@ export class ProductCategory {
     cy.visitWindow('144', 'NEW');
     cy.writeIntoStringField('Name', productCategory.name);
 
-    // Value can be updated
-    cy.writeIntoStringField('Value', productCategory.value);
+    cy.writeIntoStringField('Value', productCategory.name);
     if (productCategory.attributeSet) {
       cy.selectInListField('M_AttributeSet_ID', productCategory.attributeSet);
     }

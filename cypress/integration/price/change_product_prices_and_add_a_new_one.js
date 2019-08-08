@@ -117,7 +117,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setValue(productName1)
         .setProductType(productType)
         .setProductCategory(productCategoryName1)
         .addCUTUAllocation(packingInstructionsName1)
@@ -129,7 +128,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName2)
-        .setValue(productName2)
         .setProductType(productType)
         .setProductCategory(productCategoryName1)
         .addCUTUAllocation(packingInstructionsName1)
@@ -142,7 +140,6 @@ describe('Create the 3 products ', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName3)
-        .setValue(productName3)
         .setProductType(productType)
         .setProductCategory(productCategoryName2)
         .addCUTUAllocation(packingInstructionsName1)
@@ -231,7 +228,6 @@ function createProductCategory(productCategoryName, attributeSet) {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryName)
         .setAttributeSet(attributeSet)
         .apply();
     });
