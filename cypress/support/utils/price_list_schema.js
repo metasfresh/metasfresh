@@ -51,6 +51,13 @@ export class PriceListSchemaLine {
     return this;
   }
 
+  setProduct(product) {
+    cy.log(`PriceListSchemaLine - set product = ${product}`);
+    this.product = product;
+    return this;
+  }
+
+
   setStandardPriceSurchargeAmount(surchargeAmount) {
     cy.log(`PriceListSchemaLine - set surchargeAmount = ${surchargeAmount}`);
     this.surchargeAmount = surchargeAmount;
@@ -79,6 +86,9 @@ function applyPriceListSchemaLine(schemaLine) {
   }
   if (schemaLine.surchargeAmount) {
     cy.writeIntoStringField('Std_AddAmt', schemaLine.surchargeAmount, true);
+  }
+  if (schemaLine.product) {
+    cy.writeIntoLookupListField('M_Product_ID', schemaLine.product, schemaLine.product, false, true);
   }
   cy.pressDoneButton();
 }

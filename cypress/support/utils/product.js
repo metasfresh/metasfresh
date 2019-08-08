@@ -18,7 +18,7 @@ export class Product {
   }
 
   setValue(value) {
-    cy.log(`Product - set value = ${value}`);
+    cy.log(`Product value is never used`);
     this.value = value;
     return this;
   }
