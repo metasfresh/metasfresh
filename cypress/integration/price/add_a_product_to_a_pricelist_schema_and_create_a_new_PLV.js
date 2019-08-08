@@ -27,7 +27,7 @@ import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters }
 import { ProductPrices } from '../../page_objects/product_prices';
 import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 
-let date = humanReadableNow();
+const date = humanReadableNow();
 
 // Price
 const priceSystemName = `PriceSystem_${date}`;
