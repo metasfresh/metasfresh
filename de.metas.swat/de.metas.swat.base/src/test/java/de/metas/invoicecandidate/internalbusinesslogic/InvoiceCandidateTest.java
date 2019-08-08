@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.*;
+import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -18,8 +19,10 @@ import de.metas.money.Money;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.JSONObjectMapper;
+import de.metas.util.lang.Percent;
 
 /*
  * #%L
@@ -54,11 +57,10 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void serialize_deserialize()
+	void purchase_serialize_deserialize()
 	{
-		final Quantity qtyInStockUom = Quantitys.create(TEN, STOCK_UOM_ID);
-		final Quantity qtyNominal = Quantitys.create(new BigDecimal("40"), DELIVERY_UOM_ID);
-		final Quantity qtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
+		final StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.create(PRODUCT_ID, TEN, DELIVERY_UOM_ID, HUNDRET);
+		final StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.create(PRODUCT_ID, ONE, DELIVERY_UOM_ID, TEN);
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
@@ -67,16 +69,9 @@ class InvoiceCandidateTest
 				.build();
 
 		final DeliveredData deliveredData = DeliveredData.builder()
-				.shipmentData(ShipmentData.builder()
-						.productId(PRODUCT_ID)
-						.shippedQtyItem(ShippedQtyItem.builder()
-								.qtyInStockUom(qtyInStockUom)
-								.qtyNominal(qtyNominal)
-								.qtyCatch(qtyCatch)
-								.build())
-						.qtyInStockUom(qtyInStockUom)
-						.qtyNominal(qtyNominal)
-						.qtyCatch(qtyCatch)
+				.receiptData(ReceiptData.builder()
+						.qtysTotal(qtysTotal)
+						.qtysWithIssues(qtysWithIssues)
 						.build())
 				.build();
 
@@ -86,10 +81,10 @@ class InvoiceCandidateTest
 				.build();
 
 		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
-				.soTrx(SOTrx.SALES)
+				.soTrx(SOTrx.PURCHASE)
 				.id(InvoiceCandidateId.ofRepoId(10))
 				.productId(PRODUCT_ID)
-				.uomId(DELIVERY_UOM_ID)
+				.uomId(IC_UOM_ID)
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
 				.orderedData(orderedData)
 				.deliveredData(deliveredData)
@@ -104,9 +99,155 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_nominalWeight()
+	void sales_serialize_deserialize()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withoutCatchWeight");
+		final Quantity shippedQtyInStockUom = Quantitys.create(TEN, STOCK_UOM_ID);
+		final Quantity shippedQtyNominal = Quantitys.create(new BigDecimal("40"), DELIVERY_UOM_ID);
+		final Quantity shippedQtyCatch = Quantitys.create(new BigDecimal("43"), DELIVERY_UOM_ID);
+
+		final OrderedData orderedData = OrderedData.builder()
+				.orderFullyDelivered(false)
+				.qtyInStockUom(Quantitys.create(new BigDecimal("15"), STOCK_UOM_ID))
+				.qty(Quantitys.create(new BigDecimal("60"), DELIVERY_UOM_ID))
+				.build();
+
+		final DeliveredData deliveredData = DeliveredData.builder()
+				.shipmentData(ShipmentData.builder()
+						.productId(PRODUCT_ID)
+						.shippedQtyItem(ShippedQtyItem.builder()
+								.qtyInStockUom(shippedQtyInStockUom)
+								.qtyNominal(shippedQtyNominal)
+								.qtyCatch(shippedQtyCatch)
+								.build())
+						.qtyInStockUom(shippedQtyInStockUom)
+						.qtyNominal(shippedQtyNominal)
+						.qtyCatch(shippedQtyCatch)
+						.build())
+				.build();
+
+		final InvoicedData invoicedData = InvoicedData.builder()
+				.netAmount(Money.zero(CURRENCY_ID))
+				.qtys(StockQtyAndUOMQtys.createZero(PRODUCT_ID, DELIVERY_UOM_ID))
+				.build();
+
+		final InvoiceCandidate invoiceCandidate = InvoiceCandidate.builder()
+				.soTrx(SOTrx.SALES)
+				.id(InvoiceCandidateId.ofRepoId(10))
+				.productId(PRODUCT_ID)
+				.uomId(IC_UOM_ID)
+				.invoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight)
+				.orderedData(orderedData)
+				.deliveredData(deliveredData)
+				.invoicedData(invoicedData)
+				.invoiceRule(InvoiceRule.AfterDelivery)
+				.build();
+
+		final JSONObjectMapper<InvoiceCandidate> jsonMapper = JSONObjectMapper.forClass(InvoiceCandidate.class);
+		final String invoiceCandidateAsString = jsonMapper.writeValueAsString(invoiceCandidate);
+		final InvoiceCandidate deserializedInvoiceCandidate = jsonMapper.readValue(invoiceCandidateAsString);
+		assertThat(deserializedInvoiceCandidate).isEqualTo(invoiceCandidate);
+	}
+
+	@Test
+	void purchase_qualityIssues()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("purchase_qualityIssues");
+
+		final ReceiptData receiptData = invoiceCandidate.getDeliveredData().getReceiptData();
+		assertThat(receiptData.computeQualityDiscount().toBigDecimal()).isEqualTo(TEN);
+
+		final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
+		assertThat(qtysDelivered.getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(qtysDelivered.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysDelivered.getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(qtysDelivered.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysRaw().getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(toInvoiceData.getQtysRaw().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(toInvoiceData.getQtysRaw().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysCalc().getUomQty().toBigDecimal()).isEqualByComparingTo(NINETY);
+		assertThat(toInvoiceData.getQtysCalc().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysCalc().getStockQty().toBigDecimal()).isEqualByComparingTo(NINE);
+		assertThat(toInvoiceData.getQtysCalc().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo(NINETY);
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo(NINE);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void purchase_qualityIssues_qualityDiscountOverride()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("purchase_qualityIssues");
+		assertThat(invoiceCandidate.getDeliveredData().getReceiptData().computeQualityDiscount().toBigDecimal()).isEqualTo(TEN); // guard
+
+		invoiceCandidate.changeQualityDiscountOverride(Percent.of("20"));
+
+		final StockQtyAndUOMQty qtysWithIssuesEffective = invoiceCandidate.getDeliveredData().getReceiptData().computeQtysWithIssuesEffective(invoiceCandidate.getQualityDiscountOverride());
+		assertThat(qtysWithIssuesEffective.getUomQty().toBigDecimal()).isEqualByComparingTo("20");
+		assertThat(qtysWithIssuesEffective.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysWithIssuesEffective.getStockQty().toBigDecimal()).isEqualByComparingTo("2");
+		assertThat(qtysWithIssuesEffective.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
+		assertThat(qtysDelivered.getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(qtysDelivered.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysDelivered.getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(qtysDelivered.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysRaw().getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(toInvoiceData.getQtysRaw().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
+		assertThat(toInvoiceData.getQtysRaw().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysCalc().getUomQty().toBigDecimal()).isEqualByComparingTo("80");
+		assertThat(toInvoiceData.getQtysCalc().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysCalc().getStockQty().toBigDecimal()).isEqualByComparingTo("8");
+		assertThat(toInvoiceData.getQtysCalc().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("80");
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("8");
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_no_shipments_yet_catch()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_no_shipments_yet");
+
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_no_shipments_yet_nominal()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_no_shipments_yet");
+		invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.NominalWeight);
+		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
+
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
+	}
+
+	@Test
+	void sales_afterDelivery_nominalWeight()
+	{
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withoutCatchWeight");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
@@ -117,9 +258,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_missing_catchWeight()
+	void sales_afterDelivery_missing_catchWeight()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withoutCatchWeight");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withoutCatchWeight");
 
 		assertThatThrownBy(() -> invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.CatchWeight))
 				.isInstanceOf(AdempiereException.class)
@@ -127,9 +268,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_catchWeight()
+	void sales_afterDelivery_catchWeight()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeight");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
@@ -141,9 +282,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_catchWeight_change_invoicableQtyBasedOn()
+	void sales_afterDelivery_catchWeight_change_invoicableQtyBasedOn()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeight");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight");
 		assertThat(invoiceCandidate.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.CatchWeight); // guard
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
@@ -167,9 +308,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_change_to_immediate()
+	void sales_afterDelivery_change_to_immediate()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeight");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight");
 
 		invoiceCandidate.changeInvoiceRule(InvoiceRule.Immediate);
 
@@ -184,9 +325,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void immediate_qty_ordered_negated()
+	void sales_immediate_qty_ordered_negated()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("qtyOrderedNegated");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_qtyOrderedNegated");
 
 		assertThat(invoiceCandidate.getOrderedData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("-15"); // guard
 
@@ -201,9 +342,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void immediate_qtyQrdered_less_than_qtyDelivered()
+	void sales_immediate_qtyQrdered_less_than_qtyDelivered()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("qtyOrderedLessThanDelivered");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_qtyOrderedLessThanDelivered");
 		assertThat(invoiceCandidate.getOrderedData().getQtyInStockUom().toBigDecimal()).isEqualByComparingTo("5"); // guard
 
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(InvoiceRule.Immediate);
@@ -217,9 +358,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_catchWeight_partially_invoiced()
+	void sales_afterDelivery_catchWeight_partially_invoiced()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeightPartiallyInvoiced");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeightPartiallyInvoiced");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("25"); // 43 - 18
@@ -230,9 +371,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterDelivery_catchWeight_qtyToInvoiceOverride()
+	void sales_afterDelivery_catchWeight_qtyToInvoiceOverride()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("withCatchWeight_withQtyToInvoiceOverride");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight_withQtyToInvoiceOverride");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("46.8"); // 10/10 of 43 plus 1/5 of 19
@@ -243,9 +384,9 @@ class InvoiceCandidateTest
 	}
 
 	@Test
-	void afterOrderDelivered()
+	void sales_afterOrderDelivered()
 	{
-		final InvoiceCandidate invoiceCandidate = loadJsonFixture("afterOrderDelivered");
+		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_afterOrderDelivered");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();

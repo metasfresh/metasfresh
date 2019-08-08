@@ -5,6 +5,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

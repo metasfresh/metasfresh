@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -80,9 +83,10 @@ public class ReceiptData
 				qtysTotal.getStockQty().toBigDecimal());
 	}
 
+	@JsonCreator
 	private ReceiptData(
-			@NonNull final StockQtyAndUOMQty qtysWithIssues,
-			@NonNull final StockQtyAndUOMQty qtysTotal)
+			@JsonProperty("qtysWithIssues") @NonNull final StockQtyAndUOMQty qtysWithIssues,
+			@JsonProperty("qtysTotal") @NonNull final StockQtyAndUOMQty qtysTotal)
 	{
 		this.qtysWithIssues = qtysWithIssues;
 		this.qtysTotal = qtysTotal;

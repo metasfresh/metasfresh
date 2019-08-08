@@ -126,22 +126,21 @@ public class InvoiceCandidate
 
 		if (soTrx.isSales())
 		{
-			final ShipmentData shippedData = Check.assumeNotNull(deliveredData.getShipmentData(), "shipmentData");
+			final ShipmentData shippedData = Check.assumeNotNull(deliveredData.getShipmentData(), "If soTrx={}, then shipmentData may not be null", soTrx);
 			Check.assumeEquals(uomId, shippedData.getQtyNominal().getUomId(), "deliveredData.qtyNominal needs to have this instance's UOM; this={}", this);
 			if (shippedData.getQtyCatch() != null)
 			{
 				Check.assumeEquals(uomId, shippedData.getQtyCatch().getUomId(), "deliveredData.qtyCatch needs to have this instance's UOM; this={}", this);
 			}
 
-			Check.assumeNull(deliveredData.getReceiptData(), "receiptData");
+			Check.assumeNull(deliveredData.getReceiptData(), "If soTrx={}, then receiptData needs to be null", soTrx);
 		}
 		if (soTrx.isPurchase())
 		{
 			Check.assumeEquals(invoicableQtyBasedOn, InvoicableQtyBasedOn.NominalWeight, "Purchase invoice candidates does not support invoicableQtyBasedOn={}" + invoicableQtyBasedOn);
 
-			// TODO
-			Check.assumeNull(deliveredData.getShipmentData(), "shipmentData");
-			Check.assumeNotNull(deliveredData.getReceiptData(), "receiptData");
+			Check.assumeNull(deliveredData.getShipmentData(), "If soTrx={}, then shipmentData needs to be null", soTrx);
+			Check.assumeNotNull(deliveredData.getReceiptData(), "If soTrx={}, then receiptData may not be null", soTrx);
 		}
 	}
 
@@ -357,7 +356,7 @@ public class InvoiceCandidate
 				qtysToInvoiceRaw, qtysToInvoiceCalc);
 	}
 
-	public ToInvoiceExclOverride computeInvoicableQtysDelivered()
+	private ToInvoiceExclOverride computeInvoicableQtysDelivered()
 	{
 		final StockQtyAndUOMQty qtysToInvoiceRaw;
 		final StockQtyAndUOMQty qtysToInvoiceCalc;

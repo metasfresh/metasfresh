@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_UOM;
@@ -40,6 +41,11 @@ import lombok.NonNull;
 
 public class InvoiceCandidateFixtureHelper
 {
+
+	public static final BigDecimal NINE = new BigDecimal("9");
+	public static final BigDecimal NINETY = new BigDecimal("90");
+	public static final BigDecimal HUNDRET = new BigDecimal("100");
+
 	public static final UomId STOCK_UOM_ID = UomId.ofRepoId(100000);
 	public static final UomId DELIVERY_UOM_ID = UomId.ofRepoId(110000);
 	public static final UomId IC_UOM_ID = UomId.ofRepoId(110000); // ..for now..will change that
@@ -73,7 +79,7 @@ public class InvoiceCandidateFixtureHelper
 	public static InvoiceCandidate loadJsonFixture(@NonNull final String fixtureName)
 	{
 		final InputStream fixtureAsStream = InvoiceCandidateFixtureHelper.class
-				.getResourceAsStream("/de/metas/invoicecandidate/internalbusinesslogic/invoiceCandidateTestFixtures/" + fixtureName + "_fixture.json");
+				.getResourceAsStream("/de/metas/invoicecandidate/internalbusinesslogic/invoiceCandidateTestFixtures/" + fixtureName + ".json");
 		assertThat(fixtureAsStream).isNotNull();
 
 		final InvoiceCandidate deserializedInvoiceCandidate = jsonObjectMapper.readValue(fixtureAsStream);
