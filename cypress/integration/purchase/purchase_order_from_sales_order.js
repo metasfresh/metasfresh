@@ -7,17 +7,15 @@ import { PackingInstructionsVersion } from '../../support/utils/packing_instruct
 import { Builder } from '../../support/utils/builder';
 import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
 import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 
 describe('Create Purchase order from sales order', function() {
   const date = humanReadableNow();
   const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-  const productPMValue = `purchase_order_testPM ${date}`;
   const packingMaterialName = `ProductPackingMaterial ${date}`;
   const packingInstructionsName = `ProductPackingInstrutions ${date}`;
   const productName1 = `ProductTest ${date}`;
-  const productValue1 = `purchase_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const purchasePriceSystem = `PurchasePriceSystem ${date}`;
   const purchasePriceList = `PurchasePriceList ${date}`;
@@ -46,7 +44,7 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productForPackingMaterial)
-        .setValue(productPMValue)
+        .setValue(productForPackingMaterial)
         .setProductType(productType)
         .setProductCategory('24_Gebinde')
         .addProductPrice(productPricePM1)
@@ -78,7 +76,7 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
-        .setValue(productCategoryValue)
+        .setValue(productCategoryName)
         .apply();
     });
     /**Create vendor to use in product - Business partner tab - current vendor */
@@ -102,13 +100,6 @@ describe('Create Purchase order from sales order', function() {
         .apply();
     });
 
-    cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
-      Object.assign(new ProductCategory(), productCategoryJson)
-        .setName(productCategoryName)
-        .setValue(productCategoryValue)
-        .apply();
-    });
-
     let productPrice1;
     let productPrice2;
     cy.fixture('product/product_price.json').then(productPriceJson => {
@@ -121,9 +112,9 @@ describe('Create Purchase order from sales order', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(productName1)
-        .setValue(productValue1)
+        .setValue(productName1)
         .setProductType(productType)
-        .setProductCategory(productCategoryValue + '_' + productCategoryName)
+        .setProductCategory(productCategoryName + '_' + productCategoryName)
         .addProductPrice(productPrice1)
         .addProductPrice(productPrice2)
         .addCUTUAllocation(packingInstructionsName)
@@ -132,78 +123,38 @@ describe('Create Purchase order from sales order', function() {
     });
   });
   it('Create a sales order', function() {
-    cy.visitWindow('143', 'NEW');
-    cy.get('#lookup_C_BPartner_ID input')
-      .type(customerName)
-      .type('\n');
-    cy.contains('.input-dropdown-list-option', customerName).click();
-
-    cy.selectInListField('M_PricingSystem_ID', salesPriceSystem, false, null, true);
-
-    const addNewText = Cypress.messages.window.batchEntry.caption;
-    cy.get('.tabs-wrapper .form-flex-align .btn')
-      .contains(addNewText)
-      .should('exist')
-      .click();
-    cy.get('.quick-input-container .form-group').should('exist');
-    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
-
-    cy.get('.form-field-Qty')
-      .click()
-      .find('.input-body-container.focused')
-      .should('exist')
-      .find('i')
-      .eq(0)
-      .click();
-
-    cy.get('.form-field-Qty')
-      .find('input')
-      .should('have.value', '0.1')
-      .clear()
-      .type('1{enter}');
-    // cy.get('#lookup_M_Product_ID .input-dropdown').should('not.have.class', 'input-block');
-    cy.waitUntilProcessIsFinished();
-    /**Complete sales order */
     cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      cy.processDocument(
-        getLanguageSpecific(miscDictionary, DocumentActionKey.Complete),
-        getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed)
-      );
+      new SalesOrder()
+        .setBPartner(customerName)
+        .setPriceSystem(salesPriceSystem)
+        .addLine(new SalesOrderLine().setProduct(productName1).setQuantity(1))
+        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
+        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
+        .apply();
     });
     /**Create purchase order from sales order */
     cy.executeHeaderActionWithDialog('C_Order_CreatePOFromSOs');
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
-    cy.get('.btn-header.side-panel-toggle').click({ force: true });
-    cy.get('.order-list-nav .order-list-btn')
-      .eq('1')
-      .find('i')
-      .click({ force: true });
     /**Go to purchase order */
-    cy.get('.reference_AD_RelationType_ID-540164', { timeout: 10000 }).click();
-    cy.get('tbody tr')
-      .eq('0')
-      .dblclick();
+    cy.openReferencedDocuments('AD_RelationType_ID-540164');
+    cy.selectNthRow(0).dblclick();
     /**check product name */
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.Lookup')
       .find('.lookup-cell')
       .contains(productName1);
     /**check price of product */
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.CostPrice')
       .find('.costprice-cell')
       .eq(0)
       .contains('1.23');
     /**check if vendor in purchase order is the current vendor set in product  */
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.list-cell')
       .contains(vendorName);
-    cy.get('tbody tr')
-      .eq('0')
+    cy.selectNthRow(0)
       .find('.quantity-cell')
       .contains('1');
     /**purchase order should be drafted */

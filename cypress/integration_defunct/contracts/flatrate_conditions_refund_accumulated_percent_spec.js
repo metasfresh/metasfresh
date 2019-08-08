@@ -1,30 +1,31 @@
 import {
-  createAndCompleteTransition,
   createAndCompleteRefundPercentConditions,
+  createAndCompleteTransition,
 } from '../../support/utils/contract_static';
-import { BPartner, BPartnerLocation } from '../../support/utils/bpartner';
-import { DiscountSchema, DiscountBreak } from '../../support/utils/discountschema';
+import { BPartner } from '../../support/utils/bpartner';
+import { DiscountBreak, DiscountSchema } from '../../support/utils/discountschema';
 import { runProcessCreateContract } from '../../support/functions/contractFunctions';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create accumulated percent-based (AP) refund conditions', function() {
   it('Create accumulated percent-based refund conditions', function() {
-    const timestamp = new Date().getTime(); // used in the document names, for ordering
+    const date = humanReadableNow();
 
-    const transitionName = `Transitions (AP) ${timestamp}`;
+    const transitionName = `Transitions (AP) ${date}`;
     createAndCompleteTransition(transitionName, null, null);
     cy.screenshot();
 
-    const conditionsName = `Conditions  (AP) ${timestamp}`;
+    const conditionsName = `Conditions  (AP) ${date}`;
     createAndCompleteRefundPercentConditions(conditionsName, transitionName, 'A' /*Accumulated / Gesamtrückvergütung*/);
     cy.screenshot();
 
-    const discountSchemaName = `Discount schema (AP) ${timestamp}`;
+    const discountSchemaName = `Discount schema (AP) ${date}`;
     new DiscountSchema(discountSchemaName)
       .addDiscountBreak(new DiscountBreak().setBreakValue(0).setBreakDiscount(0))
       .apply();
     cy.screenshot();
 
-    const bPartnerName = `Vendor (AP) ${timestamp}`;
+    const bPartnerName = `Vendor (AP) ${date}`;
     new BPartner.builder(bPartnerName)
       .setVendor(true)
       .setVendorDiscountSchema(discountSchemaName)

@@ -13,19 +13,17 @@ import { purchaseOrders } from '../../page_objects/purchase_orders';
 // task: https://github.com/metasfresh/metasfresh-e2e/issues/161
 
 const date = humanReadableNow();
-const productForPackingMaterial = `ProductPackingMaterial ${date}`;
-const packingInstructionsName = `ProductPackingInstructions ${date}`;
-const productName1 = `ProductTest1 ${date}`;
-const productName2 = `ProductTest2 ${date}`;
-const productValue1 = `purchase_order_test ${date}`;
-const productValue2 = `purchase_order_test ${date}`;
-const productCategoryName = `ProductCategoryName ${date}`;
-const discountSchemaName = `DiscountSchemaTest ${date}`;
-const priceSystemName = `PriceSystem ${date}`;
-const priceListName = `PriceList ${date}`;
-const priceListVersionName = `PriceListVersion ${date}`;
+const productForPackingMaterial = `ProductPackingMaterial_${date}`;
+const packingInstructionsName = `ProductPackingInstructions_${date}`;
+const productName1 = `Product1_${date}`;
+const productName2 = `Product2_${date}`;
+const productCategoryName = `ProductCategoryName_${date}`;
+const discountSchemaName = `DiscountSchema_${date}`;
+const priceSystemName = `PriceSystem_${date}`;
+const priceListName = `PriceList_${date}`;
+const priceListVersionName = `PriceListVersion_${date}`;
 const productType = 'Item';
-const vendorName = `Vendor ${date}`;
+const vendorName = `Vendor_${date}`;
 const generateInvoicesNotificationModalText =
   'Fakturlauf mit 1 Rechnungen eingeplant. Es sind bereits 0 zu erstellende Rechnungen in der Warteschlange, die vorher verarbeitet werden.';
 
@@ -64,32 +62,41 @@ describe('Create test data', function() {
         .apply();
     });
   });
-  it('Create product, category and vendor entities', function() {
+
+  it('Create category', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {
       Object.assign(new ProductCategory(), productCategoryJson)
         .setName(productCategoryName)
         .setValue(productCategoryName)
         .apply();
     });
+  });
 
+  it('Create product1', function() {
     Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryName,
       priceListName,
       productName1,
-      productValue1,
+      productName1,
       productType,
       packingInstructionsName
     );
+  });
+
+  it('Create product2', function() {
+    // these are split into multiple "it" blocks as maybe this fixes some stupid ` Cannot read property 'body' of null` error
     Builder.createProductWithPriceAndCUTUAllocationUsingExistingCategory(
       productCategoryName,
       productCategoryName,
       priceListName,
       productName2,
-      productValue2,
+      productName2,
       productType,
       packingInstructionsName
     );
+  });
+  it('Create vendor', function() {
     new BPartner({ name: vendorName })
       .setVendor(true)
       .setVendorPricingSystem(priceSystemName)
@@ -133,21 +140,21 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Create Material Receipt 1', function() {
     cy.selectNthRow(0).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
-    cy.readAllNotifications();
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
+    cy.selectNthRow(0, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
     cy.pressDoneButton();
   });
 
   it('Create Material Receipt 2', function() {
     cy.selectNthRow(1).click();
-    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', true);
-    cy.readAllNotifications();
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', true, true);
+    cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults', false);
+    cy.selectNthRow(0, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
     cy.pressDoneButton();
   });
 
-  it('Go to the referenced Material Receipt and expect 2 rows/ecords', function() {
+  it('Go to the referenced Material Receipt and expect 2 rows/records', function() {
     cy.visitWindow(purchaseOrders.windowId, purchaseOrderRecordId);
     cy.openReferencedDocuments('184');
 
@@ -174,14 +181,12 @@ describe('Create a purchase order and Material Receipts', function() {
   });
 
   it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {
-    cy.get('.header-item-badge.icon-lg i').click(); // notification icon
-    cy.get('.inbox-item-title') // search for text
-      .contains(vendorName)
-      .first()
-      .click();
+    cy.openNotificationWithText(vendorName);
+    // wait until current window is PurchaseInvoice
+    cy.url().should('contain', '/183/');
 
     // hope this is enough for the whole window to load
-    cy.waitForSaveIndicator(false);
+    cy.waitForSaveIndicator();
 
     cy.openAdvancedEdit();
     cy.getStringFieldValue('GrandTotal').then(el => {

@@ -1,6 +1,7 @@
 import { SysConfig } from '../../support/utils/sysconfig';
 import { toggleNotFrequentFilters, selectNotFrequentFilterWidget, applyFilters } from '../../support/functions';
 import { sysconfigs } from '../../page_objects/sysconfig';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('SysConfig Tests', function() {
   it('Filter for a sysconfig entry', function() {
@@ -15,10 +16,10 @@ describe('SysConfig Tests', function() {
     sysconfigs.getRows().should('have.length', 1);
   });
 
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const sysConfigName = `SysConfig ${timestamp}`;
-  const sysConfigValue = `Value ${timestamp}`;
-  const sysConfigDescription = `Description ${timestamp}`;
+  const date = humanReadableNow();
+  const sysConfigName = `SysConfig ${date}`;
+  const sysConfigValue = `Value ${date}`;
+  const sysConfigDescription = `Description ${date}`;
 
   it('Create a sysconfig entry', function() {
     cy.log(`Create Sysconfig with name=${sysConfigName}`);

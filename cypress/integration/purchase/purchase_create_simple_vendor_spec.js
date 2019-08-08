@@ -1,8 +1,9 @@
 import { BPartner } from '../../support/utils/bpartner';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('purchase - simple vendor spec', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const vendorName = `Vendor ${timestamp}`;
+  const date = humanReadableNow();
+  const vendorName = `Vendor ${date}`;
 
   it('Create a vendor with two contacts', function() {
     cy.fixture('purchase/simple_vendor.json').then(vendorJson => {

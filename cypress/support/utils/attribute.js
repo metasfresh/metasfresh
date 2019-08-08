@@ -107,9 +107,8 @@ export class AttributeValue {
 function applyAttribute(attribute) {
   describe(`Create new Attribute ${attribute.name}`, function() {
     cy.visitWindow('260', 'NEW');
-    cy.writeIntoStringField('Name', attribute.name);
-    cy.clearField('Value');
     cy.writeIntoStringField('Value', attribute.value);
+    cy.writeIntoStringField('Name', attribute.name);
     cy.writeIntoStringField('Description', attribute.description);
     cy.selectInListField('AttributeValueType', attribute.attributeValueType);
     cy.setCheckBoxValue('IsInstanceAttribute', attribute.isInstanceAttribute);

@@ -1,14 +1,15 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { Product, ProductCategory } from '../../support/utils/product';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('create new packing instructions ', function() {
-  const timestamp = new Date().getTime();
-  const customerName = `TestBPartnerPackingMaterial ${timestamp}`;
-  const packingMaterialInstruction = `TestPackingMaterialInstruction ${timestamp}`;
-  const productName = `TestProductPackingMaterial ${timestamp}`;
-  const packingMaterial = `TestPackingMaterial ${timestamp}`;
-  const productCategoryName = `ProductCategoryName ${timestamp}`;
-  const productCategoryValue = `ProductNameValue ${timestamp}`;
+  const date = humanReadableNow();
+  const customerName = `TestBPartnerPackingMaterial ${date}`;
+  const packingMaterialInstruction = `TestPackingMaterialInstruction ${date}`;
+  const productName = `TestProductPackingMaterial ${date}`;
+  const packingMaterial = `TestPackingMaterial ${date}`;
+  const productCategoryName = `ProductCategoryName ${date}`;
+  const productCategoryValue = `ProductNameValue ${date}`;
 
   it('Set up product and partner', function() {
     cy.fixture('product/simple_productCategory.json').then(productCategoryJson => {

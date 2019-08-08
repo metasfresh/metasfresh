@@ -1,9 +1,10 @@
 import { DataEntryTab } from '../../support/utils/dataEntryTab';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Reproduce issue https://github.com/metasfresh/metasfresh-webui-frontend/issues/2214', function() {
   it('Create dataEntry group with SeqNo 21', function() {
-    const timestamp = new Date().getTime(); // used in the document names, for ordering
-    const dataEntryTabName = `Group1 ${timestamp}`;
+    const date = humanReadableNow();
+    const dataEntryTabName = `Group1 ${date}`;
 
     new DataEntryTab(dataEntryTabName, 'Business Partner')
       .setTabName('Group1-Tab1')

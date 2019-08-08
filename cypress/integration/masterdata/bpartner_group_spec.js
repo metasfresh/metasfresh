@@ -1,9 +1,10 @@
 import { BPartner } from '../../support/utils/bpartner';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create new bpartner group, https://github.com/metasfresh/metasfresh-e2e/issues/70', function() {
-  const timestamp = new Date().getTime(); // used in the document names, for ordering
-  const GroupTestPartnerName = `GroupTestPartnerName ${timestamp}`;
-  const GroupName = `TestGroup ${timestamp}`;
+  const date = humanReadableNow();
+  const GroupTestPartnerName = `GroupTestPartnerName ${date}`;
+  const GroupName = `TestGroup ${date}`;
   let groupDocumentId;
   let bpartnerID = null;
 
@@ -24,9 +25,9 @@ describe('Create new bpartner group, https://github.com/metasfresh/metasfresh-e2
   //create bpartnergroup
   it('Create bpartnergroup', function() {
     cy.visitWindow('192', 'NEW', 'newGroupId');
-    cy.writeIntoStringField('Name', `TestGroup ${timestamp}`, false);
+    cy.writeIntoStringField('Name', `TestGroup ${date}`, false);
     cy.clearField('Value');
-    cy.writeIntoStringField('Value', `TestGroup ${timestamp}`, false);
+    cy.writeIntoStringField('Value', `TestGroup ${date}`, false);
     cy.get('@newGroupId').then(groupId => {
       groupDocumentId = groupId.documentId;
     });

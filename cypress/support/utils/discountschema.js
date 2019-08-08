@@ -6,13 +6,6 @@ export class DiscountSchema {
     this.discountBreaks = [];
   }
 
-  apply() {
-    cy.log(`DiscountSchema - apply - START (name=${this.name})`);
-    applyDiscountSchema(this);
-    cy.log(`DiscountSchema - apply - END (name=${this.name})`);
-    return this;
-  }
-
   setValidFrom(validFrom) {
     cy.log(`DiscountSchemaBuilder - set validFrom = ${validFrom}`);
     this.validFrom = validFrom;
@@ -28,6 +21,13 @@ export class DiscountSchema {
   addDiscountBreak(discountBreak) {
     cy.log(`DiscountSchemaBuilder - add discountBreak = ${discountBreak}`);
     this.discountBreaks.push(discountBreak);
+    return this;
+  }
+
+  apply() {
+    cy.log(`DiscountSchema - apply - START (name=${this.name})`);
+    applyDiscountSchema(this);
+    cy.log(`DiscountSchema - apply - END (name=${this.name})`);
     return this;
   }
 }

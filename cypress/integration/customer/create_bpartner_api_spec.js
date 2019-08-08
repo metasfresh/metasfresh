@@ -1,8 +1,9 @@
 import { BPartner } from '../../support/utils/bpartner';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create new BPartner', function() {
-  const timestamp = new Date().getTime();
-  const customerName = `Sales Order Test ${timestamp}`;
+  const date = humanReadableNow();
+  const customerName = `Sales Order Test ${date}`;
   let bpartnerID = null;
 
   before(function() {

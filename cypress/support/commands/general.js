@@ -248,7 +248,14 @@ function performDocumentViewAction(windowId, documentViewAction, documentIdAlias
       responseTimeout: 20000,
     })
     .then(xhr => {
-      return { documentId: xhr.response.body[0].id };
+      expect(xhr.status).to.eq(200);
+      expect(xhr.response).to.not.be.empty;
+      expect(xhr.response.body[0]).to.not.be.empty;
+
+      cy.log('frist!: ' + JSON.stringify(xhr));
+      cy.log('frist! x2: ' + JSON.stringify(xhr));
+      cy.log('frist[0]: ' + JSON.stringify(xhr.response.body[0]));
+      return cy.wrap({ documentId: xhr.response.body[0].id });
     })
     .as(documentIdAliasName);
 }
@@ -381,6 +388,16 @@ Cypress.Commands.add('getNotificationModal', optionalText => {
     }
   });
 });
+/**
+ * Opens the notification with the given text
+ */
+Cypress.Commands.add('openNotificationWithText', text => {
+  cy.get('.header-item-badge.icon-lg i', { timeout: 10000 }).click();
+  cy.get('.inbox-item-unread .inbox-item-title')
+    .filter(':contains("' + text + '")')
+    .first()
+    .click();
+});
 
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
@@ -441,37 +458,48 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
 });
 
 Cypress.Commands.add('getCurrentWindowRecordId', () => {
-  describe('Select the current record ID from the url', function() {
-    return cy.url().then(ulrr => {
-      // noinspection UnnecessaryLocalVariableJS
-      const currentRecordId = ulrr.split('/').pop();
-      return currentRecordId;
-    });
+  return cy.url().then(ulrr => {
+    // noinspection UnnecessaryLocalVariableJS
+    const currentRecordId = ulrr.split('/').pop();
+    return currentRecordId;
   });
 });
 
 Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
-  describe('Reading the total amount', function() {
-    return cy.get('.header-breadcrumb-sitename').then(function(si) {
-      // noinspection UnnecessaryLocalVariableJS
-      const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
-      return newTotalAmount;
-    });
+  cy.waitForSaveIndicator();
+  return cy.get('.header-breadcrumb-sitename').then(function(si) {
+    // noinspection UnnecessaryLocalVariableJS
+    const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
+    return newTotalAmount;
   });
 });
 
 Cypress.Commands.add('waitUntilProcessIsFinished', () => {
-  describe('Wait until a process id finished', function() {
-    cy.wait(10000);
-  });
+  cy.wait(10000);
 });
 
 Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
-  describe('Wait until everything is saved and all requests are finished', function() {
-    if (expectIndicator) {
-      cy.get('.indicator-pending').should('exist');
-    }
-    cy.get('.indicator-pending').should('not.exist');
-    cy.get('.indicator-saved').should('exist');
-  });
+  if (expectIndicator) {
+    cy.get('.indicator-pending').should('exist');
+  }
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
+  cy.get('.indicator-pending').should('not.exist');
+  cy.get('.indicator-saved').should('exist');
+});
+
+Cypress.Commands.add('selectNotificationContaining', expectedValue => {
+  cy.get('.header-item-badge.icon-lg i').click(); // notification icon
+  return cy
+    .get('.inbox-item-title') // search for text
+    .contains(expectedValue)
+    .first();
+});
+
+Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWindowID) => {
+  cy.selectNotificationContaining(expectedValue).click();
+  // wait until current window is "destinationWindowID"
+  cy.url().should('contain', `/${destinationWindowID}`);
+  // hope this is enough for the whole window to load
+  cy.waitForSaveIndicator();
 });
