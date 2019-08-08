@@ -183,7 +183,7 @@ public class DeliveredDataLoader
 
 			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys
 					.create(
-							inoutLine.getMovementQty(), productId,
+							iciol.getQtyDelivered(), productId,
 							iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoId(iciol.getC_UOM_ID()))
 					.negateIf(negateQtys);
 
@@ -210,7 +210,7 @@ public class DeliveredDataLoader
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(
-							icIolAssociationRecord.getM_InOutLine().getMovementQty(),
+							icIolAssociationRecord.getQtyDelivered(),
 							stockUomId)
 					.negateIf(negateQtys);
 			deliveredQtyItem.qtyInStockUom(qtyInStockUom);

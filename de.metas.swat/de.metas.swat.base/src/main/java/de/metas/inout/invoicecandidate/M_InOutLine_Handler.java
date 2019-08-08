@@ -153,7 +153,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 * @return created invoice candidates; might be empty, if there was no need to create any invoice candidate
+	 * Creates a list of invoice candidates; the list often contains 1 element, but for example
+	 * <li>might also be empty, if there was no need to create any invoice candidate
+	 * <li>or might have multiple items in case of a packaging inOutLine where the related material lists have different payment terms.
 	 */
 	@VisibleForTesting
 	List<I_C_Invoice_Candidate> createCandidatesForInOutLine(@NonNull final I_M_InOutLine inOutLine)
@@ -266,117 +268,109 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
-			@NonNull final I_M_InOutLine inOutLine,
+			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable BigDecimal forcedQtyToAllocate)
 	{
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final I_M_InOut inOut = create(inOutLine.getM_InOut(), I_M_InOut.class);
-		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class, inOutLine);
+		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
+		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
 		// extractQtyDelivered() depends on the C_PaymentTerm to be set
-		ic.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 
-		TableRecordCacheLocal.setReferencedValue(ic, inOutLine);
-		ic.setIsPackagingMaterial(inOutLine.isPackagingMaterial());
+		TableRecordCacheLocal.setReferencedValue(icRecord, inOutLineRecord);
+		icRecord.setIsPackagingMaterial(inOutLineRecord.isPackagingMaterial());
 
 		// order & delivery stuff
 		final boolean callerCanCreateAdditionalICs = true; // our calling code will create further ICs if needed
-		setOrderedData(ic, forcedQtyToAllocate, callerCanCreateAdditionalICs);
-		if (ic.getQtyOrdered().signum() == 0)
+		setOrderedData(icRecord, forcedQtyToAllocate, callerCanCreateAdditionalICs);
+		if (icRecord.getQtyOrdered().signum() == 0)
 		{
 			return null; // we won't create a new IC that has qtyOrdered=zero right from the start
 		}
 
 		//
 		// Product & Charge - product and its UOM are needed when setting the delivered data
-		final ProductId productId = ProductId.ofRepoId(inOutLine.getM_Product_ID());
-		final int chargeId = inOutLine.getC_Charge_ID();
+		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
+		final int chargeId = inOutLineRecord.getC_Charge_ID();
 		{
-			ic.setM_Product_ID(productId.getRepoId());
-			ic.setC_Charge_ID(chargeId);
+			icRecord.setM_Product_ID(productId.getRepoId());
+			icRecord.setC_Charge_ID(chargeId);
 		}
-		ic.setC_UOM_ID(inOutLine.getC_UOM_ID());
+		icRecord.setC_UOM_ID(inOutLineRecord.getC_UOM_ID());
 
 		// we use our nice&generic code to set the "real" delivered data, and for that, we need the IC to be saved
-		//setDeliveredData(ic);
+		// setDeliveredData(ic);
 		// .. however, we need the movementQty to be present in the IC for createCandidatesForInOutLine to work:
-		ic.setQtyDelivered(ic.getQtyOrdered());
+		icRecord.setQtyDelivered(icRecord.getQtyOrdered());
 
-		final ClientId clientId = ClientId.ofRepoId(inOutLine.getAD_Client_ID());
+		final ClientId clientId = ClientId.ofRepoId(inOutLineRecord.getAD_Client_ID());
 
-		final OrgId orgId = OrgId.ofRepoId(inOutLine.getAD_Org_ID());
-		ic.setAD_Org_ID(orgId.getRepoId());
+		final OrgId orgId = OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID());
+		icRecord.setAD_Org_ID(orgId.getRepoId());
 
-		ic.setC_ILCandHandler(getHandlerRecord());
+		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		//
 		// Handle Transaction Type: Shipment / Receipt
 		final boolean isSOTrx = inOut.isSOTrx();
-		ic.setIsSOTrx(isSOTrx); // 05265
-
-		//
-		// Handler Customer/Verdor Returns
-		BigDecimal qtyMultiplier = ONE;
-		if (inOutBL.isReturnMovementType(inOut.getMovementType()))
-		{
-			qtyMultiplier = qtyMultiplier.negate();
-		}
+		icRecord.setIsSOTrx(isSOTrx); // 05265
 
 		//
 		// Set the bill related details
 		{
-			setBPartnerData(ic, inOutLine);
+			setBPartnerData(icRecord, inOutLineRecord);
 		}
 
-		ic.setQtyToInvoice(ZERO); // to be computed
+		icRecord.setQtyToInvoice(ZERO); // to be computed
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(ic, inOutLine);
+		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecord);
 
 		//
 		// Description
-		ic.setDescription(inOut.getDescription());
+		icRecord.setDescription(inOut.getDescription());
 
 		//
 		// Set invoice rule form linked order (if exists)
 		if (inOut.getC_Order_ID() > 0)
 		{
-			ic.setInvoiceRule(inOut.getC_Order().getInvoiceRule()); // the rule set in order
+			icRecord.setInvoiceRule(inOut.getC_Order().getInvoiceRule()); // the rule set in order
 		}
 		// Set Invoice Rule from BPartner
 		else
 		{
-			final I_C_BPartner billBPartner = bpartnerDAO.getById(ic.getBill_BPartner_ID());
+			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
 			final String invoiceRule = billBPartner.getInvoiceRule();
 			if (!Check.isEmpty(invoiceRule))
 			{
-				ic.setInvoiceRule(invoiceRule);
+				icRecord.setInvoiceRule(invoiceRule);
 			}
 			else
 			{
-				ic.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
+				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 			}
 		}
 
 		//
 		// Set C_Activity from Product (07442)
 		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
-		ic.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 		//
 		// Set C_Tax from Product (07442)
-		final Properties ctx = getCtx(inOutLine);
+		final Properties ctx = getCtx(inOutLineRecord);
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
 				ctx,
-				ic,
+				icRecord,
 				taxCategoryId,
 				productId.getRepoId(),
 				shipDate,
@@ -384,33 +378,50 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				isSOTrx);
-		ic.setC_Tax_ID(taxId);
+		icRecord.setC_Tax_ID(taxId);
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
-		saveRecord(ic);
+		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLine.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
-		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(ic, attributes);
+		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
 
 		//
 		// Update InOut Line and flag it as Invoice Candidate generated
-		inOutLine.setIsInvoiceCandidate(true);
-		saveRecord(inOutLine);
+		inOutLineRecord.setIsInvoiceCandidate(true);
+		saveRecord(inOutLineRecord);
 
 		//
 		// Create IC-IOL association (07969)
 		// Even if our IC is directly linked to M_InOutLine (by AD_Table_ID/Record_ID),
 		// we need this association in order to let our engine know this and create the M_MatchInv records.
-		final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, ic);
-		iciol.setC_Invoice_Candidate(ic);
-		Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+		final I_C_InvoiceCandidate_InOutLine iciol = newInstance(I_C_InvoiceCandidate_InOutLine.class, icRecord);
+		if (icRecord.isPackagingMaterial())
+		{
+			// icRecord might be one of many Ics that are associated with inOutLineRecord
+			iciol.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
+			iciol.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
+			iciol.setC_UOM_ID(icRecord.getC_UOM_ID());
 
-		return ic;
+			// this is a bit hacky; we might have negated qtyOrdered; in that case, we need to re-negate it here back to the way it was
+			final BigDecimal qtyMultiplier = getQtyMultiplier(icRecord);
+			iciol.setQtyDelivered(icRecord.getQtyOrdered().multiply(qtyMultiplier));
+			iciol.setQtyDeliveredInUOM_Nominal(icRecord.getQtyEntered().multiply(qtyMultiplier));
+
+			saveRecord(iciol);
+		}
+		else
+		{
+			// the common case; icRecord is the only one associated with inOutLineRecord; and inOutLineRecord *might* have a catch quantity
+			iciol.setC_Invoice_Candidate(icRecord);
+			Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLineRecord);
+		}
+		return icRecord;
 	}
 
 	@Override

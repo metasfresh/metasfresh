@@ -145,6 +145,7 @@ class InvoiceCandidateRecordServiceTest
 		final I_C_InvoiceCandidate_InOutLine icIol = newInstance(I_C_InvoiceCandidate_InOutLine.class);
 		icIol.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
 		icIol.setM_InOutLine_ID(iol.getM_InOutLine_ID());
+		icIol.setQtyDelivered(iol.getMovementQty());
 		icIol.setQtyDeliveredInUOM_Nominal(FOUR_HUNDRET);
 		icIol.setQtyDeliveredInUOM_Catch(FOUR_HUNDRET_TWENTY);
 		icIol.setC_UOM_ID(iol.getC_UOM_ID());
@@ -164,6 +165,7 @@ class InvoiceCandidateRecordServiceTest
 		final I_C_InvoiceCandidate_InOutLine icIol2 = newInstance(I_C_InvoiceCandidate_InOutLine.class);
 		icIol2.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
 		icIol2.setM_InOutLine_ID(iol2.getM_InOutLine_ID());
+		icIol2.setQtyDelivered(iol2.getMovementQty());
 		icIol2.setQtyDeliveredInUOM_Nominal(TWO_HUNDRET);
 		icIol2.setQtyDeliveredInUOM_Catch(ONE_HUNDRET_NINETY);
 		icIol2.setC_UOM_ID(iol2.getC_UOM_ID());

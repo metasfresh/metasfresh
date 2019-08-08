@@ -256,6 +256,7 @@ class DeliveredQtysLoaderTest
 		icIol1.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
 		icIol1.setM_InOutLine_ID(iol.getM_InOutLine_ID());
 		icIol1.setC_UOM_ID(iol.getC_UOM_ID());
+		icIol1.setQtyDelivered(iol.getMovementQty());
 		icIol1.setQtyDeliveredInUOM_Nominal(FOUR_HUNDRET); // shall be converted to 40 in IC-UOM
 		icIol1.setQtyDeliveredInUOM_Catch(FOUR_HUNDRET_TWENTY); // shall be converted to 42 in IC-UOM
 		icIol1.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());
@@ -275,6 +276,7 @@ class DeliveredQtysLoaderTest
 		icIol2.setC_Invoice_Candidate_ID(icRecord.getC_Invoice_Candidate_ID());
 		icIol2.setM_InOutLine_ID(iol2.getM_InOutLine_ID());
 		icIol2.setC_UOM_ID(iol2.getC_UOM_ID());
+		icIol2.setQtyDelivered(iol2.getMovementQty());
 		icIol2.setQtyDeliveredInUOM_Nominal(TWO_HUNDRET); // shall be converted to 20 in IC-UOM
 		icIol2.setQtyDeliveredInUOM_Catch(ONE_HUNDRET_NINETY); // shall be converted to 19 in IC-UOM
 		icIol2.setC_UOM_ID(shipmentUomRecord.getC_UOM_ID());

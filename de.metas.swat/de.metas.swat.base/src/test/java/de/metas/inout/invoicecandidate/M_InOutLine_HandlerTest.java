@@ -608,6 +608,7 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest.setDeliveredData(ic);
 
 		assertThat(ic.isPackagingMaterial()).isTrue();
+		assertThat(ic.getQtyOrdered()).isEqualByComparingTo(TEN.negate());
 		assertThat(ic.getQtyDelivered()).isEqualByComparingTo(TEN.negate()); // packagingInOutLine only has movementQty=10 so the IC's value can't be higher
 	}
 
@@ -701,6 +702,7 @@ public class M_InOutLine_HandlerTest
 		);
 	}
 
+	// create material inOutLine and link if to the test's packing inOutLine
 	private I_M_InOutLine createMaterialInOutLine(
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal qtyEnteredTU)

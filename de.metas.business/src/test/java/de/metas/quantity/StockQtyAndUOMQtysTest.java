@@ -4,6 +4,7 @@ import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -85,8 +86,9 @@ public class StockQtyAndUOMQtysTest
 				.uomQty(Quantity.of(TEN, stockUomRecord))
 				.build();
 
-		assertThatThrownBy(() -> StockQtyAndUOMQtys.validate(qtys))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("StockQty and uomQty have the same UOM, but different amounts");
+		// this shall *not* throw an exception
+		final StockQtyAndUOMQty result = StockQtyAndUOMQtys.validate(qtys);
+
+		assertThat(result).isSameAs(qtys);
 	}
 }

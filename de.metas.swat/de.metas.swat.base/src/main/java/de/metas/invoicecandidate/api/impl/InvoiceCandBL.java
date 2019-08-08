@@ -1937,6 +1937,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		iciol.setM_InOutLine(inOutLine);
 		// iciol.setQtyInvoiced(QtyInvoiced); // will be set during invoicing to keep track of which movementQty is already invoiced in case of partial invoicing
 
+		iciol.setQtyDelivered(inOutLine.getMovementQty());
+
 		if (inOutLine.getCatch_UOM_ID() > 0)
 		{
 			iciol.setC_UOM_ID(inOutLine.getCatch_UOM_ID());

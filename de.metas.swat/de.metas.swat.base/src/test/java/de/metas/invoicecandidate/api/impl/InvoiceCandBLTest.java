@@ -421,7 +421,6 @@ public class InvoiceCandBLTest
 		icRecord.setQtyDelivered(qtyDelivered);
 		icRecord.setQtyWithIssues(qtyWithIssues);
 		icRecord.setQualityDiscountPercent(qualityDiscountPercent); // shall be ignored, because it's not used in this method at all..QtyWithIssues is used instead
-		icRecord.setQualityDiscountPercent_Override(qualityDiscountPercent_Override);
 		save(icRecord);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(icRecord);
@@ -457,10 +456,15 @@ public class InvoiceCandBLTest
 		iol2.setIsInDispute(true);
 		save(iol2);
 
+
 		final I_C_InvoiceCandidate_InOutLine icIol2 = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
 		icIol2.setC_Invoice_Candidate(icRecord);
 		invoiceCandBL.updateICIOLAssociationFromIOL(icIol2, iol2);
 		save(icIol);
+
+		// only *now* we set this override, because those icIols would have reset it anyways
+		icRecord.setQualityDiscountPercent_Override(qualityDiscountPercent_Override);
+		save(inOut);
 
 		// invoke the stuff under test
 		final InvoiceCandidateRecordService invoiceCandidateRecordService = new InvoiceCandidateRecordService();

@@ -252,10 +252,8 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
 
 	/**
@@ -264,7 +262,7 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
 	public java.math.BigDecimal getQtyDelivered();
 

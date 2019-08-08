@@ -15,7 +15,7 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -604452476L;
+	private static final long serialVersionUID = 394758368L;
 
     /** Standard Constructor */
     public X_C_InvoiceCandidate_InOutLine (Properties ctx, int C_InvoiceCandidate_InOutLine_ID, String trxName)
@@ -190,7 +190,8 @@ public class X_C_InvoiceCandidate_InOutLine extends org.compiere.model.PO implem
 	@Override
 	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
 	{
-		throw new IllegalArgumentException ("QtyDelivered is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
 
 	/** Get Gelieferte Menge.
 		@return Gelieferte Menge
