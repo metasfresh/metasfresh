@@ -250,8 +250,8 @@ import lombok.NonNull;
 	{
 		StockQtyAndUOMQty qtyReceived = StockQtyAndUOMQtys
 				.create(
-						ProductId.ofRepoId(iol.getM_Product_ID()), iol.getMovementQty(),
-						UomId.ofRepoId(iol.getCatch_UOM_ID()), iol.getQtyDeliveredCatch());
+						iol.getMovementQty(), ProductId.ofRepoId(iol.getM_Product_ID()),
+						iol.getQtyDeliveredCatch(), UomId.ofRepoId(iol.getCatch_UOM_ID()));
 
 		// Negate the qtyReceived if this is an material return,
 		// because we want to have the qtyReceived as an absolute value.

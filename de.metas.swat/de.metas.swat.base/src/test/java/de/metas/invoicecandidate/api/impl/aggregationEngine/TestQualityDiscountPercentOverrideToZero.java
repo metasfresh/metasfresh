@@ -55,8 +55,8 @@ public abstract class TestQualityDiscountPercentOverrideToZero extends AbstractT
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		final StockQtyAndUOMQty qtysDelivered_90 = StockQtyAndUOMQtys.create(productId, new BigDecimal("90"), uomId, new BigDecimal("900"));
-		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(productId, TEN, uomId, HUNDRET);
+		final StockQtyAndUOMQty qtysDelivered_90 = StockQtyAndUOMQtys.create(new BigDecimal("90"), productId, new BigDecimal("900"), uomId);
+		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo

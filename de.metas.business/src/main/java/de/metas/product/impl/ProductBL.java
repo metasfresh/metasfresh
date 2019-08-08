@@ -111,7 +111,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public I_C_UOM getStockingUOM(@NonNull final I_M_Product product)
+	public I_C_UOM getStockUOM(@NonNull final I_M_Product product)
 	{
 		return Services.get(IUOMDAO.class).getById(product.getC_UOM_ID());
 	}
@@ -121,7 +121,7 @@ public final class ProductBL implements IProductBL
 	{
 		// we don't know if the product of productId was already committed, so we can't load it out-of-trx
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		return Check.assumeNotNull(getStockingUOM(product), "The uom for productId={} may not be null", productId);
+		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
 	/**
@@ -146,7 +146,7 @@ public final class ProductBL implements IProductBL
 			return BigDecimal.ZERO;
 		}
 
-		final I_C_UOM stockingUom = getStockingUOM(product);
+		final I_C_UOM stockingUom = getStockUOM(product);
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"

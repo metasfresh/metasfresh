@@ -93,7 +93,7 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 		final BigDecimal qtyPicked = shipmentScheduleAllocDAO.retrieveQtyPickedAndUnconfirmed(shipmentSchedule);
-		final I_C_UOM stockUOMRecord = productBL.getStockingUOM(ProductIds.ofRecord(shipmentSchedule));
+		final I_C_UOM stockUOMRecord = productBL.getStockUOM(ProductIds.ofRecord(shipmentSchedule));
 
 		return Quantity.of(qtyPicked, stockUOMRecord);
 	}

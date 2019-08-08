@@ -879,7 +879,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public UomId getUomIdOfProduct(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
-		return productBL.getStockingUOMId(sched.getM_Product_ID());
+		return productBL.getStockUOMId(sched.getM_Product_ID());
 	}
 
 	@Override

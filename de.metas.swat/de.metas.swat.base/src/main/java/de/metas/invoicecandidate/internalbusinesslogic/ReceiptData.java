@@ -66,8 +66,8 @@ public class ReceiptData
 				qtyTotalInStockUom.getUOM().getStdPrecision());
 
 		return StockQtyAndUOMQtys.create(
-				qtysWithIssues.getProductId(), qtyWithIssuesInStockUomEffective,
-				qtyTotal.getUomId(), qtyWithIssuesEffective);
+				qtyWithIssuesInStockUomEffective, qtysWithIssues.getProductId(),
+				qtyWithIssuesEffective, qtyTotal.getUomId());
 	}
 
 	public StockQtyAndUOMQty computeInvoicableQtyDelivered(@Nullable final Percent qualityDiscountOverride)

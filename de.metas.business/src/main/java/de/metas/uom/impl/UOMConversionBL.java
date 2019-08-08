@@ -150,7 +150,7 @@ public class UOMConversionBL implements IUOMConversionBL
 	{
 		// Get Product's stocking UOM
 		final ProductId productId = conversionCtx.getProductId();
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockUOM(productId);
 
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
@@ -162,7 +162,7 @@ public class UOMConversionBL implements IUOMConversionBL
 		final I_C_UOM sourceUOM = quantity.getUOM();
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uomTo = Services.get(IProductBL.class).getStockUOM(productId);
 		final BigDecimal qty = convertQty(conversionCtx, sourceQty, sourceUOM, uomTo);
 		return new Quantity(qty, uomTo, sourceQty, sourceUOM);
 	}

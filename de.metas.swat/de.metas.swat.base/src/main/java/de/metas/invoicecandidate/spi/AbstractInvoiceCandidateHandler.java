@@ -1,7 +1,5 @@
 package de.metas.invoicecandidate.spi;
 
-
-
 /*
  * #%L
  * de.metas.swat.base
@@ -31,6 +29,9 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceRule;
+import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.Money;
@@ -80,14 +81,21 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	}
 
 	@Override
-	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate ic)
+	public void setLineNetAmt(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
-		final Quantity openQty = invoiceCandBL.computeOpenQty(ic);
-		final Money netAmtToInvoice = computeNetAmtUsingQty(ic, openQty);
+		// get the quantity that would/could be invoiced "right now"
+		// (note: for negative qtyOrdered the result is negative)
+		final ToInvoiceData imediateInvoiceData = invoiceCandidateRecordService
+				.ofRecord(icRecord)
+				.changeInvoiceRule(InvoiceRule.Immediate)
+				.computeToInvoiceData();
+		final Quantity openQty = imediateInvoiceData.getQtysEffective().getUOMQty();
 
-		ic.setLineNetAmt(netAmtToInvoice.toBigDecimal());
+		final Money netAmtToInvoice = computeNetAmtUsingQty(icRecord, openQty);
+
+		icRecord.setLineNetAmt(netAmtToInvoice.toBigDecimal());
 	}
 
 	private Money computeNetAmtUsingQty(
@@ -95,10 +103,11 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 			@NonNull final Quantity qty)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final ProductPrice priceActual = invoiceCandBL.getPriceActual(ic);
 
-		return SpringContextHolder.instance.getBean(MoneyService.class).multiply(qty, priceActual);
+		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+
+		return moneyService.multiply(qty, priceActual);
 	}
 
 	/**

@@ -272,24 +272,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void updateProcessedFlag(I_C_Invoice_Candidate candidate);
 
-//	/**
-//	 * Convert the given <code>qty</code> or amount to the given <code>ic</code>'s price UOM.
-//	 * <p>
-//	 * E.g. if we have 10 pieces of 0,5kg items priced by kilogram, return 5.
-//	 * <p>
-//	 * <b>SIDE-FFECT (gh #428):</b> if the qty can't be converted due to a missing UOM conversion rule,<br>
-//	 * then return <code>null</code>, set the given <code>ic</code>'s <code>IsError='Y'</code> and append an info-message to the <code>ic</code>'s <code>ErrorMsg</code>.<br>
-//	 * But don't save the <code>ic</code>.
-//	 *
-//	 * @param qty the "raw" Qty in terms of the product UOM
-//	 * @param ic the invoice candidate whose price UOM, product and product UOM we use for the conversion.
-//	 *
-//	 * @return the "price" qty. If the given <code>ic</code>'s product and price UOM is the same or if either product or price UOM is not set, then return the given <code>qty</code>.
-//	 *
-//	 * @see de.metas.uom.IUOMConversionBL#convertFromProductUOM(Properties, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)
-//	 */
-//	Quantity convertToPriceUOM(Quantity qtyInUom, I_C_Invoice_Candidate ic);
-
 	/**
 	 * Resets {@link I_C_Invoice_Candidate#COLUMNNAME_IsError} field together with some other depending fields:
 	 * <ul>
@@ -325,22 +307,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	void setError(I_C_Invoice_Candidate ic, String errorMsg, I_AD_Note note, boolean askForDeleteRegeneration);
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
-
-//	/**
-//	 * Update invoice candidate's QtyWithIssues and depending cols by taking it from inout lines. Updates
-//	 * <ul>
-//	 * <li>QtyWithIssues
-//	 * <li>QualityDiscountPercent
-//	 * <li>QualityDiscountPercent_Override to <code>null</code>, if <code>QualityDiscountPercent</code> was changed
-//	 * <li>IsInDispute to <code>true</code> if <code>QualityDiscountPercent</code> was changed and the new value is <b>not</b> zero.
-//	 * </ul>
-//	 *
-//	 * NOTE: this method is NOT saving the invoice candidate.
-//	 *
-//	 * @param ic
-//	 * @task 06502
-//	 */
-//	void updateQtyWithIssues(I_C_Invoice_Candidate ic);
 
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
@@ -451,20 +417,11 @@ public interface IInvoiceCandBL extends ISingletonService
 	 */
 	void closePartiallyInvoiced_InvoiceCandidates(I_C_Invoice invoice);
 
-	/**
-	 * Compute the qty (in the ic's UOM) that was ordered but not yet invoiced.<br>
-	 * Also account for negative ordered quantities.<br>
-	 * The result does not depend on the given ic's invoice rule.
-	 */
-	Quantity computeOpenQty(I_C_Invoice_Candidate ic);
-
 	void markInvoiceCandInDisputeForReceiptLine(I_M_InOutLine inOutLine);
 
 	void set_DateToInvoice_DefaultImpl(I_C_Invoice_Candidate ic);
 
 	OptionalBoolean extractProcessedOverride(I_C_Invoice_Candidate candidate);
-
-	StockQtyAndUOMQty computeQtyDeliveredFromShipments(I_C_Invoice_Candidate ic);
 
 	void updateICIOLAssociationFromIOL(I_C_InvoiceCandidate_InOutLine iciol, org.compiere.model.I_M_InOutLine inOutLine);
 }

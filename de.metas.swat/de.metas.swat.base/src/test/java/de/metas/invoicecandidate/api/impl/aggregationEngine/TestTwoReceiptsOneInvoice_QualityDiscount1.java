@@ -89,12 +89,12 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
 		{
-			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(productId, new BigDecimal("3"), uomId, new BigDecimal("30"));
+			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_3, inOutDocumentNo + "_1");
 
-			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(productId, new BigDecimal("5"), uomId, new BigDecimal("50"));
+			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(new BigDecimal("5"), productId, new BigDecimal("50"), uomId);
 			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_5, inOutDocumentNo + "_2");
 			iol12_five_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol12_five_disp);
@@ -104,11 +104,11 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 
 		{
 			final String inOutDocumentNo = "2";
-			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(productId, new BigDecimal("10"), uomId, new BigDecimal("100"));
+			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), uomId);
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_10, inOutDocumentNo + "_1");
 
-			final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(productId, new BigDecimal("20"), uomId, new BigDecimal("200"));
+			final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(new BigDecimal("20"), productId, new BigDecimal("200"), uomId);
 			iol22_twenty_disp = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_20, inOutDocumentNo + "_2");
 			iol22_twenty_disp.setIsInDispute(true);
 			InterfaceWrapperHelper.save(iol22_twenty_disp);
@@ -158,11 +158,11 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 
 		final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
 		assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-		assertThat(icIol11.getQtyInvoiced().getUomQty().toBigDecimal(), comparesEqualTo(THIRTY));
+		assertThat(icIol11.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(THIRTY));
 
 		final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il1, iol21_ten);
 		assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-		assertThat(icIol21.getQtyInvoiced().getUomQty().toBigDecimal(), comparesEqualTo(HUNDRET));
+		assertThat(icIol21.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(HUNDRET));
 
 		//
 		// checking the in-dispute-iols

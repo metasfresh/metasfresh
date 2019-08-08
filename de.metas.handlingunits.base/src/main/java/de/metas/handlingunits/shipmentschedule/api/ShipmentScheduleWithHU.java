@@ -195,8 +195,8 @@ public class ShipmentScheduleWithHU
 		final UomId catchUomIdOrNull = UomId.ofRepoIdOrNull(allocRecord.getCatch_UOM_ID());
 
 		final StockQtyAndUOMQty stockQtyAndUOMQty = StockQtyAndUOMQtys.create(
-				productId, allocRecord.getQtyPicked(),
-				catchUomIdOrNull, allocRecord.getQtyDeliveredCatch());
+				allocRecord.getQtyPicked(), productId,
+				allocRecord.getQtyDeliveredCatch(), catchUomIdOrNull);
 
 		this.pickedqty = stockQtyAndUOMQty.getStockQty();
 		this.catchQty = stockQtyAndUOMQty.getUOMQtyOpt();
@@ -425,9 +425,9 @@ public class ShipmentScheduleWithHU
 			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 			final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
-			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQtys.createConvertToStockUom(
-					ProductIds.ofRecord(shipmentSchedule),
+			final StockQtyAndUOMQty stockQtyAndCatchQty = StockQtyAndUOMQtys.createConvert(
 					pickedqty,
+					ProductIds.ofRecord(shipmentSchedule),
 					shipmentScheduleBL.getCatchQtyOverride(shipmentSchedule).orElse(null));
 
 			shipmentScheduleQtyPicked = create(

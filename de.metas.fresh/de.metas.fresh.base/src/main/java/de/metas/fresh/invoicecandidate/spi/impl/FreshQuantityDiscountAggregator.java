@@ -215,7 +215,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 			final List<IInvoiceLineRW> originalInvoiceLineRWs = invoiceCandAggregate.getLinesFor(candidate);
 			final IInvoiceLineRW originalInvoiceLineRW = originalInvoiceLineRWs.get(0);
 
-			final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(ProductId.ofRepoId(candidate.getM_Product_ID()), qtyQualityDiscount, UomId.ofRepoId(candidate.getC_UOM_ID()));
+			final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyQualityDiscount, ProductId.ofRepoId(candidate.getM_Product_ID()), UomId.ofRepoId(candidate.getC_UOM_ID()));
 
 			//
 			// Adjust the original invoice line add let it include our qty with issues.
@@ -257,9 +257,9 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	{
 		final BigDecimal qtyToInvoice = qtyDiscount.negate();
 
-		final StockQtyAndUOMQty stockQtyAndUOMQtyToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(
-				ProductId.ofRepoId(candidate.getM_Product_ID()),
+		final StockQtyAndUOMQty stockQtyAndUOMQtyToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(
 				qtyToInvoice,
+				ProductId.ofRepoId(candidate.getM_Product_ID()),
 				UomId.ofRepoId(candidate.getC_UOM_ID()));
 
 		final ProductPrice priceActual = invoiceCandBL.getPriceActual(candidate);

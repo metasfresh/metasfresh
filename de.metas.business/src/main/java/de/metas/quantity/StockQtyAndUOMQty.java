@@ -13,7 +13,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -25,6 +27,7 @@ public class StockQtyAndUOMQty
 	Quantity stockQty;
 
 	/** Quantity in a "parallel" UOM. Note that often there is no fix UOM conversion rule between this quantity and {@link #getStockingQty()}. */
+	@Getter(AccessLevel.NONE)
 	Quantity uomQty;
 
 	@Builder(toBuilder = true)
@@ -41,11 +44,12 @@ public class StockQtyAndUOMQty
 
 	@JsonIgnore
 	public Optional<Quantity> getUOMQtyOpt()
-	{// TODO consider getting rid of optional altogether
+	{
 		return Optional.ofNullable(uomQty);
 	}
 
-	public Quantity getUomQty()
+	@JsonProperty("uomQty")
+	public Quantity getUOMQty()
 	{
 		return assumeNotNull(uomQty, "uomQty may not be null; this={}", this);
 	}
@@ -106,12 +110,12 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty minUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
 	{
-		return this.getUomQty().compareTo(qtysToCompare.getUomQty()) <= 0 ? this : qtysToCompare;
+		return this.getUOMQty().compareTo(qtysToCompare.getUOMQty()) <= 0 ? this : qtysToCompare;
 	}
 
 	public StockQtyAndUOMQty maxUomQty(@NonNull final StockQtyAndUOMQty qtysToCompare)
 	{
-		return this.getUomQty().compareTo(qtysToCompare.getUomQty()) >= 0 ? this : qtysToCompare;
+		return this.getUOMQty().compareTo(qtysToCompare.getUOMQty()) >= 0 ? this : qtysToCompare;
 	}
 
 	public StockQtyAndUOMQty multiply(@NonNull final BigDecimal factor)

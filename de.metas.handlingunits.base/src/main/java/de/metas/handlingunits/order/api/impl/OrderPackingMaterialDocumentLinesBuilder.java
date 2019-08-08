@@ -67,7 +67,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		this.order = order;
 	}
 
-	public final void addAllOrderLinesFromOrder()
+	public void addAllOrderLinesFromOrder()
 	{
 		// note that we want all because there might be existing inactive packaging lines to reuse
 		final List<I_C_OrderLine> orderLinesAll = retrieveAllOrderLinesFromOrder();
@@ -111,7 +111,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	 * They might eventually be removed in {@link #create()}, if they don't get new quantities assigned from the builder.
 	 *
 	 */
-	public final void deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder()
+	public void deactivateAndUnlinkAllPackingMaterialOrderLinesFromOrder()
 	{
 		final List<I_C_OrderLine> oLines = retrieveAllOrderLinesFromOrder();
 		for (final I_C_OrderLine orderLine : oLines)
@@ -131,7 +131,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected final void assertValid(final IPackingMaterialDocumentLineSource source)
+	protected void assertValid(final IPackingMaterialDocumentLineSource source)
 	{
 		Check.assumeInstanceOf(source, OrderLinePackingMaterialDocumentLineSource.class, "source");
 
@@ -144,10 +144,10 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected final IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
-		final UomId uomId = productBL.getStockingUOMId(packingMaterial.getM_Product_ID());
+		final UomId uomId = productBL.getStockUOMId(packingMaterial.getM_Product_ID());
 
 		orderLine.setM_Product_ID(packingMaterial.getM_Product_ID());
 		orderLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
@@ -156,18 +156,18 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 		return new OrderLinePackingMaterialDocumentLine(orderLine);
 	}
 
-	private final OrderLinePackingMaterialDocumentLine toImpl(final IPackingMaterialDocumentLine pmLine)
+	private OrderLinePackingMaterialDocumentLine toImpl(final IPackingMaterialDocumentLine pmLine)
 	{
 		return (OrderLinePackingMaterialDocumentLine)pmLine;
 	}
 
-	private final OrderLinePackingMaterialDocumentLineSource toImpl(final IPackingMaterialDocumentLineSource source)
+	private OrderLinePackingMaterialDocumentLineSource toImpl(final IPackingMaterialDocumentLineSource source)
 	{
 		return (OrderLinePackingMaterialDocumentLineSource)source;
 	}
 
 	@Override
-	protected final void removeDocumentLine(final IPackingMaterialDocumentLine pmLine)
+	protected void removeDocumentLine(final IPackingMaterialDocumentLine pmLine)
 	{
 		final OrderLinePackingMaterialDocumentLine orderLinePMLine = toImpl(pmLine);
 		final I_C_OrderLine pmOrderLine = orderLinePMLine.getC_OrderLine();
@@ -179,7 +179,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected final void createDocumentLine(final IPackingMaterialDocumentLine pmLine)
+	protected void createDocumentLine(final IPackingMaterialDocumentLine pmLine)
 	{
 		final OrderLinePackingMaterialDocumentLine orderLinePMLine = toImpl(pmLine);
 		final I_C_OrderLine pmOrderLine = orderLinePMLine.getC_OrderLine();
@@ -207,7 +207,7 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected final void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source,
+	protected void linkSourceToDocumentLine(final IPackingMaterialDocumentLineSource source,
 			final IPackingMaterialDocumentLine pmLine)
 	{
 		final OrderLinePackingMaterialDocumentLineSource orderLineSource = toImpl(source);

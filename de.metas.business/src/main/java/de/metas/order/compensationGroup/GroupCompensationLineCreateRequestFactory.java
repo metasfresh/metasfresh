@@ -53,7 +53,7 @@ public class GroupCompensationLineCreateRequestFactory
 
 		final ProductId productId = templateLine.getProductId();
 		final I_M_Product product = productsRepo.getById(productId);
-		final I_C_UOM uom = productBL.getStockingUOM(product);
+		final I_C_UOM uom = productBL.getStockUOM(product);
 
 		final GroupCompensationType type = extractGroupCompensationType(product);
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);

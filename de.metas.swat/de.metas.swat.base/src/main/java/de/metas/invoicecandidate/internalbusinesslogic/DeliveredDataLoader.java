@@ -179,8 +179,8 @@ public class DeliveredDataLoader
 			final I_M_InOutLine inoutLine = create(iciol.getM_InOutLine(), I_M_InOutLine.class);
 
 			final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.create(
-					productId, inoutLine.getMovementQty(),
-					UomId.ofRepoId(iciol.getC_UOM_ID()), iciol.getQtyDeliveredInUOM_Nominal());
+					inoutLine.getMovementQty(), productId,
+					iciol.getQtyDeliveredInUOM_Nominal(), UomId.ofRepoId(iciol.getC_UOM_ID()));
 
 			qtysTotal = StockQtyAndUOMQtys.add(qtysTotal, qtys);
 			if (inoutLine.isInDispute())

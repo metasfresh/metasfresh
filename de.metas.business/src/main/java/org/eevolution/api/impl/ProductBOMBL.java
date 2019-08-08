@@ -157,7 +157,7 @@ public class ProductBOMBL implements IProductBOMBL
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final I_C_UOM endUOM = productBL.getStockingUOM(endProductId);
+		final I_C_UOM endUOM = productBL.getStockUOM(endProductId);
 
 		final I_C_UOM bomLineUOM = productBomLine.getC_UOM();
 		Check.assumeNotNull(bomLineUOM, "bomLineUOM not null");
@@ -195,7 +195,7 @@ public class ProductBOMBL implements IProductBOMBL
 
 	/**
 	 * Return absolute (unified) quantity value. If IsQtyPercentage then QtyBatch / 100 will be returned. Else QtyBOM will be returned.
-	 * 
+	 *
 	 * @param includeScrapQty if true, scrap qty will be used for calculating qty
 	 * @return qty
 	 */

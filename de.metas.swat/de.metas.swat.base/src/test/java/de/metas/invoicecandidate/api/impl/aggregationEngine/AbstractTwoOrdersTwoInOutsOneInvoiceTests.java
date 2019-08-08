@@ -114,7 +114,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 	protected List<I_M_InOutLine> step_createInOutLines(final List<I_C_Invoice_Candidate> ignored)
 	{
 		// Deliver 10 via Wareneingang pos
-		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(productId, TEN, uomId, HUNDRET);
+		final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(TEN, productId, HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "11";
 			inOut11 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
@@ -123,7 +123,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		}
 
 		// Deliver 20 via Wareneingang pos
-		final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(productId, TWENTY, uomId, TWO_HUNDRET);
+		final StockQtyAndUOMQty qtysDelivered_20 = StockQtyAndUOMQtys.create(TWENTY, productId, TWO_HUNDRET, uomId);
 		{
 			final String inOutDocumentNo = "12";
 			inOut12 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
@@ -133,7 +133,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic1)).size(), is(2));
 
 		// Deliver everything via WP
-		final StockQtyAndUOMQty qtysDelivered_50 = StockQtyAndUOMQtys.create(productId, FIFTY, uomId, FIVE_HUNDRET);
+		final StockQtyAndUOMQty qtysDelivered_50 = StockQtyAndUOMQtys.create(FIFTY, productId, FIVE_HUNDRET, uomId);
 		{
 
 			final String inOutDocumentNo = "21";

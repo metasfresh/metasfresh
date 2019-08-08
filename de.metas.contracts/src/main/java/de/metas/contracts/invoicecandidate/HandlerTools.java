@@ -164,7 +164,7 @@ public class HandlerTools
 		if (term.getM_Product_ID() > 0)
 		{
 			final IProductBL productBL = Services.get(IProductBL.class);
-			return productBL.getStockingUOMId(term.getM_Product_ID());
+			return productBL.getStockUOMId(term.getM_Product_ID());
 		}
 
 		throw new AdempiereException("The term of param 'icRecord' needs to have a UOM; C_Invoice_Candidate_ID=" + icRecord.getC_Invoice_Candidate_ID())

@@ -97,7 +97,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(productId, FIFTY, uomId, FIVE_HUNDRET);
+		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(FIFTY, productId, FIVE_HUNDRET, uomId);
 
 		// Deliver 50 via Wareneingang pos
 		{

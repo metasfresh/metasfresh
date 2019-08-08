@@ -82,7 +82,7 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 		// Partially invoice both at the same time
 		{
 			final String inOutDocumentNo = "1";
-			final StockQtyAndUOMQty qtysDelivered_1_32 = StockQtyAndUOMQtys.create(productId, partialQty1_32, uomId, new BigDecimal("320"));
+			final StockQtyAndUOMQty qtysDelivered_1_32 = StockQtyAndUOMQtys.create(partialQty1_32, productId, new BigDecimal("320"), uomId);
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			iol11 = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_1_32, inOutDocumentNo); // inOutLineDescription
 			completeInOut(inOut1);
@@ -90,8 +90,8 @@ public abstract class AbstractTwoInOutsTests extends AbstractNewAggregationEngin
 
 		{
 			final String inOutDocumentNo = "2";
-			final StockQtyAndUOMQty qtysDelivered_2_8 = StockQtyAndUOMQtys.create(productId, partialQty2_8, uomId, new BigDecimal("80"));
-			final StockQtyAndUOMQty qtysDelivered_3_4 = StockQtyAndUOMQtys.create(productId, partialQty3_4, uomId, new BigDecimal("40"));
+			final StockQtyAndUOMQty qtysDelivered_2_8 = StockQtyAndUOMQtys.create(partialQty2_8, productId, new BigDecimal("80"), uomId);
+			final StockQtyAndUOMQty qtysDelivered_3_4 = StockQtyAndUOMQtys.create(partialQty3_4, productId, new BigDecimal("40"), uomId);
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo
 			iol21 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_2_8, inOutDocumentNo + "_1"); // inOutLineDescription
 			iol22 = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_3_4, inOutDocumentNo + "_2"); // inOutLineDescription

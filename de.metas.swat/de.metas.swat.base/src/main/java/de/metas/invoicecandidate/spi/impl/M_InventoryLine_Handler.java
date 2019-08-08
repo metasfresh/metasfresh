@@ -402,7 +402,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final IProductBL productBL = Services.get(IProductBL.class);
-		final UomId stockingUOMId = productBL.getStockingUOMId(inventoryLine.getM_Product_ID());
+		final UomId stockingUOMId = productBL.getStockUOMId(inventoryLine.getM_Product_ID());
 
 		ic.setC_UOM_ID(UomId.toRepoId(stockingUOMId));
 	}

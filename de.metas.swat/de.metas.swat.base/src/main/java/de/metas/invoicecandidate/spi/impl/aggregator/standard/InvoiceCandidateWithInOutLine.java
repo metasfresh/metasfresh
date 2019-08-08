@@ -158,8 +158,8 @@ public final class InvoiceCandidateWithInOutLine
 
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
-						productId, inOutLine.getMovementQty(),
-						UomId.ofRepoId(iciol.getC_UOM_ID()), uomQty);
+						inOutLine.getMovementQty(), productId,
+						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
 		{

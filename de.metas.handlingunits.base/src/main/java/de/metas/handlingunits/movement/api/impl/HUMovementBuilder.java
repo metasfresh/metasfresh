@@ -398,7 +398,7 @@ public class HUMovementBuilder
 		final ProductId productId = productStorage.getProductId();
 		final I_M_MovementLine movementLine = getCreateMovementLine(productId);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM).toBigDecimal();
 
 		//

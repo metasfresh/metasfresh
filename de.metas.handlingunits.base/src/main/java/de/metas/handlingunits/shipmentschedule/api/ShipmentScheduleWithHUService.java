@@ -61,6 +61,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.spi.hu.impl.HUStorageQuery;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -206,7 +207,9 @@ public class ShipmentScheduleWithHUService
 	}
 
 	/**
-	 * If there are any existing HUs that match the given {@code scheduleRecord}, then pick them now although they were not explicitly picked by users.
+	 * If there are any existing HUs that match the given {@code scheduleRecord},<br>
+	 * then pick them now although they were not explicitly picked by users.
+	 * <p>
 	 * Goal: help keeping the metasfresh stock quantity near the real quantity and avoid some of the inventory effort.
 	 * <p>
 	 * Note that we don't use the picked HUs' catch weights since we don't know which HUs were actually picked in the real world.
@@ -274,11 +277,13 @@ public class ShipmentScheduleWithHUService
 				loggable.addLog("QtyToDeliver={}; assign split M_HU_ID={} with Qty={}", qtyToDeliver, newHURecord.getM_HU_ID(), qtyOfNewHU);
 
 				// We don't extract the HU's catch weight; see method's javadoc comment.
-				final StockQtyAndUOMQty stockQty = StockQtyAndUOMQtys.createConvertToStockUom(productId, qtyOfNewHU);
+				final StockQtyAndUOMQty qtys = StockQtyAndUOMQtys.createConvert(qtyOfNewHU,
+						productId,
+						UomId.ofRepoId(uomRecord.getC_UOM_ID()));
 
 				result.add(huShipmentScheduleBL.addQtyPicked(
 						scheduleRecord,
-						stockQty,
+						qtys,
 						newHURecord,
 						huContext));
 				remainingQtyToAllocate = remainingQtyToAllocate.subtract(qtyOfNewHU);
@@ -575,7 +580,7 @@ public class ShipmentScheduleWithHUService
 		final Quantity qtyToDeliver = shipmentScheduleBL.getQtyToDeliver(schedule);
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(
 				huContext,
-				loadOutOfTrx(schedule.getM_Product_ID(),I_M_Product.class),
+				loadOutOfTrx(schedule.getM_Product_ID(), I_M_Product.class),
 				qtyToDeliver,
 				SystemTime.asDate(),
 				schedule,      // reference model

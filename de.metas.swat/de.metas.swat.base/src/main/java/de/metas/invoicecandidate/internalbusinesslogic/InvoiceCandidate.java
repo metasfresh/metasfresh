@@ -144,20 +144,22 @@ public class InvoiceCandidate
 		}
 	}
 
-	public void changeQtyBasedOn(@NonNull final InvoicableQtyBasedOn newValue)
+	public InvoiceCandidate changeQtyBasedOn(@NonNull final InvoicableQtyBasedOn newValue)
 	{
 		this.invoicableQtyBasedOn = newValue;
-		computeToInvoiceData(); // to verify it's still ok!
+		return this;
 	}
 
-	public void changeInvoiceRule(@NonNull final InvoiceRule newValue)
+	public InvoiceCandidate changeInvoiceRule(@NonNull final InvoiceRule newValue)
 	{
 		this.invoiceRule = newValue;
+		return this;
 	}
 
-	public void changeQualityDiscountOverride(@NonNull final Percent qualityDiscountOverride)
+	public InvoiceCandidate changeQualityDiscountOverride(@NonNull final Percent qualityDiscountOverride)
 	{
 		this.qualityDiscountOverride = qualityDiscountOverride;
+		return this;
 	}
 
 	public ToInvoiceData computeToInvoiceData()
@@ -183,7 +185,7 @@ public class InvoiceCandidate
 			// qtyToInvoiceOverride > qtyDelivered
 			if (overrideExceedsDelivered)
 			{
-				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(productId, qtyToInvoiceOverrideInStockUom, uomId);
+				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, productId, uomId);
 				final Quantity qtyDelivered = deliveredQtysCalc.getUOMQtyOpt().get();
 
 				final boolean deliveredInUomExceedsOverride = qtyDelivered
@@ -200,7 +202,7 @@ public class InvoiceCandidate
 			}
 			else if (InvoicableQtyBasedOn.NominalWeight.equals(invoicableQtyBasedOn))
 			{
-				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createUsingUOMConversion(productId, qtyToInvoiceOverrideInStockUom, uomId);
+				final StockQtyAndUOMQty qtysToInvoice = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(qtyToInvoiceOverrideInStockUom, productId, uomId);
 				qtysEffective = qtysToInvoice;
 			}
 			else
@@ -232,8 +234,8 @@ public class InvoiceCandidate
 						final Quantity partialItemUomQty = itemUomQty.multiply(fraction);
 
 						final StockQtyAndUOMQty augent = StockQtyAndUOMQtys.create(
-								productId, remainingQtyOverride,
-								partialItemUomQty.getUomId(), partialItemUomQty.toBigDecimal());
+								remainingQtyOverride, productId,
+								partialItemUomQty.toBigDecimal(), partialItemUomQty.getUomId());
 						qtysToInvoice = StockQtyAndUOMQtys.add(qtysToInvoice, augent);
 
 						remainingQtyOverride = ZERO;
@@ -251,7 +253,7 @@ public class InvoiceCandidate
 		result.qtysEffective(qtysEffective);
 
 		final Quantity qtyInPriceUom = Quantitys.create(
-				qtysEffective.getUomQty(),
+				qtysEffective.getUOMQty(),
 				UOMConversionContext.of(productId),
 				priceUomId);
 

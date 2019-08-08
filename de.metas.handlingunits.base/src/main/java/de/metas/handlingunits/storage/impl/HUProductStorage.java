@@ -121,7 +121,7 @@ import lombok.NonNull;
 	@Override
 	public final BigDecimal getQtyInStockingUOM()
 	{
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(getProductId());
+		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockUOM(getProductId());
 		return getQty(productUOM).toBigDecimal();
 	}
 

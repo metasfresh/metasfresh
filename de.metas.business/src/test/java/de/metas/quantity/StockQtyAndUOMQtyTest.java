@@ -62,7 +62,6 @@ class StockQtyAndUOMQtyTest
 	@Test
 	void serialize_deserialize()
 	{
-
 		final StockQtyAndUOMQty original = StockQtyAndUOMQty
 				.builder()
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))

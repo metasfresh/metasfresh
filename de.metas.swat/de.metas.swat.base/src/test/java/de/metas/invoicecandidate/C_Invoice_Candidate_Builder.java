@@ -166,9 +166,9 @@ public class C_Invoice_Candidate_Builder
 
 		ic.setBill_Location_ID(billBPartnerLocationId.getRepoId());
 
-		final StockQtyAndUOMQty qtysOrdered = StockQtyAndUOMQtys.createUsingUOMConversion(
-				productId,
+		final StockQtyAndUOMQty qtysOrdered = StockQtyAndUOMQtys.createWithUomQtyUsingConversion(
 				assumeNotNull(qtyOrdered, "this builder needs qtyOrdered to be set before it is able to build an IC; this={}", this),
+				productId,
 				uomId);
 
 		ic.setAD_User_InCharge_ID(-1); // nobody, aka null
@@ -176,7 +176,7 @@ public class C_Invoice_Candidate_Builder
 		ic.setC_Currency_ID(test.currencyConversionBL.getBaseCurrency(ctx).getId().getRepoId());
 		ic.setDiscount(BigDecimal.valueOf(discount));
 		ic.setQtyOrdered(qtysOrdered.getStockQty().toBigDecimal());
-		ic.setQtyEntered(qtysOrdered.getUomQty().toBigDecimal());
+		ic.setQtyEntered(qtysOrdered.getUOMQty().toBigDecimal());
 		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 		ic.setQtyToInvoice_Override(null); // no override
 		ic.setC_ILCandHandler(test.plainHandler);

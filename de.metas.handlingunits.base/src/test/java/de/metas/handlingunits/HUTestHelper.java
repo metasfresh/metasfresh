@@ -1358,7 +1358,7 @@ public class HUTestHelper
 
 		final AbstractAllocationSourceDestination allocationSource = createDummySourceDestination(cuProductId,
 				Quantity.QTY_INFINITE,
-				Services.get(IProductBL.class).getStockingUOM(cuProductId),
+				Services.get(IProductBL.class).getStockUOM(cuProductId),
 				true // fullyLoaded
 		);
 		final Object referencedModel = allocationSource.getReferenceModel();

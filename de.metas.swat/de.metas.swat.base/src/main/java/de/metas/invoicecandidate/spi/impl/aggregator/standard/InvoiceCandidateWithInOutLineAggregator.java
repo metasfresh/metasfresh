@@ -234,10 +234,10 @@ import lombok.ToString;
 		{
 			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 			final boolean alreadyInvoicedFullShippedQty = qtyAlreadyShippedPerCurrentICS
-					.getUomQty()
+					.getUOMQty()
 					.multiply(factor)
 					.compareTo(qtyAlreadyInvoicedPerCurrentICS
-							.getUomQty()
+							.getUOMQty()
 							.multiply(factor)) <= 0;
 			if (alreadyInvoicedFullShippedQty)
 			{
@@ -297,7 +297,7 @@ import lombok.ToString;
 		// Calculate how much we can invoice for this invoice candidate (final result)
 		// i.e. if the "candQtyToInvoiceUnchecked" does not fit within the calculated limits, use max value
 		final StockQtyAndUOMQty candQtyToInvoiceFinal;
-		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUomQty().compareTo(candQtyToInvoiceUnchecked.getUomQty()) < 0;
+		final boolean doesNofitWithinLimits = maxQtyToInvoicePerLine.getUOMQty().compareTo(candQtyToInvoiceUnchecked.getUOMQty()) < 0;
 		if (doesNofitWithinLimits && stayWithinShippedQty)
 		{
 			candQtyToInvoiceFinal = maxQtyToInvoicePerLine;
@@ -344,11 +344,11 @@ import lombok.ToString;
 
 			if (!candNetAmtToInvoiceOrig.isEqualByComparingTo(candNetAmtToInvoiceCalc))
 			{
-				if (!candQtyToInvoiceFinal.getUomQty().isOne())
+				if (!candQtyToInvoiceFinal.getUOMQty().isOne())
 				{
 					// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 					throw new InvalidQtyForPartialAmtToInvoiceException(
-							candQtyToInvoiceFinal.getUomQty(),
+							candQtyToInvoiceFinal.getUOMQty(),
 							cand,
 							candNetAmtToInvoiceOrig,
 							candNetAmtToInvoiceCalc);
@@ -356,7 +356,7 @@ import lombok.ToString;
 				candPriceActual = ProductPrice.builder()
 						.money(candNetAmtToInvoiceOrig)
 						.productId(ics.getProductId())
-						.uomId(candQtyToInvoiceFinal.getUomQty().getUomId())
+						.uomId(candQtyToInvoiceFinal.getUOMQty().getUomId())
 						.build();
 			}
 			else
@@ -371,14 +371,14 @@ import lombok.ToString;
 			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
 
 			final Quantity candQtyToInvoiceFinalInPriceUOM = uomConversionBL.convertQuantityTo(
-					candQtyToInvoiceFinal.getUomQty(),
+					candQtyToInvoiceFinal.getUOMQty(),
 					UOMConversionContext.of(ics.getProductId()),
 					UomId.ofRepoId(firstGreaterThanZero(cand.getPrice_UOM_ID(), cand.getC_UOM_ID())));
 
 			candPriceActual = invoiceCandBL.getPriceActual(cand);
 
 			// fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUomQty(), candPriceActual);
+			candNetAmtToInvoice = moneyService.multiply(candQtyToInvoiceFinal.getUOMQty(), candPriceActual);
 
 		}
 

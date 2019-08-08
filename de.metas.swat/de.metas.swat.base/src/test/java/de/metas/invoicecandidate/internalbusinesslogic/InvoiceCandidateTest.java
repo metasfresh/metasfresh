@@ -59,8 +59,8 @@ class InvoiceCandidateTest
 	@Test
 	void purchase_serialize_deserialize()
 	{
-		final StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.create(PRODUCT_ID, TEN, DELIVERY_UOM_ID, HUNDRET);
-		final StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.create(PRODUCT_ID, ONE, DELIVERY_UOM_ID, TEN);
+		final StockQtyAndUOMQty qtysTotal = StockQtyAndUOMQtys.create(TEN, PRODUCT_ID, HUNDRET, DELIVERY_UOM_ID);
+		final StockQtyAndUOMQty qtysWithIssues = StockQtyAndUOMQtys.create(ONE, PRODUCT_ID, TEN, DELIVERY_UOM_ID);
 
 		final OrderedData orderedData = OrderedData.builder()
 				.orderFullyDelivered(false)
@@ -157,25 +157,25 @@ class InvoiceCandidateTest
 		assertThat(receiptData.computeQualityDiscount().toBigDecimal()).isEqualTo(TEN);
 
 		final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
-		assertThat(qtysDelivered.getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
-		assertThat(qtysDelivered.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysDelivered.getUOMQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(qtysDelivered.getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(qtysDelivered.getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(qtysDelivered.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysRaw().getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
-		assertThat(toInvoiceData.getQtysRaw().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysRaw().getUOMQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(toInvoiceData.getQtysRaw().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(toInvoiceData.getQtysRaw().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
-		assertThat(toInvoiceData.getQtysCalc().getUomQty().toBigDecimal()).isEqualByComparingTo(NINETY);
-		assertThat(toInvoiceData.getQtysCalc().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysCalc().getUOMQty().toBigDecimal()).isEqualByComparingTo(NINETY);
+		assertThat(toInvoiceData.getQtysCalc().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysCalc().getStockQty().toBigDecimal()).isEqualByComparingTo(NINE);
 		assertThat(toInvoiceData.getQtysCalc().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo(NINETY);
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo(NINETY);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo(NINE);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
@@ -189,31 +189,31 @@ class InvoiceCandidateTest
 		invoiceCandidate.changeQualityDiscountOverride(Percent.of("20"));
 
 		final StockQtyAndUOMQty qtysWithIssuesEffective = invoiceCandidate.getDeliveredData().getReceiptData().computeQtysWithIssuesEffective(invoiceCandidate.getQualityDiscountOverride());
-		assertThat(qtysWithIssuesEffective.getUomQty().toBigDecimal()).isEqualByComparingTo("20");
-		assertThat(qtysWithIssuesEffective.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysWithIssuesEffective.getUOMQty().toBigDecimal()).isEqualByComparingTo("20");
+		assertThat(qtysWithIssuesEffective.getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(qtysWithIssuesEffective.getStockQty().toBigDecimal()).isEqualByComparingTo("2");
 		assertThat(qtysWithIssuesEffective.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
 		final StockQtyAndUOMQty qtysDelivered = invoiceCandidate.computeQtysDelivered();
-		assertThat(qtysDelivered.getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
-		assertThat(qtysDelivered.getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(qtysDelivered.getUOMQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(qtysDelivered.getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(qtysDelivered.getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(qtysDelivered.getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysRaw().getUomQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
-		assertThat(toInvoiceData.getQtysRaw().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysRaw().getUOMQty().toBigDecimal()).isEqualByComparingTo(HUNDRET);
+		assertThat(toInvoiceData.getQtysRaw().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal()).isEqualByComparingTo(TEN);
 		assertThat(toInvoiceData.getQtysRaw().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
-		assertThat(toInvoiceData.getQtysCalc().getUomQty().toBigDecimal()).isEqualByComparingTo("80");
-		assertThat(toInvoiceData.getQtysCalc().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysCalc().getUOMQty().toBigDecimal()).isEqualByComparingTo("80");
+		assertThat(toInvoiceData.getQtysCalc().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysCalc().getStockQty().toBigDecimal()).isEqualByComparingTo("8");
 		assertThat(toInvoiceData.getQtysCalc().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("80");
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("80");
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("8");
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
@@ -225,8 +225,8 @@ class InvoiceCandidateTest
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
@@ -238,8 +238,8 @@ class InvoiceCandidateTest
 		invoiceCandidate.changeQtyBasedOn(InvoicableQtyBasedOn.NominalWeight);
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
@@ -251,8 +251,8 @@ class InvoiceCandidateTest
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
 	}
@@ -274,8 +274,8 @@ class InvoiceCandidateTest
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
 
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("43"); // delivered catch qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("43"); // delivered catch qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -288,8 +288,8 @@ class InvoiceCandidateTest
 		assertThat(invoiceCandidate.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.CatchWeight); // guard
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("43"); // delivered catch qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("43"); // delivered catch qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -300,8 +300,8 @@ class InvoiceCandidateTest
 		assertThat(invoiceCandidate.getInvoicableQtyBasedOn()).isEqualTo(InvoicableQtyBasedOn.NominalWeight);
 
 		final ToInvoiceData toInvoiceDataAfterChange = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceDataAfterChange.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
-		assertThat(toInvoiceDataAfterChange.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceDataAfterChange.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
+		assertThat(toInvoiceDataAfterChange.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceDataAfterChange.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
 		assertThat(toInvoiceDataAfterChange.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -317,8 +317,8 @@ class InvoiceCandidateTest
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(InvoiceRule.Immediate);
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("60"); // ordered qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("60"); // ordered qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("15"); // ordered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -333,9 +333,10 @@ class InvoiceCandidateTest
 
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(InvoiceRule.Immediate);
 
+
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("-60"); // delivered nominal qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("-60"); // delivered nominal qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("-15"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -350,8 +351,8 @@ class InvoiceCandidateTest
 		assertThat(invoiceCandidate.getInvoiceRule()).isEqualTo(InvoiceRule.Immediate);
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("40"); // delivered nominal qty
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("10"); // delivered qty in stock UOM
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -363,8 +364,8 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeightPartiallyInvoiced");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("25"); // 43 - 18
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("25"); // 43 - 18
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("5"); // delivered qty in stock UOM - already invoiced
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -376,8 +377,8 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_withCatchWeight_withQtyToInvoiceOverride");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isEqualByComparingTo("46.8"); // 10/10 of 43 plus 1/5 of 19
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isEqualByComparingTo("46.8"); // 10/10 of 43 plus 1/5 of 19
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isEqualByComparingTo("11"); // qtyToInvoiceOverride
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);
@@ -389,8 +390,8 @@ class InvoiceCandidateTest
 		final InvoiceCandidate invoiceCandidate = loadJsonFixture("sales_afterOrderDelivered");
 
 		final ToInvoiceData toInvoiceData = invoiceCandidate.computeToInvoiceData();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal()).isZero();
-		assertThat(toInvoiceData.getQtysEffective().getUomQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal()).isZero();
+		assertThat(toInvoiceData.getQtysEffective().getUOMQty().getUomId()).isEqualTo(DELIVERY_UOM_ID);
 
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal()).isZero();
 		assertThat(toInvoiceData.getQtysEffective().getStockQty().getUomId()).isEqualTo(STOCK_UOM_ID);

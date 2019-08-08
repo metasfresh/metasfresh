@@ -145,7 +145,7 @@ public class M_InOutLine
 		final UomId catchUomId = UomId.ofRepoIdOrNull(inOutLine.getCatch_UOM_ID());
 		final StockQtyAndUOMQty qtyPickedSum = computeQtyPickedSum(productId, catchUomId, allocs);
 
-		final StockQtyAndUOMQty shipmentLine_movementQty = StockQtyAndUOMQtys.create(productId, inOutLine.getMovementQty(), catchUomId, inOutLine.getQtyDeliveredCatch());
+		final StockQtyAndUOMQty shipmentLine_movementQty = StockQtyAndUOMQtys.create(inOutLine.getMovementQty(), productId, inOutLine.getQtyDeliveredCatch(), catchUomId);
 
 		final StockQtyAndUOMQty qtyPickedToAdd = StockQtyAndUOMQtys.subtract(shipmentLine_movementQty, qtyPickedSum);
 		if (qtyPickedToAdd.signum() == 0)
@@ -222,8 +222,8 @@ public class M_InOutLine
 			@NonNull final I_M_ShipmentSchedule_QtyPicked alloc)
 	{
 		return StockQtyAndUOMQtys.create(
-				productId, alloc.getQtyPicked(),
-				UomId.ofRepoIdOrNull(alloc.getCatch_UOM_ID()), alloc.getQtyDeliveredCatch());
+				alloc.getQtyPicked(), productId,
+				alloc.getQtyDeliveredCatch(), UomId.ofRepoIdOrNull(alloc.getCatch_UOM_ID()));
 	}
 
 }

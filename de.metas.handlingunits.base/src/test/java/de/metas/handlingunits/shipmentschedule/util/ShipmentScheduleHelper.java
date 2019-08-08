@@ -59,6 +59,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /**
@@ -167,7 +168,10 @@ public class ShipmentScheduleHelper
 		{
 			shipmentScheduleAllocBL.addQtyPicked(
 					shipmentSchedule,
-					StockQtyAndUOMQtys.create(ProductId.ofRepoId(product.getM_Product_ID()), qtyPickedInitial));
+					StockQtyAndUOMQtys.createConvert(
+							qtyPickedInitial,
+							ProductId.ofRepoId(product.getM_Product_ID()),
+							UomId.ofRepoId(uom.getC_UOM_ID())));
 
 			shipmentScheduleExpectations
 					.qtyPicked(qtyPickedInitial)

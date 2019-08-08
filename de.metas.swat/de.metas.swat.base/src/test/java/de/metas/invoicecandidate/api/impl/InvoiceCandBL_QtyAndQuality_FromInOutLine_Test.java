@@ -104,7 +104,7 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test //extends AbstractIC
 	@Test
 	public void test1()
 	{
-		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.create(productId, new BigDecimal("100"), icUomId, new BigDecimal("1000"));
+		final StockQtyAndUOMQty qtys_100 = StockQtyAndUOMQtys.create(new BigDecimal("100"), productId, new BigDecimal("1000"), icUomId);
 
 		final I_M_InOutLine inoutLine01 = new InOutLineExpectation<>(null, context)
 				.qtys(qtys_100)
@@ -134,7 +134,7 @@ public class InvoiceCandBL_QtyAndQuality_FromInOutLine_Test //extends AbstractIC
 	@Test
 	public void test2()
 	{
-		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(productId, new BigDecimal("10"), icUomId, new BigDecimal("100"));
+		final StockQtyAndUOMQty qtys_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), icUomId);
 
 		final I_M_InOutLine inoutLine01 = new InOutLineExpectation<>(null, context)
 				.qtys(qtys_10)

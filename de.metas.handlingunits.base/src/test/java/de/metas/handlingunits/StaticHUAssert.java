@@ -110,7 +110,7 @@ public final class StaticHUAssert
 	@Deprecated
 	public static void assertHUStorage(final I_M_HU hu, final ProductId productId, final BigDecimal qtyExpected)
 	{
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(productId);
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IHUStorage huStorage = storageFactory.getStorage(hu);

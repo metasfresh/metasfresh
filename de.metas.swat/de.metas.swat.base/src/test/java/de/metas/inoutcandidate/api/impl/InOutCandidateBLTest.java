@@ -75,8 +75,8 @@ public class InOutCandidateBLTest
 	public void test_getQtyAndQuality_NotInDispute()
 	{
 		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				productId, new BigDecimal("33"),
-				stockUomId, new BigDecimal("33"));
+				new BigDecimal("33"), productId,
+				new BigDecimal("33"), stockUomId);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
 				.qtys(qtys_33)
@@ -96,8 +96,8 @@ public class InOutCandidateBLTest
 	public void test_getQtyAndQuality_InDispute()
 	{
 		final StockQtyAndUOMQty qtys_33 = StockQtyAndUOMQtys.create(
-				productId, new BigDecimal("33"),
-				stockUomId, new BigDecimal("33"));
+				new BigDecimal("33"), productId,
+				new BigDecimal("33"), stockUomId);
 
 		final I_M_InOutLine inoutLine = new InOutLineExpectation<>(null, context)
 				.qtys(qtys_33)

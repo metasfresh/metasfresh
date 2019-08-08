@@ -128,7 +128,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
-		final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productUOM = productBL.getStockUOM(productId);
 		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM).toBigDecimal();
 
 		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());

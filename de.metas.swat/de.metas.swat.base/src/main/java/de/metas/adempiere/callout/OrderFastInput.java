@@ -278,7 +278,7 @@ public class OrderFastInput extends CalloutEngine
 		if (ol.getC_UOM_ID() <= 0 && ol.getM_Product_ID() > 0)
 		{
 			// the builders did provide a product, but no UOM, so we take the product's stocking UOM
-			final UomId stockingUOMId = Services.get(IProductBL.class).getStockingUOMId(ol.getM_Product_ID());
+			final UomId stockingUOMId = Services.get(IProductBL.class).getStockUOMId(ol.getM_Product_ID());
 			ol.setC_UOM_ID(stockingUOMId.getRepoId());
 		}
 

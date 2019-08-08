@@ -69,7 +69,7 @@ public class InvoiceCandBLUpdateInvalidCandidatesTest extends AbstractICTestSupp
 		assertThat("Invalid QtyToInvoice on the IC level", ic1.getQtyToInvoice(), comparesEqualTo(BigDecimal.ZERO));
 
 		final I_M_InOut inOut1;
-		final StockQtyAndUOMQty partialQty1 = StockQtyAndUOMQtys.create(productId, ONE, uomId, ONE);
+		final StockQtyAndUOMQty partialQty1 = StockQtyAndUOMQtys.create(ONE, productId, ONE, uomId);
 		{
 			inOut1 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), "1"); // DocumentNo
 			createInvoiceCandidateInOutLine(ic1, inOut1, partialQty1, "1"); // inOutLineDescription

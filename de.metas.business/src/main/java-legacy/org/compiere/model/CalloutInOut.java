@@ -471,7 +471,7 @@ public class CalloutInOut extends CalloutEngine
 
 		//
 		// Set UOM/Qty
-		final UomId productUOM = Services.get(IProductBL.class).getStockingUOMId(inoutLine.getM_Product_ID());
+		final UomId productUOM = Services.get(IProductBL.class).getStockUOMId(inoutLine.getM_Product_ID());
 		inoutLine.setC_UOM_ID(productUOM.getRepoId());
 
 		//

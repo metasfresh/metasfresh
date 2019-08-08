@@ -48,6 +48,7 @@ import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -345,28 +346,31 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 *
 	 */
 	@Override
-	public void setDeliveredData(final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
-		StockQtyAndUOMQty qtyDelivered = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
-		if (qtyDelivered.getStockQty().isZero())
+		StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService
+				.ofRecord(icRecord)
+				.computeQtysDelivered();
+
+		if (qtysDelivered.getStockQty().isZero())
 		{
-			final org.compiere.model.I_C_OrderLine orderLine = ic.getC_OrderLine();
+			final org.compiere.model.I_C_OrderLine orderLine = icRecord.getC_OrderLine();
 			if (orderLine.getQtyDelivered().signum() > 0)
 			{
 				// fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
-				qtyDelivered = StockQtyAndUOMQtys.create(
-						ProductId.ofRepoId(orderLine.getM_Product_ID()), orderLine.getQtyDelivered(),
-						UomId.ofRepoId(orderLine.getC_UOM_ID()), orderLine.getQtyEntered());
+				qtysDelivered = StockQtyAndUOMQtys.create(
+						orderLine.getQtyDelivered(), ProductId.ofRepoId(orderLine.getM_Product_ID()),
+						orderLine.getQtyEntered(), UomId.ofRepoId(orderLine.getC_UOM_ID()));
 			}
 		}
-		ic.setQtyDelivered(qtyDelivered.getStockQty().toBigDecimal());
-		ic.setQtyDeliveredInUOM(qtyDelivered.getUomQty().toBigDecimal());
+		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
+		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQty().toBigDecimal());
 		//
 		// Find out the first shipment/receipt
-		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(ic));
+		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(InvoiceCandidateIds.ofRecord(icRecord));
 		I_M_InOut firstInOut = null;
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)
 		{
@@ -389,7 +393,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 
-		setDeliveredDataFromFirstInOut(ic, firstInOut);
+		setDeliveredDataFromFirstInOut(icRecord, firstInOut);
 	}
 
 	@Override

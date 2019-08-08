@@ -49,7 +49,7 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		final StockQtyAndUOMQty qtysDelivered_100 = StockQtyAndUOMQtys.create(productId, HUNDRET, uomId, THOUSAND);
+		final StockQtyAndUOMQty qtysDelivered_100 = StockQtyAndUOMQtys.create(HUNDRET, productId, THOUSAND, uomId);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo); // DocumentNo

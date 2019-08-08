@@ -128,8 +128,8 @@ public class MatchInvDAO implements IMatchInvDAO
 		{
 			final StockQtyAndUOMQty matchInvQtys = StockQtyAndUOMQtys
 					.create(
-							productId, matchInvRecord.getQty(),
-							UomId.ofRepoIdOrNull(matchInvRecord.getC_UOM_ID()), matchInvRecord.getQtyInUOM());
+							matchInvRecord.getQty(), productId,
+							matchInvRecord.getQtyInUOM(), UomId.ofRepoIdOrNull(matchInvRecord.getC_UOM_ID()));
 			result = StockQtyAndUOMQtys.add(result, matchInvQtys);
 		}
 

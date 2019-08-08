@@ -212,7 +212,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 
 		final CostElement costElement = costElementRepo.getById(costSegmentAndElement.getCostElementId());
 		final AcctSchema acctSchema = acctSchemasRepo.getById(costSegmentAndElement.getAcctSchemaId());
-		final I_C_UOM uom = productBL.getStockingUOM(costSegmentAndElement.getProductId());
+		final I_C_UOM uom = productBL.getStockUOM(costSegmentAndElement.getProductId());
 
 		final CurrentCost currentCost = CurrentCost.builder()
 				.costSegment(costSegmentAndElement.toCostSegment())

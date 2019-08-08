@@ -444,7 +444,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 
 	private Quantity convertDurationToQuantity(final Duration duration, final ProductId resourceProductId)
 	{
-		final I_C_UOM durationUOM = productsService.getStockingUOM(resourceProductId);
+		final I_C_UOM durationUOM = productsService.getStockUOM(resourceProductId);
 		final TemporalUnit durationUnit = UOMUtil.toTemporalUnit(durationUOM);
 
 		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, durationUnit);

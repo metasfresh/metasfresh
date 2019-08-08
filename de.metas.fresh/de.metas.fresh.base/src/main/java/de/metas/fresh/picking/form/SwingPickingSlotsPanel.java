@@ -470,7 +470,7 @@ public class SwingPickingSlotsPanel
 			//
 			// Remote Qty from HU
 			// there was no explicit assumption about the UOM of qtyToRemove. I now assume stockingUOM.
-			final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockingUOM(selectedProduct.getProductId());
+			final I_C_UOM stockingUOM = Services.get(IProductBL.class).getStockUOM(selectedProduct.getProductId());
 
 			final IPackingItem pckItem = selectedProduct.getPackingItem();
 			removeProductQty(pckItem, selectedPickingSlotKey.getM_HU(), Quantity.of(qtyToRemove, stockingUOM));

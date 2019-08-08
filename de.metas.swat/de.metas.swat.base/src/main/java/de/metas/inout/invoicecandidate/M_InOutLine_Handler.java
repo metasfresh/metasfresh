@@ -69,6 +69,7 @@ import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
@@ -85,7 +86,6 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -479,46 +479,46 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	private void setOrderedData(
-			@NonNull final I_C_Invoice_Candidate ic,
+			@NonNull final I_C_Invoice_Candidate icRecord,
 			@Nullable BigDecimal forcedQtyOrdered,
 			final boolean callerCanCreateAdditionalICs)
 	{
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final I_M_InOutLine inOutLine = getM_InOutLine(icRecord);
 		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
 
 		final I_C_Order order = inOut.getC_Order();
 
 		if (inOut.getC_Order_ID() > 0)
 		{
-			ic.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
-			ic.setDateOrdered(order.getDateOrdered());
+			icRecord.setC_Order(order);  // also set the order; even if the iol does not directly refer to an order line, it is there because of that order
+			icRecord.setDateOrdered(order.getDateOrdered());
 		}
-		else if (ic.getC_Order_ID() <= 0)
+		else if (icRecord.getC_Order_ID() <= 0)
 		{
 			// don't attempt to "clear" the order data if it is already set/known.
-			ic.setC_Order(null);
-			ic.setDateOrdered(inOut.getMovementDate());
+			icRecord.setC_Order(null);
+			icRecord.setDateOrdered(inOut.getMovementDate());
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
 		if (docStatus.isCompletedOrClosed())
 		{
-			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
+			final BigDecimal qtyMultiplier = getQtyMultiplier(icRecord);
 			final BigDecimal qtyOrdered = CoalesceUtil.coalesceSuppliers(
 					() -> forcedQtyOrdered,
-					() -> extractQtyDelivered(ic, callerCanCreateAdditionalICs));
+					() -> extractQtyDelivered(icRecord, callerCanCreateAdditionalICs));
 
 			final BigDecimal qtyDelivered = qtyOrdered.multiply(qtyMultiplier);
-			ic.setQtyOrdered(qtyDelivered);
+			icRecord.setQtyOrdered(qtyDelivered);
 
 			final BigDecimal qtyEntered = inOutLine.getQtyEntered().multiply(qtyMultiplier);
-			ic.setQtyEntered(qtyEntered);
+			icRecord.setQtyEntered(qtyEntered);
 		}
 		else
 		{
 			// not yet delivered (e.g. IP), reversed, voided etc. Set qty to zero.
-			ic.setQtyOrdered(ZERO);
-			ic.setQtyEntered(ZERO);
+			icRecord.setQtyOrdered(ZERO);
+			icRecord.setQtyEntered(ZERO);
 		}
 	}
 
@@ -684,27 +684,26 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @see IInvoiceCandidateHandler#setDeliveredData(I_C_Invoice_Candidate)
 	 */
 	@Override
-	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate ic)
+	public void setDeliveredData(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		//
 		// Get delivered quantity and then set it to IC
-		// NOTE: please check setOrderedData() method which is setting QtyOrdered as inout lines' movement quantity,
-		// so that's why, here, we consider the QtyDelivered as QtyOrdered.
-		final BigDecimal qtyDelivered = ic.getQtyOrdered();
-		ic.setQtyDelivered(qtyDelivered);
+		// NOTE: setOrderedData() method sets QtyOrdered as inout lines' movement quantity,
 
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final InvoiceCandidateRecordService invoiceCandidateRecordService = SpringContextHolder.instance.getBean(InvoiceCandidateRecordService.class);
 
-		// TODO decide if we need to fallback to C_OrderLine.QtyDelivered...maybe there are cases with no-item-products, where we have QtyDelivered, but no shipments
-		final StockQtyAndUOMQty qtyDeliveredFromShipments = invoiceCandBL.computeQtyDeliveredFromShipments(ic);
-		final Quantity stockQty = qtyDeliveredFromShipments.getStockQty();
-		ic.setQtyDeliveredInUOM(qtyDeliveredFromShipments.getUOMQtyOpt().orElse(stockQty).toBigDecimal());
+		final StockQtyAndUOMQty qtysDelivered = invoiceCandidateRecordService
+				.ofRecord(icRecord)
+				.computeQtysDelivered(); // this is based on icRecord's QtyOrdered
+
+		icRecord.setQtyDelivered(qtysDelivered.getStockQty().toBigDecimal());
+		icRecord.setQtyDeliveredInUOM(qtysDelivered.getUOMQty().toBigDecimal());
 
 		//
 		// Set other delivery informations by fetching them from first shipment/receipt.
-		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+		final I_M_InOutLine inOutLine = getM_InOutLine(icRecord);
 		final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
-		setDeliveredDataFromFirstInOut(ic, inOut);
+		setDeliveredDataFromFirstInOut(icRecord, inOut);
 	}
 
 	public static I_M_InOutLine getM_InOutLine(final I_C_Invoice_Candidate ic)

@@ -240,8 +240,8 @@ public class DefaultAggregator implements IAggregator
 					// Even if QtyToInvoice_Override is set, the system will decide what to invoice (e.g. based on RnvoiceRule and QtyDelivered)
 					// and update QtyToInvoice accordingly, possibly to a value that is different from QtyToInvoice_Override.
 					final StockQtyAndUOMQty qtyToInvoice = StockQtyAndUOMQtys.create(
-							ics.getProductId(), ic.getQtyToInvoice(),
-							ics.getIcUomId(), ic.getQtyToInvoiceInUOM());
+							ic.getQtyToInvoice(), ics.getProductId(),
+							ic.getQtyToInvoiceInUOM(), ics.getIcUomId());
 					ic2QtyInvoicable.put(ics.getInvoicecandidateId(), qtyToInvoice);
 				}
 			}

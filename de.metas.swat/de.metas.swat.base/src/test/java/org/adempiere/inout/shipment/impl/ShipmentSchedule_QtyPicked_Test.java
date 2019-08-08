@@ -51,6 +51,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.product.ProductIds;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 public class ShipmentSchedule_QtyPicked_Test
@@ -61,13 +62,14 @@ public class ShipmentSchedule_QtyPicked_Test
 
 	private I_M_Product product;
 	private I_C_UOM uom;
+	private UomId uomId;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		this.contextProvider = new PlainContextAware(Env.getCtx(), ITrx.TRXNAME_None);
+		this.contextProvider = PlainContextAware.newOutOfTrx();
 
 		Services.registerService(IShipmentScheduleBL.class, ShipmentScheduleBL.newInstanceForUnitTesting());
 
@@ -81,6 +83,8 @@ public class ShipmentSchedule_QtyPicked_Test
 		uom.setUOMSymbol("Ea");
 		InterfaceWrapperHelper.save(uom);
 
+		uomId = UomId.ofRepoId(uom.getC_UOM_ID());
+
 		product = InterfaceWrapperHelper.newInstance(I_M_Product.class, contextProvider);
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		InterfaceWrapperHelper.save(product);
@@ -88,39 +92,39 @@ public class ShipmentSchedule_QtyPicked_Test
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
-//	@Test
-//	public void testSetGetQtyPicked()
-//	{
-//
-//		testSetGetQtyPicked(new BigDecimal("456"));
-//	}
-//
-//	private void testSetGetQtyPicked(final BigDecimal qtyPicked)
-//	{
-//		final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
-//
-//		shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPicked);
-//		// final BigDecimal qtyPickedActual = shipmentScheduleBL.getQtyPicked(shipmentSchedule);
-//
-//		Assert.assertThat("Invalid getQtyPicked()",
-//				Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
-//				Matchers.comparesEqualTo(qtyPicked) // Expected
-//		);
-//
-//		//
-//		// Now check the DAO
-//		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
-//		Assert.assertNotNull("QtyPicked records not found", qtyPickedRecords);
-//		Assert.assertEquals("Only one QtyPicked record expected", 1, qtyPickedRecords.size());
-//
-//		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = qtyPickedRecords.get(0);
-//		Assert.assertNotNull("QtyPicked record not found", qtyPickedRecord);
-//
-//		Assert.assertThat("Invalid I_M_ShipmentSchedule_QtyPicked.QtyPicked",
-//				qtyPickedRecord.getQtyPicked(), // Actual
-//				Matchers.comparesEqualTo(qtyPicked) // Expected
-//		);
-//	}
+	// @Test
+	// public void testSetGetQtyPicked()
+	// {
+	//
+	// testSetGetQtyPicked(new BigDecimal("456"));
+	// }
+	//
+	// private void testSetGetQtyPicked(final BigDecimal qtyPicked)
+	// {
+	// final I_M_ShipmentSchedule shipmentSchedule = createShipmentSchedule();
+	//
+	// shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPicked);
+	// // final BigDecimal qtyPickedActual = shipmentScheduleBL.getQtyPicked(shipmentSchedule);
+	//
+	// Assert.assertThat("Invalid getQtyPicked()",
+	// Services.get(IShipmentScheduleAllocDAO.class).retrieveNotOnShipmentLineQty(shipmentSchedule), // Actual
+	// Matchers.comparesEqualTo(qtyPicked) // Expected
+	// );
+	//
+	// //
+	// // Now check the DAO
+	// final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+	// Assert.assertNotNull("QtyPicked records not found", qtyPickedRecords);
+	// Assert.assertEquals("Only one QtyPicked record expected", 1, qtyPickedRecords.size());
+	//
+	// final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = qtyPickedRecords.get(0);
+	// Assert.assertNotNull("QtyPicked record not found", qtyPickedRecord);
+	//
+	// Assert.assertThat("Invalid I_M_ShipmentSchedule_QtyPicked.QtyPicked",
+	// qtyPickedRecord.getQtyPicked(), // Actual
+	// Matchers.comparesEqualTo(qtyPicked) // Expected
+	// );
+	// }
 
 	private final I_M_ShipmentSchedule createShipmentSchedule()
 	{
@@ -155,11 +159,15 @@ public class ShipmentSchedule_QtyPicked_Test
 		testAddAndGetQtyPicked(shipmentSchedule, new BigDecimal("0"), new BigDecimal("10"));
 	}
 
-	private void testAddAndGetQtyPicked(final I_M_ShipmentSchedule shipmentSchedule,
+	private void testAddAndGetQtyPicked(
+			final I_M_ShipmentSchedule shipmentSchedule,
 			final BigDecimal qtyPickedToAdd,
 			final BigDecimal qtyPickedExpected)
 	{
-		final StockQtyAndUOMQty stockQtyToAdd = StockQtyAndUOMQtys.create(ProductIds.ofRecord(shipmentSchedule), qtyPickedToAdd);
+		final StockQtyAndUOMQty stockQtyToAdd = StockQtyAndUOMQtys.createConvert(
+				qtyPickedToAdd,
+				ProductIds.ofRecord(shipmentSchedule),
+				uomId);
 
 		final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord = shipmentScheduleAllocBL
 				.addQtyPicked(shipmentSchedule, stockQtyToAdd);

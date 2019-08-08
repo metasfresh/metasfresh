@@ -425,7 +425,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 		// FIXME: because MPPCostCollector.completeIt() is not refactored, it's not executed
 		// we need to set the BOM Line's QtyDelivered by ourselves
-		final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(pFolie);
+		final I_C_UOM uom = Services.get(IProductBL.class).getStockUOM(pFolie);
 		ppOrderBOMBL.addQty(OrderBOMLineQtyChangeRequest.builder()
 				.orderBOMLineId(ppOrderBOMLineId_Folie)
 				.usageVariance(false)
@@ -642,7 +642,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private void setBOMLineQtyDeliveredAndSave(final I_PP_Order_BOMLine orderBOMLine, final Quantity qtyDelivered)
 	{
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_C_UOM productStockingUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM productStockingUOM = productBL.getStockUOM(productId);
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 		final Quantity qtyDeliveredInStockingUOM = uomConversionService.convertQuantityTo(qtyDelivered, conversionCtx, productStockingUOM);
 		orderBOMLine.setQtyDelivered(qtyDeliveredInStockingUOM.toBigDecimal());

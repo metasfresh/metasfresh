@@ -184,8 +184,8 @@ public class InvoiceCandidateRecordService
 
 		invoiceCandidateRecord.setQtyToInvoiceBeforeDiscount(toInvoiceData.getQtysRaw().getStockQty().toBigDecimal());
 		invoiceCandidateRecord.setQtyToInvoice(toInvoiceData.getQtysEffective().getStockQty().toBigDecimal());
-		invoiceCandidateRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUomQty().toBigDecimal());
+		invoiceCandidateRecord.setQtyToInvoiceInUOM(toInvoiceData.getQtysEffective().getUOMQty().toBigDecimal());
 
-		invoiceCandidateRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUomQty().toBigDecimal());
+		invoiceCandidateRecord.setQtyToInvoiceInUOM_Calc(toInvoiceData.getQtysCalc().getUOMQty().toBigDecimal());
 	}
 }

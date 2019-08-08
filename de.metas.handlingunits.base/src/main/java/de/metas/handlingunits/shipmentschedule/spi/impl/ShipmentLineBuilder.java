@@ -262,7 +262,7 @@ import lombok.NonNull;
 
 		qtyEntered = Quantity.zero(candidate.getUOM());
 
-		final I_C_UOM stockingUOM = productBL.getStockingUOM(productId);
+		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
 		movementQty = Quantity.zero(stockingUOM);
 
 		final Optional<I_C_UOM> catchUOM = productBL.getCatchUOM(productId);
@@ -486,7 +486,7 @@ import lombok.NonNull;
 				{
 					// there are no real HUs, *and* we don't have any infos from the shipment schedule;
 					// therefore, we make an educated guess, based on the packing instruction
-					final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+					final I_C_UOM productUOM = productBL.getStockUOM(productId);
 					final Capacity capacity = Services.get(IHUCapacityBL.class).getCapacity(piipForShipmentLine, productId, productUOM);
 					final Integer qtyTUFromCapacity = capacity.calculateQtyTU(movementQty.toBigDecimal(), productUOM);
 					shipmentLine.setQtyTU_Override(BigDecimal.valueOf(qtyTUFromCapacity));
@@ -566,7 +566,7 @@ import lombok.NonNull;
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(hu);
 
-			final I_C_UOM productUOM = productBL.getStockingUOM(productId);
+			final I_C_UOM productUOM = productBL.getStockUOM(productId);
 			final IHUAttributeTransferRequestBuilder requestBuilder = new HUAttributeTransferRequestBuilder(huContext)
 					.setProductId(productId)
 					.setQty(shipmentLine.getMovementQty())

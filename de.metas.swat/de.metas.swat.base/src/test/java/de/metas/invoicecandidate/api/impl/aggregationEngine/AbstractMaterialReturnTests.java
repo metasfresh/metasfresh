@@ -85,7 +85,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 	@Override
 	protected List<I_M_InOutLine> step_createInOutLines(final List<I_C_Invoice_Candidate> invoiceCandidates)
 	{
-		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(productId, FIFTY.negate(), uomId, FIVE_HUNDRET.negate());
+		final StockQtyAndUOMQty qtysDelivered = StockQtyAndUOMQtys.create(FIFTY.negate(), productId, FIVE_HUNDRET.negate(), uomId);
 		{
 			final String inOutDocumentNo = "1";
 			inOut1 = createInOut(ic1.getBill_BPartner_ID(), ic1.getC_Order_ID(), inOutDocumentNo);
@@ -132,7 +132,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 
 		assertThat(il1.getPriceActual().toBigDecimal(), comparesEqualTo(BigDecimal.ONE.negate()));
 		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(FIFTY.negate()));
-		assertThat(il1.getQtysToInvoice().getUomQty().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
+		assertThat(il1.getQtysToInvoice().getUOMQty().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET.negate()));
 		assertThat(il1.getNetLineAmt().toBigDecimal(), comparesEqualTo(FIVE_HUNDRET)); /**/
 	}
 

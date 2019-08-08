@@ -304,7 +304,7 @@ public class RefundInvoiceCandidateFactory
 				priceActual,
 				CurrencyId.ofRepoId(refundRecord.getC_Currency_ID()));
 
-		final I_C_UOM productUom = productBL.getStockingUOM(ProductIds.ofRecord(refundRecord));
+		final I_C_UOM productUom = productBL.getStockUOM(ProductIds.ofRecord(refundRecord));
 
 		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
 				.builder()

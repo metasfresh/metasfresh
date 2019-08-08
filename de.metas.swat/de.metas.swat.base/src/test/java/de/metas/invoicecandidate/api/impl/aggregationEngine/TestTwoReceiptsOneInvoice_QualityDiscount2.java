@@ -140,13 +140,13 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final I_M_AttributeSetInstance asi1 = ic_inout1_attributeExpectations.createM_AttributeSetInstance(ic);
 
 			final String inOutDocumentNo = "1";
-			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(productId, new BigDecimal("3"), uomId, new BigDecimal("30"));
+			final StockQtyAndUOMQty qtysDelivered_3 = StockQtyAndUOMQtys.create(new BigDecimal("3"), productId, new BigDecimal("30"), uomId);
 			inOut1 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol11_three = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_3, inOutDocumentNo + "_1");
 			iol11_three.setM_AttributeSetInstance(asi1);
 			InterfaceWrapperHelper.save(iol11_three);
 
-			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(productId, new BigDecimal("5"), uomId, new BigDecimal("50"));
+			final StockQtyAndUOMQty qtysDelivered_5 = StockQtyAndUOMQtys.create(new BigDecimal("5"), productId, new BigDecimal("50"), uomId);
 			iol12_five_disp = createInvoiceCandidateInOutLine(ic, inOut1, qtysDelivered_5, inOutDocumentNo + "_2");
 			iol12_five_disp.setM_AttributeSetInstance(asi1);
 			iol12_five_disp.setIsInDispute(true);
@@ -168,7 +168,7 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final I_M_AttributeSetInstance asi2 = ic_inout2_attributeExpectations.createM_AttributeSetInstance(ic);
 
 			final String inOutDocumentNo = "2";
-			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(productId, new BigDecimal("10"), uomId, new BigDecimal("100"));
+			final StockQtyAndUOMQty qtysDelivered_10 = StockQtyAndUOMQtys.create(new BigDecimal("10"), productId, new BigDecimal("100"), uomId);
 			inOut2 = createInOut(ic.getBill_BPartner_ID(), ic.getC_Order_ID(), inOutDocumentNo);
 			iol21_ten = createInvoiceCandidateInOutLine(ic, inOut2, qtysDelivered_10, inOutDocumentNo + "_1");
 			iol21_ten.setM_AttributeSetInstance(asi2);
@@ -215,14 +215,14 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11_three);
 			assertNotNull("Missing IInvoiceLineRW for iol11=" + iol11_three, il1);
 			assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-			assertThat(il1.getQtysToInvoice().getUomQty().toBigDecimal(), comparesEqualTo(THIRTY));
+			assertThat(il1.getQtysToInvoice().getUOMQty().toBigDecimal(), comparesEqualTo(THIRTY));
 
 			// Validate invoice line attributes
 			ic_inout1_attributeExpectations.assertExpected("invalid il1 attribute", il1.getInvoiceLineAttributes());
 
 			final InvoiceCandidateInOutLineToUpdate icIol11 = retrieveIcIolToUpdateIfExists(il1, iol11_three);
 			assertThat(icIol11.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(THREE));
-			assertThat(icIol11.getQtyInvoiced().getUomQty().toBigDecimal(), comparesEqualTo(THIRTY));
+			assertThat(icIol11.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(THIRTY));
 		}
 
 		//
@@ -231,14 +231,14 @@ public class TestTwoReceiptsOneInvoice_QualityDiscount2 extends AbstractNewAggre
 			final IInvoiceLineRW il2 = getSingleForInOutLine(invoiceLines1, iol21_ten);
 			assertNotNull("Missing IInvoiceLineRW for iol21=" + iol21_ten, il2);
 			assertThat(il2.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-			assertThat(il2.getQtysToInvoice().getUomQty().toBigDecimal(), comparesEqualTo(HUNDRET));
+			assertThat(il2.getQtysToInvoice().getUOMQty().toBigDecimal(), comparesEqualTo(HUNDRET));
 
 			// Validate invoice line attributes
 			ic_inout2_attributeExpectations.assertExpected("invalid il2 attribute", il2.getInvoiceLineAttributes());
 
 			final InvoiceCandidateInOutLineToUpdate icIol21 = retrieveIcIolToUpdateIfExists(il2, iol21_ten);
 			assertThat(icIol21.getQtyInvoiced().getStockQty().toBigDecimal(), comparesEqualTo(TEN));
-			assertThat(icIol21.getQtyInvoiced().getUomQty().toBigDecimal(), comparesEqualTo(HUNDRET));
+			assertThat(icIol21.getQtyInvoiced().getUOMQty().toBigDecimal(), comparesEqualTo(HUNDRET));
 		}
 
 		//
