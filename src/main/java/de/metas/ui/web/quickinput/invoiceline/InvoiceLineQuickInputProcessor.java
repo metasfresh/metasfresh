@@ -1,7 +1,5 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
-import static de.metas.util.Check.fail;
-
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
@@ -11,9 +9,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.invoice.IInvoiceLineBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 
 /*
@@ -59,8 +60,9 @@ public class InvoiceLineQuickInputProcessor implements IQuickInputProcessor
 		invoiceLine.setC_Invoice(invoice);
 
 		invoiceBL.setProductAndUOM(invoiceLine, invoiceLineQuickInput.getM_Product_ID());
-		fail("NOT YET IMPLEMENTED"); // TODO https://github.com/metasfresh/metasfresh/issues/5384
-		//invoiceBL.setQtys(invoiceLine, invoiceLineQuickInput.getQty());
+
+		final StockQtyAndUOMQty qtyInStockUom = StockQtyAndUOMQtys.createConvert(invoiceLineQuickInput.getQty(), productId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+		invoiceBL.setQtys(invoiceLine, qtyInStockUom);
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		// invoiceBL.setLineNetAmt(invoiceLine); // not needed; will be called on save
