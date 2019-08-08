@@ -258,7 +258,7 @@ public class WEBUI_HUsToPick_PickCU extends HUsToPickViewBasedProcess implements
 	private IAllocationRequest createSplitAllocationRequest(final IHUContext huContext)
 	{
 		final ProductId productId = getProductId();
-		final I_C_UOM uom = productBL.getStockingUOM(productId);
+		final I_C_UOM uom = productBL.getStockUOM(productId);
 
 		return AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)

@@ -285,7 +285,7 @@ public class PurchaseRowsLoaderTest
 		final PurchaseProfitInfo profitInfo = PurchaseRowTestTools.createProfitInfo(currencyId);
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		final I_C_UOM productStockingUOM = Services.get(IProductBL.class).getStockingUOM(productId);
+		final I_C_UOM productStockingUOM = Services.get(IProductBL.class).getStockUOM(productId);
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.groupReference(DemandGroupReference.EMPTY)
 				.orgId(OrgId.ofRepoId(20))
