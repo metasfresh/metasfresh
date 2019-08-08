@@ -50,7 +50,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
   // retry 8 times to open the referenced document
   if (retriesLeft >= 1) {
     cy.get('body').type('{alt}6'); // open referenced docs
-    cy.get('.order-list-panel .order-list-loader').should('not.exist');
+    cy.get('.order-list-panel .order-list-loader', { timeout: 8000 }).should('not.exist');
 
     return cy.get('body').then(body => {
       if (body.find(`.reference_${referenceId}`).length > 0) {
