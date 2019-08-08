@@ -254,21 +254,9 @@ public class StockQtyAndUOMQtys
 					.setParameter("qtys", qtys);
 		}
 
-		final boolean hasUomQty = qtys.getUOMQty() != null;
-		if (hasUomQty)
-		{
-			final boolean stockQtyAndUomQtyHaveEqualUom = Objects.equals(qtys.getUOMQty().getUomId(), qtys.getStockQty().getUomId());
-			if (stockQtyAndUomQtyHaveEqualUom)
-			{
-				final boolean stockQtyAndUomQtyHaveDifferentAmounts = qtys.getUOMQty().compareTo(qtys.getStockQty()) != 0;
-				if (stockQtyAndUomQtyHaveDifferentAmounts)
-				{
-					throw new AdempiereException("StockQty and uomQty have the same UOM, but different amounts")
-							.appendParametersToMessage()
-							.setParameter("qtys", qtys);
-				}
-			}
-		}
+		// Note: stockQty and UOM might have the same UOM but different amounts!
+		// That can happen if e.g. stock UOM and price UOM are PCE, but the catch UOM is KGM!
+
 		return qtys;
 	}
 

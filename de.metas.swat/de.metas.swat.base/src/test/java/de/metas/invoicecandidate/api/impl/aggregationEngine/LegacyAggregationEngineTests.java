@@ -384,7 +384,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		// In production this will be generated when we generate the invoice
 		final I_C_Invoice_Candidate ic2_split = invoiceCandBL.splitCandidate(ic2);
 		POJOWrapper.setInstanceName(ic2_split, "ic2_split");
-		getInvoiceCandidateValidator().invalidateCandidates(ic2_split);
+		getInvoiceCandidateValidator().invalidateCandidatesAfterChange(ic2_split);
 		InterfaceWrapperHelper.save(ic2_split);
 
 		//

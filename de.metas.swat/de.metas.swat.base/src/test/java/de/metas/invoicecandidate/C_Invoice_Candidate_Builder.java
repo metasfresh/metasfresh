@@ -270,7 +270,7 @@ public class C_Invoice_Candidate_Builder
 		// Call model validator because if is not called directly
 		if (!test.isModelInterceptorsRegistered())
 		{
-			test.getInvoiceCandidateValidator().invalidateCandidates(ic);
+			test.getInvoiceCandidateValidator().invalidateCandidatesAfterChange(ic);
 		}
 
 		//

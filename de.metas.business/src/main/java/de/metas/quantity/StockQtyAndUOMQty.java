@@ -56,7 +56,7 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty add(@NonNull final StockQtyAndUOMQty other)
 	{
-		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equan to this instance's productId; this={}; other={}", this, other);
+		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equal to this instance's productId; this={}; other={}", this, other);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)
@@ -93,7 +93,7 @@ public class StockQtyAndUOMQty
 
 	public StockQtyAndUOMQty subtract(@NonNull final StockQtyAndUOMQty other)
 	{
-		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equan to this instance's productId; this={}; other={}", this, other);
+		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equal to this instance's productId; this={}; other={}", this, other);
 
 		final StockQtyAndUOMQtyBuilder result = StockQtyAndUOMQty.builder()
 				.productId(productId)

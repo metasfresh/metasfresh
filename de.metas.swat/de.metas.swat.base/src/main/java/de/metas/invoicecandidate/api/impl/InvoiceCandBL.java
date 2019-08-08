@@ -653,7 +653,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	/**
 	 * Gets Qty Ordered (target), considering the QtyDelivered too.
 	 */
-	private BigDecimal getQtyOrdered(@NonNull final I_C_Invoice_Candidate ic)
+	private BigDecimal getQtyOrderedInStockUOM(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final I_C_UOM uomRecord = Services.get(IProductBL.class).getStockUOM(ic.getM_Product_ID());
 
@@ -1432,7 +1432,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			//
 			// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
-			final BigDecimal qtyOrdered = getQtyOrdered(ic);
+			final BigDecimal qtyOrdered = getQtyOrderedInStockUOM(ic);
 			final boolean noOpenQty = qtyOrdered.abs().compareTo(ic.getQtyInvoiced().abs()) <= 0;
 
 			//

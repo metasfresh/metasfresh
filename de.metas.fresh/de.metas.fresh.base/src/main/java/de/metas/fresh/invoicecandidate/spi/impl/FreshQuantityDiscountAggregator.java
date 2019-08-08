@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
@@ -59,18 +58,20 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
- * Quanity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
+ * Quantity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
  * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation creates <b>two</b> invoice lines. The
  * fist one ignores the discount and invoices whatever is the full quantity. The second line explicitly subtracts the discount quantity (line with a negative quantity).
  *
+ * <b>Important:</b> this customization is applied only to purchase invoice candidates! Right now the catch-weight invoicing (plus qtyToInvoiceOverride) is not working together with the qutWithIssues (plus qualtiyDiscountOverride)!
  * <p>
  * Note about the naming: this class is called Fresh<b>Quantity</b>DiscountAggregator because the discount is not a percentage on the price, but a part of the delivered quantity is not invoiced. It
  * might also be called Fresh"Quality"DiscountAggregator, because that discount is happened because of quality.
  *
- *
  */
+@ToString
 public class FreshQuantityDiscountAggregator implements IAggregator
 {
 	// services
@@ -91,16 +92,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 * We use the default aggregator to do most of the work.
 	 */
 	private final DefaultAggregator defaultAggregator = new DefaultAggregator();
-
-	public FreshQuantityDiscountAggregator()
-	{
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
 
 	@Override
 	public void setContext(final Properties ctx, final String trxName)
@@ -192,8 +183,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 			if (candidate.isFreightCost())
 			{
-				// don't create quality discounts for freight cost products
 				continue;
+			}
+
+			if (candidate.isSOTrx())
+			{
+				continue; // we do the quality discount stuff *only* on the purchase side
 			}
 
 			//
