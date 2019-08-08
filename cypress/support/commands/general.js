@@ -33,9 +33,9 @@ import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
-import notificationFixtures from '../../fixtures/misc/notifications.json';
+// import notificationFixtures from '../../fixtures/misc/notifications.json';
 
-const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
+// const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
 context('Reusable "login" custom command using API', function() {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
@@ -302,65 +302,65 @@ Cypress.Commands.add('readAllNotifications', () => {
   });
 });
 
-const getNotificationFixture = () => {
-  const timestamp = new Date().getTime();
-  const message = `Test notification ${timestamp}`;
-
-  return {
-    ...NOTIFICATION_FIXTURE,
-    message,
-  };
-};
-
-Cypress.Commands.add('addNotification', notificationObject => {
-  describe('Push a new notification to the existing list', function() {
-    notificationObject = notificationObject || getNotificationFixture();
-
-    return cy
-      .window()
-      .its('store')
-      .invoke('dispatch', {
-        type: 'ADD_NOTIFICATION',
-        notification: {
-          ...notificationObject,
-        },
-      })
-      .then(() => {
-        return notificationObject;
-      });
-  });
-});
-
-Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) => {
-  describe('Clear current notifications and add a new one', function() {
-    notificationObject = notificationObject || getNotificationFixture();
-
-    return cy
-      .window()
-      .its('store')
-      .invoke('dispatch', {
-        type: 'NEW_NOTIFICATION',
-        notification: {
-          ...notificationObject,
-        },
-        unreadCount,
-      })
-      .then(() => notificationObject);
-  });
-});
-
-Cypress.Commands.add('getDOMNotificationsNumber', () => {
-  describe('Get the number of notifications displayed in the header alert element', function() {
-    return cy
-      .get('.header-item-badge')
-      .find('.notification-number')
-      .then(el => {
-        const val = el[0].textContent;
-
-        return parseInt(val, 10);
-      });
-  });
-});
+// const getNotificationFixture = () => {
+//   const timestamp = new Date().getTime();
+//   const message = `Test notification ${timestamp}`;
+//
+//   return {
+//     ...NOTIFICATION_FIXTURE,
+//     message,
+//   };
+// };
+//
+// Cypress.Commands.add('addNotification', notificationObject => {
+//   describe('Push a new notification to the existing list', function() {
+//     notificationObject = notificationObject || getNotificationFixture();
+//
+//     return cy
+//       .window()
+//       .its('store')
+//       .invoke('dispatch', {
+//         type: 'ADD_NOTIFICATION',
+//         notification: {
+//           ...notificationObject,
+//         },
+//       })
+//       .then(() => {
+//         return notificationObject;
+//       });
+//   });
+// });
+//
+// Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) => {
+//   describe('Clear current notifications and add a new one', function() {
+//     notificationObject = notificationObject || getNotificationFixture();
+//
+//     return cy
+//       .window()
+//       .its('store')
+//       .invoke('dispatch', {
+//         type: 'NEW_NOTIFICATION',
+//         notification: {
+//           ...notificationObject,
+//         },
+//         unreadCount,
+//       })
+//       .then(() => notificationObject);
+//   });
+// });
+//
+// Cypress.Commands.add('getDOMNotificationsNumber', () => {
+//   describe('Get the number of notifications displayed in the header alert element', function() {
+//     return cy
+//       .get('.header-item-badge')
+//       .find('.notification-number')
+//       .then(el => {
+//         const val = el[0].textContent;
+//
+//         return parseInt(val, 10);
+//       });
+//   });
+// });
 
 // todo @kuba i think this function is useless and should be deleted.
 //  I cannot use it to check notification message and to click a specific notification to move to the relevant window
