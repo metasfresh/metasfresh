@@ -57,10 +57,6 @@ describe('Create Dunning Documents', function() {
     cy.completeDocument();
   });
   it('Sales Invoice is not paid', function() {
-    // cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-    //   cy.log(`IsPaid = ${checkBoxValue}`);
-    //   assert.equal(checkBoxValue, false);
-    // });
     cy.expectCheckboxValue('IsPaid', false);
   });
 
@@ -85,7 +81,6 @@ describe('Create Dunning Documents', function() {
   it('Ensure there are exactly 2 Dunning Candidates - one for each dunning type level', function() {
     DunningCandidates.visit();
     filterBySalesInvoiceDocNumber(siDocumentNumber);
-    // DunningCandidates.getRows().should('have.length', 2);
     cy.expectNumberOfRows(2);
   });
 
