@@ -1,4 +1,4 @@
-import { RewriteURL } from "../utils/constants";
+import { RewriteURL } from '../utils/constants';
 import { humanReadableNow } from '../../support/utils/utils';
 /*
  * Basic command for clicking a button element having a certain text

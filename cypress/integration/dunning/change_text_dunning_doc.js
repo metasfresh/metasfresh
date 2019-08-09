@@ -1,8 +1,7 @@
 /// <reference types="Cypress" />
 
 import { SalesInvoice, SalesInvoiceLine } from '../../support/utils/sales_invoice';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
 import { BPartner } from '../../support/utils/bpartner';
 import { DunningCandidates } from '../../page_objects/dunning_candidates';
 import { applyFilters, selectNotFrequentFilterWidget, toggleNotFrequentFilters } from '../../support/functions';
@@ -43,8 +42,7 @@ describe('Create Dunning Documents', function() {
       const bpartner = new BPartner({ ...customerJson, name: businessPartnerName })
         .setCustomer(true)
         .setDunning(dunningTypeName)
-        .setPaymentTerm(paymentTerm)
-        .setBank(undefined);
+        .setPaymentTerm(paymentTerm);
 
       bpartner.apply();
     });
@@ -59,10 +57,11 @@ describe('Create Dunning Documents', function() {
     cy.completeDocument();
   });
   it('Sales Invoice is not paid', function() {
-    cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
-      cy.log(`IsPaid = ${checkBoxValue}`);
-      assert.equal(checkBoxValue, false);
-    });
+    // cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
+    //   cy.log(`IsPaid = ${checkBoxValue}`);
+    //   assert.equal(checkBoxValue, false);
+    // });
+    cy.expectCheckboxValue('IsPaid', false);
   });
 
   it('Save document no from invoice', function() {
@@ -81,13 +80,13 @@ describe('Create Dunning Documents', function() {
     cy.executeHeaderActionWithDialog('C_Dunning_Candidate_Create');
     cy.setCheckBoxValue('IsFullUpdate', true, true);
     cy.pressStartButton();
-    // cy.wait(8000);
   });
 
   it('Ensure there are exactly 2 Dunning Candidates - one for each dunning type level', function() {
     DunningCandidates.visit();
     filterBySalesInvoiceDocNumber(siDocumentNumber);
-    DunningCandidates.getRows().should('have.length', 2);
+    // DunningCandidates.getRows().should('have.length', 2);
+    cy.expectNumberOfRows(2);
   });
 
   function filterBySalesInvoiceDocNumber(siDocNumber) {
