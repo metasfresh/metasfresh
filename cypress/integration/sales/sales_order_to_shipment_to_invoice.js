@@ -52,34 +52,27 @@ describe('Create Sales order', function() {
         .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
         .apply();
     });
-    cy.selectTab('C_OrderLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
-    cy.pressDoneButton();
-    /** Go to Shipment disposition*/
-    cy.openReferencedDocuments('M_ShipmentSchedule');
-    cy.selectNthRow(0).dblclick();
-    /**Generate shipments */
-    cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
-    cy.pressStartButton();
-    /**Wait for the shipment schedule process to complete */
-    cy.waitUntilProcessIsFinished();
-    /**Open notifications */
-    cy.openInboxNotificationWithText(customer);
-    cy.selectTab('M_InOutLine');
-    cy.selectNthRow(0);
-    cy.openAdvancedEdit();
-    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
-    cy.pressDoneButton();
-    /**Billing - Invoice disposition */
-    cy.openReferencedDocuments('C_Invoice_Candidate');
-    cy.selectNthRow(0).click();
-    /**Generate invoices on billing candidates */
-    cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
-    cy.pressStartButton();
-    cy.waitUntilProcessIsFinished();
-    /**Open notifications */
-    cy.openInboxNotificationWithText(customer);
+    it('Go to Shipment disposition', function() {
+      cy.openReferencedDocuments('M_ShipmentSchedule');
+      cy.selectNthRow(0).dblclick();
+    });
+    it('Generate shipments', function() {
+      cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
+      cy.pressStartButton();
+      cy.waitUntilProcessIsFinished();
+    });
+    it('Open notifications', function() {
+      cy.openInboxNotificationWithText(customer);
+    });
+    it('Billing - Invoice disposition', function() {
+      cy.openReferencedDocuments('C_Invoice_Candidate');
+      cy.selectNthRow(0).click();
+    });
+    it('Generate invoices on billing candidates', function() {
+      cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+      cy.pressStartButton();
+      cy.waitUntilProcessIsFinished();
+      cy.openInboxNotificationWithText(customer);
+    });
   });
 });
