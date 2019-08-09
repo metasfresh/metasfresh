@@ -76,14 +76,14 @@ describe('Create Product', function() {
     cy.selectTab(`M_ProductPrice`);
     cy.selectNthRow(0);
     cy.openAdvancedEdit();
-    cy.writeIntoStringField('PriceStd', `1`, true, null, true);
+    cy.writeIntoStringField('PriceStd', 1, true, null, true);
     cy.pressDoneButton();
 
     cy.visitWindow(`143`, salesOrderRecordID);
     cy.selectTab('C_OrderLine');
     cy.pressAddNewButton();
     cy.writeIntoLookupListField('M_Product_ID', productName, productName, false, true );
-    cy.writeIntoStringField('QtyEntered', `1`, true, null, true );
+    cy.writeIntoStringField('QtyEntered', 1, true, null, true );
     cy.pressDoneButton();
   });
 
