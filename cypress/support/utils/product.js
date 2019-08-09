@@ -178,16 +178,10 @@ export class Product {
   static applyProductPrice(productPrice) {
     cy.selectTab('M_ProductPrice');
     cy.pressAddNewButton();
+    
     cy.writeIntoLookupListField('M_PriceList_Version_ID', productPrice.priceList, productPrice.priceList, true, true);
-
     cy.writeIntoStringField('PriceList', productPrice.listPriceAmount, true, null, true);
-    cy.writeIntoStringField(
-      'PriceStd',
-      productPrice.standardPriceAmount,
-      true /*modal*/,
-      null /*rewriteUrl*/,
-      true /*noRequest*/
-    );
+    cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/,true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
     const taxCategory = getLanguageSpecific(productPrice, 'taxCategory');
