@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.115
+
+## Features
+* metasfresh
+  * [#5411](https://github.com/metasfresh/metasfresh/issues/5411) Reset auth token for Json Reports user on each app-server-start
+  * [#5382](https://github.com/metasfresh/metasfresh/issues/5382) Show reversal_id in advanced edit of empties return / receive
+
+* metasfresh-e2e
+  * [#213](https://github.com/metasfresh/metasfresh-e2e/issues/213) Reverse Empties Return
+  * [#233](https://github.com/metasfresh/metasfresh-e2e/issues/233) Change product prices and add a new one
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#2325](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2325) frontend patches too much in quick input field
+
 # metasfresh 5.114
 
 ## Features
