@@ -48,31 +48,30 @@ describe('Create Sales order', function() {
         .setBPartner(customer)
         .setPriceSystem(priceSystemName)
         .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
         .apply();
     });
-    it('Go to Shipment disposition', function() {
-      cy.openReferencedDocuments('M_ShipmentSchedule');
-      cy.selectNthRow(0).dblclick();
-    });
-    it('Generate shipments', function() {
-      cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
-      cy.pressStartButton();
-      cy.waitUntilProcessIsFinished();
-    });
-    it('Open notifications', function() {
-      cy.openInboxNotificationWithText(customer);
-    });
-    it('Billing - Invoice disposition', function() {
-      cy.openReferencedDocuments('C_Invoice_Candidate');
-      cy.selectNthRow(0).click();
-    });
-    it('Generate invoices on billing candidates', function() {
-      cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
-      cy.pressStartButton();
-      cy.waitUntilProcessIsFinished();
-      cy.openInboxNotificationWithText(customer);
-    });
+    cy.completeDocument();
+  });
+  it('Go to Shipment disposition', function() {
+    cy.openReferencedDocuments('M_ShipmentSchedule');
+    cy.selectNthRow(0).dblclick();
+  });
+  it('Generate shipments', function() {
+    cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.pressStartButton();
+    cy.waitUntilProcessIsFinished();
+  });
+  it('Open notifications', function() {
+    cy.openInboxNotificationWithText(customer);
+  });
+  it('Billing - Invoice disposition', function() {
+    cy.openReferencedDocuments('C_Invoice_Candidate');
+    cy.selectNthRow(0).click();
+  });
+  it('Generate invoices on billing candidates', function() {
+    cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+    cy.pressStartButton();
+    cy.waitUntilProcessIsFinished();
+    cy.openInboxNotificationWithText(customer);
   });
 });

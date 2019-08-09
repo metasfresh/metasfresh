@@ -54,10 +54,9 @@ describe('Create Dunning Documents', function() {
     cy.fixture('sales/sales_invoice.json').then(salesInvoiceJson => {
       new SalesInvoice(businessPartnerName, salesInvoiceTargetDocumentType)
         .addLine(new SalesInvoiceLine().setProduct(productName).setQuantity(originalQuantity))
-        .setDocumentAction(getLanguageSpecific(salesInvoiceJson, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(salesInvoiceJson, DocumentStatusKey.Completed))
         .apply();
     });
+    cy.completeDocument();
   });
   it('Sales Invoice is not paid', function() {
     cy.getCheckboxValue('IsPaid').then(checkBoxValue => {
