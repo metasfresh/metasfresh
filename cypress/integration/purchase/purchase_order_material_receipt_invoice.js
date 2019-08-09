@@ -181,7 +181,7 @@ describe('Create a purchase order and Material Receipts', function() {
   });
 
   it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {
-    cy.openNotificationWithText(vendorName);
+    cy.openInboxNotificationWithText(vendorName);
     // wait until current window is PurchaseInvoice
     cy.url().should('contain', '/183/');
 

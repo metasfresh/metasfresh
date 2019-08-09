@@ -62,7 +62,7 @@ describe('Create Sales order', function() {
     /**Wait for the shipment schedule process to complete */
     cy.waitUntilProcessIsFinished();
     /**Open notifications */
-    cy.openNotificationWithText(customer);
+    cy.openInboxNotificationWithText(customer);
     /**Billing - Invoice disposition */
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();
@@ -71,6 +71,6 @@ describe('Create Sales order', function() {
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
     /**Open notifications */
-    cy.openNotificationWithText(customer);
+    cy.openInboxNotificationWithText(customer);
   });
 });

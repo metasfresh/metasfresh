@@ -284,7 +284,7 @@ declare namespace Cypress {
      * Opens the inbox notification with the given text
      * @param text - String to search for in the notification
      */
-    openNotificationWithText(text?: string): Chainable<any>
+    openInboxNotificationWithText(text?: string): Chainable<any>
 
     /**
      * Mark all current notifications as read in the API and reset counter.
