@@ -11,7 +11,6 @@ describe('Create Sales order', function() {
   const productName = `ProductTest ${date}`;
   const productValue = `sales_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
@@ -22,7 +21,7 @@ describe('Create Sales order', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName,
       productValue,
@@ -53,6 +52,11 @@ describe('Create Sales order', function() {
         .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
         .apply();
     });
+    cy.selectTab('C_OrderLine');
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
+    cy.pressDoneButton();
     /** Go to Shipment disposition*/
     cy.openReferencedDocuments('M_ShipmentSchedule');
     cy.selectNthRow(0).dblclick();
@@ -63,6 +67,11 @@ describe('Create Sales order', function() {
     cy.waitUntilProcessIsFinished();
     /**Open notifications */
     cy.openInboxNotificationWithText(customer);
+    cy.selectTab('M_InOutLine');
+    cy.selectNthRow(0);
+    cy.openAdvancedEdit();
+    cy.getStringFieldValue('M_Product_ID').should('contain', productName);
+    cy.pressDoneButton();
     /**Billing - Invoice disposition */
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();
