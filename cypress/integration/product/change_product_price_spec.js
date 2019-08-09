@@ -2,9 +2,10 @@ import { Product, ProductCategory, ProductPrice} from '../../support/utils/produ
 import { SalesOrder, SalesOrderLine} from '../../support/utils/sales_order';
 import { BPartner} from '../../support/utils/bpartner';
 import { BPartnerLocation } from '../../support/utils/bpartner_ui';
+import { humanReadableNow } from '../../support/utils/utils';
 
 describe('Create Product', function() {
-  const timestamp = new Date().getTime(); 
+  const timestamp = humanReadableNow();
   const productName = `ProductName ${timestamp}`;
   const productValue = `ProductNameValue ${timestamp}`;
   const productCategoryName = `ProductCategoryName ${timestamp}`;
