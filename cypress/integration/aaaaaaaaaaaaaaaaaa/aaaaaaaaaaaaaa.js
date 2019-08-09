@@ -30,23 +30,25 @@ import { PriceList, PriceListVersion } from '../../support/utils/pricelist';
 const date = humanReadableNow();
 
 // Price
-const priceSystemName = `PriceSystem_${date}`;
-const priceListVersionName = `PriceListVersion_${date}`;
-const priceListName = `PriceList_${date}`;
-const priceListSchemaVersionName = `PriceListSchemaVersion_${date}`;
-const priceListVersion2ValidFrom = '01/02/2019';
-const priceListVersionNameSearch1 = new RegExp(priceListName + '.*' + '2019-01-01$'); // magic from fixture (PLV doesn't have standard name :( )
-const priceListVersionNameSearch2 = new RegExp(priceListName + '.*' + '2019-01-02$'); // magic from fixture (PLV doesn't have standard name :( )
+let priceSystemName;
+let priceListName;
+let priceListVersionName;
+
+let priceListSchemaVersionName;
+let priceListVersion2ValidFrom;
+
+let priceListVersionNameSearch1; // magic from fixture (PLV doesnt have standard name :( )"
+let priceListVersionNameSearch2; // magic from fixture (PLV doesnt have standard name :( )"
 
 // Product
-const categoryName = `Category_${date}`;
-const productName1 = `Product1 ${date}`;
-const productName2 = `Product2 ${date}`;
-const productType = 'Item';
+let categoryName;
+let productName1;
+let productName2;
+let productType;
 
 // Price List Schema
-const priceListSchemaName = `PriceListSchema_${date}`;
-const surchargeAmount = 222;
+let priceListSchemaName;
+let surchargeAmount;
 
 // test
 let priceListID;
@@ -55,6 +57,28 @@ let originalPriceLimit;
 let originalPriceList;
 let originalUOM;
 let originalTaxCategory;
+
+it('Read fixture and prepare the names', function() {
+  cy.fixture('a/a.json').then(f => {
+    priceSystemName = appendDate(f['priceSystemName'], date);
+    priceListName = appendDate(f['priceListName'], date);
+    priceListVersionName = appendDate(f['priceListVersionName'], date);
+
+    priceListSchemaVersionName = appendDate(f['priceListSchemaVersionName'], date);
+    priceListVersion2ValidFrom = f['priceListVersion2ValidFrom'];
+
+    priceListVersionNameSearch1 = new RegExp(f['priceListVersionNameSearch1']);
+    priceListVersionNameSearch2 = new RegExp(f['priceListVersionNameSearch2']);
+
+    categoryName = appendDate(f['categoryName'], date);
+    productName1 = appendDate(f['productName1'], date);
+    productName2 = appendDate(f['productName2'], date);
+    productType = f['productType'];
+
+    priceListSchemaName = appendDate(f['priceListSchemaName'], date);
+    surchargeAmount = f['surchargeAmount'];
+  });
+});
 
 describe('Create Price and Products', function() {
   it('Create Price', function() {
@@ -181,4 +205,8 @@ function filterProductPricesByPLV(priceListName, priceListVersionMatch) {
   selectNotFrequentFilterWidget('default');
   cy.writeIntoLookupListField('M_PriceList_Version_ID', priceListName, priceListVersionMatch, false, false, null, true);
   applyFilters();
+}
+
+function appendDate(str, date) {
+  return `${str}_${date}`;
 }
