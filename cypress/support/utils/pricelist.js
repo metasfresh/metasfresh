@@ -85,8 +85,8 @@ export class PriceList {
       if (priceListVersion.discountSchema) {
         cy.selectInListField('M_DiscountSchema_ID', priceListVersion.discountSchema, true);
       }
-      if (priceListVersion.basisPricelistVersion) {
-        cy.selectInListField('M_Pricelist_Version_Base_ID', priceListVersion.basisPricelistVersion, true);
+      if (priceListVersion.basisPriceListVersion) {
+        cy.selectInListField('M_Pricelist_Version_Base_ID', priceListVersion.basisPriceListVersion, true);
       }
       cy.pressDoneButton();
     });
@@ -110,9 +110,9 @@ export class PriceListVersion {
     return this;
   }
 
-  setBasisPricelistVersion(basisPricelistVersion) {
-    cy.log(`PriceListVersion - set basisPricelistVersion = ${basisPricelistVersion}`);
-    this.basisPricelistVersion = basisPricelistVersion;
+  setBasisPriceListVersion(basisPriceListVersion) {
+    cy.log(`PriceListVersion - set basisPriceListVersion = ${basisPriceListVersion}`);
+    this.basisPriceListVersion = basisPriceListVersion;
     return this;
   }
 
