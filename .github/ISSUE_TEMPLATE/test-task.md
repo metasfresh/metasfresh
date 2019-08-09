@@ -22,6 +22,6 @@ Todo for developer (besides coding)
 - [ ] run your test in jenkins e2e on a vanilla db
 - [ ] jenkins console URL / cypress dashboard URL to the successful test *suite* run (not just yours)
 - [ ] get it integrated into `master`
-  * [ ] (pull request URL)
+    - [ ] (pull request URL)
 
 All Flags are ticked? Congratulations, you have delivered!
