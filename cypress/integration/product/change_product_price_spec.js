@@ -11,6 +11,9 @@ describe('Create Product', function() {
   const productCategoryName = `ProductCategoryName ${timestamp}`;
   const productCategoryValue = `ProductNameValue ${timestamp}`;
   const bpName = `Customer ${timestamp}`;
+  
+  const priceList = `Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01`;
+  const taxCatergory = `Regular Tax Rate 19% (Germany)`;
   let salesOrderRecordID;
   let productRecordID;
 
@@ -25,8 +28,8 @@ describe('Create Product', function() {
 
   it('Create a Product and Price', function() {
     const productPrice = new ProductPrice()
-      .setPriceList("Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01")
-      .setTaxCategory("Regular Tax Rate 19% (Germany)")
+      .setPriceList(priceList)
+      .setTaxCategory(taxCatergory)
       .setListPriceAmount(`0`)
       .setStandardPriceAmount(`0`)
       .setLimitPriceAmount(`0`);
