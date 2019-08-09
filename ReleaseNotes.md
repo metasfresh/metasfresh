@@ -10,6 +10,21 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.116
+
+# Features
+* metasfresh-e2e
+  * [#116](https://github.com/metasfresh/metasfresh-e2e/issues/116) Create new tour and transportation order
+  * [#136](https://github.com/metasfresh/metasfresh-e2e/issues/136) Change product price (product window) and use it
+  * [#153](https://github.com/metasfresh/metasfresh-e2e/issues/153) Change warehouse in material receipt candidate
+  * [#229](https://github.com/metasfresh/metasfresh-e2e/issues/229) Create new Shipper
+  * [#231](https://github.com/metasfresh/metasfresh-e2e/issues/231) Adapt Tourversion
+  * [#248](https://github.com/metasfresh/metasfresh-e2e/issues/248) Create Disposal from Handling Unit Editor
+  * [#277](https://github.com/metasfresh/metasfresh-e2e/issues/277) Create Vendor Return
+  * [#278](https://github.com/metasfresh/metasfresh-e2e/issues/278) Create pricelist schema
+  * [#279](https://github.com/metasfresh/metasfresh-e2e/issues/279) Create new pricelist version using a pricelist schema
+  * [#280](https://github.com/metasfresh/metasfresh-e2e/issues/280) Add a product to a pricelist schema and create a new PLV
+
 # metasfresh 5.115
 
 ## Features
