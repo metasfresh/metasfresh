@@ -72,8 +72,10 @@ public interface IMatchInvDAO extends ISingletonService
 	 * Retrieves the quantity (in stock UOM) of given <code>iol</code> which was matched with {@link I_C_InvoiceLine}s.
 	 *
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>iol</code> and returns their <code>Qty</code> sum.
+	 *
+	 * @param initialQtys usually zero; the method will add its results to this parameter. The result will have the same UOMs.
 	 */
-	StockQtyAndUOMQty retrieveQtysInvoiced(I_M_InOutLine iol);
+	StockQtyAndUOMQty retrieveQtysInvoiced(I_M_InOutLine iol, StockQtyAndUOMQty initialQtys);
 
 	/**
 	 * Retrieves the quantity of given <code>invoiceLine</code> which was matched with {@link I_M_InOutLine}s.

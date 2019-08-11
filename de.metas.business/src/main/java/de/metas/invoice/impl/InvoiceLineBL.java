@@ -38,7 +38,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -69,6 +68,7 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -270,27 +270,25 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		invoiceLine.setQtyInvoicedInPriceUOM(qtyInvoicedInPriceUOM);
 	}
 
-	private BigDecimal calculateQtyInvoicedInPriceUOM(final I_C_InvoiceLine invoiceLine)
+	private BigDecimal calculateQtyInvoicedInPriceUOM(@NonNull final I_C_InvoiceLine ilRecord)
 	{
-		Check.assumeNotNull(invoiceLine, "invoiceLine not null");
+		final BigDecimal qtyEntered = ilRecord.getQtyEntered();
+		Check.assumeNotNull(qtyEntered, "qtyEntered not null; ilRecord={}", ilRecord);
 
-		final BigDecimal qty = invoiceLine.getQtyInvoiced();
-
-		Check.assumeNotNull(qty, "qty not null");
-
-		final I_C_UOM priceUOM = invoiceLine.getPrice_UOM();
-		if (invoiceLine.getPrice_UOM_ID() <= 0)
+		final UomId priceUomId = UomId.ofRepoIdOrNull(ilRecord.getPrice_UOM_ID());
+		if (priceUomId == null)
 		{
-			return qty;
+			return qtyEntered;
 		}
 
-		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
-		if (productId == null)
-		{
-			return qty;
-		}
+		final ProductId productId = ProductId.ofRepoIdOrNull(ilRecord.getM_Product_ID());
 
-		final BigDecimal qtyInPriceUOM = Services.get(IUOMConversionBL.class).convertFromProductUOM(productId, priceUOM, qty);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final BigDecimal qtyInPriceUOM = uomConversionBL.convertQty(
+				UOMConversionContext.of(productId),
+				qtyEntered,
+				UomId.ofRepoId(ilRecord.getC_UOM_ID()),
+				priceUomId);
 
 		return qtyInPriceUOM;
 	}

@@ -861,10 +861,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 	}
 
-	private I_C_Invoice generateInvoice(final IInvoiceHeader header)
+	private I_C_Invoice generateInvoice(@NonNull final IInvoiceHeader header)
 	{
-		Check.assumeNotNull(header, "header not null");
-
 		//
 		// Instantiate invoice generator class
 		final IInvoiceGeneratorRunnable gen;

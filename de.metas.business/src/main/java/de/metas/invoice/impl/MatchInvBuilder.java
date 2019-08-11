@@ -355,7 +355,9 @@ import de.metas.util.Services;
 		final StockQtyAndUOMQty qtyMatched;
 		if (isConsiderQtysAlreadyMatched())
 		{
-			qtyMatched = matchInvDAO.retrieveQtysInvoiced(inoutLine);
+			qtyMatched = matchInvDAO.retrieveQtysInvoiced(
+					inoutLine,
+					qtyReceived.toZero()/* initialQtys */);
 		}
 		else
 		{

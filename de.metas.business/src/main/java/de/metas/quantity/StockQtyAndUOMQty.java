@@ -104,6 +104,14 @@ public class StockQtyAndUOMQty
 		return result.build();
 	}
 
+	public StockQtyAndUOMQty toZero()
+	{
+		return toBuilder()
+				.stockQty(stockQty.toZero())
+				.uomQty(uomQty.toZero())
+				.build();
+	}
+
 	public StockQtyAndUOMQty subtract(@NonNull final StockQtyAndUOMQty other)
 	{
 		Check.assumeEquals(productId, other.productId, "The other instance's productId need to be equal to this instance's productId; this={}; other={}", this, other);

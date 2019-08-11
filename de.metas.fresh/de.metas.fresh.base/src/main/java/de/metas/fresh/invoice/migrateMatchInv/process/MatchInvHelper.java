@@ -265,7 +265,9 @@ import lombok.NonNull;
 			qtyReceived = qtyReceived.negate();
 		}
 
-		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtysInvoiced(iol);
+		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtysInvoiced(
+				iol,
+				qtyReceived.toZero()/*initialValue*/);
 		final StockQtyAndUOMQty qtyNotMatched = StockQtyAndUOMQtys.subtract(qtyReceived, qtyMatched);
 		return qtyNotMatched;
 	}

@@ -107,7 +107,9 @@ public class MatchInvDAO implements IMatchInvDAO
 	}
 
 	@Override
-	public StockQtyAndUOMQty retrieveQtysInvoiced(@NonNull final I_M_InOutLine iol)
+	public StockQtyAndUOMQty retrieveQtysInvoiced(
+			@NonNull final I_M_InOutLine iol,
+			@NonNull final StockQtyAndUOMQty initialQtys)
 	{
 		final List<I_M_MatchInv> matchInvRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_MatchInv.class, iol)
 				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOutLine_ID, iol.getM_InOutLine_ID())
@@ -116,9 +118,7 @@ public class MatchInvDAO implements IMatchInvDAO
 				.list();
 
 		final ProductId productId = ProductId.ofRepoId(iol.getM_Product_ID());
-		final UomId iolUomId = UomId.ofRepoId(iol.getC_UOM_ID());
-
-		StockQtyAndUOMQty result = StockQtyAndUOMQtys.createZero(productId, iolUomId);
+		StockQtyAndUOMQty result = initialQtys;
 
 		for (final I_M_MatchInv matchInvRecord : matchInvRecords)
 		{

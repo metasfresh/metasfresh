@@ -116,12 +116,13 @@ public final class InvoiceCandidateWithInOutLine
 
 	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
 	{
+		final StockQtyAndUOMQty zero = StockQtyAndUOMQtys.createZero(productId, icUomId);
 		if (iciol == null)
 		{
-			return StockQtyAndUOMQtys.createZero(productId, icUomId);
+			return zero;
 		}
 
-		return matchInvDAO.retrieveQtysInvoiced(iciol.getM_InOutLine());
+		return matchInvDAO.retrieveQtysInvoiced(iciol.getM_InOutLine(), zero);
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyShipped()
@@ -156,9 +157,10 @@ public final class InvoiceCandidateWithInOutLine
 			}
 		}
 
+		final BigDecimal stockQty = inOutLine.getMovementQty();
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
-						inOutLine.getMovementQty(), productId,
+						stockQty, productId,
 						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
