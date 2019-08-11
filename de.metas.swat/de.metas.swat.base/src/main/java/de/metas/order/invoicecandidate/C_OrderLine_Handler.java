@@ -310,8 +310,17 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		ic.setQtyEntered(orderLine.getQtyEntered());
-		ic.setC_UOM_ID(orderLine.getC_UOM_ID());
+		// prefer priceUOM, if given
+		if (orderLine.getPrice_UOM_ID() > 0)
+		{
+			ic.setQtyEntered(orderLine.getQtyEnteredInPriceUOM());
+			ic.setC_UOM_ID(orderLine.getPrice_UOM_ID());
+		}
+		else
+		{
+			ic.setQtyEntered(orderLine.getQtyEntered());
+			ic.setC_UOM_ID(orderLine.getC_UOM_ID());
+		}
 
 		// we use C_OrderLine.QtyOrdered which is fine, but which is also in the product's stocking UOM
 		ic.setQtyOrdered(orderLine.getQtyOrdered());
