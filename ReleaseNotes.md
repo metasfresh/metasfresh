@@ -10,6 +10,36 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.116
+
+# Features
+* metasfresh-e2e
+  * [#116](https://github.com/metasfresh/metasfresh-e2e/issues/116) Create new tour and transportation order
+  * [#136](https://github.com/metasfresh/metasfresh-e2e/issues/136) Change product price (product window) and use it
+  * [#153](https://github.com/metasfresh/metasfresh-e2e/issues/153) Change warehouse in material receipt candidate
+  * [#229](https://github.com/metasfresh/metasfresh-e2e/issues/229) Create new Shipper
+  * [#231](https://github.com/metasfresh/metasfresh-e2e/issues/231) Adapt Tourversion
+  * [#248](https://github.com/metasfresh/metasfresh-e2e/issues/248) Create Disposal from Handling Unit Editor
+  * [#277](https://github.com/metasfresh/metasfresh-e2e/issues/277) Create Vendor Return
+  * [#278](https://github.com/metasfresh/metasfresh-e2e/issues/278) Create pricelist schema
+  * [#279](https://github.com/metasfresh/metasfresh-e2e/issues/279) Create new pricelist version using a pricelist schema
+  * [#280](https://github.com/metasfresh/metasfresh-e2e/issues/280) Add a product to a pricelist schema and create a new PLV
+
+# metasfresh 5.115
+
+## Features
+* metasfresh
+  * [#5411](https://github.com/metasfresh/metasfresh/issues/5411) Reset auth token for Json Reports user on each app-server-start
+  * [#5382](https://github.com/metasfresh/metasfresh/issues/5382) Show reversal_id in advanced edit of empties return / receive
+
+* metasfresh-e2e
+  * [#213](https://github.com/metasfresh/metasfresh-e2e/issues/213) Reverse Empties Return
+  * [#233](https://github.com/metasfresh/metasfresh-e2e/issues/233) Change product prices and add a new one
+
+## Fixes
+* metasfresh-webui-frontend
+  * [#2325](https://github.com/metasfresh/metasfresh-webui-frontend/issues/2325) frontend patches too much in quick input field
+
 # metasfresh 5.114
 
 ## Features
