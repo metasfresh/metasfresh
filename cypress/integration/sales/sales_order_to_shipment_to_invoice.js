@@ -11,7 +11,6 @@ describe('Create Sales order', function() {
   const productName = `ProductTest ${date}`;
   const productValue = `sales_order_test ${date}`;
   const productCategoryName = `ProductCategoryName ${date}`;
-  const productCategoryValue = `ProductCategoryValue ${date}`;
   const discountSchemaName = `DiscountSchemaTest ${date}`;
   const priceSystemName = `PriceSystem ${date}`;
   const priceListName = `PriceList ${date}`;
@@ -22,7 +21,7 @@ describe('Create Sales order', function() {
     Builder.createBasicPriceEntities(priceSystemName, priceListVersionName, priceListName, true);
     Builder.createBasicProductEntities(
       productCategoryName,
-      productCategoryValue,
+      productCategoryName,
       priceListName,
       productName,
       productValue,
@@ -49,28 +48,30 @@ describe('Create Sales order', function() {
         .setBPartner(customer)
         .setPriceSystem(priceSystemName)
         .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
         .apply();
     });
-    /** Go to Shipment disposition*/
+    cy.completeDocument();
+  });
+  it('Go to Shipment disposition', function() {
     cy.openReferencedDocuments('M_ShipmentSchedule');
     cy.selectNthRow(0).dblclick();
-    /**Generate shipments */
+  });
+  it('Generate shipments', function() {
     cy.executeHeaderAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
-    /**Wait for the shipment schedule process to complete */
     cy.waitUntilProcessIsFinished();
-    /**Open notifications */
+  });
+  it('Open notifications', function() {
     cy.openInboxNotificationWithText(customer);
-    /**Billing - Invoice disposition */
+  });
+  it('Billing - Invoice disposition', function() {
     cy.openReferencedDocuments('C_Invoice_Candidate');
     cy.selectNthRow(0).click();
-    /**Generate invoices on billing candidates */
+  });
+  it('Generate invoices on billing candidates', function() {
     cy.executeHeaderAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
-    /**Open notifications */
     cy.openInboxNotificationWithText(customer);
   });
 });
