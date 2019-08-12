@@ -72,6 +72,8 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
 
+  cy.waitForSaveIndicator();
+
   const path = createFieldPath(fieldName, modal);
 
   if (isChecked) {
