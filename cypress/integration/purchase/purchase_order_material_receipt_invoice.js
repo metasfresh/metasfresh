@@ -176,7 +176,6 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.pressStartButton();
 
     cy.getNotificationModal(generateInvoicesNotificationModalText);
-    cy.waitUntilProcessIsFinished(); // currently needed to wait for the bell notification
     cy.getDOMNotificationsNumber().should('equal', 1);
   });
 

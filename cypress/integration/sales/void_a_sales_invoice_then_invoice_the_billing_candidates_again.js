@@ -140,7 +140,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.setCheckBoxValue('IsShipToday', false, true);
       cy.pressStartButton();
       cy.getNotificationModal(shipmentNotificationModalText);
-      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       cy.readAllNotifications();
@@ -166,6 +165,9 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       const qtyDelivered = originalQuantity.toString(10);
       const qtyInvoiced = '0';
 
+      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
+      // and no, there's no request to wait for, and no notification. BALLS!!
+      cy.waitUntilProcessIsFinished();
       checkBillingCandidate(qtyDelivered, qtyInvoiced);
     });
   });
@@ -176,7 +178,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton(500);
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       // expected text:
@@ -188,6 +189,9 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       const qtyDelivered = originalQuantity.toString(10);
       const qtyInvoiced = originalQuantity.toString(10);
 
+      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
+      // and no, there's no request to wait for, and no notification. BALLS!!
+      cy.waitUntilProcessIsFinished();
       checkBillingCandidate(qtyDelivered, qtyInvoiced);
     });
   });
@@ -289,7 +293,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton();
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.waitUntilProcessIsFinished();
       cy.getDOMNotificationsNumber().should('equal', 1);
       // todo check notification inbox text!
       // expected text:
