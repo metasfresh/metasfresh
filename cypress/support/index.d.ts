@@ -261,24 +261,14 @@ declare namespace Cypress {
     selectSingleTabRow(): Chainable<any>
 
     /**
-     * Clear current notifications in the UI. This is not persistent and doesn't hit the API.
-     */
-    resetNotifications(): Chainable<any>
-
-    /**
-     * Get the number of notifications displayed in the header alert element
+     * Get the number of notifications displayed in the header alert element.
      *
-     * @return notificationsNumber
+     * Waits at most 15 seconds for a notification to appear.
+     *
+     @return notificationsNumber
      */
     getDOMNotificationsNumber(): Chainable<number>
 
-
-    /**
-     * Select the notification modal element. Optionally look for text inside the notification.
-     *
-     * @param optionalText optional; String to look for in the notification element
-     */
-    getNotificationModal(optionalText?: string): Chainable<any>
 
     /**
      * Opens the inbox notification with the given text
@@ -291,21 +281,6 @@ declare namespace Cypress {
      */
     readAllNotifications(): Chainable<any>
 
-    /**
-     * Push a new notification to the existing list
-     *
-     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
-     */
-    addNotification(notificationObject?: object): Chainable<any>
-
-    /**
-     * Clear current notifications and add a new one. Optionally set the unread count.
-     *
-     * @param notificationObject optional, object with new notification data. If not provided, fixture will be used.
-     * @param unreadCount optional, default = 0; sets unread count number
-     */
-
-    newNotification(notificationObject?: object, unreadCount?: number): Chainable<any>
 
     /**
      * @param waitBeforePress optional, default 0 - wait this many milliseconds before pressing the start button
@@ -315,6 +290,8 @@ declare namespace Cypress {
     /**
      * Get the notification modal from the top-right of the screen
      * which appears when an error happens, or when a process produces a notification.
+     *
+     * Waits at most 15 seconds for a notification to appear.
      *
      * @param containsText optional, default null - look for the given test in the notification element
      *
@@ -540,33 +517,6 @@ declare namespace Cypress {
      * cypress/support/commands/general.js
      */
     readAllNotifications(): Chainable<any>
-
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * cypress/support/commands/general.js
-     */
-    addNotification(notificationObject): Chainable<any>
-
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * cypress/support/commands/general.js
-     */
-    newNotification(notificationObject, unreadCount): Chainable<any>
-
-
-    /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
-     * cypress/support/commands/general.js
-     */
-    getDOMNotificationsNumber(): Chainable<any>
 
 
     /**

@@ -9,12 +9,8 @@
 - visitWindow: visit metasfresh document/details and wait for layout and data; or visit window and display rows
 - performDocumentViewAction: execute a given function and wait for document/detail window layout and data
 - readAllNotifications: mark all notifications as read on the backend
-- resetNotifications: clear notifications inbox and unread count
-- addNotification: adds a new notification to the list
-- newNotification: creates fresh notification list with 1 element
 - getDOMNotificationsNumber: gets the number of notifications in the
   DOM counter element
-- getNotificationsInbox: gets app notifications inbox
 - getNotificationModal: get the HTML element with notification
 - waitForFieldValue: wait for field data from request
 
