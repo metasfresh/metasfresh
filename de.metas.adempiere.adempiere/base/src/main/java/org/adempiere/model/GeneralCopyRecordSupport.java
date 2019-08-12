@@ -40,6 +40,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.GridField;
@@ -81,7 +82,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	private List<CopyRecordSupportTableInfo> _suggestedChildrenToCopy = ImmutableList.of();
 	private int _fromPOId = -1;
 	private boolean _base = false;
-	private int _adWindowId = -1;
+	private AdWindowId _adWindowId = null;
 
 	private static final transient Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
 
@@ -153,7 +154,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 				final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(childTableInfo.getTableName());
 				childCRS.setParentKeyColumn(childTableInfo.getLinkColumnName());
-				childCRS.setAD_Window_ID(getAD_Window_ID());
+				childCRS.setAdWindowId(getAdWindowId());
 				childCRS.setParentPO(toPO);
 
 				childCRS.copyRecord(childPO, trxName);
@@ -393,7 +394,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	{
 		// true NULL
 		if (value == null || value.toString().length() == 0)
+		{
 			return null;
+		}
 		// see also MTable.readData
 		int index = po.get_ColumnIndex(columnName);
 		int displayType = po.getPOInfo().getColumnDisplayType(index);
@@ -411,7 +414,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				{
 					int ii = Integer.parseInt(value);
 					if (ii < 0)
+					{
 						return null;
+					}
 					return new Integer(ii);
 				}
 				catch (Exception e)
@@ -422,11 +427,15 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			}
 			// Integer
 			if (DisplayType.Integer == displayType)
+			{
 				return new Integer(value);
+			}
 
 			// Number
 			if (DisplayType.isNumeric(displayType))
+			{
 				return new BigDecimal(value);
+			}
 
 			// Timestamps
 			if (DisplayType.isDate(displayType))
@@ -446,7 +455,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 			// Boolean
 			if (DisplayType.YesNo == displayType)
+			{
 				return Boolean.valueOf("Y".equals(value));
+			}
 
 			// Default
 			return value;
@@ -479,7 +490,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	{
 		@Nullable
 		final PO parentPO = getParentPO();
-		final int AD_Window_ID = getAD_Window_ID();
+		final AdWindowId adWindowId = getAdWindowId();
 
 		// TODO: until refactoring, keep in sync with org.compiere.model.GridField.getDefaultNoCheck()
 		// Object defaultValue = null;
@@ -494,11 +505,15 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		final int displayType = poInfo.getColumnDisplayType(index);
 
 		if (defaultLogic == null)
+		{
 			return null;
+		}
 
 		if (poInfo.isKey(index) || DisplayType.RowID == displayType
 				|| DisplayType.isLOB(displayType))
+		{
 			return null;
+		}
 		// Always Active
 		if (columnName.equals("IsActive"))
 		{
@@ -553,9 +568,13 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 					pstmt = DB.prepareStatement(sql, po.get_TrxName());
 					rs = pstmt.executeQuery();
 					if (rs.next())
+					{
 						defStr = rs.getString(1);
+					}
 					else
+					{
 						log.warn("(" + columnName + ") - no Result: " + sql);
+					}
 				}
 				catch (SQLException e)
 				{
@@ -590,15 +609,19 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			while (st.hasMoreTokens())
 			{
 				defStr = st.nextToken().trim();
-				if (defStr.equals("@SysDate@")) // System Time
+				if (defStr.equals("@SysDate@"))
+				{
 					return new Timestamp(System.currentTimeMillis());
+				}
 				else if (defStr.indexOf('@') != -1) // it is a variable
 				{
 					final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 					defStr = Evaluator.parseContext(evaluatee, defStr.trim());
 				}
-				else if (defStr.indexOf("'") != -1) // it is a 'String'
+				else if (defStr.indexOf("'") != -1)
+				{
 					defStr = defStr.replace('\'', ' ').trim();
+				}
 
 				if (!defStr.equals(""))
 				{
@@ -611,7 +634,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		/**
 		 * (d) Preference (user) - P|
 		 */
-		defStr = Env.getPreference(po.getCtx(), AD_Window_ID, columnName, false);
+		defStr = Env.getPreference(po.getCtx(), adWindowId, columnName, false);
 		if (!defStr.equals(""))
 		{
 			log.debug("[UserPreference] " + columnName + "=" + defStr);
@@ -621,7 +644,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		/**
 		 * (e) Preference (System) - # $
 		 */
-		defStr = Env.getPreference(po.getCtx(), AD_Window_ID, columnName, true);
+		defStr = Env.getPreference(po.getCtx(), adWindowId, columnName, true);
 		if (!defStr.equals(""))
 		{
 			log.debug("[SystemPreference] " + columnName + "=" + defStr);
@@ -658,7 +681,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 
 		if (parentPO != null)
+		{
 			return parentPO.get_Value(columnName);
+		}
 		return null;
 	}
 
@@ -674,13 +699,13 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return gridField.getDefault();
 	}
 
-	private final int getAD_Window_ID()
+	private final AdWindowId getAdWindowId()
 	{
 		return _adWindowId;
 	}
 
 	@Override
-	public final void setAD_Window_ID(int adWindowId)
+	public final void setAdWindowId(final AdWindowId adWindowId)
 	{
 		this._adWindowId = adWindowId;
 	}

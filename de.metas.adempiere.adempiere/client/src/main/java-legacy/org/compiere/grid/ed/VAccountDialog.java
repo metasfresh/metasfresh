@@ -41,6 +41,7 @@ import javax.swing.JTable;
 import javax.swing.JToolBar;
 import javax.swing.border.TitledBorder;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.apps.AEnv;
@@ -95,7 +96,7 @@ public final class VAccountDialog extends CDialog
 	 */
 	private static final long serialVersionUID = -1980622319541357651L;
 
-	private static final int ValidCombination_AD_Window_ID = 153;		// Maintain Account Combinations
+	private static final AdWindowId ValidCombination_AD_Window_ID = AdWindowId.ofRepoId(153);		// Maintain Account Combinations
 
 	/**
 	 * Mouse Listener
@@ -104,7 +105,7 @@ public final class VAccountDialog extends CDialog
 	{
 		VAccountDialog_mouseAdapter(VAccountDialog adaptee)
 		{
-			this.adapteeRef = new WeakReference<VAccountDialog>(adaptee);
+			this.adapteeRef = new WeakReference<>(adaptee);
 		}
 
 		private WeakReference<VAccountDialog> adapteeRef;
@@ -313,12 +314,16 @@ public final class VAccountDialog extends CDialog
 		// Model
 		final GridWindowVO wVO = AEnv.getMWindowVO(m_WindowNo, ValidCombination_AD_Window_ID, 0); // AD_Menu_ID=0
 		if (wVO == null)
+		{
 			return false;
+		}
 		m_mWindow = new GridWindow(wVO);
 		m_mTab = m_mWindow.getTab(0);
 		// Make sure is the tab is loaded - teo_sarca [ 1659124 ]
 		if (!m_mTab.isLoadComplete())
+		{
 			m_mWindow.initTab(0);
+		}
 
 		// ParameterPanel restrictions
 		m_mTab.getField("Alias").setDisplayLength(15);
@@ -332,8 +337,10 @@ public final class VAccountDialog extends CDialog
 		for (int i = 0; i < m_mTab.getFieldCount(); i++)
 		{
 			GridField field = m_mTab.getField(i);
-			if (!field.isDisplayed(true))      // check context
+			if (!field.isDisplayed(true))
+			{
 				field.setDisplayed(false);
+			}
 		}
 
 		// GridController
@@ -539,7 +546,9 @@ public final class VAccountDialog extends CDialog
 			m_gbc.gridx = 0;
 		}
 		else
+		{
 			m_gbc.gridx = 2;
+		}
 		m_gbc.insets = m_labelInsets;
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		m_gbc.weightx = 0;
@@ -547,9 +556,13 @@ public final class VAccountDialog extends CDialog
 
 		// Field
 		if (m_newRow)
+		{
 			m_gbc.gridx = 1;
+		}
 		else
+		{
 			m_gbc.gridx = 3;
+		}
 		m_gbc.insets = m_fieldInsets;
 		m_gbc.fill = GridBagConstraints.HORIZONTAL;
 		m_gbc.weightx = 1;
@@ -566,10 +579,14 @@ public final class VAccountDialog extends CDialog
 		}
 
 		if (f_Alias != null)
+		{
 			f_Alias.setValue(account.getAlias());
+		}
 
 		if (f_Combination != null)
+		{
 			f_Combination.setValue(account.getCombination());
+		}
 		//
 		loadInfoOf(account.getAD_Org_ID(), f_AD_Org_ID);
 		loadInfoOf(account.getAccount_ID(), f_Account_ID);
@@ -588,7 +605,9 @@ public final class VAccountDialog extends CDialog
 		loadInfoOf(account.getUser2_ID(), f_User2_ID);
 		//
 		if (f_Description != null)
+		{
 			f_Description.setText(account.getDescription());
+		}
 	}
 
 	private void loadInfoOf(final int value, VEditor editor)
@@ -609,9 +628,13 @@ public final class VAccountDialog extends CDialog
 		}
 
 		if (isNull)
+		{
 			editor.setValue(null);
+		}
 		else
+		{
 			editor.setValue(value);
+		}
 	}	// loadInfoOf
 
 	/**
@@ -651,7 +674,9 @@ public final class VAccountDialog extends CDialog
 		{
 			int row = m_gridController.getTable().getSelectedRow();
 			if (row >= 0)
+			{
 				m_C_ValidCombination_ID = ((Integer)m_mTab.getValue(row, "C_ValidCombination_ID")).intValue();
+			}
 			log.info("(" + row + ") - " + m_C_ValidCombination_ID);
 		}
 	}	// saveSelection
@@ -764,7 +789,9 @@ public final class VAccountDialog extends CDialog
 		{
 			String value = f_Alias.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			query.addRestriction("UPPER(Alias)", Operator.LIKE, value);
 		}
 		// Combination (mandatory)
@@ -772,51 +799,81 @@ public final class VAccountDialog extends CDialog
 		{
 			String value = f_Combination.getValue().toString().toUpperCase();
 			if (!value.endsWith("%"))
+			{
 				value += "%";
+			}
 			query.addRestriction("UPPER(Combination)", Operator.LIKE, value);
 		}
 		// Org (mandatory)
 		if (f_AD_Org_ID != null && f_AD_Org_ID.getValue() != null)
+		{
 			query.addRestriction("AD_Org_ID", Operator.EQUAL, f_AD_Org_ID.getValue());
+		}
 		// Account (mandatory)
 		if (f_Account_ID != null && f_Account_ID.getValue() != null)
+		{
 			query.addRestriction("Account_ID", Operator.EQUAL, f_Account_ID.getValue());
+		}
 		if (f_SubAcct_ID != null && f_SubAcct_ID.getValue() != null)
+		{
 			query.addRestriction("C_SubAcct_ID", Operator.EQUAL, f_SubAcct_ID.getValue());
+		}
 
 		// Product
 		if (f_M_Product_ID != null && f_M_Product_ID.getValue() != null)
+		{
 			query.addRestriction("M_Product_ID", Operator.EQUAL, f_M_Product_ID.getValue());
+		}
 		// BPartner
 		if (f_C_BPartner_ID != null && f_C_BPartner_ID.getValue() != null)
+		{
 			query.addRestriction("C_BPartner_ID", Operator.EQUAL, f_C_BPartner_ID.getValue());
+		}
 		// Campaign
 		if (f_C_Campaign_ID != null && f_C_Campaign_ID.getValue() != null)
+		{
 			query.addRestriction("C_Campaign_ID", Operator.EQUAL, f_C_Campaign_ID.getValue());
+		}
 		// Loc From
 		if (f_C_LocFrom_ID != null && f_C_LocFrom_ID.getValue() != null)
+		{
 			query.addRestriction("C_LocFrom_ID", Operator.EQUAL, f_C_LocFrom_ID.getValue());
+		}
 		// Loc To
 		if (f_C_LocTo_ID != null && f_C_LocTo_ID.getValue() != null)
+		{
 			query.addRestriction("C_LocTo_ID", Operator.EQUAL, f_C_LocTo_ID.getValue());
+		}
 		// Project
 		if (f_C_Project_ID != null && f_C_Project_ID.getValue() != null)
+		{
 			query.addRestriction("C_Project_ID", Operator.EQUAL, f_C_Project_ID.getValue());
+		}
 		// SRegion
 		if (f_C_SalesRegion_ID != null && f_C_SalesRegion_ID.getValue() != null)
+		{
 			query.addRestriction("C_SalesRegion_ID", Operator.EQUAL, f_C_SalesRegion_ID.getValue());
+		}
 		// Org Trx
 		if (f_AD_OrgTrx_ID != null && f_AD_OrgTrx_ID.getValue() != null)
+		{
 			query.addRestriction("AD_OrgTrx_ID", Operator.EQUAL, f_AD_OrgTrx_ID.getValue());
+		}
 		// Activity
 		if (f_C_Activity_ID != null && f_C_Activity_ID.getValue() != null)
+		{
 			query.addRestriction("C_Activity_ID", Operator.EQUAL, f_C_Activity_ID.getValue());
+		}
 		// User 1
 		if (f_User1_ID != null && f_User1_ID.getValue() != null)
+		{
 			query.addRestriction("User1_ID", Operator.EQUAL, f_User1_ID.getValue());
+		}
 		// User 2
 		if (f_User2_ID != null && f_User2_ID.getValue() != null)
+		{
 			query.addRestriction("User2_ID", Operator.EQUAL, f_User2_ID.getValue());
+		}
 		return query;
 	}
 
@@ -964,56 +1021,92 @@ public final class VAccountDialog extends CDialog
 	private void action_Ignore()
 	{
 		if (f_C_AcctSchema_ID != null)
+		{
 			f_C_AcctSchema_ID.setValue(acctSchemaId.getRepoId());
+		}
 		if (f_Alias != null)
+		{
 			f_Alias.setValue("");
+		}
 		if (f_Combination != null)
+		{
 			f_Combination.setValue("");
+		}
 		if (f_Description != null)
+		{
 			f_Description.setText("");
+		}
 		//
 		// Org
 		if (f_AD_Org_ID != null)
+		{
 			f_AD_Org_ID.setValue(null);
+		}
 		// Account (mandatory)
 		if (f_Account_ID != null)
+		{
 			f_Account_ID.setValue(null);
+		}
 		if (f_SubAcct_ID != null)
+		{
 			f_SubAcct_ID.setValue(null);
+		}
 
 		// Product
 		if (f_M_Product_ID != null)
+		{
 			f_M_Product_ID.setValue(null);
+		}
 		// BPartner
 		if (f_C_BPartner_ID != null)
+		{
 			f_C_BPartner_ID.setValue(null);
+		}
 		// Campaign
 		if (f_C_Campaign_ID != null)
+		{
 			f_C_Campaign_ID.setValue(null);
+		}
 		// Loc From
 		if (f_C_LocFrom_ID != null)
+		{
 			f_C_LocFrom_ID.setValue(null);
+		}
 		// Loc To
 		if (f_C_LocTo_ID != null)
+		{
 			f_C_LocTo_ID.setValue(null);
+		}
 		// Project
 		if (f_C_Project_ID != null)
+		{
 			f_C_Project_ID.setValue(null);
+		}
 		// SRegion
 		if (f_C_SalesRegion_ID != null)
+		{
 			f_C_SalesRegion_ID.setValue(null);
+		}
 		// Org Trx
 		if (f_AD_OrgTrx_ID != null)
+		{
 			f_AD_OrgTrx_ID.setValue(null);
+		}
 		// Activity
 		if (f_C_Activity_ID != null)
+		{
 			f_C_Activity_ID.setValue(null);
+		}
 		// User 1
 		if (f_User1_ID != null)
+		{
 			f_User1_ID.setValue(null);
+		}
 		// User 2
 		if (f_User2_ID != null)
+		{
 			f_User2_ID.setValue(null);
+		}
 	}	// action_Ignore
 
 	/**
@@ -1024,7 +1117,9 @@ public final class VAccountDialog extends CDialog
 	public Integer getValue()
 	{
 		if (!m_changed || m_C_ValidCombination_ID <= 0)
+		{
 			return null;
+		}
 		return m_C_ValidCombination_ID;
 	}
 
@@ -1050,7 +1145,7 @@ public final class VAccountDialog extends CDialog
 		return Env.getCtx();
 	}
 
-	private final AcctSchema getAcctSchema()
+	private AcctSchema getAcctSchema()
 	{
 		if (_acctSchema == null)
 		{

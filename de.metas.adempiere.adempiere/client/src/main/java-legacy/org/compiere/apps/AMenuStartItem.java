@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import javax.swing.SwingWorker;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -36,14 +37,12 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.process.ui.ProcessDialog;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.logging.LogManager;
 
 /**
  * Start application action ( process, workflow, window, form, task etc).
@@ -123,7 +122,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		//
 		// Load
 		this.action = wfNode.getAction();
-		this.adWindowId = wfNode.getAD_Window_ID();
+		this.adWindowId = AdWindowId.ofRepoIdOrNull(wfNode.getAD_Window_ID());
 		this.adWorkbenchId = -1;
 		this.adProcessId = wfNode.getAD_Process_ID();
 		this.adFormId = wfNode.getAD_Form_ID();
@@ -145,7 +144,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	private boolean loaded = false;
 	private String action;
 	private boolean IsSOTrx = true;
-	private int adWindowId = -1;
+	private AdWindowId adWindowId = null;
 	private int adWorkbenchId = -1;
 	private int adProcessId = -1;
 	private int adWorkflowId = -1;
@@ -197,7 +196,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 		}
 		else if (X_AD_Menu.ACTION_Workbench.equals(action))
 		{
-			startWindow(adWorkbenchId, 0);
+			startWindow(adWorkbenchId, (AdWindowId)null);
 		}
 		else if (X_AD_Menu.ACTION_WorkFlow.equals(action))
 		{
@@ -253,7 +252,7 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 					IsSOTrx = true;
 				}
 
-				adWindowId = rs.getInt("AD_Window_ID");
+				adWindowId = AdWindowId.ofRepoIdOrNull(rs.getInt("AD_Window_ID"));
 				adProcessId = rs.getInt("AD_Process_ID");
 				adWorkbenchId = rs.getInt("AD_Workbench_ID");
 				adWorkflowId = rs.getInt(m_isMenu ? I_AD_Menu.COLUMNNAME_AD_Workflow_ID : I_AD_WF_Node.COLUMNNAME_Workflow_ID);
@@ -306,15 +305,15 @@ public class AMenuStartItem extends SwingWorker<Void, Void>
 	 * Start Window
 	 *
 	 * @param AD_Workbench_ID workbench
-	 * @param AD_Window_ID window
+	 * @param adWindowId window
 	 */
-	private void startWindow(final int AD_Workbench_ID, final int AD_Window_ID)
+	private void startWindow(final int AD_Workbench_ID, final AdWindowId adWindowId)
 	{
 		// metas-ts: task 05796: moved the code to WindowBL.openWindow() to allow it beeing called on other occasions too
 		Services.get(IWindowBL.class).openWindow(
 				m_menu.getWindowManager(),
 				AD_Workbench_ID,
-				AD_Window_ID);
+				adWindowId);
 	}	// startWindow
 
 	/**

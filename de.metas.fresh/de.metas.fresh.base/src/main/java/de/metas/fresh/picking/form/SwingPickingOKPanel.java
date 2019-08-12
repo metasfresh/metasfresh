@@ -42,6 +42,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.api.IWindowBL;
@@ -622,12 +623,12 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 		else if (ACTION_QuickInv.equals(action))
 		{
 			// FIXME find a better solution..maybe by introducing column AD_Window.InternalName? 540205 is the AD_Window_ID of the "Eigenverbrauch (metas)" window
-			openDynamicWindow(540205);
+			openDynamicWindow(AdWindowId.ofRepoId(540205));
 		}
 		else if (ACTION_ShipperTransportation.equals(action))
 		{
 			// FIXME find a better solution..maybe by introducing column AD_Window.InternalName?
-			openDynamicWindow(540020);
+			openDynamicWindow(AdWindowId.ofRepoId(540020));
 		}
 		else if (ACTION_DDOrder.equals(action))
 		{
@@ -655,11 +656,11 @@ public class SwingPickingOKPanel extends TerminalSubPanel
 	 * <br>
 	 * Open dynamic window
 	 *
-	 * @param AD_Window_ID
+	 * @param adWindowId
 	 */
-	private void openDynamicWindow(final int AD_Window_ID)
+	private void openDynamicWindow(final AdWindowId adWindowId)
 	{
-		final boolean success = Services.get(IWindowBL.class).openWindow(AD_Window_ID);
+		final boolean success = Services.get(IWindowBL.class).openWindow(adWindowId);
 		if (!success)
 		{
 			final int windowNo = getPickingTerminalPanel().getTerminalContext().getWindowNo();
