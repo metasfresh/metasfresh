@@ -22,6 +22,8 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
+  cy.waitForSaveIndicator();
+
   const path = createFieldPath(fieldName, modal);
   return cy
     .get(path)
