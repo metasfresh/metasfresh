@@ -291,34 +291,30 @@ Cypress.Commands.add('readAllNotifications', () => {
 Cypress.Commands.add('getDOMNotificationsNumber', () => {
   const timeout = { timeout: 15000 };
 
-// todo @kuba i think this function is useless and should be deleted.
-//  I cannot use it to check notification message and to click a specific notification to move to the relevant window
-Cypress.Commands.add('getNotificationsInbox', () => {
-  describe('Get the notifications inbox in the app state', function() {
-    return cy
-      .window()
-      .its('store')
-      .invoke('getState')
-      .then(state => {
-        return cy.wrap(state.appHandler.inbox);
-      });
-  });
+  return cy
+    .get('.header-item-badge', timeout)
+    .find('.notification-number', timeout)
+    .then(el => {
+      const val = el[0].textContent;
+
+      return parseInt(val, 10);
+    });
 });
 
 /*
  * if `optionalText` is given it will look for it inside the notification element
  */
 Cypress.Commands.add('getNotificationModal', optionalText => {
-  describe('Get the number of notifications displayed in the header alert element', function() {
-    if (!optionalText) {
-      return cy.get('.notification-handler').find('.notification-content');
-    } else {
-      return cy
-        .get('.notification-handler')
-        .find('.notification-content')
-        .contains(optionalText);
-    }
-  });
+  const timeout = { timeout: 15000 };
+
+  if (!optionalText) {
+    return cy.get('.notification-handler', timeout).find('.notification-content', timeout);
+  } else {
+    return cy
+      .get('.notification-handler', timeout)
+      .find('.notification-content', timeout)
+      .contains(optionalText);
+  }
 });
 /**
  * Opens the inbox notification with the given text
