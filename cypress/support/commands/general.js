@@ -412,8 +412,6 @@ Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
   }
   cy.get('.indicator-pending').should('not.exist');
   cy.get('.indicator-saved').should('exist');
-  cy.get('.indicator-pending').should('not.exist');
-  cy.get('.indicator-saved').should('exist');
 });
 
 Cypress.Commands.add('selectNotificationContaining', expectedValue => {
