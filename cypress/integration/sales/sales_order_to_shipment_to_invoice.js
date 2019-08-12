@@ -55,7 +55,7 @@ describe('Create Sales order', function() {
     cy.selectNthRow(0).click();
   });
   it('Generate shipments', function() {
-    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', true, false, true);
+    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
   });
