@@ -54,6 +54,7 @@ describe('Create Sales order', function() {
   it('Generate shipments', function() {
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
     cy.pressStartButton();
+    cy.waitUntilProcessIsFinished();
   });
   it('Open notifications', function() {
     cy.openInboxNotificationWithText(customer);
