@@ -1,8 +1,7 @@
 import { BPartner } from '../../support/utils/bpartner';
 import { DiscountSchema } from '../../support/utils/discountschema';
 import { Builder } from '../../support/utils/builder';
-import { getLanguageSpecific, humanReadableNow } from '../../support/utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../../support/utils/constants';
+import { humanReadableNow } from '../../support/utils/utils';
 import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 
 describe('Create Sales order', function() {
@@ -55,21 +54,21 @@ describe('Create Sales order', function() {
     cy.selectNthRow(0).click();
   });
   it('Generate shipments', function() {
-    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection');
+    cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
     cy.pressStartButton();
     cy.waitUntilProcessIsFinished();
   });
   it('Open notifications', function() {
     cy.openInboxNotificationWithText(customer);
   });
-  it('Billing - Invoice disposition', function() {
-    cy.openReferencedDocuments('C_Invoice_Candidate');
-    cy.selectNthRow(0).click();
-  });
-  it('Generate invoices on billing candidates', function() {
-    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing');
-    cy.pressStartButton();
-    cy.waitUntilProcessIsFinished();
-    cy.openInboxNotificationWithText(customer);
-  });
+  // it('Billing - Invoice disposition', function() {
+  //   cy.openReferencedDocuments('C_Invoice_Candidate');
+  //   cy.selectNthRow(0).click();
+  // });
+  // it('Generate invoices on billing candidates', function() {
+  //   cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', true, false, true);
+  //   cy.pressStartButton();
+  //   cy.waitUntilProcessIsFinished();
+  //   cy.openInboxNotificationWithText(customer);
+  // });
 });
