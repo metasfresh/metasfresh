@@ -79,12 +79,12 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   if (isChecked) {
     return cy
       .get(path)
-      .find('.checked')
+      .find('.checked', { timeout: 10000 })
       .should('exist');
   } else {
     return cy
       .get(path)
-      .find('.checked')
+      .find('.checked', { timeout: 10000 })
       .should('not.exist');
   }
 });
