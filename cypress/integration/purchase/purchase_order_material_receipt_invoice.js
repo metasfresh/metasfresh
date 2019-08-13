@@ -182,11 +182,14 @@ describe('Create a purchase order and Material Receipts', function() {
 
   it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {
     cy.openInboxNotificationWithText(vendorName);
+    cy.waitForSaveIndicator();
+
     // wait until current window is PurchaseInvoice
     cy.url().should('contain', '/183/');
 
     // hope this is enough for the whole window to load
     cy.waitForSaveIndicator();
+    cy.getStringFieldValue('C_BPartner_ID').should('contain', vendorName);
 
     cy.openAdvancedEdit();
     cy.getStringFieldValue('GrandTotal').then(el => {
