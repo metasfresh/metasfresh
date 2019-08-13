@@ -176,7 +176,7 @@ describe('Create a purchase order and Material Receipts', function() {
     cy.pressStartButton();
 
     cy.getNotificationModal(generateInvoicesNotificationModalText);
-    cy.getDOMNotificationsNumber().should('equal', 1);
+    cy.expectNumberOfDOMNotifications(1);
   });
 
   it('Open Purchase Invoice from notifications bell and check GrandTotal', function() {

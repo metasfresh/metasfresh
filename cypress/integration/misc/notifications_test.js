@@ -9,7 +9,7 @@ describe('Test notifications', function() {
 
   it('Check if new notifications are added correctly', function() {
     newNotification(null, 1).then(notifObj => {
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
 
       getNotificationsInbox().then(state => {
         assert.equal(state.unreadCount, 1);

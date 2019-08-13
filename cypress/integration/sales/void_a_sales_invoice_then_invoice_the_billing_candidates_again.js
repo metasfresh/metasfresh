@@ -140,7 +140,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.setCheckBoxValue('IsShipToday', false, true);
       cy.pressStartButton();
       cy.getNotificationModal(shipmentNotificationModalText);
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       cy.readAllNotifications();
     });
@@ -178,7 +178,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton(500);
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       // expected text:
       // Rechnung 145808 für Partner G0002 Test Lieferant 1 wurde erstellt.
@@ -293,7 +293,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton();
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       // expected text:
       // Rechnung 145808 für Partner G0002 Test Lieferant 1 wurde erstellt.
