@@ -9,7 +9,6 @@
 - visitWindow: visit metasfresh document/details and wait for layout and data; or visit window and display rows
 - performDocumentViewAction: execute a given function and wait for document/detail window layout and data
 - readAllNotifications: mark all notifications as read on the backend
-- getDOMNotificationsNumber: gets the number of notifications in the
   DOM counter element
 - getNotificationModal: get the HTML element with notification
 - waitForFieldValue: wait for field data from request

@@ -288,7 +288,7 @@ Cypress.Commands.add('readAllNotifications', () => {
   });
 });
 
-Cypress.Commands.add('getDOMNotificationsNumber', () => {
+Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
   const timeout = { timeout: 15000 };
 
   return cy
@@ -297,8 +297,9 @@ Cypress.Commands.add('getDOMNotificationsNumber', () => {
     .then(el => {
       const val = el[0].textContent;
 
-      return parseInt(val, 10);
-    });
+      return cy.wrap(parseInt(val, 10));
+    })
+    .should('eq', expectedNumber);
 });
 
 /*

@@ -261,13 +261,12 @@ declare namespace Cypress {
     selectSingleTabRow(): Chainable<any>
 
     /**
-     * Get the number of notifications displayed in the header alert element.
+     * Expect a number of unread notifications to be displayed in the header alert element.
      *
      * Waits at most 15 seconds for a notification to appear.
      *
-     @return notificationsNumber
      */
-    getDOMNotificationsNumber(): Chainable<number>
+    expectNumberOfDOMNotifications(expectedNumber: number): Chainable<any>
 
 
     /**
