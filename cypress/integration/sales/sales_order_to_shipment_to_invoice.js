@@ -40,13 +40,11 @@ describe('Create Sales order', function() {
     cy.readAllNotifications();
   });
   it('Create a sales order', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new SalesOrder()
-        .setBPartner(customer)
-        .setPriceSystem(priceSystemName)
-        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
-        .apply();
-    });
+    new SalesOrder()
+      .setBPartner(customer)
+      .setPriceSystem(priceSystemName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(1))
+      .apply();
     cy.completeDocument();
   });
   it('Go to Shipment disposition', function() {
@@ -56,19 +54,20 @@ describe('Create Sales order', function() {
   it('Generate shipments', function() {
     cy.executeQuickAction('M_ShipmentSchedule_EnqueueSelection', false);
     cy.pressStartButton();
-    cy.waitUntilProcessIsFinished();
   });
   it('Open notifications', function() {
     cy.openInboxNotificationWithText(customer);
   });
-  // it('Billing - Invoice disposition', function() {
-  //   cy.openReferencedDocuments('C_Invoice_Candidate');
-  //   cy.selectNthRow(0).click();
-  // });
-  // it('Generate invoices on billing candidates', function() {
-  //   cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', true, false, true);
-  //   cy.pressStartButton();
-  //   cy.waitUntilProcessIsFinished();
-  //   cy.openInboxNotificationWithText(customer);
-  // });
+  it('Billing - Invoice disposition', function() {
+    // wait until current window is "Shipment"
+    cy.url().should('contain', '/169/');
+
+    cy.openReferencedDocuments('C_Invoice_Candidate');
+    cy.selectNthRow(0).click();
+  });
+  it('Generate invoices on billing candidates', function() {
+    cy.executeQuickAction('C_Invoice_Candidate_EnqueueSelectionForInvoicing', false, false, true);
+    cy.pressStartButton();
+    cy.openInboxNotificationWithText(customer);
+  });
 });
