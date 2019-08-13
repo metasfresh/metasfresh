@@ -1816,6 +1816,11 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			project.saveEx(get_TrxName());
 		} 	// project
 
+		// Make sure is flagged as processed.
+		// Else, APIs like checking the allocated amount will ignore this invoice.
+		setProcessed(true);
+		saveEx();
+
 		// User Validation
 		final String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
