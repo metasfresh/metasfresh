@@ -32,8 +32,11 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -111,6 +114,16 @@ public class PP_Order
 		}
 
 		//
+		// Set project from OrderLine if not set
+		if ((changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_OrderLine_ID))
+				&& ppOrder.getC_OrderLine_ID() > 0)
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(ppOrder.getC_OrderLine_ID());
+			final ProjectId projectId = Services.get(IOrderBL.class).getProjectIdOrNull(orderLineId);
+			ppOrder.setC_Project_ID(ProjectId.toRepoId(projectId));
+		}
+
+		//
 		// Warehouse/Locator changed => update Order BOM Lines
 		if (InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID)
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Locator_ID)
@@ -148,7 +161,7 @@ public class PP_Order
 			}
 		}
 	}
-	
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createWorkFlowAndBom(final I_PP_Order ppOrderRecord)
 	{
@@ -159,7 +172,7 @@ public class PP_Order
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		
+
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
 		{
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl

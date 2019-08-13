@@ -373,10 +373,8 @@ public interface I_PP_Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setC_Project_ID (int C_Project_ID);
 
 	/**
@@ -385,17 +383,9 @@ public interface I_PP_Order
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public int getC_Project_ID();
-
-	@Deprecated
-	public org.compiere.model.I_C_Project getC_Project();
-
-	@Deprecated
-	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
     /** Column definition for C_Project_ID */
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Project>(I_PP_Order.class, "C_Project_ID", org.compiere.model.I_C_Project.class);

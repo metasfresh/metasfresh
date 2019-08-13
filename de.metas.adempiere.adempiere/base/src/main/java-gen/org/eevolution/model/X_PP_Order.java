@@ -15,7 +15,7 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1494674743L;
+	private static final long serialVersionUID = 1357304617L;
 
     /** Standard Constructor */
     public X_PP_Order (Properties ctx, int PP_Order_ID, String trxName)
@@ -413,18 +413,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_C_Project getC_Project()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class);
-	}
-
-	@Override
-	public void setC_Project(org.compiere.model.I_C_Project C_Project)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Project_ID, org.compiere.model.I_C_Project.class, C_Project);
-	}
-
 	/** Set Projekt.
 		@param C_Project_ID 
 		Financial Project
@@ -432,7 +420,11 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	@Override
 	public void setC_Project_ID (int C_Project_ID)
 	{
-		throw new IllegalArgumentException ("C_Project_ID is virtual column");	}
+		if (C_Project_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Project_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+	}
 
 	/** Get Projekt.
 		@return Financial Project
