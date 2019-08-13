@@ -409,7 +409,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				invoice.setIsPaid(test);
 			}
-			log.debug("Paid=" + test + " (" + alloc + "=" + total + ")");
+			
+			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
 		}
 
 		return change;
