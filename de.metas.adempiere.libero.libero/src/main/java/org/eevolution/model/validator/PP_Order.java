@@ -33,6 +33,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,13 +53,13 @@ public class PP_Order
 	public void beforeSave(final I_PP_Order ppOrder, final ModelChangeType changeType)
 	{
 		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-		final boolean newRecord = changeType.isNew();
 
 		//
 		// If UOM not filled, get it from Product
-		if (ppOrder.getC_UOM_ID() <= 0 && ppOrder.getM_Product_ID() > 0)
+		if (ppOrder.getC_UOM_ID() <= 0)
 		{
-			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(ppOrder.getM_Product_ID());
+			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(productId);
 			ppOrder.setC_UOM_ID(uomId.getRepoId());
 		}
 
@@ -130,7 +131,8 @@ public class PP_Order
 
 		//
 		// DocType: OrderType
-		if (newRecord || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_DocType_ID))
+		if (changeType.isNew()
+				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_DocType_ID))
 		{
 			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
 			final I_C_DocType docType = docTypeId != null
