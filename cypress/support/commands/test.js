@@ -1,5 +1,5 @@
 import { getLanguageSpecific } from '../utils/utils';
-import { DocumentActionKey, DocumentStatusKey } from '../utils/constants';
+import { DocumentActionKey, DocumentStatusKey, RewriteURL } from '../utils/constants';
 import { checkIfWindowCanExecuteActions } from './commands_utils';
 
 Cypress.Commands.add('editAddress', (fieldName, addressFunction) => {
@@ -52,31 +52,29 @@ Cypress.Commands.add('pressStartButton', waitBeforePress => {
 });
 
 Cypress.Commands.add('processDocument', (action, expectedStatus) => {
-  describe('Execute a doc action', function() {
-    cy.log(`Execute doc action ${action}`);
+  cy.log(`Execute doc action ${action}`);
 
-    cy.server();
-    const docActionAlias = `docAction-${new Date().getTime()}`;
-    cy.route('GET', new RegExp(`rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`)).as(docActionAlias);
+  cy.server();
+  const docActionAlias = `docAction-${new Date().getTime()}`;
+  cy.route('GET', new RegExp(RewriteURL.DocActionDropdown)).as(docActionAlias);
 
-    cy.get('.form-field-DocAction .meta-dropdown-toggle').click();
-    cy.get('.form-field-DocAction .dropdown-status-open').should('exist');
-    cy.get('.form-field-DocAction .dropdown-status-list')
-      .find('.dropdown-status-item')
-      .contains(action)
-      .click();
+  cy.get('.form-field-DocAction .meta-dropdown-toggle').click();
+  cy.get('.form-field-DocAction .dropdown-status-open').should('exist');
+  cy.get('.form-field-DocAction .dropdown-status-list')
+    .find('.dropdown-status-item')
+    .contains(action)
+    .click();
 
-    cy.wait(`@${docActionAlias}`, {
-      requestTimeout: 20000,
-      responseTimeout: 20000,
-    });
-
-    cy.get('.indicator-pending', { timeout: 10000 }).should('not.exist');
-    if (expectedStatus) {
-      cy.log(`Verify that the doc status is now ${expectedStatus}`);
-      cy.contains('.meta-dropdown-toggle .tag', expectedStatus);
-    }
+  cy.wait(`@${docActionAlias}`, {
+    requestTimeout: 20000,
+    responseTimeout: 20000,
   });
+
+  cy.waitForSaveIndicator();
+  if (expectedStatus) {
+    cy.log(`Verify that the doc status is now ${expectedStatus}`);
+    cy.contains('.meta-dropdown-toggle .tag', expectedStatus);
+  }
 });
 
 Cypress.Commands.add('openAdvancedEdit', () => {

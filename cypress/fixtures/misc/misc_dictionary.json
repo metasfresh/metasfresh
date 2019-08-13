@@ -27,6 +27,9 @@
   "docStatusReversed": "Reversed",
   "de_DE__docStatusReversed": "Rückgängig",
 
+  "docStatusVoided": "Voided",
+  "de_DE__docStatusVoided": "Voided",
+
 
   "defaultTaxCategory_comment": "used in tax tests and also in places where we just need to set some tax rate",
   "defaultTaxCategory": "Regular Tax Rate 19% (Germany)",

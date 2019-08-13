@@ -22,6 +22,8 @@ Cypress.Commands.add('clearField', (fieldName, modal) => {
 Cypress.Commands.add('getStringFieldValue', (fieldName, modal) => {
   cy.log(`getStringFieldValue - fieldName=${fieldName}; modal=${modal}`);
 
+  cy.waitForSaveIndicator();
+
   const path = createFieldPath(fieldName, modal);
   return cy
     .get(path)
@@ -70,17 +72,19 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.log(`expectCheckboxValue - fieldName=${fieldName}; isChecked=${isChecked}; modal=${modal}`);
 
+  cy.waitForSaveIndicator();
+
   const path = createFieldPath(fieldName, modal);
 
   if (isChecked) {
     return cy
       .get(path)
-      .find('.checked')
+      .find('.checked', { timeout: 10000 })
       .should('exist');
   } else {
     return cy
       .get(path)
-      .find('.checked')
+      .find('.checked', { timeout: 10000 })
       .should('not.exist');
   }
 });

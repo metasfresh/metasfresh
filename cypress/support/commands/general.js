@@ -33,9 +33,6 @@ import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
 import config from '../../config';
 import nextTabbable from './nextTabbable';
-import notificationFixtures from '../../fixtures/misc/notifications.json';
-
-const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
 context('Reusable "login" custom command using API', function() {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
@@ -272,17 +269,6 @@ Cypress.Commands.add('visitWindow', (windowId, recordId, documentIdAliasName = '
   }
 });
 
-Cypress.Commands.add('resetNotifications', () => {
-  describe('Clear current notifications', function() {
-    return cy
-      .window()
-      .its('store')
-      .invoke('dispatch', {
-        type: 'REMOVE_ALL_NOTIFICATIONS',
-      });
-  });
-});
-
 Cypress.Commands.add('readAllNotifications', () => {
   describe('Mark all current notifications as read in the API and reset counter', function() {
     return cy
@@ -302,94 +288,34 @@ Cypress.Commands.add('readAllNotifications', () => {
   });
 });
 
-const getNotificationFixture = () => {
-  const timestamp = new Date().getTime();
-  const message = `Test notification ${timestamp}`;
+Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
+  const timeout = { timeout: 15000 };
 
-  return {
-    ...NOTIFICATION_FIXTURE,
-    message,
-  };
-};
+  return cy
+    .get('.header-item-badge', timeout)
+    .find('.notification-number', timeout)
+    .then(el => {
+      const val = el[0].textContent;
 
-Cypress.Commands.add('addNotification', notificationObject => {
-  describe('Push a new notification to the existing list', function() {
-    notificationObject = notificationObject || getNotificationFixture();
-
-    return cy
-      .window()
-      .its('store')
-      .invoke('dispatch', {
-        type: 'ADD_NOTIFICATION',
-        notification: {
-          ...notificationObject,
-        },
-      })
-      .then(() => {
-        return notificationObject;
-      });
-  });
-});
-
-Cypress.Commands.add('newNotification', (notificationObject, unreadCount = 0) => {
-  describe('Clear current notifications and add a new one', function() {
-    notificationObject = notificationObject || getNotificationFixture();
-
-    return cy
-      .window()
-      .its('store')
-      .invoke('dispatch', {
-        type: 'NEW_NOTIFICATION',
-        notification: {
-          ...notificationObject,
-        },
-        unreadCount,
-      })
-      .then(() => notificationObject);
-  });
-});
-
-Cypress.Commands.add('getDOMNotificationsNumber', () => {
-  describe('Get the number of notifications displayed in the header alert element', function() {
-    return cy
-      .get('.header-item-badge')
-      .find('.notification-number')
-      .then(el => {
-        const val = el[0].textContent;
-
-        return parseInt(val, 10);
-      });
-  });
-});
-
-// todo @kuba i think this function is useless and should be deleted.
-//  I cannot use it to check notification message and to click a specific notification to move to the relevant window
-Cypress.Commands.add('getNotificationsInbox', () => {
-  describe('Get the notifications inbox in the app state', function() {
-    return cy
-      .window()
-      .its('store')
-      .invoke('getState')
-      .then(state => {
-        return cy.wrap(state.appHandler.inbox);
-      });
-  });
+      return cy.wrap(parseInt(val, 10));
+    })
+    .should('eq', expectedNumber);
 });
 
 /*
  * if `optionalText` is given it will look for it inside the notification element
  */
 Cypress.Commands.add('getNotificationModal', optionalText => {
-  describe('Get the number of notifications displayed in the header alert element', function() {
-    if (!optionalText) {
-      return cy.get('.notification-handler').find('.notification-content');
-    } else {
-      return cy
-        .get('.notification-handler')
-        .find('.notification-content')
-        .contains(optionalText);
-    }
-  });
+  const timeout = { timeout: 15000 };
+
+  if (!optionalText) {
+    return cy.get('.notification-handler', timeout).find('.notification-content', timeout);
+  } else {
+    return cy
+      .get('.notification-handler', timeout)
+      .find('.notification-content', timeout)
+      .contains(optionalText);
+  }
 });
 /**
  * Opens the inbox notification with the given text
@@ -485,8 +411,6 @@ Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
   if (expectIndicator) {
     cy.get('.indicator-pending').should('exist');
   }
-  cy.get('.indicator-pending').should('not.exist');
-  cy.get('.indicator-saved').should('exist');
   cy.get('.indicator-pending').should('not.exist');
   cy.get('.indicator-saved').should('exist');
 });

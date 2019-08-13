@@ -53,14 +53,11 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Create Sales Order', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new SalesOrder()
-        .setBPartner(businessPartnerName)
-        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(originalQuantity))
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
-        .apply();
-    });
+    new SalesOrder()
+      .setBPartner(businessPartnerName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(originalQuantity))
+      .apply();
+    cy.completeDocument();
   });
 
   it('Sales Order is Completed', function() {
@@ -140,8 +137,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.setCheckBoxValue('IsShipToday', false, true);
       cy.pressStartButton();
       cy.getNotificationModal(shipmentNotificationModalText);
-      cy.waitUntilProcessIsFinished();
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       cy.readAllNotifications();
     });
@@ -151,8 +147,14 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.openReferencedDocuments('C_Order_C_Invoice_Candidate');
     });
 
-    it('Expect only 1 Billing Candidates row and open it', function() {
+    it('Expect only 1 Billing Candidates row', function() {
       BillingCandidates.getRows().should('have.length', 1);
+    });
+
+    it('Billing Candidates checks after Shipment completion', function() {
+      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
+      // and no, there's no request to wait for, and no notification. BALLS!!
+      cy.waitUntilProcessIsFinished();
 
       // select the first Table Row and click it (open it)
       // eslint-disable-next-line prettier/prettier
@@ -160,9 +162,6 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
         .getRows()
         .eq(0)
         .dblclick();
-    });
-
-    it('Billing Candidates checks after Shipment completion', function() {
       const qtyDelivered = originalQuantity.toString(10);
       const qtyInvoiced = '0';
 
@@ -176,8 +175,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton(500);
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.waitUntilProcessIsFinished();
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       // expected text:
       // Rechnung 145808 für Partner G0002 Test Lieferant 1 wurde erstellt.
@@ -188,6 +186,9 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       const qtyDelivered = originalQuantity.toString(10);
       const qtyInvoiced = originalQuantity.toString(10);
 
+      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
+      // and no, there's no request to wait for, and no notification. BALLS!!
+      cy.waitUntilProcessIsFinished();
       checkBillingCandidate(qtyDelivered, qtyInvoiced);
     });
   });
@@ -289,8 +290,7 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.pressStartButton();
 
       cy.getNotificationModal(generateInvoicesNotificationModalText);
-      cy.waitUntilProcessIsFinished();
-      cy.getDOMNotificationsNumber().should('equal', 1);
+      cy.expectNumberOfDOMNotifications(1);
       // todo check notification inbox text!
       // expected text:
       // Rechnung 145808 für Partner G0002 Test Lieferant 1 wurde erstellt.
