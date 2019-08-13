@@ -139,6 +139,8 @@ Cypress.Commands.add(
 );
 /*
  * Right now it can only select the current date
+ * @param {string} fieldName - name of the field
+ * @param {boolean} modal - use true, if the field is in a modal overlay
  */
 Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
   const path = createFieldPath(fieldName, modal);

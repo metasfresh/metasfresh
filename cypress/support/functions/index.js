@@ -9,6 +9,7 @@ const toggleNotFrequentFilters = () => {
 };
 
 const selectFrequentFilterWidget = () => {
+  cy.clickElementWithClass(`.meta-icon-calendar.input-icon-right`, true);
   return cy.get('.filters-frequent .filter-widget');
 };
 

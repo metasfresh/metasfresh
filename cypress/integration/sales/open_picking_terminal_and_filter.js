@@ -6,6 +6,7 @@ import { SalesOrder, SalesOrderLine } from '../../support/utils/sales_order';
 import {
   applyFilters,
   selectNotFrequentFilterWidget,
+  selectFrequentFilterWidget,
   toggleNotFrequentFilters,
   toggleFrequentFilters,
 } from '../../support/functions';
@@ -64,13 +65,22 @@ describe('Create Sales order', function() {
   //   });
   it('Open Picking terminal', function() {
     cy.visitWindow('540345');
+    toggleFrequentFilters();
+    selectFrequentFilterWidget();
+    cy.get('.ranges')
+      .find('li')
+      .first()
+      .should('contain', 'Today')
+      .click({ force: true });
+    applyFilters();
+    /**Even though the date selected is today, the filter label will show yesterday's date due to: https://github.com/metasfresh/me03/issues/2381 */
+
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
-    cy.writeIntoStringField('M_Product_ID', productName1, false, null, true);
-    cy.writeIntoStringField('C_BPartner_Customer_ID', customer1, false, null, true);
+    cy.writeIntoLookupListField('M_Product_ID', productName1, productName1, false, false, null, true);
+    cy.writeIntoLookupListField('C_BPartner_Customer_ID', customer1, customer1, false, false, null, true);
     applyFilters();
 
-    toggleFrequentFilters();
-    // selectFrequentFilterWidget('Filter by: Preparation Date');
+    cy.expectNumberOfRows(1);
   });
 });

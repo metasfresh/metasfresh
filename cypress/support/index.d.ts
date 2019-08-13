@@ -490,9 +490,9 @@ declare namespace Cypress {
 
 
     /**
-     * Please help with documentation!
-     * The file where this function is declared appears below, however the parameters in this definition may be wrong. Please adjust as needed.
-     *
+     * It selects the current date from the picker
+     * @fieldName - the date field for which the current date is selected
+     * @modal - boolean, set to true is the date field is in a modal
      * from cypress/support/commands/form.js
      */
     selectDateViaPicker(fieldName, modal): Chainable<any>
