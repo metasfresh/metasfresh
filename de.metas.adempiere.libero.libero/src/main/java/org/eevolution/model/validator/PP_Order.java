@@ -14,9 +14,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
@@ -25,6 +24,8 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -32,6 +33,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -56,8 +58,8 @@ public class PP_Order
 		// If UOM not filled, get it from Product
 		if (ppOrder.getC_UOM_ID() <= 0 && ppOrder.getM_Product_ID() > 0)
 		{
-			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(ppOrder.getM_Product_ID());
-			ppOrder.setC_UOM(uom);
+			final UomId uomId = Services.get(IProductBL.class).getStockingUOMId(ppOrder.getM_Product_ID());
+			ppOrder.setC_UOM_ID(uomId.getRepoId());
 		}
 
 		//
@@ -130,8 +132,11 @@ public class PP_Order
 		// DocType: OrderType
 		if (newRecord || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_DocType_ID))
 		{
-			final I_C_DocType docType = ppOrder.getC_DocType();
-			if (docType != null && docType.getC_DocType_ID() > 0)
+			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
+			final I_C_DocType docType = docTypeId != null
+					? Services.get(IDocTypeDAO.class).getById(docTypeId)
+					: null;
+			if (docType != null)
 			{
 				ppOrder.setOrderType(docType.getDocSubType());
 			}
@@ -141,7 +146,7 @@ public class PP_Order
 			}
 		}
 	}
-
+	
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createWorkFlowAndBom(final I_PP_Order ppOrderRecord)
 	{
@@ -166,7 +171,7 @@ public class PP_Order
 
 		final PPOrderChangedEvent event = eventfactory.inspectPPOrderAfterChange();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
