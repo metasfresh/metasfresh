@@ -53,14 +53,11 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
   });
 
   it('Create Sales Order', function() {
-    cy.fixture('misc/misc_dictionary.json').then(miscDictionary => {
-      new SalesOrder()
-        .setBPartner(businessPartnerName)
-        .addLine(new SalesOrderLine().setProduct(productName).setQuantity(originalQuantity))
-        .setDocumentAction(getLanguageSpecific(miscDictionary, DocumentActionKey.Complete))
-        .setDocumentStatus(getLanguageSpecific(miscDictionary, DocumentStatusKey.Completed))
-        .apply();
-    });
+    new SalesOrder()
+      .setBPartner(businessPartnerName)
+      .addLine(new SalesOrderLine().setProduct(productName).setQuantity(originalQuantity))
+      .apply();
+    cy.completeDocument();
   });
 
   it('Sales Order is Completed', function() {
