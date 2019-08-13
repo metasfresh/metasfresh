@@ -4,7 +4,7 @@
   "baseUrl_comment1":  "baseUrl can be overridden by setting the CYPRESS_baseUrl environment variable",
   "baseUrl_comment2":  "Example: CYPRESS_baseUrl=http://192.168.99.100:30080 npm run cypress:open",
   "baseUrl_comment3":  "See https://docs.cypress.io/guides/guides/environment-variables.html#We-can-move-this-into-an-environment-variable",
-  "baseUrl": "http://localhost:3000",
+  "baseUrl": "https://dev639.metasfresh.com",
 
   "projectId_comment": "Our recorded test runs can be found here: https://dashboard.cypress.io/#/projects/5yp4q1/runs",
   "projectId": "5yp4q1",

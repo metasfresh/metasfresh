@@ -2,10 +2,14 @@ import { PriceList } from '../../support/utils/pricelist';
 import { Pricesystem } from '../../support/utils/pricesystem';
 import { humanReadableNow } from '../../support/utils/utils';
 
-describe('Create Pricelist for Automatic End2End Tests with cypress https://github.com/metasfresh/metasfresh-e2e/issues/195', function() {
+describe('Create a Pricelist with currency CHF and precision 3: https://github.com/metasfresh/metasfresh-e2e/issues/195', function() {
     const date = humanReadableNow();
     const priceSystemName = `TestPriceSystem ${date}`;
     const priceListName = `TestPriceList ${date}`;
+    const pricePrecision = 3;
+    const currency = `CHF`;
+    const country = `Switzerland`;
+
     it('Create new Pricesystem', function() {
         cy.fixture('price/pricesystem.json').then(priceSystemJson => {
             Object.assign(new Pricesystem(), priceSystemJson)
@@ -19,9 +23,9 @@ describe('Create Pricelist for Automatic End2End Tests with cypress https://gith
             Object.assign(new PriceList(), pricelistJson)
             .setName(priceListName)
             .setPriceSystem(priceSystemName)
-            .setCountry(`Switzerland`)
-            .setCurrency(`CHF`)
-            .setPricePrecision(3)
+            .setCountry(country)
+            .setCurrency(currency)
+            .setPricePrecision(pricePrecision)
             .setIsSalesPriceList(true)
             .apply();
         });
