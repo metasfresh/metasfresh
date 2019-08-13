@@ -62,7 +62,7 @@ describe('Create Purchase order - complete - change - complete', function() {
     cy.selectNthRow(0).click();
     cy.executeQuickAction('WEBUI_M_ReceiptSchedule_ReceiveCUs', false);
     cy.selectNthRow(0, true);
-    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true);
+    cy.executeQuickAction('WEBUI_M_HU_CreateReceipt_NoParams', false, true, false);
     cy.pressDoneButton();
   });
   it('Go to Material receipt', function() {
