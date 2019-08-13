@@ -1,6 +1,7 @@
 export class DocumentStatusKey {
   static Completed = 'docStatusCompleted';
   static Reversed = 'docStatusReversed';
+  static Voided = 'docStatusVoided';
   static InProgress = 'docStatusInProgress';
   static Drafted = 'docStatusDrafted';
 }
