@@ -147,8 +147,14 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
       cy.openReferencedDocuments('C_Order_C_Invoice_Candidate');
     });
 
-    it('Expect only 1 Billing Candidates row and open it', function() {
+    it('Expect only 1 Billing Candidates row', function() {
       BillingCandidates.getRows().should('have.length', 1);
+    });
+
+    it('Billing Candidates checks after Shipment completion', function() {
+      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
+      // and no, there's no request to wait for, and no notification. BALLS!!
+      cy.waitUntilProcessIsFinished();
 
       // select the first Table Row and click it (open it)
       // eslint-disable-next-line prettier/prettier
@@ -156,15 +162,9 @@ describe('Void Sales Invoice and invoice the billing candidates again', function
         .getRows()
         .eq(0)
         .dblclick();
-    });
-
-    it('Billing Candidates checks after Shipment completion', function() {
       const qtyDelivered = originalQuantity.toString(10);
       const qtyInvoiced = '0';
 
-      // using wait is SO DAMN ANNOYING, but w/o it sometimes the test will just fail as backend takes its time to update frontend, and the checks will fail.
-      // and no, there's no request to wait for, and no notification. BALLS!!
-      cy.waitUntilProcessIsFinished();
       checkBillingCandidate(qtyDelivered, qtyInvoiced);
     });
   });
