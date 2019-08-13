@@ -276,7 +276,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 
 		//
 		// Misc
-		order.setC_OrderLine(null);
+		order.setC_OrderLine_ID(-1);
 		order.setC_BPartner_ID(hu.getC_BPartner_ID());
 		order.setDescription(huToProcess.getReference());
 

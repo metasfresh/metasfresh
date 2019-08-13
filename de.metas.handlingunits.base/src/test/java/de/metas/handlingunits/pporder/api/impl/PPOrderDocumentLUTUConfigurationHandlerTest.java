@@ -98,7 +98,7 @@ public class PPOrderDocumentLUTUConfigurationHandlerTest
 
 		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
 		ppOrder.setM_Product_ID(productId.getRepoId());
-		ppOrder.setC_OrderLine(orderLine);
+		ppOrder.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
 		ppOrder.setC_UOM_ID(productUOM.getC_UOM_ID());
 		ppOrder.setQtyOrdered(TEN);
 		save(ppOrder);
