@@ -29,4 +29,6 @@ export class RewriteURL {
   static QUICKACTION = `/rest/api/process.*/start\$`;
 
   static REFERENCES = `/rest/api/window/.*/references$`;
+
+  static DocActionDropdown = `rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`;
 }
