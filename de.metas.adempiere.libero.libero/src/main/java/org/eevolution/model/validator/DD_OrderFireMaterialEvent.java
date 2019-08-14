@@ -23,6 +23,7 @@ import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ddorder.DDOrderUtil;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -56,7 +57,7 @@ public class DD_OrderFireMaterialEvent
 				.datePromised(TimeUtil.asInstant(ddOrderRecord.getDatePromised()))
 				.ddOrderId(ddOrderRecord.getDD_Order_ID())
 				.docStatus(ddOrderRecord.getDocStatus())
-				.orgId(ddOrderRecord.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(ddOrderRecord.getAD_Org_ID()))
 				.plantId(ddOrderRecord.getPP_Plant_ID())
 				.productPlanningId(ddOrderRecord.getPP_Product_Planning_ID())
 				.shipperId(ddOrderRecord.getM_Shipper_ID());
@@ -81,7 +82,7 @@ public class DD_OrderFireMaterialEvent
 			ddOrderPojoBuilder.line(createDDOrderLinePojo(ddOrderLine, ddOrder, durationDays));
 
 			final DDOrderCreatedEvent event = DDOrderCreatedEvent.builder()
-					.eventDescriptor(EventDescriptor.createNew(ddOrder))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 					.ddOrder(ddOrderPojoBuilder.build())
 					.fromWarehouseId(ddOrderLine.getM_Locator().getM_Warehouse_ID())
 					.toWarehouseId(ddOrderLine.getM_LocatorTo().getM_Warehouse_ID())
@@ -118,7 +119,7 @@ public class DD_OrderFireMaterialEvent
 	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrder)
 	{
 		final DDOrderDocStatusChangedEvent event = DDOrderDocStatusChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ddOrder))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 				.ddOrderId(ddOrder.getDD_Order_ID())
 				.newDocStatus(ddOrder.getDocStatus())
 				.build();

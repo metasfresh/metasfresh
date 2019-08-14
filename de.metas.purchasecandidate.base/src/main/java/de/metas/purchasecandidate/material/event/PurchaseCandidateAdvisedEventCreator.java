@@ -61,7 +61,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		}
 
 		final ProductId productId = ProductId.ofRepoId(supplyRequiredDescriptor.getMaterialDescriptor().getProductId());
-		final OrgId orgId = OrgId.ofRepoId(supplyRequiredDescriptor.getEventDescriptor().getOrgId());
+		final OrgId orgId = supplyRequiredDescriptor.getEventDescriptor().getOrgId();
 
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
 		if (!defaultVendorProductInfo.isPresent())

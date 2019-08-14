@@ -2,12 +2,11 @@ package de.metas.material.cockpit.stock.process;
 
 import static java.math.BigDecimal.ZERO;
 
-import lombok.NonNull;
-
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.Adempiere;
+import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
@@ -17,12 +16,14 @@ import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -57,7 +58,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = Adempiere.getBean(StockDataUpdateRequestHandler.class);
+	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
 
 	@Override
 	@RunOutOfTrx
@@ -127,8 +128,8 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 
 		final StockDataRecordIdentifier recordIdentifier = StockDataRecordIdentifier
 				.builder()
-				.clientId(huBasedDataRecord.getAD_Client_ID())
-				.orgId(huBasedDataRecord.getAD_Org_ID())
+				.clientId(ClientId.ofRepoId(huBasedDataRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(huBasedDataRecord.getAD_Org_ID()))
 				.productDescriptor(productDescriptor)
 				.warehouseId(huBasedDataRecord.getM_Warehouse_ID())
 				.build();

@@ -192,7 +192,7 @@ public class DDOrderAdvisedHandlerTests
 		final List<I_MD_Candidate> allRecords = DispoTestUtils.retrieveAllRecords();
 		assertThat(allRecords).hasSize(4);
 		assertThat(allRecords).allSatisfy(r -> {
-			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID);
+			assertThat(r.getAD_Org_ID()).as("all four records shall have the same org").isEqualTo(ORG_ID.getRepoId());
 			assertThat(r.getM_Product_ID()).as("all four records shall have the same product").isEqualTo(PRODUCT_ID);
 		});
 

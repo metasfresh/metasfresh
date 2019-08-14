@@ -11,10 +11,13 @@ import javax.annotation.Nullable;
 
 import org.compiere.model.I_S_Resource;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.OrgId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -43,9 +46,10 @@ import lombok.Value;
  * #L%
  */
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class PPOrder
 {
-	int orgId;
+	OrgId orgId;
 
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
@@ -101,7 +105,7 @@ public class PPOrder
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrder(
-			@JsonProperty("orgId") final int orgId,
+			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("warehouseId") final int warehouseId,
 			@JsonProperty("bPartnerId") final int bPartnerId,
@@ -117,7 +121,7 @@ public class PPOrder
 			@JsonProperty("lines") @Singular final List<PPOrderLine> lines,
 			@JsonProperty("materialDispoGroupId") final int materialDispoGroupId)
 	{
-		this.orgId = checkIdGreaterThanZero("orgId", orgId);
+		this.orgId = orgId;
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
 		this.warehouseId = checkIdGreaterThanZero("warehouseId", warehouseId);
 

@@ -17,6 +17,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -61,7 +62,7 @@ public class PPOrderPojoConverter
 				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
 				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
 				.docStatus(ppOrderRecord.getDocStatus())
-				.orgId(ppOrderRecord.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(ppOrderRecord.getAD_Org_ID()))
 				.plantId(ppOrderRecord.getS_Resource_ID())
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.productDescriptor(productDescriptorFactory.createProductDescriptor(ppOrderRecord))

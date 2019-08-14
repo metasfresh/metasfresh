@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 
 import de.metas.bpartner.BPartnerId;
@@ -13,6 +14,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.organization.OrgId;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -48,9 +50,9 @@ public class EventTestHelper
 	 * This constant is zero because we don't control the client-id used by {@link POJOWrapper} when it creates a new instance.
 	 * It could be done with {@link Env}, but it would add complexity..
 	 */
-	public static final int CLIENT_ID = 0;
+	public static final ClientId CLIENT_ID = ClientId.SYSTEM;
 
-	public static final int ORG_ID = 20;
+	public static final OrgId ORG_ID = OrgId.ofRepoId(20);
 
 	public static final int TRANSACTION_ID = 60;
 

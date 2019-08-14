@@ -7,6 +7,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.adempiere.service.ClientId;
 import org.junit.Test;
 
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -14,6 +15,7 @@ import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.MaterialDescriptorQueryTest;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.organization.OrgId;
 
 /*
  * #%L
@@ -54,7 +56,10 @@ public class CandidatesQueryTest
 	@Test
 	public void fromCandidate()
 	{
-		final Candidate cand = Candidate.builder().type(CandidateType.STOCK)
+		final Candidate cand = Candidate.builder()
+				.clientId(ClientId.ofRepoId(1))
+				.orgId(OrgId.ofRepoId(1))
+				.type(CandidateType.STOCK)
 				.materialDescriptor(createMaterialDescriptor().withDate(NOW))
 				.build();
 		final CandidatesQuery query = CandidatesQuery.fromCandidate(cand, false);

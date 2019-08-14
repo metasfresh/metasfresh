@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import org.adempiere.service.ClientId;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -20,6 +21,7 @@ import de.metas.material.event.EventTestHelper;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
+import de.metas.organization.OrgId;
 import de.metas.util.time.SystemTime;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -63,6 +65,8 @@ public class PPOrderChangedHandlerTest
 
 		// setup a candidate to be updated
 		final Candidate candidateToUpdate = Candidate.builder()
+				.clientId(ClientId.ofRepoId(1))
+				.orgId(OrgId.ofRepoId(1))
 				// .status(CandidateStatus.doc_closed)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(materialDescriptor)

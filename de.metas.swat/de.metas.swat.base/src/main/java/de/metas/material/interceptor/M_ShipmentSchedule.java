@@ -113,7 +113,7 @@ public class M_ShipmentSchedule
 
 		final ShipmentScheduleCreatedEventBuilder builder = //
 				ShipmentScheduleCreatedEvent.builder()
-						.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 						.materialDescriptor(materialDescriptor)
 						.reservedQuantity(shipmentSchedule.getQtyReserved())
 						.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
@@ -141,7 +141,7 @@ public class M_ShipmentSchedule
 				.subtract(oldShipmentSchedule.getQtyReserved());
 
 		final ShipmentScheduleUpdatedEvent event = ShipmentScheduleUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
@@ -158,7 +158,7 @@ public class M_ShipmentSchedule
 				createOrdereMaterialDescriptor(shipmentSchedule);
 
 		final ShipmentScheduleDeletedEvent event = ShipmentScheduleDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(shipmentSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
 				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())

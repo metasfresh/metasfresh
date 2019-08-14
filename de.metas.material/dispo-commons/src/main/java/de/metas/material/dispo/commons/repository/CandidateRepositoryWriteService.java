@@ -331,7 +331,7 @@ public class CandidateRepositoryWriteService
 	{
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
-		candidateRecord.setAD_Org_ID(candidate.getOrgId());
+		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
 		candidateRecord.setMD_Candidate_Type(candidate.getType().toString());
 		candidateRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 

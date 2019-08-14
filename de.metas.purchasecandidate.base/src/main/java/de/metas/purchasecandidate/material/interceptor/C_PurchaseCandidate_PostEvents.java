@@ -87,7 +87,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
@@ -130,7 +130,7 @@ public class C_PurchaseCandidate_PostEvents
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
 
 		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(purchaseCandidateRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)

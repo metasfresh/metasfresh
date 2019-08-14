@@ -68,7 +68,7 @@ public class M_ForecastEventCreator
 		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
-				.eventDescriptor(EventDescriptor.createNew(forecastRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
 				.build();
 
 		return forecastCreatedEvent;

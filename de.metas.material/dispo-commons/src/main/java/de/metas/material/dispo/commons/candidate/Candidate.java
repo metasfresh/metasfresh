@@ -4,13 +4,15 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
-import org.compiere.util.Util;
+import org.adempiere.service.ClientId;
 
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -41,7 +43,6 @@ import lombok.experimental.Wither;
  */
 
 @Value
-@Builder(toBuilder = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Wither
 public class Candidate
@@ -53,9 +54,9 @@ public class Candidate
 				.orgId(eventDescr.getOrgId());
 	}
 
-	int clientId;
+	ClientId clientId;
 
-	int orgId;
+	OrgId orgId;
 
 	@NonNull
 	CandidateType type;
@@ -86,7 +87,6 @@ public class Candidate
 
 	DemandDetail additionalDemandDetail;
 
-	@Singular
 	List<TransactionDetail> transactionDetails;
 
 	/**
@@ -164,7 +164,7 @@ public class Candidate
 
 	public DemandDetail getDemandDetail()
 	{
-		return Util.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
+		return CoalesceUtil.coalesce(DemandDetail.castOrNull(businessCaseDetail), additionalDemandDetail);
 	}
 
 	public BigDecimal getDetailQty()
@@ -176,7 +176,10 @@ public class Candidate
 		return businessCaseDetail.getQty();
 	}
 
-	private Candidate(final int clientId, final int orgId,
+	@Builder(toBuilder = true)
+	private Candidate(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
 			@NonNull final CandidateType type,
 			final CandidateBusinessCase businessCase,
 			//final CandidateStatus status,
@@ -187,7 +190,7 @@ public class Candidate
 			@NonNull final MaterialDescriptor materialDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
-			final List<TransactionDetail> transactionDetails)
+			@Singular final List<TransactionDetail> transactionDetails)
 	{
 		this.clientId = clientId;
 		this.orgId = orgId;
@@ -195,10 +198,10 @@ public class Candidate
 		this.businessCase = businessCase;
 		//this.status = status;
 
-		this.id = Util.coalesce(id, CandidateId.NULL);
+		this.id = CoalesceUtil.coalesce(id, CandidateId.NULL);
 		Check.errorIf(this.id.isUnspecified(), "The given id may be null or CandidateId.NULL, but not unspecified");
 
-		this.parentId = Util.coalesce(parentId, CandidateId.NULL);
+		this.parentId = CoalesceUtil.coalesce(parentId, CandidateId.NULL);
 		Check.errorIf(this.parentId.isUnspecified(), "The given parentId may be null or CandidateId.NULL, but not unspecified");
 
 		this.groupId = groupId;

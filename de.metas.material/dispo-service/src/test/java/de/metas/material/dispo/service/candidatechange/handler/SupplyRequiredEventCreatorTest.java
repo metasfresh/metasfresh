@@ -61,8 +61,8 @@ public class SupplyRequiredEventCreatorTest
 
 		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
 		assertThat(result).isNotNull();
-		assertThat(result.getEventDescriptor().getClientId()).isEqualTo(20);
-		assertThat(result.getEventDescriptor().getOrgId()).isEqualTo(30);
+		assertThat(result.getEventDescriptor().getClientId().getRepoId()).isEqualTo(20);
+		assertThat(result.getEventDescriptor().getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
 	}
 }

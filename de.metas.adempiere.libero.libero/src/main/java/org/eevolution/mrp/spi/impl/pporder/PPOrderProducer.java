@@ -66,15 +66,15 @@ public class PPOrderProducer
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 
 	public I_PP_Order createPPOrder(
-			@NonNull final PPOrder ppOrderPojo,
+			@NonNull final PPOrder ppOrder,
 			@NonNull final Instant dateOrdered)
 	{
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrderPojo.getProductPlanningId());
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(ppOrder.getProductPlanningId());
 
 		//
 		// Create PP Order
 		final I_PP_Order ppOrderRecord = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
-		PPOrderPojoConverter.setMaterialDispoGroupId(ppOrderRecord, ppOrderPojo.getMaterialDispoGroupId());
+		PPOrderPojoConverter.setMaterialDispoGroupId(ppOrderRecord, ppOrder.getMaterialDispoGroupId());
 
 		ppOrderRecord.setPP_Product_Planning_ID(productPlanning.getPP_Product_Planning_ID());
 
@@ -84,14 +84,14 @@ public class PPOrderProducer
 
 		//
 		// Planning dimension
-		ppOrderRecord.setAD_Org_ID(ppOrderPojo.getOrgId());
-		ppOrderRecord.setS_Resource_ID(ppOrderPojo.getPlantId());
-		ppOrderRecord.setM_Warehouse_ID(ppOrderPojo.getWarehouseId());
+		ppOrderRecord.setAD_Org_ID(ppOrder.getOrgId().getRepoId());
+		ppOrderRecord.setS_Resource_ID(ppOrder.getPlantId());
+		ppOrderRecord.setM_Warehouse_ID(ppOrder.getWarehouseId());
 		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
 
 		//
 		// Document Type & Status
-		final DocTypeId docTypeId = getDocTypeId(OrgId.ofRepoId(ppOrderPojo.getOrgId()));
+		final DocTypeId docTypeId = getDocTypeId(ppOrder.getOrgId());
 
 		ppOrderRecord.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrderRecord.setC_DocType_ID(docTypeId.getRepoId());
@@ -100,7 +100,7 @@ public class PPOrderProducer
 
 		//
 		// Product, ASI, UOM
-		final ProductDescriptor productDescriptor = ppOrderPojo.getProductDescriptor();
+		final ProductDescriptor productDescriptor = ppOrder.getProductDescriptor();
 		ppOrderRecord.setM_Product_ID(productDescriptor.getProductId());
 		ppOrderRecord.setM_AttributeSetInstance_ID(productDescriptor.getAttributeSetInstanceId());
 
@@ -113,18 +113,18 @@ public class PPOrderProducer
 		// Dates
 		ppOrderRecord.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
 
-		final Timestamp dateFinishSchedule = TimeUtil.asTimestamp(ppOrderPojo.getDatePromised());
+		final Timestamp dateFinishSchedule = TimeUtil.asTimestamp(ppOrder.getDatePromised());
 		ppOrderRecord.setDatePromised(dateFinishSchedule);
 		ppOrderRecord.setDateFinishSchedule(dateFinishSchedule);
 		ppOrderRecord.setPreparationDate(dateFinishSchedule);
 
-		final Timestamp dateStartSchedule = TimeUtil.asTimestamp(ppOrderPojo.getDateStartSchedule());
+		final Timestamp dateStartSchedule = TimeUtil.asTimestamp(ppOrder.getDateStartSchedule());
 		ppOrderRecord.setDateStartSchedule(dateStartSchedule);
 
 		// Qtys
-		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrderPojo.getQtyRequired());
+		ppOrderBL.setQtyOrdered(ppOrderRecord, ppOrder.getQtyRequired());
 
-		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrderPojo.getQtyRequired());
+		ppOrderBL.setQtyEntered(ppOrderRecord, ppOrder.getQtyRequired());
 		ppOrderRecord.setC_UOM_ID(productBL.getStockingUOMId(productDescriptor.getProductId()).getRepoId());
 
 		// QtyBatchSize : do not set it, let the MO to take it from workflow
@@ -135,12 +135,12 @@ public class PPOrderProducer
 
 		//
 		// Inherit values from MRP demand
-		ppOrderRecord.setC_OrderLine_ID(ppOrderPojo.getOrderLineId());
-		if (ppOrderPojo.getBPartnerId() > 0)
+		ppOrderRecord.setC_OrderLine_ID(ppOrder.getOrderLineId());
+		if (ppOrder.getBPartnerId() > 0)
 		{
-			ppOrderRecord.setC_BPartner_ID(ppOrderPojo.getBPartnerId());
+			ppOrderRecord.setC_BPartner_ID(ppOrder.getBPartnerId());
 		}
-		else if (ppOrderPojo.getOrderLineId() > 0)
+		else if (ppOrder.getOrderLineId() > 0)
 		{
 			ppOrderRecord.setC_BPartner_ID(ppOrderRecord.getC_OrderLine().getC_BPartner_ID());
 		}

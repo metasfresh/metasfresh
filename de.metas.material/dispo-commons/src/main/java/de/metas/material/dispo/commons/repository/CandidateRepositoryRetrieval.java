@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +44,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.CoalesceUtil;
@@ -196,8 +198,8 @@ public class CandidateRepositoryRetrieval
 
 		final CandidateBuilder candidateBuilder = Candidate.builder()
 				.id(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()))
-				.clientId(candidateRecord.getAD_Client_ID())
-				.orgId(candidateRecord.getAD_Org_ID())
+				.clientId(ClientId.ofRepoId(candidateRecord.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(candidateRecord.getAD_Org_ID()))
 				.seqNo(candidateRecord.getSeqNo())
 				.type(CandidateType.valueOf(md_candidate_type))
 

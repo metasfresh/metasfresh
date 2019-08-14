@@ -47,7 +47,7 @@ public class PP_Order_PostMaterialEvent
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
 
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
 				.ppOrder(ppOrderPojo)
 				.build();
 
@@ -58,18 +58,18 @@ public class PP_Order_PostMaterialEvent
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_BEFORE_DELETE })
 	public void fireMaterialEvent_deletedPPOrder(
-			@NonNull final I_PP_Order ppOrder,
+			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final boolean deletedPPOrder = type.isDelete() || ModelChangeUtil.isJustDeactivated(ppOrder);
+		final boolean deletedPPOrder = type.isDelete() || ModelChangeUtil.isJustDeactivated(ppOrderRecord);
 		if (!deletedPPOrder)
 		{
 			return;
 		}
 
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrder))
-				.ppOrderId(ppOrder.getPP_Order_ID())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
+				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);

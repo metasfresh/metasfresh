@@ -34,6 +34,7 @@ import de.metas.material.planning.ProductPlanningBL;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -130,7 +131,7 @@ public class PPOrderPojoSupplier
 		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToSupply, productId);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
-				.orgId(mrpContext.getAD_Org_ID())
+				.orgId(OrgId.ofRepoId(mrpContext.getAD_Org_ID()))
 
 				// Planning dimension
 				.plantId(mrpContext.getPlant_ID())

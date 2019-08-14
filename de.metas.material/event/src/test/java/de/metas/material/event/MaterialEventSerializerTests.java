@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -63,6 +62,8 @@ import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
+import de.metas.organization.OrgId;
+import de.metas.util.JSONObjectMapper;
 import de.metas.util.time.SystemTime;
 
 /*
@@ -164,7 +165,7 @@ public class MaterialEventSerializerTests
 						.qty(TEN)
 						.salesOrderLineId(61)
 						.build())
-				.orgId(40)
+				.orgId(OrgId.ofRepoId(40))
 				.plantId(50)
 				.productPlanningId(60)
 				.shipperId(70)
@@ -195,7 +196,7 @@ public class MaterialEventSerializerTests
 						.datePromised(NOW)
 						.dateStartSchedule(NOW)
 						.materialDispoGroupId(30)
-						.orgId(100)
+						.orgId(OrgId.ofRepoId(100))
 						.plantId(110)
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
@@ -301,7 +302,7 @@ public class MaterialEventSerializerTests
 		return PPOrder.builder()
 				.datePromised(NOW)
 				.dateStartSchedule(NOW)
-				.orgId(100)
+				.orgId(OrgId.ofRepoId(100))
 				.plantId(110)
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)
@@ -689,8 +690,10 @@ public class MaterialEventSerializerTests
 
 	public static MaterialEvent assertEventEqualAfterSerializeDeserialize(final MaterialEvent originalEvent)
 	{
-		final String serializedEvt = SimpleObjectSerializer.get().serialize(originalEvent);
-		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
+		final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+
+		final String serializedEvt = jsonObjectMapper.writeValueAsString(originalEvent);
+		final MaterialEvent deserializedEvt = jsonObjectMapper.readValue(serializedEvt);
 
 		assertThat(deserializedEvt).isEqualTo(originalEvent);
 		return deserializedEvt;

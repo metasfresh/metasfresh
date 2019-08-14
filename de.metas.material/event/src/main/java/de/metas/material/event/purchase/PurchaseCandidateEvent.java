@@ -37,11 +37,8 @@ import lombok.ToString;
 public abstract class PurchaseCandidateEvent implements MaterialEvent
 {
 	private final EventDescriptor eventDescriptor;
-
 	private final int purchaseCandidateRepoId;
-
 	private final MaterialDescriptor purchaseMaterialDescriptor;
-
 	private final int vendorId;
 
 	protected PurchaseCandidateEvent(
@@ -53,6 +50,6 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 		this.purchaseMaterialDescriptor = purchaseMaterialDescriptor;
 		this.eventDescriptor = eventDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
-		this.vendorId = Check.assumeGreaterThanZero(vendorId,"vendorId");
+		this.vendorId = Check.assumeGreaterThanZero(vendorId, "vendorId");
 	}
 }

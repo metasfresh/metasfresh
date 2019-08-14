@@ -97,7 +97,7 @@ public class PPOrderChangedEventFactory
 		final PPOrder oldPPOrderPojo = ppOrderConverter.toPPOrder(oldPPOrderRecord);
 
 		return PPOrderChangedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(ppOrderRecord))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
 				.productDescriptor(oldPPOrderPojo.getProductDescriptor())
 				.ppOrderId(oldPPOrderPojo.getPpOrderId())
 				.oldDatePromised(oldPPOrderPojo.getDatePromised())

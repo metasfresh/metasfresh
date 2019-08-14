@@ -208,7 +208,7 @@ public class DDOrderPojoSupplier
 				// Try to find some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
-						.orgId(warehouseTo.getAD_Org_ID())
+						.orgId(OrgId.ofRepoId(warehouseTo.getAD_Org_ID()))
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)

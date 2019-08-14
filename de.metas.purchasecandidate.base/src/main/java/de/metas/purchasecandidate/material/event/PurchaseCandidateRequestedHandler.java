@@ -98,7 +98,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				event.getSalesOrderLineRepoId());
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
-		final OrgId orgId = OrgId.ofRepoId(event.getEventDescriptor().getOrgId());
+		final OrgId orgId = event.getEventDescriptor().getOrgId();
 
 		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
 				.getDefaultVendorProductInfo(product.getId(), orgId)
@@ -156,7 +156,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
 	{
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(requestedEvent.getEventDescriptor().copy())
+				.eventDescriptor(requestedEvent.getEventDescriptor())
 				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())

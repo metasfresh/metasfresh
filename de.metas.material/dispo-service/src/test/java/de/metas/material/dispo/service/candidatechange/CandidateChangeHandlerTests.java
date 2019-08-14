@@ -301,7 +301,7 @@ public class CandidateChangeHandlerTests
 				.build();
 
 		final I_MD_Candidate stockRecord = newInstance(I_MD_Candidate.class);
-		stockRecord.setAD_Org_ID(ORG_ID);
+		stockRecord.setAD_Org_ID(ORG_ID.getRepoId());
 		stockRecord.setMD_Candidate_Type(CandidateType.STOCK.toString());
 		stockRecord.setM_Warehouse_ID(materialDescriptor.getWarehouseId());
 		stockRecord.setQty(materialDescriptor.getQuantity());

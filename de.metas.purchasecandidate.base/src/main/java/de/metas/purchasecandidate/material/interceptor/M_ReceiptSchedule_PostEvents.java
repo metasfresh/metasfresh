@@ -132,7 +132,7 @@ public class M_ReceiptSchedule_PostEvents
 		final PurchaseCandidateId purchaseCandidateIdOrNull = purchaseCandidateRepository.getIdByPurchaseOrderLineIdOrNull(orderLineId);
 
 		final ReceiptScheduleCreatedEvent event = ReceiptScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.orderLineDescriptor(orderLineDescriptor)
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
@@ -167,7 +167,7 @@ public class M_ReceiptSchedule_PostEvents
 		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);
 
 		final ReceiptScheduleUpdatedEvent event = ReceiptScheduleUpdatedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(qtyReserved)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
@@ -194,7 +194,7 @@ public class M_ReceiptSchedule_PostEvents
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 
 		final ReceiptScheduleDeletedEvent event = ReceiptScheduleDeletedEvent.builder()
-				.eventDescriptor(EventDescriptor.createNew(receiptSchedule))
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.reservedQuantity(extractQtyReserved(receiptSchedule))
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())

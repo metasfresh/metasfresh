@@ -48,9 +48,8 @@ public class TransactionDescriptorFactory
 	{
 		final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(record.getM_Locator_ID());
 		
-		return TransactionDescriptor
-				.builder()
-				.eventDescriptor(EventDescriptor.createNew(record))
+		return TransactionDescriptor.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.productId(record.getM_Product_ID())
 				.transactionId(record.getM_Transaction_ID())
 				.warehouseId(warehouseId.getRepoId())

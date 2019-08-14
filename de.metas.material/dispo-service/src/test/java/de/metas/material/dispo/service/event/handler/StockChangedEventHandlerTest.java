@@ -169,8 +169,8 @@ public class StockChangedEventHandlerTest
 	private void assertInvocationCandidateCommons(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getClientId()).isEqualTo(10);
-		assertThat(candidate.getOrgId()).isEqualTo(20);
+		assertThat(candidate.getClientId().getRepoId()).isEqualTo(10);
+		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getStockId()).isEqualTo(30);
 		assertThat(candidate.getTransactionDetails().get(0).getResetStockAdPinstanceId()).isEqualTo(40);

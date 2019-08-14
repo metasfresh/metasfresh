@@ -85,7 +85,7 @@ public class StockDataUpdateRequestHandler
 		final I_MD_Stock newDataRecord = newInstance(I_MD_Stock.class);
 		InterfaceWrapperHelper.setValue(newDataRecord, I_MD_Stock.COLUMNNAME_AD_Client_ID, identifier.getClientId());
 
-		newDataRecord.setAD_Org_ID(identifier.getOrgId());
+		newDataRecord.setAD_Org_ID(identifier.getOrgId().getRepoId());
 		newDataRecord.setM_Product_ID(identifier.getProductDescriptor().getProductId());
 		newDataRecord.setAttributesKey(identifier.getProductDescriptor().getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId());

@@ -50,6 +50,7 @@ import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
@@ -85,7 +86,7 @@ public class PPOrderRequestedEventHandlerTests
 
 	private I_PP_Product_Planning productPlanning;
 
-	private I_AD_Org org;
+	private OrgId orgId;
 
 	private I_C_UOM uom;
 
@@ -139,8 +140,9 @@ public class PPOrderRequestedEventHandlerTests
 		productPlanning.setIsDocComplete(true);
 		save(productPlanning);
 
-		org = newInstance(I_AD_Org.class);
-		save(org);
+		final I_AD_Org orgRecord = newInstance(I_AD_Org.class);
+		save(orgRecord);
+		orgId = OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 
 		warehouse = newInstance(I_M_Warehouse.class);
 		save(warehouse);
@@ -188,7 +190,7 @@ public class PPOrderRequestedEventHandlerTests
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
 				.datePromised(SystemTime.asInstant())
 				.dateStartSchedule(SystemTime.asInstant())
-				.orgId(org.getAD_Org_ID())
+				.orgId(orgId)
 				.plantId(110)
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
@@ -247,7 +249,7 @@ public class PPOrderRequestedEventHandlerTests
 	private void verifyPPOrder(final I_PP_Order ppOrder)
 	{
 		assertThat(ppOrder).isNotNull();
-		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
+		assertThat(ppOrder.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
 		assertThat(ppOrder.getPP_Product_BOM_ID()).isEqualTo(productPlanning.getPP_Product_BOM_ID());
 
 		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);

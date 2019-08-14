@@ -30,7 +30,6 @@ import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Loggables;
@@ -111,13 +110,13 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		final I_S_Resource plant = productPlanningDAO.findPlant(
-				eventDescr.getOrgId(),
+				eventDescr.getOrgId().getRepoId(),
 				warehouse,
 				materialDescr.getProductId(),
 				materialDescr.getAttributeSetInstanceId());
 
 		final ProductPlanningQuery productPlanningQuery = ProductPlanningQuery.builder()
-				.orgId(OrgId.ofRepoId(eventDescr.getOrgId()))
+				.orgId(eventDescr.getOrgId())
 				.warehouseId(WarehouseId.ofRepoId(materialDescr.getWarehouseId()))
 				.plantId(ResourceId.ofRepoId(plant.getS_Resource_ID()))
 				.productId(ProductId.ofRepoId(materialDescr.getProductId()))

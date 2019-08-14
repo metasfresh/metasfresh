@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionCreatedEventBuilder;
+import de.metas.organization.OrgId;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -156,7 +158,8 @@ public class TransactionCreatedHandlerTests
 		final Instant date = SystemTime.asInstant();
 
 		final Candidate exisitingCandidate = Candidate.builder()
-				.clientId(10).orgId(20)
+				.clientId(ClientId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(20))
 				.type(CandidateType.UNRELATED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -255,8 +258,8 @@ public class TransactionCreatedHandlerTests
 	{
 		final Candidate exisitingCandidate = Candidate.builder()
 				.id(CandidateId.ofRepoId(11))
-				.clientId(10)
-				.orgId(20)
+				.clientId(ClientId.ofRepoId(10))
+				.orgId(OrgId.ofRepoId(20))
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
 						.productDescriptor(createProductDescriptor())
@@ -339,8 +342,8 @@ public class TransactionCreatedHandlerTests
 	private void makeCommonAssertions(final Candidate candidate)
 	{
 		assertThat(candidate).isNotNull();
-		assertThat(candidate.getClientId()).isEqualTo(10);
-		assertThat(candidate.getOrgId()).isEqualTo(20);
+		assertThat(candidate.getClientId().getRepoId()).isEqualTo(10);
+		assertThat(candidate.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(candidate.getMaterialDescriptor()).isNotNull();
 		assertThat(candidate.getProductId()).isEqualTo(PRODUCT_ID);
 		assertThat(candidate.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
