@@ -1,4 +1,4 @@
-/**The test is done but is failing due to https://github.com/metasfresh/me03/issues/2381.
+/** todo The test is done but is failing due to https://github.com/metasfresh/me03/issues/2381.
  * After this issue will be fixed, the test will pass.
  *  It will need to be moved from integration/defunct dir. */
 import { BPartner } from '../../support/utils/bpartner';
