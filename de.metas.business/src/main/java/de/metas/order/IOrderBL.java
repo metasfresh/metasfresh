@@ -16,6 +16,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.project.ProjectId;
 import de.metas.util.ISingletonService;
 
 public interface IOrderBL extends ISingletonService
@@ -223,4 +224,6 @@ public interface IOrderBL extends ISingletonService
 	I_C_BPartner getBPartner(I_C_Order order);
 
 	I_C_BPartner getBPartnerOrNull(I_C_Order order);
+
+	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
 }

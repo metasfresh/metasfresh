@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
@@ -107,8 +108,12 @@ public class PPOrderRequestedEventHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		
+		final I_C_Order order = newInstance(I_C_Order.class);
+		save(order);
 
 		orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order_ID(order.getC_Order_ID());
 		orderLine.setC_BPartner_ID(120);
 		save(orderLine);
 
