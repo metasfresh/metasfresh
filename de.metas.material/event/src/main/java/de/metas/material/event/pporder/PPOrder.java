@@ -10,12 +10,12 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.compiere.model.I_S_Resource;
-import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -132,7 +132,7 @@ public class PPOrder
 		this.dateStartSchedule = dateStartSchedule;
 
 		this.qtyRequired = qtyRequired;
-		this.qtyDelivered =Util.coalesce(qtyDelivered, ZERO);
+		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 
 		this.lines = lines;
 

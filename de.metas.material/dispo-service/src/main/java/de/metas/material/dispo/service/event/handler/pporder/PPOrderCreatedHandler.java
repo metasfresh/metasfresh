@@ -85,7 +85,11 @@ public final class PPOrderCreatedHandler
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
 		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		return createPreExistingCandidatesQuery(ppOrder);
+	}
 
+	private static CandidatesQuery createPreExistingCandidatesQuery(@NonNull final PPOrder ppOrder)
+	{
 		final int groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId <= 0)
 		{
@@ -113,8 +117,14 @@ public final class PPOrderCreatedHandler
 			@NonNull final AbstractPPOrderEvent ppOrderEvent)
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(ppOrderEvent);
-
 		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		return createPreExistingCandidatesQuery(ppOrder, ppOrderLine);
+	}
+
+	private static CandidatesQuery createPreExistingCandidatesQuery(
+			@NonNull final PPOrder ppOrder,
+			@NonNull final PPOrderLine ppOrderLine)
+	{
 		final int groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId <= 0)
 		{
@@ -122,16 +132,12 @@ public final class PPOrderCreatedHandler
 			return CandidatesQuery.FALSE;
 		}
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		return CandidatesQuery.builder()
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.groupId(groupId)
-				.materialDescriptorQuery(
-						createMaterialDescriptorQuery(
-								ppOrderLine.getProductDescriptor()))
+				.materialDescriptorQuery(createMaterialDescriptorQuery(ppOrderLine.getProductDescriptor()))
 				.build();
-
-		return query;
 	}
 
 	private static MaterialDescriptorQuery createMaterialDescriptorQuery(@NonNull final ProductDescriptor productDescriptor)

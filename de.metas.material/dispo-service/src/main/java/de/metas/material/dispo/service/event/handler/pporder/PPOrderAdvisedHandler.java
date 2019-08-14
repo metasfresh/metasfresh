@@ -136,14 +136,12 @@ public final class PPOrderAdvisedHandler
 				.productBomLineId(ppOrderLine.getProductBomLineId())
 				.build();
 
-		final CandidatesQuery query = CandidatesQuery.builder()
+		return CandidatesQuery.builder()
 				.type(extractCandidateType(ppOrderLine))
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
-
-		return query;
 	}
 
 	@Override

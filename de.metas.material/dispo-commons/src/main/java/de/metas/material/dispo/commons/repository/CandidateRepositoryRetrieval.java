@@ -298,7 +298,7 @@ public class CandidateRepositoryRetrieval
 		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
 	}
 
-	private IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(
+	private static IQueryBuilder<I_MD_Candidate> addOrderingLatestFirst(
 			@NonNull final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{
 		return queryBuilderWithoutOrdering

@@ -5,7 +5,6 @@ import static org.compiere.util.TimeUtil.asInstant;
 import java.util.List;
 
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.Adempiere;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -80,8 +79,6 @@ public class PPOrderPojoConverter
 
 	private PPOrderBuilder createPPorderPojoBuilder(@NonNull final I_PP_Order ppOrderRecord)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
-
 		final int groupIdFromPPOrderRequestedEvent = ATTR_PPORDER_REQUESTED_EVENT_GROUP_ID.getValue(ppOrderRecord, 0);
 
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
