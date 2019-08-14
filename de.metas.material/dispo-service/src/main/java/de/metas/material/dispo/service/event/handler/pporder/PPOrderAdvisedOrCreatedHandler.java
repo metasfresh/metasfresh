@@ -130,35 +130,35 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderEvent.getSupplyRequiredDescriptor();
 
-		final CandidatesQuery lineQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
-		final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineQuery);
+		final CandidatesQuery candidatesQuery = createPreExistingCandidatesQuery(ppOrderLine, ppOrderEvent);
+		final Candidate existingLineCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(candidatesQuery);
 
-		final CandidateBuilder lineCandidateBuilder = existingLineCandidate != null
+		final CandidateBuilder candidateBuilder = existingLineCandidate != null
 				? existingLineCandidate.toBuilder()
 				: Candidate.builderForEventDescr(ppOrderEvent.getEventDescriptor());
 
-		final CandidateType lineCandidateType = extractCandidateType(ppOrderLine);
-		final MaterialDescriptor lineCandidateMaterialDescriptor = createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine);
+		final CandidateType candidateType = extractCandidateType(ppOrderLine);
+		final MaterialDescriptor materialDescriptor = createMaterialDescriptorForPpOrderAndLine(ppOrder, ppOrderLine);
 		final DemandDetail lineCandidateDemandDetail = computeDemandDetailOrNull(
-				lineCandidateType,
+				candidateType,
 				supplyRequiredDescriptor,
-				lineCandidateMaterialDescriptor);
-		final ProductionDetail lineCandidateProductionDetail = createProductionDetailForPPOrderAndLine(ppOrderEvent, ppOrderLine);
+				materialDescriptor);
+		final ProductionDetail productionDetail = createProductionDetailForPPOrderLine(ppOrderEvent, ppOrderLine);
 
-		lineCandidateBuilder
-				.type(lineCandidateType)
+		candidateBuilder
+				.type(candidateType)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				// .status(candidateStatus)
 				.groupId(candidateGroupId)
 				.seqNo(headerCandidateSeqNo + 1)
-				.businessCaseDetail(lineCandidateProductionDetail)
+				.businessCaseDetail(productionDetail)
 				.additionalDemandDetail(lineCandidateDemandDetail)
-				.materialDescriptor(lineCandidateMaterialDescriptor);
+				.materialDescriptor(materialDescriptor);
 
 		// in case of CandidateType.DEMAND this might trigger further demand events
 
 		//
-		return lineCandidateBuilder.build();
+		return candidateBuilder.build();
 	}
 
 	/**
@@ -288,7 +288,7 @@ abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> im
 				.orElse(ProductionDetail.builder());
 	}
 
-	private ProductionDetail createProductionDetailForPPOrderAndLine(
+	private ProductionDetail createProductionDetailForPPOrderLine(
 			@NonNull final AbstractPPOrderEvent ppOrderEvent,
 			@NonNull final PPOrderLine ppOrderLine)
 	{
