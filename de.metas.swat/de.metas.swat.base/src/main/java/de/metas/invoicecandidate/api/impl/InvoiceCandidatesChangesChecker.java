@@ -107,7 +107,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		// (shall not happen)
 		if (infoBeforeChange == null)
 		{
-			Loggables.get().addLog("Missing(old): " + infoAfterChange);
+			Loggables.addLog("Missing(old): " + infoAfterChange);
 			return true;
 		}
 
@@ -116,7 +116,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 		// (shall not happen)
 		if (infoAfterChange == null)
 		{
-			Loggables.get().addLog("Missing(new): " + infoBeforeChange);
+			Loggables.addLog("Missing(new): " + infoBeforeChange);
 			return true;
 		}
 
@@ -213,7 +213,7 @@ public class InvoiceCandidatesChangesChecker implements IInvoiceCandidatesChange
 
 			if (hasChanges)
 			{
-				Loggables.get().addLog(infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo);
+				Loggables.addLog(infoAfterChange.getC_Invoice_Candidate_ID() + ": " + changesInfo);
 			}
 
 			return !hasChanges;

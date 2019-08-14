@@ -127,7 +127,7 @@ public class PurchaseSupplyRequiredHandler implements MaterialEventHandler<Suppl
 		final I_PP_Product_Planning productPlanning = productPlanningDAO.find(productPlanningQuery);
 		if (productPlanning == null)
 		{
-			Loggables.get().addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
+			Loggables.addLog("No PP_Product_Planning record found; query={}", productPlanningQuery);
 			return null;
 		}
 

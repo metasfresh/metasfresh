@@ -37,7 +37,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.time.SystemTime;
 
@@ -71,7 +71,7 @@ public class WorkpackageCleanupStaleEntries
 	private Date _staleDateFrom;
 	private String _staleErrorMsg;
 	private PInstanceId _adPInstanceId;
-	private ILoggable logger = NullLoggable.instance;
+	private ILoggable logger = Loggables.nop();
 
 	// Status
 	private Integer staleWorkpackagesCount;

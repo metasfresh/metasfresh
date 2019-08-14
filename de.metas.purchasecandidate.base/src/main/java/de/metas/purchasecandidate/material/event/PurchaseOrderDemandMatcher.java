@@ -46,7 +46,7 @@ public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 		}
 
 		final I_M_Product product = mrpContext.getM_Product();
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"Product {}_{} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
 				product.getValue(), product.getName(), productPlanning, product);
 		return false;

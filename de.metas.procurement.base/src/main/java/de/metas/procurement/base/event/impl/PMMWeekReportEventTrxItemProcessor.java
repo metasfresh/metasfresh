@@ -149,7 +149,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 		if (errorMsg != null)
 		{
-			Loggables.get().addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
+			Loggables.addLog("Event " + event + " marked as processed with warnings: " + errorMsg);
 		}
 
 		countProcessed.incrementAndGet();
@@ -162,7 +162,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 
 		if (errorMsg != null)
 		{
-			Loggables.get().addLog("Event " + event + " skipped: " + errorMsg);
+			Loggables.addLog("Event " + event + " skipped: " + errorMsg);
 		}
 
 		countSkipped.incrementAndGet();
@@ -225,7 +225,7 @@ class PMMWeekReportEventTrxItemProcessor extends TrxItemProcessorAdapter<I_PMM_W
 		event.setAD_Issue(issue);
 		InterfaceWrapperHelper.save(event);
 
-		Loggables.get().addLog("Event has error with message: {}; event={}", errorMsg, event);
+		Loggables.addLog("Event has error with message: {}; event={}", errorMsg, event);
 	}
 
 	public String getProcessSummary()

@@ -87,7 +87,7 @@ public class SupplyProposalEvaluator
 			return true;
 		}
 
-		Loggables.get().addLog(
+		Loggables.addLog(
 				"The given proposal would repeat a step that is already planned; rejecting it; proposal={}; existing candidates: source={}; destination={}",
 				proposal, existingDemandCandidate, existingsupplyCandidate);
 		return false;

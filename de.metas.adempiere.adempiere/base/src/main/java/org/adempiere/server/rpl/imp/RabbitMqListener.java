@@ -1,11 +1,10 @@
 package org.adempiere.server.rpl.imp;
 
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static org.compiere.util.Util.firstGreaterThanZero;
+import static org.compiere.util.Util.firstNotEmptyTrimmed;
+
+import java.util.Properties;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
@@ -18,15 +17,21 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.lang3.StringUtils;
 import org.compiere.model.I_IMP_Processor;
 import org.slf4j.Logger;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageListener;
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.w3c.dom.Document;
 
-import java.util.Properties;
-
-import static org.compiere.util.Util.firstGreaterThanZero;
-import static org.compiere.util.Util.firstNotEmptyTrimmed;
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.time.SystemTime;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -202,7 +207,7 @@ public class RabbitMqListener implements MessageListener
 		isStopping = true;
 		try
 		{
-			Loggables.get().withLogger(logger, Level.TRACE).addLog("Closing AMQP Connection!");
+			Loggables.withLogger(logger, Level.TRACE).addLog("Closing AMQP Connection!");
 
 			if (connectionFactory != null)
 			{
@@ -245,7 +250,7 @@ public class RabbitMqListener implements MessageListener
 		{
 			text = new String(message.getBody());
 
-			Loggables.get().withLogger(logger, Level.TRACE)
+			Loggables.withLogger(logger, Level.TRACE)
 					.addLog("Received message(text): \n{}", text);
 
 			importXMLDocument(text);
@@ -255,7 +260,7 @@ public class RabbitMqListener implements MessageListener
 			// not sending reply
 			if (StringUtils.isNotEmpty(message.getMessageProperties().getReplyTo()))
 			{
-				Loggables.get().withLogger(logger, Level.WARN)
+				Loggables.withLogger(logger, Level.WARN)
 						.addLog("Sending reply currently not supported with rabbitmq");
 			}
 		}

@@ -43,7 +43,7 @@ public class ClearLocks implements IStartupHouseKeepingTask
 	public void executeTask()
 	{
 		final int countLocksReleased = Services.get(ILockManager.class).removeAutoCleanupLocks();
-		Loggables.get().addLog("Deleted " + countLocksReleased + " stale records");
+		Loggables.addLog("Deleted " + countLocksReleased + " stale records");
 	}
 
 }

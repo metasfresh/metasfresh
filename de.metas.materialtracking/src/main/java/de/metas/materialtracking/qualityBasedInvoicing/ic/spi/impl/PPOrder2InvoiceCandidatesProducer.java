@@ -131,7 +131,7 @@ import lombok.NonNull;
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(ppOrder);
 		Check.assume(Env.getAD_Client_ID(context.getCtx()) == clientOrgAware.getAD_Client_ID(), "AD_Client_ID of PP_Order {} and of its Ctx are the same", ppOrder);
 
-		final ILoggable loggable = Loggables.get().withLogger(logger, Level.INFO);
+		final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
 
 		//
 		// Check if given manufacturing order is eligible. It might be not eligible anymore, because it was already processed earlier this run

@@ -169,7 +169,7 @@ public class M_Material_Tracking_Report_Line_Create
 				|| materialTracking.getM_Material_Tracking_ID() != materialTrackingAware.getM_Material_Tracking_ID())
 		{
 			// should not happen because that would mean an inconsistent M_Material_Tracking_Ref
-			Loggables.get().addLog(
+			Loggables.addLog(
 					"Skipping {} because it is referenced via M_Material_Tracking_Ref, but itself does not reference {}",
 					materialTrackingAware, materialTracking);
 			return false;

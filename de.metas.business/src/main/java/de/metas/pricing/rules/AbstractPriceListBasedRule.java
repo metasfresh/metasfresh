@@ -56,7 +56,7 @@ public abstract class AbstractPriceListBasedRule implements IPricingRule
 		if (pricingCtx.getPriceListId() == null)
 		{
 			final String msg = "pricingCtx {} contains no priceList";
-			Loggables.get().addLog(msg, pricingCtx);
+			Loggables.addLog(msg, pricingCtx);
 			log.error(msg, pricingCtx);
 			Trace.printStack();
 			return false; // false;

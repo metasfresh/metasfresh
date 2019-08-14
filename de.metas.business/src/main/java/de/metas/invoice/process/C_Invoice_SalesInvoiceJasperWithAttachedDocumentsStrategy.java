@@ -83,7 +83,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 		final boolean isPDF = OutputType.PDF.equals(outputType);
 		if (!isPDF)
 		{
-			Loggables.get().withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
+			Loggables.withLogger(logger, Level.WARN).addLog("Concatenating additional PDF-Data is not supported with outputType={}; returning only the jasper data itself.", outputType);
 			return new ExecuteReportResult(outputType, invoiceData);
 		}
 

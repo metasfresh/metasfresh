@@ -444,11 +444,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 				// save the shipment schedule using current transaction
 				InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 			}
-			Loggables.get().addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
+			Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 		}
 		else
 		{
-			Loggables.get().addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
+			Loggables.addLog("Shipment {0} would be empty, so deleting it again", currentShipment);
 			InterfaceWrapperHelper.delete(currentShipment);
 		}
 

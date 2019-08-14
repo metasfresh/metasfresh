@@ -149,7 +149,7 @@ public class PP_Order
 		}
 
 		final String msg = msgBL.translate(InterfaceWrapperHelper.getCtx(ppOrder), sb.toString());
-		Loggables.get().addLog(msg);
+		Loggables.addLog(msg);
 		throw new AdempiereException(msg);
 	}
 

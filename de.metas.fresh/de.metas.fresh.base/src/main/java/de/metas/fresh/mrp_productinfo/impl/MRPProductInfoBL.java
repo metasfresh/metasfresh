@@ -140,7 +140,7 @@ public class MRPProductInfoBL implements IMRPProductInfoBL
 			finally
 			{
 				// note: just make sure we log what we got. Assume that any error/exception logging is done by the framework
-				Loggables.get().addLog(logMsg.toString());
+				Loggables.addLog(logMsg.toString());
 			}
 		}
 	}

@@ -123,6 +123,6 @@ public class RoleAccessUpdate extends JavaProcess
 	private static void updateRole(final Role role)
 	{
 		final String result = Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-		Loggables.get().addLog("Role access updated: " + role.getName() + ": " + result);
+		Loggables.addLog("Role access updated: " + role.getName() + ": " + result);
 	}	// updateRole
 }

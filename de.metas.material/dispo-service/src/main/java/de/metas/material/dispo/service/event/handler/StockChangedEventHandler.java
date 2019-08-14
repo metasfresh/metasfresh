@@ -143,7 +143,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 		final BigDecimal quantityOnHand = event.getQtyOnHand();
 		if (quantityOnHand.signum() <= 0)
 		{
-			Loggables.get().addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
+			Loggables.addLog("Warning: something was out of sync since there is no existing 'latestMatch' with a qty to reduce");
 			return null;
 		}
 		return quantityOnHand;
@@ -154,7 +154,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 	{
 		if (quantity.signum() == 0)
 		{
-			Loggables.get().addLog("The event's quantity is what was already expected; nothing to do");
+			Loggables.addLog("The event's quantity is what was already expected; nothing to do");
 			return null;
 		}
 		final CandidateType type = quantity.signum() > 0 ? CandidateType.INVENTORY_UP : CandidateType.INVENTORY_DOWN;

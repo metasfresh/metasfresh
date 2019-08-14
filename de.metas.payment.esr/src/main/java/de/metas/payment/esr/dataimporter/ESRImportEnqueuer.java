@@ -27,7 +27,7 @@ import de.metas.payment.esr.processor.impl.LoadESRImportFileWorkpackageProcessor
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
-import de.metas.util.NullLoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -83,7 +83,7 @@ public class ESRImportEnqueuer
 
 	private ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy;
 
-	private ILoggable loggable = NullLoggable.instance;
+	private ILoggable loggable = Loggables.nop();
 
 	private ESRImportEnqueuer()
 	{

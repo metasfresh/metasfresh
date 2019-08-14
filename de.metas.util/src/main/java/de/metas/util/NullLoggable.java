@@ -29,11 +29,11 @@ package de.metas.util;
  * @author tsa
  *
  */
-public final class NullLoggable implements ILoggable
+final class NullLoggable implements ILoggable
 {
 	public static final NullLoggable instance = new NullLoggable();
 
-	public static final boolean isNull(final ILoggable loggable)
+	public static boolean isNull(final ILoggable loggable)
 	{
 		return loggable == null || loggable == NullLoggable.instance;
 	}

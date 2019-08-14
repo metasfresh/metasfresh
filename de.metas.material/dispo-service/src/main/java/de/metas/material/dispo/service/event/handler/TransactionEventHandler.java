@@ -154,7 +154,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final Flag pickDirectlyIfFeasible = extractPickDirectlyIfFeasible(candidate);
 		if (!pickDirectlyIfFeasible.toBoolean())
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
+			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has pickDirectlyIfFeasible={}; candidate={}",
 					pickDirectlyIfFeasible, candidate);
 			return;
 		}
@@ -163,7 +163,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noShipmentScheduleForPicking = demandDetail == null || demandDetail.getShipmentScheduleId() <= 0;
 		if (noShipmentScheduleForPicking)
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
+			Loggables.addLog("Not posting PickingRequestedEvent: this event's candidate has no shipmentScheduleId; candidate={}",
 					candidate);
 			return;
 		}
@@ -172,7 +172,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final boolean noHUsToPick = huOnHandQtyChangeDescriptors == null || huOnHandQtyChangeDescriptors.isEmpty();
 		if (noHUsToPick)
 		{
-			Loggables.get().addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
+			Loggables.addLog("Not posting PickingRequestedEvent: this event has no HuOnHandQtyChangeDescriptors");
 			return;
 		}
 

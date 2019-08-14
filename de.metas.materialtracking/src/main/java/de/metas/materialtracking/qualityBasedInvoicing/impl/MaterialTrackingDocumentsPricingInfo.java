@@ -258,7 +258,7 @@ import de.metas.util.Services;
 
 			if (!priceLists.hasNext())
 			{
-				Loggables.get().addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, countryId);
+				Loggables.addLog("Unable to retrieve a priceList for pricingSystem {0} and country {1}.", pricingSystem, countryId);
 				return null;
 			}
 
@@ -268,7 +268,7 @@ import de.metas.util.Services;
 			final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList, movementDate, processedPLVFiltering);
 			if (plv == null)
 			{
-				Loggables.get().addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
+				Loggables.addLog("Unable to retrieve a processed priceListVersion for priceList {0} and movementDate {1}.", priceList, movementDate);
 			}
 			return plv;
 		}

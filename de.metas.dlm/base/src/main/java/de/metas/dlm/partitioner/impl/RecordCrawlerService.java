@@ -167,7 +167,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						if (forwardRecord == null)
 						{
 							// this happens with our "minidump" where we left out the HUs
-							Loggables.get().withLogger(logger, Level.WARN).addLog(
+							Loggables.withLogger(logger, Level.WARN).addLog(
 									"{}[{}] forward: the record from table={} which we attempted to load via {}.{}={} is NULL",
 									currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey);
 							continue;
@@ -185,7 +185,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						}
 						if(AddResult.STOP.equals(addResult))
 						{
-							Loggables.get().withLogger(logger, Level.WARN)
+							Loggables.withLogger(logger, Level.WARN)
 								.addLog("The crawler was signaled to stop when it added ReferencedRecord={} to the result. Stopping now", forwardReference);
 							break mainLoop;
 						}
@@ -278,7 +278,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 							logger.trace("{}[{}] backward: ReferencingRecord={} was already added in a previous iteration. Returning", currentTableName, currentRecordId, backwardTableRecordReference);
 							break;
 						case STOP:
-							Loggables.get().addLog("The crawler was signaled to stop when it added ReferencingRecord={} the result. Stopping now", backwardTableRecordReference);
+							Loggables.addLog("The crawler was signaled to stop when it added ReferencingRecord={} the result. Stopping now", backwardTableRecordReference);
 							break mainLoop;
 						default:
 							Check.errorIf(true, "Unexpected result={}", addRecordResult);
@@ -308,16 +308,9 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		{
 			return; // nothing to store
 		}
-		Services.get(ITrxManager.class).run(new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				storeIterateResult0(config,
-						(IStorableIterateResult)result,
-						PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName));
-			}
-		});
+		Services.get(ITrxManager.class).run((TrxRunnable)localTrxName -> storeIterateResult0(config,
+				(IStorableIterateResult)result,
+				PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName)));
 	}
 
 	/**
@@ -430,7 +423,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						{
 							InterfaceWrapperHelper.delete(emptyPartitionDB);
 						}
-						Loggables.get().withLogger(logger, Level.INFO).addLog("Deleted DLM_Partition_ID={} after merge with DLM_Partition_ID={}", dlmPartitionId, firstKey);
+						Loggables.withLogger(logger, Level.INFO).addLog("Deleted DLM_Partition_ID={} after merge with DLM_Partition_ID={}", dlmPartitionId, firstKey);
 					});
 		}
 

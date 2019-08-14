@@ -270,7 +270,7 @@ public class M_ReceiptSchedule_Generate_M_InOuts extends JavaProcess
 			// task 09016: this case happens from time to time (aprox. 90 times in the first 6 months), if the M_ReceiptsScheulde is deleted due to an order reactivation
 			// don't rethrow the exception;
 			final String msg = "Detected a FK constraint vialoation; We assume that everything was rolled back, but we do not let the processing fail. Check the java comments for details";
-			Loggables.get().withLogger(logger, Level.WARN).addLog(msg);
+			Loggables.withLogger(logger, Level.WARN).addLog(msg);
 		}
 	}
 

@@ -85,7 +85,7 @@ public class OLCandsProcessorExecutor
 		this.olCandListeners = olCandListeners;
 		this.aggregationInfo = processorDescriptor.getAggregationInfo();
 		this.groupingValuesProviders = groupingValuesProviders;
-		this.loggable = Loggables.get().withLogger(logger, Level.INFO);
+		this.loggable = Loggables.withLogger(logger, Level.INFO);
 
 		this.olCandProcessorId = processorDescriptor.getId();
 		this.userInChargeId = processorDescriptor.getUserInChangeId();

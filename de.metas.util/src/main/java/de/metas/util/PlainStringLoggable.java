@@ -36,8 +36,11 @@ import com.google.common.collect.ImmutableList;
  */
 public final class PlainStringLoggable implements ILoggable
 {
-
 	private final List<String> messages = new ArrayList<>();
+
+	PlainStringLoggable()
+	{
+	}
 
 	@Override
 	public ILoggable addLog(String msg, Object... msgParameters)

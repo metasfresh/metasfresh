@@ -66,7 +66,7 @@ public class PurchaseCandidateAdvisedEventCreator
 		final Optional<VendorProductInfo> defaultVendorProductInfo = vendorProductInfoService.getDefaultVendorProductInfo(productId, orgId);
 		if (!defaultVendorProductInfo.isPresent())
 		{
-			Loggables.get().addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
+			Loggables.addLog("Found no VendorProductInfo for productId={} and orgId={}", productId.getRepoId(), orgId.getRepoId());
 			return Optional.empty();
 		}
 
@@ -81,7 +81,7 @@ public class PurchaseCandidateAdvisedEventCreator
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
 
-		Loggables.get().addLog("Created PurchaseCandidateAdvisedEvent");
+		Loggables.addLog("Created PurchaseCandidateAdvisedEvent");
 		return Optional.of(event);
 	}
 }

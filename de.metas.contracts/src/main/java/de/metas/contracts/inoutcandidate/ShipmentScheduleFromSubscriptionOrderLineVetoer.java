@@ -70,7 +70,7 @@ public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWit
 
 		if (veto)
 		{
-			Loggables.get().addLog("ShipmentScheduleFromSubscriptionOrderLineVetoer - isSubscription={}; hasAtLeastOneFlatrateContract={}; return {}; orderLine={}",
+			Loggables.addLog("ShipmentScheduleFromSubscriptionOrderLineVetoer - isSubscription={}; hasAtLeastOneFlatrateContract={}; return {}; orderLine={}",
 					subscription, hasAtLeastOneFlatrateContract, OnMissingCandidate.I_VETO, ol);
 			return OnMissingCandidate.I_VETO;
 		}

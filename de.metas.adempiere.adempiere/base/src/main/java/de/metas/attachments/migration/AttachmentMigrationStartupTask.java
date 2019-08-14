@@ -41,7 +41,7 @@ public class AttachmentMigrationStartupTask implements IStartupHouseKeepingTask
 	@Override
 	public void executeTask()
 	{
-		Loggables.get().addLog("Checking if there are still AD_Attachment records.");
+		Loggables.addLog("Checking if there are still AD_Attachment records.");
 		 migrateAttachmentService.isExistRecordsToMigrateCheckDB();
 	}
 }

@@ -176,7 +176,7 @@ public class FactAcctLogDAO implements IFactAcctLogDAO
 			if (rs.next())
 			{
 				final String resultStr = rs.getString(1);
-				Loggables.get().addLog(resultStr);
+				Loggables.addLog(resultStr);
 			}
 
 		}

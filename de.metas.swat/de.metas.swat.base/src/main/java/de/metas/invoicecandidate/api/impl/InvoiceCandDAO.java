@@ -973,7 +973,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate_Recompute.COLUMNNAME_AD_PInstance_ID, recomputeTag.getPinstanceId())
 				.execute();
 
-		Loggables.get().withLogger(logger, Level.DEBUG)
+		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Marked {} {} records with recompute tag={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag);
 
 		logger.debug("Query: {}", query);
@@ -1018,7 +1018,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQuery<I_C_Invoice_Candidate_Recompute> query = queryBuilder.create();
 		final int count = query.deleteDirectly();
 
-		Loggables.get().withLogger(logger, Level.DEBUG)
+		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("Deleted {} {} entries for tag={}, onlyInvoiceCandidateIds={}", count, I_C_Invoice_Candidate_Recompute.Table_Name, recomputeTag, onlyInvoiceCandidateIds);
 		logger.debug("Query: {}", query);
 
@@ -1181,7 +1181,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addSetColumnValue(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, paymentTermId)
 				.execute();
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateMissingPaymentTermIds - {} C_Invoice_Candidates were updated; selectionId={}, paymentTermId={}",
 						updateCount, selectionId, paymentTermId);
 
@@ -1204,7 +1204,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate needs to be updated; selectionId={}",
 							selectionId);
 		}
@@ -1231,7 +1231,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.first();
 		if (firstInvoiceCandidateWithPaymentTermId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateMissingPaymentTermIds - No C_Invoice_Candidate selected by selectionId={} has a C_PaymentTerm_ID; nothing to update", selectionId);
 			return -1;
 		}
@@ -1265,7 +1265,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
 		if (selectionToUpdateId == null)
 		{
-			Loggables.get().withLogger(logger, Level.INFO)
+			Loggables.withLogger(logger, Level.INFO)
 					.addLog("updateColumnForSelection - No C_Invoice_Candidate needs to be updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 							selectionId, columnName, updateOnlyIfNull, value);
 			return;
@@ -1283,7 +1283,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 		final int updateCount = updateQuery.updateDirectly(updater);
 
-		Loggables.get().withLogger(logger, Level.INFO)
+		Loggables.withLogger(logger, Level.INFO)
 				.addLog("updateColumnForSelection - {} C_Invoice_Candidates were updated; selectionId={}, columnName={}; updateOnlyIfNull={}, newValue={}",
 						updateCount, selectionId, columnName, updateOnlyIfNull, value);
 

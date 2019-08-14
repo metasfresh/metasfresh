@@ -246,7 +246,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			final PricingSystemId basePricingSystemId = PricingSystemId.ofRepoIdOrNull(basePricingSystemRepoId);
 			if (basePricingSystemId == null)
 			{
-				Loggables.get().withLogger(logger, Level.WARN).addLog(
+				Loggables.withLogger(logger, Level.WARN).addLog(
 						"Ignoring M_DiscountSchemaBreak_ID={} of M_DiscountSchema_ID={} which has PriceBase=P(ricingSystem), but Base_PricingSystem_ID={}",
 						discountSchemaBreakRecord.getM_DiscountSchemaBreak_ID(), discountSchemaBreakRecord.getM_DiscountSchema_ID(), basePricingSystemRepoId);
 				return PriceSpecification.none();

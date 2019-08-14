@@ -42,6 +42,6 @@ public class Reset_C_Invoice_Candidate_Recompute implements IStartupHouseKeeping
 	public void executeTask()
 	{
 		final int no = DB.getSQLValue(ITrx.TRXNAME_None, "select de_metas_invoicecandidate.Reset_C_Invoice_Candidate_Recompute();");
-		Loggables.get().addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
+		Loggables.addLog("Cleaned up " + no + " stale C_Invoice_Candidate_Recompute records");
 	}
 }
