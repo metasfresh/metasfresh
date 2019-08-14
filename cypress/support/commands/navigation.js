@@ -15,10 +15,10 @@ Cypress.Commands.add('clickButtonWithText', text => {
  * Basic command for clicking an element with certain selector
  * @param selector string used to query for the element
  */
-Cypress.Commands.add('clickElementWithClass', (selector, forced) => {
+Cypress.Commands.add('clickElementWithClass', (selector, force) => {
   const opts = {};
 
-  if (forced) {
+  if (force) {
     opts.force = true;
   }
 
@@ -27,10 +27,10 @@ Cypress.Commands.add('clickElementWithClass', (selector, forced) => {
     .click({ ...opts });
 });
 
-Cypress.Commands.add('selectTab', (tabName, forced) => {
+Cypress.Commands.add('selectTab', (tabName, force) => {
   const opts = {};
 
-  if (forced) {
+  if (force) {
     opts.force = true;
   }
 

@@ -250,9 +250,9 @@ declare namespace Cypress {
      * Select a tab by its name.
      *
      * @param tabName the name of the tab
-     * @param forced optional, default = false;
+     * @param force optional, default = false;
      */
-    selectTab(tabName: string, forced?: boolean): Chainable<any>
+    selectTab(tabName: string, force?: boolean): Chainable<any>
 
 
     /**
@@ -379,9 +379,9 @@ declare namespace Cypress {
      * Basic command for clicking an element with certain selector.
      *
      * @param selector - string used to query for the element
-     * @param forced - use force clicking or normal clicking
+     * @param force - use force clicking or normal clicking
      */
-    clickElementWithClass(selector, forced): Chainable<any>
+    clickElementWithClass(selector, force): Chainable<any>
 
 
     /*
