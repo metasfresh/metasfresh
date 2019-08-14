@@ -18,6 +18,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
@@ -196,21 +198,26 @@ class PPOrderLinesLoader
 
 	private static final ITranslatableString extractDescription(final I_PP_Order ppOrder)
 	{
-		final ITranslatableString docTypeStr;
-		final I_C_DocType docType = ppOrder.getC_DocType();
+		return TranslatableStrings.join(" ",
+				extractDocTypeName(ppOrder),
+				ppOrder.getDocumentNo());
+	}
+
+	private static ITranslatableString extractDocTypeName(final I_PP_Order ppOrder)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
+		final I_C_DocType docType = docTypeId != null
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				: null;
 		if (docType != null)
 		{
 			final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docType);
-			docTypeStr = docTypeTrlMap.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
+			return docTypeTrlMap.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
 		}
 		else
 		{
-			docTypeStr = TranslatableStrings.empty();
+			return TranslatableStrings.empty();
 		}
-
-		final ITranslatableString documentNoStr = TranslatableStrings.constant(ppOrder.getDocumentNo());
-
-		return TranslatableStrings.join(" ", docTypeStr, documentNoStr);
 	}
 
 	private PPOrderLineRow createRowForMainProduct(
