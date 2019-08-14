@@ -17,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.CoalesceUtil;
@@ -59,7 +61,7 @@ public class PPOrder
 
 	WarehouseId warehouseId;
 
-	int bPartnerId;
+	BPartnerId bpartnerId;
 
 	int productPlanningId;
 
@@ -82,7 +84,7 @@ public class PPOrder
 	 */
 	int ppOrderId;
 
-	String docStatus;
+	DocStatus docStatus;
 
 	/**
 	 * This is usually the respective supply candidates' date value.
@@ -109,12 +111,12 @@ public class PPOrder
 			@JsonProperty("orgId") @NonNull final OrgId orgId,
 			@JsonProperty("plantId") final int plantId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
-			@JsonProperty("bPartnerId") final int bPartnerId,
+			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
 			@JsonProperty("productDescriptor") @NonNull final ProductDescriptor productDescriptor,
 			@JsonProperty("orderLineId") final int orderLineId,
 			@JsonProperty("ppOrderId") final int ppOrderId,
-			@JsonProperty("docStatus") @Nullable final String docStatus,
+			@JsonProperty("docStatus") @Nullable final DocStatus docStatus,
 			@JsonProperty("datePromised") @NonNull final Instant datePromised,
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
@@ -126,7 +128,7 @@ public class PPOrder
 		this.plantId = checkIdGreaterThanZero("plantId", plantId);
 		this.warehouseId = warehouseId;
 
-		this.bPartnerId = bPartnerId;
+		this.bpartnerId = bpartnerId;
 		this.productPlanningId = productPlanningId; // ok to be not set
 		this.productDescriptor = productDescriptor;
 

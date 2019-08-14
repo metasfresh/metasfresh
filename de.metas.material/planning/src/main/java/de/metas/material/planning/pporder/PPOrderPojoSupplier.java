@@ -21,12 +21,12 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
@@ -131,7 +131,7 @@ public class PPOrderPojoSupplier
 		final ProductId productId = ProductId.ofRepoId(mrpContext.getM_Product_ID());
 		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToSupply, productId);
 
-		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
+		return PPOrder.builder()
 				.orgId(OrgId.ofRepoId(mrpContext.getAD_Org_ID()))
 
 				// Planning dimension
@@ -149,9 +149,9 @@ public class PPOrderPojoSupplier
 				.qtyRequired(ppOrderQuantity.getAsBigDecimal())
 
 				.orderLineId(request.getMrpDemandOrderLineSOId())
-				.bPartnerId(request.getMrpDemandBPartnerId());
-
-		return ppOrderPojoBuilder.build();
+				.bpartnerId(BPartnerId.ofRepoId(request.getMrpDemandBPartnerId()))
+				//
+				.build();
 	}
 
 	/**

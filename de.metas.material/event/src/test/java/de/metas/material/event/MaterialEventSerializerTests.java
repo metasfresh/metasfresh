@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.HUDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
@@ -262,8 +263,8 @@ public class MaterialEventSerializerTests
 				.newDatePromised(NOW)
 				.oldDatePromised(SystemTime.asInstant())
 				.ppOrderId(10)
-				.oldDocStatus("CO")
-				.newDocStatus("CL")
+				.oldDocStatus(DocStatus.Completed)
+				.newDocStatus(DocStatus.Closed)
 				.oldQtyRequired(TEN)
 				.newQtyRequired(ELEVEN)
 				.oldQtyDelivered(TWELVE)

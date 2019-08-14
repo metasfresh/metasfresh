@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -238,7 +239,7 @@ public class CandidateRepositoryWriteServiceTests
 						.productPlanningId(80)
 						.ppOrderId(100)
 						.ppOrderLineId(110)
-						.ppOrderDocStatus("ppOrderDocStatus")
+						.ppOrderDocStatus(DocStatus.Completed)
 						.advised(Flag.TRUE)
 						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
 						.qty(TEN)

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.util.Check;
@@ -58,7 +59,7 @@ public class ProductionDetail implements BusinessCaseDetail
 				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
 				.ppOrderId(productionDetailRecord.getPP_Order_ID())
 				.ppOrderLineId(productionDetailRecord.getPP_Order_BOMLine_ID())
-				.ppOrderDocStatus(productionDetailRecord.getPP_Order_DocStatus())
+				.ppOrderDocStatus(DocStatus.ofNullableCode(productionDetailRecord.getPP_Order_DocStatus()))
 				.qty(productionDetailRecord.getPlannedQty())
 				.build();
 
@@ -75,7 +76,7 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	int ppOrderId;
 
-	String ppOrderDocStatus;
+	DocStatus ppOrderDocStatus;
 
 	int ppOrderLineId;
 
@@ -92,7 +93,7 @@ public class ProductionDetail implements BusinessCaseDetail
 			final int productBomLineId,
 			final String description,
 			final int ppOrderId,
-			final String ppOrderDocStatus,
+			final DocStatus ppOrderDocStatus,
 			final int ppOrderLineId,
 			@NonNull final Flag advised,
 			@NonNull final Flag pickDirectlyIfFeasible,

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -62,7 +64,7 @@ public class PPOrderPojoConverter
 		return PPOrder.builder()
 				.datePromised(asInstant(ppOrderRecord.getDatePromised()))
 				.dateStartSchedule(asInstant(ppOrderRecord.getDateStartSchedule()))
-				.docStatus(ppOrderRecord.getDocStatus())
+				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
 				.orgId(OrgId.ofRepoId(ppOrderRecord.getAD_Org_ID()))
 				.plantId(ppOrderRecord.getS_Resource_ID())
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
@@ -71,7 +73,7 @@ public class PPOrderPojoConverter
 				.qtyRequired(ppOrderRecord.getQtyOrdered())
 				.qtyDelivered(ppOrderRecord.getQtyDelivered())
 				.warehouseId(WarehouseId.ofRepoId(ppOrderRecord.getM_Warehouse_ID()))
-				.bPartnerId(ppOrderRecord.getC_BPartner_ID())
+				.bpartnerId(BPartnerId.ofRepoId(ppOrderRecord.getC_BPartner_ID()))
 				.orderLineId(ppOrderRecord.getC_OrderLine_ID())
 				.materialDispoGroupId(getMaterialDispoGroupIdOrZero(ppOrderRecord))
 				//

@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -300,10 +301,10 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.qtyRequired(TEN)
 				.qtyDelivered(ONE)
 				.warehouseId(intermediateWarehouseId)
-				.bPartnerId(BPARTNER_ID.getRepoId())
+				.bpartnerId(BPARTNER_ID)
 				.plantId(120)
 				.productPlanningId(140)
-				.docStatus("IP")
+				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(groupId)
 				.line(PPOrderLine.builder()
 						.ppOrderLineId(ppOrderId * 5)

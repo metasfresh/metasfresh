@@ -136,9 +136,9 @@ public class PPOrderProducer
 		//
 		// Inherit values from MRP demand
 		ppOrderRecord.setC_OrderLine_ID(ppOrder.getOrderLineId());
-		if (ppOrder.getBPartnerId() > 0)
+		if (ppOrder.getBpartnerId() != null)
 		{
-			ppOrderRecord.setC_BPartner_ID(ppOrder.getBPartnerId());
+			ppOrderRecord.setC_BPartner_ID(ppOrder.getBpartnerId().getRepoId());
 		}
 		else if (ppOrder.getOrderLineId() > 0)
 		{

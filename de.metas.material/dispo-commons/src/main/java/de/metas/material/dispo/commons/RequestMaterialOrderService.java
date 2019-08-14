@@ -131,7 +131,7 @@ public class RequestMaterialOrderService
 						.orgId(groupMember.getOrgId())
 						.plantId(prodDetail.getPlantId())
 						.productDescriptor(materialDescriptor)
-						.bPartnerId(BPartnerId.toRepoId(materialDescriptor.getCustomerId()))
+						.bpartnerId(materialDescriptor.getCustomerId())
 						.qtyRequired(groupMember.getQuantity())
 						.warehouseId(groupMember.getWarehouseId());
 			}

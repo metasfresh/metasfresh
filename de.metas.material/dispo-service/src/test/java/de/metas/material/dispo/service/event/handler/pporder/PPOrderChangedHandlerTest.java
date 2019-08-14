@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
@@ -88,8 +89,8 @@ public class PPOrderChangedHandlerTest
 
 		final PPOrderChangedEvent ppOrderChangedEvent = PPOrderChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(10, 20))
-				.oldDocStatus("CO")
-				.newDocStatus("CO")
+				.oldDocStatus(DocStatus.Completed)
+				.newDocStatus(DocStatus.Completed)
 				.oldDatePromised(SystemTime.asInstant())
 				.newDatePromised(SystemTime.asInstant())
 				.newQtyDelivered(ONE)

@@ -7,6 +7,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -58,8 +59,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 	BigDecimal oldQtyDelivered;
 	BigDecimal newQtyDelivered;
 
-	String oldDocStatus;
-	String newDocStatus;
+	DocStatus oldDocStatus;
+	DocStatus newDocStatus;
 
 	List<ChangedPPOrderLineDescriptor> ppOrderLineChanges;
 	List<DeletedPPOrderLineDescriptor> deletedPPOrderLines;
@@ -77,8 +78,8 @@ public class PPOrderChangedEvent implements MaterialEvent
 			@JsonProperty("newQtyRequired") @NonNull final BigDecimal newQtyRequired,
 			@JsonProperty("oldQtyDelivered") @NonNull final BigDecimal oldQtyDelivered,
 			@JsonProperty("newQtyDelivered") @NonNull final BigDecimal newQtyDelivered,
-			@JsonProperty("oldDocStatus") @NonNull final String oldDocStatus,
-			@JsonProperty("newDocStatus") @NonNull final String newDocStatus,
+			@JsonProperty("oldDocStatus") @NonNull final DocStatus oldDocStatus,
+			@JsonProperty("newDocStatus") @NonNull final DocStatus newDocStatus,
 			@JsonProperty("ppOrderLineChanges") @Singular final List<ChangedPPOrderLineDescriptor> ppOrderLineChanges,
 			@JsonProperty("deletedPPOrderLines") @Singular final List<DeletedPPOrderLineDescriptor> deletedPPOrderLines,
 			@JsonProperty("newPPOrderLines") @Singular final List<PPOrderLine> newPPOrderLines)
