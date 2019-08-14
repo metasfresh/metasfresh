@@ -1208,3 +1208,12 @@ UPDATE AD_Menu SET Name='Projekt',Updated=TO_TIMESTAMP('2019-08-14 20:29:34','YY
 UPDATE AD_Menu_Trl SET Name='Projekt',Updated=TO_TIMESTAMP('2019-08-14 20:30:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Menu_ID=541312
 ;
 
+-- 2019-08-14T18:40:51.039Z
+-- URL zum Konzept
+UPDATE AD_Menu SET AD_Element_ID=1000363, Description='Type of the project', Name='Projektart',Updated=TO_TIMESTAMP('2019-08-14 20:40:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541330
+;
+
+-- 2019-08-14T18:40:51.041Z
+-- URL zum Konzept
+/* DDL */  select update_menu_translation_from_ad_element(1000363) 
+;
