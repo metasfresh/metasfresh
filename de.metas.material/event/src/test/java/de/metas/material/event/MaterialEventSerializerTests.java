@@ -66,6 +66,7 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.time.SystemTime;
 
@@ -200,7 +201,7 @@ public class MaterialEventSerializerTests
 						.dateStartSchedule(NOW)
 						.materialDispoGroupId(MaterialDispoGroupId.ofInt(30))
 						.orgId(OrgId.ofRepoId(100))
-						.plantId(110)
+						.plantId(ResourceId.ofRepoId(110))
 						.productDescriptor(createProductDescriptor())
 						.productPlanningId(130)
 						.qtyRequired(TEN)
@@ -306,7 +307,7 @@ public class MaterialEventSerializerTests
 				.datePromised(NOW)
 				.dateStartSchedule(NOW)
 				.orgId(OrgId.ofRepoId(100))
-				.plantId(110)
+				.plantId(ResourceId.ofRepoId(110))
 				.productDescriptor(createProductDescriptor())
 				.productPlanningId(130)
 				.qtyRequired(TEN)

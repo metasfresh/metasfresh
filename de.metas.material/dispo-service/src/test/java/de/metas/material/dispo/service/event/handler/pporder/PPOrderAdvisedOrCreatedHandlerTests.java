@@ -49,6 +49,7 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import mockit.Mocked;
@@ -303,7 +304,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.qtyDelivered(ONE)
 				.warehouseId(intermediateWarehouseId)
 				.bpartnerId(BPARTNER_ID)
-				.plantId(120)
+				.plantId(ResourceId.ofRepoId(120))
 				.productPlanningId(140)
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(groupId)

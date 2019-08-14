@@ -1,6 +1,5 @@
 package de.metas.material.event.pporder;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 import static java.math.BigDecimal.ZERO;
 
 import java.math.BigDecimal;
@@ -21,6 +20,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.lang.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,7 +57,7 @@ public class PPOrder
 	/**
 	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
 	 */
-	int plantId;
+	ResourceId plantId;
 
 	WarehouseId warehouseId;
 
@@ -109,7 +109,7 @@ public class PPOrder
 	@Builder(toBuilder = true)
 	public PPOrder(
 			@JsonProperty("orgId") @NonNull final OrgId orgId,
-			@JsonProperty("plantId") final int plantId,
+			@JsonProperty("plantId") @NonNull final ResourceId plantId,
 			@JsonProperty("warehouseId") @NonNull final WarehouseId warehouseId,
 			@JsonProperty("bpartnerId") @Nullable final BPartnerId bpartnerId,
 			@JsonProperty("productPlanningId") final int productPlanningId,
@@ -125,7 +125,7 @@ public class PPOrder
 			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
 	{
 		this.orgId = orgId;
-		this.plantId = checkIdGreaterThanZero("plantId", plantId);
+		this.plantId = plantId;
 		this.warehouseId = warehouseId;
 
 		this.bpartnerId = bpartnerId;

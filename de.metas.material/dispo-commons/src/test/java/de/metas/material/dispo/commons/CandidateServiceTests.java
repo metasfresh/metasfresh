@@ -27,6 +27,7 @@ import de.metas.material.event.ddorder.DDOrderRequestedEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import mockit.Mocked;
 
 /*
@@ -76,7 +77,7 @@ public class CandidateServiceTests
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(ProductionDetail.builder()
-						.plantId(210)
+						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
@@ -90,7 +91,7 @@ public class CandidateServiceTests
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(310))
 						.withQuantity(BigDecimal.valueOf(20)))
 				.withBusinessCaseDetail(ProductionDetail.builder()
-						.plantId(210)
+						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(500)
 						.advised(Flag.TRUE)
@@ -104,7 +105,7 @@ public class CandidateServiceTests
 						.withProductDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(320))
 						.withQuantity(BigDecimal.valueOf(10)))
 				.withBusinessCaseDetail(ProductionDetail.builder()
-						.plantId(210)
+						.plantId(ResourceId.ofRepoId(210))
 						.productPlanningId(220)
 						.productBomLineId(600)
 						.advised(Flag.FALSE)

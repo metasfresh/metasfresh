@@ -193,7 +193,7 @@ public class PPOrderRequestedEventHandlerTests
 				.datePromised(SystemTime.asInstant())
 				.dateStartSchedule(SystemTime.asInstant())
 				.orgId(orgId)
-				.plantId(110)
+				.plantId(ResourceId.ofRepoId(110))
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
 				.productPlanningId(productPlanning.getPP_Product_Planning_ID())

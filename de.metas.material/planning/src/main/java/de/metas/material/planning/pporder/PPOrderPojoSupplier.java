@@ -135,7 +135,7 @@ public class PPOrderPojoSupplier
 				.orgId(OrgId.ofRepoId(mrpContext.getAD_Org_ID()))
 
 				// Planning dimension
-				.plantId(mrpContext.getPlant_ID())
+				.plantId(ResourceId.ofRepoIdOrNull(mrpContext.getPlant_ID()))
 				.warehouseId(WarehouseId.ofRepoId(mrpContext.getM_Warehouse_ID()))
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 

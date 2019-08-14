@@ -51,6 +51,7 @@ import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.organization.OrgId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 
 /*
@@ -234,7 +235,7 @@ public class CandidateRepositoryWriteServiceTests
 				.orgId(ORG_ID)
 				.businessCaseDetail(ProductionDetail.builder()
 						.description("description")
-						.plantId(60)
+						.plantId(ResourceId.ofRepoId(60))
 						.productBomLineId(70)
 						.productPlanningId(80)
 						.ppOrderId(100)

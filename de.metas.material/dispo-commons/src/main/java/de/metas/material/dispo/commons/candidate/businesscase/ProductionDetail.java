@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,7 +55,7 @@ public class ProductionDetail implements BusinessCaseDetail
 				.advised(Flag.of(productionDetailRecord.isAdvised()))
 				.pickDirectlyIfFeasible(Flag.of(productionDetailRecord.isPickDirectlyIfFeasible()))
 				.description(productionDetailRecord.getDescription())
-				.plantId(productionDetailRecord.getPP_Plant_ID())
+				.plantId(ResourceId.ofRepoIdOrNull(productionDetailRecord.getPP_Plant_ID()))
 				.productBomLineId(productionDetailRecord.getPP_Product_BOMLine_ID())
 				.productPlanningId(productionDetailRecord.getPP_Product_Planning_ID())
 				.ppOrderId(productionDetailRecord.getPP_Order_ID())
@@ -66,7 +67,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		return productionDetail;
 	}
 
-	int plantId;
+	ResourceId plantId;
 
 	int productPlanningId;
 
@@ -88,7 +89,7 @@ public class ProductionDetail implements BusinessCaseDetail
 
 	@Builder(toBuilder = true)
 	private ProductionDetail(
-			final int plantId,
+			final ResourceId plantId,
 			final int productPlanningId,
 			final int productBomLineId,
 			final String description,
@@ -106,7 +107,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		if (advised.isTrue() && detailIsAboutPPOrderHeader)
 		{
 			// plantId needs to be available when using this productionDetail to request a ppOrder being created
-			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");
+			Check.errorIf(plantId == null, "Parameter plantId needs to set for and advised PPOrder 'Header' productionDetail");
 		}
 
 		this.plantId = plantId;

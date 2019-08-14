@@ -85,7 +85,7 @@ public class PPOrderProducer
 		//
 		// Planning dimension
 		ppOrderRecord.setAD_Org_ID(ppOrder.getOrgId().getRepoId());
-		ppOrderRecord.setS_Resource_ID(ppOrder.getPlantId());
+		ppOrderRecord.setS_Resource_ID(ppOrder.getPlantId().getRepoId());
 		ppOrderRecord.setM_Warehouse_ID(ppOrder.getWarehouseId().getRepoId());
 		ppOrderRecord.setPlanner_ID(productPlanning.getPlanner_ID());
 
