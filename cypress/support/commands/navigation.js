@@ -81,7 +81,7 @@ Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) =
  *
  * @param rowNumber - the row number
  */
-Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
+Cypress.Commands.add('selectNthRow', (rowNumber, modal = false, force = false) => {
   let path = '.table-flex-wrapper';
 
   if (modal) {
@@ -94,7 +94,9 @@ Cypress.Commands.add('selectNthRow', (rowNumber, modal = false) => {
     .should('exist')
     .click()
     .then(el => {
-      cy.waitForSaveIndicator();
+      if (!force) {
+        cy.waitForSaveIndicator();
+      }
       return cy.wrap(el);
     });
 });

@@ -556,8 +556,9 @@ declare namespace Cypress {
      *
      * @param rowNumber - the row number
      * @param modal - optional, default = false - use true if the field is in a modal overlay; required if the underlying window has a field with the same name.
+     * @param force - optional, default = false - use true when no checks should be done if the selection was successful;
      */
-    selectNthRow(rowNumber: number, modal?: boolean): Chainable<any>
+    selectNthRow(rowNumber: number, modal?: boolean, force ?: boolean): Chainable<any>
 
 
     /**
