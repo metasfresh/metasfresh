@@ -42,8 +42,8 @@ public enum Flag
 	{
 		return value ? TRUE : FALSE;
 	}
-
-	public boolean toBoolean()
+	
+	public boolean isTrue()
 	{
 		return this.equals(TRUE);
 	}

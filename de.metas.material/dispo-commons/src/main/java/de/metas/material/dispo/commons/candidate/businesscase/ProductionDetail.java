@@ -102,7 +102,7 @@ public class ProductionDetail implements BusinessCaseDetail
 		this.pickDirectlyIfFeasible = pickDirectlyIfFeasible;
 
 		final boolean detailIsAboutPPOrderHeader = productBomLineId <= 0;
-		if (Flag.TRUE.equals(advised) && detailIsAboutPPOrderHeader)
+		if (advised.isTrue() && detailIsAboutPPOrderHeader)
 		{
 			// plantId needs to be available when using this productionDetail to request a ppOrder being created
 			Check.errorIf(plantId <= 0, "Parameter plantId needs to be >= 0 for and advised PPOrder 'Header' productionDetail");

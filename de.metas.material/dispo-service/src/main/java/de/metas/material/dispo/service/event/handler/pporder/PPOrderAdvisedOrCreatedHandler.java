@@ -46,8 +46,7 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent>
-		implements MaterialEventHandler<T>
+abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEvent> implements MaterialEventHandler<T>
 {
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
@@ -57,7 +56,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	 * @param candidateChangeHandler
 	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
 	 */
-	public PPOrderAdvisedOrCreatedHandler(
+	PPOrderAdvisedOrCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
@@ -197,6 +196,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	}
 
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(AbstractPPOrderEvent ppOrderEvent);
+
 	protected abstract CandidatesQuery createPreExistingCandidatesQuery(PPOrderLine ppOrderLine, AbstractPPOrderEvent ppOrderEvent);
 
 	protected static final CandidateType extractCandidateType(final PPOrderLine ppOrderLine)
@@ -265,15 +265,7 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 	{
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 
-		// get our initial builder with existing values, or create a new one
-		final ProductionDetailBuilder initialBuilder = Optional.ofNullable(existingCandidateOrNull)
-				.map(Candidate::getBusinessCaseDetail)
-				.map(ProductionDetail::cast)
-				.map(ProductionDetail::toBuilder)
-				.orElse(ProductionDetail.builder());
-
-		// build and return the productionDetail
-		final ProductionDetail newProductionDetailForPPOrder = initialBuilder
+		return prepareProductionDetail(existingCandidateOrNull)
 				.advised(extractIsAdviseEvent(ppOrderEvent))
 				.pickDirectlyIfFeasible(extractIsDirectlyPickSupply(ppOrderEvent))
 				.qty(ppOrder.getQtyRequired())
@@ -282,7 +274,18 @@ public abstract class PPOrderAdvisedOrCreatedHandler<T extends AbstractPPOrderEv
 				.ppOrderId(ppOrder.getPpOrderId())
 				.ppOrderDocStatus(ppOrder.getDocStatus())
 				.build();
-		return newProductionDetailForPPOrder;
+	}
+
+	/**
+	 * @return initial builder with existing values, or create a new one
+	 */
+	private static ProductionDetailBuilder prepareProductionDetail(@Nullable final Candidate existingCandidateOrNull)
+	{
+		return Optional.ofNullable(existingCandidateOrNull)
+				.map(Candidate::getBusinessCaseDetail)
+				.map(ProductionDetail::cast)
+				.map(ProductionDetail::toBuilder)
+				.orElse(ProductionDetail.builder());
 	}
 
 	private ProductionDetail createProductionDetailForPPOrderAndLine(

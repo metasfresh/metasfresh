@@ -478,8 +478,8 @@ public class CandidateRepositoryWriteService
 		{
 			productionDetailRecordToUpdate = newInstance(I_MD_Candidate_Prod_Detail.class, synchedRecord);
 			productionDetailRecordToUpdate.setMD_Candidate(synchedRecord);
-			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
-			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
+			productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().isTrue());
+			productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().isTrue());
 		}
 		else
 		{
@@ -487,11 +487,11 @@ public class CandidateRepositoryWriteService
 
 			if (productionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
-				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().toBoolean());
+				productionDetailRecordToUpdate.setIsPickDirectlyIfFeasible(productionDetail.getPickDirectlyIfFeasible().isTrue());
 			}
 			if (productionDetail.getAdvised().isUpdateExistingRecord())
 			{
-				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().toBoolean());
+				productionDetailRecordToUpdate.setIsAdvised(productionDetail.getAdvised().isTrue());
 			}
 		}
 
@@ -524,14 +524,14 @@ public class CandidateRepositoryWriteService
 		{
 			detailRecordToUpdate = newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
 			detailRecordToUpdate.setMD_Candidate(synchedRecord);
-			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
+			detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().isTrue());
 		}
 		else
 		{
 			detailRecordToUpdate = existingDetail;
 			if (distributionDetail.getPickDirectlyIfFeasible().isUpdateExistingRecord())
 			{
-				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().toBoolean());
+				detailRecordToUpdate.setIsPickDirectlyIfFeasible(distributionDetail.getPickDirectlyIfFeasible().isTrue());
 			}
 		}
 

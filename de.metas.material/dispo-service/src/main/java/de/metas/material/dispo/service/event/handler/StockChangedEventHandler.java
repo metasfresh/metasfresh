@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 
-import org.compiere.util.Util;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +27,7 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
 import de.metas.util.Loggables;
+import de.metas.util.lang.CoalesceUtil;
 import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -252,7 +252,7 @@ public class StockChangedEventHandler implements MaterialEventHandler<StockChang
 
 	private Instant computeDate(@NonNull final StockChangedEvent event)
 	{
-		final Instant date = Util.coalesceSuppliers(
+		final Instant date = CoalesceUtil.coalesceSuppliers(
 				() -> event.getChangeDate(),
 				() -> SystemTime.asInstant());
 		return date;
